@@ -41,11 +41,21 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, [logoutMutation, utils]);
 
+  // Write user info to localStorage for the Manus runtime.
+  // IMPORTANT: JSON.stringify(undefined) returns undefined (not a string),
+  // which localStorage coerces to the string "undefined". The Manus runtime
+  // then tries to JSON.parse("undefined") which throws a parse error.
+  // Fix: only write when data is defined; remove the key on logout (null).
+  useEffect(() => {
+    if (meQuery.data === undefined) return; // still loading – don't overwrite
+    if (meQuery.data === null) {
+      localStorage.removeItem("manus-runtime-user-info");
+    } else {
+      localStorage.setItem("manus-runtime-user-info", JSON.stringify(meQuery.data));
+    }
+  }, [meQuery.data]);
+
   const state = useMemo(() => {
-    localStorage.setItem(
-      "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
-    );
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,
@@ -67,7 +77,7 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath
+    window.location.href = redirectPath;
   }, [
     redirectOnUnauthenticated,
     redirectPath,

@@ -52,3 +52,6 @@
 - [x] Vitest: Admin-Zugriffskontrolle
 - [x] Vitest: Business & Website CRUD
 - [x] Vitest: Outreach & Checkout
+
+## Bugfixes
+- [x] Fix "JSON Parse error: Unexpected identifier undefined" beim Dashboard-Laden
