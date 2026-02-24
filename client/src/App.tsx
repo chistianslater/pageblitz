@@ -4,32 +4,46 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import DashboardLayout from "./components/DashboardLayout";
 import Home from "./pages/Home";
+import SearchPage from "./pages/SearchPage";
+import WebsitesPage from "./pages/WebsitesPage";
+import OutreachPage from "./pages/OutreachPage";
+import StatsPage from "./pages/StatsPage";
+import PreviewPage from "./pages/PreviewPage";
+import SitePage from "./pages/SitePage";
+
+function AdminRouter() {
+  return (
+    <DashboardLayout>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/search" component={SearchPage} />
+        <Route path="/websites" component={WebsitesPage} />
+        <Route path="/outreach" component={OutreachPage} />
+        <Route path="/stats" component={StatsPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </DashboardLayout>
+  );
+}
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
+      <Route path="/preview/:token" component={PreviewPage} />
+      <Route path="/site/:slug" component={SitePage} />
+      <Route>
+        <AdminRouter />
+      </Route>
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />
           <Router />
