@@ -37,12 +37,16 @@ export default function SitePage() {
 
   const websiteData = data.website.websiteData as WebsiteData;
   const colorScheme = data.website.colorScheme as ColorScheme;
+  const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
+  const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
   const business = data.business;
 
   return (
     <WebsiteRenderer
       websiteData={websiteData}
       colorScheme={colorScheme}
+      heroImageUrl={heroImageUrl}
+      layoutStyle={layoutStyle}
       businessPhone={business?.phone || undefined}
       businessAddress={business?.address || undefined}
       businessEmail={business?.email || undefined}

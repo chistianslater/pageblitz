@@ -1,0 +1,42 @@
+{
+  "query": "SELECT id, slug, layoutStyle, heroImageUrl, status, LEFT(CAST(colorScheme AS CHAR), 100) as colorScheme_preview FROM generated_websites LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, slug, layoutStyle, heroImageUrl, status, LEFT(CAST(colorScheme AS CHAR), 100) as colorScheme_preview FROM generated_websites LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "slug": "friseur-gudhair-by-guido-schnucklake-6ULF",
+      "layoutStyle": "classic",
+      "heroImageUrl": "NULL",
+      "status": "preview",
+      "colorScheme_preview": "{\"accent\": \"#A9A9A9\", \"background\": \"#FDF5E6\", \"gradient\": \"linear-gradient(135deg, #8B4513 0%, #D2B"
+    },
+    {
+      "id": "2",
+      "slug": "friseur-bocholt-by-aras-RWGt",
+      "layoutStyle": "classic",
+      "heroImageUrl": "NULL",
+      "status": "preview",
+      "colorScheme_preview": "{\"accent\": \"#e0b0ff\", \"background\": \"#fdfdff\", \"gradient\": \"linear-gradient(135deg, #6a0572 0%, #a06"
+    },
+    {
+      "id": "3",
+      "slug": "ritte-bedachungen-perq",
+      "layoutStyle": "bold",
+      "heroImageUrl": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85&auto=format&fit=crop",
+      "status": "preview",
+      "colorScheme_preview": "{\"accent\": \"#f59e0b\", \"background\": \"#faf8ff\", \"gradient\": \"linear-gradient(135deg, #7c3aed 0%, #5b2"
+    },
+    {
+      "id": "4",
+      "slug": "pesch-hochbau-gmbh-J-mu",
+      "layoutStyle": "bold",
+      "heroImageUrl": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop",
+      "status": "preview",
+      "colorScheme_preview": "{\"accent\": \"#f59e0b\", \"background\": \"#ffffff\", \"gradient\": \"linear-gradient(135deg, #3b82f6 0%, #1d4"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tslug\tlayoutStyle\theroImageUrl\tstatus\tcolorScheme_preview\n1\tfriseur-gudhair-by-guido-schnucklake-6ULF\tclassic\tNULL\tpreview\t{\"accent\": \"#A9A9A9\", \"background\": \"#FDF5E6\", \"gradient\": \"linear-gradient(135deg, #8B4513 0%, #D2B\n2\tfriseur-bocholt-by-aras-RWGt\tclassic\tNULL\tpreview\t{\"accent\": \"#e0b0ff\", \"background\": \"#fdfdff\", \"gradient\": \"linear-gradient(135deg, #6a0572 0%, #a06\n3\tritte-bedachungen-perq\tbold\thttps://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85&auto=format&fit=crop\tpreview\t{\"accent\": \"#f59e0b\", \"background\": \"#faf8ff\", \"gradient\": \"linear-gradient(135deg, #7c3aed 0%, #5b2\n4\tpesch-hochbau-gmbh-J-mu\tbold\thttps://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop\tpreview\t{\"accent\": \"#f59e0b\", \"background\": \"#ffffff\", \"gradient\": \"linear-gradient(135deg, #3b82f6 0%, #1d4\n",
+  "stderr": "",
+  "execution_time_ms": 101
+}

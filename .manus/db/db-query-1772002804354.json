@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, slug, layoutStyle, heroImageUrl FROM generated_websites;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, slug, layoutStyle, heroImageUrl FROM generated_websites;",
+  "rows": [
+    {
+      "id": "1",
+      "slug": "friseur-gudhair-by-guido-schnucklake-6ULF",
+      "layoutStyle": "classic",
+      "heroImageUrl": "NULL"
+    },
+    {
+      "id": "2",
+      "slug": "friseur-bocholt-by-aras-RWGt",
+      "layoutStyle": "classic",
+      "heroImageUrl": "NULL"
+    },
+    {
+      "id": "3",
+      "slug": "ritte-bedachungen-perq",
+      "layoutStyle": "bold",
+      "heroImageUrl": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85&auto=format&fit=crop"
+    },
+    {
+      "id": "4",
+      "slug": "pesch-hochbau-gmbh-J-mu",
+      "layoutStyle": "bold",
+      "heroImageUrl": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tslug\tlayoutStyle\theroImageUrl\n1\tfriseur-gudhair-by-guido-schnucklake-6ULF\tclassic\tNULL\n2\tfriseur-bocholt-by-aras-RWGt\tclassic\tNULL\n3\tritte-bedachungen-perq\tbold\thttps://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85&auto=format&fit=crop\n4\tpesch-hochbau-gmbh-J-mu\tbold\thttps://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

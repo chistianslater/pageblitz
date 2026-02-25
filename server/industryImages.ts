@@ -272,17 +272,18 @@ export function getIndustryColorScheme(category: string, seed: string = ""): Col
 export function getLayoutStyle(category: string, seed: string = ""): string {
   const lower = (category || "").toLowerCase();
 
-  // Industry-specific layout preferences
-  if (lower.includes("restaurant") || lower.includes("cafe") || lower.includes("bistro")) return "fullbleed";
-  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("beauty")) return "elegant";
-  if (lower.includes("handwerk") || lower.includes("bau") || lower.includes("elektriker")) return "bold";
-  if (lower.includes("fitness") || lower.includes("sport") || lower.includes("gym")) return "dynamic";
-  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("medizin")) return "clean";
-  if (lower.includes("immobilien") || lower.includes("makler")) return "premium";
-  if (lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("beratung")) return "professional";
+  // Industry-specific layout preferences (DE + EN GMB categories)
+  if (lower.includes("restaurant") || lower.includes("cafe") || lower.includes("bistro") || lower.includes("food") || lower.includes("pizza") || lower.includes("sushi") || lower.includes("hotel") || lower.includes("lodging")) return "fullbleed";
+  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("beauty") || lower.includes("hair") || lower.includes("barber") || lower.includes("coiffeur") || lower.includes("nail") || lower.includes("spa") || lower.includes("massage")) return "elegant";
+  if (lower.includes("handwerk") || lower.includes("bau") || lower.includes("elektriker") || lower.includes("contractor") || lower.includes("roofing") || lower.includes("plumber") || lower.includes("carpenter") || lower.includes("painter") || lower.includes("construction") || lower.includes("renovation") || lower.includes("installation")) return "bold";
+  if (lower.includes("fitness") || lower.includes("sport") || lower.includes("gym") || lower.includes("yoga") || lower.includes("training") || lower.includes("crossfit") || lower.includes("pilates")) return "dynamic";
+  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("medizin") || lower.includes("doctor") || lower.includes("dental") || lower.includes("medical") || lower.includes("health") || lower.includes("clinic") || lower.includes("pharmacy") || lower.includes("physiotherap") || lower.includes("therapist")) return "clean";
+  if (lower.includes("immobilien") || lower.includes("makler") || lower.includes("real estate") || lower.includes("property") || lower.includes("luxury") || lower.includes("premium")) return "premium";
+  if (lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("beratung") || lower.includes("law") || lower.includes("legal") || lower.includes("consulting") || lower.includes("accountant") || lower.includes("tax") || lower.includes("steuer") || lower.includes("versicherung")) return "professional";
+  if (lower.includes("auto") || lower.includes("kfz") || lower.includes("car") || lower.includes("vehicle") || lower.includes("garage") || lower.includes("mechanic") || lower.includes("werkstatt")) return "bold";
 
-  // Fallback: vary by seed
-  const styles = ["classic", "bold", "elegant", "dynamic", "clean"];
+  // Fallback: vary by seed for more diversity
+  const styles = ["classic", "bold", "elegant", "dynamic", "clean", "premium"];
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = ((hash << 5) - hash) + seed.charCodeAt(i);

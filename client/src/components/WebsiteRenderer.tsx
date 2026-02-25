@@ -27,19 +27,54 @@ interface WebsiteRendererProps {
   openingHours?: string[];
 }
 
+// Client-side fallback images by industry keyword
+const FALLBACK_IMAGES: Array<{ keywords: string[]; url: string }> = [
+  { keywords: ["hair", "friseur", "salon", "barber", "beauty", "coiffeur"], url: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400&q=85&auto=format&fit=crop" },
+  { keywords: ["restaurant", "food", "cafe", "bistro", "pizza", "sushi"], url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop" },
+  { keywords: ["contractor", "roofing", "bau", "handwerk", "construction", "plumber", "painter"], url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=85&auto=format&fit=crop" },
+  { keywords: ["fitness", "gym", "sport", "yoga", "training"], url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1400&q=85&auto=format&fit=crop" },
+  { keywords: ["doctor", "dental", "medical", "health", "clinic", "arzt", "zahnarzt"], url: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1400&q=85&auto=format&fit=crop" },
+  { keywords: ["real estate", "property", "immobilien", "makler"], url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=85&auto=format&fit=crop" },
+  { keywords: ["law", "legal", "anwalt", "beratung", "consulting"], url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=85&auto=format&fit=crop" },
+  { keywords: ["auto", "car", "vehicle", "garage", "mechanic"], url: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1400&q=85&auto=format&fit=crop" },
+];
+
+function getFallbackImage(wd: WebsiteData): string {
+  // Use business name + tagline as signal for industry detection
+  const text = (wd.businessName + " " + (wd.tagline || "")).toLowerCase();
+  for (const entry of FALLBACK_IMAGES) {
+    if (entry.keywords.some(kw => text.includes(kw))) return entry.url;
+  }
+  return "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop";
+}
+
+function inferLayout(wd: WebsiteData): string {
+  const text = (wd.businessName + " " + (wd.tagline || "")).toLowerCase();
+  if (["restaurant", "food", "cafe", "bistro", "pizza", "hotel"].some(k => text.includes(k))) return "fullbleed";
+  if (["hair", "friseur", "salon", "barber", "beauty", "spa", "nail"].some(k => text.includes(k))) return "elegant";
+  if (["contractor", "roofing", "bau", "handwerk", "construction", "plumber"].some(k => text.includes(k))) return "bold";
+  if (["fitness", "gym", "sport", "yoga", "training"].some(k => text.includes(k))) return "dynamic";
+  if (["doctor", "dental", "medical", "health", "clinic", "arzt"].some(k => text.includes(k))) return "clean";
+  if (["real estate", "property", "immobilien", "luxury"].some(k => text.includes(k))) return "premium";
+  if (["law", "legal", "anwalt", "consulting"].some(k => text.includes(k))) return "professional";
+  return "classic";
+}
+
 export default function WebsiteRenderer({
   websiteData, colorScheme: cs, heroImageUrl, layoutStyle = "classic",
   showActivateButton = false, onActivate,
   businessPhone, businessAddress, businessEmail, openingHours = [],
 }: WebsiteRendererProps) {
-  const layout = layoutStyle || "classic";
+  // Fallback: derive image and layout from business name/industry for old websites
+  const effectiveHeroImage = heroImageUrl || getFallbackImage(websiteData);
+  const layout = layoutStyle || inferLayout(websiteData);
 
   return (
     <div className="min-h-screen font-sans" style={{ backgroundColor: cs.background, color: cs.text, fontFamily: "'Inter', 'Plus Jakarta Sans', sans-serif" }}>
       <NavBar websiteData={websiteData} cs={cs} businessPhone={businessPhone} layout={layout} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <HeroSection section={section} cs={cs} heroImageUrl={heroImageUrl} layout={layout} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <HeroSection section={section} cs={cs} heroImageUrl={effectiveHeroImage} layout={layout} showActivateButton={showActivateButton} onActivate={onActivate} />}
           {section.type === "about" && <AboutSection section={section} cs={cs} layout={layout} />}
           {(section.type === "services" || section.type === "features") && <ServicesSection section={section} cs={cs} layout={layout} />}
           {section.type === "testimonials" && <TestimonialsSection section={section} cs={cs} />}

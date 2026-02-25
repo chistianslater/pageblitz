@@ -81,3 +81,11 @@
 - [x] Frontend: Confirmation-Dialog mit Warnung und KI-Bild-Option
 - [x] Loading-State während Regenerierung
 - [x] Erfolgsmeldung mit direktem Preview-Link nach Regenerierung
+
+## WebsiteRenderer Fix (Visuelle Varianz)
+- [x] Analyse: Props layoutStyle/heroImageUrl wurden nicht an WebsiteRenderer übergeben
+- [x] PreviewPage und SitePage: layoutStyle + heroImageUrl Props korrekt weitergegeben
+- [x] WebsiteRenderer: Client-seitige Fallback-Bilder für alte Websites (ohne heroImageUrl in DB)
+- [x] WebsiteRenderer: Client-seitiger Layout-Fallback für alte Websites (ohne layoutStyle in DB)
+- [x] getLayoutStyle: Englische GMB-Kategorienamen (hair care, roofing contractor etc.) korrekt erkannt
+- [x] Alle 17 Tests bestanden, TypeScript-Check sauber
