@@ -273,17 +273,19 @@ export function getLayoutStyle(category: string, seed: string = ""): string {
   const lower = (category || "").toLowerCase();
 
   // Industry-specific layout preferences (DE + EN GMB categories)
-  if (lower.includes("restaurant") || lower.includes("cafe") || lower.includes("bistro") || lower.includes("food") || lower.includes("pizza") || lower.includes("sushi") || lower.includes("hotel") || lower.includes("lodging")) return "fullbleed";
-  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("beauty") || lower.includes("hair") || lower.includes("barber") || lower.includes("coiffeur") || lower.includes("nail") || lower.includes("spa") || lower.includes("massage")) return "elegant";
-  if (lower.includes("handwerk") || lower.includes("bau") || lower.includes("elektriker") || lower.includes("contractor") || lower.includes("roofing") || lower.includes("plumber") || lower.includes("carpenter") || lower.includes("painter") || lower.includes("construction") || lower.includes("renovation") || lower.includes("installation")) return "bold";
-  if (lower.includes("fitness") || lower.includes("sport") || lower.includes("gym") || lower.includes("yoga") || lower.includes("training") || lower.includes("crossfit") || lower.includes("pilates")) return "dynamic";
-  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("medizin") || lower.includes("doctor") || lower.includes("dental") || lower.includes("medical") || lower.includes("health") || lower.includes("clinic") || lower.includes("pharmacy") || lower.includes("physiotherap") || lower.includes("therapist")) return "clean";
-  if (lower.includes("immobilien") || lower.includes("makler") || lower.includes("real estate") || lower.includes("property") || lower.includes("luxury") || lower.includes("premium")) return "premium";
-  if (lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("beratung") || lower.includes("law") || lower.includes("legal") || lower.includes("consulting") || lower.includes("accountant") || lower.includes("tax") || lower.includes("steuer") || lower.includes("versicherung")) return "professional";
-  if (lower.includes("auto") || lower.includes("kfz") || lower.includes("car") || lower.includes("vehicle") || lower.includes("garage") || lower.includes("mechanic") || lower.includes("werkstatt")) return "bold";
+  // Restaurant, Café, Food → Warm layout
+  if (lower.includes("restaurant") || lower.includes("cafe") || lower.includes("café") || lower.includes("bistro") || lower.includes("food") || lower.includes("pizza") || lower.includes("sushi") || lower.includes("hotel") || lower.includes("bäckerei") || lower.includes("konditorei") || lower.includes("catering") || lower.includes("gastronomie")) return "warm";
+  // Beauty, Friseur → Elegant layout
+  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("beauty") || lower.includes("hair") || lower.includes("barber") || lower.includes("coiffeur") || lower.includes("nail") || lower.includes("spa") || lower.includes("massage") || lower.includes("kosmetik") || lower.includes("wellness") || lower.includes("ästhetik")) return "elegant";
+  // Handwerk, Bau → Bold layout
+  if (lower.includes("handwerk") || lower.includes("bau") || lower.includes("elektriker") || lower.includes("contractor") || lower.includes("roofing") || lower.includes("plumber") || lower.includes("carpenter") || lower.includes("painter") || lower.includes("construction") || lower.includes("renovation") || lower.includes("installation") || lower.includes("dachdecker") || lower.includes("sanitär") || lower.includes("maler") || lower.includes("zimmermann") || lower.includes("schreiner") || lower.includes("klempner") || lower.includes("heizung") || lower.includes("auto") || lower.includes("kfz") || lower.includes("car") || lower.includes("garage") || lower.includes("mechanic")) return "bold";
+  // Fitness, Sport → Dynamic layout
+  if (lower.includes("fitness") || lower.includes("sport") || lower.includes("gym") || lower.includes("yoga") || lower.includes("training") || lower.includes("crossfit") || lower.includes("pilates") || lower.includes("kampfsport") || lower.includes("tanzen")) return "dynamic";
+  // Arzt, Beratung, Recht → Clean layout
+  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("medizin") || lower.includes("doctor") || lower.includes("dental") || lower.includes("medical") || lower.includes("health") || lower.includes("clinic") || lower.includes("pharmacy") || lower.includes("physiotherap") || lower.includes("therapist") || lower.includes("immobilien") || lower.includes("makler") || lower.includes("real estate") || lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("beratung") || lower.includes("law") || lower.includes("legal") || lower.includes("consulting") || lower.includes("accountant") || lower.includes("tax") || lower.includes("steuer") || lower.includes("versicherung")) return "clean";
 
   // Fallback: vary by seed for more diversity
-  const styles = ["classic", "bold", "elegant", "dynamic", "clean", "premium"];
+  const styles = ["clean", "bold", "elegant", "dynamic", "warm"];
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = ((hash << 5) - hash) + seed.charCodeAt(i);

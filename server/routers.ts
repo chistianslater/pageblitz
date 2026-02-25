@@ -29,31 +29,69 @@ function slugify(text: string): string {
 // ── Industry-specific prompt enrichment ───────────────
 function buildIndustryContext(category: string): string {
   const lower = (category || "").toLowerCase();
-  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("barber") || lower.includes("beauty")) {
-    return `Branchenkontext: Friseursalon / Beauty. Betone: Handwerk & Expertise, persönliche Beratung, Wohlfühlatmosphäre, Terminbuchung, Produktqualität. Verwende warme, einladende Sprache. Vermeide Klischees wie "Ihr Wohlbefinden liegt uns am Herzen".`;
+  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("barber") || lower.includes("beauty") || lower.includes("hair") || lower.includes("coiffeur") || lower.includes("nail") || lower.includes("spa") || lower.includes("kosmetik") || lower.includes("wellness")) {
+    return `LAYOUT-PERSÖNLICHKEIT: ELEGANT (Friseur/Beauty)
+Schreibstil: Poetisch, sinnlich, einladend. Kurze, elegante Sätze. Emotionen ansprechen.
+Sprache: Warm, persönlich, luxuriös ohne arrogant zu sein.
+Betone: Handwerk & Expertise, persönliche Beratung, Wohlfühlatmosphäre, Transformation, Schönheit.
+Hero-Headline: Soll ein Gefühl erzeugen, kein Versprechen machen. Z.B. "Wo Schönheit beginnt" statt "Ihr Friseur in München".
+Services: Konkrete Behandlungen mit sensorischen Details (Duft, Gefühl, Ergebnis).
+VERBOTEN: "Ihr Wohlbefinden liegt uns am Herzen", "Wir freuen uns auf Ihren Besuch", generische Phrasen.`;
   }
-  if (lower.includes("restaurant") || lower.includes("gastro") || lower.includes("cafe") || lower.includes("bistro") || lower.includes("pizza") || lower.includes("küche")) {
-    return `Branchenkontext: Gastronomie. Betone: frische Zutaten, Rezepttradition, Atmosphäre, Reservierung, Spezialitäten. Verwende sensorische, appetitanregende Sprache. Beschreibe konkrete Gerichte und Aromen.`;
+  if (lower.includes("restaurant") || lower.includes("gastro") || lower.includes("cafe") || lower.includes("café") || lower.includes("bistro") || lower.includes("pizza") || lower.includes("küche") || lower.includes("bäckerei") || lower.includes("catering") || lower.includes("food")) {
+    return `LAYOUT-PERSÖNLICHKEIT: WARM (Restaurant/Gastronomie)
+Schreibstil: Sensorisch, appetitanregend, gemütlich. Beschreibe Aromen, Texturen, Atmosphäre.
+Sprache: Herzlich, einladend, leidenschaftlich für Essen.
+Betone: Frische Zutaten, Rezepttradition, Atmosphäre, konkrete Gerichte, Reservierung.
+Hero-Headline: Soll Hunger und Vorfreude wecken. Z.B. "Wo jeder Bissen zählt" oder "Echte Küche. Echter Geschmack."
+Services: Konkrete Gerichte/Menüs mit verlockenden Beschreibungen.
+VERBOTEN: "Wir bieten eine große Auswahl", "für jeden Geschmack etwas dabei", generische Phrasen.`;
   }
-  if (lower.includes("handwerk") || lower.includes("elektriker") || lower.includes("klempner") || lower.includes("maler") || lower.includes("bau") || lower.includes("sanitär")) {
-    return `Branchenkontext: Handwerk / Bau. Betone: Zuverlässigkeit, Qualitätsarbeit, Erfahrung, schnelle Reaktionszeit, Festpreise, regionale Verwurzelung. Verwende direkte, vertrauensbildende Sprache. Nenne konkrete Leistungen.`;
+  if (lower.includes("handwerk") || lower.includes("elektriker") || lower.includes("klempner") || lower.includes("maler") || lower.includes("bau") || lower.includes("sanitär") || lower.includes("dachdecker") || lower.includes("contractor") || lower.includes("roofing") || lower.includes("construction") || lower.includes("auto") || lower.includes("kfz") || lower.includes("werkstatt")) {
+    return `LAYOUT-PERSÖNLICHKEIT: BOLD (Handwerk/Bau/KFZ)
+Schreibstil: Direkt, kraftvoll, selbstbewusst. Kurze, prägnante Aussagen. Zahlen und Fakten.
+Sprache: Männlich, kompetent, vertrauenswürdig. Keine Schnickschnack.
+Betone: Zuverlässigkeit, Qualitätsarbeit, Erfahrung (Jahre), schnelle Reaktionszeit, Festpreise, Garantie.
+Hero-Headline: Stark, direkt, selbstbewusst. Z.B. "Gemacht für die Härte des Alltags" oder "Wir reparieren. Punkt."
+Services: Konkrete Leistungen mit Zeitangaben und Garantien.
+VERBOTEN: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle", weiche Phrasen.`;
   }
-  if (lower.includes("fitness") || lower.includes("gym") || lower.includes("sport") || lower.includes("yoga") || lower.includes("training")) {
-    return `Branchenkontext: Fitness / Sport. Betone: Transformation, Ergebnisse, Community, Expertise der Trainer, Ausstattung. Verwende motivierende, energetische Sprache. Konkrete Ergebnisse und Programme nennen.`;
+  if (lower.includes("fitness") || lower.includes("gym") || lower.includes("sport") || lower.includes("yoga") || lower.includes("training") || lower.includes("crossfit") || lower.includes("pilates") || lower.includes("kampfsport")) {
+    return `LAYOUT-PERSÖNLICHKEIT: DYNAMIC (Fitness/Sport)
+Schreibstil: Motivierend, energetisch, herausfordernd. Imperativ-Sätze. Transformation betonen.
+Sprache: Stark, inspirierend, community-orientiert. Ergebnisse in den Vordergrund.
+Betone: Transformation, konkrete Ergebnisse (kg, Zeit, Leistung), Community, Trainer-Expertise, Programme.
+Hero-Headline: Soll Energie und Motivation auslösen. Z.B. "Dein stärkeres Ich beginnt hier" oder "Keine Ausreden. Nur Ergebnisse."
+Services: Konkrete Programme mit Ergebnisversprechen.
+VERBOTEN: "Für jeden das Richtige", "Spaß am Sport", generische Fitness-Phrasen.`;
   }
-  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("praxis") || lower.includes("medizin") || lower.includes("therapie")) {
-    return `Branchenkontext: Medizin / Gesundheit. Betone: Kompetenz, Vertrauen, modernste Technik, Patientenorientierung, kurze Wartezeiten. Verwende professionelle, beruhigende Sprache. Qualifikationen und Spezialisierungen hervorheben.`;
+  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("praxis") || lower.includes("medizin") || lower.includes("therapie") || lower.includes("doctor") || lower.includes("dental") || lower.includes("clinic") || lower.includes("health")) {
+    return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Medizin/Gesundheit)
+Schreibstil: Professionell, beruhigend, klar. Präzise Aussagen. Vertrauen aufbauen.
+Sprache: Kompetent, empathisch, sachlich. Fachbegriffe erklären.
+Betone: Kompetenz, modernste Technik, Patientenorientierung, kurze Wartezeiten, Qualifikationen.
+Hero-Headline: Beruhigend und kompetent. Z.B. "Ihre Gesundheit in erfahrenen Händen" oder "Medizin, die zuhört."
+Services: Konkrete Behandlungen mit Erklärungen und Vorteilen.
+VERBOTEN: "Ihr Vertrauen ist unser Kapital", "Wir nehmen uns Zeit für Sie", generische Phrasen.`;
   }
-  if (lower.includes("immobilien") || lower.includes("makler")) {
-    return `Branchenkontext: Immobilien. Betone: Marktkenntnis, Verhandlungsstärke, Diskretion, Netzwerk, Erfolgsquote. Verwende professionelle, vertrauensbildende Sprache. Regionale Expertise betonen.`;
+  if (lower.includes("immobilien") || lower.includes("makler") || lower.includes("real estate")) {
+    return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Immobilien)
+Schreibstil: Professionell, diskret, premium. Zahlen und Erfolge betonen.
+Sprache: Seriös, vertrauenswürdig, kompetent. Regionale Expertise.
+Betone: Marktkenntnis, Verhandlungsstärke, Diskretion, Netzwerk, Erfolgsquote, verkaufte Objekte.
+Hero-Headline: Premium und kompetent. Z.B. "Ihr Immobilienexperte seit [Jahr]" oder "Jede Immobilie hat ihre Geschichte."`;
   }
-  if (lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("kanzlei") || lower.includes("steuerberater")) {
-    return `Branchenkontext: Recht / Beratung. Betone: Expertise, Diskretion, Erfolgsquote, persönliche Betreuung, Spezialisierung. Verwende sachliche, kompetente Sprache. Vertrauen durch Erfahrung aufbauen.`;
+  if (lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("kanzlei") || lower.includes("steuerberater") || lower.includes("beratung") || lower.includes("consulting") || lower.includes("law") || lower.includes("legal")) {
+    return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Recht/Beratung)
+Schreibstil: Sachlich, präzise, kompetent. Vertrauen durch Expertise.
+Sprache: Professionell, direkt, vertrauenswürdig. Keine Emotionen, aber Empathie.
+Betone: Expertise, Diskretion, Erfolgsquote, persönliche Betreuung, Spezialisierung, Jahre Erfahrung.
+Hero-Headline: Kompetenz und Sicherheit. Z.B. "Ihr Recht. Unsere Expertise." oder "Wenn es darauf ankommt."`;
   }
-  if (lower.includes("auto") || lower.includes("kfz") || lower.includes("werkstatt")) {
-    return `Branchenkontext: KFZ / Autowerkstatt. Betone: Fachkompetenz, Transparenz bei Preisen, schnelle Reparaturen, Markenkenntnis, Garantie. Verwende direkte, technisch kompetente Sprache.`;
-  }
-  return `Branchenkontext: Dienstleistungsunternehmen. Betone: Professionalität, Kundenzufriedenheit, Erfahrung, regionale Präsenz. Verwende klare, überzeugende Sprache.`;
+  return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Dienstleistung)
+Schreibstil: Klar, professionell, überzeugend. Nutzen für den Kunden betonen.
+Sprache: Direkt, kompetent, vertrauenswürdig. Regionale Präsenz.
+Betone: Professionalität, Kundenzufriedenheit, Erfahrung, regionale Präsenz, konkrete Leistungen.`;
 }
 
 function buildPersonalityHint(name: string, rating: string | null, reviewCount: number): string {

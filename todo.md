@@ -89,3 +89,15 @@
 - [x] WebsiteRenderer: Client-seitiger Layout-Fallback für alte Websites (ohne layoutStyle in DB)
 - [x] getLayoutStyle: Englische GMB-Kategorienamen (hair care, roofing contractor etc.) korrekt erkannt
 - [x] Alle 17 Tests bestanden, TypeScript-Check sauber
+
+## Layout-Persönlichkeiten (Runde 3)
+- [x] ElegantLayout.tsx: Playfair Display, Gold-Akzente, Split-Hero, Serif-Typografie (Beauty/Friseur)
+- [x] BoldLayout.tsx: Oswald, dunkler Hintergrund, Diagonal-Cuts, Power-Typografie (Handwerk/Bau)
+- [x] WarmLayout.tsx: Lora, warme Farben, Foodfoto-Atmosphäre, Karten-Stil (Restaurant/Café)
+- [x] CleanLayout.tsx: Inter, Blau-Akzente, Trust-Badges, viel Weissraum (Arzt/Beratung)
+- [x] DynamicLayout.tsx: Bebas Neue, Diagonale, Energie-Farben, Große Zahlen (Fitness/Sport)
+- [x] WebsiteRenderer.tsx: Dispatcher auf 5 neue Layouts, Fallback-Bilder, Layout-Inferenz
+- [x] getLayoutStyle: Nur noch 5 valide Layouts (elegant/bold/warm/clean/dynamic)
+- [x] buildIndustryContext: Layout-spezifische Schreibstil-Anweisungen mit VERBOTEN-Liste
+- [x] Google Fonts in index.html: Playfair Display, Lora, Oswald, Bebas Neue, Rajdhani
+- [x] 17/17 Tests bestanden, TypeScript-Check sauber
