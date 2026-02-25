@@ -11,8 +11,8 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
-const SERIF = "'Libre Baskerville', Georgia, serif";
-const BODY = "'Source Sans Pro', 'Helvetica Neue', sans-serif";
+const SERIF = "var(--site-font-headline, 'Libre Baskerville', Georgia, serif)";
+const BODY = "var(--site-font-body, 'Source Sans Pro', 'Helvetica Neue', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;

@@ -179,3 +179,12 @@
 - [x] animations.css globales CSS-System
 - [x] useAnimations.ts Hook (useScrollReveal, useNavbarScroll, useCounterAnimation)
 - [x] Alle 12 Layouts gepatcht (data-reveal auf h2, btn-premium, card-premium, hero-animate-*)
+
+## Design-Token-System für visuelle Individualität (Runde 11)
+- [x] WebsiteData: designTokens Feld hinzufügen (fonts, spacing, borderRadius, shadowStyle, sectionBg)
+- [x] AI-Prompt: Archetyp-spezifische Token-Generierung (konkrete Werte, nicht generisch)
+- [x] WebsiteRenderer: CSS Custom Properties aus designTokens injizieren
+- [x] Alle Layouts: CSS Custom Properties statt hardcoded Werte verwenden (HEADING/BODY/SERIF/SANS)
+- [x] Google Fonts: Dynamisch aus designTokens.fonts laden (useEffect in WebsiteRenderer)
+- [x] Section-Hintergründe: Abwechslungsreich aus designTokens.sectionBg
+- [x] designTokens Sanitization: Enum-Werte validieren, Platzhalter-Strings bereinigen

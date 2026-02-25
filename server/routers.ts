@@ -422,6 +422,23 @@ PFLICHT-AUSGABE (exaktes JSON-Format)
   "seoDescription": "Prägnante SEO-Beschreibung mit Keyword und lokalem Bezug (max. 155 Zeichen)",
   "footer": {
     "text": "© ${year} ${business.name}. Alle Rechte vorbehalten."
+  },
+  "designTokens": {
+    "headlineFont": "[Google Font passend zum ${archetype.name}-Archetyp, z.B. Playfair Display / Oswald / Space Grotesk / Fraunces / DM Serif Display / Unbounded / Syne]",
+    "bodyFont": "[Google Font für Fließtext, z.B. Inter / Nunito / Source Sans 3 / Lato / DM Sans / Outfit]",
+    "headlineFontWeight": "[700 oder 800 oder 900 je nach Archetyp-Energie]",
+    "headlineLetterSpacing": "[z.B. -0.04em für elegant/luxury, 0.08em für craft/bold, -0.02em für modern]",
+    "bodyLineHeight": "[z.B. 1.6 für kompakt, 1.8 für luftig, 1.75 für standard]",
+    "borderRadius": "[none | sm | md | lg | full – passend zum Archetyp: luxury=none, craft=sm, fresh=lg, vibrant=full]",
+    "shadowStyle": "[none | flat | soft | dramatic | glow – luxury=none, trust=soft, craft=flat, vibrant=glow]",
+    "sectionSpacing": "[tight | normal | spacious | ultra – luxury=ultra, craft=normal, fresh=spacious]",
+    "sectionBackgrounds": ["[Hintergrund Sektion 1, z.B. #FFFFFF]", "[Hintergrund Sektion 2, z.B. #F8F4F0]", "[Hintergrund Sektion 3, z.B. #1A1A1A]"],
+    "accentColor": "[Akzentfarbe aus der 60-30-10 Regel, z.B. ${colorScheme.accent || archetype.colors.accent}]",
+    "textColor": "[Primäre Textfarbe, z.B. #1A1A1A oder #F0F0F0 bei dark mode]",
+    "backgroundColor": "[Haupt-Hintergrundfarbe, z.B. ${archetype.colors.background}]",
+    "cardBackground": "[Karten-Hintergrundfarbe, z.B. #FFFFFF oder rgba(255,255,255,0.05)]",
+    "buttonStyle": "[filled | outline | ghost | pill – luxury=outline, craft=filled, fresh=pill, vibrant=filled]",
+    "archetype": "${archetype.name}"
   }
 }
 
@@ -736,6 +753,30 @@ export const appRouter = router({
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
+        // Sanitize designTokens: ensure enum values are valid
+        if (websiteData.designTokens) {
+          const dt = websiteData.designTokens;
+          const validRadius = ["none", "sm", "md", "lg", "full"];
+          const validShadow = ["none", "flat", "soft", "dramatic", "glow"];
+          const validSpacing = ["tight", "normal", "spacious", "ultra"];
+          const validButton = ["filled", "outline", "ghost", "pill"];
+          if (!validRadius.includes(dt.borderRadius)) dt.borderRadius = "md";
+          if (!validShadow.includes(dt.shadowStyle)) dt.shadowStyle = "soft";
+          if (!validSpacing.includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
+          if (!validButton.includes(dt.buttonStyle)) dt.buttonStyle = "filled";
+          if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
+            dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
+          }
+          // Ensure font names are plain strings (no brackets)
+          if (dt.headlineFont && dt.headlineFont.includes("[")) dt.headlineFont = "Playfair Display";
+          if (dt.bodyFont && dt.bodyFont.includes("[")) dt.bodyFont = "Inter";
+          // Ensure accent color is a valid hex/rgb
+          if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
+          if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
+          if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
+          if (!dt.cardBackground || dt.cardBackground.includes("[")) dt.cardBackground = colorScheme.surface;
+        }
+
         const slug = slugify(business.name) + "-" + nanoid(4);
         const previewToken = nanoid(32);
 
@@ -846,6 +887,28 @@ export const appRouter = router({
         // Inject real Google rating data
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
+
+        // Sanitize designTokens: ensure enum values are valid
+        if (websiteData.designTokens) {
+          const dt = websiteData.designTokens;
+          const validRadius = ["none", "sm", "md", "lg", "full"];
+          const validShadow = ["none", "flat", "soft", "dramatic", "glow"];
+          const validSpacing = ["tight", "normal", "spacious", "ultra"];
+          const validButton = ["filled", "outline", "ghost", "pill"];
+          if (!validRadius.includes(dt.borderRadius)) dt.borderRadius = "md";
+          if (!validShadow.includes(dt.shadowStyle)) dt.shadowStyle = "soft";
+          if (!validSpacing.includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
+          if (!validButton.includes(dt.buttonStyle)) dt.buttonStyle = "filled";
+          if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
+            dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
+          }
+          if (dt.headlineFont && dt.headlineFont.includes("[")) dt.headlineFont = "Playfair Display";
+          if (dt.bodyFont && dt.bodyFont.includes("[")) dt.bodyFont = "Inter";
+          if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
+          if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
+          if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
+          if (!dt.cardBackground || dt.cardBackground.includes("[")) dt.cardBackground = colorScheme.surface;
+        }
 
         // Generate a new slug and token for the regenerated version
         const newSlug = slugify(business.name) + "-" + nanoid(4);

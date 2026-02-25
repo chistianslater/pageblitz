@@ -11,7 +11,7 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
-const SERIF = "'Playfair Display', Georgia, serif";
+const SERIF = "var(--site-font-headline, 'Playfair Display', Georgia, serif)";
 const ROUND = "'Nunito', 'Segoe UI', sans-serif";
 
 interface Props {

@@ -10,8 +10,8 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
-const HEADING = "'Bebas Neue', 'Oswald', Impact, sans-serif";
-const BODY = "'Rajdhani', 'Barlow', 'Inter', sans-serif";
+const HEADING = "var(--site-font-headline, 'Bebas Neue', 'Oswald', Impact, sans-serif)";
+const BODY = "var(--site-font-body, 'Rajdhani', 'Barlow', 'Inter', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;

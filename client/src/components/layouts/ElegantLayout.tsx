@@ -10,8 +10,8 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
-const SERIF = "'Cormorant Garamond', Georgia, serif";
-const SANS = "'Jost', 'Inter', sans-serif";
+const SERIF = "var(--site-font-headline, 'Cormorant Garamond', Georgia, serif)";
+const SANS = "var(--site-font-body, 'Jost', 'Inter', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;
