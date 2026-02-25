@@ -188,3 +188,9 @@
 - [x] Google Fonts: Dynamisch aus designTokens.fonts laden (useEffect in WebsiteRenderer)
 - [x] Section-Hintergründe: Abwechslungsreich aus designTokens.sectionBg
 - [x] designTokens Sanitization: Enum-Werte validieren, Platzhalter-Strings bereinigen
+
+## Font-Mixing Bug Fix (Runde 12)
+- [ ] Diagnose: designTokens aus DB für betroffene Website prüfen
+- [ ] AI-Prompt: Strikte Font-Pairing-Regeln pro Archetyp (kein Serif als Body für Handwerk/Bau)
+- [ ] Sanitization: bodyFont auf Sans-Serif beschränken für bestimmte Archetypen
+- [ ] Sanitization: Serif-Fonts nur als headlineFont erlauben, nie als bodyFont für Handwerk/Bau/Fitness

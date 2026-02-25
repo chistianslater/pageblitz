@@ -1,0 +1,40 @@
+{
+  "query": "SELECT slug, layoutStyle, JSON_EXTRACT(websiteData, '$.designTokens.headlineFont') as headlineFont, JSON_EXTRACT(websiteData, '$.designTokens.bodyFont') as bodyFont FROM generated_websites LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT slug, layoutStyle, JSON_EXTRACT(websiteData, '$.designTokens.headlineFont') as headlineFont, JSON_EXTRACT(websiteData, '$.designTokens.bodyFont') as bodyFont FROM generated_websites LIMIT 5;",
+  "rows": [
+    {
+      "slug": "friseur-gudhair-by-guido-schnucklake-6ULF",
+      "layoutStyle": "classic",
+      "headlineFont": "NULL",
+      "bodyFont": "NULL"
+    },
+    {
+      "slug": "friseur-bocholt-by-aras-NyqU",
+      "layoutStyle": "elegant",
+      "headlineFont": "NULL",
+      "bodyFont": "NULL"
+    },
+    {
+      "slug": "ritte-bedachungen-e-2v",
+      "layoutStyle": "modern",
+      "headlineFont": "NULL",
+      "bodyFont": "NULL"
+    },
+    {
+      "slug": "pesch-hochbau-gmbh-mE5D",
+      "layoutStyle": "bold",
+      "headlineFont": "NULL",
+      "bodyFont": "NULL"
+    },
+    {
+      "slug": "rainer-demming-bauunternehmen-gmbh-h2mg",
+      "layoutStyle": "craft",
+      "headlineFont": "\"Abril Fatface\"",
+      "bodyFont": "\"Crimson Text\""
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tlayoutStyle\theadlineFont\tbodyFont\nfriseur-gudhair-by-guido-schnucklake-6ULF\tclassic\tNULL\tNULL\nfriseur-bocholt-by-aras-NyqU\telegant\tNULL\tNULL\nritte-bedachungen-e-2v\tmodern\tNULL\tNULL\npesch-hochbau-gmbh-mE5D\tbold\tNULL\tNULL\nrainer-demming-bauunternehmen-gmbh-h2mg\tcraft\t\"Abril Fatface\"\t\"Crimson Text\"\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

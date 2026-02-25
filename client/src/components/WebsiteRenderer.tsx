@@ -113,6 +113,22 @@ const FALLBACK_IMAGES: Record<string, string> = {
   natural: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=85&fit=crop",
 };
 
+// ── Layout-specific font defaults (used when no designTokens present) ────────
+const LAYOUT_FONT_DEFAULTS: Record<string, { headline: string; body: string }> = {
+  elegant:  { headline: "'Cormorant Garamond', Georgia, serif",       body: "'Lato', 'Inter', sans-serif" },
+  bold:     { headline: "'Oswald', 'Barlow Condensed', Impact, sans-serif", body: "'Barlow', 'Inter', sans-serif" },
+  warm:     { headline: "'Lora', Georgia, serif",                      body: "'Nunito', 'Inter', sans-serif" },
+  clean:    { headline: "'Inter', system-ui, sans-serif",              body: "'Inter', system-ui, sans-serif" },
+  dynamic:  { headline: "'Rajdhani', 'Barlow Condensed', sans-serif",  body: "'Barlow', 'Inter', sans-serif" },
+  luxury:   { headline: "'Playfair Display', Georgia, serif",          body: "'Raleway', 'Inter', sans-serif" },
+  craft:    { headline: "'Bebas Neue', 'Impact', sans-serif",          body: "'Barlow', 'Inter', sans-serif" },
+  fresh:    { headline: "'Poppins', 'Inter', sans-serif",              body: "'Poppins', 'Inter', sans-serif" },
+  trust:    { headline: "'Montserrat', 'Inter', sans-serif",           body: "'Source Sans 3', 'Inter', sans-serif" },
+  modern:   { headline: "'Space Grotesk', 'Inter', sans-serif",        body: "'Inter', system-ui, sans-serif" },
+  vibrant:  { headline: "'Barlow Condensed', 'Impact', sans-serif",    body: "'Barlow', 'Inter', sans-serif" },
+  natural:  { headline: "'Playfair Display', Georgia, serif",          body: "'Nunito', 'Inter', sans-serif" },
+};
+
 // ── CSS Custom Property maps ──────────────────────────────────────────────────
 const RADIUS_MAP: Record<string, string> = {
   none: "0px", sm: "4px", md: "8px", lg: "16px", full: "9999px",
@@ -129,14 +145,12 @@ const SPACING_MAP: Record<string, string> = {
 };
 
 /**
- * Build a <style> tag that loads Google Fonts for the given design tokens.
+ * Build a Google Fonts URL for the given font names.
  */
-function buildGoogleFontsUrl(tokens: DesignTokens): string {
-  const fonts = new Set<string>();
-  if (tokens.headlineFont) fonts.add(tokens.headlineFont);
-  if (tokens.bodyFont) fonts.add(tokens.bodyFont);
-  if (fonts.size === 0) return "";
-  const families = Array.from(fonts)
+function buildGoogleFontsUrl(fonts: string[]): string {
+  const unique = Array.from(new Set(fonts.filter(Boolean)));
+  if (unique.length === 0) return "";
+  const families = unique
     .map(f => `family=${encodeURIComponent(f)}:wght@300;400;500;600;700;800;900`)
     .join("&");
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
@@ -194,21 +208,27 @@ export default function WebsiteRenderer({
   const effectiveHeroImage = heroImageUrl || FALLBACK_IMAGES[effectiveLayout] || FALLBACK_IMAGES.clean;
 
   const tokens = websiteData.designTokens;
+  const fontDefaults = LAYOUT_FONT_DEFAULTS[effectiveLayout] || LAYOUT_FONT_DEFAULTS.clean;
 
-  // Inject Google Fonts dynamically when design tokens are present
+  // Determine which fonts to load via Google Fonts
+  const fontsToLoad = tokens
+    ? [tokens.headlineFont, tokens.bodyFont].filter(Boolean) as string[]
+    : []; // Layout fonts are system/generic fallbacks, no Google Fonts needed for defaults
+
+  // Inject Google Fonts dynamically
   useEffect(() => {
-    if (!tokens?.headlineFont) return;
-    const url = buildGoogleFontsUrl(tokens);
+    if (fontsToLoad.length === 0) return;
+    const url = buildGoogleFontsUrl(fontsToLoad);
     if (!url) return;
     const id = "site-google-fonts";
-    if (document.getElementById(id)) return;
+    document.getElementById(id)?.remove(); // Remove old to force refresh
     const link = document.createElement("link");
     link.id = id;
     link.rel = "stylesheet";
     link.href = url;
     document.head.appendChild(link);
     return () => { document.getElementById(id)?.remove(); };
-  }, [tokens?.headlineFont, tokens?.bodyFont]);
+  }, [fontsToLoad.join(",")]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const sharedProps = {
     websiteData,
@@ -222,13 +242,10 @@ export default function WebsiteRenderer({
     openingHours,
   };
 
-  // Build wrapper style with CSS custom properties from design tokens
-  const wrapperStyle: React.CSSProperties = tokens
-    ? ({ cssText: buildTokenStyles(tokens, cs) } as unknown as React.CSSProperties)
-    : {};
-
-  // Use a div wrapper with inline CSS vars so all child layouts inherit them
-  const tokenStyle = tokens ? buildTokenStyles(tokens, cs) : "";
+  // Build CSS custom properties string – always set at least the font defaults
+  const tokenStyle = tokens
+    ? buildTokenStyles(tokens, cs)
+    : `--site-font-headline: ${fontDefaults.headline}; --site-font-body: ${fontDefaults.body};`;
 
   const layout = (() => {
     switch (effectiveLayout) {
@@ -248,17 +265,14 @@ export default function WebsiteRenderer({
     }
   })();
 
-  if (!tokenStyle) return layout;
-
-  // Wrap with a div that sets the CSS custom properties
+  // Wrap with a real block div (NOT display:contents) so CSS custom properties
+  // are properly inherited by all child elements. The div itself is invisible.
   return (
     <div
-      style={{ all: "unset", display: "contents" } as React.CSSProperties}
       ref={(el) => {
-        if (el && tokenStyle) {
-          el.setAttribute("style", tokenStyle);
-        }
+        if (el) el.setAttribute("style", tokenStyle);
       }}
+      style={{ display: "block", minHeight: "100vh" }}
     >
       {layout}
     </div>
