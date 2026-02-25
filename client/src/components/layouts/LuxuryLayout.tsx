@@ -5,10 +5,11 @@
  * Feel: Dark, premium, powerful, modern
  * Structure: Full-bleed dark hero, stats bar, alternating dark/slightly-lighter sections
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, ArrowRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
 const BODY = "'Inter', 'Helvetica Neue', sans-serif";
@@ -68,7 +69,7 @@ function LuxuryNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDat
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#000", padding: "0.5rem 1.25rem", fontSize: "0.75rem", letterSpacing: "0.08em", fontWeight: 700, textTransform: "uppercase" }} className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#000", padding: "0.5rem 1.25rem", fontSize: "0.75rem", letterSpacing: "0.08em", fontWeight: 700, textTransform: "uppercase" }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-3 w-3" /> Anrufen
           </a>
         )}
@@ -92,7 +93,7 @@ function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
             <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Premium Service</span>
           </div>
-          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(3.5rem, 8vw, 7rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: "#fff", marginBottom: "1.5rem", textTransform: "uppercase" }}>
+          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(3.5rem, 8vw, 7rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: "#fff", marginBottom: "1.5rem", textTransform: "uppercase" }} className="hero-animate-headline">
             {section.headline}
           </h1>
           {section.subheadline && (
@@ -108,7 +109,7 @@ function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
           ) : null}
           <div className="flex flex-wrap gap-4">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
                 {section.ctaText} <ArrowRight className="h-4 w-4" />
               </a>
             )}
@@ -143,7 +144,7 @@ function LuxuryAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
               <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
               <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Über uns</span>
             </div>
-            <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, marginBottom: "1.5rem", textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
+            <h2 data-reveal data-delay="0" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, marginBottom: "1.5rem", textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
             {section.subheadline && <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.6)", marginBottom: "1rem" }}>{section.subheadline}</p>}
             {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)" }}>{section.content}</p>}
           </div>
@@ -170,7 +171,7 @@ function LuxuryServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
               <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
               <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Leistungen</span>
             </div>
-            <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
+            <h2 data-reveal data-delay="100" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
           </div>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
@@ -198,7 +199,7 @@ function LuxuryTestimonials({ section, cs }: { section: WebsiteSection; cs: Colo
           <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Kundenstimmen</span>
         </div>
-        <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "4rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="200" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "4rem" }}>{section.headline}</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: cs.background, padding: "2.5rem", borderLeft: `3px solid ${cs.primary}` }}>
@@ -227,7 +228,7 @@ function LuxuryFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
           <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>FAQ</span>
         </div>
-        <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "3rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "3rem" }}>{section.headline}</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "1px", backgroundColor: "rgba(255,255,255,0.06)" }}>
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: cs.background }}>
@@ -252,7 +253,7 @@ function LuxuryCTA({ section, cs, showActivateButton, onActivate }: { section: W
   return (
     <section style={{ backgroundColor: cs.primary, padding: "5rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "0.03em", color: "#000", textTransform: "uppercase", lineHeight: 0.95, marginBottom: "1.5rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "0.03em", color: "#000", textTransform: "uppercase", lineHeight: 0.95, marginBottom: "1.5rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(0,0,0,0.7)", marginBottom: "2.5rem" }}>{section.content}</p>}
         <div className="flex flex-wrap gap-4 justify-center">
           {section.ctaText && (
@@ -281,7 +282,7 @@ function LuxuryContact({ section, cs, phone, address, email, hours }: { section:
               <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
               <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Kontakt</span>
             </div>
-            <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "2.5rem" }}>{section.headline}</h2>
+            <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "2.5rem" }}>{section.headline}</h2>
             {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem" }}>{section.content}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
               {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: cs.text, fontSize: "1rem" }}>{phone}</a></div>}
@@ -296,7 +297,7 @@ function LuxuryContact({ section, cs, phone, address, email, hours }: { section:
               <input type="text" placeholder="Ihr Name" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
               <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
               <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none", resize: "vertical" }} />
-              <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
+              <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, border: "none", cursor: "pointer" }} className="btn-premium transition-opacity">
                 Senden
               </button>
             </form>

@@ -5,10 +5,11 @@
  * Feel: Powerful, trustworthy, professional trades
  * Structure: Dark hero with centered text, trust bar, feature grid with numbers, alternating sections
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Zap, Shield, Award, ArrowRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const DISPLAY = "'Oswald', 'Impact', sans-serif";
 const BODY = "'Inter', 'Helvetica Neue', sans-serif";
@@ -82,7 +83,7 @@ function CraftNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#000", padding: "0.65rem 1.5rem", fontSize: "0.8rem", letterSpacing: "0.08em", fontWeight: 700, textTransform: "uppercase", display: "flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#000", padding: "0.65rem 1.5rem", fontSize: "0.8rem", letterSpacing: "0.08em", fontWeight: 700, textTransform: "uppercase", display: "flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
             <Phone className="h-4 w-4" /> Jetzt anrufen
           </a>
         )}
@@ -104,7 +105,7 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
             <div style={{ width: "6px", height: "6px", backgroundColor: cs.primary, borderRadius: "50%" }} />
             <span style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Zertifiziert & Versichert</span>
           </div>
-          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.8rem, 6vw, 5.5rem)", lineHeight: 1, letterSpacing: "0.03em", color: "#fff", marginBottom: "0.5rem", textTransform: "uppercase" }}>
+          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.8rem, 6vw, 5.5rem)", lineHeight: 1, letterSpacing: "0.03em", color: "#fff", marginBottom: "0.5rem", textTransform: "uppercase" }} className="hero-animate-headline">
             {section.headline?.split(" ").slice(0, Math.ceil((section.headline?.split(" ").length || 4) / 2)).join(" ")}
           </h1>
           <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.8rem, 6vw, 5.5rem)", lineHeight: 1, letterSpacing: "0.03em", color: cs.primary, marginBottom: "1.5rem", textTransform: "uppercase" }}>
@@ -123,7 +124,7 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
           ) : null}
           <div className="flex flex-wrap gap-4">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem 2.5rem", fontSize: "0.85rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem 2.5rem", fontSize: "0.85rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
                 {section.ctaText} <ArrowRight className="h-4 w-4" />
               </a>
             )}
@@ -163,7 +164,7 @@ function CraftAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
         </div>
         <div>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Über uns</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1, marginBottom: "1.5rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1, marginBottom: "1.5rem" }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.6)", marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)", marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -187,7 +188,7 @@ function CraftServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Unsere Leistungen</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1 }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => (
@@ -214,7 +215,7 @@ function CraftTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Kundenstimmen</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="200" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1 }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
@@ -242,7 +243,7 @@ function CraftFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center mb-12">
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>FAQ</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1 }}>{section.headline}</h2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           {items.map((item, i) => (
@@ -268,7 +269,7 @@ function CraftCTA({ section, cs, showActivateButton, onActivate }: { section: We
   return (
     <section style={{ backgroundColor: cs.primary, padding: "5rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "0.03em", color: "#000", textTransform: "uppercase", lineHeight: 1, marginBottom: "1.5rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", letterSpacing: "0.03em", color: "#000", textTransform: "uppercase", lineHeight: 1, marginBottom: "1.5rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(0,0,0,0.7)", marginBottom: "2.5rem" }}>{section.content}</p>}
         <div className="flex flex-wrap gap-4 justify-center">
           {section.ctaText && (
@@ -293,7 +294,7 @@ function CraftContact({ section, cs, phone, address, email, hours }: { section: 
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Kontakt</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1, marginBottom: "2.5rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1, marginBottom: "2.5rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 1.25rem", backgroundColor: cs.background }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: cs.text, fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
@@ -311,7 +312,7 @@ function CraftContact({ section, cs, phone, address, email, hours }: { section: 
             </div>
             <input type="tel" placeholder="Telefonnummer" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.85rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
             <textarea placeholder="Beschreiben Sie Ihr Anliegen" rows={4} style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.85rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none", resize: "vertical" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, border: "none", cursor: "pointer" }} className="btn-premium transition-opacity">
               Anfrage senden
             </button>
           </form>

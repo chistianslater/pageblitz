@@ -4,10 +4,11 @@
  * Feel: Luxurious, airy, feminine, editorial
  * Structure: Split hero, large imagery, generous whitespace, gold accents
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Scissors, Heart, Sparkles, Instagram, Quote } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const SERIF = "'Cormorant Garamond', Georgia, serif";
 const SANS = "'Jost', 'Inter', sans-serif";
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: SANS, backgroundColor: cs.background, color: cs.text }}>
       <ElegantNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -45,8 +47,10 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActiv
 }
 
 function ElegantNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+  const navRef = useRef<HTMLElement>(null);
+  useNavbarScroll(navRef);
   return (
-    <nav style={{ backgroundColor: cs.background, borderBottom: `1px solid ${cs.primary}22`, fontFamily: SANS }} className="sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
+    <nav ref={navRef} style={{ backgroundColor: cs.background, borderBottom: `1px solid ${cs.primary}22`, fontFamily: SANS }} className="sticky top-0 z-50 backdrop-blur-md bg-opacity-95 hero-animate-nav transition-all duration-300">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
         <div className="flex flex-col">
           <span style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 600, letterSpacing: "0.05em", color: cs.text }}>{websiteData.businessName}</span>
@@ -73,41 +77,43 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16 grid lg:grid-cols-2 gap-16 items-center w-full">
         {/* Left: Text */}
         <div className="order-2 lg:order-1">
-          <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary, marginBottom: "2rem" }} />
-          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1.5rem" }}>
+          <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary, marginBottom: "2rem" }} className="hero-animate-badge" />
+          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1.5rem" }} className="hero-animate-badge">
             Willkommen
           </p>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.8rem, 5vw, 4.5rem)", fontWeight: 400, lineHeight: 1.1, color: cs.text, marginBottom: "1.5rem", fontStyle: "italic" }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.8rem, 5vw, 4.5rem)", fontWeight: 400, lineHeight: 1.1, color: cs.text, marginBottom: "1.5rem", fontStyle: "italic", letterSpacing: "-0.02em" }} className="hero-animate-headline">
             {section.headline}
           </h1>
           {section.subheadline && (
-            <p style={{ fontFamily: SANS, fontSize: "1.05rem", lineHeight: 1.7, color: cs.textLight, marginBottom: "1rem", fontWeight: 300 }}>{section.subheadline}</p>
+            <p style={{ fontFamily: SANS, fontSize: "1.05rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "1rem", fontWeight: 300 }} className="hero-animate-sub">{section.subheadline}</p>
           )}
           {section.content && (
-            <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "2.5rem", fontWeight: 300 }}>{section.content}</p>
+            <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "2.5rem", fontWeight: 300 }} className="hero-animate-sub">{section.content}</p>
           )}
           {websiteData.googleRating && websiteData.googleReviewCount ? (
-            <div style={{ marginBottom: "2rem" }}>
+            <div style={{ marginBottom: "2rem" }} className="hero-animate-sub">
               <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="dark" starColor={cs.primary} />
             </div>
           ) : null}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 hero-animate-cta">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS }} className="hover:opacity-90 transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS }} className="btn-premium">
                 {section.ctaText}
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `1px solid ${cs.primary}`, color: cs.primary, padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
+              <button onClick={onActivate} style={{ border: `1px solid ${cs.primary}`, color: cs.primary, padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS, backgroundColor: "transparent" }} className="btn-premium">
                 Jetzt aktivieren
               </button>
             )}
           </div>
         </div>
         {/* Right: Image */}
-        <div className="order-1 lg:order-2 relative">
+        <div className="order-1 lg:order-2 relative hero-animate-image">
           <div style={{ position: "absolute", top: "-1.5rem", right: "-1.5rem", width: "70%", height: "70%", backgroundColor: `${cs.primary}15`, zIndex: 0 }} />
-          <img src={heroImageUrl} alt={section.headline || ""} style={{ position: "relative", zIndex: 1, width: "100%", aspectRatio: "4/5", objectFit: "cover" }} />
+          <div className="img-zoom" style={{ position: "relative", zIndex: 1 }}>
+            <img src={heroImageUrl} alt={section.headline || ""} style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} />
+          </div>
           <div style={{ position: "absolute", bottom: "-1.5rem", left: "-1.5rem", width: "40%", height: "40%", border: `1px solid ${cs.primary}40`, zIndex: 0 }} />
         </div>
       </div>

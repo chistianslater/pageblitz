@@ -5,10 +5,11 @@
  * Feel: Energetic, motivating, powerful, community-driven
  * Structure: Full-screen dark hero with large text, horizontal stats, program cards, transformation CTA
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Dumbbell, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
 const BODY = "'Inter', 'Helvetica Neue', sans-serif";
@@ -62,7 +63,7 @@ function VibrantNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#000", padding: "0.6rem 1.5rem", fontSize: "0.8rem", letterSpacing: "0.1em", fontWeight: 700, textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#000", padding: "0.6rem 1.5rem", fontSize: "0.8rem", letterSpacing: "0.1em", fontWeight: 700, textTransform: "uppercase" }} className="btn-premium transition-opacity">
             Jetzt starten
           </a>
         )}
@@ -83,7 +84,7 @@ function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           <div style={{ display: "inline-block", backgroundColor: cs.primary, padding: "0.3rem 0.9rem", marginBottom: "1.5rem" }}>
             <span style={{ fontFamily: DISPLAY, fontSize: "0.85rem", letterSpacing: "0.15em", color: "#000", textTransform: "uppercase" }}>Deine Transformation beginnt jetzt</span>
           </div>
-          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(4rem, 10vw, 9rem)", lineHeight: 0.85, letterSpacing: "0.02em", color: "#fff", textTransform: "uppercase", marginBottom: "1.5rem" }}>
+          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(4rem, 10vw, 9rem)", lineHeight: 0.85, letterSpacing: "0.02em", color: "#fff", textTransform: "uppercase", marginBottom: "1.5rem" }} className="hero-animate-headline">
             {section.headline}
           </h1>
           {section.subheadline && (
@@ -99,7 +100,7 @@ function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           ) : null}
           <div className="flex flex-wrap gap-4">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1.1rem 3rem", fontSize: "0.9rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1.1rem 3rem", fontSize: "0.9rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
                 {section.ctaText} <ArrowRight className="h-4 w-4" />
               </a>
             )}
@@ -132,7 +133,7 @@ function VibrantAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
         <div>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Über uns</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "1.5rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "1.5rem" }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.6)", marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)", marginBottom: "2rem" }}>{section.content}</p>}
           <div className="grid grid-cols-2 gap-4">
@@ -164,7 +165,7 @@ function VibrantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
       <div className="max-w-7xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Programme</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item, i) => {
@@ -190,7 +191,7 @@ function VibrantTestimonials({ section, cs }: { section: WebsiteSection; cs: Col
       <div className="max-w-7xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Erfolgsgeschichten</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="200" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
@@ -216,7 +217,7 @@ function VibrantFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
       <div className="max-w-4xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>FAQ</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           {items.map((item, i) => (
@@ -242,7 +243,7 @@ function VibrantCTA({ section, cs, showActivateButton, onActivate }: { section: 
   return (
     <section style={{ backgroundColor: cs.primary, padding: "6rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.02em", color: "#000", textTransform: "uppercase", lineHeight: 0.9, marginBottom: "1.5rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.02em", color: "#000", textTransform: "uppercase", lineHeight: 0.9, marginBottom: "1.5rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(0,0,0,0.7)", marginBottom: "2.5rem" }}>{section.content}</p>}
         <div className="flex flex-wrap gap-4 justify-center">
           {section.ctaText && (
@@ -267,7 +268,7 @@ function VibrantContact({ section, cs, phone, address, email, hours }: { section
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Kontakt</span>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "2.5rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "2.5rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: cs.text, fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
@@ -283,7 +284,7 @@ function VibrantContact({ section, cs, phone, address, email, hours }: { section
             <input type="email" placeholder="Deine E-Mail" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
             <input type="tel" placeholder="Telefon" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
             <textarea placeholder="Dein Ziel" rows={3} style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none", resize: "vertical" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800, border: "none", cursor: "pointer" }} className="btn-premium transition-opacity">
               Jetzt starten
             </button>
           </form>

@@ -7,6 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
+import "./animations.css";
 
 // ── localStorage Sanitization ──────────────────────────────────────────────
 // The Manus runtime reads "manus-runtime-user-info" from localStorage and

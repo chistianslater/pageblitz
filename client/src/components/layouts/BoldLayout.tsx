@@ -4,10 +4,11 @@
  * Feel: Strong, industrial, trustworthy, masculine
  * Structure: Full-bleed dark hero, large numbers, diagonal accents, high contrast
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Wrench, Shield, Award, Hammer, Truck } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const HEADING = "'Oswald', 'Barlow Condensed', Impact, sans-serif";
 const BODY = "'Barlow', 'Inter', sans-serif";
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: cs.background, color: cs.text }}>
       <BoldNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -58,7 +60,7 @@ function BoldNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData;
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.5rem", fontFamily: HEADING, fontSize: "0.9rem", fontWeight: 600, letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.5rem", fontFamily: HEADING, fontSize: "0.9rem", fontWeight: 600, letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-4 w-4" /> {businessPhone}
           </a>
         )}
@@ -80,7 +82,7 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate, w
           <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#fff" }} />
           <span style={{ fontFamily: BODY, fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#fff", fontWeight: 600 }}>Ihr Fachbetrieb</span>
         </div>
-        <h1 style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 7vw, 6rem)", fontWeight: 700, lineHeight: 0.95, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem" }}>
+        <h1 style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 7vw, 6rem)", fontWeight: 700, lineHeight: 0.95, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem" }} className="hero-animate-headline">
           {section.headline?.split(" ").map((word, i) => (
             <span key={i} style={{ display: "block", color: i === 1 ? cs.primary : "#fff" }}>{word}</span>
           ))}
@@ -88,7 +90,7 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate, w
         {section.subheadline && <p style={{ fontFamily: BODY, fontSize: "1.1rem", color: "rgba(255,255,255,0.75)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "2.5rem" }}>{section.subheadline}</p>}
         <div className="flex flex-wrap gap-4">
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
@@ -127,7 +129,7 @@ function BoldAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
             <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
             <span style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Über uns</span>
           </div>
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem", lineHeight: 1.05 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem", lineHeight: 1.05 }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontFamily: BODY, fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.65)", marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontFamily: BODY, fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.55)" }}>{section.content}</p>}
         </div>
@@ -151,7 +153,7 @@ function BoldServices({ section, cs }: { section: WebsiteSection; cs: ColorSchem
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-12">
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: cs.text, textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: cs.text, textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item, i) => (
@@ -175,7 +177,7 @@ function BoldTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorS
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-12">
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="200" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => (
@@ -199,7 +201,7 @@ function BoldFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) 
       <div className="max-w-4xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-12">
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: cs.text, textTransform: "uppercase" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: cs.text, textTransform: "uppercase" }}>{section.headline}</h2>
         </div>
         <div className="space-y-2">
           {items.map((item, i) => (
@@ -226,7 +228,7 @@ function BoldContact({ section, cs, phone, address, email, hours }: { section: W
             <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
             <span style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Kontakt</span>
           </div>
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
           <div className="space-y-4">
             {phone && <div className="flex items-center gap-3"><div style={{ backgroundColor: cs.primary, padding: "0.5rem" }}><Phone className="h-4 w-4 text-white" /></div><a href={`tel:${phone}`} style={{ fontFamily: BODY, fontSize: "1rem", color: "#fff", fontWeight: 500 }}>{phone}</a></div>}
             {address && <div className="flex items-start gap-3"><div style={{ backgroundColor: cs.primary, padding: "0.5rem", flexShrink: 0 }}><MapPin className="h-4 w-4 text-white" /></div><span style={{ fontFamily: BODY, fontSize: "1rem", color: "rgba(255,255,255,0.75)" }}>{address}</span></div>}
@@ -244,7 +246,7 @@ function BoldContact({ section, cs, phone, address, email, hours }: { section: W
             ))}
           </div>
           {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "2rem" }} className="hover:opacity-90 transition-opacity">
+            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "2rem" }} className="btn-premium transition-opacity">
               <Phone className="h-4 w-4" /> Jetzt anrufen
             </a>
           )}
@@ -259,7 +261,7 @@ function BoldCTA({ section, cs, showActivateButton, onActivate }: { section: Web
     <section style={{ backgroundColor: cs.primary, padding: "4rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
           {section.content && <p style={{ fontFamily: BODY, fontSize: "1rem", color: "rgba(255,255,255,0.8)", marginTop: "0.5rem" }}>{section.content}</p>}
         </div>
         <div className="flex flex-wrap gap-4 flex-shrink-0">

@@ -5,10 +5,11 @@
  * Feel: Contemporary, clean, bold typography, minimal decoration
  * Structure: Asymmetric 60/40 hero, horizontal scrolling services, large testimonial quote
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const BODY = "'Inter', 'Helvetica Neue', sans-serif";
 
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function ModernLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: "#ffffff", color: "#0a0a0a" }}>
       <ModernNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -74,7 +76,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             <div style={{ width: "1.5rem", height: "2px", backgroundColor: cs.primary }} />
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Professionell & Zuverlässig</span>
           </div>
-          <h1 style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem" }}>
+          <h1 style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem" }} className="hero-animate-headline">
             {section.headline}
           </h1>
           {section.subheadline && (
@@ -125,7 +127,7 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
           </div>
           <div>
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1rem" }}>Über uns</span>
-            <h2 style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem", lineHeight: 1.05 }}>{section.headline}</h2>
+            <h2 data-reveal data-delay="0" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem", lineHeight: 1.05 }}>{section.headline}</h2>
             {section.subheadline && <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "#555", marginBottom: "1rem" }}>{section.subheadline}</p>}
             {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "#777", marginBottom: "2rem" }}>{section.content}</p>}
             <a href="#kontakt" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", fontWeight: 700, color: cs.primary }} className="hover:opacity-70 transition-opacity">
@@ -146,7 +148,7 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "4rem" }}>
           <div>
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Leistungen</span>
-            <h2 style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1.05 }}>{section.headline}</h2>
+            <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1.05 }}>{section.headline}</h2>
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1px", backgroundColor: "#f0f0f0" }}>
@@ -214,7 +216,7 @@ function ModernFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
     <section style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
       <div className="max-w-4xl mx-auto px-8">
         <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>FAQ</span>
-        <h2 style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "3rem", lineHeight: 1.05 }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="200" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "3rem", lineHeight: 1.05 }}>{section.headline}</h2>
         <div>
           {items.map((item, i) => (
             <div key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
@@ -242,12 +244,12 @@ function ModernCTA({ section, cs, showActivateButton, onActivate }: { section: W
     <section style={{ backgroundColor: cs.primary, padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
         <div>
-          <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#fff", lineHeight: 1.05 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#fff", lineHeight: 1.05 }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", marginTop: "0.75rem" }}>{section.content}</p>}
         </div>
         <div style={{ display: "flex", gap: "1rem", flexShrink: 0, flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
               {section.ctaText} <ArrowRight className="h-4 w-4" />
             </a>
           )}
@@ -268,7 +270,7 @@ function ModernContact({ section, cs, phone, address, email, hours }: { section:
       <div className="max-w-7xl mx-auto px-8 grid lg:grid-cols-2 gap-20">
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
-          <h2 style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2.5rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: "#0a0a0a", fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}

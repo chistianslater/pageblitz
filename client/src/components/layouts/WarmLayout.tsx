@@ -4,10 +4,11 @@
  * Feel: Cozy, inviting, artisanal, food-forward
  * Structure: Full-bleed food photo hero, card-style menu sections, warm earthy palette
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Utensils, Coffee, Leaf } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const SERIF = "'Lora', Georgia, serif";
 const SANS = "'Nunito', 'Inter', sans-serif";
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function WarmLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: SANS, backgroundColor: cs.background, color: cs.text }}>
       <WarmNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -61,7 +63,7 @@ function WarmNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData;
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.25rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700 }} className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.25rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700 }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-3.5 w-3.5" /> Reservieren
           </a>
         )}
@@ -80,11 +82,11 @@ function WarmHero({ section, cs, heroImageUrl, showActivateButton, onActivate, w
           <Leaf className="h-4 w-4" style={{ color: cs.primary }} />
           <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Frisch & Regional</span>
         </div>
-        <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 700, color: "#fff", lineHeight: 1.1, marginBottom: "1rem", maxWidth: "700px" }}>{section.headline}</h1>
+        <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 700, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: "1rem", maxWidth: "700px" }} className="hero-animate-headline">{section.headline}</h1>
         {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1.1rem", color: "rgba(255,255,255,0.8)", maxWidth: "550px", lineHeight: 1.7, marginBottom: "2rem" }}>{section.subheadline}</p>}
         <div className="flex flex-wrap gap-4">
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700 }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
@@ -111,7 +113,7 @@ function WarmAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs:
             <div style={{ width: "2rem", height: "2px", backgroundColor: cs.primary }} />
             <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Unsere Geschichte</span>
           </div>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight }}>{section.content}</p>}
           <div className="flex flex-wrap gap-6 mt-6">
@@ -139,7 +141,7 @@ function WarmMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
             <Utensils className="h-4 w-4" style={{ color: cs.primary }} />
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.textLight, marginTop: "0.75rem" }}>{section.subheadline}</p>}
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -168,7 +170,7 @@ function WarmTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorS
   return (
     <section style={{ backgroundColor: cs.primary, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
-        <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "#fff", textAlign: "center", marginBottom: "3rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "#fff", textAlign: "center", marginBottom: "3rem" }}>{section.headline}</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: "rgba(255,255,255,0.12)", borderRadius: "1rem", padding: "2rem", backdropFilter: "blur(4px)" }}>
@@ -189,7 +191,7 @@ function WarmFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) 
   return (
     <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-3xl mx-auto px-6">
-        <h2 style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: cs.text, textAlign: "center", marginBottom: "3rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: cs.text, textAlign: "center", marginBottom: "3rem" }}>{section.headline}</h2>
         <div className="space-y-3">
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: cs.background, borderRadius: "0.75rem", overflow: "hidden" }}>
@@ -211,7 +213,7 @@ function WarmContact({ section, cs, phone, address, email, hours }: { section: W
     <section id="kontakt" style={{ backgroundColor: cs.background, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
         <div>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "2rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "2rem" }}>{section.content}</p>}
           <div className="space-y-4">
             {phone && <div className="flex items-center gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}20`, display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 600 }}>{phone}</a></div>}
@@ -230,7 +232,7 @@ function WarmContact({ section, cs, phone, address, email, hours }: { section: W
             ))}
           </div>
           {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700, marginTop: "2rem" }} className="hover:opacity-90 transition-opacity">
+            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700, marginTop: "2rem" }} className="btn-premium transition-opacity">
               <Phone className="h-4 w-4" /> Tisch reservieren
             </a>
           )}
@@ -245,7 +247,7 @@ function WarmCTA({ section, cs, showActivateButton, onActivate }: { section: Web
     <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-3xl mx-auto px-6 text-center">
         <Utensils className="h-8 w-8 mx-auto mb-4" style={{ color: cs.primary }} />
-        <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "1rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "1rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.textLight, marginBottom: "2rem" }}>{section.content}</p>}
         <div className="flex flex-wrap justify-center gap-4">
           {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}

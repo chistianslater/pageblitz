@@ -5,10 +5,11 @@
  * Feel: Warm, artisanal, handcrafted, inviting, playful
  * Structure: Centered hero with decorative elements, blue feature block, mosaic gallery, card services
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Heart, Coffee, Leaf, Sun } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const SERIF = "'Playfair Display', Georgia, serif";
 const ROUND = "'Nunito', 'Segoe UI', sans-serif";
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: ROUND, backgroundColor: "#fafaf8", color: "#1a1a1a" }}>
       <FreshNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -59,7 +61,7 @@ function FreshNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="btn-premium transition-opacity">
             <Phone className="h-3.5 w-3.5" /> Reservieren
           </a>
         )}
@@ -74,7 +76,7 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
       <div className="max-w-6xl mx-auto px-6">
         {/* Centered headline */}
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.15, marginBottom: "1.25rem" }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: "1.25rem" }} className="hero-animate-headline">
             {section.headline}
           </h1>
           {section.subheadline && (
@@ -85,7 +87,7 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
           )}
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.85rem 2.5rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.85rem 2.5rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
                 {section.ctaText}
               </a>
             )}
@@ -121,7 +123,7 @@ function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", fontWeight: 600, display: "block", marginBottom: "1rem" }}>Unsere Geschichte</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#fff", marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#fff", marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "rgba(255,255,255,0.8)", marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.7)", marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", gap: "2rem" }}>
@@ -149,7 +151,7 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Unser Angebot</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontSize: "1rem", color: "#666", marginTop: "0.75rem" }}>{section.subheadline}</p>}
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -178,7 +180,7 @@ function FreshTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Was unsere Gäste sagen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
@@ -211,7 +213,7 @@ function FreshFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
       <div className="max-w-3xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {items.map((item, i) => (
@@ -239,11 +241,11 @@ function FreshCTA({ section, cs, showActivateButton, onActivate }: { section: We
   return (
     <section style={{ backgroundColor: "#1a1a1a", padding: "5rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", marginBottom: "1.25rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", marginBottom: "1.25rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.6)", marginBottom: "2.5rem" }}>{section.content}</p>}
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
@@ -264,7 +266,7 @@ function FreshContact({ section, cs, phone, address, email, hours }: { section: 
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a", marginBottom: "2rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a", marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ color: "#1a1a1a", fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}

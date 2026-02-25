@@ -5,10 +5,11 @@
  * Structure: CENTERED headline hero → full-width photo band → stats bar → card-grid services
  * Deliberately different from CleanLayout (which uses split-hero)
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Users, ArrowRight, Quote } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const SERIF = "'Libre Baskerville', Georgia, serif";
 const BODY = "'Source Sans Pro', 'Helvetica Neue', sans-serif";
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: "#ffffff", color: "#1a2332" }}>
       <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -90,7 +92,7 @@ function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
             <Shield className="h-3.5 w-3.5" style={{ color: cs.primary }} />
             <span style={{ fontSize: "0.75rem", color: cs.primary, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>Vertrauen seit Jahren</span>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#1a2332", lineHeight: 1.2, marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#1a2332", lineHeight: 1.2, marginBottom: "1.5rem", letterSpacing: "-0.02em" }} className="hero-animate-headline">
             {section.headline}
           </h1>
           {section.subheadline && (
@@ -99,7 +101,7 @@ function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
           <div className="flex flex-wrap justify-center gap-4">
             <a href="#kontakt" onClick={showActivateButton ? onActivate : undefined}
               style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
-              className="hover:opacity-90 transition-opacity">
+              className="btn-premium transition-opacity">
               {section.ctaText || "Jetzt anfragen"} <ArrowRight className="h-4 w-4" />
             </a>
             {businessPhone && (
@@ -157,7 +159,7 @@ function TrustAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-3 gap-12">
         <div className="lg:col-span-1">
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, marginBottom: "1.5rem" }} />
-          <h2 style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: "#1a2332", lineHeight: 1.3, marginBottom: "1rem" }}>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: "#1a2332", lineHeight: 1.3, marginBottom: "1rem" }}>
             {section.headline}
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "2rem" }}>
@@ -183,13 +185,13 @@ function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
     <section id="leistungen" style={{ padding: "5rem 0", backgroundColor: "#f7f9fc" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.75rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.75rem" }}>{section.headline}</h2>
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, margin: "0 auto" }} />
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: "#fff", padding: "2rem", borderTop: `3px solid ${i === 0 ? cs.primary : "#e8edf3"}`, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
-              className="hover:shadow-lg transition-shadow group">
+              className="hover:shadow-lg transition-shadow group card-premium">
               <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}12`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
                 <Shield className="h-5 w-5" style={{ color: cs.primary }} />
               </div>
@@ -213,7 +215,7 @@ function TrustTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
     <section style={{ padding: "5rem 0", backgroundColor: "#1a2332" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#fff", marginBottom: "0.5rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#fff", marginBottom: "0.5rem" }}>{section.headline}</h2>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>Beispiel-Kundenstimmen</p>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
@@ -244,7 +246,7 @@ function TrustFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
     <section id="faq" style={{ padding: "5rem 0", backgroundColor: "#fff" }}>
       <div className="max-w-3xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.5rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.5rem" }}>{section.headline}</h2>
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, margin: "0 auto" }} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
@@ -272,11 +274,11 @@ function TrustCTA({ section, cs, showActivateButton, onActivate }: { section: We
   return (
     <section style={{ padding: "5rem 0", backgroundColor: cs.primary, textAlign: "center" }}>
       <div className="max-w-3xl mx-auto px-6">
-        <h2 style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 700, color: "#fff", marginBottom: "1rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 700, color: "#fff", marginBottom: "1rem" }}>{section.headline}</h2>
         <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "2.5rem" }}>{section.content}</p>
         <a href="#kontakt" onClick={showActivateButton ? onActivate : undefined}
           style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 3rem", fontSize: "1rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
-          className="hover:opacity-90 transition-opacity">
+          className="btn-premium transition-opacity">
           {section.ctaText || "Jetzt Kontakt aufnehmen"} <ArrowRight className="h-4 w-4" />
         </a>
       </div>
@@ -290,7 +292,7 @@ function TrustContact({ section, cs, phone, address, email, hours }: { section: 
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, marginBottom: "1.5rem" }} />
-          <h2 style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: "#1a2332", marginBottom: "1rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: "#1a2332", marginBottom: "1rem" }}>{section.headline}</h2>
           <p style={{ color: "#5a6a7e", fontSize: "1rem", lineHeight: 1.7, marginBottom: "2rem" }}>{section.content}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -329,7 +331,7 @@ function TrustContact({ section, cs, phone, address, email, hours }: { section: 
               <textarea rows={4} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", resize: "vertical", backgroundColor: "#f7f9fc" }} />
             </div>
             <button style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem", fontWeight: 700, fontSize: "0.95rem", border: "none", cursor: "pointer", width: "100%" }}
-              className="hover:opacity-90 transition-opacity">
+              className="btn-premium transition-opacity">
               {section.ctaText || "Anfrage senden"}
             </button>
           </div>

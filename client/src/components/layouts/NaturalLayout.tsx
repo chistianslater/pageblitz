@@ -5,10 +5,11 @@
  * Feel: Organic, earthy, sustainable, warm, authentic
  * Structure: Warm hero with overlapping elements, feature strips, earthy color blocks
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Leaf, Sun, Flower, Droplets, ArrowRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const SERIF = "'Playfair Display', Georgia, serif";
 const ROUND = "'Nunito', 'Segoe UI', sans-serif";
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function NaturalLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: ROUND, backgroundColor: "#faf8f4", color: "#2a2018" }}>
       <NaturalNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -59,7 +61,7 @@ function NaturalNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "0.25rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "0.25rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="btn-premium transition-opacity">
             <Phone className="h-3.5 w-3.5" /> Kontakt
           </a>
         )}
@@ -77,7 +79,7 @@ function NaturalHero({ section, cs, heroImageUrl, showActivateButton, onActivate
             <Leaf className="h-3.5 w-3.5" style={{ color: cs.primary }} />
             <span style={{ fontSize: "0.75rem", color: cs.primary, fontWeight: 700 }}>100% Natürlich</span>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, lineHeight: 1.15, color: "#2a2018", marginBottom: "1.25rem" }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.02em", color: "#2a2018", marginBottom: "1.25rem" }} className="hero-animate-headline">
             {section.headline}
           </h1>
           {section.subheadline && (
@@ -88,7 +90,7 @@ function NaturalHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           )}
           <div className="flex flex-wrap gap-3">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "0.9rem", fontWeight: 700, borderRadius: "0.25rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "0.9rem", fontWeight: 700, borderRadius: "0.25rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
                 {section.ctaText} <ArrowRight className="h-4 w-4" />
               </a>
             )}
@@ -126,7 +128,7 @@ function NaturalAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
         </div>
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Unsere Geschichte</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018", marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018", marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "#7a6a5a", marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "#9a8a7a", marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", gap: "2rem" }}>
@@ -153,14 +155,14 @@ function NaturalServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Unser Angebot</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018" }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontSize: "1rem", color: "#7a6a5a", marginTop: "0.75rem" }}>{section.subheadline}</p>}
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => {
             const Icon = icons[i % icons.length];
             return (
-              <div key={i} style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "1rem", border: "1px solid #e8e0d0" }} className="hover:shadow-md transition-shadow">
+              <div key={i} style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "1rem", border: "1px solid #e8e0d0" }} className="hover:shadow-md transition-shadow card-premium">
                 <div style={{ width: "3rem", height: "3rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
                   <Icon className="h-6 w-6" style={{ color: cs.primary }} />
                 </div>
@@ -182,7 +184,7 @@ function NaturalTestimonials({ section, cs }: { section: WebsiteSection; cs: Col
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kundenstimmen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#fff" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#fff" }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
@@ -208,7 +210,7 @@ function NaturalFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
       <div className="max-w-3xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018" }}>{section.headline}</h2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {items.map((item, i) => (
@@ -236,11 +238,11 @@ function NaturalCTA({ section, cs, showActivateButton, onActivate }: { section: 
   return (
     <section style={{ backgroundColor: "#2a2018", padding: "5rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", marginBottom: "1.25rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", marginBottom: "1.25rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.6)", marginBottom: "2.5rem" }}>{section.content}</p>}
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 3rem", fontSize: "0.9rem", fontWeight: 700, borderRadius: "0.25rem" }} className="hover:opacity-90 transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 3rem", fontSize: "0.9rem", fontWeight: 700, borderRadius: "0.25rem" }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
@@ -261,7 +263,7 @@ function NaturalContact({ section, cs, phone, address, email, hours }: { section
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018", marginBottom: "2rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#2a2018", marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#7a6a5a", marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ color: "#2a2018", fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}

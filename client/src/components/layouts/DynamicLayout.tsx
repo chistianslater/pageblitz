@@ -4,10 +4,11 @@
  * Feel: Energetic, motivating, action-oriented, high-performance
  * Structure: Diagonal cuts, full-bleed action photo, bold stats, vibrant accent colors
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, Flame, Activity, Award } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
+import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const HEADING = "'Bebas Neue', 'Oswald', Impact, sans-serif";
 const BODY = "'Rajdhani', 'Barlow', 'Inter', sans-serif";
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+  useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: "#0a0a0a", color: "#fff" }}>
       <DynamicNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
@@ -58,7 +60,7 @@ function DynamicNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.25rem", fontFamily: HEADING, fontSize: "1rem", letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.25rem", fontFamily: HEADING, fontSize: "1rem", letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-4 w-4" /> Jetzt starten
           </a>
         )}
@@ -79,7 +81,7 @@ function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           <Flame className="h-3.5 w-3.5" style={{ color: cs.primary }} />
           <span style={{ fontFamily: BODY, fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Jetzt durchstarten</span>
         </div>
-        <h1 style={{ fontFamily: HEADING, fontSize: "clamp(4rem, 10vw, 9rem)", fontWeight: 400, lineHeight: 0.9, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem" }}>
+        <h1 style={{ fontFamily: HEADING, fontSize: "clamp(4rem, 10vw, 9rem)", fontWeight: 400, lineHeight: 0.9, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem" }} className="hero-animate-headline">
           {section.headline?.split(" ").slice(0, 2).join(" ")}
           <br />
           <span style={{ color: cs.primary, WebkitTextStroke: "2px transparent", textShadow: `0 0 30px ${cs.primary}60` }}>{section.headline?.split(" ").slice(2).join(" ") || "JETZT"}</span>
@@ -87,7 +89,7 @@ function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate
         {section.subheadline && <p style={{ fontFamily: BODY, fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", maxWidth: "550px", lineHeight: 1.6, marginBottom: "2.5rem", fontWeight: 500 }}>{section.subheadline}</p>}
         <div className="flex flex-wrap gap-4">
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 3rem", fontFamily: HEADING, fontSize: "1.2rem", letterSpacing: "0.1em", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 3rem", fontFamily: HEADING, fontSize: "1.2rem", letterSpacing: "0.1em", textTransform: "uppercase" }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
@@ -111,7 +113,7 @@ function DynamicAbout({ section, cs }: { section: WebsiteSection; cs: ColorSchem
             <Activity className="h-6 w-6" style={{ color: cs.primary }} />
             <span style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Über uns</span>
           </div>
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.95, marginBottom: "1.5rem" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="0" style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.95, marginBottom: "1.5rem" }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontFamily: BODY, fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.65)", marginBottom: "1rem", fontWeight: 500 }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontFamily: BODY, fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)" }}>{section.content}</p>}
         </div>
@@ -136,7 +138,7 @@ function DynamicServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-12">
           <Zap className="h-6 w-6" style={{ color: cs.primary }} />
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item, i) => (
@@ -161,7 +163,7 @@ function DynamicTestimonials({ section, cs }: { section: WebsiteSection; cs: Col
     <section style={{ backgroundColor: cs.primary, padding: "5rem 0", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, opacity: 0.05, backgroundImage: "repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)", backgroundSize: "20px 20px" }} />
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
-        <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="200" style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem" }}>{section.headline}</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: "rgba(0,0,0,0.2)", padding: "2rem", backdropFilter: "blur(4px)" }}>
@@ -182,7 +184,7 @@ function DynamicFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
   return (
     <section style={{ backgroundColor: "#111", padding: "5rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 lg:px-8">
-        <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem" }}>{section.headline}</h2>
         <div className="space-y-2">
           {items.map((item, i) => (
             <div key={i} style={{ borderLeft: `3px solid ${open === i ? cs.primary : "#333"}`, paddingLeft: "1.5rem", transition: "border-color 0.2s" }}>
@@ -204,7 +206,7 @@ function DynamicContact({ section, cs, phone, address, email, hours }: { section
     <section id="kontakt" style={{ backgroundColor: "#0a0a0a", padding: "5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
         <div>
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "2rem", lineHeight: 0.95 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "2rem", lineHeight: 0.95 }}>{section.headline}</h2>
           <div className="space-y-4">
             {phone && <div className="flex items-center gap-3"><div style={{ width: "3rem", height: "3rem", backgroundColor: cs.primary, display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-5 w-5 text-white" /></div><a href={`tel:${phone}`} style={{ fontFamily: BODY, fontSize: "1.1rem", color: "#fff", fontWeight: 600 }}>{phone}</a></div>}
             {address && <div className="flex items-start gap-3"><div style={{ width: "3rem", height: "3rem", backgroundColor: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-5 w-5" style={{ color: cs.primary }} /></div><span style={{ fontFamily: BODY, fontSize: "1rem", color: "rgba(255,255,255,0.65)", fontWeight: 500 }}>{address}</span></div>}
@@ -225,7 +227,7 @@ function DynamicContact({ section, cs, phone, address, email, hours }: { section
             ))}
           </div>
           {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1.1rem", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "2rem" }} className="hover:opacity-90 transition-opacity">
+            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1.1rem", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "2rem" }} className="btn-premium transition-opacity">
               <Zap className="h-4 w-4" /> Jetzt starten
             </a>
           )}
@@ -241,7 +243,7 @@ function DynamicCTA({ section, cs, showActivateButton, onActivate }: { section: 
       <div style={{ position: "absolute", top: "-50%", right: "-10%", width: "600px", height: "600px", borderRadius: "50%", backgroundColor: `${cs.primary}08` }} />
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-8">
         <div>
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.95 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 400, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.95 }}>{section.headline}</h2>
           {section.content && <p style={{ fontFamily: BODY, fontSize: "1rem", color: "rgba(255,255,255,0.6)", marginTop: "1rem", fontWeight: 500 }}>{section.content}</p>}
         </div>
         <div className="flex flex-wrap gap-4 flex-shrink-0">
