@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, slug, layoutStyle, heroImageUrl, industry, status FROM generated_websites ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, slug, layoutStyle, heroImageUrl, industry, status FROM generated_websites ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "30001",
+      "slug": "rainer-demming-bauunternehmen-gmbh-Rhv7",
+      "layoutStyle": "bold",
+      "heroImageUrl": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop",
+      "industry": "general contractor",
+      "status": "preview"
+    },
+    {
+      "id": "4",
+      "slug": "pesch-hochbau-gmbh-aGIc",
+      "layoutStyle": "modern",
+      "heroImageUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&q=85&auto=format&fit=crop",
+      "industry": "general contractor",
+      "status": "preview"
+    },
+    {
+      "id": "3",
+      "slug": "ritte-bedachungen-e-2v",
+      "layoutStyle": "modern",
+      "heroImageUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&q=85&auto=format&fit=crop",
+      "industry": "roofing contractor",
+      "status": "preview"
+    },
+    {
+      "id": "2",
+      "slug": "friseur-bocholt-by-aras-NyqU",
+      "layoutStyle": "elegant",
+      "heroImageUrl": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1400&q=85&auto=format&fit=crop",
+      "industry": "hair care",
+      "status": "preview"
+    },
+    {
+      "id": "1",
+      "slug": "friseur-gudhair-by-guido-schnucklake-6ULF",
+      "layoutStyle": "classic",
+      "heroImageUrl": "NULL",
+      "industry": "hair care",
+      "status": "preview"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tslug\tlayoutStyle\theroImageUrl\tindustry\tstatus\n30001\trainer-demming-bauunternehmen-gmbh-Rhv7\tbold\thttps://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop\tgeneral contractor\tpreview\n4\tpesch-hochbau-gmbh-aGIc\tmodern\thttps://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&q=85&auto=format&fit=crop\tgeneral contractor\tpreview\n3\tritte-bedachungen-e-2v\tmodern\thttps://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&q=85&auto=format&fit=crop\troofing contractor\tpreview\n2\tfriseur-bocholt-by-aras-NyqU\telegant\thttps://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1400&q=85&auto=format&fit=crop\thair care\tpreview\n1\tfriseur-gudhair-by-guido-schnucklake-6ULF\tclassic\tNULL\thair care\tpreview\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

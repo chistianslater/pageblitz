@@ -8,8 +8,8 @@
 import { Star } from "lucide-react";
 
 interface Props {
-  rating: number;
-  reviewCount: number;
+  rating?: number;
+  reviewCount?: number;
   /** "light" = badge on dark bg (white text), "dark" = badge on light bg (dark text) */
   variant?: "light" | "dark";
   /** Optional override for accent/star color */
@@ -18,12 +18,13 @@ interface Props {
 }
 
 export default function GoogleRatingBadge({ rating, reviewCount, variant = "dark", starColor = "#f59e0b", className = "" }: Props) {
+  if (!rating && !reviewCount) return null;
   const textColor = variant === "light" ? "rgba(255,255,255,0.95)" : "#1a1a1a";
   const subColor = variant === "light" ? "rgba(255,255,255,0.65)" : "#666";
   const bgColor = variant === "light" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.05)";
   const borderColor = variant === "light" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)";
 
-  const stars = Math.round(rating);
+  const stars = Math.round(rating ?? 0);
 
   return (
     <div
@@ -61,10 +62,10 @@ export default function GoogleRatingBadge({ rating, reviewCount, variant = "dark
       {/* Rating + count */}
       <div className="flex items-baseline gap-1.5">
         <span style={{ fontWeight: 700, fontSize: "0.95rem", color: textColor, lineHeight: 1 }}>
-          {rating.toFixed(1)}
+          {(rating ?? 0).toFixed(1)}
         </span>
         <span style={{ fontSize: "0.75rem", color: subColor, lineHeight: 1 }}>
-          ({reviewCount.toLocaleString("de-DE")} Bewertungen)
+          ({(reviewCount ?? 0).toLocaleString("de-DE")} Bewertungen)
         </span>
       </div>
     </div>

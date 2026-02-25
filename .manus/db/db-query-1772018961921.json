@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, slug, layoutStyle, LEFT(heroImageUrl, 60) as heroUrl, industry FROM generated_websites ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, slug, layoutStyle, LEFT(heroImageUrl, 60) as heroUrl, industry FROM generated_websites ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "30001",
+      "slug": "rainer-demming-bauunternehmen-gmbh-Rhv7",
+      "layoutStyle": "bold",
+      "heroUrl": "https://images.unsplash.com/photo-1497366216548-37526070297c",
+      "industry": "general contractor"
+    },
+    {
+      "id": "4",
+      "slug": "pesch-hochbau-gmbh-aGIc",
+      "layoutStyle": "modern",
+      "heroUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+      "industry": "general contractor"
+    },
+    {
+      "id": "3",
+      "slug": "ritte-bedachungen-e-2v",
+      "layoutStyle": "modern",
+      "heroUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+      "industry": "roofing contractor"
+    },
+    {
+      "id": "2",
+      "slug": "friseur-bocholt-by-aras-NyqU",
+      "layoutStyle": "elegant",
+      "heroUrl": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f",
+      "industry": "hair care"
+    },
+    {
+      "id": "1",
+      "slug": "friseur-gudhair-by-guido-schnucklake-6ULF",
+      "layoutStyle": "classic",
+      "heroUrl": "NULL",
+      "industry": "hair care"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tslug\tlayoutStyle\theroUrl\tindustry\n30001\trainer-demming-bauunternehmen-gmbh-Rhv7\tbold\thttps://images.unsplash.com/photo-1497366216548-37526070297c\tgeneral contractor\n4\tpesch-hochbau-gmbh-aGIc\tmodern\thttps://images.unsplash.com/photo-1486406146926-c627a92ad1ab\tgeneral contractor\n3\tritte-bedachungen-e-2v\tmodern\thttps://images.unsplash.com/photo-1486406146926-c627a92ad1ab\troofing contractor\n2\tfriseur-bocholt-by-aras-NyqU\telegant\thttps://images.unsplash.com/photo-1521590832167-7bcbfaa6381f\thair care\n1\tfriseur-gudhair-by-guido-schnucklake-6ULF\tclassic\tNULL\thair care\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

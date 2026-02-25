@@ -1,17 +1,17 @@
 /**
  * TRUST Layout – Medical, Legal, Financial, Consulting, Insurance
- * Inspired by: GuardPest template (white/blue, 3-column features, trust badges, clean structure)
- * Typography: Lora (headlines) + Inter (body)
- * Feel: Professional, trustworthy, authoritative, calm
- * Structure: Split hero with image right, trust bar, 3-column features, clean testimonials
+ * Typography: Libre Baskerville (headlines) + Source Sans Pro (body)
+ * Feel: Authoritative, calm, institutional, premium
+ * Structure: CENTERED headline hero → full-width photo band → stats bar → card-grid services
+ * Deliberately different from CleanLayout (which uses split-hero)
  */
 import { useState } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Users, ArrowRight } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Users, ArrowRight, Quote } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 
-const SERIF = "'Lora', Georgia, serif";
-const BODY = "'Inter', 'Helvetica Neue', sans-serif";
+const SERIF = "'Libre Baskerville', Georgia, serif";
+const BODY = "'Source Sans Pro', 'Helvetica Neue', sans-serif";
 
 interface Props {
   websiteData: WebsiteData;
@@ -31,8 +31,8 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivat
       <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <TrustAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
+          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessPhone={businessPhone} />}
+          {section.type === "about" && <TrustAbout section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <TrustServices section={section} cs={cs} />}
           {section.type === "testimonials" && <TrustTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <TrustFAQ section={section} cs={cs} />}
@@ -47,111 +47,130 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivat
 
 function TrustNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "#fff", borderBottom: "1px solid #e8edf3", fontFamily: BODY }} className="sticky top-0 z-50 shadow-sm">
+    <nav style={{ backgroundColor: "#fff", borderBottom: `3px solid ${cs.primary}` }} className="sticky top-0 z-50">
+      {/* Top bar */}
+      <div style={{ backgroundColor: cs.primary, padding: "0.35rem 0" }}>
+        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            {businessPhone && (
+              <a href={`tel:${businessPhone}`} style={{ color: "#fff", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <Phone className="h-3 w-3" /> {businessPhone}
+              </a>
+            )}
+          </div>
+          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.75rem" }}>Ihr Vertrauen – unser Auftrag</span>
+        </div>
+      </div>
+      {/* Main nav */}
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div>
-          <span style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: "#1a2332" }}>{websiteData.businessName}</span>
-          {websiteData.tagline && <p style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.08em", marginTop: "1px" }}>{websiteData.tagline.slice(0, 40)}</p>}
+          <span style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 700, color: "#1a2332", letterSpacing: "-0.02em" }}>{websiteData.businessName}</span>
+          {websiteData.tagline && <p style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: "1px" }}>{websiteData.tagline.slice(0, 50)}</p>}
         </div>
         <div className="hidden md:flex items-center gap-8">
-          {["Leistungen", "Über uns", "Kontakt"].map(label => (
-            <a key={label} href={`#${label.toLowerCase()}`} style={{ fontSize: "0.85rem", color: "#5a6a7e", fontWeight: 500 }} className="hover:text-black transition-colors">{label}</a>
+          {["Leistungen", "Über uns", "FAQ", "Kontakt"].map(label => (
+            <a key={label} href={`#${label.toLowerCase().replace(" ", "-")}`} style={{ fontSize: "0.85rem", color: "#4a5568", fontWeight: 500, letterSpacing: "0.02em" }} className="hover:text-black transition-colors">{label}</a>
           ))}
         </div>
-        {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.5rem", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.5rem", borderRadius: "0.25rem" }} className="hover:opacity-90 transition-opacity">
-            <Phone className="h-3.5 w-3.5" /> {businessPhone}
-          </a>
-        )}
+        <a href="#kontakt" style={{ backgroundColor: "#1a2332", color: "#fff", padding: "0.6rem 1.5rem", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.03em" }} className="hidden sm:block hover:opacity-80 transition-opacity">
+          Termin anfragen
+        </a>
       </div>
     </nav>
   );
 }
 
-function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
+function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessPhone }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessPhone?: string | null }) {
   return (
-    <section style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e8edf3" }}>
-      <div className="max-w-6xl mx-auto px-6 py-16 grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: `${cs.primary}10`, border: `1px solid ${cs.primary}30`, padding: "0.35rem 0.9rem", borderRadius: "2rem", marginBottom: "1.5rem" }}>
+    <>
+      {/* Centered headline section */}
+      <section style={{ backgroundColor: "#f7f9fc", padding: "5rem 0 3rem", textAlign: "center" }}>
+        <div className="max-w-4xl mx-auto px-6">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: `${cs.primary}12`, border: `1px solid ${cs.primary}30`, padding: "0.4rem 1.2rem", marginBottom: "2rem" }}>
             <Shield className="h-3.5 w-3.5" style={{ color: cs.primary }} />
-            <span style={{ fontSize: "0.7rem", letterSpacing: "0.1em", color: cs.primary, fontWeight: 600 }}>Zertifiziert & Vertrauenswürdig</span>
+            <span style={{ fontSize: "0.75rem", color: cs.primary, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>Vertrauen seit Jahren</span>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 700, lineHeight: 1.2, color: "#1a2332", marginBottom: "1.25rem" }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#1a2332", lineHeight: 1.2, marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>
             {section.headline}
           </h1>
           {section.subheadline && (
-            <p style={{ fontSize: "1.1rem", lineHeight: 1.7, color: "#5a6a7e", marginBottom: "1rem" }}>{section.subheadline}</p>
+            <p style={{ fontSize: "1.15rem", color: "#5a6a7e", lineHeight: 1.7, maxWidth: "600px", margin: "0 auto 2.5rem" }}>{section.subheadline}</p>
           )}
-          {section.content && (
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "#7a8a9e", marginBottom: "2rem" }}>{section.content}</p>
-          )}
-          <div className="flex flex-wrap gap-3">
-            {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.85rem 2rem", fontSize: "0.9rem", fontWeight: 600, borderRadius: "0.25rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">
-                {section.ctaText} <ArrowRight className="h-4 w-4" />
+          <div className="flex flex-wrap justify-center gap-4">
+            <a href="#kontakt" onClick={showActivateButton ? onActivate : undefined}
+              style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+              className="hover:opacity-90 transition-opacity">
+              {section.ctaText || "Jetzt anfragen"} <ArrowRight className="h-4 w-4" />
+            </a>
+            {businessPhone && (
+              <a href={`tel:${businessPhone}`}
+                style={{ backgroundColor: "#fff", color: "#1a2332", padding: "0.9rem 2rem", fontSize: "1rem", fontWeight: 600, border: "2px solid #1a2332", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+                className="hover:bg-gray-50 transition-colors">
+                <Phone className="h-4 w-4" /> Direkt anrufen
               </a>
             )}
-            {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `1px solid ${cs.primary}`, color: cs.primary, padding: "0.85rem 2rem", fontSize: "0.9rem", fontWeight: 600, borderRadius: "0.25rem", backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
-                Website aktivieren
-              </button>
-            )}
           </div>
-          {/* Trust indicators */}
-          <div style={{ display: "flex", gap: "1.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid #e8edf3" }}>
-            {[["20+", "Jahre Erfahrung"], ["500+", "Kunden betreut"], ["98%", "Zufriedenheit"]].map(([num, label]) => (
-              <div key={label}>
-                <p style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: cs.primary }}>{num}</p>
-                <p style={{ fontSize: "0.75rem", color: "#7a8a9e" }}>{label}</p>
-              </div>
-            ))}
-          </div>
+          {(websiteData.googleRating || websiteData.googleReviewCount) && (
+            <div className="mt-6 flex justify-center">
+              <GoogleRatingBadge rating={websiteData.googleRating ?? undefined} reviewCount={websiteData.googleReviewCount ?? undefined} variant="light" />
+            </div>
+          )}
         </div>
-        <div style={{ position: "relative" }}>
-          <img src={heroImageUrl} alt={section.headline || ""} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: "0.5rem" }} />
-          {/* Floating badge */}
-          <div style={{ position: "absolute", bottom: "1.5rem", left: "-1.5rem", backgroundColor: "#fff", borderRadius: "0.5rem", padding: "1rem 1.25rem", boxShadow: "0 4px 20px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Award className="h-5 w-5" style={{ color: cs.primary }} />
-            </div>
-            <div>
-              <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#1a2332" }}>Top bewertet</p>
-              <div style={{ display: "flex", gap: "2px" }}>
-                {[1,2,3,4,5].map(j => <Star key={j} className="h-3 w-3" style={{ fill: "#f59e0b", color: "#f59e0b" }} />)}
-              </div>
-            </div>
+      </section>
+
+      {/* Full-width photo band */}
+      <div style={{ height: "380px", overflow: "hidden", position: "relative" }}>
+        <img src={heroImageUrl} alt={websiteData.businessName} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, ${cs.primary}60 0%, transparent 50%)` }} />
+        {showActivateButton && (
+          <div style={{ position: "absolute", bottom: "2rem", right: "2rem" }}>
+            <button onClick={onActivate} style={{ backgroundColor: "#fff", color: cs.primary, padding: "0.8rem 2rem", fontWeight: 700, fontSize: "0.9rem", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>
+              Website aktivieren
+            </button>
           </div>
+        )}
+      </div>
+
+      {/* Stats bar */}
+      <div style={{ backgroundColor: "#1a2332", padding: "2rem 0" }}>
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {[
+            { num: "100%", label: "Diskretion" },
+            { num: "24h", label: "Reaktionszeit" },
+            { num: "15+", label: "Jahre Erfahrung" },
+            { num: "500+", label: "Zufriedene Mandanten" },
+          ].map((stat, i) => (
+            <div key={i}>
+              <div style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: cs.primary }}>{stat.num}</div>
+              <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "0.25rem" }}>{stat.label}</div>
+            </div>
+          ))}
         </div>
       </div>
-    </section>
+    </>
   );
 }
 
-function TrustAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
+function TrustAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   return (
-    <section style={{ backgroundColor: "#fff", padding: "6rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Über uns</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 700, color: "#1a2332", marginBottom: "1.5rem", lineHeight: 1.25 }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "#5a6a7e", marginBottom: "1rem" }}>{section.subheadline}</p>}
-          {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "#7a8a9e", marginBottom: "2rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {["Persönliche Beratung & individuelle Lösungen", "Transparente Kommunikation", "Langjährige Erfahrung & Expertise"].map(item => (
-              <div key={item} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <CheckCircle className="h-5 w-5" style={{ color: cs.primary, flexShrink: 0 }} />
-                <span style={{ fontSize: "0.9rem", color: "#5a6a7e" }}>{item}</span>
+    <section style={{ padding: "5rem 0", backgroundColor: "#fff" }}>
+      <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-1">
+          <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, marginBottom: "1.5rem" }} />
+          <h2 style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: "#1a2332", lineHeight: 1.3, marginBottom: "1rem" }}>
+            {section.headline}
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "2rem" }}>
+            {["Zertifiziert & anerkannt", "Persönliche Betreuung", "Transparente Kommunikation"].map((item, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <CheckCircle className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} />
+                <span style={{ fontSize: "0.9rem", color: "#4a5568" }}>{item}</span>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ position: "relative" }}>
-          <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: "0.5rem" }} />
-          <div style={{ position: "absolute", bottom: "-1.5rem", right: "-1.5rem", backgroundColor: cs.primary, borderRadius: "0.5rem", padding: "1.5rem 2rem", textAlign: "center" }}>
-            <p style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: "#fff" }}>20+</p>
-            <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.8)", letterSpacing: "0.08em" }}>Jahre Erfahrung</p>
-          </div>
+        <div className="lg:col-span-2">
+          <p style={{ fontSize: "1.05rem", color: "#4a5568", lineHeight: 1.85, whiteSpace: "pre-line" }}>{section.content}</p>
         </div>
       </div>
     </section>
@@ -160,28 +179,28 @@ function TrustAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
 
 function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
-  const icons = [Shield, Award, Users, CheckCircle, Star, Clock];
   return (
-    <section style={{ backgroundColor: "#f8fafc", padding: "6rem 0" }}>
+    <section id="leistungen" style={{ padding: "5rem 0", backgroundColor: "#f7f9fc" }}>
       <div className="max-w-6xl mx-auto px-6">
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Unsere Leistungen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 700, color: "#1a2332" }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontSize: "1rem", color: "#5a6a7e", marginTop: "0.75rem" }}>{section.subheadline}</p>}
+        <div className="text-center mb-12">
+          <h2 style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.75rem" }}>{section.headline}</h2>
+          <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, margin: "0 auto" }} />
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item, i) => {
-            const Icon = icons[i % icons.length];
-            return (
-              <div key={i} style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "0.5rem", border: "1px solid #e8edf3", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }} className="hover:shadow-md transition-shadow">
-                <div style={{ width: "3rem", height: "3rem", backgroundColor: `${cs.primary}10`, borderRadius: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
-                  <Icon className="h-6 w-6" style={{ color: cs.primary }} />
-                </div>
-                <h3 style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.75rem" }}>{item.title}</h3>
-                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#5a6a7e" }}>{item.description}</p>
+          {items.map((item, i) => (
+            <div key={i} style={{ backgroundColor: "#fff", padding: "2rem", borderTop: `3px solid ${i === 0 ? cs.primary : "#e8edf3"}`, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+              className="hover:shadow-lg transition-shadow group">
+              <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}12`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
+                <Shield className="h-5 w-5" style={{ color: cs.primary }} />
               </div>
-            );
-          })}
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.75rem" }}>{item.title}</h3>
+              <p style={{ fontSize: "0.9rem", color: "#5a6a7e", lineHeight: 1.7 }}>{item.description}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "1.25rem", color: cs.primary, fontSize: "0.8rem", fontWeight: 600 }}
+                className="group-hover:gap-2 transition-all">
+                <span>Mehr erfahren</span> <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -191,28 +210,23 @@ function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
 function TrustTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#fff", padding: "6rem 0" }}>
+    <section style={{ padding: "5rem 0", backgroundColor: "#1a2332" }}>
       <div className="max-w-6xl mx-auto px-6">
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kundenstimmen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 700, color: "#1a2332" }}>{section.headline}</h2>
+        <div className="text-center mb-12">
+          <h2 style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#fff", marginBottom: "0.5rem" }}>{section.headline}</h2>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>Beispiel-Kundenstimmen</p>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: "#f8fafc", padding: "2rem", borderRadius: "0.5rem", border: "1px solid #e8edf3", position: "relative" }}>
-              <div style={{ display: "flex", gap: "0.2rem", marginBottom: "1rem" }}>
-                {Array.from({ length: item.rating || 5 }).map((_, j) => (
-                  <Star key={j} className="h-4 w-4" style={{ fill: "#f59e0b", color: "#f59e0b" }} />
-                ))}
-              </div>
-              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: "#3a4a5e", marginBottom: "1.5rem", fontStyle: "italic" }}>{item.description || item.title}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: cs.primary }}>{(item.author || "K")[0]}</span>
-                </div>
-                <div>
-                  <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "#1a2332" }}>{item.author || "Kunde"}</p>
-                  <p style={{ fontSize: "0.75rem", color: "#7a8a9e" }}>Verifizierter Kunde</p>
+            <div key={i} style={{ backgroundColor: "rgba(255,255,255,0.05)", padding: "2rem", borderLeft: `3px solid ${cs.primary}` }}>
+              <Quote className="h-6 w-6 mb-4" style={{ color: cs.primary, opacity: 0.6 }} />
+              <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.95rem", lineHeight: 1.7, marginBottom: "1.5rem", fontStyle: "italic" }}>"{item.description}"</p>
+              <div className="flex items-center justify-between">
+                <span style={{ fontFamily: SERIF, fontWeight: 700, color: "#fff", fontSize: "0.9rem" }}>{item.author}</span>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: item.rating || 5 }).map((_, j) => (
+                    <Star key={j} className="h-3.5 w-3.5 fill-current" style={{ color: cs.primary }} />
+                  ))}
                 </div>
               </div>
             </div>
@@ -227,22 +241,23 @@ function TrustFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
   const [open, setOpen] = useState<number | null>(null);
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#f8fafc", padding: "6rem 0" }}>
-      <div className="max-w-4xl mx-auto px-6">
-        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 700, color: "#1a2332" }}>{section.headline}</h2>
+    <section id="faq" style={{ padding: "5rem 0", backgroundColor: "#fff" }}>
+      <div className="max-w-3xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <h2 style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.5rem" }}>{section.headline}</h2>
+          <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, margin: "0 auto" }} />
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: "#fff", borderRadius: "0.5rem", border: "1px solid #e8edf3", overflow: "hidden" }}>
-              <button onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}>
-                <span style={{ fontSize: "0.95rem", fontWeight: 600, color: "#1a2332" }}>{item.question || item.title}</span>
-                {open === i ? <ChevronUp className="h-5 w-5 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-5 w-5 flex-shrink-0" style={{ color: "#9aa5b4" }} />}
+            <div key={i} style={{ borderBottom: "1px solid #e8edf3" }}>
+              <button onClick={() => setOpen(open === i ? null : i)}
+                style={{ width: "100%", padding: "1.5rem 0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
+                <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: "#1a2332", paddingRight: "2rem" }}>{item.question}</span>
+                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "#9aa5b4" }} />}
               </button>
               {open === i && (
-                <div style={{ padding: "0 1.5rem 1.25rem", fontSize: "0.9rem", lineHeight: 1.7, color: "#5a6a7e", borderTop: `1px solid #e8edf3` }}>
-                  {item.answer || item.description}
+                <div style={{ paddingBottom: "1.5rem" }}>
+                  <p style={{ fontSize: "0.95rem", color: "#5a6a7e", lineHeight: 1.75 }}>{item.answer}</p>
                 </div>
               )}
             </div>
@@ -255,22 +270,15 @@ function TrustFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
 
 function TrustCTA({ section, cs, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; showActivateButton?: boolean; onActivate?: () => void }) {
   return (
-    <section style={{ backgroundColor: cs.primary, padding: "5rem 0" }}>
-      <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#fff", marginBottom: "1.25rem" }}>{section.headline}</h2>
-        {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.8)", marginBottom: "2.5rem" }}>{section.content}</p>}
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-          {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 3rem", fontSize: "0.9rem", fontWeight: 700, borderRadius: "0.25rem" }} className="hover:opacity-90 transition-opacity">
-              {section.ctaText}
-            </a>
-          )}
-          {showActivateButton && (
-            <button onClick={onActivate} style={{ border: "2px solid rgba(255,255,255,0.5)", color: "#fff", padding: "1rem 3rem", fontSize: "0.9rem", fontWeight: 700, borderRadius: "0.25rem", backgroundColor: "transparent" }} className="hover:border-white transition-colors">
-              Website aktivieren
-            </button>
-          )}
-        </div>
+    <section style={{ padding: "5rem 0", backgroundColor: cs.primary, textAlign: "center" }}>
+      <div className="max-w-3xl mx-auto px-6">
+        <h2 style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 700, color: "#fff", marginBottom: "1rem" }}>{section.headline}</h2>
+        <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "2.5rem" }}>{section.content}</p>
+        <a href="#kontakt" onClick={showActivateButton ? onActivate : undefined}
+          style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 3rem", fontSize: "1rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+          className="hover:opacity-90 transition-opacity">
+          {section.ctaText || "Jetzt Kontakt aufnehmen"} <ArrowRight className="h-4 w-4" />
+        </a>
       </div>
     </section>
   );
@@ -278,30 +286,53 @@ function TrustCTA({ section, cs, showActivateButton, onActivate }: { section: We
 
 function TrustContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
   return (
-    <section id="kontakt" style={{ backgroundColor: "#fff", padding: "6rem 0" }}>
+    <section id="kontakt" style={{ padding: "5rem 0", backgroundColor: "#f7f9fc" }}>
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: 700, color: "#1a2332", marginBottom: "2rem" }}>{section.headline}</h2>
-          {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#5a6a7e", marginBottom: "2rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: "#1a2332", fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
-            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><span style={{ color: "#5a6a7e", fontSize: "0.95rem" }}>{address}</span></div>}
-            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ color: "#1a2332", fontSize: "1rem" }}>{email}</a></div>}
-            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><div>{hours.map((h, i) => <p key={i} style={{ color: "#5a6a7e", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
+          <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, marginBottom: "1.5rem" }} />
+          <h2 style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: "#1a2332", marginBottom: "1rem" }}>{section.headline}</h2>
+          <p style={{ color: "#5a6a7e", fontSize: "1rem", lineHeight: 1.7, marginBottom: "2rem" }}>{section.content}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}12`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Phone className="h-4 w-4" style={{ color: cs.primary }} />
+              </div>
+              <a href={`tel:${phone}`} style={{ color: "#1a2332", fontWeight: 600 }}>{phone}</a>
+            </div>}
+            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+              <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}12`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <MapPin className="h-4 w-4" style={{ color: cs.primary }} />
+              </div>
+              <span style={{ color: "#4a5568" }}>{address}</span>
+            </div>}
+            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+              <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}12`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Clock className="h-4 w-4" style={{ color: cs.primary }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                {hours.slice(0, 4).map((h, i) => <span key={i} style={{ fontSize: "0.85rem", color: "#4a5568" }}>{h}</span>)}
+              </div>
+            </div>}
           </div>
         </div>
-        <div style={{ backgroundColor: "#f8fafc", padding: "2.5rem", borderRadius: "0.5rem", border: "1px solid #e8edf3" }}>
-          <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#1a2332", marginBottom: "1.5rem" }}>Kostenlose Erstberatung</h3>
-          <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <input type="text" placeholder="Ihr Name" style={{ backgroundColor: "#fff", border: "1px solid #d1d9e0", padding: "0.85rem 1rem", color: "#1a2332", fontSize: "0.9rem", outline: "none", borderRadius: "0.25rem" }} />
-            <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: "#fff", border: "1px solid #d1d9e0", padding: "0.85rem 1rem", color: "#1a2332", fontSize: "0.9rem", outline: "none", borderRadius: "0.25rem" }} />
-            <input type="tel" placeholder="Ihre Telefonnummer" style={{ backgroundColor: "#fff", border: "1px solid #d1d9e0", padding: "0.85rem 1rem", color: "#1a2332", fontSize: "0.9rem", outline: "none", borderRadius: "0.25rem" }} />
-            <textarea placeholder="Ihr Anliegen" rows={3} style={{ backgroundColor: "#fff", border: "1px solid #d1d9e0", padding: "0.85rem 1rem", color: "#1a2332", fontSize: "0.9rem", outline: "none", resize: "vertical", borderRadius: "0.25rem" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem", fontSize: "0.9rem", fontWeight: 600, border: "none", cursor: "pointer", borderRadius: "0.25rem" }} className="hover:opacity-90 transition-opacity">
-              Beratungsgespräch anfragen
+        <div style={{ backgroundColor: "#fff", padding: "2.5rem", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+          <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: "#1a2332", marginBottom: "1.5rem" }}>Nachricht senden</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {[{ label: "Name", type: "text" }, { label: "E-Mail", type: "email" }, { label: "Telefon", type: "tel" }].map(f => (
+              <div key={f.label}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>{f.label}</label>
+                <input type={f.type} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", backgroundColor: "#f7f9fc" }} />
+              </div>
+            ))}
+            <div>
+              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>Anliegen</label>
+              <textarea rows={4} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", resize: "vertical", backgroundColor: "#f7f9fc" }} />
+            </div>
+            <button style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem", fontWeight: 700, fontSize: "0.95rem", border: "none", cursor: "pointer", width: "100%" }}
+              className="hover:opacity-90 transition-opacity">
+              {section.ctaText || "Anfrage senden"}
             </button>
-          </form>
+          </div>
         </div>
       </div>
     </section>
@@ -310,15 +341,27 @@ function TrustContact({ section, cs, phone, address, email, hours }: { section: 
 
 function TrustFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer style={{ backgroundColor: "#1a2332", padding: "2.5rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <span style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: "rgba(255,255,255,0.4)" }}>{websiteData.businessName}</span>
-        <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.25)" }}>{websiteData.footer?.text}</p>
-        <div style={{ display: "flex", gap: "1.5rem" }}>
-          {["Impressum", "Datenschutz"].map(l => (
-            <a key={l} href="#" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }} className="hover:text-white transition-colors">{l}</a>
-          ))}
+    <footer style={{ backgroundColor: "#0f1724", padding: "3rem 0 1.5rem" }}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid md:grid-cols-3 gap-8 pb-6 mb-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+          <div>
+            <span style={{ fontFamily: SERIF, fontSize: "1.2rem", fontWeight: 700, color: "#fff" }}>{websiteData.businessName}</span>
+            {websiteData.tagline && <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", marginTop: "0.5rem" }}>{websiteData.tagline}</p>}
+          </div>
+          <div>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem" }}>Leistungen</p>
+            {["Beratung", "Analyse", "Umsetzung", "Betreuung"].map(l => (
+              <a key={l} href="#" style={{ display: "block", color: "rgba(255,255,255,0.6)", fontSize: "0.85rem", marginBottom: "0.4rem" }} className="hover:text-white transition-colors">{l}</a>
+            ))}
+          </div>
+          <div>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem" }}>Rechtliches</p>
+            {["Impressum", "Datenschutz", "AGB"].map(l => (
+              <a key={l} href="#" style={{ display: "block", color: "rgba(255,255,255,0.6)", fontSize: "0.85rem", marginBottom: "0.4rem" }} className="hover:text-white transition-colors">{l}</a>
+            ))}
+          </div>
         </div>
+        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem", textAlign: "center" }}>{websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`}</p>
       </div>
     </footer>
   );
