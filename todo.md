@@ -152,3 +152,10 @@
 - [x] TemplatesPage: Review-Queue – KI-Vorschläge anzeigen, editierbar, bestätigen/ablehnen
 - [x] TemplatesPage: Multi-Branchen-Auswahl pro Template (Checkboxen)
 - [x] KI-Generierung: Mehrfach-Zuordnung berücksichtigen (Template taucht in mehreren Branchen-Pools auf)
+
+## Template-Detail-Modal (Runde 9)
+- [x] Template-Galerie: Klick auf Karte öffnet Detail-Modal
+- [x] Modal: Große Bildvorschau + editierbare Felder (Name, Branchen, Layout-Pool, Notizen, Status)
+- [x] Modal: Speichern-Button mit Erfolgsmeldung
+- [x] Modal: Freigeben/Zurückziehen-Button je nach aktuellem Status
+- [x] Modal: Löschen-Button mit Bestätigung

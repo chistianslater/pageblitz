@@ -12,9 +12,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
-  Upload, Trash2, ImageIcon, Filter, CheckCircle, Clock, XCircle,
-  Layers, Sparkles, ChevronDown, ChevronUp, Check, RefreshCw, X
+  Upload, Trash2, ImageIcon, CheckCircle, Clock, XCircle,
+  Layers, Sparkles, ChevronDown, ChevronUp, Check, RefreshCw, X,
+  Pencil, ExternalLink, ZoomIn
 } from "lucide-react";
+// TemplateUpload type (inline to avoid import path issues)
+interface TemplateUpload {
+  id: number;
+  name: string;
+  industry: string;
+  industries: string | null;
+  layoutPool: string;
+  aiIndustries: string | null;
+  aiLayoutPool: string | null;
+  aiConfidence: string | null;
+  aiReason: string | null;
+  status: string;
+  imageUrl: string;
+  fileKey: string;
+  notes: string | null;
+  createdAt: Date;
+}
 
 // ── Constants ────────────────────────────────────────────
 const INDUSTRIES = [
@@ -99,6 +117,7 @@ export default function TemplatesPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "approved">("all");
   const [filterIndustry, setFilterIndustry] = useState("all");
+  const [detailTemplate, setDetailTemplate] = useState<TemplateUpload | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
 
@@ -385,31 +404,24 @@ export default function TemplatesPage() {
             {savedTemplates.map((t) => {
               const inds: string[] = (() => { try { return JSON.parse(t.industries || "[]"); } catch { return [t.industry]; } })();
               return (
-                <div key={t.id} className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-gray-600 transition-colors">
+                <div
+                  key={t.id}
+                  className="group relative bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-blue-500/50 transition-all cursor-pointer"
+                  onClick={() => setDetailTemplate(t)}
+                >
                   <div className="relative" style={{ aspectRatio: "4/3" }}>
-                    <img src={t.imageUrl} alt={t.name} className="w-full h-full object-cover" loading="lazy" />
+                    <img src={t.imageUrl} alt={t.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="bg-white/10 backdrop-blur-sm rounded-full p-3">
+                        <ZoomIn className="h-5 w-5 text-white" />
+                      </div>
+                    </div>
                     <div className="absolute top-2 left-2">
                       {t.status === "approved"
                         ? <span className="bg-green-600/80 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Aktiv</span>
                         : <span className="bg-yellow-600/80 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1"><Clock className="h-3 w-3" /> Ausstehend</span>
                       }
-                    </div>
-                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {t.status === "pending" && (
-                        <button
-                          onClick={() => approveMutation.mutate({ id: t.id }, { onSuccess: () => { toast.success("Freigegeben"); refetch(); } })}
-                          className="bg-green-600/80 hover:bg-green-600 rounded-full p-1.5"
-                          title="Freigeben"
-                        >
-                          <Check className="h-3.5 w-3.5 text-white" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => { if (confirm(`"${t.name}" löschen?`)) deleteMutation.mutate({ id: t.id }); }}
-                        className="bg-red-600/80 hover:bg-red-600 rounded-full p-1.5"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-white" />
-                      </button>
                     </div>
                   </div>
                   <div className="p-2.5 space-y-1.5">
@@ -431,6 +443,264 @@ export default function TemplatesPage() {
             })}
           </div>
         )}
+      </div>
+
+      {/* ── Template Detail Modal ── */}
+      {detailTemplate && (
+        <TemplateDetailModal
+          template={detailTemplate}
+          onClose={() => setDetailTemplate(null)}
+          onSaved={(updated) => { setDetailTemplate(updated); refetch(); }}
+          onDeleted={() => { setDetailTemplate(null); refetch(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── TemplateDetailModal Component ─────────────────────────────
+interface TemplateDetailModalProps {
+  template: TemplateUpload;
+  onClose: () => void;
+  onSaved: (updated: TemplateUpload) => void;
+  onDeleted: () => void;
+}
+
+function TemplateDetailModal({ template, onClose, onSaved, onDeleted }: TemplateDetailModalProps) {
+  const [name, setName] = useState(template.name);
+  const [industries, setIndustries] = useState<string[]>(() => {
+    try { return JSON.parse(template.industries || "[]"); } catch { return [template.industry]; }
+  });
+  const [layoutPool, setLayoutPool] = useState(template.layoutPool);
+  const [notes, setNotes] = useState(template.notes || "");
+  const [status, setStatus] = useState(template.status);
+  const [saving, setSaving] = useState(false);
+
+  const updateMutation = trpc.templates.update.useMutation();
+  const approveMutation = trpc.templates.approve.useMutation();
+  const deleteMutation = trpc.templates.delete.useMutation();
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const toggleIndustry = (val: string) => {
+    setIndustries(prev =>
+      prev.includes(val) ? prev.filter(i => i !== val) : [...prev, val]
+    );
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateMutation.mutateAsync({
+        id: template.id,
+        name,
+        industries,
+        layoutPool,
+        notes: notes || undefined,
+        status: status as any,
+      });
+      toast.success("Gespeichert");
+      onSaved({ ...template, name, industries: JSON.stringify(industries), layoutPool, notes, status });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleApproval = async () => {
+    const newStatus = status === "approved" ? "pending" : "approved";
+    setSaving(true);
+    try {
+      await updateMutation.mutateAsync({ id: template.id, status: newStatus as any });
+      setStatus(newStatus);
+      toast.success(newStatus === "approved" ? "Freigegeben" : "Zurückgezogen");
+      onSaved({ ...template, name, industries: JSON.stringify(industries), layoutPool, notes, status: newStatus });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`"${name}" wirklich löschen?`)) return;
+    try {
+      await deleteMutation.mutateAsync({ id: template.id });
+      toast.success("Template gelöscht");
+      onDeleted();
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
+    >
+      <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Modal header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
+          <h2 className="text-base font-semibold text-white flex items-center gap-2">
+            <Pencil className="h-4 w-4 text-blue-400" />
+            Template bearbeiten
+          </h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Modal body */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid md:grid-cols-2 gap-0">
+            {/* Left: Large image preview */}
+            <div className="relative bg-gray-950 flex items-center justify-center" style={{ minHeight: "320px" }}>
+              <img
+                src={template.imageUrl}
+                alt={name}
+                className="w-full h-full object-contain"
+                style={{ maxHeight: "480px" }}
+              />
+              <a
+                href={template.imageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> Original öffnen
+              </a>
+              <div className="absolute top-3 left-3">
+                {status === "approved"
+                  ? <span className="bg-green-600/90 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><CheckCircle className="h-3.5 w-3.5" /> Aktiv</span>
+                  : <span className="bg-yellow-600/90 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Ausstehend</span>
+                }
+              </div>
+            </div>
+
+            {/* Right: Edit form */}
+            <div className="p-5 space-y-4 overflow-y-auto" style={{ maxHeight: "480px" }}>
+              {/* Name */}
+              <div>
+                <Label className="text-gray-300 text-xs mb-1.5 block">Name</Label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+
+              {/* Layout Pool */}
+              <div>
+                <Label className="text-gray-300 text-xs mb-1.5 block">Layout-Pool</Label>
+                <Select value={layoutPool} onValueChange={setLayoutPool}>
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LAYOUT_POOLS.map(p => (
+                      <SelectItem key={p.value} value={p.value}>
+                        <span className={`inline-block w-2 h-2 rounded-full mr-2 ${POOL_COLORS[p.value]?.split(" ")[0] || "bg-gray-500"}`} />
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Industries */}
+              <div>
+                <Label className="text-gray-300 text-xs mb-2 block">
+                  Branchen
+                  <span className="ml-1.5 text-gray-500">(mehrere wählbar)</span>
+                </Label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {INDUSTRIES.map(ind => {
+                    const selected = industries.includes(ind.value);
+                    return (
+                      <button
+                        key={ind.value}
+                        onClick={() => toggleIndustry(ind.value)}
+                        className={`text-xs px-2 py-1.5 rounded text-left transition-colors flex items-center gap-1.5 ${
+                          selected ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        {selected && <Check className="h-3 w-3 flex-shrink-0" />}
+                        {ind.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <Label className="text-gray-300 text-xs mb-1.5 block">Notizen (optional)</Label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="z.B. Besonders gutes Farbschema..."
+                  className="bg-gray-800 border-gray-600 text-white resize-none text-sm"
+                  rows={3}
+                />
+              </div>
+
+              {/* AI info if available */}
+              {template.aiReason && (
+                <div className="text-xs text-gray-400 bg-gray-800/50 rounded p-2.5 flex gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span><strong className="text-purple-300">KI-Analyse:</strong> {template.aiReason}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Modal footer */}
+        <div className="flex items-center justify-between px-5 py-4 border-t border-gray-800 bg-gray-950/50">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-1.5"
+          >
+            <Trash2 className="h-4 w-4" /> Löschen
+          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleApproval}
+              disabled={saving}
+              className={`gap-1.5 border-gray-600 ${
+                status === "approved"
+                  ? "text-yellow-400 hover:bg-yellow-500/10"
+                  : "text-green-400 hover:bg-green-500/10"
+              }`}
+            >
+              {status === "approved"
+                ? <><Clock className="h-4 w-4" /> Zurückziehen</>
+                : <><CheckCircle className="h-4 w-4" /> Freigeben</>
+              }
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={saving || industries.length === 0}
+              className="gap-1.5 bg-blue-600 hover:bg-blue-700"
+            >
+              {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              Speichern
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
