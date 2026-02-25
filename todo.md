@@ -74,3 +74,10 @@
 - [x] Website-Alter-Erkennung: bestehende Websites auf Alter und Qualität prüfen (Wayback Machine + HTML-Analyse)
 - [x] GMB-Suche: Filter für "veraltete Website" (>3 Jahre) und Qualitäts-Score
 - [x] Lead-Kategorien: "Keine Website", "Veraltete Website", "Schlechte Website"
+
+## Regenerate-Feature
+- [x] Backend: Vollständige Regenerate-Prozedur (neue KI-Texte, neues Layout, neuer Preview-Token)
+- [x] Frontend: Regenerate-Button in Websites-Übersicht
+- [x] Frontend: Confirmation-Dialog mit Warnung und KI-Bild-Option
+- [x] Loading-State während Regenerierung
+- [x] Erfolgsmeldung mit direktem Preview-Link nach Regenerierung

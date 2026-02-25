@@ -491,23 +491,174 @@ Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Z
         const business = await getBusinessById(website.businessId);
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
 
-        // Delete old and regenerate
-        await updateWebsite(input.websiteId, { status: "inactive" });
-
-        // Re-use the generate logic by calling the same function
+        // Full re-generation: same pipeline as generate, but updates existing record
         const category = business.category || "Dienstleistung";
-        const colorScheme = getIndustryColorScheme(category, business.name + Date.now());
-        const layoutStyle = getLayoutStyle(category, business.name + Date.now());
-        const heroImageUrl = getHeroImageUrl(category, business.name + Date.now());
+        // Use a different seed so layout/colors vary from the previous version
+        const seed = business.name + Date.now().toString();
+        const industryContext = buildIndustryContext(category);
+        const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
+        const colorScheme = getIndustryColorScheme(category, seed);
+        const layoutStyle = getLayoutStyle(category, seed);
+        const heroImageUrl = getHeroImageUrl(category, seed);
+        const galleryImages = getGalleryImages(category);
 
-        await updateWebsite(input.websiteId, {
-          colorScheme,
-          layoutStyle,
-          heroImageUrl,
-          status: "preview",
+        // Pick different templates than last time by shuffling
+        const matchingTemplates = selectTemplatesForIndustry(category, seed, 3);
+        const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
+        const templateImageUrls = getTemplateImageUrls(matchingTemplates);
+
+        let hoursText = "Nicht angegeben";
+        if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
+          hoursText = (business.openingHours as string[]).join(", ");
+        }
+
+        const prompt = `Du bist ein erstklassiger Webtexter und UX-Copywriter für lokale Unternehmen in Deutschland. Deine Aufgabe: Erstelle eine NEUE, einzigartige Website für dieses Unternehmen. Wichtig: Diese Website soll sich deutlich von einer vorherigen Version unterscheiden – andere Texte, andere Perspektive, andere Struktur.
+
+═══════════════════════════════════════
+UNTERNEHMENSDATEN
+═══════════════════════════════════════
+Name: ${business.name}
+Branche/Kategorie: ${category}
+Adresse: ${business.address || "Nicht angegeben"}
+Telefon: ${business.phone || "Nicht angegeben"}
+Bewertung: ${business.rating ? business.rating + "/5 Sterne" : "Nicht verfügbar"}
+Anzahl Bewertungen: ${business.reviewCount || 0}
+Öffnungszeiten: ${hoursText}
+
+═══════════════════════════════════════
+BRANCHENKONTEXT & PERSÖNLICHKEIT
+═══════════════════════════════════════
+${industryContext}
+${personalityHint}
+
+Layout-Stil: ${layoutStyle}
+Primärfarbe: ${colorScheme.primary}
+
+${templateStyleDesc}
+
+═══════════════════════════════════════
+KREATIVE ANFORDERUNGEN (NEUE VERSION)
+═══════════════════════════════════════
+1. ANDERE PERSPEKTIVE: Wähle einen anderen Storytelling-Ansatz als zuvor (z.B. wenn vorher "Expertise" betont wurde, betone jetzt "Leidenschaft" oder "Gemeinschaft").
+2. NEUER SLOGAN: Erfinde einen komplett anderen Tagline.
+3. ANDERE HERO-HEADLINE: Andere emotionale Ansprache, anderer Fokus.
+4. VERSCHIEDENE LEISTUNGEN: Zeige andere Aspekte des Angebots, andere Formulierungen.
+5. NEUE TESTIMONIALS: Andere Kunden, andere Szenarien, andere Ergebnisse.
+6. KEINE GENERIK: Verboten: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle".
+7. LOKALER BEZUG: Nutze die Stadt/Region konkret.
+
+═══════════════════════════════════════
+PFLICHT-AUSGABE (exaktes JSON-Format)
+═══════════════════════════════════════
+{
+  "businessName": "${business.name}",
+  "tagline": "Einzigartiger, einprägsamer Slogan (max. 8 Wörter, keine Klischees)",
+  "description": "Kurze, packende Beschreibung (2 Sätze, konkret und spezifisch)",
+  "sections": [
+    { "type": "hero", "headline": "Kraftvolle Hauptüberschrift", "subheadline": "Konkrete Unterüberschrift mit USP", "content": "Kurzer Einleitungstext", "ctaText": "Kreativer CTA-Button-Text", "ctaLink": "#kontakt" },
+    { "type": "about", "headline": "Kreative Überschrift für 'Über uns'", "content": "Authentischer Text (4-5 Sätze, andere Perspektive als zuvor)" },
+    { "type": "services", "headline": "Kreative Überschrift für Leistungen", "items": [
+      { "title": "Leistung 1", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
+      { "title": "Leistung 2", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
+      { "title": "Leistung 3", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
+      { "title": "Leistung 4", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
+      { "title": "Leistung 5", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
+      { "title": "Leistung 6", "description": "Spezifische Beschreibung", "icon": "LucideIconName" }
+    ]},
+    { "type": "testimonials", "headline": "Kreative Überschrift für Kundenstimmen", "items": [
+      { "title": "Zusammenfassung", "description": "Detaillierte Bewertung", "author": "Name", "rating": 5 },
+      { "title": "Zusammenfassung", "description": "Detaillierte Bewertung", "author": "Name", "rating": 5 },
+      { "title": "Zusammenfassung", "description": "Detaillierte Bewertung", "author": "Name", "rating": 4 }
+    ]},
+    { "type": "faq", "headline": "Häufige Fragen", "items": [
+      { "question": "Frage 1?", "answer": "Antwort" },
+      { "question": "Frage 2?", "answer": "Antwort" },
+      { "question": "Frage 3?", "answer": "Antwort" },
+      { "question": "Frage 4?", "answer": "Antwort" }
+    ]},
+    { "type": "cta", "headline": "Starke CTA-Überschrift", "content": "Kurzer überzeugender Text", "ctaText": "Handlungsaufruf-Button", "ctaLink": "#kontakt" },
+    { "type": "contact", "headline": "Kontaktüberschrift", "content": "Einladender Kontakttext", "ctaText": "Nachricht senden" }
+  ],
+  "seoTitle": "${business.name} – [Branchenspezifisches Keyword] in [Stadt]",
+  "seoDescription": "Prägnante SEO-Beschreibung (max. 155 Zeichen)",
+  "footer": { "text": "© ${new Date().getFullYear()} ${business.name}. Alle Rechte vorbehalten." }
+}
+
+Verfügbare Lucide-Icons: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, MapPin, Phone, Mail, Users, Award, ThumbsUp, Briefcase, Home, Car, Utensils, Camera, Sparkles, Flame, Leaf, Sun, Moon, Coffee, Music, Book, Palette, Hammer, Truck, Package, CheckCircle, Globe, Lock, Key, Smile, Baby, Dog, Flower, Trees, Dumbbell, Bike, Stethoscope, Pill, Scale, Gavel, Calculator, PiggyBank, Building`;
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: "Du bist ein erstklassiger Webtexter und Design-Direktor für lokale Unternehmen. Du erstellst eine NEUE VERSION einer Website mit frischen Texten und anderem Ansatz. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke."
+            },
+            ...(templateImageUrls.length > 0 ? [{
+              role: "user" as const,
+              content: [
+                { type: "text" as const, text: `Hier sind ${templateImageUrls.length} professionelle Website-Templates als visuelle Referenz für den neuen Design-Stil.` },
+                ...templateImageUrls.map(url => ({ type: "image_url" as const, image_url: { url, detail: "low" as const } }))
+              ]
+            }] : []),
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
         });
 
-        return { success: true, message: "Bitte nutze 'generate' für eine vollständige Neugenerierung" };
+        const llmContent = response.choices[0]?.message?.content;
+        if (!llmContent || typeof llmContent !== "string") {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Regenerierung fehlgeschlagen" });
+        }
+
+        let websiteData: any;
+        try {
+          const cleaned = llmContent.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+          websiteData = JSON.parse(cleaned);
+        } catch {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI hat kein valides JSON zurückgegeben" });
+        }
+
+        // Optionally generate AI hero image
+        let finalHeroImageUrl = heroImageUrl;
+        if (input.generateAiImage) {
+          try {
+            const imagePrompt = `Professional hero image for ${business.name}, a ${category} business. ${websiteData.tagline || ""}. High quality, photorealistic, modern, clean composition. No text or logos.`;
+            const { url } = await generateImage({ prompt: imagePrompt });
+            if (url) finalHeroImageUrl = url;
+          } catch {
+            finalHeroImageUrl = heroImageUrl;
+          }
+        }
+
+        // Inject gallery images
+        if (galleryImages.length > 0 && websiteData.sections) {
+          const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
+          if (gallerySection) gallerySection.images = galleryImages;
+        }
+
+        // Generate a new slug and token for the regenerated version
+        const newSlug = slugify(business.name) + "-" + nanoid(4);
+        const newPreviewToken = nanoid(32);
+
+        // Update the existing website record with new content
+        await updateWebsite(input.websiteId, {
+          slug: newSlug,
+          status: "preview",
+          websiteData,
+          colorScheme,
+          industry: category,
+          previewToken: newPreviewToken,
+          heroImageUrl: finalHeroImageUrl,
+          layoutStyle,
+        });
+
+        return {
+          websiteId: input.websiteId,
+          slug: newSlug,
+          previewToken: newPreviewToken,
+          heroImageUrl: finalHeroImageUrl,
+          layoutStyle,
+          regenerated: true,
+        };
       }),
 
     list: adminProcedure

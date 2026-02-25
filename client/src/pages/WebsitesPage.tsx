@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
@@ -26,11 +28,11 @@ const statusLabels: Record<string, string> = {
 
 export default function WebsitesPage() {
   const utils = trpc.useUtils();
-  const { data: businessData, isLoading: bizLoading } = trpc.business.list.useQuery({ limit: 100, offset: 0 });
+  const { data: businessData } = trpc.business.list.useQuery({ limit: 100, offset: 0 });
   const { data: websiteData, isLoading: webLoading } = trpc.website.list.useQuery({ limit: 100, offset: 0 });
 
   const generateMutation = trpc.website.generate.useMutation({
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Website erfolgreich generiert!");
       utils.website.list.invalidate();
       utils.business.list.invalidate();
@@ -39,12 +41,8 @@ export default function WebsitesPage() {
     onError: (err) => toast.error("Generierung fehlgeschlagen: " + err.message),
   });
 
-  const handleGenerate = (businessId: number) => {
-    generateMutation.mutate({ businessId });
-  };
-
   const businessesWithoutWebsite = businessData?.businesses?.filter(b => {
-    return !websiteData?.websites?.some(w => w.businessId === b.id);
+    return !websiteData?.websites?.some((w: any) => w.businessId === b.id);
   }) || [];
 
   return (
@@ -102,7 +100,7 @@ export default function WebsitesPage() {
                       <TableCell className="text-right">
                         <Button
                           size="sm"
-                          onClick={() => handleGenerate(b.id)}
+                          onClick={() => generateMutation.mutate({ businessId: b.id })}
                           disabled={generateMutation.isPending}
                         >
                           {generateMutation.isPending ? (
@@ -180,6 +178,7 @@ export default function WebsitesPage() {
                               <ExternalLink className="h-3 w-3 mr-1" /> Live
                             </a>
                           </Button>
+                          <RegenerateDialog website={w} />
                           <OutreachDialog website={w} />
                         </div>
                       </TableCell>
@@ -192,6 +191,119 @@ export default function WebsitesPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function RegenerateDialog({ website }: { website: any }) {
+  const utils = trpc.useUtils();
+  const [open, setOpen] = useState(false);
+  const [generateAiImage, setGenerateAiImage] = useState(false);
+
+  const regenerateMutation = trpc.website.regenerate.useMutation({
+    onSuccess: (data) => {
+      toast.success("Website erfolgreich neu generiert! Neuer Preview-Link ist aktiv.", {
+        action: {
+          label: "Preview öffnen",
+          onClick: () => window.open(`/preview/${data.previewToken}`, "_blank"),
+        },
+        duration: 6000,
+      });
+      utils.website.list.invalidate();
+      utils.stats.dashboard.invalidate();
+      setOpen(false);
+    },
+    onError: (err) => toast.error("Regenerierung fehlgeschlagen: " + err.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300"
+        >
+          <RefreshCw className="h-3 w-3 mr-1" />
+          Neu generieren
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <RefreshCw className="h-5 w-5 text-blue-400" />
+            Website neu generieren
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Die KI erstellt komplett neue Texte, einen anderen Slogan, andere Testimonials und ein neues Layout-Design für{" "}
+            <span className="font-medium text-foreground">{website.business?.name}</span>.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-2 space-y-4">
+          {/* Warning */}
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+            <p className="text-sm text-amber-300">
+              Der bisherige Preview-Link wird ungültig. Ein neuer Link wird generiert.
+            </p>
+          </div>
+
+          {/* AI Image option */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-purple-400" />
+              <div>
+                <Label htmlFor="ai-image-regen" className="text-sm font-medium cursor-pointer">
+                  KI-Bild generieren
+                </Label>
+                <p className="text-xs text-muted-foreground">Erstellt ein einzigartiges Hero-Bild via KI</p>
+              </div>
+            </div>
+            <Switch
+              id="ai-image-regen"
+              checked={generateAiImage}
+              onCheckedChange={setGenerateAiImage}
+            />
+          </div>
+
+          {/* What changes */}
+          <div className="space-y-1.5 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground text-xs uppercase tracking-wider">Was sich ändert:</p>
+            <ul className="space-y-1 pl-2">
+              {["Alle Texte & Überschriften", "Slogan & Beschreibung", "Testimonials & FAQ", "Farbschema & Layout-Stil", "Hero-Bild (Unsplash-Auswahl)", "Preview-Token & URL"].map(item => (
+                <li key={item} className="flex items-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-blue-400 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={regenerateMutation.isPending}>
+            Abbrechen
+          </Button>
+          <Button
+            onClick={() => regenerateMutation.mutate({ websiteId: website.id, generateAiImage })}
+            disabled={regenerateMutation.isPending}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {regenerateMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                KI generiert…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Jetzt neu generieren
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
