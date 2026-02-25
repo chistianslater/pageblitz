@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Utensils, Coffee, Leaf } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const SERIF = "'Lora', Georgia, serif";
 const SANS = "'Nunito', 'Inter', sans-serif";
@@ -29,7 +30,7 @@ export default function WarmLayout({ websiteData, cs, heroImageUrl, showActivate
       <WarmNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <WarmHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <WarmHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <WarmAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <WarmMenu section={section} cs={cs} />}
           {section.type === "testimonials" && <WarmTestimonials section={section} cs={cs} />}
@@ -69,7 +70,7 @@ function WarmNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData;
   );
 }
 
-function WarmHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function WarmHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ position: "relative", minHeight: "88vh", display: "flex", alignItems: "flex-end" }}>
       <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }} />

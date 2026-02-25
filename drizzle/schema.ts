@@ -81,3 +81,17 @@ export const outreachEmails = mysqlTable("outreach_emails", {
 
 export type OutreachEmail = typeof outreachEmails.$inferSelect;
 export type InsertOutreachEmail = typeof outreachEmails.$inferInsert;
+
+export const templateUploads = mysqlTable("template_uploads", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  industry: varchar("industry", { length: 100 }).notNull(), // e.g. "beauty", "restaurant", "fitness"
+  layoutPool: varchar("layoutPool", { length: 50 }).notNull(), // e.g. "elegant", "fresh", "luxury"
+  imageUrl: text("imageUrl").notNull(), // S3 public URL
+  fileKey: varchar("fileKey", { length: 500 }).notNull(), // S3 key
+  notes: text("notes"), // optional admin notes
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TemplateUpload = typeof templateUploads.$inferSelect;
+export type InsertTemplateUpload = typeof templateUploads.$inferInsert;

@@ -38,6 +38,9 @@ export interface WebsiteData {
     text: string;
     links?: Array<{ label: string; href: string }>;
   };
+  // Real Google data injected at generation time
+  googleRating?: number | null;
+  googleReviewCount?: number | null;
 }
 
 export interface ColorScheme {

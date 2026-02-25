@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Wrench, Shield, Award, Hammer, Truck } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const HEADING = "'Oswald', 'Barlow Condensed', Impact, sans-serif";
 const BODY = "'Barlow', 'Inter', sans-serif";
@@ -29,7 +30,7 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivate
       <BoldNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <BoldHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <BoldHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <BoldAbout section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <BoldServices section={section} cs={cs} />}
           {section.type === "testimonials" && <BoldTestimonials section={section} cs={cs} />}
@@ -66,7 +67,7 @@ function BoldNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData;
   );
 }
 
-function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ position: "relative", minHeight: "90vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
       {/* Background image with dark overlay */}
@@ -97,8 +98,13 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate }:
             </button>
           )}
         </div>
+        {websiteData.googleRating && websiteData.googleReviewCount ? (
+          <div style={{ marginTop: "2rem" }}>
+            <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="light" starColor={cs.primary} />
+          </div>
+        ) : null}
         {/* Trust bar */}
-        <div className="flex flex-wrap gap-8 mt-12">
+        <div className="flex flex-wrap gap-8 mt-8">
           {[{ icon: Shield, text: "Geprüfter Fachbetrieb" }, { icon: Award, text: "Über 15 Jahre Erfahrung" }, { icon: CheckCircle, text: "Kostenlose Beratung" }].map(({ icon: Icon, text }, i) => (
             <div key={i} className="flex items-center gap-2">
               <Icon className="h-5 w-5" style={{ color: cs.primary }} />

@@ -5,6 +5,7 @@ import {
   businesses, InsertBusiness, Business,
   generatedWebsites, InsertGeneratedWebsite, GeneratedWebsite,
   outreachEmails, InsertOutreachEmail, OutreachEmail,
+  templateUploads, InsertTemplateUpload, TemplateUpload,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -215,4 +216,45 @@ export async function getDashboardStats() {
     countOutreachEmailsByStatus("sent"),
   ]);
   return { totalBusinesses, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails };
+}
+
+// ── Template Uploads ───────────────────────────────────
+export async function createTemplateUpload(data: InsertTemplateUpload): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(templateUploads).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function listTemplateUploads(): Promise<TemplateUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(templateUploads).orderBy(desc(templateUploads.createdAt));
+}
+
+export async function listTemplateUploadsByIndustry(industry: string): Promise<TemplateUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(templateUploads).where(eq(templateUploads.industry, industry)).orderBy(desc(templateUploads.createdAt));
+}
+
+export async function listTemplateUploadsByPool(industry: string, layoutPool: string): Promise<TemplateUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(templateUploads)
+    .where(and(eq(templateUploads.industry, industry), eq(templateUploads.layoutPool, layoutPool)))
+    .orderBy(desc(templateUploads.createdAt));
+}
+
+export async function deleteTemplateUpload(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(templateUploads).where(eq(templateUploads.id, id));
+}
+
+export async function countTemplateUploads(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(templateUploads);
+  return result[0]?.count ?? 0;
 }

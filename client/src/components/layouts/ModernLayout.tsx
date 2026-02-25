@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const BODY = "'Inter', 'Helvetica Neue', sans-serif";
 
@@ -29,7 +30,7 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, showActiva
       <ModernNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} />}
           {section.type === "testimonials" && <ModernTestimonials section={section} cs={cs} />}
@@ -63,7 +64,7 @@ function ModernNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDat
   );
 }
 
-function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ backgroundColor: "#fff", minHeight: "90vh", display: "flex" }}>
       <div className="max-w-7xl mx-auto px-8 w-full grid lg:grid-cols-5 gap-0 items-stretch">
@@ -82,6 +83,11 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate 
           {section.content && (
             <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#777", marginBottom: "2.5rem", maxWidth: "480px" }}>{section.content}</p>
           )}
+          {websiteData.googleRating && websiteData.googleReviewCount ? (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="dark" starColor={cs.primary} />
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-4">
             {section.ctaText && (
               <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#0a0a0a", color: "#fff", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 700, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">

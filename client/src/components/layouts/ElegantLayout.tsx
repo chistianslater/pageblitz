@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Scissors, Heart, Sparkles, Instagram, Quote } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const SERIF = "'Cormorant Garamond', Georgia, serif";
 const SANS = "'Jost', 'Inter', sans-serif";
@@ -27,9 +28,9 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActiv
   return (
     <div style={{ fontFamily: SANS, backgroundColor: cs.background, color: cs.text }}>
       <ElegantNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
-      {websiteData.sections.map((section, i) => (
+        {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <ElegantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <ElegantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <ElegantServices section={section} cs={cs} />}
           {section.type === "testimonials" && <ElegantTestimonials section={section} cs={cs} />}
@@ -66,7 +67,7 @@ function ElegantNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
   );
 }
 
-function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ backgroundColor: cs.surface, minHeight: "92vh" }} className="flex items-center">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16 grid lg:grid-cols-2 gap-16 items-center w-full">
@@ -85,6 +86,11 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           {section.content && (
             <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "2.5rem", fontWeight: 300 }}>{section.content}</p>
           )}
+          {websiteData.googleRating && websiteData.googleReviewCount ? (
+            <div style={{ marginBottom: "2rem" }}>
+              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="dark" starColor={cs.primary} />
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-4">
             {section.ctaText && (
               <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS }} className="hover:opacity-90 transition-opacity">

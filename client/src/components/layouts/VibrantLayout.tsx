@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Dumbbell, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
 const BODY = "'Inter', 'Helvetica Neue', sans-serif";
@@ -31,7 +32,7 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActiv
       <VibrantNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <VibrantHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <VibrantHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <VibrantAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <VibrantServices section={section} cs={darkCs} />}
           {section.type === "testimonials" && <VibrantTestimonials section={section} cs={darkCs} />}
@@ -70,7 +71,7 @@ function VibrantNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
   );
 }
 
-function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0 }}>
@@ -91,6 +92,11 @@ function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           {section.content && (
             <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem", maxWidth: "500px" }}>{section.content}</p>
           )}
+          {websiteData.googleRating && websiteData.googleReviewCount ? (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="light" starColor={cs.primary} />
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-4">
             {section.ctaText && (
               <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1.1rem 3rem", fontSize: "0.9rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">

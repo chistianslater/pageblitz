@@ -10,6 +10,7 @@ import {
   listWebsites, countWebsites, updateWebsite,
   createOutreachEmail, listOutreachEmails, countOutreachEmails,
   getDashboardStats,
+  createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { invokeLLM } from "./_core/llm";
@@ -160,6 +161,22 @@ function buildPersonalityHint(name: string, rating: string | null, reviewCount: 
     parts.push(`Familienunternehmen – betone persönliche, familiäre Atmosphäre und Tradition.`);
   }
   return parts.join(" ");
+}
+
+/** Maps a GMB category string to the industry key used in template_uploads table */
+function mapCategoryToIndustryKey(category: string): string {
+  const lower = (category || "").toLowerCase();
+  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|lash|brow|make.?up/.test(lower)) return "beauty";
+  if (/restaurant|gastro|cafe|café|bistro|pizza|küche|bäckerei|catering|food|sushi|burger|bakery/.test(lower)) return "restaurant";
+  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|personal.?trainer|physiotherap|boxing/.test(lower)) return "fitness";
+  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|motorrad|reifenservice/.test(lower)) return "automotive";
+  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|chiropractor/.test(lower)) return "medical";
+  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien/.test(lower)) return "legal";
+  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|roofing|construction|tischler|schreiner/.test(lower)) return "trades";
+  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|startup/.test(lower)) return "tech";
+  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|naturopath/.test(lower)) return "other";
+  if (/hotel|pension|hostel|tourism|tourismus|event|veranstaltung|hochzeit|wedding|reise/.test(lower)) return "hospitality";
+  return "other";
 }
 
 export const appRouter = router({
@@ -373,7 +390,16 @@ export const appRouter = router({
         // Select matching templates from the library for visual reference
         const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
         const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
-        const templateImageUrls = getTemplateImageUrls(matchingTemplates);
+        const baseTemplateImageUrls = getTemplateImageUrls(matchingTemplates);
+
+        // Merge with admin-uploaded templates for this industry+pool
+        const uploadedTemplates = await listTemplateUploadsByPool(
+          mapCategoryToIndustryKey(category),
+          layoutStyle
+        );
+        const uploadedImageUrls = uploadedTemplates.slice(0, 3).map(t => t.imageUrl);
+        // Uploaded templates take priority (shown first), then library templates
+        const templateImageUrls = [...uploadedImageUrls, ...baseTemplateImageUrls].slice(0, 5);
 
         // Opening hours formatting
         let hoursText = "Nicht angegeben";
@@ -549,6 +575,10 @@ Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Z
           }
         }
 
+        // Inject real Google rating data
+        if (business.rating) websiteData.googleRating = parseFloat(business.rating);
+        if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
+
         const slug = slugify(business.name) + "-" + nanoid(4);
         const previewToken = nanoid(32);
 
@@ -590,7 +620,15 @@ Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Z
         // Pick different templates than last time by shuffling
         const matchingTemplates = selectTemplatesForIndustry(category, seed, 3);
         const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
-        const templateImageUrls = getTemplateImageUrls(matchingTemplates);
+        const baseTemplateImageUrlsRegen = getTemplateImageUrls(matchingTemplates);
+
+        // Merge with admin-uploaded templates for this industry+pool
+        const uploadedTemplatesRegen = await listTemplateUploadsByPool(
+          mapCategoryToIndustryKey(category),
+          layoutStyle
+        );
+        const uploadedImageUrlsRegen = uploadedTemplatesRegen.slice(0, 3).map(t => t.imageUrl);
+        const templateImageUrls = [...uploadedImageUrlsRegen, ...baseTemplateImageUrlsRegen].slice(0, 5);
 
         let hoursText = "Nicht angegeben";
         if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
@@ -720,6 +758,10 @@ Verfügbare Lucide-Icons: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, Map
           if (gallerySection) gallerySection.images = galleryImages;
         }
 
+        // Inject real Google rating data
+        if (business.rating) websiteData.googleRating = parseFloat(business.rating);
+        if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
+
         // Generate a new slug and token for the regenerated version
         const newSlug = slugify(business.name) + "-" + nanoid(4);
         const newPreviewToken = nanoid(32);
@@ -812,6 +854,64 @@ Verfügbare Lucide-Icons: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, Map
         const emails = await listOutreachEmails(input?.limit || 50, input?.offset || 0);
         const total = await countOutreachEmails();
         return { emails, total };
+      }),
+  }),
+
+  // ── Admin: Template Uploads ───────────────────────
+  templates: router({
+    // Upload a new template image (base64 encoded)
+    upload: adminProcedure
+      .input(z.object({
+        name: z.string().min(1).max(255),
+        industry: z.string().min(1).max(100),
+        layoutPool: z.string().min(1).max(50),
+        notes: z.string().optional(),
+        // base64 encoded image data
+        imageData: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+        fileName: z.string().default("template.jpg"),
+      }))
+      .mutation(async ({ input }) => {
+        const { storagePut } = await import("./storage");
+        const { nanoid: nid } = await import("nanoid");
+        // Decode base64 to buffer
+        const base64Data = input.imageData.replace(/^data:[^;]+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        const ext = input.mimeType.split("/")[1] || "jpg";
+        const fileKey = `templates/${input.industry}/${input.layoutPool}/${nid(8)}.${ext}`;
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        const id = await createTemplateUpload({
+          name: input.name,
+          industry: input.industry,
+          layoutPool: input.layoutPool,
+          imageUrl: url,
+          fileKey,
+          notes: input.notes || null,
+        });
+        return { id, imageUrl: url, fileKey };
+      }),
+
+    list: adminProcedure
+      .input(z.object({ industry: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        if (input?.industry) {
+          return listTemplateUploadsByIndustry(input.industry);
+        }
+        return listTemplateUploads();
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteTemplateUpload(input.id);
+        return { success: true };
+      }),
+
+    // Get templates for a specific industry+pool combination (used during generation)
+    getForPool: adminProcedure
+      .input(z.object({ industry: z.string(), layoutPool: z.string() }))
+      .query(async ({ input }) => {
+        return listTemplateUploadsByPool(input.industry, input.layoutPool);
       }),
   }),
 

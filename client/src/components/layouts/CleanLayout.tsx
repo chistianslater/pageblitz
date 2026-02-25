@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Heart, Stethoscope, Users, Lock } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const SERIF = "'DM Serif Display', Georgia, serif";
 const SANS = "'DM Sans', 'Inter', sans-serif";
@@ -29,7 +30,7 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivat
       <CleanNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <CleanAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <CleanServices section={section} cs={cs} />}
           {section.type === "testimonials" && <CleanTestimonials section={section} cs={cs} />}
@@ -71,7 +72,7 @@ function CleanNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
   );
 }
 
-function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ backgroundColor: "#fff", padding: "4rem 0 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">

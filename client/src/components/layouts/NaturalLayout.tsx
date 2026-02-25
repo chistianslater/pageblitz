@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Leaf, Sun, Flower, Droplets, ArrowRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const SERIF = "'Playfair Display', Georgia, serif";
 const ROUND = "'Nunito', 'Segoe UI', sans-serif";
@@ -30,7 +31,7 @@ export default function NaturalLayout({ websiteData, cs, heroImageUrl, showActiv
       <NaturalNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <NaturalHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <NaturalHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <NaturalAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <NaturalServices section={section} cs={cs} />}
           {section.type === "testimonials" && <NaturalTestimonials section={section} cs={cs} />}
@@ -67,7 +68,7 @@ function NaturalNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
   );
 }
 
-function NaturalHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function NaturalHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ backgroundColor: "#faf8f4", padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">

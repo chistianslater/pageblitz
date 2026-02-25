@@ -124,3 +124,19 @@
 - [x] getLayoutStyle: Pool-basiertes System mit 12 Branchen-Kategorien
 - [x] buildIndustryContext: Alle 12 Branchen-Pools mit spezifischen Schreibstil-Anweisungen
 - [x] Verifiziert: Friseur → elegant/fresh/luxury je nach Firmenname; Restaurant → warm/fresh/modern; Fitness → vibrant/dynamic
+
+## Google Bewertungen & Testimonials (Runde 7)
+- [x] Echte Google-Bewertungsdaten (Sterne + Anzahl) prominent in allen 12 Layouts anzeigen
+- [x] KI-Testimonials mit Hinweis "Beispiel-Bewertungen" kennzeichnen (oder entfernen wenn echte Daten vorhanden)
+- [x] AI-Prompt: Echte Rating-Daten als Basis für Testimonial-Ton und -Anzahl nutzen
+- [x] Alle 12 Layout-Komponenten: Google-Rating-Badge im Hero oder Stats-Bereich
+
+## Admin Template-Upload-System (Runde 7)
+- [x] DB-Schema: template_uploads Tabelle (id, industry, layoutPool, imageUrl, fileKey, name, createdAt)
+- [x] DB-Migration ausführen
+- [x] S3: Template-Bilder hochladen und speichern (storagePut)
+- [x] tRPC: uploadTemplate Mutation (Admin), listTemplates Query, deleteTemplate Mutation
+- [x] Admin-UI: Neue Seite "Templates" im Sidebar
+- [x] Admin-UI: Upload-Formular (Branche wählen, Layout-Pool wählen, Bild hochladen)
+- [x] Admin-UI: Template-Galerie mit Vorschau und Löschen-Button
+- [x] KI-Generierung: Hochgeladene Templates als visuelle Referenz für multimodalen Prompt nutzen

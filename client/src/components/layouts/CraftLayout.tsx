@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Zap, Shield, Award, ArrowRight } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const DISPLAY = "'Oswald', 'Impact', sans-serif";
 const BODY = "'Inter', 'Helvetica Neue', sans-serif";
@@ -48,7 +49,7 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivat
       <CraftNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <CraftHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <CraftHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <CraftAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <CraftServices section={section} cs={darkCs} />}
           {section.type === "testimonials" && <CraftTestimonials section={section} cs={darkCs} />}
@@ -90,7 +91,7 @@ function CraftNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
   );
 }
 
-function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ position: "relative", minHeight: "85vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0 }}>
@@ -115,6 +116,11 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate }
           {section.content && (
             <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem" }}>{section.content}</p>
           )}
+          {websiteData.googleRating && websiteData.googleReviewCount ? (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="light" starColor={cs.primary} />
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-4">
             {section.ctaText && (
               <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem 2.5rem", fontSize: "0.85rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-90 transition-opacity">

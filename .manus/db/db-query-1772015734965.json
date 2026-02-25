@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `template_uploads` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(255) NOT NULL,\n\t`industry` varchar(100) NOT NULL,\n\t`layoutPool` varchar(50) NOT NULL,\n\t`imageUrl` text NOT NULL,\n\t`fileKey` varchar(500) NOT NULL,\n\t`notes` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `template_uploads_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute CREATE TABLE `template_uploads` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(255) NOT NULL,\n\t`industry` varchar(100) NOT NULL,\n\t`layoutPool` varchar(50) NOT NULL,\n\t`imageUrl` text NOT NULL,\n\t`fileKey` varchar(500) NOT NULL,\n\t`notes` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `template_uploads_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 206
+}

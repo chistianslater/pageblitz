@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, Flame, Activity, Award } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const HEADING = "'Bebas Neue', 'Oswald', Impact, sans-serif";
 const BODY = "'Rajdhani', 'Barlow', 'Inter', sans-serif";
@@ -29,7 +30,7 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActiv
       <DynamicNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <DynamicHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <DynamicHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <DynamicAbout section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <DynamicServices section={section} cs={cs} />}
           {section.type === "testimonials" && <DynamicTestimonials section={section} cs={cs} />}
@@ -66,7 +67,7 @@ function DynamicNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
   );
 }
 
-function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ position: "relative", minHeight: "95vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center top" }} />

@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Heart, Coffee, Leaf, Sun } from "lucide-react";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import GoogleRatingBadge from "../GoogleRatingBadge";
 
 const SERIF = "'Playfair Display', Georgia, serif";
 const ROUND = "'Nunito', 'Segoe UI', sans-serif";
@@ -30,7 +31,7 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivat
       <FreshNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <FreshHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "hero" && <FreshHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <FreshAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <FreshServices section={section} cs={cs} />}
           {section.type === "testimonials" && <FreshTestimonials section={section} cs={cs} />}
@@ -67,7 +68,7 @@ function FreshNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
   );
 }
 
-function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
+function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ backgroundColor: "#fafaf8", padding: "4rem 0 2rem", overflow: "hidden" }}>
       <div className="max-w-6xl mx-auto px-6">

@@ -10,6 +10,7 @@ import SearchPage from "./pages/SearchPage";
 import WebsitesPage from "./pages/WebsitesPage";
 import OutreachPage from "./pages/OutreachPage";
 import StatsPage from "./pages/StatsPage";
+import TemplatesPage from "./pages/TemplatesPage";
 import PreviewPage from "./pages/PreviewPage";
 import SitePage from "./pages/SitePage";
 
@@ -22,6 +23,7 @@ function AdminRouter() {
         <Route path="/websites" component={WebsitesPage} />
         <Route path="/outreach" component={OutreachPage} />
         <Route path="/stats" component={StatsPage} />
+        <Route path="/templates" component={TemplatesPage} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
