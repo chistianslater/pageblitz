@@ -219,6 +219,13 @@ export async function getDashboardStats() {
 }
 
 // ── Template Uploads ───────────────────────────────────
+
+/** Parse industries JSON field safely */
+export function parseIndustries(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try { return JSON.parse(raw) as string[]; } catch { return []; }
+}
+
 export async function createTemplateUpload(data: InsertTemplateUpload): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
@@ -226,24 +233,51 @@ export async function createTemplateUpload(data: InsertTemplateUpload): Promise<
   return (result[0] as any).insertId as number;
 }
 
-export async function listTemplateUploads(): Promise<TemplateUpload[]> {
+export async function updateTemplateUpload(id: number, data: Partial<InsertTemplateUpload>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(templateUploads).set(data).where(eq(templateUploads.id, id));
+}
+
+export async function getTemplateUploadById(id: number): Promise<TemplateUpload | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(templateUploads).where(eq(templateUploads.id, id)).limit(1);
+  return result[0];
+}
+
+export async function listTemplateUploads(status?: string): Promise<TemplateUpload[]> {
   const db = await getDb();
   if (!db) return [];
+  if (status) {
+    return db.select().from(templateUploads).where(eq(templateUploads.status, status)).orderBy(desc(templateUploads.createdAt));
+  }
   return db.select().from(templateUploads).orderBy(desc(templateUploads.createdAt));
 }
 
 export async function listTemplateUploadsByIndustry(industry: string): Promise<TemplateUpload[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(templateUploads).where(eq(templateUploads.industry, industry)).orderBy(desc(templateUploads.createdAt));
+  // Match both legacy industry field and new industries JSON array
+  const all = await db.select().from(templateUploads)
+    .where(eq(templateUploads.status, "approved"))
+    .orderBy(desc(templateUploads.createdAt));
+  return all.filter(t => {
+    const inds = parseIndustries(t.industries);
+    return inds.includes(industry) || t.industry === industry;
+  });
 }
 
 export async function listTemplateUploadsByPool(industry: string, layoutPool: string): Promise<TemplateUpload[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(templateUploads)
-    .where(and(eq(templateUploads.industry, industry), eq(templateUploads.layoutPool, layoutPool)))
+  const all = await db.select().from(templateUploads)
+    .where(and(eq(templateUploads.layoutPool, layoutPool), eq(templateUploads.status, "approved")))
     .orderBy(desc(templateUploads.createdAt));
+  return all.filter(t => {
+    const inds = parseIndustries(t.industries);
+    return inds.includes(industry) || t.industry === industry;
+  });
 }
 
 export async function deleteTemplateUpload(id: number): Promise<void> {

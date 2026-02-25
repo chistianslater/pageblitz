@@ -85,11 +85,21 @@ export type InsertOutreachEmail = typeof outreachEmails.$inferInsert;
 export const templateUploads = mysqlTable("template_uploads", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  industry: varchar("industry", { length: 100 }).notNull(), // e.g. "beauty", "restaurant", "fitness"
-  layoutPool: varchar("layoutPool", { length: 50 }).notNull(), // e.g. "elegant", "fresh", "luxury"
-  imageUrl: text("imageUrl").notNull(), // S3 public URL
-  fileKey: varchar("fileKey", { length: 500 }).notNull(), // S3 key
-  notes: text("notes"), // optional admin notes
+  // Legacy single industry (kept for backwards compat, use industries JSON array instead)
+  industry: varchar("industry", { length: 100 }).notNull().default("other"),
+  // JSON array of industry keys, e.g. '["beauty","fitness"]' – primary field (nullable in DB, handled in code)
+  industries: text("industries"),
+  layoutPool: varchar("layoutPool", { length: 50 }).notNull().default("clean"),
+  // AI-suggested values (before admin review)
+  aiIndustries: text("aiIndustries"), // JSON array
+  aiLayoutPool: varchar("aiLayoutPool", { length: 50 }),
+  aiConfidence: varchar("aiConfidence", { length: 20 }), // "high" | "medium" | "low"
+  aiReason: text("aiReason"), // short explanation from AI
+  // Status: pending = awaiting admin review, approved = active in pool
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  imageUrl: text("imageUrl").notNull(),
+  fileKey: varchar("fileKey", { length: 500 }).notNull(),
+  notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

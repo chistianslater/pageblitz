@@ -29,6 +29,13 @@
       "when": 1772015726587,
       "tag": "0003_bouncy_molecule_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1772017096113,
+      "tag": "0004_white_husk",
+      "breakpoints": true
     }
   ]
 }

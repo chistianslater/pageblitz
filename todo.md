@@ -140,3 +140,15 @@
 - [x] Admin-UI: Upload-Formular (Branche wählen, Layout-Pool wählen, Bild hochladen)
 - [x] Admin-UI: Template-Galerie mit Vorschau und Löschen-Button
 - [x] KI-Generierung: Hochgeladene Templates als visuelle Referenz für multimodalen Prompt nutzen
+
+## Batch-Upload & KI-Klassifizierung (Runde 8)
+- [x] DB-Schema: template_uploads erweitern (status: pending/approved, industries als JSON-Array statt einzelner String)
+- [x] DB-Migration ausführen
+- [x] tRPC: classifyTemplate Mutation – KI analysiert Bild und schlägt Branchen + Layout-Pool vor
+- [x] tRPC: updateTemplate Mutation – Korrekturen speichern (Branchen, Pool, Name, Notes)
+- [x] tRPC: approveTemplate / bulkApprove Mutations
+- [x] TemplatesPage: Batch-Upload (mehrere Dateien gleichzeitig, Drag&Drop-Zone)
+- [x] TemplatesPage: Upload-Queue mit Fortschrittsanzeige pro Bild
+- [x] TemplatesPage: Review-Queue – KI-Vorschläge anzeigen, editierbar, bestätigen/ablehnen
+- [x] TemplatesPage: Multi-Branchen-Auswahl pro Template (Checkboxen)
+- [x] KI-Generierung: Mehrfach-Zuordnung berücksichtigen (Template taucht in mehreren Branchen-Pools auf)

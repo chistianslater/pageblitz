@@ -11,6 +11,7 @@ import {
   createOutreachEmail, listOutreachEmails, countOutreachEmails,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
+  updateTemplateUpload, getTemplateUploadById, parseIndustries,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { invokeLLM } from "./_core/llm";
@@ -859,45 +860,178 @@ Verfügbare Lucide-Icons: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, Map
 
   // ── Admin: Template Uploads ───────────────────────
   templates: router({
-    // Upload a new template image (base64 encoded)
+    // Batch upload: upload one image, get back id + imageUrl, then classify separately
     upload: adminProcedure
       .input(z.object({
         name: z.string().min(1).max(255),
-        industry: z.string().min(1).max(100),
-        layoutPool: z.string().min(1).max(50),
-        notes: z.string().optional(),
-        // base64 encoded image data
         imageData: z.string(),
         mimeType: z.string().default("image/jpeg"),
-        fileName: z.string().default("template.jpg"),
       }))
       .mutation(async ({ input }) => {
         const { storagePut } = await import("./storage");
         const { nanoid: nid } = await import("nanoid");
-        // Decode base64 to buffer
         const base64Data = input.imageData.replace(/^data:[^;]+;base64,/, "");
         const buffer = Buffer.from(base64Data, "base64");
         const ext = input.mimeType.split("/")[1] || "jpg";
-        const fileKey = `templates/${input.industry}/${input.layoutPool}/${nid(8)}.${ext}`;
+        const fileKey = `templates/pending/${nid(12)}.${ext}`;
         const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        // Create with status=pending, no industry yet
         const id = await createTemplateUpload({
           name: input.name,
-          industry: input.industry,
-          layoutPool: input.layoutPool,
+          industry: "other",
+          industries: "[]",
+          layoutPool: "clean",
+          status: "pending",
           imageUrl: url,
           fileKey,
-          notes: input.notes || null,
         });
-        return { id, imageUrl: url, fileKey };
+        return { id, imageUrl: url };
+      }),
+
+    // AI classification: analyze uploaded image and suggest industries + layout pool
+    classify: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const template = await getTemplateUploadById(input.id);
+        if (!template) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const classifyPrompt = `Du bist ein Experte für Website-Design und Branchenklassifizierung.
+Analysiere diesen Website-Screenshot und bestimme:
+1. Für welche Branchen ist dieses Design-Template geeignet? (mehrere möglich)
+2. Welcher Layout-Pool passt am besten?
+
+Veefügbare Branchen (wähle alle passenden):
+- beauty (Friseur, Salon, Spa, Kosmetik, Wellness, Nail Studio)
+- restaurant (Restaurant, Café, Bistro, Bäckerei, Food)
+- fitness (Gym, Yoga, Sport, Personal Training, Crossfit)
+- automotive (KFZ, Autohaus, Werkstatt, Tuning)
+- medical (Arzt, Zahnarzt, Praxis, Therapie, Apotheke)
+- legal (Anwalt, Steuerberater, Beratung, Kanzlei)
+- trades (Handwerk, Elektriker, Klempner, Bau, Maler)
+- retail (Einzelhandel, Mode, Shop, Boutique)
+- tech (IT, Software, Agentur, Digital, Startup)
+- education (Schule, Kurs, Coaching, Nachhilfe)
+- hospitality (Hotel, Pension, Tourismus, Events)
+- other (Sonstige)
+
+Veefügbare Layout-Pools:
+- elegant (Luxuriös, Serif-Typografie, Gold-Akzente, Beauty/Spa-Stil)
+- bold (Kraftvoll, Große Headlines, Dunkler Hintergrund, Handwerk-Stil)
+- warm (Warm, Einladend, Foodfoto-Atmosphäre, Restaurant-Stil)
+- clean (Sauber, Viel Weißraum, Trust-Badges, Medizin/Beratungs-Stil)
+- dynamic (Energetisch, Diagonal-Elemente, Fitness-Stil)
+- luxury (Premium, Schwarz/Gold, Automotive/High-End-Stil)
+- craft (Industrial, Handgemacht, Werkzeug-Ästhetik)
+- fresh (Hell, Luftig, Illustrationen, Café/Wellness-Stil)
+- trust (Professionell, Blau-Akzente, Medizin/Legal-Stil)
+- modern (Asymmetrisch, Tech-Startup-Stil, Minimal)
+- vibrant (Neon-Akzente, Energie, Fitness/Sport-Stil)
+- natural (Öko, Erdfarben, Natur-Stil)
+
+Antworte NUR mit validem JSON:
+{
+  "industries": ["beauty", "fitness"],
+  "layoutPool": "elegant",
+  "confidence": "high",
+  "reason": "Kurze Begründung auf Deutsch (max. 2 Sätze)"
+}`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "user", content: [
+              { type: "text", text: classifyPrompt },
+              { type: "image_url", image_url: { url: template.imageUrl, detail: "low" } },
+            ]},
+          ],
+          response_format: { type: "json_schema", json_schema: {
+            name: "template_classification",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                industries: { type: "array", items: { type: "string" } },
+                layoutPool: { type: "string" },
+                confidence: { type: "string" },
+                reason: { type: "string" },
+              },
+              required: ["industries", "layoutPool", "confidence", "reason"],
+              additionalProperties: false,
+            },
+          }},
+        });
+
+        const raw = response.choices[0].message.content as string;
+        let parsed: { industries: string[]; layoutPool: string; confidence: string; reason: string };
+        try { parsed = JSON.parse(raw); } catch {
+          parsed = { industries: ["other"], layoutPool: "clean", confidence: "low", reason: "KI-Analyse fehlgeschlagen" };
+        }
+
+        // Save AI suggestions to DB
+        await updateTemplateUpload(input.id, {
+          aiIndustries: JSON.stringify(parsed.industries),
+          aiLayoutPool: parsed.layoutPool,
+          aiConfidence: parsed.confidence,
+          aiReason: parsed.reason,
+          // Pre-fill the actual fields with AI suggestions (admin can correct)
+          industries: JSON.stringify(parsed.industries),
+          industry: parsed.industries[0] || "other",
+          layoutPool: parsed.layoutPool,
+        });
+
+        return {
+          id: input.id,
+          industries: parsed.industries,
+          layoutPool: parsed.layoutPool,
+          confidence: parsed.confidence,
+          reason: parsed.reason,
+        };
+      }),
+
+    // Update template metadata (admin correction after AI classification)
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).max(255).optional(),
+        industries: z.array(z.string()).optional(),
+        layoutPool: z.string().optional(),
+        notes: z.string().optional(),
+        status: z.enum(["pending", "approved", "rejected"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, industries, ...rest } = input;
+        const updateData: Record<string, unknown> = { ...rest };
+        if (industries !== undefined) {
+          updateData.industries = JSON.stringify(industries);
+          updateData.industry = industries[0] || "other";
+        }
+        await updateTemplateUpload(id, updateData as any);
+        return { success: true };
+      }),
+
+    // Approve a single template
+    approve: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await updateTemplateUpload(input.id, { status: "approved" });
+        return { success: true };
+      }),
+
+    // Bulk approve multiple templates
+    bulkApprove: adminProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        await Promise.all(input.ids.map(id => updateTemplateUpload(id, { status: "approved" })));
+        return { success: true, count: input.ids.length };
       }),
 
     list: adminProcedure
-      .input(z.object({ industry: z.string().optional() }).optional())
+      .input(z.object({ status: z.enum(["pending", "approved", "rejected", "all"]).optional(), industry: z.string().optional() }).optional())
       .query(async ({ input }) => {
-        if (input?.industry) {
+        const status = input?.status === "all" ? undefined : (input?.status || undefined);
+        if (input?.industry && input.industry !== "all") {
           return listTemplateUploadsByIndustry(input.industry);
         }
-        return listTemplateUploads();
+        return listTemplateUploads(status);
       }),
 
     delete: adminProcedure
@@ -907,7 +1041,6 @@ Verfügbare Lucide-Icons: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, Map
         return { success: true };
       }),
 
-    // Get templates for a specific industry+pool combination (used during generation)
     getForPool: adminProcedure
       .input(z.object({ industry: z.string(), layoutPool: z.string() }))
       .query(async ({ input }) => {
