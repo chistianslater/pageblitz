@@ -343,24 +343,89 @@ export function getIndustryColorScheme(category: string, seed: string = ""): Col
 export function getLayoutStyle(category: string, seed: string = ""): string {
   const lower = (category || "").toLowerCase();
 
-  // Industry-specific layout preferences (DE + EN GMB categories)
-  // Restaurant, Café, Food → Warm layout
-  if (lower.includes("restaurant") || lower.includes("cafe") || lower.includes("café") || lower.includes("bistro") || lower.includes("food") || lower.includes("pizza") || lower.includes("sushi") || lower.includes("hotel") || lower.includes("bäckerei") || lower.includes("konditorei") || lower.includes("catering") || lower.includes("gastronomie")) return "warm";
-  // Beauty, Friseur → Elegant layout
-  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("beauty") || lower.includes("hair") || lower.includes("barber") || lower.includes("coiffeur") || lower.includes("nail") || lower.includes("spa") || lower.includes("massage") || lower.includes("kosmetik") || lower.includes("wellness") || lower.includes("ästhetik")) return "elegant";
-  // Handwerk, Bau → Bold layout
-  if (lower.includes("handwerk") || lower.includes("bau") || lower.includes("elektriker") || lower.includes("contractor") || lower.includes("roofing") || lower.includes("plumber") || lower.includes("carpenter") || lower.includes("painter") || lower.includes("construction") || lower.includes("renovation") || lower.includes("installation") || lower.includes("dachdecker") || lower.includes("sanitär") || lower.includes("maler") || lower.includes("zimmermann") || lower.includes("schreiner") || lower.includes("klempner") || lower.includes("heizung") || lower.includes("auto") || lower.includes("kfz") || lower.includes("car") || lower.includes("garage") || lower.includes("mechanic")) return "bold";
-  // Fitness, Sport → Dynamic layout
-  if (lower.includes("fitness") || lower.includes("sport") || lower.includes("gym") || lower.includes("yoga") || lower.includes("training") || lower.includes("crossfit") || lower.includes("pilates") || lower.includes("kampfsport") || lower.includes("tanzen")) return "dynamic";
-  // Arzt, Beratung, Recht → Clean layout
-  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("medizin") || lower.includes("doctor") || lower.includes("dental") || lower.includes("medical") || lower.includes("health") || lower.includes("clinic") || lower.includes("pharmacy") || lower.includes("physiotherap") || lower.includes("therapist") || lower.includes("immobilien") || lower.includes("makler") || lower.includes("real estate") || lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("beratung") || lower.includes("law") || lower.includes("legal") || lower.includes("consulting") || lower.includes("accountant") || lower.includes("tax") || lower.includes("steuer") || lower.includes("versicherung")) return "clean";
+  /**
+   * Industry → Layout Pool mapping.
+   * Each industry maps to 2-4 structurally different layouts.
+   * The seed (business name) deterministically picks one from the pool,
+   * ensuring maximum variance within the same industry.
+   */
+  const POOLS: Array<{ test: (s: string) => boolean; pool: string[] }> = [
+    // Hair & Beauty
+    {
+      test: (s) => /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/.test(s),
+      pool: ["elegant", "fresh", "luxury"],
+    },
+    // Restaurant, Café, Food
+    {
+      test: (s) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie/.test(s),
+      pool: ["warm", "fresh", "modern"],
+    },
+    // Construction, Trades
+    {
+      test: (s) => /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|carpenter|painter|construction|renovation|installation|tischler|fliesenleger/.test(s),
+      pool: ["bold", "craft", "modern"],
+    },
+    // Automotive
+    {
+      test: (s) => /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire/.test(s),
+      pool: ["luxury", "bold", "craft"],
+    },
+    // Fitness & Sport
+    {
+      test: (s) => /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance/.test(s),
+      pool: ["vibrant", "dynamic", "modern"],
+    },
+    // Medical & Health
+    {
+      test: (s) => /arzt|zahnarzt|medizin|doctor|dental|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker/.test(s),
+      pool: ["trust", "clean", "modern"],
+    },
+    // Legal, Finance, Consulting
+    {
+      test: (s) => /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|tax|finanz|wirtschaft|unternehmensberatung|notariat|immobilien|makler|real.?estate/.test(s),
+      pool: ["trust", "clean", "modern"],
+    },
+    // Organic, Eco, Garden
+    {
+      test: (s) => /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/.test(s),
+      pool: ["natural", "fresh", "warm"],
+    },
+    // Pest Control, Cleaning, Facility
+    {
+      test: (s) => /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving/.test(s),
+      pool: ["craft", "trust", "bold"],
+    },
+    // Tech, Agency, Digital
+    {
+      test: (s) => /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/.test(s),
+      pool: ["modern", "vibrant", "dynamic"],
+    },
+    // Education, Coaching
+    {
+      test: (s) => /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung/.test(s),
+      pool: ["trust", "clean", "fresh"],
+    },
+    // Hotel, Tourism, Events
+    {
+      test: (s) => /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour/.test(s),
+      pool: ["luxury", "elegant", "warm"],
+    },
+  ];
 
-  // Fallback: vary by seed for more diversity
-  const styles = ["clean", "bold", "elegant", "dynamic", "warm"];
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
-    hash |= 0;
+  // Find matching pool
+  let pool: string[] = ["clean", "modern", "trust", "fresh"];
+  for (const entry of POOLS) {
+    if (entry.test(lower)) {
+      pool = entry.pool;
+      break;
+    }
   }
-  return styles[Math.abs(hash) % styles.length];
+
+  // Deterministic hash of seed → pick from pool
+  let hash = 0;
+  const s = seed || category || "default";
+  for (let i = 0; i < s.length; i++) {
+    hash = Math.imul(31, hash) + s.charCodeAt(i) | 0;
+  }
+  return pool[Math.abs(hash) % pool.length];
 }

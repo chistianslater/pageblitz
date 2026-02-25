@@ -107,3 +107,20 @@
 - [x] Varianz-System: 5-6 Farbvarianten pro Branche, verbesserter Hash-Algorithmus
 - [x] Farb-Picker auf Preview-Seite: 12 Farb-Presets + eigener Hex-Input + Live-Vorschau
 - [x] 17/17 Tests bestanden, TypeScript-Check sauber
+
+## Template-Matching-System (Runde 5)
+- [ ] Template-Library visuell analysieren und Design-DNA extrahieren
+- [ ] Branchen-Template-Pools aufbauen (Beauty, Handwerk, Restaurant, Medizin, Fitness etc.)
+- [ ] Template-Selector: zufälliges Template aus Branchen-Pool wählen
+- [ ] Design-DNA als strukturierte Prompt-Anweisungen einbauen
+- [ ] templateId in DB speichern für Konsistenz bei Regenerierung
+- [ ] WebsiteRenderer: strukturell unterschiedliche Layouts pro Template-Typ
+
+## Branchenspezifische Layout-Pools (Runde 6)
+- [x] 7 neue Layout-Komponenten: LuxuryLayout, CraftLayout, FreshLayout, TrustLayout, ModernLayout, VibrantLayout, NaturalLayout
+- [x] WebsiteRenderer: 12 Layouts (elegant, bold, warm, clean, dynamic, luxury, craft, fresh, trust, modern, vibrant, natural)
+- [x] Industry-Pool-System: Jede Branche hat 2-4 verschiedene Layouts im Pool
+- [x] Deterministischer Hash: Gleicher Firmenname → immer gleicher Layout; verschiedene Firmen → verschiedene Layouts
+- [x] getLayoutStyle: Pool-basiertes System mit 12 Branchen-Kategorien
+- [x] buildIndustryContext: Alle 12 Branchen-Pools mit spezifischen Schreibstil-Anweisungen
+- [x] Verifiziert: Friseur → elegant/fresh/luxury je nach Firmenname; Restaurant → warm/fresh/modern; Fitness → vibrant/dynamic

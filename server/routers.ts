@@ -29,8 +29,10 @@ function slugify(text: string): string {
 // ── Industry-specific prompt enrichment ───────────────
 function buildIndustryContext(category: string): string {
   const lower = (category || "").toLowerCase();
-  if (lower.includes("friseur") || lower.includes("salon") || lower.includes("barber") || lower.includes("beauty") || lower.includes("hair") || lower.includes("coiffeur") || lower.includes("nail") || lower.includes("spa") || lower.includes("kosmetik") || lower.includes("wellness")) {
-    return `LAYOUT-PERSÖNLICHKEIT: ELEGANT (Friseur/Beauty)
+
+  // Hair & Beauty → Pool: elegant, fresh, luxury
+  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/.test(lower)) {
+    return `LAYOUT-POOL: BEAUTY (elegant / fresh / luxury)
 Schreibstil: Poetisch, sinnlich, einladend. Kurze, elegante Sätze. Emotionen ansprechen.
 Sprache: Warm, persönlich, luxuriös ohne arrogant zu sein.
 Betone: Handwerk & Expertise, persönliche Beratung, Wohlfühlatmosphäre, Transformation, Schönheit.
@@ -38,8 +40,10 @@ Hero-Headline: Soll ein Gefühl erzeugen, kein Versprechen machen. Z.B. "Wo Sch�
 Services: Konkrete Behandlungen mit sensorischen Details (Duft, Gefühl, Ergebnis).
 VERBOTEN: "Ihr Wohlbefinden liegt uns am Herzen", "Wir freuen uns auf Ihren Besuch", generische Phrasen.`;
   }
-  if (lower.includes("restaurant") || lower.includes("gastro") || lower.includes("cafe") || lower.includes("café") || lower.includes("bistro") || lower.includes("pizza") || lower.includes("küche") || lower.includes("bäckerei") || lower.includes("catering") || lower.includes("food")) {
-    return `LAYOUT-PERSÖNLICHKEIT: WARM (Restaurant/Gastronomie)
+
+  // Restaurant, Café, Food → Pool: warm, fresh, modern
+  if (/restaurant|gastro|cafe|café|bistro|pizza|küche|bäckerei|catering|food|sushi|burger|gastronomie|bakery/.test(lower)) {
+    return `LAYOUT-POOL: GASTRONOMIE (warm / fresh / modern)
 Schreibstil: Sensorisch, appetitanregend, gemütlich. Beschreibe Aromen, Texturen, Atmosphäre.
 Sprache: Herzlich, einladend, leidenschaftlich für Essen.
 Betone: Frische Zutaten, Rezepttradition, Atmosphäre, konkrete Gerichte, Reservierung.
@@ -47,26 +51,42 @@ Hero-Headline: Soll Hunger und Vorfreude wecken. Z.B. "Wo jeder Bissen zählt" o
 Services: Konkrete Gerichte/Menüs mit verlockenden Beschreibungen.
 VERBOTEN: "Wir bieten eine große Auswahl", "für jeden Geschmack etwas dabei", generische Phrasen.`;
   }
-  if (lower.includes("handwerk") || lower.includes("elektriker") || lower.includes("klempner") || lower.includes("maler") || lower.includes("bau") || lower.includes("sanitär") || lower.includes("dachdecker") || lower.includes("contractor") || lower.includes("roofing") || lower.includes("construction") || lower.includes("auto") || lower.includes("kfz") || lower.includes("werkstatt")) {
-    return `LAYOUT-PERSÖNLICHKEIT: BOLD (Handwerk/Bau/KFZ)
+
+  // Construction, Trades → Pool: bold, craft, modern
+  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|contractor|roofing|construction|tischler|schreiner|zimmermann|fliesenleger|renovation|installation/.test(lower)) {
+    return `LAYOUT-POOL: HANDWERK (bold / craft / modern)
 Schreibstil: Direkt, kraftvoll, selbstbewusst. Kurze, prägnante Aussagen. Zahlen und Fakten.
-Sprache: Männlich, kompetent, vertrauenswürdig. Keine Schnickschnack.
+Sprache: Kompetent, vertrauenswürdig. Keine Schnickschnack.
 Betone: Zuverlässigkeit, Qualitätsarbeit, Erfahrung (Jahre), schnelle Reaktionszeit, Festpreise, Garantie.
-Hero-Headline: Stark, direkt, selbstbewusst. Z.B. "Gemacht für die Härte des Alltags" oder "Wir reparieren. Punkt."
+Hero-Headline: Stark, direkt. Z.B. "Gemacht für die Härte des Alltags" oder "Wir reparieren. Punkt."
 Services: Konkrete Leistungen mit Zeitangaben und Garantien.
 VERBOTEN: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle", weiche Phrasen.`;
   }
-  if (lower.includes("fitness") || lower.includes("gym") || lower.includes("sport") || lower.includes("yoga") || lower.includes("training") || lower.includes("crossfit") || lower.includes("pilates") || lower.includes("kampfsport")) {
-    return `LAYOUT-PERSÖNLICHKEIT: DYNAMIC (Fitness/Sport)
+
+  // Automotive → Pool: luxury, bold, craft
+  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice/.test(lower)) {
+    return `LAYOUT-POOL: AUTOMOTIVE (luxury / bold / craft)
+Schreibstil: Technisch-präzise, leidenschaftlich, premium. Zahlen und Spezifikationen.
+Sprache: Kennerschaft, Qualitätsbewusstsein, Leidenschaft fürs Fahrzeug.
+Betone: Präzision, Erfahrung, Originalteile, Garantie, schnelle Durchlaufzeit.
+Hero-Headline: Leidenschaft und Expertise. Z.B. "Ihr Fahrzeug. Unsere Leidenschaft." oder "Perfektion bis ins letzte Detail."
+Services: Konkrete Leistungen mit technischen Details und Zeitangaben.`;
+  }
+
+  // Fitness & Sport → Pool: vibrant, dynamic, modern
+  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing/.test(lower)) {
+    return `LAYOUT-POOL: FITNESS (vibrant / dynamic / modern)
 Schreibstil: Motivierend, energetisch, herausfordernd. Imperativ-Sätze. Transformation betonen.
 Sprache: Stark, inspirierend, community-orientiert. Ergebnisse in den Vordergrund.
 Betone: Transformation, konkrete Ergebnisse (kg, Zeit, Leistung), Community, Trainer-Expertise, Programme.
-Hero-Headline: Soll Energie und Motivation auslösen. Z.B. "Dein stärkeres Ich beginnt hier" oder "Keine Ausreden. Nur Ergebnisse."
+Hero-Headline: Energie und Motivation. Z.B. "Dein stärkeres Ich beginnt hier" oder "Keine Ausreden. Nur Ergebnisse."
 Services: Konkrete Programme mit Ergebnisversprechen.
 VERBOTEN: "Für jeden das Richtige", "Spaß am Sport", generische Fitness-Phrasen.`;
   }
-  if (lower.includes("arzt") || lower.includes("zahnarzt") || lower.includes("praxis") || lower.includes("medizin") || lower.includes("therapie") || lower.includes("doctor") || lower.includes("dental") || lower.includes("clinic") || lower.includes("health")) {
-    return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Medizin/Gesundheit)
+
+  // Medical & Health → Pool: trust, clean, modern
+  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|hospital|chiropractor|heilpraktiker/.test(lower)) {
+    return `LAYOUT-POOL: MEDIZIN (trust / clean / modern)
 Schreibstil: Professionell, beruhigend, klar. Präzise Aussagen. Vertrauen aufbauen.
 Sprache: Kompetent, empathisch, sachlich. Fachbegriffe erklären.
 Betone: Kompetenz, modernste Technik, Patientenorientierung, kurze Wartezeiten, Qualifikationen.
@@ -74,21 +94,48 @@ Hero-Headline: Beruhigend und kompetent. Z.B. "Ihre Gesundheit in erfahrenen Hä
 Services: Konkrete Behandlungen mit Erklärungen und Vorteilen.
 VERBOTEN: "Ihr Vertrauen ist unser Kapital", "Wir nehmen uns Zeit für Sie", generische Phrasen.`;
   }
-  if (lower.includes("immobilien") || lower.includes("makler") || lower.includes("real estate")) {
-    return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Immobilien)
-Schreibstil: Professionell, diskret, premium. Zahlen und Erfolge betonen.
-Sprache: Seriös, vertrauenswürdig, kompetent. Regionale Expertise.
-Betone: Marktkenntnis, Verhandlungsstärke, Diskretion, Netzwerk, Erfolgsquote, verkaufte Objekte.
-Hero-Headline: Premium und kompetent. Z.B. "Ihr Immobilienexperte seit [Jahr]" oder "Jede Immobilie hat ihre Geschichte."`;
-  }
-  if (lower.includes("rechtsanwalt") || lower.includes("anwalt") || lower.includes("kanzlei") || lower.includes("steuerberater") || lower.includes("beratung") || lower.includes("consulting") || lower.includes("law") || lower.includes("legal")) {
-    return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Recht/Beratung)
+
+  // Legal, Finance, Consulting → Pool: trust, clean, modern
+  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien|makler/.test(lower)) {
+    return `LAYOUT-POOL: BERATUNG (trust / clean / modern)
 Schreibstil: Sachlich, präzise, kompetent. Vertrauen durch Expertise.
 Sprache: Professionell, direkt, vertrauenswürdig. Keine Emotionen, aber Empathie.
 Betone: Expertise, Diskretion, Erfolgsquote, persönliche Betreuung, Spezialisierung, Jahre Erfahrung.
-Hero-Headline: Kompetenz und Sicherheit. Z.B. "Ihr Recht. Unsere Expertise." oder "Wenn es darauf ankommt."`;
+Hero-Headline: Kompetenz und Sicherheit. Z.B. "Ihr Recht. Unsere Expertise." oder "Wenn es darauf ankommt."
+Services: Konkrete Leistungsbereiche mit Spezialisierungen.`;
   }
-  return `LAYOUT-PERSÖNLICHKEIT: CLEAN (Dienstleistung)
+
+  // Organic, Eco, Garden → Pool: natural, fresh, warm
+  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/.test(lower)) {
+    return `LAYOUT-POOL: NATUR (natural / fresh / warm)
+Schreibstil: Warm, authentisch, nachhaltig. Sensorische Beschreibungen. Erdverbundenheit.
+Sprache: Ehrlich, leidenschaftlich, umweltbewusst. Regionale Herkunft betonen.
+Betone: Nachhaltigkeit, regionale Produkte, handgemacht, frisch, Natur, Gesundheit.
+Hero-Headline: Natürlich und einladend. Z.B. "Direkt aus der Natur zu dir" oder "Echt. Frisch. Regional."
+Services: Konkrete Produkte/Leistungen mit Herkunftsangaben.`;
+  }
+
+  // Tech, Agency, Digital → Pool: modern, vibrant, dynamic
+  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/.test(lower)) {
+    return `LAYOUT-POOL: DIGITAL (modern / vibrant / dynamic)
+Schreibstil: Präzise, innovativ, zukunftsorientiert. Ergebnisse und ROI betonen.
+Sprache: Kompetent, modern, lösungsorientiert. Technische Begriffe erklären.
+Betone: Ergebnisse, Expertise, Innovationsfähigkeit, Portfolio, Prozesse, Zeitersparnis.
+Hero-Headline: Wirkungsorientiert. Z.B. "Digitale Lösungen, die wachsen." oder "Technologie, die begeistert."
+Services: Konkrete Leistungen mit messbaren Ergebnissen.`;
+  }
+
+  // Hotel, Tourism, Events → Pool: luxury, elegant, warm
+  if (/hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel/.test(lower)) {
+    return `LAYOUT-POOL: HOSPITALITY (luxury / elegant / warm)
+Schreibstil: Einladend, atmosphärisch, erlebnisreich. Emotionen und Erinnerungen wecken.
+Sprache: Gastfreundlich, warm, exklusiv. Erlebnisse beschreiben.
+Betone: Atmosphäre, besondere Momente, Service-Qualität, Lage, Ausstattung.
+Hero-Headline: Erlebnisversprechen. Z.B. "Wo Momente zu Erinnerungen werden" oder "Ihr perfekter Aufenthalt."
+Services: Konkrete Angebote mit Erlebnisbeschreibungen.`;
+  }
+
+  return `LAYOUT-POOL: DIENSTLEISTUNG (clean / modern / trust)
 Schreibstil: Klar, professionell, überzeugend. Nutzen für den Kunden betonen.
 Sprache: Direkt, kompetent, vertrauenswürdig. Regionale Präsenz.
 Betone: Professionalität, Kundenzufriedenheit, Erfahrung, regionale Präsenz, konkrete Leistungen.`;
