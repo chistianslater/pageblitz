@@ -208,10 +208,10 @@ function ElegantFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
           {items.map((item, i) => (
             <div key={i} style={{ borderBottom: `1px solid ${cs.primary}20` }}>
               <button onClick={() => setOpen(open === i ? null : i)} className="w-full text-left py-5 flex items-center justify-between" style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 500 }}>
-                {item.title}
+                {item.question || item.title}
                 {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} />}
               </button>
-              {open === i && <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.8, color: cs.textLight, paddingBottom: "1.25rem", fontWeight: 300 }}>{item.description}</p>}
+              {open === i && <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.8, color: cs.textLight, paddingBottom: "1.25rem", fontWeight: 300 }}>{item.answer || item.description}</p>}
             </div>
           ))}
         </div>

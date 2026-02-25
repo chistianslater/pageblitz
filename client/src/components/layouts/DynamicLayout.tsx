@@ -186,10 +186,10 @@ function DynamicFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
           {items.map((item, i) => (
             <div key={i} style={{ borderLeft: `3px solid ${open === i ? cs.primary : "#333"}`, paddingLeft: "1.5rem", transition: "border-color 0.2s" }}>
               <button onClick={() => setOpen(open === i ? null : i)} className="w-full text-left py-4 flex items-center justify-between" style={{ fontFamily: HEADING, fontSize: "1.1rem", color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                {item.title}
+                {item.question || item.title}
                 {open === i ? <ChevronUp className="h-5 w-5 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-5 w-5 flex-shrink-0" style={{ color: "rgba(255,255,255,0.4)" }} />}
               </button>
-              {open === i && <p style={{ fontFamily: BODY, fontSize: "0.9rem", lineHeight: 1.7, color: "rgba(255,255,255,0.55)", paddingBottom: "1rem", fontWeight: 500 }}>{item.description}</p>}
+              {open === i && <p style={{ fontFamily: BODY, fontSize: "0.9rem", lineHeight: 1.7, color: "rgba(255,255,255,0.55)", paddingBottom: "1rem", fontWeight: 500 }}>{item.answer || item.description}</p>}
             </div>
           ))}
         </div>

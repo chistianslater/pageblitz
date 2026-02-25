@@ -101,3 +101,9 @@
 - [x] buildIndustryContext: Layout-spezifische Schreibstil-Anweisungen mit VERBOTEN-Liste
 - [x] Google Fonts in index.html: Playfair Display, Lora, Oswald, Bebas Neue, Rajdhani
 - [x] 17/17 Tests bestanden, TypeScript-Check sauber
+
+## Bugfixes & Features (Runde 4)
+- [x] FAQ-Bug gefixt: Feld-Name-Mismatch question/answer vs title/description in allen 5 Layouts
+- [x] Varianz-System: 5-6 Farbvarianten pro Branche, verbesserter Hash-Algorithmus
+- [x] Farb-Picker auf Preview-Seite: 12 Farb-Presets + eigener Hex-Input + Live-Vorschau
+- [x] 17/17 Tests bestanden, TypeScript-Check sauber

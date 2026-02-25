@@ -212,10 +212,10 @@ function CleanFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
           {items.map((item, i) => (
             <div key={i} style={{ border: `1px solid ${cs.primary}20`, borderRadius: "0.75rem", overflow: "hidden" }}>
               <button onClick={() => setOpen(open === i ? null : i)} className="w-full text-left px-5 py-4 flex items-center justify-between" style={{ fontFamily: SANS, fontSize: "0.95rem", fontWeight: 600, color: cs.text }}>
-                {item.title}
+                {item.question || item.title}
                 {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} />}
               </button>
-              {open === i && <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.7, color: cs.textLight, padding: "0 1.25rem 1.25rem" }}>{item.description}</p>}
+              {open === i && <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.7, color: cs.textLight, padding: "0 1.25rem 1.25rem" }}>{item.answer || item.description}</p>}
             </div>
           ))}
         </div>
