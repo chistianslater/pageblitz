@@ -28,6 +28,106 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
 }
 
+// ── Design Archetype Definitions ─────────────────────
+const DESIGN_ARCHETYPES: Record<string, { name: string; aesthetic: string; colors: { primary: string; background: string; accent: string; text: string }; typography: { headers: string; body: string }; patterns: string[]; microInteractions: string[] }> = {
+  elegant: {
+    name: "The Luxury Minimalist",
+    aesthetic: "Großzügiger Weißraum, klassische Serifenschriften, hochwertige Bilder, neutrale Farbpaletten",
+    colors: { primary: "#1A1A1A", background: "#FDFBF7", accent: "#D4AF37", text: "#1A1A1A" },
+    typography: { headers: "Playfair Display, serif", body: "Lora, serif" },
+    patterns: ["editorial-grid", "full-bleed-images", "generous-whitespace"],
+    microInteractions: ["elegant-hover", "smooth-transitions", "subtle-reveal"]
+  },
+  fresh: {
+    name: "The Warm Connector",
+    aesthetic: "Warme einladende Farben, freundliche runde Formen, authentische Fotografie, viele Testimonials",
+    colors: { primary: "#E07B53", background: "#FDF8F4", accent: "#F4A261", text: "#2D3436" },
+    typography: { headers: "Nunito, sans-serif", body: "Open Sans, sans-serif" },
+    patterns: ["card-grid", "testimonial-slider", "feature-sections"],
+    microInteractions: ["gentle-hover", "smooth-scroll", "fade-in"]
+  },
+  luxury: {
+    name: "The Immersive Storyteller",
+    aesthetic: "Filmisch, emotional, atmosphärische Farbpaletten, sanfte fließende Animationen",
+    colors: { primary: "#0F141A", background: "#0F141A", accent: "#C9A84C", text: "#E8E2DA" },
+    typography: { headers: "Playfair Display, serif", body: "Inter, sans-serif" },
+    patterns: ["video-hero", "parallax-sections", "cinematic-scroll"],
+    microInteractions: ["cursor-effects", "parallax", "fade-sequences"]
+  },
+  bold: {
+    name: "The Bold Experimentalist",
+    aesthetic: "Kraftvoll, direkt, starke Kontraste, große Typografie, asymmetrische Layouts",
+    colors: { primary: "#FF4500", background: "#0A0A0A", accent: "#FF4500", text: "#FFFFFF" },
+    typography: { headers: "Space Grotesk, sans-serif", body: "Inter, sans-serif" },
+    patterns: ["asymmetric-split", "full-screen-sections", "broken-grid"],
+    microInteractions: ["magnetic-buttons", "image-distortion", "marquee"]
+  },
+  craft: {
+    name: "The Retro Revivalist",
+    aesthetic: "Authentisch, handwerklich, texturierte Hintergründe, illustrative Elemente",
+    colors: { primary: "#D4A574", background: "#FFF8DC", accent: "#CD5C5C", text: "#3E2723" },
+    typography: { headers: "Abril Fatface, serif", body: "Crimson Text, serif" },
+    patterns: ["classic-layout", "vintage-cards", "decorative-borders"],
+    microInteractions: ["subtle-hover", "paper-textures", "gentle-animations"]
+  },
+  modern: {
+    name: "The Digital Purist",
+    aesthetic: "Minimalistisch, technisch, fokussiert auf Klarheit und Funktionalität",
+    colors: { primary: "#6366F1", background: "#FAFAFA", accent: "#6366F1", text: "#1F2937" },
+    typography: { headers: "Inter, sans-serif", body: "Inter, sans-serif" },
+    patterns: ["asymmetric-grid", "full-screen-sections", "bento-grid"],
+    microInteractions: ["subtle-hover", "smooth-scroll", "staggered-reveal"]
+  },
+  trust: {
+    name: "The Corporate Professional",
+    aesthetic: "Seriös, vertrauenswürdig, klare Struktur, Vertrauenssignale prominent",
+    colors: { primary: "#1E3A5F", background: "#FFFFFF", accent: "#38B2AC", text: "#1A202C" },
+    typography: { headers: "Montserrat, sans-serif", body: "Source Sans Pro, sans-serif" },
+    patterns: ["structured-grid", "stats-sections", "team-grid"],
+    microInteractions: ["professional-hover", "smooth-scroll", "accordion"]
+  },
+  vibrant: {
+    name: "The Energetic Communicator",
+    aesthetic: "Dynamisch, energetisch, starke Typografie, Parallax-Effekte, hohe Informationsdichte",
+    colors: { primary: "#FF4500", background: "#0D0D0D", accent: "#FFD700", text: "#FFFFFF" },
+    typography: { headers: "Oswald, sans-serif", body: "Open Sans, sans-serif" },
+    patterns: ["bento-grid", "magazine-layout", "card-masonry"],
+    microInteractions: ["hover-scale", "staggered-reveal", "parallax"]
+  },
+  natural: {
+    name: "The Eco-Conscious",
+    aesthetic: "Naturverbunden, nachhaltig, erdige Farben, organische Formen, Naturbilder",
+    colors: { primary: "#4A7C59", background: "#F5F0E8", accent: "#8B6914", text: "#2C3E2D" },
+    typography: { headers: "Lato, sans-serif", body: "Merriweather, serif" },
+    patterns: ["organic-grid", "full-bleed-images", "feature-sections"],
+    microInteractions: ["gentle-hover", "smooth-scroll", "fade-in"]
+  },
+  dynamic: {
+    name: "The Playful Innovator",
+    aesthetic: "Verspielt, innovativ, bunte Palette, animierte Illustrationen, überraschende Interaktionen",
+    colors: { primary: "#6366F1", background: "#FAFAFA", accent: "#EC4899", text: "#1F2937" },
+    typography: { headers: "Poppins, sans-serif", body: "Nunito, sans-serif" },
+    patterns: ["card-carousel", "feature-grid", "hero-illustration"],
+    microInteractions: ["bounce-hover", "playful-animations", "micro-interactions"]
+  },
+  warm: {
+    name: "The Warm Connector (Gastro)",
+    aesthetic: "Sensorisch, appetitanregend, gemütlich, warme Erdtöne, einladende Atmosphäre",
+    colors: { primary: "#C0392B", background: "#FDF6EC", accent: "#E67E22", text: "#2C1810" },
+    typography: { headers: "Playfair Display, serif", body: "Lato, sans-serif" },
+    patterns: ["editorial-grid", "full-bleed-images", "card-grid"],
+    microInteractions: ["elegant-hover", "smooth-transitions", "fade-in"]
+  },
+  clean: {
+    name: "The Corporate Professional (Clean)",
+    aesthetic: "Klar, professionell, vertrauenswürdig, viel Weißraum, strukturierte Navigation",
+    colors: { primary: "#2563EB", background: "#FFFFFF", accent: "#0EA5E9", text: "#1E293B" },
+    typography: { headers: "Montserrat, sans-serif", body: "Inter, sans-serif" },
+    patterns: ["structured-grid", "hero-split", "stats-sections"],
+    microInteractions: ["professional-hover", "smooth-scroll", "accordion"]
+  },
+};
+
 // ── Industry-specific prompt enrichment ───────────────
 function buildIndustryContext(category: string): string {
   const lower = (category || "").toLowerCase();
@@ -162,6 +262,170 @@ function buildPersonalityHint(name: string, rating: string | null, reviewCount: 
     parts.push(`Familienunternehmen – betone persönliche, familiäre Atmosphäre und Tradition.`);
   }
   return parts.join(" ");
+}
+
+/** Builds the full enhanced generation prompt with StoryBrand, archetype personality, animation strategy */
+function buildEnhancedPrompt(opts: {
+  business: { name: string; address?: string | null; phone?: string | null; rating?: string | null; reviewCount?: number | null; openingHours?: string[] | null };
+  category: string;
+  industryContext: string;
+  personalityHint: string;
+  layoutStyle: string;
+  colorScheme: { primary: string; secondary: string; accent: string };
+  templateStyleDesc: string;
+  hoursText: string;
+  isRegenerate?: boolean;
+}): string {
+  const { business, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText, isRegenerate } = opts;
+  const archetype = DESIGN_ARCHETYPES[layoutStyle] || DESIGN_ARCHETYPES["modern"];
+  const year = new Date().getFullYear();
+
+  return `Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und UX-Copywriter für lokale Unternehmen in Deutschland.
+Dein Designprozess:
+1. ANALYSE VOR GENERIERUNG: Verstehe Zielgruppe, Pain Points und Unique Value Proposition
+2. STORYBRAND: Der KUNDE ist der HELD – das Unternehmen ist der GUIDE (wie Yoda für Luke)
+3. QUALITÄT: Einzigartige, spezifische Texte – NIEMALS generische Phrasen
+4. ARCHETYP: Halte die Persönlichkeit des Design-Archetyps konsequent durch
+
+═══════════════════════════════════════
+UNTERNEHMENSDATEN
+═══════════════════════════════════════
+Name: ${business.name}
+Branche/Kategorie: ${category}
+Adresse: ${business.address || "Nicht angegeben"}
+Telefon: ${business.phone || "Nicht angegeben"}
+Bewertung: ${business.rating ? business.rating + "/5 Sterne" : "Nicht verfügbar"}
+Anzahl Bewertungen: ${business.reviewCount || 0}
+Öffnungszeiten: ${hoursText}
+
+═══════════════════════════════════════
+DESIGN-ARCHETYP: ${archetype.name.toUpperCase()}
+═══════════════════════════════════════
+Aesthetik: ${archetype.aesthetic}
+Typografie-Persönlichkeit: Headlines in ${archetype.typography.headers} / Body in ${archetype.typography.body}
+Layout-Patterns: ${archetype.patterns.join(", ")}
+Micro-Interactions: ${archetype.microInteractions.join(", ")}
+
+FARB-HIERARCHIE (60-30-10 REGEL – STRIKT EINHALTEN):
+- 60% = Hintergrundfarbe: ${archetype.colors.background} (dominanter Hintergrund)
+- 30% = Primärfarbe: ${colorScheme.primary || archetype.colors.primary} (Hauptelemente, Texte, Strukturen)
+- 10% = Akzentfarbe: ${colorScheme.accent || archetype.colors.accent} (NUR für CTAs, Links, Highlights)
+❌ NIEMALS mehr als 3 Hauptfarben
+❌ NIEMALS bunte Section-Hintergründe
+✅ IMMER gleiche Akzentfarbe für alle CTAs
+
+═══════════════════════════════════════
+BRANCHENKONTEXT & PERSÖNLICHKEIT
+═══════════════════════════════════════
+${industryContext}
+${personalityHint}
+${templateStyleDesc}
+
+═══════════════════════════════════════
+STORYBRAND-FRAMEWORK (PFLICHT)
+═══════════════════════════════════════
+Der KUNDE ist der HELD dieser Geschichte – ${business.name} ist der erfahrene GUIDE.
+- HELD: Dein Traumkunde hat ein konkretes Problem (Stress, Unsicherheit, Zeitdruck)
+- GUIDE: ${business.name} hat die Expertise und Empathie, um zu helfen
+- PLAN: Einfacher 3-Schritte-Prozess (z.B. Termin → Beratung → Ergebnis)
+- CTA: Klarer, einladender Aufruf zur Aktion
+- ERFOLG: Das Leben des Kunden verbessert sich konkret
+- MISSERFOLG (vermeiden): Was passiert, wenn der Kunde NICHT handelt?
+
+Hero-Headline-Formel: [Emotionaler Trigger] + [Konkretes Ergebnis] für [Zielgruppe]
+Beispiele für gute Headlines:
+- ✅ "Wo Schönheit beginnt" (Beauty, emotional)
+- ✅ "Gemacht für die Härte des Alltags" (Handwerk, direkt)
+- ✅ "Dein stärkeres Ich beginnt hier" (Fitness, motivierend)
+- ❌ "Willkommen bei ${business.name}" (generisch, verboten)
+- ❌ "Ihr Partner für..." (Klischee, verboten)
+
+═══════════════════════════════════════
+KREATIVE ANFORDERUNGEN${isRegenerate ? " (NEUE VERSION – ANDERE PERSPEKTIVE)" : ""}
+═══════════════════════════════════════
+1. EINZIGARTIGKEIT: Schreibe so, als würdest du dieses spezifische Unternehmen kennen.
+2. KEINE GENERIK: Verboten: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle", "Ihr Vertrauen ist unser Kapital", "Wir freuen uns auf Ihren Besuch".
+3. ARCHETYP-KONSISTENZ: Jeder Text muss die Persönlichkeit von "${archetype.name}" widerspiegeln.
+4. SPEZIFISCHE LEISTUNGEN: Realistische, branchenspezifische Leistungen – keine generischen "Service 1, Service 2".
+5. AUTHENTISCHE TESTIMONIALS: Glaubwürdige Kundenstimmen mit konkreten Details (was wurde gemacht, welches Ergebnis, warum zufrieden).
+6. LOKALER BEZUG: Nutze die Stadt/Region aus der Adresse konkret.
+7. CTA-TEXTE: Kreative, handlungsauslösende Buttons passend zum Archetyp.${isRegenerate ? "\n8. ANDERE PERSPEKTIVE: Wähle einen anderen Storytelling-Ansatz als zuvor – andere Texte, anderer Fokus, andere Struktur." : ""}
+
+═══════════════════════════════════════
+PFLICHT-AUSGABE (exaktes JSON-Format)
+═══════════════════════════════════════
+{
+  "businessName": "${business.name}",
+  "tagline": "Einzigartiger, einprägsamer Slogan im Stil von ${archetype.name} (max. 8 Wörter, keine Klischees)",
+  "description": "Kurze, packende Beschreibung (2 Sätze, konkret und spezifisch)",
+  "archetypePersonality": "${archetype.name}: ${archetype.aesthetic.substring(0, 80)}",
+  "sections": [
+    {
+      "type": "hero",
+      "headline": "Kraftvolle Hauptüberschrift im ${archetype.name}-Stil (max. 7 Wörter, mit emotionalem Trigger)",
+      "subheadline": "Konkrete Unterüberschrift mit USP (1-2 Sätze, StoryBrand: Held + Problem + Lösung)",
+      "content": "Kurzer Einleitungstext (max. 30 Wörter, spezifisch für diese Branche)",
+      "ctaText": "Kreativer CTA-Button-Text passend zum Archetyp",
+      "ctaLink": "#kontakt"
+    },
+    {
+      "type": "about",
+      "headline": "Kreative Überschrift für 'Über uns' (nicht 'Über uns'!)",
+      "content": "Authentischer Text über das Unternehmen als Guide (4-5 Sätze: Gründungsgeschichte, Expertise, lokale Verwurzelung, Leidenschaft)"
+    },
+    {
+      "type": "services",
+      "headline": "Kreative Überschrift für Leistungen",
+      "items": [
+        { "title": "Konkrete Leistung 1", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
+        { "title": "Konkrete Leistung 2", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
+        { "title": "Konkrete Leistung 3", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
+        { "title": "Konkrete Leistung 4", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
+        { "title": "Konkrete Leistung 5", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
+        { "title": "Konkrete Leistung 6", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" }
+      ]
+    },
+    {
+      "type": "testimonials",
+      "headline": "Kreative Überschrift für Kundenstimmen",
+      "items": [
+        { "title": "Kurze Zusammenfassung des Ergebnisses", "description": "Detaillierte, glaubwürdige Bewertung: Was war das Problem? Was hat ${business.name} gemacht? Welches konkrete Ergebnis? (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 5 },
+        { "title": "Kurze Zusammenfassung des Ergebnisses", "description": "Detaillierte, glaubwürdige Bewertung: anderes Szenario, anderer Kunde (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 5 },
+        { "title": "Kurze Zusammenfassung des Ergebnisses", "description": "Detaillierte, glaubwürdige Bewertung: drittes Szenario (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 4 }
+      ]
+    },
+    {
+      "type": "faq",
+      "headline": "Häufige Fragen",
+      "items": [
+        { "question": "Branchenspezifische Frage 1 (echte Kundenfrage)?", "answer": "Detaillierte, hilfreiche Antwort als Guide (2-3 Sätze)" },
+        { "question": "Branchenspezifische Frage 2?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" },
+        { "question": "Branchenspezifische Frage 3?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" },
+        { "question": "Branchenspezifische Frage 4?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" }
+      ]
+    },
+    {
+      "type": "cta",
+      "headline": "Starke CTA-Überschrift im ${archetype.name}-Stil (Dringlichkeit oder konkreten Nutzen betonen)",
+      "content": "Kurzer überzeugender Text (max. 20 Wörter, StoryBrand: Erfolg visualisieren)",
+      "ctaText": "Handlungsaufruf-Button",
+      "ctaLink": "#kontakt"
+    },
+    {
+      "type": "contact",
+      "headline": "Kontaktüberschrift",
+      "content": "Einladender Kontakttext (1-2 Sätze)",
+      "ctaText": "Nachricht senden"
+    }
+  ],
+  "seoTitle": "${business.name} – [Branchenspezifisches Keyword] in [Stadt]",
+  "seoDescription": "Prägnante SEO-Beschreibung mit Keyword und lokalem Bezug (max. 155 Zeichen)",
+  "footer": {
+    "text": "© ${year} ${business.name}. Alle Rechte vorbehalten."
+  }
+}
+
+Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, MapPin, Phone, Mail, Users, Award, ThumbsUp, Briefcase, Home, Car, Utensils, Camera, Sparkles, Flame, Leaf, Sun, Moon, Coffee, Music, Book, Palette, Hammer, Truck, Package, CheckCircle, ArrowRight, ChevronRight, Globe, Wifi, Lock, Key, Smile, Baby, Dog, Flower, Trees, Dumbbell, Bike, Stethoscope, Pill, Microscope, Scale, Gavel, Calculator, PiggyBank, Building, Factory, Warehouse`;
 }
 
 /** Maps a GMB category string to the industry key used in template_uploads table */
@@ -408,128 +672,20 @@ export const appRouter = router({
           hoursText = (business.openingHours as string[]).join(", ");
         }
 
-        const prompt = `Du bist ein erstklassiger Webtexter und UX-Copywriter für lokale Unternehmen in Deutschland. Deine Aufgabe: Erstelle eine einzigartige, überzeugende Website für dieses konkrete Unternehmen.
-
-═══════════════════════════════════════
-UNTERNEHMENSDATEN
-═══════════════════════════════════════
-Name: ${business.name}
-Branche/Kategorie: ${category}
-Adresse: ${business.address || "Nicht angegeben"}
-Telefon: ${business.phone || "Nicht angegeben"}
-Bewertung: ${business.rating ? business.rating + "/5 Sterne" : "Nicht verfügbar"}
-Anzahl Bewertungen: ${business.reviewCount || 0}
-Öffnungszeiten: ${hoursText}
-
-═══════════════════════════════════════
-BRANCHENKONTEXT & PERSÖNLICHKEIT
-═══════════════════════════════════════
-${industryContext}
-${personalityHint}
-
-Layout-Stil: ${layoutStyle}
-Primärfarbe: ${colorScheme.primary}
-
-${templateStyleDesc}
-
-═══════════════════════════════════════
-KREATIVE ANFORDERUNGEN
-═══════════════════════════════════════
-1. EINZIGARTIGKEIT: Schreibe so, als würdest du dieses spezifische Unternehmen kennen. Nutze den Namen, die Adresse und Bewertungen konkret.
-2. KEINE GENERIK: Vermeide "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle", "Ihr Vertrauen ist unser Kapital" – diese Phrasen sind verboten.
-3. STORYTELLING: Jede Section soll eine Geschichte erzählen. Der Hero soll sofort fesseln.
-4. SPEZIFISCHE LEISTUNGEN: Erfinde realistische, branchenspezifische Leistungen (keine generischen "Service 1, Service 2").
-5. AUTHENTISCHE TESTIMONIALS: Schreibe glaubwürdige Kundenstimmen mit konkreten Details (was wurde gemacht, welches Ergebnis).
-6. LOKALER BEZUG: Nutze die Stadt/Region aus der Adresse für lokalen Bezug.
-7. CTA-TEXTE: Kreative, handlungsauslösende Buttons (nicht nur "Kontakt aufnehmen").
-
-═══════════════════════════════════════
-PFLICHT-AUSGABE (exaktes JSON-Format)
-═══════════════════════════════════════
-{
-  "businessName": "${business.name}",
-  "tagline": "Einzigartiger, einprägsamer Slogan (max. 8 Wörter, keine Klischees)",
-  "description": "Kurze, packende Beschreibung (2 Sätze, konkret und spezifisch)",
-  "sections": [
-    {
-      "type": "hero",
-      "headline": "Kraftvolle Hauptüberschrift (max. 7 Wörter, mit emotionalem Trigger)",
-      "subheadline": "Konkrete Unterüberschrift mit USP (1-2 Sätze)",
-      "content": "Kurzer Einleitungstext (max. 30 Wörter, spezifisch für diese Branche)",
-      "ctaText": "Kreativer CTA-Button-Text",
-      "ctaLink": "#kontakt"
-    },
-    {
-      "type": "about",
-      "headline": "Kreative Überschrift für 'Über uns' (nicht 'Über uns'!)",
-      "content": "Authentischer Text über das Unternehmen (4-5 Sätze, mit konkreten Details: Gründungsjahr erfinden wenn nötig, Teamgröße, Spezialisierung, lokale Verwurzelung)"
-    },
-    {
-      "type": "services",
-      "headline": "Kreative Überschrift für Leistungen",
-      "items": [
-        { "title": "Konkrete Leistung 1", "description": "Spezifische Beschreibung (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 2", "description": "Spezifische Beschreibung (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 3", "description": "Spezifische Beschreibung (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 4", "description": "Spezifische Beschreibung (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 5", "description": "Spezifische Beschreibung (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 6", "description": "Spezifische Beschreibung (2 Sätze)", "icon": "LucideIconName" }
-      ]
-    },
-    {
-      "type": "testimonials",
-      "headline": "Kreative Überschrift für Kundenstimmen",
-      "items": [
-        { "title": "Kurze Zusammenfassung", "description": "Detaillierte, glaubwürdige Bewertung mit konkretem Ergebnis (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 5 },
-        { "title": "Kurze Zusammenfassung", "description": "Detaillierte, glaubwürdige Bewertung mit konkretem Ergebnis (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 5 },
-        { "title": "Kurze Zusammenfassung", "description": "Detaillierte, glaubwürdige Bewertung mit konkretem Ergebnis (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 4 }
-      ]
-    },
-    {
-      "type": "faq",
-      "headline": "Häufige Fragen",
-      "items": [
-        { "question": "Branchenspezifische Frage 1?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" },
-        { "question": "Branchenspezifische Frage 2?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" },
-        { "question": "Branchenspezifische Frage 3?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" },
-        { "question": "Branchenspezifische Frage 4?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" }
-      ]
-    },
-    {
-      "type": "cta",
-      "headline": "Starke CTA-Überschrift (Dringlichkeit oder Nutzen betonen)",
-      "content": "Kurzer überzeugender Text (max. 20 Wörter)",
-      "ctaText": "Handlungsaufruf-Button",
-      "ctaLink": "#kontakt"
-    },
-    {
-      "type": "contact",
-      "headline": "Kontaktüberschrift",
-      "content": "Einladender Kontakttext (1-2 Sätze)",
-      "ctaText": "Nachricht senden"
-    }
-  ],
-  "seoTitle": "${business.name} – [Branchenspezifisches Keyword] in [Stadt]",
-  "seoDescription": "Prägnante SEO-Beschreibung mit Keyword und lokalem Bezug (max. 155 Zeichen)",
-  "footer": {
-    "text": "© ${new Date().getFullYear()} ${business.name}. Alle Rechte vorbehalten."
-  }
-}
-
-Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, MapPin, Phone, Mail, Users, Award, ThumbsUp, Briefcase, Home, Car, Utensils, Camera, Sparkles, Flame, Leaf, Sun, Moon, Coffee, Music, Book, Palette, Hammer, Truck, Package, CheckCircle, ArrowRight, ChevronRight, Globe, Wifi, Lock, Key, Smile, Baby, Dog, Flower, Trees, Dumbbell, Bike, Stethoscope, Pill, Microscope, Scale, Gavel, Calculator, PiggyBank, Building, Factory, Warehouse`;
+        const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText });
 
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: "Du bist ein erstklassiger Webtexter und Design-Direktor für lokale Unternehmen. Du analysierst professionelle Website-Templates als visuelle Referenz und erstellst daraus einzigartige, maßgeschneiderte Website-Inhalte. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke. Schreibe einzigartige, spezifische Texte – niemals generische Phrasen."
+              content: "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Du analysierst professionelle Website-Templates als visuelle Referenz und erstellst daraus einzigartige, maßgeschneiderte Website-Inhalte im Stil des jeweiligen Design-Archetyps. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke. Schreibe einzigartige, spezifische Texte – niemals generische Phrasen. Das StoryBrand-Framework ist PFLICHT: Der Kunde ist der Held, das Unternehmen ist der Guide."
             },
             ...(templateImageUrls.length > 0 ? [{
               role: "user" as const,
               content: [
                 {
                   type: "text" as const,
-                  text: `Hier sind ${templateImageUrls.length} professionelle Website-Templates als visuelle Referenz. Analysiere den Design-Stil, die Farbpaletten, die Typografie und das Layout dieser Templates. Nutze diese als Inspiration für die Website-Generierung, aber passe alles spezifisch auf das Unternehmen an.`
+                  text: `DESIGN-REFERENZEN: Hier sind ${templateImageUrls.length} professionelle Website-Templates. Analysiere den Design-Stil, die Farbpaletten, die Typografie und das Layout.\n\n⚠️ WICHTIG – INDIVIDUALISIERUNG ERFORDERLICH:\n- Das Ergebnis DARF NICHT wie einer der Screenshots aussehen!\n- Nutze die Screenshots nur um das QUALITÄTSNIVEAU und spezifische DESIGN-PATTERNS zu verstehen\n- Erstelle ein KOMPLETT EIGENSTÄNDIGES Design für dieses Unternehmen\n- Die Archetyp-Farben und der Schreibstil haben ABSOLUTE PRIORITÄT`
                 },
                 ...templateImageUrls.map(url => ({
                   type: "image_url" as const,
@@ -636,90 +792,18 @@ Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Z
           hoursText = (business.openingHours as string[]).join(", ");
         }
 
-        const prompt = `Du bist ein erstklassiger Webtexter und UX-Copywriter für lokale Unternehmen in Deutschland. Deine Aufgabe: Erstelle eine NEUE, einzigartige Website für dieses Unternehmen. Wichtig: Diese Website soll sich deutlich von einer vorherigen Version unterscheiden – andere Texte, andere Perspektive, andere Struktur.
-
-═══════════════════════════════════════
-UNTERNEHMENSDATEN
-═══════════════════════════════════════
-Name: ${business.name}
-Branche/Kategorie: ${category}
-Adresse: ${business.address || "Nicht angegeben"}
-Telefon: ${business.phone || "Nicht angegeben"}
-Bewertung: ${business.rating ? business.rating + "/5 Sterne" : "Nicht verfügbar"}
-Anzahl Bewertungen: ${business.reviewCount || 0}
-Öffnungszeiten: ${hoursText}
-
-═══════════════════════════════════════
-BRANCHENKONTEXT & PERSÖNLICHKEIT
-═══════════════════════════════════════
-${industryContext}
-${personalityHint}
-
-Layout-Stil: ${layoutStyle}
-Primärfarbe: ${colorScheme.primary}
-
-${templateStyleDesc}
-
-═══════════════════════════════════════
-KREATIVE ANFORDERUNGEN (NEUE VERSION)
-═══════════════════════════════════════
-1. ANDERE PERSPEKTIVE: Wähle einen anderen Storytelling-Ansatz als zuvor (z.B. wenn vorher "Expertise" betont wurde, betone jetzt "Leidenschaft" oder "Gemeinschaft").
-2. NEUER SLOGAN: Erfinde einen komplett anderen Tagline.
-3. ANDERE HERO-HEADLINE: Andere emotionale Ansprache, anderer Fokus.
-4. VERSCHIEDENE LEISTUNGEN: Zeige andere Aspekte des Angebots, andere Formulierungen.
-5. NEUE TESTIMONIALS: Andere Kunden, andere Szenarien, andere Ergebnisse.
-6. KEINE GENERIK: Verboten: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle".
-7. LOKALER BEZUG: Nutze die Stadt/Region konkret.
-
-═══════════════════════════════════════
-PFLICHT-AUSGABE (exaktes JSON-Format)
-═══════════════════════════════════════
-{
-  "businessName": "${business.name}",
-  "tagline": "Einzigartiger, einprägsamer Slogan (max. 8 Wörter, keine Klischees)",
-  "description": "Kurze, packende Beschreibung (2 Sätze, konkret und spezifisch)",
-  "sections": [
-    { "type": "hero", "headline": "Kraftvolle Hauptüberschrift", "subheadline": "Konkrete Unterüberschrift mit USP", "content": "Kurzer Einleitungstext", "ctaText": "Kreativer CTA-Button-Text", "ctaLink": "#kontakt" },
-    { "type": "about", "headline": "Kreative Überschrift für 'Über uns'", "content": "Authentischer Text (4-5 Sätze, andere Perspektive als zuvor)" },
-    { "type": "services", "headline": "Kreative Überschrift für Leistungen", "items": [
-      { "title": "Leistung 1", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
-      { "title": "Leistung 2", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
-      { "title": "Leistung 3", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
-      { "title": "Leistung 4", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
-      { "title": "Leistung 5", "description": "Spezifische Beschreibung", "icon": "LucideIconName" },
-      { "title": "Leistung 6", "description": "Spezifische Beschreibung", "icon": "LucideIconName" }
-    ]},
-    { "type": "testimonials", "headline": "Kreative Überschrift für Kundenstimmen", "items": [
-      { "title": "Zusammenfassung", "description": "Detaillierte Bewertung", "author": "Name", "rating": 5 },
-      { "title": "Zusammenfassung", "description": "Detaillierte Bewertung", "author": "Name", "rating": 5 },
-      { "title": "Zusammenfassung", "description": "Detaillierte Bewertung", "author": "Name", "rating": 4 }
-    ]},
-    { "type": "faq", "headline": "Häufige Fragen", "items": [
-      { "question": "Frage 1?", "answer": "Antwort" },
-      { "question": "Frage 2?", "answer": "Antwort" },
-      { "question": "Frage 3?", "answer": "Antwort" },
-      { "question": "Frage 4?", "answer": "Antwort" }
-    ]},
-    { "type": "cta", "headline": "Starke CTA-Überschrift", "content": "Kurzer überzeugender Text", "ctaText": "Handlungsaufruf-Button", "ctaLink": "#kontakt" },
-    { "type": "contact", "headline": "Kontaktüberschrift", "content": "Einladender Kontakttext", "ctaText": "Nachricht senden" }
-  ],
-  "seoTitle": "${business.name} – [Branchenspezifisches Keyword] in [Stadt]",
-  "seoDescription": "Prägnante SEO-Beschreibung (max. 155 Zeichen)",
-  "footer": { "text": "© ${new Date().getFullYear()} ${business.name}. Alle Rechte vorbehalten." }
-}
-
-Verfügbare Lucide-Icons: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, MapPin, Phone, Mail, Users, Award, ThumbsUp, Briefcase, Home, Car, Utensils, Camera, Sparkles, Flame, Leaf, Sun, Moon, Coffee, Music, Book, Palette, Hammer, Truck, Package, CheckCircle, Globe, Lock, Key, Smile, Baby, Dog, Flower, Trees, Dumbbell, Bike, Stethoscope, Pill, Scale, Gavel, Calculator, PiggyBank, Building`;
+        const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText, isRegenerate: true });
 
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: "Du bist ein erstklassiger Webtexter und Design-Direktor für lokale Unternehmen. Du erstellst eine NEUE VERSION einer Website mit frischen Texten und anderem Ansatz. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke."
+              content: "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Du erstellst eine NEUE VERSION einer Website mit komplett anderem Storytelling-Ansatz und frischen Texten. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke. Das StoryBrand-Framework ist PFLICHT: Der Kunde ist der Held, das Unternehmen ist der Guide. Niemals generische Phrasen."
             },
             ...(templateImageUrls.length > 0 ? [{
               role: "user" as const,
               content: [
-                { type: "text" as const, text: `Hier sind ${templateImageUrls.length} professionelle Website-Templates als visuelle Referenz für den neuen Design-Stil.` },
+                { type: "text" as const, text: `DESIGN-REFERENZEN: Hier sind ${templateImageUrls.length} professionelle Website-Templates.\n\n⚠️ WICHTIG – INDIVIDUALISIERUNG ERFORDERLICH:\n- Das Ergebnis DARF NICHT wie einer der Screenshots aussehen!\n- Nutze die Screenshots nur um das QUALITÄTSNIVEAU und spezifische DESIGN-PATTERNS zu verstehen\n- Erstelle ein KOMPLETT EIGENSTÄNDIGES Design für dieses Unternehmen\n- Die Archetyp-Farben und der Schreibstil haben ABSOLUTE PRIORITÄT` },
                 ...templateImageUrls.map(url => ({ type: "image_url" as const, image_url: { url, detail: "low" as const } }))
               ]
             }] : []),

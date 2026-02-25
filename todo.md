@@ -159,3 +159,12 @@
 - [x] Modal: Speichern-Button mit Erfolgsmeldung
 - [x] Modal: Freigeben/Zurückziehen-Button je nach aktuellem Status
 - [x] Modal: Löschen-Button mit Bestätigung
+## Prompt-Optimierung aus Referenz-Repo (Runde 9)
+- [x] 12 Design-Archetypen definiert (DESIGN_ARCHETYPES Konstante)
+- [x] buildEnhancedPrompt() Helper mit StoryBrand-Framework
+- [x] 60-30-10 Farbregel explizit im Prompt
+- [x] Archetyp-Persönlichkeit (Name, Ästhetik, Typografie, Patterns, Micro-Interactions) im Prompt
+- [x] Individualisierungswarnung für Template-Referenzen ("DARF NICHT wie Screenshots aussehen!")
+- [x] Hero-Headline-Formel mit Beispielen (gute vs. verbotene Headlines)
+- [x] generate + regenerate Prozeduren auf buildEnhancedPrompt() umgestellt
+- [x] System-Prompts auf Awwwards-Level Standard angehoben
