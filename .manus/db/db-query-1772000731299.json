@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `businesses` ADD `leadType` enum('no_website','outdated_website','poor_website','unknown') DEFAULT 'unknown';\nALTER TABLE `businesses` ADD `websiteAge` int;\nALTER TABLE `businesses` ADD `websiteScore` int;\nALTER TABLE `businesses` ADD `websiteAnalysis` json;\nALTER TABLE `generated_websites` ADD `heroImageUrl` text;\nALTER TABLE `generated_websites` ADD `layoutStyle` varchar(50) DEFAULT 'classic';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute ALTER TABLE `businesses` ADD `leadType` enum('no_website','outdated_website','poor_website','unknown') DEFAULT 'unknown';\nALTER TABLE `businesses` ADD `websiteAge` int;\nALTER TABLE `businesses` ADD `websiteScore` int;\nALTER TABLE `businesses` ADD `websiteAnalysis` json;\nALTER TABLE `generated_websites` ADD `heroImageUrl` text;\nALTER TABLE `generated_websites` ADD `layoutStyle` varchar(50) DEFAULT 'classic';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2440
+}

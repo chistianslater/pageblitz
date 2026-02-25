@@ -60,3 +60,17 @@
 - [x] Alle JSON.parse-Stellen im Code absichern
 - [x] localStorage beim App-Start auf ungültige Werte prüfen und bereinigen (sanitizeLocalStorage in main.tsx)
 - [x] Server-Neustart und vollständige Verifikation (17/17 Tests bestanden)
+
+## Template-Library (uicore.pro)
+- [x] uicore.pro Templates scrapen und Vorschaubilder extrahieren (150 Templates)
+- [x] Template-Library als strukturierte Daten aufbauen (templates.json mit CDN-URLs)
+- [x] KI-Prompt mit Template-Referenzen anreichern (multimodal image input)
+
+## Feature-Verbesserungen (Runde 2)
+- [x] KI-Prompt massiv verbessern: einzigartige Texte, branchenspezifische Layouts, mehr Varianz
+- [x] Bildmaterial-Integration: KI-generierte Hero-Bilder via Image Generation API
+- [x] Unsplash-Integration für branchenspezifische Stockfotos als Fallback
+- [x] WebsiteRenderer: mehr Layout-Varianten (mindestens 5 verschiedene Stile), echte Bilder, bessere Typografie
+- [x] Website-Alter-Erkennung: bestehende Websites auf Alter und Qualität prüfen (Wayback Machine + HTML-Analyse)
+- [x] GMB-Suche: Filter für "veraltete Website" (>3 Jahre) und Qualitäts-Score
+- [x] Lead-Kategorien: "Keine Website", "Veraltete Website", "Schlechte Website"

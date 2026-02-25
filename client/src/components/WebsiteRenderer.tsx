@@ -1,60 +1,47 @@
-import { type WebsiteData, type WebsiteSection, type ColorScheme } from "@shared/types";
-import { Star, Phone, MapPin, Clock, Mail, ChevronDown, ChevronUp, MessageSquare, Bot, Calendar, Globe, Scissors, Wrench, Heart, Shield, Zap, Award, ThumbsUp, Briefcase, Home, Car, Utensils, Camera, Users, Package, Sparkles, Lightbulb, Target, Palette, Music, BookOpen, Dumbbell, Stethoscope, GraduationCap, Hammer, Paintbrush, Truck, Coffee, ShoppingBag, Headphones, Wifi, Monitor, Smartphone, Leaf, Sun, Moon, Droplets, Flame, Wind } from "lucide-react";
 import { useState } from "react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, ArrowRight, Scissors, Wrench, Heart, Shield, Zap, Users, Award, ThumbsUp, Briefcase, Home, Car, Utensils, Camera, Sparkles, Flame, Leaf, Sun, Moon, Coffee, Music, Palette, Hammer, Truck, Package, Globe, Lock, Key, Smile, Dumbbell, Bike, Stethoscope, Pill, Scale, Gavel, Calculator, PiggyBank, Building, Factory, Warehouse } from "lucide-react";
+import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 
-const iconMap: Record<string, any> = {
-  Scissors, Wrench, Heart, Star, Shield, Zap, Clock, MapPin, Phone, Mail, Users, Award, ThumbsUp,
-  Briefcase, Home, Car, Utensils, Camera, Package, Sparkles, Lightbulb, Target, Palette, Music,
-  BookOpen, Dumbbell, Stethoscope, GraduationCap, Hammer, Paintbrush, Truck, Coffee, ShoppingBag,
-  Headphones, Wifi, Monitor, Smartphone, Leaf, Sun, Moon, Droplets, Flame, Wind, MessageSquare, Bot, Calendar, Globe,
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+  Scissors, Wrench, Heart, Shield, Zap, Users, Award, ThumbsUp, Briefcase, Home, Car, Utensils,
+  Camera, Sparkles, Flame, Leaf, Sun, Moon, Coffee, Music, Palette, Hammer, Truck, Package,
+  CheckCircle, ArrowRight, Globe, Lock, Key, Smile, Dumbbell, Bike, Stethoscope, Pill,
+  Scale, Gavel, Calculator, PiggyBank, Building, Factory, Warehouse, Star, Phone, MapPin, Clock, Mail,
 };
+
+function Icon({ name, className, style }: { name?: string; className?: string; style?: React.CSSProperties }) {
+  const Component = (name && ICON_MAP[name]) ? ICON_MAP[name] : Star;
+  return <Component className={className} style={style} />;
+}
 
 interface WebsiteRendererProps {
   websiteData: WebsiteData;
   colorScheme: ColorScheme;
-  businessPhone?: string;
-  businessAddress?: string;
-  businessEmail?: string;
-  openingHours?: string[];
+  heroImageUrl?: string | null;
+  layoutStyle?: string | null;
   showActivateButton?: boolean;
   onActivate?: () => void;
+  businessPhone?: string | null;
+  businessAddress?: string | null;
+  businessEmail?: string | null;
+  openingHours?: string[];
 }
 
 export default function WebsiteRenderer({
-  websiteData, colorScheme, businessPhone, businessAddress, businessEmail, openingHours, showActivateButton, onActivate,
+  websiteData, colorScheme: cs, heroImageUrl, layoutStyle = "classic",
+  showActivateButton = false, onActivate,
+  businessPhone, businessAddress, businessEmail, openingHours = [],
 }: WebsiteRendererProps) {
-  const cs = colorScheme;
+  const layout = layoutStyle || "classic";
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif", color: cs.text, backgroundColor: cs.background }}>
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ backgroundColor: `${cs.background}ee`, borderColor: `${cs.text}10` }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <span className="text-xl font-bold" style={{ color: cs.primary }}>{websiteData.businessName}</span>
-            <div className="hidden md:flex items-center gap-6">
-              {websiteData.sections.map((s, i) => (
-                <a key={i} href={`#section-${i}`} className="text-sm font-medium transition-colors hover:opacity-80" style={{ color: cs.textLight }}>
-                  {s.headline?.split(" ").slice(0, 2).join(" ") || s.type}
-                </a>
-              ))}
-            </div>
-            {businessPhone && (
-              <a href={`tel:${businessPhone}`} className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white transition-transform hover:scale-105" style={{ background: cs.gradient || cs.primary }}>
-                <Phone className="h-4 w-4" /> Anrufen
-              </a>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Sections */}
+    <div className="min-h-screen font-sans" style={{ backgroundColor: cs.background, color: cs.text, fontFamily: "'Inter', 'Plus Jakarta Sans', sans-serif" }}>
+      <NavBar websiteData={websiteData} cs={cs} businessPhone={businessPhone} layout={layout} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <HeroSection section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
-          {section.type === "about" && <AboutSection section={section} cs={cs} />}
-          {section.type === "services" && <ServicesSection section={section} cs={cs} />}
-          {section.type === "features" && <ServicesSection section={section} cs={cs} />}
+          {section.type === "hero" && <HeroSection section={section} cs={cs} heroImageUrl={heroImageUrl} layout={layout} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "about" && <AboutSection section={section} cs={cs} layout={layout} />}
+          {(section.type === "services" || section.type === "features") && <ServicesSection section={section} cs={cs} layout={layout} />}
           {section.type === "testimonials" && <TestimonialsSection section={section} cs={cs} />}
           {section.type === "faq" && <FAQSection section={section} cs={cs} />}
           {section.type === "contact" && <ContactSection section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />}
@@ -63,13 +50,15 @@ export default function WebsiteRenderer({
           {section.type === "team" && <TeamSection section={section} cs={cs} />}
         </div>
       ))}
-
-      {/* Footer */}
-      <footer className="py-8 border-t" style={{ borderColor: `${cs.text}10`, backgroundColor: cs.surface }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm" style={{ color: cs.textLight }}>{websiteData.footer?.text}</p>
-          <p className="text-xs mt-2" style={{ color: `${cs.textLight}80` }}>
-            Erstellt mit <span style={{ color: cs.primary }}>Pageblitz</span>
+      <footer className="py-10 border-t" style={{ borderColor: `${cs.text}12`, backgroundColor: cs.surface }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="font-bold text-lg" style={{ color: cs.primary }}>{websiteData.businessName}</p>
+            <p className="text-sm mt-1" style={{ color: cs.textLight }}>{websiteData.tagline}</p>
+          </div>
+          <p className="text-sm text-center" style={{ color: cs.textLight }}>{websiteData.footer?.text}</p>
+          <p className="text-xs" style={{ color: `${cs.textLight}80` }}>
+            Erstellt mit <span className="font-semibold" style={{ color: cs.primary }}>Pageblitz</span>
           </p>
         </div>
       </footer>
@@ -77,22 +66,213 @@ export default function WebsiteRenderer({
   );
 }
 
-function HeroSection({ section, cs, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; showActivateButton?: boolean; onActivate?: () => void }) {
+function NavBar({ websiteData, cs, businessPhone, layout }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; layout: string }) {
+  const isElegant = layout === "elegant" || layout === "premium";
+  return (
+    <nav className="sticky top-0 z-50 border-b backdrop-blur-md" style={{ backgroundColor: `${cs.background}ee`, borderColor: `${cs.text}10` }}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ background: cs.gradient || cs.primary }}>
+            {websiteData.businessName.charAt(0).toUpperCase()}
+          </div>
+          <span className="font-bold text-lg tracking-tight" style={{ color: cs.text, fontFamily: isElegant ? "Georgia, serif" : "inherit" }}>
+            {websiteData.businessName}
+          </span>
+        </div>
+        <div className="hidden md:flex items-center gap-6">
+          {websiteData.sections.slice(0, 4).map((s, i) => (
+            <a key={i} href={`#section-${i}`} className="text-sm font-medium transition-opacity hover:opacity-70" style={{ color: cs.textLight }}>
+              {s.type === "hero" ? "Start" : s.type === "about" ? "Über uns" : s.type === "services" ? "Leistungen" : s.type === "contact" ? "Kontakt" : s.headline?.split(" ").slice(0, 2).join(" ") || s.type}
+            </a>
+          ))}
+        </div>
+        {businessPhone && (
+          <a href={`tel:${businessPhone}`} className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-105" style={{ background: cs.gradient || cs.primary }}>
+            <Phone className="h-3.5 w-3.5" /> {businessPhone}
+          </a>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+function HeroSection({ section, cs, heroImageUrl, layout, showActivateButton, onActivate }: {
+  section: WebsiteSection; cs: ColorScheme; heroImageUrl?: string | null; layout: string;
+  showActivateButton?: boolean; onActivate?: () => void;
+}) {
+  const ctaButtons = (
+    <div className="flex flex-wrap gap-4">
+      {section.ctaText && (
+        <a href={section.ctaLink || "#kontakt"} className="px-8 py-4 rounded-xl text-base font-bold shadow-xl transition-all hover:scale-105 hover:shadow-2xl text-white" style={{ background: cs.gradient || cs.primary }}>
+          {section.ctaText}
+        </a>
+      )}
+      {showActivateButton && (
+        <button onClick={onActivate} className="px-8 py-4 rounded-xl text-base font-bold border-2 transition-all hover:opacity-80" style={{ borderColor: cs.primary, color: cs.primary, backgroundColor: "transparent" }}>
+          Jetzt aktivieren – ab 490€
+        </button>
+      )}
+    </div>
+  );
+
+  // FULLBLEED: large background image with dark overlay
+  if (layout === "fullbleed" && heroImageUrl) {
+    return (
+      <section className="relative flex items-center" style={{ minHeight: "88vh" }}>
+        <div className="absolute inset-0">
+          <img src={heroImageUrl} alt={section.headline || ""} className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.1) 100%)" }} />
+        </div>
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 text-white/90" style={{ backgroundColor: `${cs.primary}99` }}>
+              <Sparkles className="h-3 w-3" /> Premium Qualität
+            </div>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight mb-6" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
+              {section.headline}
+            </h1>
+            {section.subheadline && <p className="text-xl text-white/85 mb-4 leading-relaxed">{section.subheadline}</p>}
+            {section.content && <p className="text-base text-white/70 mb-10 max-w-lg">{section.content}</p>}
+            {ctaButtons}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ELEGANT / PREMIUM: split layout, image right
+  if ((layout === "elegant" || layout === "premium") && heroImageUrl) {
+    return (
+      <section className="min-h-[80vh] flex items-center" style={{ backgroundColor: cs.surface }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid lg:grid-cols-2 gap-12 items-center w-full">
+          <div>
+            <div className="w-12 h-1 rounded-full mb-8" style={{ backgroundColor: cs.primary }} />
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6" style={{ color: cs.text, fontFamily: "Georgia, serif" }}>
+              {section.headline}
+            </h1>
+            {section.subheadline && <p className="text-lg leading-relaxed mb-4" style={{ color: cs.textLight }}>{section.subheadline}</p>}
+            {section.content && <p className="text-base mb-10" style={{ color: cs.textLight }}>{section.content}</p>}
+            {ctaButtons}
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-3xl opacity-20" style={{ background: cs.gradient || cs.primary }} />
+            <img src={heroImageUrl} alt={section.headline || ""} className="relative rounded-2xl shadow-2xl w-full object-cover aspect-square" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // BOLD: dark background, accent color, image as subtle bg
+  if (layout === "bold") {
+    return (
+      <section className="relative overflow-hidden py-24 sm:py-32" style={{ backgroundColor: cs.text }}>
+        {heroImageUrl && (
+          <div className="absolute inset-0 opacity-15">
+            <img src={heroImageUrl} alt="" className="w-full h-full object-cover" />
+          </div>
+        )}
+        <div className="absolute top-0 right-0 w-1/2 h-full opacity-10" style={{ background: cs.gradient || cs.primary, clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }} />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="inline-block px-4 py-2 rounded-lg text-sm font-bold mb-6 text-white" style={{ backgroundColor: cs.primary }}>
+              ✓ Professionell & Zuverlässig
+            </div>
+            <h1 className="text-5xl sm:text-6xl font-black text-white leading-tight mb-6 uppercase tracking-tight">
+              {section.headline}
+            </h1>
+            {section.subheadline && <p className="text-xl text-white/80 mb-4">{section.subheadline}</p>}
+            {section.content && <p className="text-base text-white/60 mb-10">{section.content}</p>}
+            <div className="flex flex-wrap gap-4">
+              {section.ctaText && (
+                <a href={section.ctaLink || "#"} className="px-8 py-4 rounded-lg text-base font-bold transition-all hover:scale-105 text-white" style={{ backgroundColor: cs.primary }}>
+                  {section.ctaText} →
+                </a>
+              )}
+              {showActivateButton && (
+                <button onClick={onActivate} className="px-8 py-4 rounded-lg text-base font-bold border-2 border-white/30 text-white hover:border-white/60 transition-all">
+                  Jetzt aktivieren – ab 490€
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // DYNAMIC: diagonal split with image
+  if (layout === "dynamic" && heroImageUrl) {
+    return (
+      <section className="relative overflow-hidden" style={{ minHeight: "80vh" }}>
+        <div className="absolute inset-0 grid grid-cols-2">
+          <div style={{ background: cs.gradient || cs.primary }} />
+          <div><img src={heroImageUrl} alt="" className="w-full h-full object-cover" /></div>
+        </div>
+        <div className="absolute inset-0" style={{ background: "linear-gradient(105deg, transparent 45%, rgba(0,0,0,0.45) 45%)" }} />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+          <div className="max-w-xl">
+            <h1 className="text-5xl sm:text-6xl font-extrabold text-white leading-tight mb-6">{section.headline}</h1>
+            {section.subheadline && <p className="text-xl text-white/85 mb-4">{section.subheadline}</p>}
+            {section.content && <p className="text-base text-white/70 mb-10">{section.content}</p>}
+            <div className="flex flex-wrap gap-4">
+              {section.ctaText && (
+                <a href={section.ctaLink || "#"} className="px-8 py-4 rounded-xl text-base font-bold bg-white transition-all hover:scale-105 shadow-xl" style={{ color: cs.primary }}>
+                  {section.ctaText}
+                </a>
+              )}
+              {showActivateButton && (
+                <button onClick={onActivate} className="px-8 py-4 rounded-xl text-base font-bold border-2 border-white text-white hover:bg-white/10 transition-all">
+                  Jetzt aktivieren – ab 490€
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // CLEAN / PROFESSIONAL: minimal centered
+  if (layout === "clean" || layout === "professional") {
+    return (
+      <section className="py-24 sm:py-32" style={{ backgroundColor: cs.background }}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {heroImageUrl && (
+            <div className="w-28 h-28 rounded-2xl overflow-hidden mx-auto mb-8 shadow-lg">
+              <img src={heroImageUrl} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8" style={{ backgroundColor: `${cs.primary}15`, color: cs.primary }}>
+            <CheckCircle className="h-4 w-4" /> Zertifiziert & Erfahren
+          </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6" style={{ color: cs.text }}>
+            {section.headline}
+          </h1>
+          {section.subheadline && <p className="text-xl leading-relaxed mb-4 max-w-2xl mx-auto" style={{ color: cs.textLight }}>{section.subheadline}</p>}
+          {section.content && <p className="text-base mb-10 max-w-xl mx-auto" style={{ color: cs.textLight }}>{section.content}</p>}
+          <div className="flex flex-wrap items-center justify-center gap-4">{ctaButtons}</div>
+        </div>
+      </section>
+    );
+  }
+
+  // DEFAULT / CLASSIC: gradient background with dot pattern
   return (
     <section className="relative overflow-hidden py-20 sm:py-28 lg:py-36" style={{ background: cs.gradient || cs.primary }}>
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 25% 50%, white 1px, transparent 1px), radial-gradient(circle at 75% 50%, white 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
       </div>
+      {heroImageUrl && (
+        <div className="absolute right-0 top-0 w-1/2 h-full opacity-20 hidden lg:block">
+          <img src={heroImageUrl} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, transparent, rgba(0,0,0,0.5))" }} />
+        </div>
+      )}
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {section.headline}
-        </h1>
-        {section.subheadline && (
-          <p className="mt-6 text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">{section.subheadline}</p>
-        )}
-        {section.content && (
-          <p className="mt-4 text-base text-white/70 max-w-xl mx-auto">{section.content}</p>
-        )}
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">{section.headline}</h1>
+        {section.subheadline && <p className="mt-6 text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">{section.subheadline}</p>}
+        {section.content && <p className="mt-4 text-base text-white/70 max-w-xl mx-auto">{section.content}</p>}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           {section.ctaText && (
             <a href={section.ctaLink || "#"} className="px-8 py-3.5 rounded-full text-base font-semibold shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: "white", color: cs.primary }}>
@@ -110,41 +290,54 @@ function HeroSection({ section, cs, showActivateButton, onActivate }: { section:
   );
 }
 
-function AboutSection({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function AboutSection({ section, cs, layout }: { section: WebsiteSection; cs: ColorScheme; layout: string }) {
+  const isElegant = layout === "elegant" || layout === "premium";
   return (
     <section className="py-16 sm:py-24" style={{ backgroundColor: cs.background }}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-6" style={{ color: cs.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {section.headline}
-        </h2>
-        <div className="w-16 h-1 rounded-full mx-auto mb-8" style={{ backgroundColor: cs.primary }} />
-        <p className="text-lg leading-relaxed text-center" style={{ color: cs.textLight }}>{section.content}</p>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`grid gap-12 items-center ${isElegant ? "lg:grid-cols-2" : ""}`}>
+          <div>
+            <div className="w-12 h-1 rounded-full mb-6" style={{ backgroundColor: cs.primary }} />
+            <h2 className="text-3xl sm:text-4xl font-bold mb-6" style={{ color: cs.text, fontFamily: isElegant ? "Georgia, serif" : "inherit" }}>
+              {section.headline}
+            </h2>
+            <p className="text-lg leading-relaxed" style={{ color: cs.textLight }}>{section.content}</p>
+          </div>
+          {isElegant && (
+            <div className="grid grid-cols-2 gap-4">
+              {[{ icon: "Award", label: "Jahrelange Erfahrung" }, { icon: "Users", label: "Zufriedene Kunden" }, { icon: "CheckCircle", label: "Qualitätsgarantie" }, { icon: "Heart", label: "Persönliche Betreuung" }].map((item, i) => (
+                <div key={i} className="p-4 rounded-xl text-center" style={{ backgroundColor: cs.surface }}>
+                  <Icon name={item.icon} className="h-6 w-6 mx-auto mb-2" style={{ color: cs.primary }} />
+                  <p className="text-xs font-medium" style={{ color: cs.textLight }}>{item.label}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
 }
 
-function ServicesSection({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function ServicesSection({ section, cs, layout }: { section: WebsiteSection; cs: ColorScheme; layout: string }) {
   return (
     <section className="py-16 sm:py-24" style={{ backgroundColor: cs.surface }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {section.headline}
-        </h2>
-        <div className="w-16 h-1 rounded-full mx-auto mb-12" style={{ backgroundColor: cs.primary }} />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {section.items?.map((item, i) => {
-            const Icon = iconMap[item.icon || "Star"] || Star;
-            return (
-              <div key={i} className="p-6 rounded-2xl border transition-all hover:shadow-lg hover:-translate-y-1" style={{ backgroundColor: cs.background, borderColor: `${cs.text}08` }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${cs.primary}15` }}>
-                  <Icon className="h-6 w-6" style={{ color: cs.primary }} />
-                </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: cs.text }}>{item.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: cs.textLight }}>{item.description}</p>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: cs.text }}>{section.headline}</h2>
+          <div className="w-16 h-1 rounded-full mx-auto" style={{ backgroundColor: cs.primary }} />
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {section.items?.map((item, i) => (
+            <div key={i} className="group relative p-6 rounded-2xl border transition-all hover:shadow-lg hover:-translate-y-1" style={{ backgroundColor: cs.background, borderColor: `${cs.text}08` }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all group-hover:scale-110" style={{ backgroundColor: `${cs.primary}15` }}>
+                <Icon name={item.icon} className="h-6 w-6" style={{ color: cs.primary }} />
               </div>
-            );
-          })}
+              <h3 className="font-semibold text-lg mb-2" style={{ color: cs.text }}>{item.title}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: cs.textLight }}>{item.description}</p>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-b-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: cs.gradient || cs.primary }} />
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -153,26 +346,22 @@ function ServicesSection({ section, cs }: { section: WebsiteSection; cs: ColorSc
 
 function TestimonialsSection({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   return (
-    <section className="py-16 sm:py-24" style={{ backgroundColor: cs.background }}>
+    <section className="py-16 sm:py-24" style={{ background: cs.gradient || cs.primary }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {section.headline}
-        </h2>
-        <div className="w-16 h-1 rounded-full mx-auto mb-12" style={{ backgroundColor: cs.primary }} />
+        <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12">{section.headline}</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {section.items?.map((item, i) => (
-            <div key={i} className="p-6 rounded-2xl border" style={{ backgroundColor: cs.surface, borderColor: `${cs.text}08` }}>
+            <div key={i} className="p-6 rounded-2xl" style={{ backgroundColor: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}>
               <div className="flex gap-1 mb-4">
-                {Array.from({ length: item.rating || 5 }).map((_, j) => (
-                  <Star key={j} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                ))}
+                {Array.from({ length: item.rating || 5 }).map((_, j) => <Star key={j} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
               </div>
-              <p className="text-sm leading-relaxed mb-4" style={{ color: cs.textLight }}>"{item.description}"</p>
+              {item.title && <p className="font-semibold text-white mb-2">"{item.title}"</p>}
+              <p className="text-sm text-white/80 leading-relaxed mb-4">{item.description}</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ backgroundColor: cs.primary }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
                   {item.author?.charAt(0) || "K"}
                 </div>
-                <span className="text-sm font-medium" style={{ color: cs.text }}>{item.author}</span>
+                <p className="text-sm font-medium text-white/90">{item.author}</p>
               </div>
             </div>
           ))}
@@ -183,27 +372,22 @@ function TestimonialsSection({ section, cs }: { section: WebsiteSection; cs: Col
 }
 
 function FAQSection({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
-  const [open, setOpen] = useState<number | null>(null);
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
   return (
-    <section className="py-16 sm:py-24" style={{ backgroundColor: cs.surface }}>
+    <section className="py-16 sm:py-24" style={{ backgroundColor: cs.background }}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {section.headline}
-        </h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text }}>{section.headline}</h2>
         <div className="w-16 h-1 rounded-full mx-auto mb-12" style={{ backgroundColor: cs.primary }} />
         <div className="space-y-3">
           {section.items?.map((item, i) => (
-            <div key={i} className="rounded-xl border overflow-hidden" style={{ backgroundColor: cs.background, borderColor: `${cs.text}08` }}>
-              <button
-                onClick={() => setOpen(open === i ? null : i)}
-                className="w-full flex items-center justify-between p-5 text-left"
-              >
+            <div key={i} className="rounded-xl border overflow-hidden" style={{ borderColor: `${cs.text}10`, backgroundColor: cs.surface }}>
+              <button className="w-full flex items-center justify-between p-5 text-left transition-colors hover:opacity-80" onClick={() => setOpenIdx(openIdx === i ? null : i)}>
                 <span className="font-medium pr-4" style={{ color: cs.text }}>{item.question || item.title}</span>
-                {open === i ? <ChevronUp className="h-5 w-5 shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-5 w-5 shrink-0" style={{ color: cs.textLight }} />}
+                {openIdx === i ? <ChevronUp className="h-5 w-5 shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-5 w-5 shrink-0" style={{ color: cs.textLight }} />}
               </button>
-              {open === i && (
-                <div className="px-5 pb-5">
-                  <p className="text-sm leading-relaxed" style={{ color: cs.textLight }}>{item.answer || item.description}</p>
+              {openIdx === i && (
+                <div className="px-5 pb-5 text-sm leading-relaxed" style={{ color: cs.textLight }}>
+                  {item.answer || item.description}
                 </div>
               )}
             </div>
@@ -214,71 +398,59 @@ function FAQSection({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
   );
 }
 
-function ContactSection({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string; address?: string; email?: string; hours?: string[] }) {
+function ContactSection({ section, cs, phone, address, email, hours }: {
+  section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[];
+}) {
   return (
-    <section className="py-16 sm:py-24" style={{ backgroundColor: cs.background }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {section.headline}
-        </h2>
+    <section className="py-16 sm:py-24" style={{ backgroundColor: cs.surface }}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text }}>{section.headline}</h2>
         <div className="w-16 h-1 rounded-full mx-auto mb-12" style={{ backgroundColor: cs.primary }} />
-        <div className="grid gap-8 md:grid-cols-2">
-          <div className="space-y-6">
-            {section.content && <p className="text-base leading-relaxed" style={{ color: cs.textLight }}>{section.content}</p>}
-            {phone && (
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${cs.primary}15` }}>
-                  <Phone className="h-5 w-5" style={{ color: cs.primary }} />
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wider" style={{ color: cs.textLight }}>Telefon</p>
-                  <a href={`tel:${phone}`} className="font-medium" style={{ color: cs.text }}>{phone}</a>
-                </div>
-              </div>
-            )}
-            {email && (
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${cs.primary}15` }}>
-                  <Mail className="h-5 w-5" style={{ color: cs.primary }} />
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wider" style={{ color: cs.textLight }}>E-Mail</p>
-                  <a href={`mailto:${email}`} className="font-medium" style={{ color: cs.text }}>{email}</a>
-                </div>
-              </div>
-            )}
-            {address && (
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${cs.primary}15` }}>
-                  <MapPin className="h-5 w-5" style={{ color: cs.primary }} />
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wider" style={{ color: cs.textLight }}>Adresse</p>
-                  <p className="font-medium" style={{ color: cs.text }}>{address}</p>
-                </div>
-              </div>
-            )}
-            {hours && hours.length > 0 && (
-              <div className="flex items-start gap-4">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div className="space-y-5">
+            {section.content && <p className="text-lg leading-relaxed mb-6" style={{ color: cs.textLight }}>{section.content}</p>}
+            {[
+              phone && { icon: "Phone", label: "Telefon", value: phone, href: `tel:${phone}` },
+              address && { icon: "MapPin", label: "Adresse", value: address, href: undefined },
+              email && { icon: "Mail", label: "E-Mail", value: email, href: `mailto:${email}` },
+            ].filter(Boolean).map((item: any, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 rounded-xl" style={{ backgroundColor: cs.background }}>
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${cs.primary}15` }}>
-                  <Clock className="h-5 w-5" style={{ color: cs.primary }} />
+                  <Icon name={item.icon} className="h-5 w-5" style={{ color: cs.primary }} />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wider mb-2" style={{ color: cs.textLight }}>Öffnungszeiten</p>
-                  {hours.map((h, i) => (
-                    <p key={i} className="text-sm" style={{ color: cs.text }}>{h}</p>
-                  ))}
+                  <p className="text-xs font-medium uppercase tracking-wider mb-0.5" style={{ color: cs.textLight }}>{item.label}</p>
+                  {item.href ? (
+                    <a href={item.href} className="font-semibold hover:opacity-80 transition-opacity" style={{ color: cs.text }}>{item.value}</a>
+                  ) : (
+                    <p className="font-semibold" style={{ color: cs.text }}>{item.value}</p>
+                  )}
                 </div>
+              </div>
+            ))}
+            {hours && hours.length > 0 && (
+              <div className="p-4 rounded-xl" style={{ backgroundColor: cs.background }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${cs.primary}15` }}>
+                    <Clock className="h-5 w-5" style={{ color: cs.primary }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wider" style={{ color: cs.textLight }}>Öffnungszeiten</p>
+                </div>
+                {hours.map((h, i) => <p key={i} className="text-sm py-0.5" style={{ color: cs.text }}>{h}</p>)}
               </div>
             )}
           </div>
-          <div className="rounded-2xl border p-6" style={{ backgroundColor: cs.surface, borderColor: `${cs.text}08` }}>
-            <h3 className="text-lg font-semibold mb-4" style={{ color: cs.text }}>Nachricht senden</h3>
+          <div className="rounded-2xl border p-6" style={{ backgroundColor: cs.background, borderColor: `${cs.text}08` }}>
+            <h3 className="text-lg font-semibold mb-5" style={{ color: cs.text }}>Nachricht senden</h3>
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <input type="text" placeholder="Ihr Name" className="w-full px-4 py-3 rounded-lg border text-sm" style={{ backgroundColor: cs.background, borderColor: `${cs.text}15`, color: cs.text }} />
-              <input type="email" placeholder="Ihre E-Mail" className="w-full px-4 py-3 rounded-lg border text-sm" style={{ backgroundColor: cs.background, borderColor: `${cs.text}15`, color: cs.text }} />
-              <textarea placeholder="Ihre Nachricht" rows={4} className="w-full px-4 py-3 rounded-lg border text-sm resize-none" style={{ backgroundColor: cs.background, borderColor: `${cs.text}15`, color: cs.text }} />
-              <button type="submit" className="w-full py-3 rounded-lg text-sm font-semibold text-white transition-transform hover:scale-[1.02]" style={{ background: cs.gradient || cs.primary }}>
+              {["Ihr Name", "Ihre E-Mail", "Ihre Telefonnummer (optional)"].map((ph, i) => (
+                <input key={i} type={i === 1 ? "email" : i === 2 ? "tel" : "text"} placeholder={ph}
+                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all"
+                  style={{ backgroundColor: cs.surface, borderColor: `${cs.text}15`, color: cs.text }} />
+              ))}
+              <textarea placeholder="Ihre Nachricht" rows={4} className="w-full px-4 py-3 rounded-xl border text-sm resize-none outline-none transition-all"
+                style={{ backgroundColor: cs.surface, borderColor: `${cs.text}15`, color: cs.text }} />
+              <button type="submit" className="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02] shadow-lg" style={{ background: cs.gradient || cs.primary }}>
                 {section.ctaText || "Nachricht senden"}
               </button>
             </form>
@@ -291,13 +463,16 @@ function ContactSection({ section, cs, phone, address, email, hours }: { section
 
 function CTASection({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   return (
-    <section className="py-16 sm:py-24" style={{ background: cs.gradient || cs.primary }}>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{section.headline}</h2>
+    <section className="py-16 sm:py-24 relative overflow-hidden" style={{ background: cs.gradient || cs.primary }}>
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 2px, transparent 2px), radial-gradient(circle at 80% 50%, white 2px, transparent 2px)", backgroundSize: "80px 80px" }} />
+      </div>
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{section.headline}</h2>
         {section.content && <p className="text-lg text-white/80 mb-8">{section.content}</p>}
         {section.ctaText && (
-          <a href={section.ctaLink || "#"} className="inline-block px-8 py-3.5 rounded-full text-base font-semibold shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: "white", color: cs.primary }}>
-            {section.ctaText}
+          <a href={section.ctaLink || "#"} className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-semibold shadow-xl transition-all hover:scale-105" style={{ backgroundColor: "white", color: cs.primary }}>
+            {section.ctaText} <ArrowRight className="h-4 w-4" />
           </a>
         )}
       </div>
@@ -306,18 +481,22 @@ function CTASection({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
 }
 
 function GallerySection({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const images = (section as any).images as string[] | undefined;
   return (
     <section className="py-16 sm:py-24" style={{ backgroundColor: cs.surface }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{section.headline}</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text }}>{section.headline}</h2>
         <div className="w-16 h-1 rounded-full mx-auto mb-12" style={{ backgroundColor: cs.primary }} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {section.items?.map((item, i) => (
-            <div key={i} className="rounded-2xl overflow-hidden border" style={{ borderColor: `${cs.text}08` }}>
-              <div className="aspect-video flex items-center justify-center" style={{ backgroundColor: `${cs.primary}10` }}>
-                <Camera className="h-8 w-8" style={{ color: `${cs.primary}40` }} />
-              </div>
-              {item.title && <div className="p-4"><p className="text-sm font-medium" style={{ color: cs.text }}>{item.title}</p></div>}
+          {(images || section.items || []).map((item: any, i: number) => (
+            <div key={i} className="rounded-2xl overflow-hidden border group" style={{ borderColor: `${cs.text}08` }}>
+              {typeof item === "string" ? (
+                <img src={item} alt={`Galerie ${i + 1}`} className="w-full aspect-video object-cover transition-transform group-hover:scale-105" />
+              ) : (
+                <div className="aspect-video flex items-center justify-center" style={{ backgroundColor: `${cs.primary}10` }}>
+                  <Camera className="h-8 w-8" style={{ color: `${cs.primary}40` }} />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -330,12 +509,12 @@ function TeamSection({ section, cs }: { section: WebsiteSection; cs: ColorScheme
   return (
     <section className="py-16 sm:py-24" style={{ backgroundColor: cs.background }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{section.headline}</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4" style={{ color: cs.text }}>{section.headline}</h2>
         <div className="w-16 h-1 rounded-full mx-auto mb-12" style={{ backgroundColor: cs.primary }} />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {section.items?.map((item, i) => (
             <div key={i} className="text-center p-6 rounded-2xl border" style={{ backgroundColor: cs.surface, borderColor: `${cs.text}08` }}>
-              <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-white" style={{ backgroundColor: cs.primary }}>
+              <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-white" style={{ background: cs.gradient || cs.primary }}>
                 {item.title?.charAt(0) || "T"}
               </div>
               <h3 className="font-semibold" style={{ color: cs.text }}>{item.title}</h3>

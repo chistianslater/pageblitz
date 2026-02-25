@@ -15,6 +15,13 @@
       "when": 1771966278109,
       "tag": "0001_glorious_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772000718568,
+      "tag": "0002_slim_payback",
+      "breakpoints": true
     }
   ]
 }

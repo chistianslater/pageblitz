@@ -34,6 +34,11 @@ export const businesses = mysqlTable("businesses", {
   searchQuery: varchar("searchQuery", { length: 500 }),
   searchRegion: varchar("searchRegion", { length: 255 }),
   hasWebsite: int("hasWebsite").default(0),
+  // Lead qualification fields
+  leadType: mysqlEnum("leadType", ["no_website", "outdated_website", "poor_website", "unknown"]).default("unknown"),
+  websiteAge: int("websiteAge"), // estimated age in years
+  websiteScore: int("websiteScore"), // 0-100 quality score
+  websiteAnalysis: json("websiteAnalysis"), // detailed analysis object
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -53,11 +58,12 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   stripeSessionId: varchar("stripeSessionId", { length: 255 }),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
   paidAt: timestamp("paidAt"),
-  addons: json("addons"),
+   addons: json("addons"),
+  heroImageUrl: text("heroImageUrl"), // AI-generated or Unsplash hero image
+  layoutStyle: varchar("layoutStyle", { length: 50 }).default("classic"), // design variant
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
-
 export type GeneratedWebsite = typeof generatedWebsites.$inferSelect;
 export type InsertGeneratedWebsite = typeof generatedWebsites.$inferInsert;
 
