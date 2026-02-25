@@ -55,3 +55,8 @@
 
 ## Bugfixes
 - [x] Fix "JSON Parse error: Unexpected identifier undefined" beim Dashboard-Laden
+
+## Bugfixes Runde 2
+- [x] Alle JSON.parse-Stellen im Code absichern
+- [x] localStorage beim App-Start auf ungültige Werte prüfen und bereinigen (sanitizeLocalStorage in main.tsx)
+- [x] Server-Neustart und vollständige Verifikation (17/17 Tests bestanden)

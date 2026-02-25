@@ -277,7 +277,12 @@ Wähle Farben die zur Branche "${business.category || "Dienstleistung"}" passen.
 
         let websiteData: any;
         try {
-          websiteData = JSON.parse(content);
+          // Strip markdown code fences if the LLM wraps the JSON in ```json ... ```
+          const cleaned = content
+            .replace(/^```(?:json)?\s*/i, "")
+            .replace(/\s*```\s*$/, "")
+            .trim();
+          websiteData = JSON.parse(cleaned);
         } catch {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI hat kein valides JSON zurückgegeben" });
         }

@@ -8,6 +8,26 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+// ── localStorage Sanitization ──────────────────────────────────────────────
+// The Manus runtime reads "manus-runtime-user-info" from localStorage and
+// sends it via postMessage to the container, which calls JSON.parse() on it.
+// If the stored value is the literal string "undefined" (caused by a previous
+// bug where JSON.stringify(undefined) was stored), JSON.parse("undefined")
+// throws "JSON Parse error: Unexpected identifier 'undefined'".
+// Fix: on every startup, validate the stored value and remove it if invalid.
+(function sanitizeLocalStorage() {
+  const KEY = "manus-runtime-user-info";
+  const raw = localStorage.getItem(KEY);
+  if (raw !== null) {
+    try {
+      JSON.parse(raw);
+    } catch {
+      // Value is not valid JSON (e.g. the string "undefined") – remove it.
+      localStorage.removeItem(KEY);
+    }
+  }
+})();
+
 const queryClient = new QueryClient();
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
