@@ -142,6 +142,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [legalConsent, setLegalConsent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // ── Onboarding data ─────────────────────────────────────────────────────
   const [data, setData] = useState<OnboardingData>({
@@ -253,15 +254,50 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Gewerbliche Kunden & Unternehmen",
             "Privat- und Gewerbekunden",
           ];
+        case "legalOwner": {
+          // Suggest owner name from GMB if available (business name as fallback hint)
+          const suggestions: string[] = [];
+          if (business?.name) suggestions.push(business.name);
+          return suggestions;
+        }
+        case "legalStreet": {
+          // Extract street from GMB address (format: "Straße 12, PLZ Stadt, Land")
+          const suggestions: string[] = [];
+          if (business?.address) {
+            const parts = business.address.split(",");
+            if (parts.length >= 1) {
+              const street = parts[0].trim();
+              if (street && /\d/.test(street)) suggestions.push(street);
+            }
+          }
+          return suggestions;
+        }
+        case "legalZipCity": {
+          // Extract zip+city from GMB address
+          const suggestions: string[] = [];
+          if (business?.address) {
+            const parts = business.address.split(",");
+            if (parts.length >= 2) {
+              // Try second part which often is "PLZ Stadt"
+              const zipCity = parts[1].trim();
+              if (/^\d{5}\s+.+/.test(zipCity)) suggestions.push(zipCity);
+              else if (parts.length >= 3) {
+                const alt = parts[2].trim();
+                if (/^\d{5}\s+.+/.test(alt)) suggestions.push(alt);
+              }
+            }
+          }
+          return suggestions;
+        }
         case "legalEmail":
-          return data.legalEmail ? [data.legalEmail] : [];
+          return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         case "email":
-          return data.legalEmail ? [data.legalEmail] : [];
+          return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         default:
           return [];
       }
     },
-    [data.businessName, data.legalEmail, business?.name]
+    [data.businessName, data.legalEmail, business?.name, business?.address, business?.email]
   );
 
   // ── Step prompts ────────────────────────────────────────────────────────
@@ -354,11 +390,29 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   };
 
   // ── Step advancement ────────────────────────────────────────────────────
+  // Group headers shown before certain thematic sections
+  const GROUP_HEADERS: Partial<Record<ChatStep, string>> = {
+    legalOwner: "📋 **Abschnitt 2: Rechtliche Pflichtangaben**\n\nFür ein vollständiges Impressum und eine korrekte Datenschutzerklärung brauche ich noch ein paar Angaben. Das dauert nur 2 Minuten!",
+    brandColor: "🎨 **Abschnitt 3: Visuelles Design**\n\nJetzt gestalten wir den Look deiner Website – Farbe und Logo. Das macht deine Seite unverwechselbar!",
+    addons: "⚡ **Abschnitt 4: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern?",
+  };
+
   const advanceToStep = useCallback(
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
+      // Show group header if this step starts a new thematic section
+      if (GROUP_HEADERS[nextStep]) {
+        await addBotMessage(GROUP_HEADERS[nextStep]!, 600);
+        await new Promise((r) => setTimeout(r, 300));
+      }
       await addBotMessage(getStepPrompt(nextStep), 800);
-      setTimeout(() => inputRef.current?.focus(), 900);
+      setTimeout(() => {
+        if (["tagline", "description", "usp", "targetAudience"].includes(nextStep)) {
+          textareaRef.current?.focus();
+        } else {
+          inputRef.current?.focus();
+        }
+      }, 900);
     },
     [addBotMessage, getStepPrompt]
   );
@@ -1036,41 +1090,69 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div className="flex gap-2">
                 {/* AI generate button for text fields */}
                 {["tagline", "description", "usp", "targetAudience"].includes(currentStep) && (
-                  <button
-                    onClick={() => generateWithAI(currentStep as keyof OnboardingData)}
-                    disabled={isGenerating}
-                    className="flex-shrink-0 w-10 h-10 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 flex items-center justify-center transition-colors"
-                    title="Mit KI generieren"
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4 text-violet-400" />
-                    )}
-                  </button>
+                  <div className="relative flex-shrink-0 group/ai">
+                    <button
+                      onClick={() => generateWithAI(currentStep as keyof OnboardingData)}
+                      disabled={isGenerating}
+                      className="w-10 h-10 rounded-xl bg-violet-600/30 hover:bg-violet-600/50 border border-violet-500/60 flex items-center justify-center transition-all ai-glow-btn"
+                      title="Mit KI generieren"
+                    >
+                      {isGenerating ? (
+                        <Loader2 className="w-4 h-4 text-violet-300 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 text-violet-300" />
+                      )}
+                    </button>
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 pointer-events-none opacity-0 group-hover/ai:opacity-100 transition-opacity duration-200 z-20">
+                      <div className="bg-violet-900/95 border border-violet-500/50 text-violet-100 text-xs px-3 py-2 rounded-lg shadow-lg text-center leading-snug">
+                        ✨ Automatisch von KI<br/>generieren lassen
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-violet-900/95" />
+                      </div>
+                    </div>
+                  </div>
                 )}
-                <input
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
-                  placeholder={
-                    currentStep === "businessName"
-                      ? data.businessName || "Unternehmensname eingeben..."
-                      : currentStep === "legalStreet"
-                      ? "Musterstraße 12"
-                      : currentStep === "legalZipCity"
-                      ? "46395 Bocholt"
-                      : currentStep === "legalEmail"
-                      ? "info@musterfirma.de"
-                      : currentStep === "legalVat"
-                      ? "DE123456789 oder 'Nein'"
-                      : currentStep === "email"
-                      ? "deine@email.de"
-                      : "Deine Antwort..."
-                  }
-                  className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
-                />
+                {["tagline", "description", "usp", "targetAudience"].includes(currentStep) ? (
+                  <textarea
+                    ref={textareaRef}
+                    value={inputValue}
+                    rows={3}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                      // Auto-resize
+                      const el = e.target as HTMLTextAreaElement;
+                      el.style.height = "auto";
+                      el.style.height = Math.min(el.scrollHeight, 160) + "px";
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
+                    placeholder="Deine Antwort... (Shift+Enter für neue Zeile)"
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none leading-relaxed"
+                    style={{ minHeight: "72px", maxHeight: "160px" }}
+                  />
+                ) : (
+                  <input
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
+                    placeholder={
+                      currentStep === "businessName"
+                        ? data.businessName || "Unternehmensname eingeben..."
+                        : currentStep === "legalStreet"
+                        ? "Musterstraße 12"
+                        : currentStep === "legalZipCity"
+                        ? "46395 Bocholt"
+                        : currentStep === "legalEmail"
+                        ? "info@musterfirma.de"
+                        : currentStep === "legalVat"
+                        ? "DE123456789 oder 'Nein'"
+                        : currentStep === "email"
+                        ? "deine@email.de"
+                        : "Deine Antwort..."
+                    }
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                  />
+                )}
                 <button
                   onClick={() => handleSubmit()}
                   disabled={!inputValue.trim() && currentStep !== "businessName"}

@@ -373,3 +373,9 @@
 - [x] Kontaktformular-Upsell: ausgegraut in Preview mit +4,90 € Badge wenn nicht aktiviert
 - [x] Haftungs-Checkbox beim Checkout (Nutzer bestätigt Verantwortung für Impressum-Daten)
 - [ ] Visueller Sektions-Editor (post-purchase, im Kunden-Dashboard)
+
+## Onboarding UX-Verbesserungen (Feb 27 2026)
+- [x] GMB-Vorausfüllung: Rechtliche Felder (Straße, PLZ/Stadt, Telefon, E-Mail) mit GMB-Daten als Quick-Reply anbieten
+- [x] Textarea statt Input für lange Textfelder (Tagline, Beschreibung, USP, Zielgruppe) mit Auto-Resize
+- [x] KI-Button hervorheben: Glow-Animation + Tooltip "✨ Automatisch von KI generieren lassen"
+- [x] Themen-Gruppen-Ankündigungen: Bot kündigt Abschnitte an (Grunddaten / Rechtliches / Visuelles)
