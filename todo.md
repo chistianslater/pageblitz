@@ -331,3 +331,8 @@
 - [x] Chat-Panel: items-center für horizontale Zentrierung
 - [x] MacBook-Viewport: Scrollen via onWheel-Handler mit scrollTop-State
 - [x] MacBook-Padding: px-8 py-10 (größer als vorher)
+
+## Chat-Stagnation Bug (Runde 22)
+- [x] Bug: Nach Auswahl eines Quick-Reply-Chips bei Schritt 2 (tagline) geht der Chat nicht weiter
+- [x] Fix: trySaveStep-Helper wraps saveStepMutation in try/catch – Chat läuft immer weiter, auch wenn Server-Save fehlschlägt
+- [x] Fix: advanceToStep wird jetzt außerhalb des try/catch aufgerufen (garantiert immer ausgeführt)

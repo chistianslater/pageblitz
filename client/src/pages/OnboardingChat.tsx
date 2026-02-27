@@ -340,6 +340,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     [addBotMessage, getStepPrompt]
   );
 
+  // Helper to save step data without blocking chat advancement
+  const trySaveStep = async (stepIdx: number, stepData: Record<string, unknown>) => {
+    if (!websiteId) return;
+    try {
+      await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: stepData });
+    } catch (e) {
+      console.warn("[Onboarding] saveStep failed (non-blocking):", e);
+    }
+  };
+
   const handleSubmit = async (value?: string) => {
     // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
     const val = value !== undefined ? value.trim() : inputValue.trim();
@@ -351,92 +361,87 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const stepIdx = STEP_ORDER.indexOf(currentStep);
     const nextStep = STEP_ORDER[stepIdx + 1] as ChatStep;
 
-    switch (currentStep) {
-      case "businessName":
-        if (val) {
+    try {
+      switch (currentStep) {
+        case "businessName":
+          if (val) {
+            addUserMessage(val);
+            setData((p) => ({ ...p, businessName: val }));
+            await trySaveStep(stepIdx, { businessName: val });
+          } else {
+            // Confirmed existing name
+            addUserMessage(`Ja, „${data.businessName}“ stimmt! ✓`);
+          }
+          break;
+        case "tagline":
           addUserMessage(val);
-          setData((p) => ({ ...p, businessName: val }));
-          if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { businessName: val } });
-        } else {
-          // Confirmed existing name
-          addUserMessage(`Ja, „${data.businessName}“ stimmt! ✓`);
+          setData((p) => ({ ...p, tagline: val }));
+          await trySaveStep(stepIdx, { tagline: val });
+          break;
+        case "description":
+          addUserMessage(val);
+          setData((p) => ({ ...p, description: val }));
+          await trySaveStep(stepIdx, { description: val });
+          break;
+        case "usp":
+          addUserMessage(val);
+          setData((p) => ({ ...p, usp: val }));
+          await trySaveStep(stepIdx, { usp: val });
+          break;
+        case "targetAudience":
+          addUserMessage(val);
+          setData((p) => ({ ...p, targetAudience: val }));
+          await trySaveStep(stepIdx, { targetAudience: val });
+          break;
+        case "legalOwner":
+          addUserMessage(val);
+          setData((p) => ({ ...p, legalOwner: val }));
+          await trySaveStep(stepIdx, { legalOwner: val });
+          break;
+        case "legalAddress": {
+          addUserMessage(val);
+          // Parse "Musterstraße 1, 46395 Bocholt" format
+          const parts = val.split(",").map((s) => s.trim());
+          const street = parts[0] || val;
+          const cityPart = parts[1] || "";
+          const zipMatch = cityPart.match(/^(\d{5})\s+(.+)$/);
+          const zip = zipMatch?.[1] || "";
+          const city = zipMatch?.[2] || cityPart;
+          setData((p) => ({ ...p, legalStreet: street, legalZip: zip, legalCity: city }));
+          await trySaveStep(stepIdx, { legalStreet: street, legalZip: zip, legalCity: city });
+          break;
         }
-        break;
-      case "tagline":
-        addUserMessage(val);
-        setData((p) => ({ ...p, tagline: val }));
-        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { tagline: val } });
-        break;
-      case "description":
-        addUserMessage(val);
-        setData((p) => ({ ...p, description: val }));
-        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { description: val } });
-        break;
-      case "usp":
-        addUserMessage(val);
-        setData((p) => ({ ...p, usp: val }));
-        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { usp: val } });
-        break;
-      case "targetAudience":
-        addUserMessage(val);
-        setData((p) => ({ ...p, targetAudience: val }));
-        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { targetAudience: val } });
-        break;
-      case "legalOwner":
-        addUserMessage(val);
-        setData((p) => ({ ...p, legalOwner: val }));
-        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { legalOwner: val } });
-        break;
-      case "legalAddress": {
-        addUserMessage(val);
-        // Parse "Musterstraße 1, 46395 Bocholt" format
-        const parts = val.split(",").map((s) => s.trim());
-        const street = parts[0] || val;
-        const cityPart = parts[1] || "";
-        const zipMatch = cityPart.match(/^(\d{5})\s+(.+)$/);
-        const zip = zipMatch?.[1] || "";
-        const city = zipMatch?.[2] || cityPart;
-        setData((p) => ({ ...p, legalStreet: street, legalZip: zip, legalCity: city }));
-        if (websiteId)
-          await saveStepMutation.mutateAsync({
-            websiteId,
-            step: stepIdx,
-            data: { legalStreet: street, legalZip: zip, legalCity: city },
-          });
-        break;
+        case "legalContact": {
+          addUserMessage(val);
+          // Try to extract email and VAT ID
+          const emailMatch = val.match(/[\w.-]+@[\w.-]+\.\w+/);
+          const vatMatch = val.match(/DE\d{9}/i);
+          const email = emailMatch?.[0] || data.legalEmail;
+          const vatId = vatMatch?.[0] || "";
+          setData((p) => ({ ...p, legalEmail: email, legalVatId: vatId }));
+          await trySaveStep(stepIdx, { legalEmail: email, legalVatId: vatId });
+          break;
+        }
+        case "email":
+          addUserMessage(val);
+          setData((p) => ({ ...p, email: val }));
+          break;
+        case "services":
+        case "addons":
+        case "subpages":
+          // These are handled by the interactive UI below
+          break;
+        case "preview":
+          addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+          break;
+        case "checkout":
+          break;
       }
-      case "legalContact": {
-        addUserMessage(val);
-        // Try to extract email and VAT ID
-        const emailMatch = val.match(/[\w.-]+@[\w.-]+\.\w+/);
-        const vatMatch = val.match(/DE\d{9}/i);
-        const email = emailMatch?.[0] || data.legalEmail;
-        const vatId = vatMatch?.[0] || "";
-        setData((p) => ({ ...p, legalEmail: email, legalVatId: vatId }));
-        if (websiteId)
-          await saveStepMutation.mutateAsync({
-            websiteId,
-            step: stepIdx,
-            data: { legalEmail: email, legalVatId: vatId },
-          });
-        break;
-      }
-      case "email":
-        addUserMessage(val);
-        setData((p) => ({ ...p, email: val }));
-        break;
-      case "services":
-      case "addons":
-      case "subpages":
-        // These are handled by the interactive UI below
-        break;
-      case "preview":
-        addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
-        break;
-      case "checkout":
-        break;
+    } catch (e) {
+      console.error("[Onboarding] handleSubmit error:", e);
     }
 
+    // Always advance to next step, even if save failed
     if (nextStep) {
       await advanceToStep(nextStep);
     }
