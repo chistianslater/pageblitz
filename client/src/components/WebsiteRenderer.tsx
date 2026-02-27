@@ -41,6 +41,7 @@ interface WebsiteRendererProps {
   businessAddress?: string | null;
   businessEmail?: string | null;
   openingHours?: string[];
+  slug?: string | null;
 }
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
@@ -212,6 +213,7 @@ export default function WebsiteRenderer({
   businessAddress,
   businessEmail,
   openingHours = [],
+  slug,
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
   const cs: ColorScheme = colorScheme && colorScheme.primary
@@ -252,6 +254,7 @@ export default function WebsiteRenderer({
     businessAddress,
     businessEmail,
     openingHours,
+    slug,
   };
 
   // Build CSS custom properties string – always set at least the font defaults

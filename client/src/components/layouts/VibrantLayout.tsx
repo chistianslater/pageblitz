@@ -24,9 +24,12 @@ interface Props {
   businessAddress?: string | null;
   businessEmail?: string | null;
   openingHours?: string[];
+  slug?: string | null;
 }
 
-export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+  slug,
+}: Props) {
   const darkCs = { ...cs, background: "#0d0d0d", surface: "#161616", text: "#ffffff", textLight: "rgba(255,255,255,0.6)" };
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkCs.background, color: darkCs.text }}>
@@ -42,7 +45,7 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActiv
           {section.type === "cta" && <VibrantCTA section={section} cs={darkCs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
       ))}
-      <VibrantFooter websiteData={websiteData} cs={darkCs} />
+      <VibrantFooter websiteData={websiteData} cs={darkCs} slug={slug} />
     </div>
   );
 }
@@ -294,7 +297,7 @@ function VibrantContact({ section, cs, phone, address, email, hours }: { section
   );
 }
 
-function VibrantFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
+function VibrantFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
     <footer style={{ backgroundColor: "#000", borderTop: `3px solid ${cs.primary}`, padding: "2.5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -302,7 +305,7 @@ function VibrantFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: Colo
         <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.2)" }}>{websiteData.footer?.text}</p>
         <div style={{ display: "flex", gap: "1.5rem" }}>
           {["Impressum", "Datenschutz"].map(l => (
-            <a key={l} href="#" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }} className="hover:text-white transition-colors">{l}</a>
+            <a key={l} href={slug ? `/site/${slug}/${l.toLowerCase()}` : "#"} style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }} className="hover:text-white transition-colors">{l}</a>
           ))}
         </div>
       </div>

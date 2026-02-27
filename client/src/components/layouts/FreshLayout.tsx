@@ -24,9 +24,12 @@ interface Props {
   businessAddress?: string | null;
   businessEmail?: string | null;
   openingHours?: string[];
+  slug?: string | null;
 }
 
-export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+  slug,
+}: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: ROUND, backgroundColor: "#fafaf8", color: "#1a1a1a" }}>
@@ -42,7 +45,7 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivat
           {section.type === "cta" && <FreshCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
       ))}
-      <FreshFooter websiteData={websiteData} cs={cs} />
+      <FreshFooter websiteData={websiteData} cs={cs} slug={slug} />
     </div>
   );
 }
@@ -291,7 +294,7 @@ function FreshContact({ section, cs, phone, address, email, hours }: { section: 
   );
 }
 
-function FreshFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
+function FreshFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
     <footer style={{ backgroundColor: "#1a1a1a", padding: "2.5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -299,7 +302,7 @@ function FreshFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorS
         <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.3)" }}>{websiteData.footer?.text}</p>
         <div style={{ display: "flex", gap: "1.5rem" }}>
           {["Impressum", "Datenschutz"].map(l => (
-            <a key={l} href="#" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }} className="hover:text-white transition-colors">{l}</a>
+            <a key={l} href={slug ? `/site/${slug}/${l.toLowerCase()}` : "#"} style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }} className="hover:text-white transition-colors">{l}</a>
           ))}
         </div>
       </div>

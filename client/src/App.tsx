@@ -13,6 +13,8 @@ import StatsPage from "./pages/StatsPage";
 import TemplatesPage from "./pages/TemplatesPage";
 import PreviewPage from "./pages/PreviewPage";
 import SitePage from "./pages/SitePage";
+import OnboardingWizard from "./pages/OnboardingWizard";
+import LegalPage from "./pages/LegalPage";
 
 function AdminRouter() {
   return (
@@ -35,6 +37,9 @@ function Router() {
     <Switch>
       <Route path="/preview/:token" component={PreviewPage} />
       <Route path="/site/:slug" component={SitePage} />
+      <Route path="/site/:slug/impressum" component={LegalPage} />
+      <Route path="/site/:slug/datenschutz" component={LegalPage} />
+      <Route path="/websites/:id/onboarding">{(params) => <OnboardingWizard websiteId={parseInt(params.id || "0")} />}</Route>
       <Route>
         <AdminRouter />
       </Route>

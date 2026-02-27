@@ -23,9 +23,12 @@ interface Props {
   businessAddress?: string | null;
   businessEmail?: string | null;
   openingHours?: string[];
+  slug?: string | null;
 }
 
-export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+  slug,
+}: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: SANS, backgroundColor: cs.background, color: cs.text }}>

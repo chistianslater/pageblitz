@@ -6,6 +6,8 @@ import {
   generatedWebsites, InsertGeneratedWebsite, GeneratedWebsite,
   outreachEmails, InsertOutreachEmail, OutreachEmail,
   templateUploads, InsertTemplateUpload, TemplateUpload,
+  subscriptions, InsertSubscription, Subscription,
+  onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -324,4 +326,65 @@ export async function getNextLayoutForIndustry(
     console.warn("[DB] getNextLayoutForIndustry failed, falling back to random:", err);
     return pool[Math.floor(Math.random() * pool.length)];
   }
+}
+
+// ── Subscriptions ──────────────────────────────────────
+export async function createSubscription(data: InsertSubscription): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(subscriptions).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getSubscriptionByWebsiteId(websiteId: number): Promise<Subscription | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(subscriptions).where(eq(subscriptions.websiteId, websiteId)).limit(1);
+  return result[0];
+}
+
+export async function getSubscriptionByStripeId(stripeSubscriptionId: string): Promise<Subscription | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId)).limit(1);
+  return result[0];
+}
+
+export async function updateSubscription(id: number, data: Partial<InsertSubscription>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(subscriptions).set(data).where(eq(subscriptions.id, id));
+}
+
+export async function updateSubscriptionByWebsiteId(websiteId: number, data: Partial<InsertSubscription>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(subscriptions).set(data).where(eq(subscriptions.websiteId, websiteId));
+}
+
+// ── Onboarding Responses ───────────────────────────────
+export async function createOnboarding(data: InsertOnboardingResponse): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(onboardingResponses).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getOnboardingByWebsiteId(websiteId: number): Promise<OnboardingResponse | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(onboardingResponses).where(eq(onboardingResponses.websiteId, websiteId)).limit(1);
+  return result[0];
+}
+
+export async function updateOnboarding(websiteId: number, data: Partial<InsertOnboardingResponse>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(onboardingResponses).set(data).where(eq(onboardingResponses.websiteId, websiteId));
+}
+
+export async function listOnboardingInProgress(limit = 50, offset = 0): Promise<OnboardingResponse[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(onboardingResponses).where(eq(onboardingResponses.status, "in_progress")).orderBy(desc(onboardingResponses.updatedAt)).limit(limit).offset(offset);
 }

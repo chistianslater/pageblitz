@@ -221,3 +221,43 @@
 - [x] buildEnhancedPrompt: archetype.promptInstruction direkt in Prompt eingebettet
 - [ ] React-Layouts: Mehr visuelle Differenzierung durch konkrete CSS-Klassen statt generischer Patterns
 - [ ] Layouts: Jedes Layout bekommt eine einzigartige strukturelle Signatur (z.B. BoldLayout: Sticky-Sidebar-CTA, TrustLayout: Diagonal-Split, ModernLayout: Bento-Grid-Hero)
+
+## Monetarisierung & Onboarding-System (Runde 16)
+
+### Stripe & Pricing
+- [x] Stripe-Integration einrichten (webdev_add_feature stripe)
+- [x] Pricing-Modell: 79 €/Monat Basis, +9,90 €/Monat pro Unterseite, +4,90 €/Monat Bildergalerie, Kontaktformular als Add-on
+- [x] Stripe Checkout Session erstellen (tRPC procedure: createCheckoutSession)
+- [x] Stripe Webhook: subscription.created → Onboarding starten, subscription.deleted → Website deaktivieren
+- [x] Checkout-Button auf der Website-Detailseite im Admin
+
+### Datenbank
+- [x] Tabelle: subscriptions (websiteId, stripeSubscriptionId, status, plan, addOns JSON, currentPeriodEnd)
+- [x] Tabelle: onboarding_responses (websiteId, step, data JSON, completedAt)
+- [x] Spalte in generated_websites: onboardingStatus (pending | in_progress | completed), hasLegalPages
+- [x] DB-Helpers in db.ts: createSubscription, getSubscription, updateSubscription
+- [x] DB-Helpers in db.ts: createOnboarding, getOnboarding, updateOnboarding
+
+### Onboarding-Wizard (Frontend)
+- [x] Schritt 1: Begrüßung + Erklärung was passiert
+- [x] Schritt 2: Unternehmensinfos verfeinern (Name, Slogan, Kurzbeschreibung, Gründungsjahr, Team-Größe)
+- [x] Schritt 3: Alleinstellungsmerkmal + Top-3-Leistungen (konkret, nicht generisch)
+- [x] Schritt 4: Zielgruppe + häufige Kundenfragen
+- [x] Schritt 5: Logo-Upload (PNG/SVG, max 2MB, komprimiert)
+- [x] Schritt 6: Fotos hochladen (max 5 Fotos, komprimiert, ersetzen Unsplash-Bilder)
+- [x] Schritt 7: Rechtliche Daten (Inhaber, Straße, PLZ, Ort, USt-IdNr., Handelsregister, Verantwortlicher)
+- [x] Schritt 8: Add-ons wählen (Unterseiten, Bildergalerie, Kontaktformular)
+- [x] Schritt 9: Zusammenfassung + Bestätigung → Website aktualisieren
+
+### Server-Logik
+- [x] tRPC procedure: patchWebsiteWithOnboarding – aktualisiert nur Texte/Bilder, kein Re-Design
+- [x] Foto-Upload: S3 storagePut, komprimiert via sharp, ersetzt Unsplash-URLs in website_data JSON
+- [x] Logo-Upload: S3 storagePut, in Navbar und Footer eingebunden
+- [x] Rechtliche Seiten: Impressum + Datenschutz als eigenständige Subpages (kostenlos, Pflicht)
+- [ ] Bildergalerie-Section: neue Section-Type "gallery" in Layout-Komponenten (Add-on)
+
+### Legal Pages
+- [x] Impressum-Generator: Template mit echten Firmendaten befüllen
+- [x] Datenschutz-Generator: DSGVO-konformes Template mit echten Daten
+- [ ] Cookie-Banner: einfaches Opt-in Banner für alle generierten Websites
+- [x] Routing: /site/{slug}/impressum und /site/{slug}/datenschutz

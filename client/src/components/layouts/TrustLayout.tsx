@@ -24,9 +24,12 @@ interface Props {
   businessAddress?: string | null;
   businessEmail?: string | null;
   openingHours?: string[];
+  slug?: string | null;
 }
 
-export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [] }: Props) {
+export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+  slug,
+}: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: "#ffffff", color: "#1a2332" }}>

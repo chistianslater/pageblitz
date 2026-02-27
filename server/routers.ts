@@ -12,6 +12,8 @@ import {
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
+  createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
+  createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { invokeLLM } from "./_core/llm";
@@ -22,6 +24,16 @@ import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutSty
 import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
+import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
+import { uploadLogo, uploadPhoto } from "./onboardingUpload";
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+
+const PRICING = {
+  base: { amount: 7900, currency: "eur", interval: "month" as const },
+  subpage: { amount: 990, currency: "eur", interval: "month" as const },
+  gallery: { amount: 490, currency: "eur", interval: "month" as const },
+} as const;
 
 function slugify(text: string): string {
   return text.toLowerCase()
@@ -1379,15 +1391,217 @@ Antworte NUR mit validem JSON:
       }),
   }),
 
-  // ── Public: Preview checkout ───────────────────────
+  // ── Checkout & Subscriptions ─────────────────────────
   checkout: router({
     createSession: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        addOns: z.object({
+          subpages: z.number().default(0),
+          gallery: z.boolean().default(false),
+          contactForm: z.boolean().default(false),
+        }).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        
+        let totalAmount = PRICING.base.amount;
+        const addOnsList = [];
+        if (input.addOns?.subpages) {
+          totalAmount += input.addOns.subpages * PRICING.subpage.amount;
+          addOnsList.push(`${input.addOns.subpages} Unterseite(n)`);
+        }
+        if (input.addOns?.gallery) {
+          totalAmount += PRICING.gallery.amount;
+          addOnsList.push("Bildergalerie");
+        }
+        if (input.addOns?.contactForm) {
+          addOnsList.push("Kontaktformular");
+        }
+        
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          mode: "subscription",
+          customer_email: ctx.user?.email || undefined,
+          line_items: [
+            {
+              price_data: {
+                currency: "eur",
+                product_data: {
+                  name: `Pageblitz Website - ${website.slug}`,
+                  description: `79EUR/Monat Basis${addOnsList.length > 0 ? " + " + addOnsList.join(", ") : ""}`,
+                },
+                unit_amount: totalAmount,
+                recurring: { interval: "month", interval_count: 1 },
+              },
+              quantity: 1,
+            },
+          ],
+          success_url: `${ctx.req.headers.origin}/websites/${website.id}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${ctx.req.headers.origin}/websites/${website.id}`,
+          metadata: {
+            websiteId: website.id.toString(),
+            userId: ctx.user?.id.toString() || "anonymous",
+            addOns: JSON.stringify(input.addOns),
+          },
+        });
+        
+        if (!session.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Stripe session URL not generated" });
+        return { url: session.url, sessionId: session.id };
+      }),
+  }),
+  
+  // ── Onboarding ────────────────────────────────────────
+  onboarding: router({
+    get: publicProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        if (!onboarding) throw new TRPCError({ code: "NOT_FOUND" });
+        return onboarding;
+      }),
+    
+    saveStep: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        step: z.number(),
+        data: z.record(z.string(), z.any()),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        
+        let onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        if (!onboarding) {
+          await createOnboarding({
+            websiteId: input.websiteId,
+            status: "in_progress",
+            stepCurrent: input.step,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            ...input.data,
+          });
+        } else {
+          await updateOnboarding(input.websiteId, {
+            stepCurrent: input.step,
+            ...input.data,
+            updatedAt: Date.now(),
+          });
+        }
+        
+        return { success: true, step: input.step };
+      }),
+    
+    complete: publicProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
-        await updateWebsite(input.websiteId, { status: "sold", paidAt: new Date() });
-        return { success: true, message: "Zahlung simuliert (Stripe-Integration im MVP)" };
+        
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        if (!onboarding) throw new TRPCError({ code: "NOT_FOUND", message: "Onboarding not found" });
+        
+        // Patch website data with real onboarding content (no redesign)
+        const patchedData = patchWebsiteData(website.websiteData, {
+          businessName: onboarding.businessName,
+          tagline: onboarding.tagline,
+          description: onboarding.description,
+          usp: onboarding.usp,
+          topServices: onboarding.topServices,
+          logoUrl: onboarding.logoUrl,
+          photoUrls: onboarding.photoUrls,
+        });
+        
+        // Generate legal pages if legal data is present
+        let impressumHtml: string | null = null;
+        let datenschutzHtml: string | null = null;
+        
+        if (onboarding.legalOwner && onboarding.legalEmail) {
+          const legalData = {
+            businessName: onboarding.businessName || (website.websiteData as any)?.businessName || "Unternehmen",
+            legalOwner: onboarding.legalOwner,
+            legalStreet: onboarding.legalStreet || "",
+            legalZip: onboarding.legalZip || "",
+            legalCity: onboarding.legalCity || "",
+            legalCountry: onboarding.legalCountry || "Deutschland",
+            legalEmail: onboarding.legalEmail,
+            legalPhone: onboarding.legalPhone || undefined,
+            legalVatId: onboarding.legalVatId || undefined,
+            legalRegister: onboarding.legalRegister || undefined,
+            legalRegisterCourt: onboarding.legalRegisterCourt || undefined,
+            legalResponsible: onboarding.legalResponsible || undefined,
+          };
+          impressumHtml = generateImpressum(legalData);
+          datenschutzHtml = generateDatenschutz(legalData);
+        }
+        
+        // Save patched data and legal pages
+        await updateWebsite(input.websiteId, {
+          websiteData: {
+            ...(patchedData || {}),
+            impressumHtml,
+            datenschutzHtml,
+            hasLegalPages: !!(impressumHtml && datenschutzHtml),
+          } as any,
+          onboardingStatus: "completed",
+          hasLegalPages: !!(impressumHtml && datenschutzHtml),
+          status: "active",
+        });
+        
+        // Mark onboarding as completed
+        await updateOnboarding(input.websiteId, {
+          status: "completed",
+          completedAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+        
+        // Notify owner
+        await notifyOwner({
+          title: "Onboarding abgeschlossen",
+          content: `Website ${website.slug} wurde durch Onboarding aktiviert.`,
+        });
+        
+        return { success: true };
+      }),
+    
+    // Upload logo during onboarding
+    uploadLogo: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        imageData: z.string(),
+        mimeType: z.string().default("image/png"),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await uploadLogo(input.imageData, input.mimeType, input.websiteId);
+        await updateOnboarding(input.websiteId, {
+          logoUrl: result.url,
+          updatedAt: Date.now(),
+        });
+        return { url: result.url, key: result.key };
+      }),
+    
+    // Upload photos during onboarding
+    uploadPhoto: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        imageData: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+        index: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await uploadPhoto(input.imageData, input.mimeType, input.websiteId, input.index);
+        
+        // Append to existing photo URLs
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        const existingPhotos = Array.isArray(onboarding?.photoUrls) ? onboarding.photoUrls as string[] : [];
+        const updatedPhotos = [...existingPhotos, result.url];
+        
+        await updateOnboarding(input.websiteId, {
+          photoUrls: updatedPhotos as any,
+          updatedAt: Date.now(),
+        });
+        return { url: result.url, key: result.key, totalPhotos: updatedPhotos.length };
       }),
   }),
 });

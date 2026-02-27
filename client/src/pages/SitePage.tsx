@@ -51,6 +51,7 @@ export default function SitePage() {
       businessAddress={business?.address || undefined}
       businessEmail={business?.email || undefined}
       openingHours={business?.openingHours as string[] | undefined}
+      slug={params.slug}
     />
   );
 }

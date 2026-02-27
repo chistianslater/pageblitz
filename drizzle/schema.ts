@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint, boolean } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -36,9 +36,9 @@ export const businesses = mysqlTable("businesses", {
   hasWebsite: int("hasWebsite").default(0),
   // Lead qualification fields
   leadType: mysqlEnum("leadType", ["no_website", "outdated_website", "poor_website", "unknown"]).default("unknown"),
-  websiteAge: int("websiteAge"), // estimated age in years
-  websiteScore: int("websiteScore"), // 0-100 quality score
-  websiteAnalysis: json("websiteAnalysis"), // detailed analysis object
+  websiteAge: int("websiteAge"),
+  websiteScore: int("websiteScore"),
+  websiteAnalysis: json("websiteAnalysis"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -58,14 +58,78 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   stripeSessionId: varchar("stripeSessionId", { length: 255 }),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
   paidAt: timestamp("paidAt"),
-   addons: json("addons"),
-  heroImageUrl: text("heroImageUrl"), // AI-generated or Unsplash hero image
-  layoutStyle: varchar("layoutStyle", { length: 50 }).default("classic"), // design variant
+  addons: json("addons"),
+  heroImageUrl: text("heroImageUrl"),
+  layoutStyle: varchar("layoutStyle", { length: 50 }).default("classic"),
+  // Onboarding & subscription state
+  onboardingStatus: mysqlEnum("onboardingStatus", ["pending", "in_progress", "completed"]).default("pending"),
+  hasLegalPages: boolean("hasLegalPages").default(false),
+  subscriptionStatus: mysqlEnum("subscriptionStatus", ["none", "active", "canceled", "past_due"]).default("none"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 export type GeneratedWebsite = typeof generatedWebsites.$inferSelect;
 export type InsertGeneratedWebsite = typeof generatedWebsites.$inferInsert;
+
+export const subscriptions = mysqlTable("subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  userId: int("userId").notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  status: mysqlEnum("status", ["active", "canceled", "past_due", "trialing", "incomplete"]).notNull().default("incomplete"),
+  plan: varchar("plan", { length: 50 }).notNull().default("base"),
+  addOns: json("addOns"), // { contactForm: bool, gallery: bool, subpages: string[] }
+  currentPeriodEnd: bigint("currentPeriodEnd", { mode: "number" }),
+  createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+  updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+});
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;
+
+export const onboardingResponses = mysqlTable("onboarding_responses", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull().unique(),
+  status: mysqlEnum("status", ["pending", "in_progress", "completed"]).notNull().default("pending"),
+  stepCurrent: int("stepCurrent").notNull().default(0),
+  // Business info
+  businessName: varchar("businessName", { length: 255 }),
+  tagline: varchar("tagline", { length: 255 }),
+  description: text("description"),
+  foundedYear: int("foundedYear"),
+  teamSize: varchar("teamSize", { length: 50 }),
+  // USP & services
+  usp: text("usp"),
+  topServices: json("topServices"), // [{ title, description }]
+  targetAudience: text("targetAudience"),
+  faqItems: json("faqItems"), // [{ question, answer }]
+  // Media
+  logoUrl: varchar("logoUrl", { length: 1024 }),
+  photoUrls: json("photoUrls"), // string[]
+  // Legal data
+  legalOwner: varchar("legalOwner", { length: 255 }),
+  legalStreet: varchar("legalStreet", { length: 255 }),
+  legalZip: varchar("legalZip", { length: 20 }),
+  legalCity: varchar("legalCity", { length: 255 }),
+  legalCountry: varchar("legalCountry", { length: 100 }).default("Deutschland"),
+  legalEmail: varchar("legalEmail", { length: 255 }),
+  legalPhone: varchar("legalPhone", { length: 100 }),
+  legalVatId: varchar("legalVatId", { length: 100 }),
+  legalRegister: varchar("legalRegister", { length: 255 }),
+  legalRegisterCourt: varchar("legalRegisterCourt", { length: 255 }),
+  legalResponsible: varchar("legalResponsible", { length: 255 }),
+  // Add-ons
+  addOnContactForm: boolean("addOnContactForm").default(false),
+  addOnGallery: boolean("addOnGallery").default(false),
+  addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
+  completedAt: bigint("completedAt", { mode: "number" }),
+  createdAt: bigint("createdAt", { mode: "number" }).notNull(),
+  updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+});
+
+export type OnboardingResponse = typeof onboardingResponses.$inferSelect;
+export type InsertOnboardingResponse = typeof onboardingResponses.$inferInsert;
 
 export const outreachEmails = mysqlTable("outreach_emails", {
   id: int("id").autoincrement().primaryKey(),
@@ -85,17 +149,13 @@ export type InsertOutreachEmail = typeof outreachEmails.$inferInsert;
 export const templateUploads = mysqlTable("template_uploads", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  // Legacy single industry (kept for backwards compat, use industries JSON array instead)
   industry: varchar("industry", { length: 100 }).notNull().default("other"),
-  // JSON array of industry keys, e.g. '["beauty","fitness"]' – primary field (nullable in DB, handled in code)
   industries: text("industries"),
   layoutPool: varchar("layoutPool", { length: 50 }).notNull().default("clean"),
-  // AI-suggested values (before admin review)
-  aiIndustries: text("aiIndustries"), // JSON array
+  aiIndustries: text("aiIndustries"),
   aiLayoutPool: varchar("aiLayoutPool", { length: 50 }),
-  aiConfidence: varchar("aiConfidence", { length: 20 }), // "high" | "medium" | "low"
-  aiReason: text("aiReason"), // short explanation from AI
-  // Status: pending = awaiting admin review, approved = active in pool
+  aiConfidence: varchar("aiConfidence", { length: 20 }),
+  aiReason: text("aiReason"),
   status: varchar("status", { length: 20 }).notNull().default("pending"),
   imageUrl: text("imageUrl").notNull(),
   fileKey: varchar("fileKey", { length: 500 }).notNull(),
@@ -106,8 +166,6 @@ export const templateUploads = mysqlTable("template_uploads", {
 export type TemplateUpload = typeof templateUploads.$inferSelect;
 export type InsertTemplateUpload = typeof templateUploads.$inferInsert;
 
-// Round-robin counter per industry key – ensures consecutive websites in the same
-// industry always get a different layout from the pool.
 export const layoutCounters = mysqlTable("layout_counters", {
   industryKey: varchar("industryKey", { length: 100 }).primaryKey(),
   counter: int("counter").notNull().default(0),
