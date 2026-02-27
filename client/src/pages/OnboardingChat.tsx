@@ -729,31 +729,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <h1 className="text-white font-semibold text-base">Pageblitz Assistent</h1>
               <p className="text-slate-400 text-xs">Personalisiert deine Website in Minuten</p>
             </div>
-            {/* Hide chat toggle */}
+            {/* Hide chat toggle – sits at the right edge of the header */}
             <button
               onClick={() => setChatHidden(true)}
-              className="ml-auto mr-2 w-7 h-7 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center text-slate-400 hover:text-white transition-colors flex-shrink-0"
+              className="ml-auto w-7 h-7 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center text-slate-400 hover:text-white transition-colors flex-shrink-0"
               title="Chat ausblenden"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            {/* Progress bar */}
-            {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
-              const totalSteps = STEP_ORDER.filter((s) => s !== "welcome").length;
-              const currentIdx = STEP_ORDER.indexOf(currentStep);
-              const progress = Math.round((currentIdx / totalSteps) * 100);
-              return (
-                <div className="flex flex-col items-end gap-1 ml-auto">
-                  <span className="text-xs text-slate-400">Schritt {currentIdx} / {totalSteps}</span>
-                  <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })()}
           </div>
 
           {/* Messages */}
@@ -1138,18 +1121,36 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const parts = business.address ? business.address.split(",") : [];
                     const street = parts[0]?.trim() || "";
                     const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
-                    const zipCityMatch = zipCityRaw.match(/^(\d{5})\s+(.+)$/);
+                    const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
                     const zip = zipCityMatch?.[1] || "";
                     const city = zipCityMatch?.[2] || "";
+                    const phone = business.phone || "";
+                    const email = business.email || "";
+                    // Update state with all GMB data
                     setData((p) => ({
                       ...p,
                       legalStreet: street || p.legalStreet,
                       legalZip: zip || p.legalZip,
                       legalCity: city || p.legalCity,
-                      legalPhone: business.phone || p.legalPhone,
-                      legalEmail: business.email || p.legalEmail,
+                      legalPhone: phone || p.legalPhone,
+                      legalEmail: email || p.legalEmail,
                     }));
-                    toast.success("Adresse, Telefon und E-Mail aus Google My Business übernommen! Bitte prüfe die Angaben.");
+                    // Show confirmation in chat and skip through legal steps automatically
+                    const summary = [
+                      street && `Straße: ${street}`,
+                      zip && city && `PLZ/Stadt: ${zip} ${city}`,
+                      phone && `Telefon: ${phone}`,
+                      email && `E-Mail: ${email}`,
+                    ].filter(Boolean).join(" · ");
+                    addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
+                    // Save all pre-filled legal fields
+                    const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                    if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
+                    if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
+                    if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
+                    if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
+                    // Advance directly to legalVat (last legal step)
+                    await advanceToStep("legalVat");
                   }}
                   className="flex items-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2 rounded-xl transition-all"
                 >
@@ -1410,19 +1411,37 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           )}
         </div>
 
-        {/* Show chat button (only when hidden) */}
-        {chatHidden && (
-          <button
-            onClick={() => setChatHidden(false)}
-            className="absolute top-16 left-3 z-10 w-8 h-8 rounded-xl bg-slate-700/90 hover:bg-slate-600 border border-slate-600/50 flex items-center justify-center text-slate-300 hover:text-white transition-colors shadow-lg"
-            title="Chat einblenden"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
-
         {/* Preview panel – MacBook mockup */}
         <div className="relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col">
+          {/* Preview top bar: chat toggle + progress bar */}
+          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-700/50">
+            {/* Chat toggle button – always visible here */}
+            <button
+              onClick={() => setChatHidden((v) => !v)}
+              className="flex items-center gap-1.5 text-xs bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+              title={chatHidden ? "Chat einblenden" : "Chat ausblenden"}
+            >
+              {chatHidden ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+              {chatHidden ? "Chat einblenden" : "Chat ausblenden"}
+            </button>
+            {/* Progress bar */}
+            {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
+              const totalSteps = STEP_ORDER.filter((s) => s !== "welcome").length;
+              const currentIdx = STEP_ORDER.indexOf(currentStep);
+              const progress = Math.round((currentIdx / totalSteps) * 100);
+              return (
+                <div className="flex flex-1 items-center gap-3">
+                  <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-slate-400 whitespace-nowrap">Schritt {currentIdx} / {totalSteps}</span>
+                </div>
+              );
+            })()}
+          </div>
           {liveWebsiteData && colorScheme ? (
             <MacbookMockup label="Live-Vorschau deiner Website">
               <WebsiteRenderer

@@ -405,3 +405,8 @@
 - [x] Feature: Fortschrittsbalken im Onboarding-Chat (Schritt X von Y)
 - [x] Feature: Telefonnummer-Schritt mit GMB-Vorausfüllung
 - [x] Feature: „Alles aus GMB übernehmen“-Button bei rechtlichen Angaben
+
+## UI-Fixes (Feb 27 2026 – Runde 5)
+- [x] Fortschrittsbalken über Preview-Panel verschieben (mehr Platz)
+- [x] Chat-Toggle-Button außerhalb der Seitenleiste platzieren
+- [x] GMB-Bulk-Prefill: nach Übernahme Chat-Schritte mit vorausgefüllten Daten durchlaufen
