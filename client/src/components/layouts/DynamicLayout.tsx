@@ -29,6 +29,7 @@ interface Props {
 
 export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
+  contactFormLocked = false,
 }: Props) {
   useScrollReveal();
   return (
@@ -41,7 +42,39 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActiv
           {(section.type === "services" || section.type === "features") && <DynamicServices section={section} cs={cs} />}
           {section.type === "testimonials" && <DynamicTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <DynamicFAQ section={section} cs={cs} />}
-          {section.type === "contact" && <DynamicContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />}
+                    {section.type === "contact" && (
+            <div style={{ position: "relative" }}>
+              <DynamicContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+              {contactFormLocked && (
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.78)",
+                  backdropFilter: "blur(3px)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.75rem",
+                  zIndex: 20,
+                }}>
+                  <div style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    backgroundColor: "rgba(59,130,246,0.2)",
+                    border: "1px solid rgba(59,130,246,0.5)",
+                    borderRadius: "9999px",
+                    padding: "0.5rem 1.25rem",
+                  }}>
+                    <span style={{ fontSize: "0.85rem", color: "#93c5fd", fontWeight: 700 }}>🔒 Kontaktformular</span>
+                    <span style={{ fontSize: "0.8rem", color: "#60a5fa", backgroundColor: "rgba(59,130,246,0.25)", padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>+4,90 €/Monat</span>
+                  </div>
+                  <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.65)", margin: 0 }}>Im nächsten Schritt aktivierbar</p>
+                </div>
+              )}
+            </div>
+          )}
           {section.type === "cta" && <DynamicCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
       ))}

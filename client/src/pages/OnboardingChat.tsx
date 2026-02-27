@@ -49,6 +49,7 @@ type ChatStep =
   | "legalStreet"
   | "legalZipCity"
   | "legalEmail"
+  | "legalPhone"
   | "legalVat"
   | "brandColor"
   | "brandLogo"
@@ -82,6 +83,7 @@ const STEP_ORDER: ChatStep[] = [
   "legalStreet",
   "legalZipCity",
   "legalEmail",
+  "legalPhone",
   "legalVat",
   "brandColor",
   "brandLogo",
@@ -314,6 +316,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
         case "legalEmail":
           return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
+        case "legalPhone":
+          return data.legalPhone ? [data.legalPhone] : (business?.phone ? [business.phone] : []);
         case "email":
           return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         default:
@@ -350,6 +354,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Und die **Postleitzahl und Stadt**?\n\nBeispiel: *46395 Bocholt*`;
         case "legalEmail":
           return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
+        case "legalPhone":
+          return `Welche **Telefonnummer** soll im Impressum und auf der Website stehen?\n\nBeispiel: *+49 2871 123456*`;
         case "legalVat":
           return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach „Nein" oder lass das Feld leer.`;
         case "brandColor":
@@ -546,6 +552,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           await trySaveStep(stepIdx, { legalEmail: val.trim() });
           break;
         }
+        case "legalPhone": {
+          const phoneVal = val.trim();
+          if (!phoneVal) { toast.error("Bitte gib eine Telefonnummer ein"); return; }
+          addUserMessage(phoneVal);
+          setData((p) => ({ ...p, legalPhone: phoneVal }));
+          await trySaveStep(stepIdx, { legalPhone: phoneVal });
+          break;
+        }
         case "legalVat": {
           const skip = ["nein", "keine", "n/a", "-", ""].includes(val.trim().toLowerCase());
           const vatRegex = /^DE\d{9}$/i;
@@ -723,25 +737,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            {/* Progress dots */}
-            <div className="flex gap-1">
-              {STEP_ORDER.filter((s) => s !== "welcome").map((step, i) => {
-                const stepIdx = STEP_ORDER.indexOf(currentStep);
-                const thisIdx = STEP_ORDER.indexOf(step);
-                return (
-                  <div
-                    key={step}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${
-                      thisIdx < stepIdx
-                        ? "bg-green-400"
-                        : thisIdx === stepIdx
-                        ? "bg-blue-400 scale-125"
-                        : "bg-slate-600"
-                    }`}
-                  />
-                );
-              })}
-            </div>
+            {/* Progress bar */}
+            {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
+              const totalSteps = STEP_ORDER.filter((s) => s !== "welcome").length;
+              const currentIdx = STEP_ORDER.indexOf(currentStep);
+              const progress = Math.round((currentIdx / totalSteps) * 100);
+              return (
+                <div className="flex flex-col items-end gap-1 ml-auto">
+                  <span className="text-xs text-slate-400">Schritt {currentIdx} / {totalSteps}</span>
+                  <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Messages */}
@@ -1116,6 +1128,33 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     Weiter <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
+              <div className="ml-9 mt-2">
+                <button
+                  onClick={async () => {
+                    const parts = business.address ? business.address.split(",") : [];
+                    const street = parts[0]?.trim() || "";
+                    const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
+                    const zipCityMatch = zipCityRaw.match(/^(\d{5})\s+(.+)$/);
+                    const zip = zipCityMatch?.[1] || "";
+                    const city = zipCityMatch?.[2] || "";
+                    setData((p) => ({
+                      ...p,
+                      legalStreet: street || p.legalStreet,
+                      legalZip: zip || p.legalZip,
+                      legalCity: city || p.legalCity,
+                      legalPhone: business.phone || p.legalPhone,
+                      legalEmail: business.email || p.legalEmail,
+                    }));
+                    toast.success("Adresse, Telefon und E-Mail aus Google My Business übernommen! Bitte prüfe die Angaben.");
+                  }}
+                  className="flex items-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2 rounded-xl transition-all"
+                >
+                  <span>📍</span> Adresse, Telefon & E-Mail aus Google My Business übernehmen
+                </button>
               </div>
             )}
 

@@ -398,3 +398,10 @@
 ## Bugfixes (Feb 27 2026 – Runde 3)
 - [x] Kontaktformular-Upsell-Overlay: korrekte Position direkt über der Kontakt-Sektion
 - [x] Testimonials-Sektion: komplett entfernen wenn keine echten Google-Rezensionen vorhanden
+
+## Bugfixes & Features (Feb 27 2026 – Runde 4)
+- [x] Fix: Google-Bewertungen erscheinen nicht in der Preview (isRealReviews-Flag prüfen)
+- [x] Fix: Kontaktformular-Overlay erscheint immer noch nicht (contactFormLocked-Pfad prüfen)
+- [x] Feature: Fortschrittsbalken im Onboarding-Chat (Schritt X von Y)
+- [x] Feature: Telefonnummer-Schritt mit GMB-Vorausfüllung
+- [x] Feature: „Alles aus GMB übernehmen“-Button bei rechtlichen Angaben

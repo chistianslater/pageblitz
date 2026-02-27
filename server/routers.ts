@@ -706,6 +706,7 @@ export const appRouter = router({
               openingHours: details.result?.opening_hours?.weekday_text || [],
               hasWebsite,
               leadType,
+              reviews: details.result?.reviews || [],
             });
           } catch {
             detailedResults.push({
@@ -769,6 +770,12 @@ export const appRouter = router({
           openingHours: z.array(z.string()).optional(),
           hasWebsite: z.boolean(),
           leadType: z.enum(["no_website", "outdated_website", "poor_website", "unknown"]).optional(),
+      reviews: z.array(z.object({
+        author_name: z.string(),
+        rating: z.number(),
+        text: z.string(),
+        time: z.number(),
+      })).optional(),
         })),
         searchQuery: z.string(),
         searchRegion: z.string(),
@@ -794,6 +801,7 @@ export const appRouter = router({
             leadType: r.leadType || (r.hasWebsite ? "unknown" : "no_website"),
             searchQuery: input.searchQuery,
             searchRegion: input.searchRegion,
+            googleReviews: r.reviews && r.reviews.length > 0 ? r.reviews : null,
           });
           saved++;
         }
