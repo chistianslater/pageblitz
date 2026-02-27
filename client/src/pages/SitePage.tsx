@@ -4,6 +4,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import CookieBanner from "@/components/CookieBanner";
 import { Loader2, AlertCircle } from "lucide-react";
 import type { WebsiteData, ColorScheme } from "@shared/types";
+import { convertOpeningHoursToGerman } from "@shared/hours";
 
 export default function SitePage() {
   const params = useParams<{ slug: string }>();
@@ -52,7 +53,7 @@ export default function SitePage() {
         businessPhone={business?.phone || undefined}
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
-        openingHours={business?.openingHours as string[] | undefined}
+        openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
         slug={params.slug}
       />
       <CookieBanner slug={params.slug} primaryColor={colorScheme.primary} />

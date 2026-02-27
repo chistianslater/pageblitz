@@ -11,6 +11,7 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const SERIF = "var(--site-font-headline, 'Lora', Georgia, serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Lora', Georgia, serif))";
 const SANS = "var(--site-font-body, 'Nunito', 'Inter', sans-serif)";
 
 interface Props {
@@ -25,16 +26,18 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
 }
 
 export default function WarmLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
 }: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: SANS, backgroundColor: cs.background, color: cs.text }}>
-      <WarmNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
+      <WarmNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <WarmHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
@@ -53,14 +56,14 @@ export default function WarmLayout({ websiteData, cs, heroImageUrl, showActivate
   );
 }
 
-function WarmNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function WarmNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "rgba(255,255,255,0.97)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${cs.primary}30` }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
         <div className="text-center">
           <div className="flex items-center gap-2">
             <Utensils className="h-5 w-5" style={{ color: cs.primary }} />
-            <span style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 700, color: cs.text }}>{websiteData.businessName}</span>
+            {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: cs.text }}>{websiteData.businessName}</span>}
           </div>
           {websiteData.tagline && <p style={{ fontFamily: SANS, fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.textLight }}>{websiteData.tagline.split(" ").slice(0, 5).join(" ")}</p>}
         </div>

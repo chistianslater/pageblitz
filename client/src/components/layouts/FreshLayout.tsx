@@ -12,6 +12,7 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const SERIF = "var(--site-font-headline, 'Playfair Display', Georgia, serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Playfair Display', Georgia, serif))";
 const ROUND = "'Nunito', 'Segoe UI', sans-serif";
 
 interface Props {
@@ -26,16 +27,18 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
 }
 
 export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
 }: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: ROUND, backgroundColor: "#fafaf8", color: "#1a1a1a" }}>
-      <FreshNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
+      <FreshNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <FreshHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
@@ -84,12 +87,12 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivat
   );
 }
 
-function FreshNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "#fafaf8", borderBottom: "1px solid #e8e8e4", fontFamily: ROUND }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-          <span style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 700, color: "#1a1a1a" }}>{websiteData.businessName}</span>
+          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: "#1a1a1a" }}>{websiteData.businessName}</span>}
           {websiteData.tagline && <span style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.1em", fontWeight: 600 }}>{websiteData.tagline.slice(0, 35)}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">

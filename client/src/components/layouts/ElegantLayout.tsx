@@ -12,6 +12,7 @@ import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Cormorant Garamond', Georgia, serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Cormorant Garamond', Georgia, serif))";
 const SANS = "var(--site-font-body, 'Jost', 'Inter', sans-serif)";
 
 interface Props {
@@ -26,18 +27,20 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
   businessCategory?: string | null;
 }
 
 export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
   businessCategory,
 }: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: SANS, backgroundColor: cs.background, color: cs.text }}>
-      <ElegantNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
+      <ElegantNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
         {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <ElegantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
@@ -56,14 +59,14 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActiv
   );
 }
 
-function ElegantNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function ElegantNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   const navRef = useRef<HTMLElement>(null);
   useNavbarScroll(navRef);
   return (
     <nav ref={navRef} style={{ backgroundColor: cs.background, borderBottom: `1px solid ${cs.primary}22`, fontFamily: SANS }} className="sticky top-0 z-50 backdrop-blur-md bg-opacity-95 hero-animate-nav transition-all duration-300">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
         <div className="flex flex-col">
-          <span style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 600, letterSpacing: "0.05em", color: cs.text }}>{websiteData.businessName}</span>
+          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.5rem", fontWeight: 600, letterSpacing: "0.05em", color: cs.text }}>{websiteData.businessName}</span>}
           {websiteData.tagline && <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 500 }}>{websiteData.tagline.split(" ").slice(0, 4).join(" ")}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">

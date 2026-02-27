@@ -449,3 +449,10 @@
 - [ ] Chat-Neustart-Bug: Nach Farb/Logo-Bestätigung kein Neustart des Chats
 - [ ] businessCategory vorausgefüllt: GMB-Kategorie automatisch erkennen und vorauswählen
 - [ ] Sektionen-Ausblenden-Schritt: Vor Checkout klickbare Sektionen zum Deaktivieren
+
+## Bugfixes Runde (aktuell)
+- [ ] Fix opening hours: convert AM/PM to German 24h format (e.g. "9:00 AM" → "09:00 Uhr")
+- [ ] Fix logo not displaying correctly in onboarding preview
+- [ ] Add logo upload functionality in onboarding brandLogo step
+- [ ] Improve hideSections prompt text ("Wir sind fast fertig...")
+- [ ] Fix DB error in checkout step: websiteId type mismatch (string vs number)

@@ -1734,6 +1734,8 @@ Kontext: ${input.context}`,
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
         
+        // Strip any protected fields from input.data to prevent accidental overrides
+        const { websiteId: _wid, id: _id, stepCurrent: _sc, status: _st, createdAt: _ca, ...safeData } = input.data as any;
         let onboarding = await getOnboardingByWebsiteId(input.websiteId);
         if (!onboarding) {
           await createOnboarding({
@@ -1742,12 +1744,12 @@ Kontext: ${input.context}`,
             stepCurrent: input.step,
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            ...input.data,
+            ...safeData,
           });
         } else {
           await updateOnboarding(input.websiteId, {
             stepCurrent: input.step,
-            ...input.data,
+            ...safeData,
             updatedAt: Date.now(),
           });
         }

@@ -243,9 +243,14 @@ export default function WebsiteRenderer({
   const effectiveLogoFont = logoFont
     || (websiteData as any)?._logoFont as string | undefined
     || (websiteData as any)?._brandLogoFont as string | undefined;
+  // Logo image URL (uploaded custom logo)
+  const effectiveLogoUrl = (websiteData as any)?._brandLogoUrl as string | undefined
+    || (websiteData as any)?._logoUrl as string | undefined;
   useEffect(() => {
     if (effectiveLogoFont) {
       document.documentElement.style.setProperty('--logo-font', `'${effectiveLogoFont}', sans-serif`);
+    } else {
+      document.documentElement.style.removeProperty('--logo-font');
     }
     return () => { document.documentElement.style.removeProperty('--logo-font'); };
   }, [effectiveLogoFont]);
@@ -279,6 +284,7 @@ export default function WebsiteRenderer({
     slug,
     contactFormLocked,
     businessCategory,
+    logoUrl: effectiveLogoUrl,
   };
 
   // Build CSS custom properties string – always set at least the font defaults

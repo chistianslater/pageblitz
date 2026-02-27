@@ -13,6 +13,7 @@ import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
 const DISPLAY = "'Oswald', 'Impact', sans-serif";
+const LOGO_FONT = "var(--logo-font, 'Oswald', 'Impact', sans-serif)";
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
 
 interface Props {
@@ -27,12 +28,14 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
   businessCategory?: string | null;
 }
 
 export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
   businessCategory,
 }: Props) {
   const darkCs = {
@@ -55,7 +58,7 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivat
           <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>Mo–Fr: 8:00–18:00 Uhr</span>
         </div>
       </div>
-      <CraftNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} />
+      <CraftNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <CraftHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
@@ -104,7 +107,7 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivat
   );
 }
 
-function CraftNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function CraftNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: cs.background, fontFamily: BODY }} className="sticky top-0 z-50" >
       <div className="max-w-7xl mx-auto px-6 h-18 py-4 flex items-center justify-between">
@@ -113,7 +116,7 @@ function CraftNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
             <Zap className="h-5 w-5" style={{ color: "#000" }} />
           </div>
           <div>
-            <span style={{ fontFamily: DISPLAY, fontSize: "1.3rem", letterSpacing: "0.08em", color: cs.text, textTransform: "uppercase" }}>{websiteData.businessName}</span>
+            {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.3rem", letterSpacing: "0.08em", color: cs.text, textTransform: "uppercase" }}>{websiteData.businessName}</span>}
             {websiteData.tagline && <p style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em" }}>{websiteData.tagline.slice(0, 40)}</p>}
           </div>
         </div>

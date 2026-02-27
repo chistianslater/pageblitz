@@ -13,6 +13,7 @@ import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Libre Baskerville', Georgia, serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Libre Baskerville', Georgia, serif))";
 const BODY = "var(--site-font-body, 'Source Sans Pro', 'Helvetica Neue', sans-serif)";
 
 interface Props {
@@ -27,18 +28,20 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
   businessCategory?: string | null;
 }
 
 export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
   businessCategory,
 }: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: "#ffffff", color: "#1a2332" }}>
-      <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
+      <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessPhone={businessPhone} businessCategory={businessCategory} />}
@@ -87,7 +90,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivat
   );
 }
 
-function TrustNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function TrustNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "#fff", borderBottom: `3px solid ${cs.primary}` }} className="sticky top-0 z-50">
       {/* Top bar */}
@@ -106,7 +109,7 @@ function TrustNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
       {/* Main nav */}
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div>
-          <span style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 700, color: "#1a2332", letterSpacing: "-0.02em" }}>{websiteData.businessName}</span>
+          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: "#1a2332", letterSpacing: "-0.02em" }}>{websiteData.businessName}</span>}
           {websiteData.tagline && <p style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: "1px" }}>{websiteData.tagline.slice(0, 50)}</p>}
         </div>
         <div className="hidden md:flex items-center gap-8">

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
 import type { WebsiteData, ColorScheme } from "@shared/types";
+import { convertOpeningHoursToGerman } from "@shared/hours";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -134,7 +135,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     { enabled: !!(previewToken || websiteIdProp) }
   );
 
-  const websiteId = siteData?.website?.id;
+  const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
   const business = siteData?.business;
 
   // ── Chat state ──────────────────────────────────────────────────────────
@@ -200,6 +201,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const checkoutMutation = trpc.checkout.createSession.useMutation();
   const generateTextMutation = trpc.onboarding.generateText.useMutation();
   const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
+  const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
 
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
@@ -378,7 +380,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "legalVat":
           return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach "Nein" oder lass das Feld leer.`;
         case "hideSections":
-          return `Welche Bereiche möchtest du auf deiner Website ausblenden?`;
+          return `Wir sind fast fertig! 🎉 Gibt es Bereiche, die du zum Start ausblenden möchtest? Klick einfach drauf – keine Sorge, du kannst sie jederzeit wieder einblenden.`;
         case "brandColor":
           return `Jetzt zum Look deiner Website! 🎨\n\nWelche **Hauptfarbe** soll deine Website haben? Wähle unten eine Farbe aus oder gib einen eigenen Hex-Code ein.`;
         case "brandLogo":
@@ -697,9 +699,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       (patched as any)._brandColorOverride = data.brandColor;
     }
 
-    // Patch brandLogo font
+    // Patch brandLogo font or URL
     if (data.brandLogo && data.brandLogo.startsWith("font:")) {
       (patched as any)._brandLogoFont = data.brandLogo.replace("font:", "");
+      delete (patched as any)._brandLogoUrl;
+    } else if (data.brandLogo && data.brandLogo.startsWith("url:")) {
+      (patched as any)._brandLogoUrl = data.brandLogo.replace("url:", "");
+      delete (patched as any)._brandLogoFont;
     }
 
     return patched;
@@ -1094,17 +1100,79 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={() => setData((p) => ({ ...p, brandLogo: `font:${opt.font}` }))}
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-blue-500 bg-blue-500/10" : "border-slate-600 bg-slate-700/40 hover:border-slate-500"}`}
                   >
-                    <p className="text-white text-lg mb-1" style={opt.style}>{data.businessName || "Mein Unternehmen"}</p>
+                    <p className="text-white text-lg mb-1" style={opt.style}>{data.businessName || business?.name || "Mein Unternehmen"}</p>
                     <p className="text-slate-400 text-xs">{opt.label}</p>
                   </button>
                 ))}
+
+                {/* Logo upload option */}
+                <div className="border-t border-slate-700 pt-3">
+                  <p className="text-slate-400 text-xs mb-2">Oder eigenes Logo hochladen:</p>
+                  {data.brandLogo?.startsWith("url:") ? (
+                    <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-blue-500 bg-blue-500/10">
+                      <img src={data.brandLogo.replace("url:", "")} alt="Logo" className="h-10 w-auto max-w-[120px] object-contain rounded" />
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium">Logo hochgeladen ✓</p>
+                        <button
+                          onClick={() => setData((p) => ({ ...p, brandLogo: "font:Montserrat" }))}
+                          className="text-slate-400 text-xs hover:text-white transition-colors"
+                        >
+                          Entfernen
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${uploadLogoMutation.isPending ? "opacity-50 pointer-events-none" : ""}`}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !websiteId) return;
+                          if (file.size > 2 * 1024 * 1024) {
+                            toast.error("Logo darf maximal 2 MB groß sein.");
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = async () => {
+                            const base64 = (reader.result as string).split(",")[1];
+                            try {
+                              const result = await uploadLogoMutation.mutateAsync({
+                                websiteId,
+                                imageData: base64,
+                                mimeType: file.type,
+                              });
+                              setData((p) => ({ ...p, brandLogo: `url:${result.url}` }));
+                              toast.success("Logo erfolgreich hochgeladen!");
+                            } catch {
+                              toast.error("Upload fehlgeschlagen. Bitte erneut versuchen.");
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                      {uploadLogoMutation.isPending ? (
+                        <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+                      ) : (
+                        <ImageIcon className="w-5 h-5 text-slate-400" />
+                      )}
+                      <div>
+                        <p className="text-white text-sm">{uploadLogoMutation.isPending ? "Wird hochgeladen…" : "Bild auswählen"}</p>
+                        <p className="text-slate-400 text-xs">PNG, JPG oder SVG · max. 2 MB</p>
+                      </div>
+                      <Upload className="w-4 h-4 text-slate-500 ml-auto" />
+                    </label>
+                  )}
+                </div>
+
                 <button
-                  disabled={isTyping}
+                  disabled={isTyping || uploadLogoMutation.isPending}
                   onClick={async () => {
                     if (isTyping) return;
                     const logo = data.brandLogo || "font:Montserrat";
-                    const fontName = logo.replace("font:", "");
-                    addUserMessage(`Schriftart gewählt: ${fontName} ✓`);
+                    const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
+                    addUserMessage(`Logo gewählt: ${label} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
                     await advanceToStep("businessName");
                   }}
@@ -1615,7 +1683,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 businessPhone={business?.phone || undefined}
                 businessAddress={business?.address || undefined}
                 businessEmail={business?.email || undefined}
-                openingHours={business?.openingHours as string[] | undefined}
+                openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
                 slug={slug}
                 contactFormLocked={!data.addOnContactForm}
                 logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}

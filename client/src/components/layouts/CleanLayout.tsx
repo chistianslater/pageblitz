@@ -12,6 +12,7 @@ import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'DM Serif Display', Georgia, serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'DM Serif Display', Georgia, serif))";
 const SANS = "var(--site-font-body, 'DM Sans', 'Inter', sans-serif)";
 
 interface Props {
@@ -26,18 +27,20 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
   businessCategory?: string | null;
 }
 
 export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
   businessCategory,
 }: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: SANS, backgroundColor: "#f8fafc", color: cs.text }}>
-      <CleanNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
+      <CleanNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
@@ -56,18 +59,24 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivat
   );
 }
 
-function CleanNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function CleanNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.5rem", backgroundColor: cs.primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>{websiteData.businessName.charAt(0)}</span>
-          </div>
-          <div>
-            <p style={{ fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700, color: cs.text, lineHeight: 1.2 }}>{websiteData.businessName}</p>
-            {websiteData.tagline && <p style={{ fontFamily: SANS, fontSize: "0.7rem", color: cs.textLight }}>{websiteData.tagline.split(" ").slice(0, 4).join(" ")}</p>}
-          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />
+          ) : (
+            <>
+              <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.5rem", backgroundColor: cs.primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontFamily: LOGO_FONT, fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>{websiteData.businessName.charAt(0)}</span>
+              </div>
+              <div>
+                <p style={{ fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700, color: cs.text, lineHeight: 1.2 }}>{websiteData.businessName}</p>
+                {websiteData.tagline && <p style={{ fontFamily: SANS, fontSize: "0.7rem", color: cs.textLight }}>{websiteData.tagline.split(" ").slice(0, 4).join(" ")}</p>}
+              </div>
+            </>
+          )}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Leistungen", "Über uns", "Kontakt"].map(label => (

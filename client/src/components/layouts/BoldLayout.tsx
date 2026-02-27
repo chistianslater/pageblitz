@@ -12,6 +12,7 @@ import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
 const HEADING = "var(--site-font-headline, 'Oswald', 'Barlow Condensed', Impact, sans-serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Oswald', 'Barlow Condensed', Impact, sans-serif))";
 const BODY = "var(--site-font-body, 'Barlow', 'Inter', sans-serif)";
 
 interface Props {
@@ -26,18 +27,20 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
   businessCategory?: string | null;
 }
 
 export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
   businessCategory,
 }: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: cs.background, color: cs.text }}>
-      <BoldNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
+      <BoldNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <BoldHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
@@ -56,13 +59,13 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivate
   );
 }
 
-function BoldNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function BoldNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "#0d0d0d", borderBottom: `3px solid ${cs.primary}` }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div style={{ width: "4px", height: "2rem", backgroundColor: cs.primary }} />
-          <span style={{ fontFamily: HEADING, fontSize: "1.4rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#fff" }}>{websiteData.businessName}</span>
+          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#fff" }}>{websiteData.businessName}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Leistungen", "Über uns", "Kontakt"].map(label => (

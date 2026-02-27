@@ -12,6 +12,7 @@ import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
 const HEADING = "var(--site-font-headline, 'Bebas Neue', 'Oswald', Impact, sans-serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Bebas Neue', 'Oswald', Impact, sans-serif))";
 const BODY = "var(--site-font-body, 'Rajdhani', 'Barlow', 'Inter', sans-serif)";
 
 interface Props {
@@ -26,18 +27,20 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
   businessCategory?: string | null;
 }
 
 export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
   businessCategory,
 }: Props) {
   useScrollReveal();
   return (
     <div style={{ fontFamily: BODY, backgroundColor: "#0a0a0a", color: "#fff" }}>
-      <DynamicNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
+      <DynamicNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <DynamicHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
@@ -56,13 +59,19 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActiv
   );
 }
 
-function DynamicNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function DynamicNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "rgba(10,10,10,0.95)", backdropFilter: "blur(8px)" }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Zap className="h-5 w-5" style={{ color: cs.primary }} />
-          <span style={{ fontFamily: HEADING, fontSize: "1.6rem", letterSpacing: "0.08em", color: "#fff" }}>{websiteData.businessName.toUpperCase()}</span>
+          {logoUrl ? (
+            <img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          ) : (
+            <>
+              <Zap className="h-5 w-5" style={{ color: cs.primary }} />
+              <span style={{ fontFamily: LOGO_FONT, fontSize: "1.6rem", letterSpacing: "0.08em", color: "#fff" }}>{websiteData.businessName.toUpperCase()}</span>
+            </>
+          )}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Training", "Über uns", "Kontakt"].map(label => (

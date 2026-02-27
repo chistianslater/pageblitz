@@ -12,6 +12,7 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
+const LOGO_FONT = "var(--logo-font, 'Bebas Neue', 'Impact', sans-serif)";
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
 
 interface Props {
@@ -26,16 +27,18 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
 }
 
 export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
 }: Props) {
   const darkCs = { ...cs, background: "#0d0d0d", surface: "#161616", text: "#ffffff", textLight: "rgba(255,255,255,0.6)" };
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkCs.background, color: darkCs.text }}>
-      <VibrantNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} />
+      <VibrantNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <VibrantHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
@@ -84,7 +87,7 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActiv
   );
 }
 
-function VibrantNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function VibrantNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "rgba(13,13,13,0.95)", backdropFilter: "blur(10px)", borderBottom: `1px solid rgba(255,255,255,0.05)`, fontFamily: BODY }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -92,7 +95,7 @@ function VibrantNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteDa
           <div style={{ width: "2rem", height: "2rem", backgroundColor: cs.primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Dumbbell className="h-4 w-4" style={{ color: "#000" }} />
           </div>
-          <span style={{ fontFamily: DISPLAY, fontSize: "1.4rem", letterSpacing: "0.08em", color: cs.text, textTransform: "uppercase" }}>{websiteData.businessName}</span>
+          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", letterSpacing: "0.08em", color: cs.text, textTransform: "uppercase" }}>{websiteData.businessName}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Programme", "Über uns", "Kontakt"].map(label => (

@@ -13,6 +13,7 @@ import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
 const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
+const LOGO_FONT = "var(--logo-font, 'Bebas Neue', 'Impact', sans-serif)";
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
 
 interface Props {
@@ -27,12 +28,14 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  logoUrl?: string | null;
   businessCategory?: string | null;
 }
 
 export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  logoUrl,
   businessCategory,
 }: Props) {
   // Force dark theme for luxury layout
@@ -46,7 +49,7 @@ export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActiva
 
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkCs.background, color: darkCs.text }}>
-      <LuxuryNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} />
+      <LuxuryNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <LuxuryHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
@@ -95,13 +98,13 @@ export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActiva
   );
 }
 
-function LuxuryNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null }) {
+function LuxuryNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
     <nav style={{ backgroundColor: "rgba(10,10,10,0.95)", borderBottom: `1px solid rgba(255,255,255,0.08)`, fontFamily: BODY, backdropFilter: "blur(10px)" }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div style={{ width: "8px", height: "8px", backgroundColor: cs.primary, borderRadius: "50%" }} />
-          <span style={{ fontFamily: DISPLAY, fontSize: "1.4rem", letterSpacing: "0.1em", color: cs.text }}>{websiteData.businessName.toUpperCase()}</span>
+          <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", letterSpacing: "0.1em", color: cs.text }}>{websiteData.businessName.toUpperCase()}</span>
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Services", "Über uns", "Kontakt"].map(label => (

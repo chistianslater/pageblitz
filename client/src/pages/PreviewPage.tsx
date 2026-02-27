@@ -6,6 +6,7 @@ import { Loader2, Zap, AlertCircle, CheckCircle, MessageSquare, Bot, Calendar, G
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import type { WebsiteData, ColorScheme } from "@shared/types";
+import { convertOpeningHoursToGerman } from "@shared/hours";
 
 const addonIcons: Record<string, any> = { MessageSquare, Bot, Calendar, Globe };
 
@@ -232,7 +233,7 @@ export default function PreviewPage() {
         businessPhone={business?.phone || undefined}
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
-        openingHours={business?.openingHours as string[] | undefined}
+        openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
         businessCategory={(business as any)?.category || undefined}
         showActivateButton={true}
         onActivate={goToOnboarding}
