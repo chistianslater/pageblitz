@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor } from "lucide-react";
@@ -469,6 +469,56 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   };
 
+  // ── Live preview data: merge chat inputs into websiteData in real-time ──
+  const liveWebsiteData = useMemo((): WebsiteData | undefined => {
+    const base = siteData?.website?.websiteData as WebsiteData | undefined;
+    if (!base) return undefined;
+
+    // Deep-clone to avoid mutating the original
+    const patched: WebsiteData = JSON.parse(JSON.stringify(base));
+
+    // Patch top-level fields
+    if (data.businessName) patched.businessName = data.businessName;
+    if (data.tagline) patched.tagline = data.tagline;
+    if (data.description) patched.description = data.description;
+
+    // Patch sections
+    patched.sections = patched.sections.map((section) => {
+      if (section.type === "hero") {
+        return {
+          ...section,
+          headline: data.tagline || section.headline,
+          subheadline: data.description || section.subheadline,
+        };
+      }
+      if (section.type === "about") {
+        return {
+          ...section,
+          content: data.description || section.content,
+          headline: data.businessName ? `Über ${data.businessName}` : section.headline,
+        };
+      }
+      if (section.type === "services" && data.topServices.some((s) => s.title)) {
+        const filledServices = data.topServices.filter((s) => s.title.trim());
+        if (filledServices.length > 0) {
+          return {
+            ...section,
+            items: filledServices.map((s) => ({ title: s.title, description: s.description })),
+          };
+        }
+      }
+      return section;
+    });
+
+    return patched;
+  }, [
+    siteData?.website?.websiteData,
+    data.businessName,
+    data.tagline,
+    data.description,
+    data.topServices,
+  ]);
+
   // ── Price calculation ───────────────────────────────────────────────────
   const totalPrice = () => {
     let price = 79;
@@ -895,10 +945,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
         {/* Preview panel – MacBook mockup */}
         <div className="relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col">
-          {websiteData && colorScheme ? (
+          {liveWebsiteData && colorScheme ? (
             <MacbookMockup label="Live-Vorschau deiner Website">
               <WebsiteRenderer
-                websiteData={websiteData}
+                websiteData={liveWebsiteData}
                 colorScheme={colorScheme}
                 heroImageUrl={heroImageUrl}
                 layoutStyle={layoutStyle}

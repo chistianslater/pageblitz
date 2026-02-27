@@ -336,3 +336,10 @@
 - [x] Bug: Nach Auswahl eines Quick-Reply-Chips bei Schritt 2 (tagline) geht der Chat nicht weiter
 - [x] Fix: trySaveStep-Helper wraps saveStepMutation in try/catch – Chat läuft immer weiter, auch wenn Server-Save fehlschlägt
 - [x] Fix: advanceToStep wird jetzt außerhalb des try/catch aufgerufen (garantiert immer ausgeführt)
+
+## Echtzeit-Preview im Onboarding (Runde 23)
+- [x] websiteData an WebsiteRenderer wird live aus dem chat data-State abgeleitet (useMemo: liveWebsiteData)
+- [x] Jede Chat-Eingabe (tagline, description) aktualisiert sofort die Vorschau rechts
+- [x] Hero-Section: tagline → headline, description → subheadline
+- [x] About-Section: description → content, businessName → headline
+- [x] Services-Section: topServices → items (wenn ausgefüllt)
