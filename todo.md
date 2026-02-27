@@ -312,3 +312,8 @@
 - [x] Timer startet beim ersten Aufruf des Onboardings (localStorage)
 - [ ] Bei Ablauf: Reminder-E-Mail an die im Onboarding eingegebene E-Mail (noch ausstehend)
 - [ ] FOMO-Badge auf der Preview-Seite: "⚡ Nur noch X Stunden reserviert" (noch ausstehend)
+
+## Onboarding UX Verbesserungen (Runde 19)
+- [x] MacBook/Browser-Mockup: Website-Preview in einem Laptop-Framing anzeigen (horizontal, Freigestellt)
+- [x] Quick-Reply-Buttons: Klickbare Vorschläge für häufige Antworten (z.B. Firmenname bestätigen, Tagline-Vorschläge, USP-Vorschläge, Zielgruppe-Vorschläge)
+- [x] Preview-Panel: MacBook-Framing mit Browser-Chrome (Traffic Lights, URL-Bar, Reload-Icon)

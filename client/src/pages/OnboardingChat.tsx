@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, Clock, Zap, Check } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, Clock, Zap, Check, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
+import MacbookMockup from "@/components/MacbookMockup";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -212,6 +213,40 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       { id: genId(), role: "user", content, timestamp: Date.now() },
     ]);
   }, []);
+
+  // ── Quick-reply suggestions per step ──────────────────────────────────
+  const getQuickReplies = useCallback(
+    (step: ChatStep): string[] => {
+      const name = data.businessName || business?.name || "";
+      switch (step) {
+        case "businessName":
+          return name ? [`✓ Ja, "${name}" stimmt so`] : [];
+        case "tagline":
+          return [
+            `Qualität, die bleibt – seit ${new Date().getFullYear() - 10}`,
+            "Ihr Partner für perfekte Ergebnisse",
+            "Schnell. Zuverlässig. Fair.",
+          ];
+        case "usp":
+          return [
+            "Kostenloser Vor-Ort-Termin innerhalb 24h",
+            "Über 15 Jahre Erfahrung in der Region",
+            "Festpreisgarantie – keine versteckten Kosten",
+          ];
+        case "targetAudience":
+          return [
+            "Privathaushalte in der Region",
+            "Gewerbliche Kunden & Unternehmen",
+            "Privat- und Gewerbekunden",
+          ];
+        case "email":
+          return data.legalEmail ? [data.legalEmail] : [];
+        default:
+          return [];
+      }
+    },
+    [data.businessName, data.legalEmail, business?.name]
+  );
 
   // ── Step prompts ────────────────────────────────────────────────────────
   const getStepPrompt = useCallback(
@@ -806,45 +841,51 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <Send className="w-4 h-4 text-white" />
                 </button>
               </div>
-              {currentStep === "businessName" && data.businessName && (
-                <button
-                  onClick={() => handleSubmit("")}
-                  className="mt-2 text-xs text-slate-400 hover:text-slate-300 transition-colors"
-                >
-                  ✓ Ja, "{data.businessName}" stimmt so
-                </button>
+              {/* Quick-reply chips */}
+              {!isTyping && getQuickReplies(currentStep).length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {getQuickReplies(currentStep).map((reply) => (
+                    <button
+                      key={reply}
+                      onClick={() => {
+                        if (currentStep === "businessName" && reply.startsWith("✓")) {
+                          handleSubmit("");
+                        } else {
+                          handleSubmit(reply);
+                        }
+                      }}
+                      className="text-xs bg-slate-700/60 hover:bg-blue-600/30 border border-slate-600/50 hover:border-blue-500/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-full transition-all"
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Preview panel */}
-        <div className="flex-1 overflow-hidden relative">
+        {/* Preview panel – MacBook mockup */}
+        <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex items-start justify-center">
           {websiteData && colorScheme ? (
-            <>
-              <div className="absolute inset-0 overflow-y-auto">
-                <WebsiteRenderer
-                  websiteData={websiteData}
-                  colorScheme={colorScheme}
-                  heroImageUrl={heroImageUrl}
-                  layoutStyle={layoutStyle}
-                  businessPhone={business?.phone || undefined}
-                  businessAddress={business?.address || undefined}
-                  businessEmail={business?.email || undefined}
-                  openingHours={business?.openingHours as string[] | undefined}
-                  slug={slug}
-                />
-              </div>
-              {currentStep !== "preview" && currentStep !== "checkout" && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full border border-slate-700/50 pointer-events-none">
-                  Live-Vorschau deiner Website
-                </div>
-              )}
-            </>
+            <MacbookMockup label="Live-Vorschau deiner Website">
+              <WebsiteRenderer
+                websiteData={websiteData}
+                colorScheme={colorScheme}
+                heroImageUrl={heroImageUrl}
+                layoutStyle={layoutStyle}
+                businessPhone={business?.phone || undefined}
+                businessAddress={business?.address || undefined}
+                businessEmail={business?.email || undefined}
+                openingHours={business?.openingHours as string[] | undefined}
+                slug={slug}
+              />
+            </MacbookMockup>
           ) : (
-            <div className="h-full flex items-center justify-center text-slate-500">
+            <div className="h-full flex items-center justify-center text-slate-500 min-h-[400px]">
               <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-slate-600" />
+                <Monitor className="w-16 h-16 mx-auto mb-4 text-slate-700" />
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-3 text-slate-600" />
                 <p className="text-sm">Vorschau wird geladen...</p>
               </div>
             </div>
