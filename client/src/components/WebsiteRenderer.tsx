@@ -232,6 +232,15 @@ export default function WebsiteRenderer({
     ? [tokens.headlineFont, tokens.bodyFont].filter(Boolean) as string[]
     : []; // Layout fonts are system/generic fallbacks, no Google Fonts needed for defaults
 
+  // Inject _logoFont as CSS variable for real-time logo preview during onboarding
+  const logoFont = (websiteData as any)?._logoFont as string | undefined;
+  useEffect(() => {
+    if (logoFont) {
+      document.documentElement.style.setProperty('--logo-font', `'${logoFont}', sans-serif`);
+    }
+    return () => { document.documentElement.style.removeProperty('--logo-font'); };
+  }, [logoFont]);
+
   // Inject Google Fonts dynamically
   useEffect(() => {
     if (fontsToLoad.length === 0) return;

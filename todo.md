@@ -383,3 +383,8 @@
 ## Services-Schritt Verbesserungen (Feb 27 2026)
 - [x] KI-Vorschlag-Button für Leistungen (Branchenbasiert, füllt 2-4 Felder vor)
 - [x] "Keine Leistungen anzeigen"-Option mit Warn-Dialog
+
+## Branding-First Onboarding (Feb 27 2026)
+- [x] Branding-Schritte (Farbe + Logo) an den Anfang des Onboardings verschieben (nach Welcome)
+- [x] Live-Vorschau: Farbauswahl ändert Preview sofort in Echtzeit (kein Weiter-Klick nötig)
+- [x] Live-Vorschau: Font-Logo-Auswahl ändert Navbar/Hero-Logo sofort in Echtzeit

@@ -981,7 +981,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const fontName = logo.replace("font:", "");
                     addUserMessage(`Schriftart gewählt: ${fontName} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
-                    await advanceToStep("addons");
+                    await advanceToStep("businessName");
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
