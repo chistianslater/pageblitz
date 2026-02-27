@@ -44,8 +44,10 @@ type ChatStep =
   | "services"
   | "targetAudience"
   | "legalOwner"
-  | "legalAddress"
-  | "legalContact"
+  | "legalStreet"
+  | "legalZipCity"
+  | "legalEmail"
+  | "legalVat"
   | "addons"
   | "subpages"
   | "email"
@@ -72,8 +74,10 @@ const STEP_ORDER: ChatStep[] = [
   "services",
   "targetAudience",
   "legalOwner",
-  "legalAddress",
-  "legalContact",
+  "legalStreet",
+  "legalZipCity",
+  "legalEmail",
+  "legalVat",
   "addons",
   "subpages",
   "email",
@@ -240,6 +244,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Gewerbliche Kunden & Unternehmen",
             "Privat- und Gewerbekunden",
           ];
+        case "legalEmail":
+          return data.legalEmail ? [data.legalEmail] : [];
         case "email":
           return data.legalEmail ? [data.legalEmail] : [];
         default:
@@ -269,11 +275,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "targetAudience":
           return `Für wen macht ihr das alles? Beschreib kurz eure idealen Kunden – wer ruft euch an, wer schreibt euch?\n\nBeispiel: *"Privathaushalte in Bocholt, die ein neues Dach brauchen"*`;
         case "legalOwner":
-          return `Fast geschafft! 🎉 Jetzt noch ein paar rechtliche Pflichtangaben für Impressum & Datenschutz.\n\nWer ist der Inhaber oder Geschäftsführer? (Vollständiger Name)`;
-        case "legalAddress":
-          return `Und die Geschäftsadresse? (Straße, PLZ, Stadt)`;
-        case "legalContact":
-          return `Letzte rechtliche Info: E-Mail-Adresse für das Impressum und optional USt-IdNr. (z.B. DE123456789)`;
+          return `Fast geschafft! 🎉 Jetzt noch ein paar rechtliche Pflichtangaben für Impressum & Datenschutz.\n\nWer ist der **Inhaber oder Geschäftsführer**? (Vollständiger Name, z.B. „Max Mustermann")`;
+        case "legalStreet":
+          return `Wie lautet die **Straße und Hausnummer** der Geschäftsadresse?\n\nBeispiel: *Musterstraße 12*`;
+        case "legalZipCity":
+          return `Und die **Postleitzahl und Stadt**?\n\nBeispiel: *46395 Bocholt*`;
+        case "legalEmail":
+          return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
+        case "legalVat":
+          return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach „Nein" oder lass das Feld leer.`;
         case "addons":
           return `Möchtest du optionale Extras zu deiner Website hinzufügen?\n\n• **Kontaktformular** – Kunden können direkt anfragen (+4,90 €/Monat)\n• **Bildergalerie** – Zeig deine Projekte in einer schönen Galerie (+4,90 €/Monat)`;
         case "subpages":
@@ -393,33 +403,50 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           setData((p) => ({ ...p, targetAudience: val }));
           await trySaveStep(stepIdx, { targetAudience: val });
           break;
-        case "legalOwner":
+        case "legalOwner": {
+          if (val.trim().split(/\s+/).length < 2) {
+            toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
+            return;
+          }
           addUserMessage(val);
           setData((p) => ({ ...p, legalOwner: val }));
           await trySaveStep(stepIdx, { legalOwner: val });
           break;
-        case "legalAddress": {
+        }
+        case "legalStreet": {
+          if (!val.trim()) { toast.error("Bitte gib Straße und Hausnummer ein"); return; }
+          if (!/\d/.test(val)) { toast.error("Bitte gib auch die Hausnummer an (z.B. Musterstraße 12)"); return; }
           addUserMessage(val);
-          // Parse "Musterstraße 1, 46395 Bocholt" format
-          const parts = val.split(",").map((s) => s.trim());
-          const street = parts[0] || val;
-          const cityPart = parts[1] || "";
-          const zipMatch = cityPart.match(/^(\d{5})\s+(.+)$/);
-          const zip = zipMatch?.[1] || "";
-          const city = zipMatch?.[2] || cityPart;
-          setData((p) => ({ ...p, legalStreet: street, legalZip: zip, legalCity: city }));
-          await trySaveStep(stepIdx, { legalStreet: street, legalZip: zip, legalCity: city });
+          setData((p) => ({ ...p, legalStreet: val }));
+          await trySaveStep(stepIdx, { legalStreet: val });
           break;
         }
-        case "legalContact": {
+        case "legalZipCity": {
+          const zipCityMatch = val.trim().match(/^(\d{5})\s+(.+)$/);
+          if (!zipCityMatch) { toast.error("Bitte im Format 'PLZ Stadt' eingeben, z.B. 46395 Bocholt"); return; }
+          const zip = zipCityMatch[1];
+          const city = zipCityMatch[2];
           addUserMessage(val);
-          // Try to extract email and VAT ID
-          const emailMatch = val.match(/[\w.-]+@[\w.-]+\.\w+/);
-          const vatMatch = val.match(/DE\d{9}/i);
-          const email = emailMatch?.[0] || data.legalEmail;
-          const vatId = vatMatch?.[0] || "";
-          setData((p) => ({ ...p, legalEmail: email, legalVatId: vatId }));
-          await trySaveStep(stepIdx, { legalEmail: email, legalVatId: vatId });
+          setData((p) => ({ ...p, legalZip: zip, legalCity: city }));
+          await trySaveStep(stepIdx, { legalZip: zip, legalCity: city });
+          break;
+        }
+        case "legalEmail": {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(val.trim())) { toast.error("Bitte gib eine gültige E-Mail-Adresse ein (z.B. info@firma.de)"); return; }
+          addUserMessage(val);
+          setData((p) => ({ ...p, legalEmail: val.trim() }));
+          await trySaveStep(stepIdx, { legalEmail: val.trim() });
+          break;
+        }
+        case "legalVat": {
+          const skip = ["nein", "keine", "n/a", "-", ""].includes(val.trim().toLowerCase());
+          const vatRegex = /^DE\d{9}$/i;
+          if (!skip && !vatRegex.test(val.trim())) { toast.error("USt-IdNr. muss das Format DE123456789 haben. Schreib 'Nein' wenn du keine hast."); return; }
+          const vatId = skip ? "" : val.trim().toUpperCase();
+          addUserMessage(skip ? "Keine USt-IdNr. (Kleinunternehmer)" : vatId);
+          setData((p) => ({ ...p, legalVatId: vatId }));
+          await trySaveStep(stepIdx, { legalVatId: vatId });
           break;
         }
         case "email":
@@ -742,15 +769,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   </button>
                 ))}
                 <button
+                  disabled={isTyping}
                   onClick={async () => {
+                    if (isTyping) return;
                     const selected = [];
                     if (data.addOnContactForm) selected.push("Kontaktformular");
                     if (data.addOnGallery) selected.push("Bildergalerie");
                     addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
-                    if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: STEP_ORDER.indexOf("addons"), data: { addOnContactForm: data.addOnContactForm, addOnGallery: data.addOnGallery } });
+                    await trySaveStep(STEP_ORDER.indexOf("addons"), { addOnContactForm: data.addOnContactForm, addOnGallery: data.addOnGallery });
                     await advanceToStep("subpages");
                   }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1"
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
@@ -799,13 +828,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <Plus className="w-3.5 h-3.5" /> Unterseite hinzufügen (+9,90 €/Mo)
                   </button>
                   <button
+                    disabled={isTyping}
                     onClick={async () => {
+                      if (isTyping) return;
                       const validPages = data.subPages.filter((p) => p.name.trim());
                       addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
-                      if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: STEP_ORDER.indexOf("subpages"), data: { addOnSubpages: validPages.map((p) => p.name) } });
+                      await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: validPages.map((p) => p.name) });
                       await advanceToStep("email");
                     }}
-                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
+                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Weiter <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -906,10 +937,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   placeholder={
                     currentStep === "businessName"
                       ? data.businessName || "Unternehmensname eingeben..."
-                      : currentStep === "legalAddress"
-                      ? "Musterstraße 1, 46395 Bocholt"
-                      : currentStep === "legalContact"
-                      ? "info@firma.de, DE123456789 (optional)"
+                      : currentStep === "legalStreet"
+                      ? "Musterstraße 12"
+                      : currentStep === "legalZipCity"
+                      ? "46395 Bocholt"
+                      : currentStep === "legalEmail"
+                      ? "info@musterfirma.de"
+                      : currentStep === "legalVat"
+                      ? "DE123456789 oder 'Nein'"
                       : currentStep === "email"
                       ? "deine@email.de"
                       : "Deine Antwort..."
