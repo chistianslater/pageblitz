@@ -77,7 +77,6 @@ const STEP_ORDER: ChatStep[] = [
   "businessCategory",
   "brandColor",
   "brandLogo",
-  "welcome",
   "businessName",
   "tagline",
   "description",
@@ -93,6 +92,7 @@ const STEP_ORDER: ChatStep[] = [
   "addons",
   "subpages",
   "email",
+  "hideSections",
   "preview",
   "checkout",
 ];
@@ -208,6 +208,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       setData((prev) => ({
         ...prev,
         businessName: business.name || prev.businessName,
+        businessCategory: (business as any).category || prev.businessCategory,
         legalEmail: business.email || prev.legalEmail,
         legalPhone: business.phone || prev.legalPhone,
         email: business.email || prev.email,
@@ -968,6 +969,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             {!isTyping && currentStep === "businessCategory" && (
               <div className="ml-9 space-y-3">
+                {/* Show GMB category as pre-selected if available */}
+                {data.businessCategory && (
+                  <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2">
+                    <span className="text-emerald-400 text-xs">✓ Aus Google My Business:</span>
+                    <span className="text-emerald-200 text-sm font-medium">{data.businessCategory}</span>
+                    <button
+                      onClick={async () => {
+                        addUserMessage(`Branche: ${data.businessCategory} ✓`);
+                        await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
+                        await advanceToStep("brandColor");
+                      }}
+                      className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
+                    >
+                      Übernehmen
+                    </button>
+                  </div>
+                )}
                 <p className="text-xs text-slate-400">Branche auswählen oder selbst eingeben:</p>
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -991,7 +1009,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       key={label}
                       onClick={() => handleSubmit(label)}
-                      className="flex items-center gap-1.5 text-sm bg-slate-700/60 hover:bg-blue-600/40 border border-slate-600/50 hover:border-blue-500/60 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all"
+                      className={`flex items-center gap-1.5 text-sm border px-3 py-2 rounded-xl transition-all ${
+                        data.businessCategory === label
+                          ? "bg-blue-600/40 border-blue-500/60 text-white"
+                          : "bg-slate-700/60 hover:bg-blue-600/40 border-slate-600/50 hover:border-blue-500/60 text-slate-200 hover:text-white"
+                      }`}
                     >
                       <span>{icon}</span>
                       <span>{label}</span>
@@ -1084,7 +1106,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const fontName = logo.replace("font:", "");
                     addUserMessage(`Schriftart gewählt: ${fontName} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
-                    await advanceToStep("welcome");
+                    await advanceToStep("businessName");
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -1358,7 +1380,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           if (isTyping) return;
                           const hidden = Array.from(hiddenSections);
                           addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
-                          await advanceToStep("hideSections");
+                          await advanceToStep("preview");
                         }}
                         className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
                       >

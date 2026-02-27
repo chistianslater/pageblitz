@@ -221,6 +221,7 @@ export default function WebsiteRenderer({
   openingHours = [],
   slug,
   contactFormLocked = false,
+  logoFont,
   businessCategory,
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
@@ -237,14 +238,17 @@ export default function WebsiteRenderer({
     ? [tokens.headlineFont, tokens.bodyFont].filter(Boolean) as string[]
     : []; // Layout fonts are system/generic fallbacks, no Google Fonts needed for defaults
 
-  // Inject _logoFont as CSS variable for real-time logo preview during onboarding
-  const logoFont = (websiteData as any)?._logoFont as string | undefined;
+  // Inject logoFont as CSS variable for real-time logo preview during onboarding
+  // Accepts both the direct prop and the legacy _logoFont/_brandLogoFont from websiteData
+  const effectiveLogoFont = logoFont
+    || (websiteData as any)?._logoFont as string | undefined
+    || (websiteData as any)?._brandLogoFont as string | undefined;
   useEffect(() => {
-    if (logoFont) {
-      document.documentElement.style.setProperty('--logo-font', `'${logoFont}', sans-serif`);
+    if (effectiveLogoFont) {
+      document.documentElement.style.setProperty('--logo-font', `'${effectiveLogoFont}', sans-serif`);
     }
     return () => { document.documentElement.style.removeProperty('--logo-font'); };
-  }, [logoFont]);
+  }, [effectiveLogoFont]);
 
   // Inject Google Fonts dynamically
   useEffect(() => {

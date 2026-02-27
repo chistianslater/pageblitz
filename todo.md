@@ -443,3 +443,9 @@
 - [x] GMB-Fotos aus Google My Business als Hero/Gallery-Bilder nutzen
 - [x] Branchentypische initiale Farbpaletten (Bar → dunkel/warm, Gastronomie → erdige Töne, Bauunternehmen → anthrazit/orange)
 - [x] Inhaltliche Konsistenz: branchenspezifische Stats/Metriken (keine "abgeschlossene Projekte" bei Gastronomie)
+
+## OnboardingChat Fixes (Feb 27 2026 – Runde 8)
+- [ ] Logo/Schriftart Live-Preview: Auswahl ändert Preview sofort (kein Neustart)
+- [ ] Chat-Neustart-Bug: Nach Farb/Logo-Bestätigung kein Neustart des Chats
+- [ ] businessCategory vorausgefüllt: GMB-Kategorie automatisch erkennen und vorauswählen
+- [ ] Sektionen-Ausblenden-Schritt: Vor Checkout klickbare Sektionen zum Deaktivieren
