@@ -1609,6 +1609,62 @@ Kontext: ${input.context}`,
         }
       }),
 
+    findEmail: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        domain: z.string().optional(),
+        websiteUrl: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const domain = input.domain || (input.websiteUrl ? (() => {
+          try { return new URL(input.websiteUrl!).hostname.replace(/^www\./, ""); } catch { return null; }
+        })() : null);
+
+        if (!domain) return { email: null, source: null };
+
+        // 1. Try Hunter.io if API key is configured
+        const hunterKey = process.env.HUNTER_API_KEY;
+        if (hunterKey) {
+          try {
+            const hunterRes = await fetch(
+              `https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&limit=5&api_key=${hunterKey}`
+            );
+            const hunterData = await hunterRes.json() as { data?: { emails?: Array<{ value: string; type: string; confidence: number }> } };
+            const emails = hunterData?.data?.emails || [];
+            // Prefer generic emails (info@, kontakt@, etc.) over personal ones
+            const generic = emails.find(e => /^(info|kontakt|contact|hallo|hello|mail|post|office|service|anfrage)@/i.test(e.value));
+            const best = generic || emails.sort((a, b) => b.confidence - a.confidence)[0];
+            if (best?.value) return { email: best.value, source: "hunter" };
+          } catch {
+            // fall through to scraping
+          }
+        }
+
+        // 2. Fallback: scrape the website for mailto: links
+        try {
+          const url = input.websiteUrl || `https://${domain}`;
+          const res = await fetch(url, {
+            headers: { "User-Agent": "Mozilla/5.0 (compatible; Pageblitz/1.0)" },
+            signal: AbortSignal.timeout(6000),
+          });
+          const html = await res.text();
+          const matches = html.match(/mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g) || [];
+          const emails = Array.from(new Set(matches.map(m => m.replace("mailto:", "").toLowerCase())))
+            .filter(e => !e.includes("example.com") && !e.includes("domain.com"));
+          // Prefer generic emails
+          const generic = emails.find(e => /^(info|kontakt|contact|hallo|hello|mail|post|office|service|anfrage)@/.test(e));
+          const best = generic || emails[0];
+          if (best) return { email: best, source: "scrape" };
+        } catch {
+          // ignore
+        }
+
+        return { email: null, source: null };
+      }),
+
     saveStep: publicProcedure
       .input(z.object({
         websiteId: z.number(),

@@ -410,3 +410,17 @@
 - [x] Fortschrittsbalken über Preview-Panel verschieben (mehr Platz)
 - [x] Chat-Toggle-Button außerhalb der Seitenleiste platzieren
 - [x] GMB-Bulk-Prefill: nach Übernahme Chat-Schritte mit vorausgefüllten Daten durchlaufen
+
+## UX & Email-Enrichment (Feb 27 2026 – Runde 6)
+- [x] Chat-Panel: Smooth Slide-Animation beim Ein-/Ausblenden
+- [x] GMB-Prefill: Stift-Icon zum nachträglichen Bearbeiten einzelner Felder
+- [ ] E-Mail-Enrichment: Automatische E-Mail-Suche für Unternehmen ohne GMB-E-Mail
+
+## OnboardingChat Fixes (Feb 27 2026 – Runde 5)
+- [x] Chat-Seitenleiste sticky: Eingabefeld bleibt unten fixiert, kein Hochscrollen
+- [x] Farbe + Logo Echtzeit-Preview: Auswahl ändert Preview sofort
+- [x] Farbe + Logo als allererster Schritt (vor Welcome)
+- [x] Kein Chat-Neustart nach Farbe/Logo-Bestätigung
+- [x] Flackern bei Themenüberschriften beheben
+- [x] KI-Intent-Erkennung: "mach mir einen Vorschlag" → KI generiert automatisch
+- [x] Kontaktformular-Overlay: nur wenn wirklich Formularfelder vorhanden

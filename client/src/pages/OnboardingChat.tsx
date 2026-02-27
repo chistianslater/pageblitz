@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -72,6 +72,8 @@ interface ChatMessage {
 const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const STEP_ORDER: ChatStep[] = [
+  "brandColor",
+  "brandLogo",
   "welcome",
   "businessName",
   "tagline",
@@ -85,8 +87,6 @@ const STEP_ORDER: ChatStep[] = [
   "legalEmail",
   "legalPhone",
   "legalVat",
-  "brandColor",
-  "brandLogo",
   "addons",
   "subpages",
   "email",
@@ -146,6 +146,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set<string>());
+  const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -195,6 +196,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const checkoutMutation = trpc.checkout.createSession.useMutation();
   const generateTextMutation = trpc.onboarding.generateText.useMutation();
   const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
+
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
@@ -438,9 +440,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Step advancement ────────────────────────────────────────────────────
   // Group headers shown before certain thematic sections
   const GROUP_HEADERS: Partial<Record<ChatStep, string>> = {
+    brandColor: "🎨 **Willkommen! Lass uns mit dem Look starten.**\n\nWähle deine Hauptfarbe – du siehst sofort rechts, wie deine Website damit aussieht!",
+    welcome: "✅ **Perfekt! Dein Design ist festgelegt.**\n\nJetzt sammle ich noch ein paar Infos über dein Unternehmen.",
     legalOwner: "📋 **Abschnitt 2: Rechtliche Pflichtangaben**\n\nFür ein vollständiges Impressum und eine korrekte Datenschutzerklärung brauche ich noch ein paar Angaben. Das dauert nur 2 Minuten!",
-    brandColor: "🎨 **Abschnitt 3: Visuelles Design**\n\nJetzt gestalten wir den Look deiner Website – Farbe und Logo. Das macht deine Seite unverwechselbar!",
-    addons: "⚡ **Abschnitt 4: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern?",
+    addons: "⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern?",
   };
 
   const advanceToStep = useCallback(
@@ -497,25 +500,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           break;
         case "tagline":
-          addUserMessage(val);
-          setData((p) => ({ ...p, tagline: val }));
-          await trySaveStep(stepIdx, { tagline: val });
-          break;
         case "description":
-          addUserMessage(val);
-          setData((p) => ({ ...p, description: val }));
-          await trySaveStep(stepIdx, { description: val });
-          break;
         case "usp":
+        case "targetAudience": {
+          // AI intent detection: if user asks for a suggestion, trigger AI generation
+          const aiIntentPattern = /vorschlag|generier|mach mir|erstell|schreib|idee|hilf|automatisch|ki|ai\b/i;
+          if (aiIntentPattern.test(val)) {
+            addUserMessage(val);
+            addBotMessage("Klar, ich generiere dir einen Vorschlag! ✨", 200);
+            await generateWithAI(currentStep as keyof OnboardingData);
+            return; // Don't advance, let user review and submit
+          }
           addUserMessage(val);
-          setData((p) => ({ ...p, usp: val }));
-          await trySaveStep(stepIdx, { usp: val });
+          setData((p) => ({ ...p, [currentStep]: val }));
+          await trySaveStep(stepIdx, { [currentStep]: val });
           break;
-        case "targetAudience":
-          addUserMessage(val);
-          setData((p) => ({ ...p, targetAudience: val }));
-          await trySaveStep(stepIdx, { targetAudience: val });
-          break;
+        }
         case "legalOwner": {
           if (val.trim().split(/\s+/).length < 2) {
             toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
@@ -668,6 +668,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       return section;
     });
 
+    // Patch brandColor into colorScheme override (stored in patched.colorScheme if present)
+    if (data.brandColor && data.brandColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+      (patched as any)._brandColorOverride = data.brandColor;
+    }
+
+    // Patch brandLogo font
+    if (data.brandLogo && data.brandLogo.startsWith("font:")) {
+      (patched as any)._brandLogoFont = data.brandLogo.replace("font:", "");
+    }
+
     return patched;
   }, [
     siteData?.website?.websiteData,
@@ -675,6 +685,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.tagline,
     data.description,
     data.topServices,
+    data.brandColor,
+    data.brandLogo,
+    hiddenSections,
   ]);
 
   // ── Price calculation ───────────────────────────────────────────────────
@@ -718,8 +731,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
       {/* Main layout */}
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
-        {/* Chat panel */}
-        <div className={`${chatHidden ? "hidden" : "flex"} w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0 items-center`}>
+        {/* Chat panel – smooth slide */}
+        <div
+          className="flex w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0 items-center overflow-hidden transition-all duration-300 ease-in-out"
+          style={{
+            maxWidth: chatHidden ? 0 : 360,
+            minWidth: chatHidden ? 0 : undefined,
+            opacity: chatHidden ? 0 : 1,
+            pointerEvents: chatHidden ? "none" : undefined,
+          }}
+        >
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-700/50 flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg">
@@ -740,7 +761,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0" style={{ maxHeight: "calc(100vh - 280px)" }}>
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -1004,7 +1025,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const fontName = logo.replace("font:", "");
                     addUserMessage(`Schriftart gewählt: ${fontName} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
-                    await advanceToStep("businessName");
+                    await advanceToStep("welcome");
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -1116,45 +1137,104 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             {!isTyping && currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
               <div className="ml-9 mt-2">
+                {!gmbÜbernommenEditMode ? (
+                  <button
+                    onClick={async () => {
+                      const parts = business.address ? business.address.split(",") : [];
+                      const street = parts[0]?.trim() || "";
+                      const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
+                      const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
+                      const zip = zipCityMatch?.[1] || "";
+                      const city = zipCityMatch?.[2] || "";
+                      const phone = business.phone || "";
+                      const email = business.email || "";
+                      setData((p) => ({
+                        ...p,
+                        legalStreet: street || p.legalStreet,
+                        legalZip: zip || p.legalZip,
+                        legalCity: city || p.legalCity,
+                        legalPhone: phone || p.legalPhone,
+                        legalEmail: email || p.legalEmail,
+                      }));
+                      const summary = [
+                        street && `Straße: ${street}`,
+                        zip && city && `PLZ/Stadt: ${zip} ${city}`,
+                        phone && `Telefon: ${phone}`,
+                        email && `E-Mail: ${email}`,
+                      ].filter(Boolean).join(" · ");
+                      addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
+                      const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                      if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
+                      if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
+                      if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
+                      if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
+                      await advanceToStep("legalVat");
+                    }}
+                    className="flex items-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2 rounded-xl transition-all"
+                  >
+                    <span>📍</span> Adresse, Telefon & E-Mail aus Google My Business übernehmen
+                  </button>
+                ) : (
+                  /* Edit mode: show fields inline */
+                  <div className="bg-slate-800/80 border border-slate-600/50 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-emerald-400 font-medium">📍 GMB-Daten bearbeiten</span>
+                      <button
+                        onClick={() => setGmbÜbernommenEditMode(false)}
+                        className="text-xs text-slate-400 hover:text-white transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    {[
+                      { label: "Straße", key: "legalStreet" as const, placeholder: "Musterstraße 1" },
+                      { label: "PLZ", key: "legalZip" as const, placeholder: "12345" },
+                      { label: "Stadt", key: "legalCity" as const, placeholder: "Musterstadt" },
+                      { label: "Telefon", key: "legalPhone" as const, placeholder: "+49 123 456789" },
+                      { label: "E-Mail", key: "legalEmail" as const, placeholder: "info@firma.de" },
+                    ].map(({ label, key, placeholder }) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 w-14 flex-shrink-0">{label}</span>
+                        <input
+                          type="text"
+                          value={data[key] || ""}
+                          onChange={(e) => setData((p) => ({ ...p, [key]: e.target.value }))}
+                          placeholder={placeholder}
+                          className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-blue-500 placeholder-slate-500"
+                        />
+                      </div>
+                    ))}
+                    <button
+                      onClick={async () => {
+                        setGmbÜbernommenEditMode(false);
+                        const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                        if (data.legalStreet) await trySaveStep(stepIdx + 1, { legalStreet: data.legalStreet });
+                        if (data.legalZip && data.legalCity) await trySaveStep(stepIdx + 2, { legalZip: data.legalZip, legalCity: data.legalCity });
+                        if (data.legalEmail) await trySaveStep(stepIdx + 3, { legalEmail: data.legalEmail });
+                        if (data.legalPhone) await trySaveStep(stepIdx + 4, { legalPhone: data.legalPhone });
+                        await advanceToStep("legalVat");
+                      }}
+                      className="w-full flex items-center justify-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors mt-1"
+                    >
+                      <Check className="w-3.5 h-3.5" /> Bestätigen & weiter
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Pencil to re-open edit mode after GMB data was confirmed */}
+            {!isTyping && currentStep !== "legalOwner" && ["legalStreet","legalZipCity","legalEmail","legalPhone","legalVat"].includes(currentStep) && data.legalStreet && (
+              <div className="ml-9 mt-1">
                 <button
-                  onClick={async () => {
-                    const parts = business.address ? business.address.split(",") : [];
-                    const street = parts[0]?.trim() || "";
-                    const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
-                    const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
-                    const zip = zipCityMatch?.[1] || "";
-                    const city = zipCityMatch?.[2] || "";
-                    const phone = business.phone || "";
-                    const email = business.email || "";
-                    // Update state with all GMB data
-                    setData((p) => ({
-                      ...p,
-                      legalStreet: street || p.legalStreet,
-                      legalZip: zip || p.legalZip,
-                      legalCity: city || p.legalCity,
-                      legalPhone: phone || p.legalPhone,
-                      legalEmail: email || p.legalEmail,
-                    }));
-                    // Show confirmation in chat and skip through legal steps automatically
-                    const summary = [
-                      street && `Straße: ${street}`,
-                      zip && city && `PLZ/Stadt: ${zip} ${city}`,
-                      phone && `Telefon: ${phone}`,
-                      email && `E-Mail: ${email}`,
-                    ].filter(Boolean).join(" · ");
-                    addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
-                    // Save all pre-filled legal fields
-                    const stepIdx = STEP_ORDER.indexOf("legalOwner");
-                    if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
-                    if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
-                    if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
-                    if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
-                    // Advance directly to legalVat (last legal step)
-                    await advanceToStep("legalVat");
+                  onClick={() => {
+                    setGmbÜbernommenEditMode(true);
+                    // Go back to legalOwner step to show the edit panel
+                    setCurrentStep("legalOwner" as any);
                   }}
-                  className="flex items-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2 rounded-xl transition-all"
+                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+                  title="GMB-Daten nachträglich bearbeiten"
                 >
-                  <span>📍</span> Adresse, Telefon & E-Mail aus Google My Business übernehmen
+                  <Pencil className="w-3 h-3" /> Angaben bearbeiten
                 </button>
               </div>
             )}
@@ -1407,6 +1487,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   ))}
                 </div>
               )}
+
             </div>
           )}
         </div>
@@ -1446,7 +1527,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             <MacbookMockup label="Live-Vorschau deiner Website">
               <WebsiteRenderer
                 websiteData={liveWebsiteData}
-                colorScheme={colorScheme}
+                colorScheme={data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor)
+                  ? { ...colorScheme, primary: data.brandColor, secondary: data.brandColor, accent: data.brandColor } as any
+                  : colorScheme}
                 heroImageUrl={heroImageUrl}
                 layoutStyle={layoutStyle}
                 businessPhone={business?.phone || undefined}
@@ -1455,6 +1538,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 openingHours={business?.openingHours as string[] | undefined}
                 slug={slug}
                 contactFormLocked={!data.addOnContactForm}
+                logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
               />
             </MacbookMockup>
           ) : (

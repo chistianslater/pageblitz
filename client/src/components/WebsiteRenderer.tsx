@@ -44,6 +44,8 @@ interface WebsiteRendererProps {
   slug?: string | null;
   /** When true, the contact section is shown as locked/upsell overlay */
   contactFormLocked?: boolean;
+  /** Optional font override for the logo (e.g. 'Montserrat', 'Oswald') */
+  logoFont?: string;
 }
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
