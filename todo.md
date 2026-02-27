@@ -284,3 +284,31 @@
 - [ ] "Einstellungen" Link im Footer öffnet Banner erneut
 - [x] SitePage: CookieBanner einbinden
 - [ ] Alle 12 Layouts: "Cookie-Einstellungen" Link im Footer
+
+## Chatbot-Onboarding v2 (Runde 18)
+
+### Chatbot-Interface
+- [x] OnboardingChat.tsx: Geführter Chatbot-Stil (eine Frage nach der anderen)
+- [x] Bot-Nachrichten: Charmante, persönliche Sprache ("Hey, schön dass du dabei bist! 👋")
+- [x] Nutzer-Antworten: Text-Input + Quick-Reply-Buttons für häufige Antworten
+- [x] Vorausgefüllte Felder: GMB-Daten (Name, Adresse, Telefon, E-Mail) als Standardwerte
+- [x] KI-Hilfe-Button: "Mit KI generieren" (✨) für Tagline, USP, Beschreibung, Zielgruppe
+- [x] tRPC procedure: onboarding.generateText (LLM-basiert)
+- [ ] Pflichtfelder-Validierung: Name, E-Mail, Leistungen, Rechtliche Daten (noch ausstehend)
+- [x] Fortschrittsanzeige: Punkte-Verlauf oben rechts
+
+### Add-on Pricing (korrigiert)
+- [x] Kontaktformular: +4,90 €/Monat
+- [x] Unterseiten: Repeater mit +/- Buttons (+9,90 €/Monat pro Seite)
+- [x] Bildergalerie: +4,90 €/Monat
+
+### Live-Preview vor Checkout
+- [x] Vorletzter Schritt: Website mit echten Onboarding-Daten live rendern (kein Re-Design)
+- [x] "Das ist deine Website" – Vorschau rechts neben dem Chat
+- [x] Erst nach Bestätigung der Preview → Checkout-Schritt
+
+### FOMO-Mechanismus
+- [x] Countdown-Timer: "Diese Website ist noch XX:XX:XX für dich reserviert"
+- [x] Timer startet beim ersten Aufruf des Onboardings (localStorage)
+- [ ] Bei Ablauf: Reminder-E-Mail an die im Onboarding eingegebene E-Mail (noch ausstehend)
+- [ ] FOMO-Badge auf der Preview-Seite: "⚡ Nur noch X Stunden reserviert" (noch ausstehend)

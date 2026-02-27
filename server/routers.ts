@@ -1461,6 +1461,43 @@ Antworte NUR mit validem JSON:
         if (!onboarding) throw new TRPCError({ code: "NOT_FOUND" });
         return onboarding;
       }),
+
+    generateText: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        field: z.enum(["tagline", "description", "usp", "targetAudience"]),
+        context: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        
+        const prompts: Record<string, string> = {
+          tagline: `Erstelle einen kurzen, einprägsamen deutschen Slogan (max. 8 Wörter) für dieses Unternehmen. Nur den Slogan, keine Anführungszeichen, keine Erklärung.
+
+Kontext: ${input.context}`,
+          description: `Schreibe eine professionelle deutsche Unternehmensbeschreibung (2-3 Sätze, ca. 80-120 Wörter) für dieses Unternehmen. Direkt, überzeugend, ohne Floskeln.
+
+Kontext: ${input.context}`,
+          usp: `Was ist das Alleinstellungsmerkmal (USP) dieses Unternehmens? Formuliere es in einem prägnanten deutschen Satz (max. 15 Wörter). Nur den USP, keine Erklärung.
+
+Kontext: ${input.context}`,
+          targetAudience: `Beschreibe die ideale Zielgruppe für dieses Unternehmen in 1-2 deutschen Sätzen. Konkret und spezifisch.
+
+Kontext: ${input.context}`,
+        };
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Du bist ein professioneller Texter für lokale Unternehmen in Deutschland. Schreibe immer auf Deutsch. Sei prägnant, authentisch und vermeide Marketingfloskeln." },
+            { role: "user", content: prompts[input.field] },
+          ],
+        });
+        
+        const rawContent = response.choices?.[0]?.message?.content;
+        const text = typeof rawContent === "string" ? rawContent : "";
+        return { text: text.trim() };
+      }),
     
     saveStep: publicProcedure
       .input(z.object({

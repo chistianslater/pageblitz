@@ -14,6 +14,7 @@ import TemplatesPage from "./pages/TemplatesPage";
 import PreviewPage from "./pages/PreviewPage";
 import SitePage from "./pages/SitePage";
 import OnboardingWizard from "./pages/OnboardingWizard";
+import OnboardingChat from "./pages/OnboardingChat";
 import LegalPage from "./pages/LegalPage";
 
 function AdminRouter() {
@@ -39,8 +40,8 @@ function Router() {
       <Route path="/site/:slug" component={SitePage} />
       <Route path="/site/:slug/impressum" component={LegalPage} />
       <Route path="/site/:slug/datenschutz" component={LegalPage} />
-      <Route path="/preview/:token/onboarding">{(params) => <OnboardingWizard previewToken={params.token} />}</Route>
-      <Route path="/websites/:id/onboarding">{(params) => <OnboardingWizard websiteId={parseInt(params.id || "0")} />}</Route>
+      <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
+      <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
       <Route>
         <AdminRouter />
       </Route>

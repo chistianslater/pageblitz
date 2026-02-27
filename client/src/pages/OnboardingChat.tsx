@@ -1,0 +1,856 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, Clock, Zap, Check } from "lucide-react";
+import { toast } from "sonner";
+import WebsiteRenderer from "@/components/WebsiteRenderer";
+import type { WebsiteData, ColorScheme } from "@shared/types";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+interface SubPage {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface OnboardingData {
+  businessName: string;
+  tagline: string;
+  description: string;
+  usp: string;
+  topServices: { title: string; description: string }[];
+  targetAudience: string;
+  legalOwner: string;
+  legalStreet: string;
+  legalZip: string;
+  legalCity: string;
+  legalEmail: string;
+  legalPhone: string;
+  legalVatId: string;
+  addOnContactForm: boolean;
+  addOnGallery: boolean;
+  subPages: SubPage[];
+  email: string; // for FOMO reminder
+}
+
+type ChatStep =
+  | "welcome"
+  | "businessName"
+  | "tagline"
+  | "description"
+  | "usp"
+  | "services"
+  | "targetAudience"
+  | "legalOwner"
+  | "legalAddress"
+  | "legalContact"
+  | "addons"
+  | "subpages"
+  | "email"
+  | "preview"
+  | "checkout";
+
+interface ChatMessage {
+  id: string;
+  role: "bot" | "user";
+  content: string;
+  timestamp: number;
+}
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+const STEP_ORDER: ChatStep[] = [
+  "welcome",
+  "businessName",
+  "tagline",
+  "description",
+  "usp",
+  "services",
+  "targetAudience",
+  "legalOwner",
+  "legalAddress",
+  "legalContact",
+  "addons",
+  "subpages",
+  "email",
+  "preview",
+  "checkout",
+];
+
+// ── Helper ───────────────────────────────────────────────────────────────────
+
+function genId() {
+  return Math.random().toString(36).slice(2);
+}
+
+function useCountdown(expiresAt: number | null) {
+  const [remaining, setRemaining] = useState<number>(0);
+  useEffect(() => {
+    if (!expiresAt) return;
+    const tick = () => setRemaining(Math.max(0, expiresAt - Date.now()));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+  const h = Math.floor(remaining / 3600000);
+  const m = Math.floor((remaining % 3600000) / 60000);
+  const s = Math.floor((remaining % 60000) / 1000);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
+interface Props {
+  previewToken?: string;
+  websiteId?: number;
+}
+
+export default function OnboardingChat({ previewToken, websiteId: websiteIdProp }: Props) {
+  const [, navigate] = useLocation();
+
+  // ── Website data ────────────────────────────────────────────────────────
+  const { data: siteData, isLoading: siteLoading } = trpc.website.get.useQuery(
+    { token: previewToken, id: websiteIdProp },
+    { enabled: !!(previewToken || websiteIdProp) }
+  );
+
+  const websiteId = siteData?.website?.id;
+  const business = siteData?.business;
+
+  // ── Chat state ──────────────────────────────────────────────────────────
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentStep, setCurrentStep] = useState<ChatStep>("welcome");
+  const [inputValue, setInputValue] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // ── Onboarding data ─────────────────────────────────────────────────────
+  const [data, setData] = useState<OnboardingData>({
+    businessName: "",
+    tagline: "",
+    description: "",
+    usp: "",
+    topServices: [{ title: "", description: "" }],
+    targetAudience: "",
+    legalOwner: "",
+    legalStreet: "",
+    legalZip: "",
+    legalCity: "",
+    legalEmail: "",
+    legalPhone: "",
+    legalVatId: "",
+    addOnContactForm: false,
+    addOnGallery: false,
+    subPages: [],
+    email: "",
+  });
+
+  // ── FOMO timer ──────────────────────────────────────────────────────────
+  const [fomoExpiresAt, setFomoExpiresAt] = useState<number | null>(null);
+  const countdown = useCountdown(fomoExpiresAt);
+
+  useEffect(() => {
+    const key = `pageblitz_fomo_${previewToken || websiteIdProp}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      setFomoExpiresAt(parseInt(stored));
+    } else {
+      const exp = Date.now() + FOMO_DURATION_MS;
+      localStorage.setItem(key, String(exp));
+      setFomoExpiresAt(exp);
+    }
+  }, [previewToken, websiteIdProp]);
+
+  // ── tRPC mutations ──────────────────────────────────────────────────────
+  const saveStepMutation = trpc.onboarding.saveStep.useMutation();
+  const completeMutation = trpc.onboarding.complete.useMutation();
+  const checkoutMutation = trpc.checkout.createSession.useMutation();
+  const generateTextMutation = trpc.onboarding.generateText.useMutation();
+
+  // ── Pre-fill from GMB data ──────────────────────────────────────────────
+  useEffect(() => {
+    if (business && !initialized) {
+      setData((prev) => ({
+        ...prev,
+        businessName: business.name || prev.businessName,
+        legalEmail: business.email || prev.legalEmail,
+        legalPhone: business.phone || prev.legalPhone,
+        email: business.email || prev.email,
+      }));
+    }
+  }, [business, initialized]);
+
+  // ── Scroll to bottom ────────────────────────────────────────────────────
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  // ── Bot message helper ──────────────────────────────────────────────────
+  const addBotMessage = useCallback((content: string, delay = 600) => {
+    return new Promise<void>((resolve) => {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          { id: genId(), role: "bot", content, timestamp: Date.now() },
+        ]);
+        resolve();
+      }, delay);
+    });
+  }, []);
+
+  const addUserMessage = useCallback((content: string) => {
+    setMessages((prev) => [
+      ...prev,
+      { id: genId(), role: "user", content, timestamp: Date.now() },
+    ]);
+  }, []);
+
+  // ── Step prompts ────────────────────────────────────────────────────────
+  const getStepPrompt = useCallback(
+    (step: ChatStep): string => {
+      const name = data.businessName || business?.name || "dein Unternehmen";
+      switch (step) {
+        case "welcome":
+          return `Hey! 👋 Ich bin dein persönlicher Website-Assistent. Ich helfe dir in wenigen Minuten, deine Website mit echten Infos zu befüllen – damit sie nicht mehr generisch klingt, sondern wirklich nach **${name}** aussieht.\n\nKlingt gut? Dann lass uns starten! 🚀`;
+        case "businessName":
+          return `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName || "noch keinen Namen"}** vorausgefüllt – stimmt das so?`;
+        case "tagline":
+          return `Super! Jetzt brauchen wir einen knackigen Slogan für **${data.businessName}** – einen Satz, der sofort klar macht, was ihr macht und warum ihr besonders seid.\n\nBeispiel: *"Qualität, die bleibt – seit 1998"* oder *"Ihr Dach in besten Händen"*\n\nOder soll ich dir einen Vorschlag machen? 💡`;
+        case "description":
+          return `Perfekt! Jetzt eine kurze Beschreibung deines Unternehmens – 2-3 Sätze, die erklären, was ihr macht, für wen und was euch auszeichnet.\n\nKein Stress, ich kann dir auch einen Entwurf generieren! ✨`;
+        case "usp":
+          return `Was macht **${data.businessName}** einzigartig? Was können Kunden bei euch bekommen, was sie woanders nicht finden?\n\nDein Alleinstellungsmerkmal (USP) – in einem Satz. Ich helfe dir gerne dabei! 🎯`;
+        case "services":
+          return `Welche sind eure Top-Leistungen? Nenn mir 2-4 Dinge, die ihr am häufigsten anbietet.\n\nIch habe unten Felder vorbereitet – füll sie aus oder lass mich Vorschläge machen! 🔧`;
+        case "targetAudience":
+          return `Für wen macht ihr das alles? Beschreib kurz eure idealen Kunden – wer ruft euch an, wer schreibt euch?\n\nBeispiel: *"Privathaushalte in Bocholt, die ein neues Dach brauchen"*`;
+        case "legalOwner":
+          return `Fast geschafft! 🎉 Jetzt noch ein paar rechtliche Pflichtangaben für Impressum & Datenschutz.\n\nWer ist der Inhaber oder Geschäftsführer? (Vollständiger Name)`;
+        case "legalAddress":
+          return `Und die Geschäftsadresse? (Straße, PLZ, Stadt)`;
+        case "legalContact":
+          return `Letzte rechtliche Info: E-Mail-Adresse für das Impressum und optional USt-IdNr. (z.B. DE123456789)`;
+        case "addons":
+          return `Möchtest du optionale Extras zu deiner Website hinzufügen?\n\n• **Kontaktformular** – Kunden können direkt anfragen (+4,90 €/Monat)\n• **Bildergalerie** – Zeig deine Projekte in einer schönen Galerie (+4,90 €/Monat)`;
+        case "subpages":
+          return `Brauchst du zusätzliche Unterseiten? Zum Beispiel "Über uns", "Projekte", "Referenzen" oder "Team".\n\nJede Unterseite kostet +9,90 €/Monat. Du kannst sie unten hinzufügen oder überspringen.`;
+        case "email":
+          return `Fast fertig! 🎊 An welche E-Mail-Adresse sollen wir deine Website-Infos und die Freischalt-Bestätigung schicken?`;
+        case "preview":
+          return `🎉 **Deine Website ist fertig personalisiert!**\n\nSchau dir unten die Vorschau an – das ist deine echte Website mit deinen echten Daten. Wenn alles passt, kannst du sie freischalten!`;
+        case "checkout":
+          return `Bereit zum Freischalten? 🚀 Wähle dein Paket und starte durch!`;
+        default:
+          return "";
+      }
+    },
+    [data.businessName, business?.name]
+  );
+
+  // ── Initialize chat ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!siteLoading && !initialized) {
+      setInitialized(true);
+      const initChat = async () => {
+        await addBotMessage(getStepPrompt("welcome"), 800);
+        await new Promise((r) => setTimeout(r, 400));
+        setCurrentStep("businessName");
+        await addBotMessage(getStepPrompt("businessName"), 1000);
+      };
+      initChat();
+    }
+  }, [siteLoading, initialized, addBotMessage, getStepPrompt]);
+
+  // ── AI text generation ──────────────────────────────────────────────────
+  const generateWithAI = async (field: keyof OnboardingData) => {
+    if (!websiteId) return;
+    const validFields = ["tagline", "description", "usp", "targetAudience"] as const;
+    type ValidField = typeof validFields[number];
+    if (!validFields.includes(field as ValidField)) return;
+    setIsGenerating(true);
+    try {
+      const context = `Unternehmensname: ${data.businessName || business?.name || ""}, Branche: ${business?.category || "Handwerk"}, Adresse: ${business?.address || ""}, Beschreibung: ${data.description || ""}`;
+      const result = await generateTextMutation.mutateAsync({
+        websiteId,
+        field: field as ValidField,
+        context,
+      });
+      if (result.text) {
+        setInputValue(result.text);
+        toast.success("Text generiert! Du kannst ihn noch anpassen.");
+      }
+    } catch {
+      toast.error("KI-Generierung fehlgeschlagen");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // ── Step advancement ────────────────────────────────────────────────────
+  const advanceToStep = useCallback(
+    async (nextStep: ChatStep) => {
+      setCurrentStep(nextStep);
+      await addBotMessage(getStepPrompt(nextStep), 800);
+      setTimeout(() => inputRef.current?.focus(), 900);
+    },
+    [addBotMessage, getStepPrompt]
+  );
+
+  const handleSubmit = async (value?: string) => {
+    const val = (value || inputValue).trim();
+    if (!val && !["addons", "subpages", "preview", "checkout"].includes(currentStep)) return;
+
+    setInputValue("");
+
+    const stepIdx = STEP_ORDER.indexOf(currentStep);
+    const nextStep = STEP_ORDER[stepIdx + 1] as ChatStep;
+
+    switch (currentStep) {
+      case "businessName":
+        if (val) {
+          addUserMessage(val);
+          setData((p) => ({ ...p, businessName: val }));
+          if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { businessName: val } });
+        } else {
+          addUserMessage(`Ja, ${data.businessName} stimmt! ✓`);
+        }
+        break;
+      case "tagline":
+        addUserMessage(val);
+        setData((p) => ({ ...p, tagline: val }));
+        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { tagline: val } });
+        break;
+      case "description":
+        addUserMessage(val);
+        setData((p) => ({ ...p, description: val }));
+        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { description: val } });
+        break;
+      case "usp":
+        addUserMessage(val);
+        setData((p) => ({ ...p, usp: val }));
+        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { usp: val } });
+        break;
+      case "targetAudience":
+        addUserMessage(val);
+        setData((p) => ({ ...p, targetAudience: val }));
+        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { targetAudience: val } });
+        break;
+      case "legalOwner":
+        addUserMessage(val);
+        setData((p) => ({ ...p, legalOwner: val }));
+        if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { legalOwner: val } });
+        break;
+      case "legalAddress": {
+        addUserMessage(val);
+        // Parse "Musterstraße 1, 46395 Bocholt" format
+        const parts = val.split(",").map((s) => s.trim());
+        const street = parts[0] || val;
+        const cityPart = parts[1] || "";
+        const zipMatch = cityPart.match(/^(\d{5})\s+(.+)$/);
+        const zip = zipMatch?.[1] || "";
+        const city = zipMatch?.[2] || cityPart;
+        setData((p) => ({ ...p, legalStreet: street, legalZip: zip, legalCity: city }));
+        if (websiteId)
+          await saveStepMutation.mutateAsync({
+            websiteId,
+            step: stepIdx,
+            data: { legalStreet: street, legalZip: zip, legalCity: city },
+          });
+        break;
+      }
+      case "legalContact": {
+        addUserMessage(val);
+        // Try to extract email and VAT ID
+        const emailMatch = val.match(/[\w.-]+@[\w.-]+\.\w+/);
+        const vatMatch = val.match(/DE\d{9}/i);
+        const email = emailMatch?.[0] || data.legalEmail;
+        const vatId = vatMatch?.[0] || "";
+        setData((p) => ({ ...p, legalEmail: email, legalVatId: vatId }));
+        if (websiteId)
+          await saveStepMutation.mutateAsync({
+            websiteId,
+            step: stepIdx,
+            data: { legalEmail: email, legalVatId: vatId },
+          });
+        break;
+      }
+      case "email":
+        addUserMessage(val);
+        setData((p) => ({ ...p, email: val }));
+        break;
+      case "services":
+      case "addons":
+      case "subpages":
+        // These are handled by the interactive UI below
+        break;
+      case "preview":
+        addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+        break;
+      case "checkout":
+        break;
+    }
+
+    if (nextStep) {
+      await advanceToStep(nextStep);
+    }
+  };
+
+  // ── Checkout ────────────────────────────────────────────────────────────
+  const handleCheckout = async () => {
+    if (!websiteId) return;
+    try {
+      // Complete onboarding first
+      await completeMutation.mutateAsync({ websiteId });
+      // Then create checkout session
+      const session = await checkoutMutation.mutateAsync({
+        websiteId,
+        addOns: {
+          subpages: data.subPages.filter((p) => p.name.trim()).length,
+          gallery: data.addOnGallery,
+          contactForm: data.addOnContactForm,
+        },
+      });
+      window.open(session.url, "_blank");
+      toast.success("Du wirst zu Stripe weitergeleitet...");
+    } catch (e: any) {
+      toast.error(e.message || "Fehler beim Checkout");
+    }
+  };
+
+  // ── Price calculation ───────────────────────────────────────────────────
+  const totalPrice = () => {
+    let price = 79;
+    if (data.addOnContactForm) price += 4.9;
+    if (data.addOnGallery) price += 4.9;
+    price += data.subPages.length * 9.9;
+    return price.toFixed(2);
+  };
+
+  // ── Render ──────────────────────────────────────────────────────────────
+
+  if (siteLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="text-center text-white">
+          <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4 text-blue-400" />
+          <p className="text-slate-300">Deine Website wird vorbereitet...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;
+  const colorScheme = siteData?.website?.colorScheme as ColorScheme | undefined;
+  const heroImageUrl = (siteData?.website as any)?.heroImageUrl as string | undefined;
+  const layoutStyle = (siteData?.website as any)?.layoutStyle as string | undefined;
+  const slug = siteData?.website?.slug;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+      {/* FOMO Header */}
+      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
+        <Clock className="w-4 h-4 flex-shrink-0" />
+        <span>
+          ⚡ Diese Website ist noch{" "}
+          <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
+        </span>
+      </div>
+
+      {/* Main layout */}
+      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full">
+        {/* Chat panel */}
+        <div className="w-full lg:w-[480px] flex flex-col border-r border-slate-700/50">
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-slate-700/50 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-white font-semibold text-base">Pageblitz Assistent</h1>
+              <p className="text-slate-400 text-xs">Personalisiert deine Website in Minuten</p>
+            </div>
+            {/* Progress dots */}
+            <div className="ml-auto flex gap-1">
+              {STEP_ORDER.filter((s) => s !== "welcome").map((step, i) => {
+                const stepIdx = STEP_ORDER.indexOf(currentStep);
+                const thisIdx = STEP_ORDER.indexOf(step);
+                return (
+                  <div
+                    key={step}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                      thisIdx < stepIdx
+                        ? "bg-green-400"
+                        : thisIdx === stepIdx
+                        ? "bg-blue-400 scale-125"
+                        : "bg-slate-600"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0" style={{ maxHeight: "calc(100vh - 280px)" }}>
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {msg.role === "bot" && (
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
+                    <Zap className="w-3.5 h-3.5 text-white" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                    msg.role === "bot"
+                      ? "bg-slate-700/80 text-slate-100 rounded-tl-sm"
+                      : "bg-blue-600 text-white rounded-tr-sm"
+                  }`}
+                  dangerouslySetInnerHTML={{
+                    __html: msg.content
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/\n/g, "<br/>"),
+                  }}
+                />
+              </div>
+            ))}
+
+            {/* Typing indicator */}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mr-2 flex-shrink-0">
+                  <Zap className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="bg-slate-700/80 px-4 py-3 rounded-2xl rounded-tl-sm">
+                  <div className="flex gap-1 items-center h-4">
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
+                        style={{ animationDelay: `${i * 0.15}s` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Interactive step UI */}
+            {!isTyping && currentStep === "services" && (
+              <div className="ml-9 space-y-2">
+                {data.topServices.map((svc, i) => (
+                  <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2">
+                    <input
+                      className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder={`Leistung ${i + 1} (z.B. Dachreparatur)`}
+                      value={svc.title}
+                      onChange={(e) => {
+                        const updated = [...data.topServices];
+                        updated[i] = { ...updated[i], title: e.target.value };
+                        setData((p) => ({ ...p, topServices: updated }));
+                      }}
+                    />
+                    <input
+                      className="w-full bg-slate-600/50 text-white text-xs px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Kurze Beschreibung (optional)"
+                      value={svc.description}
+                      onChange={(e) => {
+                        const updated = [...data.topServices];
+                        updated[i] = { ...updated[i], description: e.target.value };
+                        setData((p) => ({ ...p, topServices: updated }));
+                      }}
+                    />
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  {data.topServices.length < 4 && (
+                    <button
+                      onClick={() => setData((p) => ({ ...p, topServices: [...p.topServices, { title: "", description: "" }] }))}
+                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
+                    </button>
+                  )}
+                  <button
+                    onClick={async () => {
+                      const filtered = data.topServices.filter((s) => s.title.trim());
+                      if (filtered.length === 0) { toast.error("Bitte mindestens eine Leistung eingeben"); return; }
+                      addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
+                      if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: STEP_ORDER.indexOf("services"), data: { topServices: filtered } });
+                      await advanceToStep("targetAudience");
+                    }}
+                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    Weiter <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "addons" && (
+              <div className="ml-9 space-y-2">
+                {[
+                  { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+4,90 €/Monat", desc: "Kunden können direkt anfragen" },
+                  { key: "addOnGallery" as const, label: "Bildergalerie", price: "+4,90 €/Monat", desc: "Zeig deine Projekte" },
+                ].map((addon) => (
+                  <button
+                    key={addon.key}
+                    onClick={() => setData((p) => ({ ...p, [addon.key]: !p[addon.key] }))}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                      data[addon.key]
+                        ? "border-blue-500 bg-blue-500/10"
+                        : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${data[addon.key] ? "border-blue-500 bg-blue-500" : "border-slate-500"}`}>
+                      {data[addon.key] && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white text-sm font-medium">{addon.label}</p>
+                      <p className="text-slate-400 text-xs">{addon.desc}</p>
+                    </div>
+                    <span className="text-blue-400 text-xs font-medium">{addon.price}</span>
+                  </button>
+                ))}
+                <button
+                  onClick={async () => {
+                    const selected = [];
+                    if (data.addOnContactForm) selected.push("Kontaktformular");
+                    if (data.addOnGallery) selected.push("Bildergalerie");
+                    addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
+                    if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: STEP_ORDER.indexOf("addons"), data: { addOnContactForm: data.addOnContactForm, addOnGallery: data.addOnGallery } });
+                    await advanceToStep("subpages");
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "subpages" && (
+              <div className="ml-9 space-y-2">
+                {data.subPages.map((page, i) => (
+                  <div key={page.id} className="bg-slate-700/60 rounded-xl p-3 flex gap-2 items-start">
+                    <div className="flex-1 space-y-1.5">
+                      <input
+                        className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                        placeholder="Seitenname (z.B. Über uns)"
+                        value={page.name}
+                        onChange={(e) => {
+                          const updated = [...data.subPages];
+                          updated[i] = { ...updated[i], name: e.target.value };
+                          setData((p) => ({ ...p, subPages: updated }));
+                        }}
+                      />
+                      <input
+                        className="w-full bg-slate-600/50 text-white text-xs px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                        placeholder="Was soll auf dieser Seite stehen? (optional)"
+                        value={page.description}
+                        onChange={(e) => {
+                          const updated = [...data.subPages];
+                          updated[i] = { ...updated[i], description: e.target.value };
+                          setData((p) => ({ ...p, subPages: updated }));
+                        }}
+                      />
+                    </div>
+                    <button
+                      onClick={() => setData((p) => ({ ...p, subPages: p.subPages.filter((_, j) => j !== i) }))}
+                      className="text-slate-500 hover:text-red-400 transition-colors mt-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <div className="flex gap-2 items-center">
+                  <button
+                    onClick={() => setData((p) => ({ ...p, subPages: [...p.subPages, { id: genId(), name: "", description: "" }] }))}
+                    className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Unterseite hinzufügen (+9,90 €/Mo)
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const validPages = data.subPages.filter((p) => p.name.trim());
+                      addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
+                      if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: STEP_ORDER.indexOf("subpages"), data: { addOnSubpages: validPages.map((p) => p.name) } });
+                      await advanceToStep("email");
+                    }}
+                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    Weiter <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "preview" && (
+              <div className="ml-9">
+                <button
+                  onClick={async () => {
+                    addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+                    await advanceToStep("checkout");
+                  }}
+                  className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                >
+                  <Zap className="w-4 h-4" /> Website freischalten
+                </button>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "checkout" && (
+              <div className="ml-9 space-y-3">
+                <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
+                  <div className="flex justify-between text-sm text-slate-300">
+                    <span>Basis-Website</span>
+                    <span>79,00 €/Monat</span>
+                  </div>
+                  {data.addOnContactForm && (
+                    <div className="flex justify-between text-sm text-slate-300">
+                      <span>Kontaktformular</span>
+                      <span>+4,90 €/Monat</span>
+                    </div>
+                  )}
+                  {data.addOnGallery && (
+                    <div className="flex justify-between text-sm text-slate-300">
+                      <span>Bildergalerie</span>
+                      <span>+4,90 €/Monat</span>
+                    </div>
+                  )}
+                  {data.subPages.filter((p) => p.name).map((page) => (
+                    <div key={page.id} className="flex justify-between text-sm text-slate-300">
+                      <span>Unterseite: {page.name}</span>
+                      <span>+9,90 €/Monat</span>
+                    </div>
+                  ))}
+                  <div className="border-t border-slate-600 pt-2 flex justify-between font-bold text-white">
+                    <span>Gesamt</span>
+                    <span>{totalPrice()} €/Monat</span>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCheckout}
+                  disabled={completeMutation.isPending || checkoutMutation.isPending}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold px-5 py-4 rounded-xl transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 text-base disabled:opacity-50"
+                >
+                  {completeMutation.isPending || checkoutMutation.isPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5" /> Jetzt für {totalPrice()} €/Monat freischalten
+                    </>
+                  )}
+                </button>
+                <p className="text-center text-xs text-slate-500">
+                  Monatlich kündbar • Keine Einrichtungsgebühr • SSL inklusive
+                </p>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input area */}
+          {!["services", "addons", "subpages", "preview", "checkout", "welcome"].includes(currentStep) && (
+            <div className="px-4 py-4 border-t border-slate-700/50">
+              <div className="flex gap-2">
+                {/* AI generate button for text fields */}
+                {["tagline", "description", "usp", "targetAudience"].includes(currentStep) && (
+                  <button
+                    onClick={() => generateWithAI(currentStep as keyof OnboardingData)}
+                    disabled={isGenerating}
+                    className="flex-shrink-0 w-10 h-10 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 flex items-center justify-center transition-colors"
+                    title="Mit KI generieren"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 text-violet-400" />
+                    )}
+                  </button>
+                )}
+                <input
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
+                  placeholder={
+                    currentStep === "businessName"
+                      ? data.businessName || "Unternehmensname eingeben..."
+                      : currentStep === "legalAddress"
+                      ? "Musterstraße 1, 46395 Bocholt"
+                      : currentStep === "legalContact"
+                      ? "info@firma.de, DE123456789 (optional)"
+                      : currentStep === "email"
+                      ? "deine@email.de"
+                      : "Deine Antwort..."
+                  }
+                  className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                />
+                <button
+                  onClick={() => handleSubmit()}
+                  disabled={!inputValue.trim() && currentStep !== "businessName"}
+                  className="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-colors disabled:opacity-40 flex-shrink-0"
+                >
+                  <Send className="w-4 h-4 text-white" />
+                </button>
+              </div>
+              {currentStep === "businessName" && data.businessName && (
+                <button
+                  onClick={() => handleSubmit("")}
+                  className="mt-2 text-xs text-slate-400 hover:text-slate-300 transition-colors"
+                >
+                  ✓ Ja, "{data.businessName}" stimmt so
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Preview panel */}
+        <div className="flex-1 overflow-hidden relative">
+          {websiteData && colorScheme ? (
+            <>
+              <div className="absolute inset-0 overflow-y-auto">
+                <WebsiteRenderer
+                  websiteData={websiteData}
+                  colorScheme={colorScheme}
+                  heroImageUrl={heroImageUrl}
+                  layoutStyle={layoutStyle}
+                  businessPhone={business?.phone || undefined}
+                  businessAddress={business?.address || undefined}
+                  businessEmail={business?.email || undefined}
+                  openingHours={business?.openingHours as string[] | undefined}
+                  slug={slug}
+                />
+              </div>
+              {currentStep !== "preview" && currentStep !== "checkout" && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full border border-slate-700/50 pointer-events-none">
+                  Live-Vorschau deiner Website
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="h-full flex items-center justify-center text-slate-500">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-slate-600" />
+                <p className="text-sm">Vorschau wird geladen...</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
