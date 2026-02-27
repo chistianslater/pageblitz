@@ -699,14 +699,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   )}
                   <button
+                    disabled={isTyping || saveStepMutation.isPending}
                     onClick={async () => {
+                      if (isTyping) return;
                       const filtered = data.topServices.filter((s) => s.title.trim());
                       if (filtered.length === 0) { toast.error("Bitte mindestens eine Leistung eingeben"); return; }
                       addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
-                      if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: STEP_ORDER.indexOf("services"), data: { topServices: filtered } });
+                      await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
                       await advanceToStep("targetAudience");
                     }}
-                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
+                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Weiter <ChevronRight className="w-3.5 h-3.5" />
                   </button>
