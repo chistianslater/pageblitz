@@ -50,7 +50,7 @@ async function getGmbPhotos(placeId: string, maxPhotos = 6): Promise<string[]> {
   try {
     const details = await makeRequest<any>(
       "/maps/api/place/details/json",
-      { place_id: placeId, fields: "photos" }
+      { place_id: placeId, fields: "photos", language: "de" }
     );
     const photos: Array<{ photo_reference: string; width: number; height: number }> =
       details?.result?.photos || [];
@@ -729,7 +729,7 @@ export const appRouter = router({
         const searchQuery = `${input.query} in ${input.region}`;
         const placesResult = await makeRequest<PlacesSearchResult>(
           "/maps/api/place/textsearch/json",
-          { query: searchQuery }
+          { query: searchQuery, language: "de" }
         );
         if (placesResult.status !== "OK" || !placesResult.results?.length) {
           return { results: [], total: 0 };
@@ -740,7 +740,7 @@ export const appRouter = router({
           try {
             const details = await makeRequest<PlaceDetailsResult>(
               "/maps/api/place/details/json",
-              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews" }
+              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
             );
             const hasWebsite = !!(details.result?.website);
             const category = place.types?.[0]?.replace(/_/g, " ") || input.query;
