@@ -16,6 +16,7 @@ import {
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
+import { ENV } from "./_core/env";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import { notifyOwner } from "./_core/notification";
@@ -39,6 +40,35 @@ function slugify(text: string): string {
   return text.toLowerCase()
     .replace(/[äöüß]/g, m => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
+
+/**
+ * Fetch photos from Google My Business (Places API) for a given placeId.
+ * Returns an array of photo URLs (up to maxPhotos), or empty array on failure.
+ */
+async function getGmbPhotos(placeId: string, maxPhotos = 6): Promise<string[]> {
+  try {
+    const details = await makeRequest<any>(
+      "/maps/api/place/details/json",
+      { place_id: placeId, fields: "photos" }
+    );
+    const photos: Array<{ photo_reference: string; width: number; height: number }> =
+      details?.result?.photos || [];
+    if (!photos.length) return [];
+    // Build photo URLs via the Manus Maps proxy (same pattern as map.ts)
+    const baseUrl = (ENV.forgeApiUrl || "").replace(/\/+$/, "");
+    const apiKey = ENV.forgeApiKey || "";
+    if (!baseUrl || !apiKey) return [];
+    return photos.slice(0, maxPhotos).map((p) => {
+      const url = new URL(`${baseUrl}/v1/maps/proxy/maps/api/place/photo`);
+      url.searchParams.set("maxwidth", "1600");
+      url.searchParams.set("photo_reference", p.photo_reference);
+      url.searchParams.set("key", apiKey);
+      return url.toString();
+    });
+  } catch {
+    return [];
+  }
 }
 
 // ── Design Archetype Definitions ─────────────────────
@@ -461,6 +491,8 @@ function buildEnhancedPrompt(opts: {
   return `Du bist ein PREISGEKRÖNTER Awwwards-Level Webdesigner, UX-Copywriter und Frontend-Entwickler.
 Deine Websites gewinnen regelmäßig "Site of the Day" auf Awwwards, FWA und CSS Design Awards.
 
+⚠️ SPRACHE: ALLE TEXTE MÜSSEN AUF DEUTSCH SEIN – Überschriften, Fließtexte, Testimonials, Buttons, FAQ, ALLES. Kein einziges englisches Wort außer Eigennamen und Markennamen. Testimonials von deutschen Kunden mit deutschen Namen.
+
 Dein Designprozess:
 1. ANALYSE VOR GENERIERUNG: Verstehe Zielgruppe, Pain Points und Unique Value Proposition
 2. DESIGN-TWIN IMITIEREN: Imitiere die visuelle DNA des Design-Twins – aber mit den Kundendaten
@@ -550,7 +582,7 @@ KREATIVE ANFORDERUNGEN${isRegenerate ? " (NEUE VERSION – ANDERE PERSPEKTIVE)" 
 2. KEINE GENERIK: Verboten: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle", "Ihr Vertrauen ist unser Kapital", "Wir freuen uns auf Ihren Besuch".
 3. ARCHETYP-KONSISTENZ: Jeder Text muss die Persönlichkeit von "${archetype.name}" widerspiegeln.
 4. SPEZIFISCHE LEISTUNGEN: Realistische, branchenspezifische Leistungen – keine generischen "Service 1, Service 2".
-5. AUTHENTISCHE TESTIMONIALS: Glaubwürdige Kundenstimmen mit konkreten Details (was wurde gemacht, welches Ergebnis, warum zufrieden).
+5. AUTHENTISCHE TESTIMONIALS AUF DEUTSCH: Glaubwürdige Kundenstimmen auf Deutsch mit konkreten Details (was wurde gemacht, welches Ergebnis, warum zufrieden). Autoren-Namen müssen deutsch klingen (z.B. "Maria Schneider", "Thomas Müller"). KEINE englischen Testimonials.
 6. LOKALER BEZUG: Nutze die Stadt/Region aus der Adresse konkret.
 7. CTA-TEXTE: Kreative, handlungsauslösende Buttons passend zum Archetyp.${isRegenerate ? "\n8. ANDERE PERSPEKTIVE: Wähle einen anderen Storytelling-Ansatz als zuvor – andere Texte, anderer Fokus, andere Struktur." : ""}
 
@@ -885,8 +917,9 @@ export const appRouter = router({
         const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
         const heroImageUrl = getHeroImageUrl(category, business.name);
         const galleryImages = getGalleryImages(category);
-
-        // Select matching templates from the library for visual reference
+        // Fetch GMB photos from Google Places API (prefer real business photos over Unsplash)
+        const gmbPhotos = business.placeId ? await getGmbPhotos(business.placeId, 7) : [];
+        // Select matching templatess from the library for visual reference
         const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
         const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
         const baseTemplateImageUrls = getTemplateImageUrls(matchingTemplates);
@@ -946,23 +979,24 @@ export const appRouter = router({
         }
 
         // Optionally generate AI hero image
-        let finalHeroImageUrl = heroImageUrl;
+        // Priority: AI image > GMB photo > Unsplash fallback
+        let finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
         if (input.generateAiImage) {
           try {
             const imagePrompt = `Professional hero image for ${business.name}, a ${category} business. ${websiteData.tagline || ""}. High quality, photorealistic, modern, clean composition. No text or logos.`;
             const { url } = await generateImage({ prompt: imagePrompt });
             if (url) finalHeroImageUrl = url;
           } catch {
-            // Fallback to Unsplash if AI image generation fails
-            finalHeroImageUrl = heroImageUrl;
+            // Fallback to GMB photo or Unsplash if AI image generation fails
+            finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
           }
         }
-
-        // Inject gallery images into sections
-        if (galleryImages.length > 0 && websiteData.sections) {
+        // Inject gallery images: prefer GMB photos, fall back to Unsplash
+        const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
+        if (effectiveGalleryImages.length > 0 && websiteData.sections) {
           const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
           if (gallerySection) {
-            gallerySection.images = galleryImages;
+            gallerySection.images = effectiveGalleryImages;
           }
         }
 

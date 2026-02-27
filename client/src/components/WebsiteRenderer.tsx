@@ -46,6 +46,8 @@ interface WebsiteRendererProps {
   contactFormLocked?: boolean;
   /** Optional font override for the logo (e.g. 'Montserrat', 'Oswald') */
   logoFont?: string;
+  /** Business category/industry for industry-specific stats and content */
+  businessCategory?: string | null;
 }
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
@@ -219,6 +221,7 @@ export default function WebsiteRenderer({
   openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
   const cs: ColorScheme = colorScheme && colorScheme.primary
@@ -258,15 +261,9 @@ export default function WebsiteRenderer({
     return () => { document.getElementById(id)?.remove(); };
   }, [fontsToLoad.join(",")]);  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Filter out testimonials section if no real Google reviews are available
-  const filteredSections = (websiteData.sections || []).filter((s: any) => {
-    if (s.type === "testimonials" && !s.isRealReviews) return false;
-    return true;
-  });
-  const filteredWebsiteData = { ...websiteData, sections: filteredSections };
-
+  // Show all sections including AI-generated testimonials (they are always in German)
   const sharedProps = {
-    websiteData: filteredWebsiteData,
+    websiteData,
     cs,
     heroImageUrl: effectiveHeroImage,
     showActivateButton,
@@ -277,6 +274,7 @@ export default function WebsiteRenderer({
     openingHours,
     slug,
     contactFormLocked,
+    businessCategory,
   };
 
   // Build CSS custom properties string – always set at least the font defaults

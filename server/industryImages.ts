@@ -353,6 +353,46 @@ const INDUSTRY_COLORS: Record<string, ColorScheme[]> = {
     // 3. Electric Blue
     { primary: "#1565c0", secondary: "#0d47a1", accent: "#ffa726", background: "#f8fbff", surface: "#e3f2fd", text: "#0a1a3a", textLight: "#5a7aaa", gradient: "linear-gradient(135deg, #1565c0 0%, #ffa726 100%)" },
   ],
+  bar: [
+    // 1. Dark Burgundy & Brass (Weinbar/Tapas) – warm, dunkel, edel
+    { primary: "#8b1a2e", secondary: "#5a0f1e", accent: "#c9a96e", background: "#1a0f0a", surface: "#2a1a12", text: "#f5e8d8", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #8b1a2e 0%, #c9a96e 100%)" },
+    // 2. Midnight Black & Copper (Cocktailbar/Lounge)
+    { primary: "#b87333", secondary: "#8b5a1a", accent: "#e8c87a", background: "#0a0a0a", surface: "#1a1410", text: "#f0e8d8", textLight: "#b87333", gradient: "linear-gradient(135deg, #b87333 0%, #0a0a0a 100%)" },
+    // 3. Deep Slate & Amber (Pub/Kneipe)
+    { primary: "#d97706", secondary: "#b45309", accent: "#fbbf24", background: "#1c1a14", surface: "#2a2618", text: "#f5f0e0", textLight: "#d97706", gradient: "linear-gradient(135deg, #d97706 0%, #1c1a14 100%)" },
+    // 4. Terracotta & Dark (Tapas/Spanisch)
+    { primary: "#c0392b", secondary: "#8b1a10", accent: "#f39c12", background: "#1a0f0a", surface: "#2a1a10", text: "#f5e8d8", textLight: "#e07b3c", gradient: "linear-gradient(135deg, #c0392b 0%, #f39c12 100%)" },
+  ],
+  cafe: [
+    // 1. Espresso & Cream (Klassisches Café)
+    { primary: "#5d3a1a", secondary: "#3e2010", accent: "#d4a843", background: "#fdf8f0", surface: "#f5ece0", text: "#2a1a0a", textLight: "#8a6a4a", gradient: "linear-gradient(135deg, #5d3a1a 0%, #d4a843 100%)" },
+    // 2. Dusty Rose & Mocha (Modernes Café/Brunch)
+    { primary: "#a0522d", secondary: "#7a3a1a", accent: "#e8c4a0", background: "#fdf5f0", surface: "#f5e8dc", text: "#2a1a10", textLight: "#8a6a5a", gradient: "linear-gradient(135deg, #a0522d 0%, #e8c4a0 100%)" },
+    // 3. Forest & Cream (Bio-Café)
+    { primary: "#4a7c59", secondary: "#2d5a3a", accent: "#d4a843", background: "#f8faf5", surface: "#e8f0e8", text: "#1a2a1a", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #4a7c59 0%, #d4a843 100%)" },
+    // 4. Warm Slate & Caramel (Bäckerei)
+    { primary: "#c8860a", secondary: "#9a6208", accent: "#5d3a1a", background: "#fffbf5", surface: "#fff3e0", text: "#2a1a00", textLight: "#8a6a30", gradient: "linear-gradient(135deg, #c8860a 0%, #5d3a1a 100%)" },
+  ],
+  hotel: [
+    // 1. Midnight Navy & Gold (Luxushotel)
+    { primary: "#1a3a5c", secondary: "#0f2744", accent: "#c9a96e", background: "#0f1e2e", surface: "#1a2e44", text: "#f5ede0", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #1a3a5c 0%, #c9a96e 100%)" },
+    // 2. Champagne & Ivory (Boutique Hotel)
+    { primary: "#c9a96e", secondary: "#8b6914", accent: "#1a3a5c", background: "#fdfaf5", surface: "#f5ede0", text: "#2a1e10", textLight: "#8a7050", gradient: "linear-gradient(135deg, #c9a96e 0%, #1a3a5c 100%)" },
+    // 3. Forest & Linen (Landhotel/Pension)
+    { primary: "#3d6b4f", secondary: "#2a4d38", accent: "#d4a843", background: "#faf8f3", surface: "#eef0e8", text: "#1a2a1a", textLight: "#6a8a6a", gradient: "linear-gradient(135deg, #3d6b4f 0%, #d4a843 100%)" },
+    // 4. Warm Terracotta & Cream (Mediterranes Hotel)
+    { primary: "#b5451b", secondary: "#8b3214", accent: "#c9a96e", background: "#fdf8f5", surface: "#f5e8e0", text: "#2c1a10", textLight: "#8b6a5a", gradient: "linear-gradient(135deg, #b5451b 0%, #c9a96e 100%)" },
+  ],
+  bauunternehmen: [
+    // 1. Industrial Anthracite & Orange (Bauunternehmen)
+    { primary: "#e67e22", secondary: "#ca6f1e", accent: "#37474f", background: "#f5f5f5", surface: "#eeeeee", text: "#1a1a1a", textLight: "#666666", gradient: "linear-gradient(135deg, #e67e22 0%, #37474f 100%)" },
+    // 2. Dark Charcoal & Safety Yellow (Hochbau)
+    { primary: "#f9a825", secondary: "#f57f17", accent: "#263238", background: "#1c1c1c", surface: "#2a2a2a", text: "#f5f5f5", textLight: "#aaaaaa", gradient: "linear-gradient(135deg, #f9a825 0%, #263238 100%)" },
+    // 3. Steel Blue & Orange (Tiefbau/Infrastruktur)
+    { primary: "#1565c0", secondary: "#0d47a1", accent: "#e67e22", background: "#f8fbff", surface: "#e3f2fd", text: "#0a1a3a", textLight: "#5a7aaa", gradient: "linear-gradient(135deg, #1565c0 0%, #e67e22 100%)" },
+    // 4. Concrete Grey & Red (Rohbau/Abbruch)
+    { primary: "#c62828", secondary: "#8b0000", accent: "#455a64", background: "#f5f5f5", surface: "#eceff1", text: "#1a1a1a", textLight: "#7a8a8e", gradient: "linear-gradient(135deg, #c62828 0%, #455a64 100%)" },
+  ],
   default: [
     { primary: "#3b82f6", secondary: "#1d4ed8", accent: "#f59e0b", background: "#ffffff", surface: "#f8fafc", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" },
     { primary: "#7c3aed", secondary: "#5b21b6", accent: "#f59e0b", background: "#faf8ff", surface: "#f3f0ff", text: "#1e1b4b", textLight: "#6d6a8a", gradient: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)" },

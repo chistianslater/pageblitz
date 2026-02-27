@@ -233,6 +233,7 @@ export default function PreviewPage() {
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
         openingHours={business?.openingHours as string[] | undefined}
+        businessCategory={(business as any)?.category || undefined}
         showActivateButton={true}
         onActivate={goToOnboarding}
       />

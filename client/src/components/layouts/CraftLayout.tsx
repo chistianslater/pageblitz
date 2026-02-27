@@ -10,6 +10,7 @@ import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, 
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const DISPLAY = "'Oswald', 'Impact', sans-serif";
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
@@ -26,11 +27,13 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  businessCategory?: string | null;
 }
 
 export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: Props) {
   const darkCs = {
     ...cs,
@@ -55,8 +58,8 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivat
       <CraftNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <CraftHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <CraftAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} />}
+          {section.type === "hero" && <CraftHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
+          {section.type === "about" && <CraftAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <CraftServices section={section} cs={darkCs} />}
           {section.type === "testimonials" && <CraftTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <CraftFAQ section={section} cs={darkCs} />}
@@ -129,7 +132,8 @@ function CraftNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
   );
 }
 
-function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
+function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessCategory?: string | null }) {
+  const heroStats = getIndustryStats(businessCategory || "");
   return (
     <section style={{ position: "relative", minHeight: "85vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0 }}>
@@ -176,7 +180,7 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
       {/* Trust badges */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "rgba(0,0,0,0.85)", borderTop: `2px solid ${cs.primary}` }}>
         <div className="max-w-7xl mx-auto px-6 py-4 grid grid-cols-3 gap-4">
-          {[["24/7", "Notfalldienst"], ["10+", "Jahre Erfahrung"], ["300+", "Zufriedene Kunden"]].map(([num, label]) => (
+          {heroStats.map(({ n: num, label }) => (
             <div key={label} style={{ textAlign: "center" }}>
               <p style={{ fontFamily: DISPLAY, fontSize: "1.8rem", color: cs.primary, lineHeight: 1 }}>{num}</p>
               <p style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "0.25rem" }}>{label}</p>
@@ -188,15 +192,16 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
   );
 }
 
-function CraftAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
+function CraftAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
+  const firstStat = getIndustryStats(businessCategory || "")[1] || { n: "10+", label: "Jahre Erfahrung" };
   return (
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
         <div style={{ position: "relative" }}>
           <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover" }} />
           <div style={{ position: "absolute", top: "2rem", right: "-2rem", backgroundColor: cs.primary, padding: "1.5rem 2rem", textAlign: "center" }}>
-            <p style={{ fontFamily: DISPLAY, fontSize: "2.5rem", color: "#000", lineHeight: 1 }}>10+</p>
-            <p style={{ fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(0,0,0,0.7)", marginTop: "0.25rem" }}>Jahre Erfahrung</p>
+            <p style={{ fontFamily: DISPLAY, fontSize: "2.5rem", color: "#000", lineHeight: 1 }}>{firstStat.n}</p>
+            <p style={{ fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(0,0,0,0.7)", marginTop: "0.25rem" }}>{firstStat.label}</p>
           </div>
         </div>
         <div>

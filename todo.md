@@ -437,3 +437,9 @@
 - [x] Branchenspezifische Bilder: Bar/Tapas, Café/Bistro, Hotel, Bauunternehmen als eigene Kategorien in industryImages.ts
 - [x] buildIndustryContext: Bar/Tapas und Bauunternehmen als eigene Layout-Pools mit spezifischen Schreibstil-Anweisungen
 - [x] mapCategoryToIndustryKey: Bar, Café, Bauunternehmen korrekt zugeordnet
+
+## Qualitätsverbesserungen (Runde N+1)
+- [x] Testimonials immer auf Deutsch generieren (KI-Prompt anpassen)
+- [x] GMB-Fotos aus Google My Business als Hero/Gallery-Bilder nutzen
+- [x] Branchentypische initiale Farbpaletten (Bar → dunkel/warm, Gastronomie → erdige Töne, Bauunternehmen → anthrazit/orange)
+- [x] Inhaltliche Konsistenz: branchenspezifische Stats/Metriken (keine "abgeschlossene Projekte" bei Gastronomie)

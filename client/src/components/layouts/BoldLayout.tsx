@@ -9,6 +9,7 @@ import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, 
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const HEADING = "var(--site-font-headline, 'Oswald', 'Barlow Condensed', Impact, sans-serif)";
 const BODY = "var(--site-font-body, 'Barlow', 'Inter', sans-serif)";
@@ -25,11 +26,13 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  businessCategory?: string | null;
 }
 
 export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -38,7 +41,7 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivate
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <BoldHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <BoldAbout section={section} cs={cs} />}
+          {section.type === "about" && <BoldAbout section={section} cs={cs} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <BoldServices section={section} cs={cs} />}
           {section.type === "testimonials" && <BoldTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <BoldFAQ section={section} cs={cs} />}
@@ -126,8 +129,8 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate, w
   );
 }
 
-function BoldAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
-  const stats = [{ n: "500+", label: "Projekte" }, { n: "15+", label: "Jahre" }, { n: "100%", label: "Zufriedenheit" }];
+function BoldAbout({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
+  const stats = getIndustryStats(businessCategory || "");
   return (
     <section style={{ backgroundColor: "#111", padding: "5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">

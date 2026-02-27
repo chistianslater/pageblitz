@@ -1,0 +1,18 @@
+{
+  "query": "SHOW COLUMNS FROM onboarding_responses LIKE 'businessCategory';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SHOW COLUMNS FROM onboarding_responses LIKE 'businessCategory';",
+  "rows": [
+    {
+      "Field": "businessCategory",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nbusinessCategory\tvarchar(255)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

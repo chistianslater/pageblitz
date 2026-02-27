@@ -9,6 +9,7 @@ import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, 
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const HEADING = "var(--site-font-headline, 'Bebas Neue', 'Oswald', Impact, sans-serif)";
 const BODY = "var(--site-font-body, 'Rajdhani', 'Barlow', 'Inter', sans-serif)";
@@ -25,11 +26,13 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  businessCategory?: string | null;
 }
 
 export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -38,7 +41,7 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActiv
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <DynamicHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <DynamicAbout section={section} cs={cs} />}
+          {section.type === "about" && <DynamicAbout section={section} cs={cs} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <DynamicServices section={section} cs={cs} />}
           {section.type === "testimonials" && <DynamicTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <DynamicFAQ section={section} cs={cs} />}
@@ -111,7 +114,11 @@ function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate
   );
 }
 
-function DynamicAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function DynamicAbout({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
+  const icons = [Target, Award, TrendingUp, Flame];
+  const stats = getIndustryStats(businessCategory || "");
+  // Pad to 4 items for the 2x2 grid
+  const stats4 = stats.length >= 4 ? stats : [...stats, ...stats].slice(0, 4);
   return (
     <section style={{ backgroundColor: "#111", padding: "5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
@@ -125,13 +132,13 @@ function DynamicAbout({ section, cs }: { section: WebsiteSection; cs: ColorSchem
           {section.content && <p style={{ fontFamily: BODY, fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)" }}>{section.content}</p>}
         </div>
         <div className="grid grid-cols-2 gap-4">
-          {[{ icon: Target, n: "500+", l: "Erfolgreiche Trainings" }, { icon: Award, n: "10+", l: "Jahre Erfahrung" }, { icon: TrendingUp, n: "98%", l: "Kundenzufriedenheit" }, { icon: Flame, n: "∞", l: "Motivation" }].map(({ icon: Icon, n, l }, i) => (
+          {stats4.map(({ n, label: l }, i) => { const Icon = icons[i % icons.length]; return (
             <div key={i} style={{ backgroundColor: i === 0 ? cs.primary : "#1a1a1a", padding: "2rem", position: "relative", overflow: "hidden" }}>
               <Icon className="h-8 w-8 mb-2 opacity-30" style={{ color: i === 0 ? "#fff" : cs.primary }} />
               <p style={{ fontFamily: HEADING, fontSize: "2.5rem", color: i === 0 ? "#fff" : cs.primary, lineHeight: 1 }}>{n}</p>
               <p style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.1em", textTransform: "uppercase", color: i === 0 ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.45)", marginTop: "0.25rem" }}>{l}</p>
             </div>
-          ))}
+          ); })}
         </div>
       </div>
     </section>

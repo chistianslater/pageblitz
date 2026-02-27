@@ -10,6 +10,7 @@ import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, 
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
@@ -26,11 +27,13 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  businessCategory?: string | null;
 }
 
 export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: Props) {
   // Force dark theme for luxury layout
   const darkCs = {
@@ -47,7 +50,7 @@ export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActiva
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <LuxuryHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <LuxuryAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} />}
+          {section.type === "about" && <LuxuryAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <LuxuryServices section={section} cs={darkCs} />}
           {section.type === "testimonials" && <LuxuryTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <LuxuryFAQ section={section} cs={darkCs} />}
@@ -162,13 +165,14 @@ function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
   );
 }
 
-function LuxuryAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
+function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
+  const industryStats = getIndustryStats(businessCategory || "");
   return (
     <section style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Stats bar */}
         <div className="grid grid-cols-3 gap-px mb-20" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
-          {[["98%", "Kundenzufriedenheit"], ["7+", "Jahre Erfahrung"], ["800+", "Abgeschlossene Projekte"]].map(([num, label]) => (
+          {industryStats.map(({ n: num, label }) => (
             <div key={label} style={{ backgroundColor: cs.surface, padding: "2rem", textAlign: "center" }}>
               <p style={{ fontFamily: DISPLAY, fontSize: "3rem", letterSpacing: "0.05em", color: cs.primary, lineHeight: 1 }}>{num}</p>
               <p style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "0.5rem" }}>{label}</p>

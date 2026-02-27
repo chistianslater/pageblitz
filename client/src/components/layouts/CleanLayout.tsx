@@ -9,6 +9,7 @@ import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, 
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'DM Serif Display', Georgia, serif)";
 const SANS = "var(--site-font-body, 'DM Sans', 'Inter', sans-serif)";
@@ -25,11 +26,13 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  businessCategory?: string | null;
 }
 
 export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -37,7 +40,7 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivat
       <CleanNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
+          {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
           {section.type === "about" && <CleanAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <CleanServices section={section} cs={cs} />}
           {section.type === "testimonials" && <CleanTestimonials section={section} cs={cs} />}
@@ -81,7 +84,8 @@ function CleanNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
   );
 }
 
-function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
+function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessCategory?: string | null }) {
+  const stats4 = getIndustryStats(businessCategory || "", 4);
   return (
     <section style={{ backgroundColor: "#fff", padding: "4rem 0 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
@@ -122,7 +126,7 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
       {/* Stats bar */}
       <div style={{ backgroundColor: cs.primary, marginTop: "4rem" }}>
         <div className="max-w-6xl mx-auto px-6 lg:px-8 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[{ n: "20+", l: "Jahre Erfahrung" }, { n: "5000+", l: "Zufriedene Kunden" }, { n: "4.9", l: "Bewertung" }, { n: "100%", l: "Diskretion" }].map(({ n, l }, i) => (
+          {stats4.map(({ n, label: l }, i) => (
             <div key={i} className="text-center">
               <p style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: "#fff", lineHeight: 1 }}>{n}</p>
               <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.75)", marginTop: "0.25rem" }}>{l}</p>

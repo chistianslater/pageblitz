@@ -10,6 +10,7 @@ import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, 
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Libre Baskerville', Georgia, serif)";
 const BODY = "var(--site-font-body, 'Source Sans Pro', 'Helvetica Neue', sans-serif)";
@@ -26,11 +27,13 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  businessCategory?: string | null;
 }
 
 export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -38,7 +41,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivat
       <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessPhone={businessPhone} />}
+          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessPhone={businessPhone} businessCategory={businessCategory} />}
           {section.type === "about" && <TrustAbout section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <TrustServices section={section} cs={cs} />}
           {section.type === "testimonials" && <TrustTestimonials section={section} cs={cs} />}
@@ -119,7 +122,8 @@ function TrustNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
   );
 }
 
-function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessPhone }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessPhone?: string | null }) {
+function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessPhone, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessPhone?: string | null; businessCategory?: string | null }) {
+  const heroStats = getIndustryStats(businessCategory || "");
   return (
     <section style={{ position: "relative", minHeight: "92vh", display: "flex", overflow: "hidden" }}>
       {/* LEFT: Dark panel with text – 55% width */}
@@ -170,10 +174,10 @@ function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
         </div>
         {/* Stats row at bottom */}
         <div style={{ display: "flex", gap: "2.5rem", marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-          {["15+ Jahre", "500+ Projekte", "100% Qualität"].map((s, i) => (
+          {heroStats.map(({ n, label }, i) => (
             <div key={i}>
-              <div style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: cs.primary }}>{s.split(" ")[0]}</div>
-              <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.split(" ").slice(1).join(" ")}</div>
+              <div style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: cs.primary }}>{n}</div>
+              <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
             </div>
           ))}
         </div>

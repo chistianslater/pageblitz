@@ -9,6 +9,7 @@ import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, 
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Cormorant Garamond', Georgia, serif)";
 const SANS = "var(--site-font-body, 'Jost', 'Inter', sans-serif)";
@@ -25,11 +26,13 @@ interface Props {
   openingHours?: string[];
   slug?: string | null;
   contactFormLocked?: boolean;
+  businessCategory?: string | null;
 }
 
 export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -38,7 +41,7 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActiv
         {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <ElegantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
+          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={heroImageUrl} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <ElegantServices section={section} cs={cs} />}
           {section.type === "testimonials" && <ElegantTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <ElegantFAQ section={section} cs={cs} />}
@@ -128,15 +131,16 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
   );
 }
 
-function ElegantAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
+function ElegantAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
+  const firstStat = getIndustryStats(businessCategory || "")[0] || { n: "15+", label: "Jahre Erfahrung" };
   return (
     <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
         <div className="relative">
           <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover" }} />
           <div style={{ position: "absolute", bottom: "2rem", right: "-2rem", backgroundColor: cs.primary, padding: "1.5rem 2rem", textAlign: "center" }}>
-            <p style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 600, color: "#fff", lineHeight: 1 }}>15+</p>
-            <p style={{ fontFamily: SANS, fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.8)", marginTop: "0.25rem" }}>Jahre Erfahrung</p>
+            <p style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 600, color: "#fff", lineHeight: 1 }}>{firstStat.n}</p>
+            <p style={{ fontFamily: SANS, fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.8)", marginTop: "0.25rem" }}>{firstStat.label}</p>
           </div>
         </div>
         <div>
