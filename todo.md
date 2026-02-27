@@ -317,3 +317,11 @@
 - [x] MacBook/Browser-Mockup: Website-Preview in einem Laptop-Framing anzeigen (horizontal, Freigestellt)
 - [x] Quick-Reply-Buttons: Klickbare Vorschläge für häufige Antworten (z.B. Firmenname bestätigen, Tagline-Vorschläge, USP-Vorschläge, Zielgruppe-Vorschläge)
 - [x] Preview-Panel: MacBook-Framing mit Browser-Chrome (Traffic Lights, URL-Bar, Reload-Icon)
+
+## Onboarding UX Fixes (Runde 20)
+- [x] Quick-Reply-Buttons: Click-Handler korrekt – Wert direkt an handleSubmit übergeben (Bug: setInputValue allein reicht nicht)
+- [x] MacBook-Preview: Volle Breite nutzen, kein blauer Streifen rechts
+- [x] MacBook-Preview: Proportionale Skalierung via ResizeObserver (Desktop-Ansicht, kein responsives Umbrechen)
+- [x] Chat-Panel: Schmaler (360px statt 480px)
+- [x] Chat-Panel: Hide/Show-Toggle-Button (ChevronLeft/Right-Icon)
+- [x] Preview: Wenn Chat versteckt, volle Breite für MacBook-Mockup

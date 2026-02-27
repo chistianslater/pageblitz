@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, Clock, Zap, Check, Monitor } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -126,6 +126,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [currentStep, setCurrentStep] = useState<ChatStep>("welcome");
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [chatHidden, setChatHidden] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -340,8 +341,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   );
 
   const handleSubmit = async (value?: string) => {
-    const val = (value || inputValue).trim();
-    if (!val && !["addons", "subpages", "preview", "checkout"].includes(currentStep)) return;
+    // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
+    const val = value !== undefined ? value.trim() : inputValue.trim();
+    const isExplicitEmpty = value === "";
+    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout"].includes(currentStep)) return;
 
     setInputValue("");
 
@@ -355,7 +358,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           setData((p) => ({ ...p, businessName: val }));
           if (websiteId) await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: { businessName: val } });
         } else {
-          addUserMessage(`Ja, ${data.businessName} stimmt! ✓`);
+          // Confirmed existing name
+          addUserMessage(`Ja, „${data.businessName}“ stimmt! ✓`);
         }
         break;
       case "tagline":
@@ -502,7 +506,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       {/* Main layout */}
       <div className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full">
         {/* Chat panel */}
-        <div className="w-full lg:w-[480px] flex flex-col border-r border-slate-700/50">
+        <div className={`${chatHidden ? "hidden" : "flex"} w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0`}>
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-700/50 flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg">
@@ -512,8 +516,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <h1 className="text-white font-semibold text-base">Pageblitz Assistent</h1>
               <p className="text-slate-400 text-xs">Personalisiert deine Website in Minuten</p>
             </div>
+            {/* Hide chat toggle */}
+            <button
+              onClick={() => setChatHidden(true)}
+              className="ml-auto mr-2 w-7 h-7 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center text-slate-400 hover:text-white transition-colors flex-shrink-0"
+              title="Chat ausblenden"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
             {/* Progress dots */}
-            <div className="ml-auto flex gap-1">
+            <div className="flex gap-1">
               {STEP_ORDER.filter((s) => s !== "welcome").map((step, i) => {
                 const stepIdx = STEP_ORDER.indexOf(currentStep);
                 const thisIdx = STEP_ORDER.indexOf(step);
@@ -865,8 +877,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           )}
         </div>
 
+        {/* Show chat button (only when hidden) */}
+        {chatHidden && (
+          <button
+            onClick={() => setChatHidden(false)}
+            className="absolute top-16 left-3 z-10 w-8 h-8 rounded-xl bg-slate-700/90 hover:bg-slate-600 border border-slate-600/50 flex items-center justify-center text-slate-300 hover:text-white transition-colors shadow-lg"
+            title="Chat einblenden"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+
         {/* Preview panel – MacBook mockup */}
-        <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex items-start justify-center">
+        <div className="relative flex-1 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
           {websiteData && colorScheme ? (
             <MacbookMockup label="Live-Vorschau deiner Website">
               <WebsiteRenderer
