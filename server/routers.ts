@@ -30,102 +30,245 @@ function slugify(text: string): string {
 }
 
 // ── Design Archetype Definitions ─────────────────────
-const DESIGN_ARCHETYPES: Record<string, { name: string; aesthetic: string; colors: { primary: string; background: string; accent: string; text: string }; typography: { headers: string; body: string }; patterns: string[]; microInteractions: string[] }> = {
+// Each archetype has concrete CSS rules (promptInstruction) that force the AI to produce
+// visually distinct, award-winning designs – not generic templates.
+const DESIGN_ARCHETYPES: Record<string, {
+  name: string;
+  designTwin: string;
+  aesthetic: string;
+  colors: { primary: string; background: string; accent: string; text: string };
+  typography: { headers: string; body: string };
+  patterns: string[];
+  microInteractions: string[];
+  promptInstruction: string;
+}> = {
   elegant: {
     name: "The Luxury Minimalist",
-    aesthetic: "Großzügiger Weißraum, klassische Serifenschriften, hochwertige Bilder, neutrale Farbpaletten",
+    designTwin: "Aesop meets Acne Studios",
+    aesthetic: "Elegant, reduziert, luxuriös. Großzügiger Weißraum, klassische Serifen, hochwertige Bilder.",
     colors: { primary: "#1A1A1A", background: "#FDFBF7", accent: "#D4AF37", text: "#1A1A1A" },
-    typography: { headers: "Playfair Display, serif", body: "Lora, serif" },
+    typography: { headers: "Playfair Display, serif", body: "Lato, sans-serif" },
     patterns: ["editorial-grid", "full-bleed-images", "generous-whitespace"],
-    microInteractions: ["elegant-hover", "smooth-transitions", "subtle-reveal"]
+    microInteractions: ["subtle scale on hover (1.02)", "smooth opacity transitions", "parallax at 0.3x"],
+    promptInstruction: `Design Style: Luxury Minimalist (Aesop / Acne Studios Vibe).
+STRIKTE CSS-REGELN:
+1) Serif-Überschriften: Playfair Display, font-size: min(8vw, 72px), font-weight: 700, letter-spacing: -0.03em
+2) Extremer Weißraum: padding-top/bottom mindestens 120px für alle Sections
+3) Farbpalette NUR: Hintergrund #FDFBF7, Text #1A1A1A, Akzent #D4AF37 – KEINE anderen Farben
+4) Keine Schatten, keine Borders – nur 1px solid rgba(0,0,0,0.08) als Trennlinie
+5) Bilder: Full-bleed, object-fit: cover, kein Overlay-Text direkt auf Bildern
+6) Buttons: outline-only, 1px solid currentColor, kein background, großes padding (16px 40px)
+7) Layout: Zentriert, max-width: 900px, asymmetrische Abstände (z.B. padding-left: 10%, padding-right: 5%)
+Vibe: Teuer, zeitlos, sophisticated. Weniger ist mehr.`
   },
   fresh: {
     name: "The Warm Connector",
-    aesthetic: "Warme einladende Farben, freundliche runde Formen, authentische Fotografie, viele Testimonials",
+    designTwin: "Calm meets Headspace",
+    aesthetic: "Einladend, freundlich, zugänglich. Warme Pastelle, abgerundete Formen, authentische Fotografie.",
     colors: { primary: "#E07B53", background: "#FDF8F4", accent: "#F4A261", text: "#2D3436" },
     typography: { headers: "Nunito, sans-serif", body: "Open Sans, sans-serif" },
     patterns: ["card-grid", "testimonial-slider", "feature-sections"],
-    microInteractions: ["gentle-hover", "smooth-scroll", "fade-in"]
+    microInteractions: ["gentle scale on hover", "soft shadow transitions", "smooth color shifts"],
+    promptInstruction: `Design Style: Warm Connector (Calm / Headspace Vibe).
+STRIKTE CSS-REGELN:
+1) Abgerundete Ecken ÜBERALL: border-radius: 24px für Cards, 999px für Buttons und Badges
+2) Pastellfarben: Hintergrund #FDF8F4, Akzent #E07B53, Sekundär #F4A261 – warme Erdtöne
+3) Schrift: Nunito 700 für Headlines (freundlich, rund), Open Sans für Body
+4) Soft Shadows: box-shadow: 0 8px 32px rgba(224,123,83,0.12) auf Cards
+5) Hero: Großes Foto links (60%), Text rechts (40%) – KEIN Vollbild-Hero
+6) Testimonials: Karten mit Foto, Name, Sterne – prominent, 3-spaltig
+7) CTA-Buttons: pill-shaped, background: #E07B53, color: white, padding: 16px 40px
+Vibe: Menschlich, fürsorglich, zugänglich. Wie ein freundlicher Nachbar.`
   },
   luxury: {
     name: "The Immersive Storyteller",
-    aesthetic: "Filmisch, emotional, atmosphärische Farbpaletten, sanfte fließende Animationen",
+    designTwin: "Dogstudio.co meets Exoape.com",
+    aesthetic: "Filmisch, emotional, atmosphärisch. Video-first, sanfte Animationen, dunkle Atmosphäre.",
     colors: { primary: "#0F141A", background: "#0F141A", accent: "#C9A84C", text: "#E8E2DA" },
     typography: { headers: "Playfair Display, serif", body: "Inter, sans-serif" },
     patterns: ["video-hero", "parallax-sections", "cinematic-scroll"],
-    microInteractions: ["cursor-effects", "parallax", "fade-sequences"]
+    microInteractions: ["smooth fade-in on scroll", "letter-by-letter animation", "parallax depth layers"],
+    promptInstruction: `Design Style: Immersive Storyteller (Dogstudio / Exoape Vibe).
+STRIKTE CSS-REGELN:
+1) Dark Mode PFLICHT: background: #0F141A, text: #E8E2DA – KEIN heller Hintergrund
+2) RIESIGE Typografie: H1 font-size: min(12vw, 96px), font-weight: 700, line-height: 0.95
+3) Vollbild-Hero: 100vh, background-image mit overlay: linear-gradient(to bottom, rgba(15,20,26,0.3), rgba(15,20,26,0.9))
+4) Goldener Akzent #C9A84C NUR für CTAs, Trennlinien und Highlights – sparsam einsetzen
+5) Scroll-Animationen: Elemente erscheinen mit opacity: 0 → 1 und translateY(40px) → 0
+6) Sections: Abwechselnd dunkel (#0F141A) und sehr dunkel (#070A0D) – kein helles Element
+7) Buttons: Transparent mit 1px gold border, hover: gold background
+Vibe: Filmisch, mysteriös, emotional. Wie ein Kinotrailer.`
   },
   bold: {
     name: "The Bold Experimentalist",
-    aesthetic: "Kraftvoll, direkt, starke Kontraste, große Typografie, asymmetrische Layouts",
+    designTwin: "Baseborn.studio meets Tore Bentsen",
+    aesthetic: "Kraftvoll, direkt, starke Kontraste. Große Typografie, asymmetrische Layouts, schwarzer Hintergrund.",
     colors: { primary: "#FF4500", background: "#0A0A0A", accent: "#FF4500", text: "#FFFFFF" },
     typography: { headers: "Space Grotesk, sans-serif", body: "Inter, sans-serif" },
     patterns: ["asymmetric-split", "full-screen-sections", "broken-grid"],
-    microInteractions: ["magnetic-buttons", "image-distortion", "marquee"]
+    microInteractions: ["text distortion on hover", "rotate/skew on scroll", "marquee ticker"],
+    promptInstruction: `Design Style: Bold Experimentalist (Baseborn / Brutalist Vibe).
+STRIKTE CSS-REGELN:
+1) Schwarzer Hintergrund PFLICHT: background: #0A0A0A, text: #FFFFFF – maximaler Kontrast
+2) EXTREME Typografie: H1 font-size: min(15vw, 120px), font-weight: 900, letter-spacing: -0.05em, text-transform: uppercase
+3) Asymmetrisches Hero-Layout: Text links (55%), Bild rechts mit clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%)
+4) Akzentfarbe #FF4500 NUR für CTAs und Hover-States – wie Feuer im Dunkel
+5) Marquee-Ticker: Horizontaler Text-Scroll zwischen Sections (font-size: 14px, text: Leistungen/Keywords)
+6) Buttons: Filled, background: #FF4500, color: white, border-radius: 0 (eckig!), text-transform: uppercase
+7) Kein Padding-Weichspüler: Sections direkt aneinander, harte Übergänge
+Vibe: Roh, selbstbewusst, rebellisch. Wie ein Schlag ins Gesicht (positiv).`
   },
   craft: {
     name: "The Retro Revivalist",
-    aesthetic: "Authentisch, handwerklich, texturierte Hintergründe, illustrative Elemente",
-    colors: { primary: "#D4A574", background: "#FFF8DC", accent: "#CD5C5C", text: "#3E2723" },
-    typography: { headers: "Abril Fatface, serif", body: "Crimson Text, serif" },
+    designTwin: "Mailchimp meets Innocent Drinks",
+    aesthetic: "Authentisch, handwerklich, nostalgisch. Texturierte Hintergründe, Vintage-Typografie, Wärme.",
+    colors: { primary: "#8B4513", background: "#FFF8DC", accent: "#CD5C5C", text: "#3E2723" },
+    typography: { headers: "Abril Fatface, serif", body: "Lato, sans-serif" },
     patterns: ["classic-layout", "vintage-cards", "decorative-borders"],
-    microInteractions: ["subtle-hover", "paper-textures", "gentle-animations"]
+    microInteractions: ["subtle hover", "paper texture overlay", "gentle fade-in"],
+    promptInstruction: `Design Style: Retro Revivalist (Mailchimp / Handmade Vibe).
+STRIKTE CSS-REGELN:
+1) Cremefarbener Hintergrund: background: #FFF8DC – warm, papierartig, KEIN reines Weiß
+2) Retro-Schrift: Abril Fatface für Headlines (groß, dekorativ), Lato für Body
+3) Textur: background-image: url(noise.png) mit opacity: 0.03 über alle Sections
+4) Warme Farben: Braun #8B4513, Terrakotta #CD5C5C, Senf #DAA520 – erdige Palette
+5) Dekorative Elemente: Dünne Rahmen (2px solid #8B4513), Trennlinien mit Ornament-Charakter
+6) Cards: border: 2px solid rgba(139,69,19,0.2), border-radius: 8px, box-shadow: 4px 4px 0 rgba(139,69,19,0.1)
+7) Buttons: Filled braun, border-radius: 4px, leicht texturiert
+Vibe: Nostalgisch, handwerklich, authentisch. Wie ein Familienbetrieb seit 1952.`
   },
   modern: {
     name: "The Digital Purist",
-    aesthetic: "Minimalistisch, technisch, fokussiert auf Klarheit und Funktionalität",
-    colors: { primary: "#6366F1", background: "#FAFAFA", accent: "#6366F1", text: "#1F2937" },
+    designTwin: "Linear.app meets Vercel",
+    aesthetic: "Minimalistisch, technisch, fokussiert. Dunkle Hintergründe, klare Hierarchie, Bento-Grid.",
+    colors: { primary: "#6366F1", background: "#0A0A0A", accent: "#6366F1", text: "#E8E8E8" },
     typography: { headers: "Inter, sans-serif", body: "Inter, sans-serif" },
-    patterns: ["asymmetric-grid", "full-screen-sections", "bento-grid"],
-    microInteractions: ["subtle-hover", "smooth-scroll", "staggered-reveal"]
+    patterns: ["bento-grid", "asymmetric-grid", "full-screen-sections"],
+    microInteractions: ["glow on hover", "underline animation", "subtle border glow"],
+    promptInstruction: `Design Style: Digital Purist (Linear / Vercel Vibe).
+STRIKTE CSS-REGELN:
+1) Dunkler Hintergrund: background: #0A0A0A, text: #E8E8E8 – Engineering-Ästhetik
+2) Exzessiver Weißraum: padding-top/bottom: 140px für alle Sections
+3) Glassmorphism-Borders: border: 1px solid rgba(255,255,255,0.08) auf Cards
+4) Bento-Grid für Features: CSS Grid mit ungleichen Zellen (2x1, 1x2, 1x1)
+5) Typografie: Inter 700-900, kleine Labels in uppercase mit letter-spacing: 0.12em
+6) Akzent #6366F1 NUR für Glows: box-shadow: 0 0 40px rgba(99,102,241,0.3)
+7) Buttons: Glassmorphism-Style, backdrop-filter: blur(10px), border: 1px solid rgba(99,102,241,0.4)
+Vibe: Präzision, Ingenieurskunst, High-Tech. Wie ein Produkt von einem Top-Startup.`
   },
   trust: {
     name: "The Corporate Professional",
-    aesthetic: "Seriös, vertrauenswürdig, klare Struktur, Vertrauenssignale prominent",
+    designTwin: "McKinsey meets Goldman Sachs",
+    aesthetic: "Seriös, strukturiert, vertrauenswürdig. Navy-Farben, klare Grids, Business-Fotografie.",
     colors: { primary: "#1E3A5F", background: "#FFFFFF", accent: "#38B2AC", text: "#1A202C" },
     typography: { headers: "Montserrat, sans-serif", body: "Source Sans Pro, sans-serif" },
     patterns: ["structured-grid", "stats-sections", "team-grid"],
-    microInteractions: ["professional-hover", "smooth-scroll", "accordion"]
+    microInteractions: ["subtle hover states", "smooth transitions", "professional feedback"],
+    promptInstruction: `Design Style: Corporate Professional (McKinsey / Goldman Sachs Vibe).
+STRIKTE CSS-REGELN:
+1) Heller Hintergrund: background: #FFFFFF, Sekundär: #F8FAFC – sauber, professionell
+2) Navy-Blau als Hauptfarbe: #1E3A5F für Header, Überschriften, Buttons
+3) Diagonal-Split-Hero: Linke Hälfte dunkel (#1E3A5F) mit Text, rechte Hälfte Foto – clip-path: polygon(0 0, 58% 0, 52% 100%, 0 100%)
+4) Trust-Badges: Bewertungssterne, Zertifikate, Kundenzahlen prominent im Hero
+5) Stats-Section: Große Zahlen (font-size: 64px, font-weight: 800) mit Beschreibung darunter
+6) Typografie: Montserrat 700 für Headlines, Source Sans Pro für Body – professionell, lesbar
+7) Buttons: Filled navy, border-radius: 6px, hover: leicht aufgehellt
+Vibe: Vertrauenswürdig, etabliert, seriös. Wie ein Marktführer.`
   },
   vibrant: {
     name: "The Energetic Communicator",
-    aesthetic: "Dynamisch, energetisch, starke Typografie, Parallax-Effekte, hohe Informationsdichte",
+    designTwin: "Critical Mass meets Monks.com",
+    aesthetic: "Dynamisch, magazinähnlich, informationsdicht. Starke Typografie, Parallax, Bewegung.",
     colors: { primary: "#FF4500", background: "#0D0D0D", accent: "#FFD700", text: "#FFFFFF" },
     typography: { headers: "Oswald, sans-serif", body: "Open Sans, sans-serif" },
     patterns: ["bento-grid", "magazine-layout", "card-masonry"],
-    microInteractions: ["hover-scale", "staggered-reveal", "parallax"]
+    microInteractions: ["counter animation", "parallax on scroll", "bounce effect on hover"],
+    promptInstruction: `Design Style: Energetic Communicator (Critical Mass / Monks Vibe).
+STRIKTE CSS-REGELN:
+1) Dunkler Hintergrund: background: #0D0D0D, text: #FFFFFF – maximale Energie
+2) UPPERCASE-Typografie: Oswald 900, font-size: min(10vw, 80px), letter-spacing: 0.02em, text-transform: uppercase
+3) Grid-Breaking Layout: CSS Grid mit overlapping elements, negative margins
+4) Marquee-Ticker PFLICHT: Horizontaler Scroll-Text mit Leistungen/Keywords zwischen Sections
+5) Akzent-Kontrast: Orange #FF4500 + Gold #FFD700 – energetisch, warm
+6) Counter-Animationen: Große Zahlen die beim Scrollen hochzählen (z.B. 500+ Kunden, 15 Jahre)
+7) Buttons: Pill-shaped, gradient: linear-gradient(135deg, #FF4500, #FFD700)
+Vibe: Laut, selbstbewusst, buzz-worthy. Wie eine Werbeagentur.`
   },
   natural: {
     name: "The Eco-Conscious",
-    aesthetic: "Naturverbunden, nachhaltig, erdige Farben, organische Formen, Naturbilder",
+    designTwin: "Patagonia meets Oatly",
+    aesthetic: "Naturverbunden, nachhaltig, erdige Farben, organische Formen, Naturbilder.",
     colors: { primary: "#4A7C59", background: "#F5F0E8", accent: "#8B6914", text: "#2C3E2D" },
-    typography: { headers: "Lato, sans-serif", body: "Merriweather, serif" },
+    typography: { headers: "Lato, sans-serif", body: "Lato, sans-serif" },
     patterns: ["organic-grid", "full-bleed-images", "feature-sections"],
-    microInteractions: ["gentle-hover", "smooth-scroll", "fade-in"]
+    microInteractions: ["gentle hover", "smooth scroll", "organic fade-in"],
+    promptInstruction: `Design Style: Eco-Conscious (Patagonia / Oatly Vibe).
+STRIKTE CSS-REGELN:
+1) Natürlicher Hintergrund: background: #F5F0E8 (Leinen/Papier), KEIN reines Weiß
+2) Organische Formen: Wellenförmige SVG-Trennlinien zwischen Sections (keine geraden Kanten)
+3) Waldgrün als Hauptfarbe: #4A7C59 für Buttons, Akzente, Überschriften
+4) Typografie: Lato 700 für Headlines – klar, natürlich, nicht zu dekorativ
+5) Bilder: Vollbild-Naturfotos, kein Overlay, authentisch und unbearbeitet wirkend
+6) Cards: border-radius: 16px, background: rgba(255,255,255,0.7), backdrop-filter: blur(8px)
+7) Buttons: Filled waldgrün, border-radius: 999px (pill), padding: 14px 36px
+Vibe: Nachhaltig, clean, natürlich. Wie ein Bio-Unternehmen mit Stil.`
   },
   dynamic: {
     name: "The Playful Innovator",
-    aesthetic: "Verspielt, innovativ, bunte Palette, animierte Illustrationen, überraschende Interaktionen",
+    designTwin: "Duolingo meets Figma",
+    aesthetic: "Verspielt, bunt, gamifiziert. Lebhafte Farben, abgerundete Elemente, spielerische Animationen.",
     colors: { primary: "#6366F1", background: "#FAFAFA", accent: "#EC4899", text: "#1F2937" },
     typography: { headers: "Poppins, sans-serif", body: "Nunito, sans-serif" },
     patterns: ["card-carousel", "feature-grid", "hero-illustration"],
-    microInteractions: ["bounce-hover", "playful-animations", "micro-interactions"]
+    microInteractions: ["bounce animations", "playful hover effects", "progress indicators"],
+    promptInstruction: `Design Style: Playful Innovator (Duolingo / Figma Vibe).
+STRIKTE CSS-REGELN:
+1) Heller Hintergrund: background: #FAFAFA, lebhafte Farb-Akzente
+2) Abgerundete Elemente ÜBERALL: border-radius: 24px für Cards, 999px für Buttons und Tags
+3) Gradient-Hintergründe: linear-gradient(135deg, #6366F1, #EC4899) für Hero-Elemente
+4) Poppins 800 für Headlines – freundlich, modern, lebendig
+5) Bounce-Animationen: transform: translateY(-4px) auf hover, transition: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)
+6) Farbige Feature-Cards: Jede Card hat eigene Akzentfarbe (lila, pink, grün, orange)
+7) Buttons: Gradient-filled, border-radius: 999px, box-shadow: 0 8px 24px rgba(99,102,241,0.4)
+Vibe: Spaßig, engagierend, erfrischend. Wie eine App die man gerne benutzt.`
   },
   warm: {
     name: "The Warm Connector (Gastro)",
-    aesthetic: "Sensorisch, appetitanregend, gemütlich, warme Erdtöne, einladende Atmosphäre",
+    designTwin: "Noma meets The French Laundry",
+    aesthetic: "Sensorisch, appetitanregend, gemütlich. Warme Erdtöne, Foodfoto-Atmosphäre.",
     colors: { primary: "#C0392B", background: "#FDF6EC", accent: "#E67E22", text: "#2C1810" },
     typography: { headers: "Playfair Display, serif", body: "Lato, sans-serif" },
     patterns: ["editorial-grid", "full-bleed-images", "card-grid"],
-    microInteractions: ["elegant-hover", "smooth-transitions", "fade-in"]
+    microInteractions: ["elegant hover", "smooth transitions", "fade-in"],
+    promptInstruction: `Design Style: Warm Gastro Connector (Noma / Fine Dining Vibe).
+STRIKTE CSS-REGELN:
+1) Cremiger Hintergrund: background: #FDF6EC – warm, appetitlich, einladend
+2) Vollbild-Foodfoto im Hero: 100vh, object-fit: cover, overlay: linear-gradient(to right, rgba(44,24,16,0.85) 40%, transparent)
+3) Playfair Display 700 für Headlines – elegant, gastronomisch
+4) Warme Farbpalette: Dunkelrot #C0392B, Orange #E67E22, Creme – keine kalten Farben
+5) Menü-Karten: Große Fotos, border-radius: 12px, box-shadow: 0 20px 60px rgba(0,0,0,0.15)
+6) Reservierungs-CTA prominent: Großer Button, kontraststark, immer sichtbar
+7) Typografie-Kontrast: Große Serif-Headlines + kleine Sans-Serif-Labels
+Vibe: Appetitanregend, gemütlich, premium. Wie ein Restaurant das man sofort besuchen will.`
   },
   clean: {
     name: "The Corporate Professional (Clean)",
-    aesthetic: "Klar, professionell, vertrauenswürdig, viel Weißraum, strukturierte Navigation",
+    designTwin: "Stripe meets Notion",
+    aesthetic: "Klar, professionell, vertrauenswürdig. Viel Weißraum, strukturierte Navigation, Blau-Akzente.",
     colors: { primary: "#2563EB", background: "#FFFFFF", accent: "#0EA5E9", text: "#1E293B" },
     typography: { headers: "Montserrat, sans-serif", body: "Inter, sans-serif" },
     patterns: ["structured-grid", "hero-split", "stats-sections"],
-    microInteractions: ["professional-hover", "smooth-scroll", "accordion"]
+    microInteractions: ["professional hover", "smooth scroll", "accordion"],
+    promptInstruction: `Design Style: Clean Corporate (Stripe / Notion Vibe).
+STRIKTE CSS-REGELN:
+1) Weißer Hintergrund: background: #FFFFFF, Sekundär: #F8FAFC – maximale Klarheit
+2) Blau als einzige Akzentfarbe: #2563EB für Buttons, Links, Highlights – KEINE anderen Farben
+3) Viel Weißraum: padding-top/bottom: 100px, max-width: 1200px, zentriert
+4) Split-Hero: Text links (50%), Illustration/Foto rechts (50%) – symmetrisch, professionell
+5) Feature-Grid: 3-spaltig, Icons in Blau, Titel fett, Beschreibung grau
+6) Trust-Elemente: Kundenzahlen, Bewertungen, Zertifikate prominent
+7) Buttons: Filled blau, border-radius: 8px, hover: #1D4ED8
+Vibe: Vertrauenswürdig, modern, professionell. Wie ein SaaS-Produkt.`
   },
 };
 
@@ -281,12 +424,15 @@ function buildEnhancedPrompt(opts: {
   const archetype = DESIGN_ARCHETYPES[layoutStyle] || DESIGN_ARCHETYPES["modern"];
   const year = new Date().getFullYear();
 
-  return `Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und UX-Copywriter für lokale Unternehmen in Deutschland.
+  return `Du bist ein PREISGEKRÖNTER Awwwards-Level Webdesigner, UX-Copywriter und Frontend-Entwickler.
+Deine Websites gewinnen regelmäßig "Site of the Day" auf Awwwards, FWA und CSS Design Awards.
+
 Dein Designprozess:
 1. ANALYSE VOR GENERIERUNG: Verstehe Zielgruppe, Pain Points und Unique Value Proposition
-2. STORYBRAND: Der KUNDE ist der HELD – das Unternehmen ist der GUIDE (wie Yoda für Luke)
-3. QUALITÄT: Einzigartige, spezifische Texte – NIEMALS generische Phrasen
-4. ARCHETYP: Halte die Persönlichkeit des Design-Archetyps konsequent durch
+2. DESIGN-TWIN IMITIEREN: Imitiere die visuelle DNA des Design-Twins – aber mit den Kundendaten
+3. STORYBRAND: Der KUNDE ist der HELD – das Unternehmen ist der GUIDE (wie Yoda für Luke)
+4. QUALITÄT: Einzigartige, spezifische Texte – NIEMALS generische Phrasen
+5. ANIMATION: Subtile, purposeful Animationen – jede Animation hat einen Grund
 
 ═══════════════════════════════════════
 UNTERNEHMENSDATEN
@@ -301,11 +447,14 @@ Anzahl Bewertungen: ${business.reviewCount || 0}
 
 ═══════════════════════════════════════
 DESIGN-ARCHETYP: ${archetype.name.toUpperCase()}
+Design-Twin: ${archetype.designTwin}
 ═══════════════════════════════════════
 Aesthetik: ${archetype.aesthetic}
-Typografie-Persönlichkeit: Headlines in ${archetype.typography.headers} / Body in ${archetype.typography.body}
+Typografie: Headlines in ${archetype.typography.headers} / Body in ${archetype.typography.body}
 Layout-Patterns: ${archetype.patterns.join(", ")}
 Micro-Interactions: ${archetype.microInteractions.join(", ")}
+
+${archetype.promptInstruction}
 
 FARB-HIERARCHIE (60-30-10 REGEL – STRIKT EINHALTEN):
 - 60% = Hintergrundfarbe: ${archetype.colors.background} (dominanter Hintergrund)
@@ -314,6 +463,25 @@ FARB-HIERARCHIE (60-30-10 REGEL – STRIKT EINHALTEN):
 ❌ NIEMALS mehr als 3 Hauptfarben
 ❌ NIEMALS bunte Section-Hintergründe
 ✅ IMMER gleiche Akzentfarbe für alle CTAs
+
+═══════════════════════════════════════
+ANIMATIONS-STRATEGIE
+═══════════════════════════════════════
+Page-Load Sequenz:
+- Navbar: fade-in 0.3s ease-out
+- Hero-Headline: slide-up 0.6s ease-out, 0.1s delay
+- Hero-Subtext: fade-in 0.6s ease-out, 0.2s delay
+- CTA-Button: fade-in + scale 0.6s ease-out, 0.4s delay
+
+Scroll-Verhalten:
+- Intersection Observer: Elemente fade-in + translateY(30px → 0) beim Erscheinen
+- Card-Stagger: 80ms delay pro Card für orchestrierte Animationen
+- Navbar: backdrop-blur + shadow bei scroll (class 'scrolled' via JS)
+
+Interaktive Elemente:
+- Buttons: translateY(-2px) + box-shadow glow on hover, 0.2s ease-out
+- Cards: scale(1.02) + shadow enhanced on hover, 0.3s ease-out
+- Links: animated underline width 0→100%, 0.2s ease-out
 
 ═══════════════════════════════════════
 BRANCHENKONTEXT & PERSÖNLICHKEIT

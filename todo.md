@@ -211,3 +211,13 @@
 - [ ] Server: getNextLayout(industryKey) Funktion – atomarer Counter-Increment
 - [ ] generate + regenerate: Hash durch Round-Robin ersetzen
 - [ ] Strukturell radikaler: BoldLayout (dunkel/diagonal), TrustLayout (hell/zentriert), ModernLayout (minimal/asymmetrisch)
+
+## Design-DNA Upgrade aus vite-deploy-studio Analyse (Runde 15)
+- [x] DESIGN_ARCHETYPES: Konkrete CSS-Regeln als promptInstruction pro Archetyp (wie in vite-deploy-studio)
+- [x] DESIGN_ARCHETYPES: designTwin-Referenz pro Archetyp (z.B. "Aesop meets Acne Studios")
+- [x] buildEnhancedPrompt: Design-Twin in Prompt-Header eingebaut
+- [x] buildEnhancedPrompt: Separate Animation-Strategy-Section mit konkreten CSS-Werten
+- [x] buildEnhancedPrompt: System-Prompt auf Awwwards-Level angehoben ("Site of the Day")
+- [x] buildEnhancedPrompt: archetype.promptInstruction direkt in Prompt eingebettet
+- [ ] React-Layouts: Mehr visuelle Differenzierung durch konkrete CSS-Klassen statt generischer Patterns
+- [ ] Layouts: Jedes Layout bekommt eine einzigartige strukturelle Signatur (z.B. BoldLayout: Sticky-Sidebar-CTA, TrustLayout: Diagonal-Split, ModernLayout: Bento-Grid-Hero)
