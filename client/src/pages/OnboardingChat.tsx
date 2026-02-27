@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -653,16 +653,30 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div className="ml-9 space-y-2">
                 {data.topServices.map((svc, i) => (
                   <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2">
-                    <input
-                      className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder={`Leistung ${i + 1} (z.B. Dachreparatur)`}
-                      value={svc.title}
-                      onChange={(e) => {
-                        const updated = [...data.topServices];
-                        updated[i] = { ...updated[i], title: e.target.value };
-                        setData((p) => ({ ...p, topServices: updated }));
-                      }}
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                        placeholder={`Leistung ${i + 1} (z.B. Dachreparatur)`}
+                        value={svc.title}
+                        onChange={(e) => {
+                          const updated = [...data.topServices];
+                          updated[i] = { ...updated[i], title: e.target.value };
+                          setData((p) => ({ ...p, topServices: updated }));
+                        }}
+                      />
+                      {data.topServices.length > 1 && (
+                        <button
+                          onClick={() => {
+                            const updated = data.topServices.filter((_, idx) => idx !== i);
+                            setData((p) => ({ ...p, topServices: updated }));
+                          }}
+                          className="flex-shrink-0 text-slate-400 hover:text-red-400 transition-colors p-1 rounded"
+                          title="Leistung entfernen"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                     <input
                       className="w-full bg-slate-600/50 text-white text-xs px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="Kurze Beschreibung (optional)"
