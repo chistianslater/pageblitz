@@ -379,3 +379,7 @@
 - [x] Textarea statt Input für lange Textfelder (Tagline, Beschreibung, USP, Zielgruppe) mit Auto-Resize
 - [x] KI-Button hervorheben: Glow-Animation + Tooltip "✨ Automatisch von KI generieren lassen"
 - [x] Themen-Gruppen-Ankündigungen: Bot kündigt Abschnitte an (Grunddaten / Rechtliches / Visuelles)
+
+## Services-Schritt Verbesserungen (Feb 27 2026)
+- [x] KI-Vorschlag-Button für Leistungen (Branchenbasiert, füllt 2-4 Felder vor)
+- [x] "Keine Leistungen anzeigen"-Option mit Warn-Dialog

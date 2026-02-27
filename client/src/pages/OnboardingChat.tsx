@@ -138,6 +138,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [isTyping, setIsTyping] = useState(false);
   const [chatHidden, setChatHidden] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingServices, setIsGeneratingServices] = useState(false);
+  const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -188,6 +190,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const completeMutation = trpc.onboarding.complete.useMutation();
   const checkoutMutation = trpc.checkout.createSession.useMutation();
   const generateTextMutation = trpc.onboarding.generateText.useMutation();
+  const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
@@ -386,6 +389,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       toast.error("KI-Generierung fehlgeschlagen");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const generateServicesWithAI = async () => {
+    if (!websiteId || isGeneratingServices) return;
+    setIsGeneratingServices(true);
+    try {
+      const context = `Unternehmensname: ${data.businessName || business?.name || ""}, Branche: ${business?.category || "Handwerk"}, Adresse: ${business?.address || ""}`;
+      const result = await suggestServicesMutation.mutateAsync({ websiteId, context });
+      if (result.services && result.services.length > 0) {
+        setData((p) => ({ ...p, topServices: result.services.map((s: { title: string; description: string }) => ({ title: s.title, description: s.description })) }));
+        toast.success(`${result.services.length} Leistungen vorgeschlagen! Du kannst sie noch anpassen.`);
+      }
+    } catch {
+      toast.error("KI-Vorschläge konnten nicht geladen werden");
+    } finally {
+      setIsGeneratingServices(false);
     }
   };
 
@@ -747,6 +767,30 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             {/* Interactive step UI */}
             {!isTyping && currentStep === "services" && (
               <div className="ml-9 space-y-2">
+                {/* KI-Vorschlag-Button */}
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="relative group/svc-ai">
+                    <button
+                      onClick={generateServicesWithAI}
+                      disabled={isGeneratingServices || !websiteId}
+                      className="flex items-center gap-1.5 text-xs bg-violet-600/30 hover:bg-violet-600/50 border border-violet-500/60 text-violet-200 px-3 py-1.5 rounded-lg transition-all ai-glow-btn disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingServices ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5" />
+                      )}
+                      {isGeneratingServices ? "Generiere..." : "✨ KI-Vorschläge generieren"}
+                    </button>
+                    <div className="absolute bottom-full left-0 mb-2 w-52 pointer-events-none opacity-0 group-hover/svc-ai:opacity-100 transition-opacity duration-200 z-20">
+                      <div className="bg-violet-900/95 border border-violet-500/50 text-violet-100 text-xs px-3 py-2 rounded-lg shadow-lg leading-snug">
+                        Ich schlage dir typische Leistungen für deine Branche vor – du kannst sie danach noch anpassen!
+                        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-violet-900/95" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {data.topServices.map((svc, i) => (
                   <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2">
                     <div className="flex items-center gap-2">
@@ -785,7 +829,38 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     />
                   </div>
                 ))}
-                <div className="flex gap-2">
+
+                {/* Skip warning dialog */}
+                {showSkipServicesWarning && (
+                  <div className="bg-amber-900/40 border border-amber-500/50 rounded-xl p-3 space-y-2">
+                    <p className="text-amber-200 text-xs font-semibold">⚠️ Wirklich ohne Leistungen fortfahren?</p>
+                    <p className="text-amber-300/80 text-xs leading-relaxed">
+                      Websites ohne Leistungsübersicht konvertieren deutlich schlechter. Kunden wollen auf einen Blick sehen, was du anbietest – das ist oft der wichtigste Faktor für eine Anfrage.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowSkipServicesWarning(false)}
+                        className="flex-1 text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Doch eintragen
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setShowSkipServicesWarning(false);
+                          addUserMessage("Keine Leistungen anzeigen");
+                          setData((p) => ({ ...p, topServices: [] }));
+                          await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: [] });
+                          await advanceToStep("targetAudience");
+                        }}
+                        className="flex-1 text-xs bg-slate-600 hover:bg-slate-500 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Trotzdem überspringen
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2 flex-wrap">
                   {data.topServices.length < 4 && (
                     <button
                       onClick={() => setData((p) => ({ ...p, topServices: [...p.topServices, { title: "", description: "" }] }))}
@@ -794,12 +869,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
                     </button>
                   )}
+                  {!showSkipServicesWarning && (
+                    <button
+                      onClick={() => setShowSkipServicesWarning(true)}
+                      className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-400 transition-colors"
+                    >
+                      Keine Leistungen anzeigen
+                    </button>
+                  )}
                   <button
                     disabled={isTyping || saveStepMutation.isPending}
                     onClick={async () => {
                       if (isTyping) return;
                       const filtered = data.topServices.filter((s) => s.title.trim());
-                      if (filtered.length === 0) { toast.error("Bitte mindestens eine Leistung eingeben"); return; }
+                      if (filtered.length === 0) {
+                        setShowSkipServicesWarning(true);
+                        return;
+                      }
                       addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
                       await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
                       await advanceToStep("targetAudience");

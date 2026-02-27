@@ -1499,6 +1499,62 @@ Kontext: ${input.context}`,
         return { text: text.trim() };
       }),
     
+    suggestServices: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        context: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Du bist ein Experte für lokale Unternehmenswebsites in Deutschland. Antworte immer mit validem JSON." },
+            { role: "user", content: `Schlage 3 typische Leistungen für dieses Unternehmen vor. Gib nur ein JSON-Array zurück, kein Markdown, keine Erklärung.\n\nFormat: [{\"title\": \"Leistungsname\", \"description\": \"Kurze Beschreibung (max 10 Wörter)\"}]\n\nKontext: ${input.context}` },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "services_suggestions",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  services: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        description: { type: "string" },
+                      },
+                      required: ["title", "description"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["services"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const rawContent = response.choices?.[0]?.message?.content;
+        const text = typeof rawContent === "string" ? rawContent : "{}";
+        try {
+          const parsed = JSON.parse(text);
+          const services = (parsed.services || []).slice(0, 4).map((s: { title: string; description: string }) => ({
+            title: String(s.title || "").trim(),
+            description: String(s.description || "").trim(),
+          }));
+          return { services };
+        } catch {
+          return { services: [] };
+        }
+      }),
+
     saveStep: publicProcedure
       .input(z.object({
         websiteId: z.number(),
