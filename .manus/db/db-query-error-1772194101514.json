@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, share_token, layout_style, created_at FROM generated_websites ORDER BY created_at DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, share_token, layout_style, created_at FROM generated_websites ORDER BY created_at DESC LIMIT 10;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'share_token' in 'field list'"
+  ]
+}

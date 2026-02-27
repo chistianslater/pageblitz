@@ -45,18 +45,30 @@ interface WebsiteRendererProps {
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
 const INDUSTRY_POOLS: Array<{ keywords: RegExp; pool: string[] }> = [
-  { keywords: /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/i, pool: ["elegant", "fresh", "luxury"] },
-  { keywords: /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|confectionery/i, pool: ["warm", "fresh", "modern"] },
-  { keywords: /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|carpenter|painter|construction|renovation|installation|tischler|fliesenleger|bodenleger|trockenbauer/i, pool: ["bold", "craft", "modern"] },
-  { keywords: /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire/i, pool: ["luxury", "bold", "craft"] },
-  { keywords: /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance/i, pool: ["vibrant", "dynamic", "modern"] },
-  { keywords: /arzt|zahnarzt|medizin|doctor|dental|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker/i, pool: ["trust", "clean", "modern"] },
-  { keywords: /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|tax|finanz|wirtschaft|unternehmensberatung|notariat|immobilien|makler|real.?estate/i, pool: ["trust", "clean", "modern"] },
-  { keywords: /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/i, pool: ["natural", "fresh", "warm"] },
-  { keywords: /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving/i, pool: ["craft", "trust", "bold"] },
-  { keywords: /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/i, pool: ["modern", "vibrant", "dynamic"] },
-  { keywords: /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung/i, pool: ["trust", "clean", "fresh"] },
-  { keywords: /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour/i, pool: ["luxury", "elegant", "warm"] },
+  // Beauty/Friseur: [0] dark luxury | [1] light elegant serif | [2] fresh/airy
+  { keywords: /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/i, pool: ["luxury", "elegant", "fresh"] },
+  // Restaurant/Food: [0] warm earthy | [1] fresh modern | [2] dark craft
+  { keywords: /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|confectionery/i, pool: ["warm", "fresh", "craft"] },
+  // Handwerk/Bau: [0] dark bold | [1] light trust/professional | [2] minimal modern
+  { keywords: /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|carpenter|painter|construction|renovation|installation|tischler|fliesenleger|bodenleger|trockenbauer/i, pool: ["bold", "trust", "modern"] },
+  // Auto/KFZ: [0] dark luxury | [1] dark craft | [2] light clean
+  { keywords: /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire/i, pool: ["luxury", "craft", "clean"] },
+  // Fitness/Sport: [0] dark vibrant | [1] dark dynamic | [2] light fresh
+  { keywords: /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance/i, pool: ["vibrant", "dynamic", "fresh"] },
+  // Medizin/Gesundheit: [0] light trust | [1] light clean | [2] warm natural
+  { keywords: /arzt|zahnarzt|medizin|doctor|dental|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker/i, pool: ["trust", "clean", "natural"] },
+  // Recht/Finanzen/Beratung: [0] light trust | [1] dark luxury | [2] minimal modern
+  { keywords: /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|tax|finanz|wirtschaft|unternehmensberatung|notariat|immobilien|makler|real.?estate/i, pool: ["trust", "luxury", "modern"] },
+  // Bio/Natur/Garten: [0] light natural | [1] warm earthy | [2] fresh airy
+  { keywords: /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/i, pool: ["natural", "warm", "fresh"] },
+  // Reinigung/Service/Security: [0] dark bold | [1] light trust | [2] minimal clean
+  { keywords: /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving/i, pool: ["bold", "trust", "clean"] },
+  // Tech/Digital/Agency: [0] minimal modern | [1] dark dynamic | [2] vibrant
+  { keywords: /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/i, pool: ["modern", "dynamic", "vibrant"] },
+  // Bildung/Coaching: [0] light trust | [1] fresh airy | [2] warm natural
+  { keywords: /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung/i, pool: ["trust", "fresh", "natural"] },
+  // Hotel/Event/Reise: [0] dark luxury | [1] warm elegant | [2] light fresh
+  { keywords: /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour/i, pool: ["luxury", "warm", "elegant"] },
 ];
 
 const ALL_LAYOUTS = ["elegant", "bold", "warm", "clean", "dynamic", "luxury", "craft", "fresh", "trust", "modern", "vibrant", "natural"];

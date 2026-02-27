@@ -194,3 +194,13 @@
 - [ ] AI-Prompt: Strikte Font-Pairing-Regeln pro Archetyp (kein Serif als Body für Handwerk/Bau)
 - [ ] Sanitization: bodyFont auf Sans-Serif beschränken für bestimmte Archetypen
 - [ ] Sanitization: Serif-Fonts nur als headlineFont erlauben, nie als bodyFont für Handwerk/Bau/Fitness
+
+## Pool-Diversifizierung (Runde 13)
+- [x] INDUSTRY_POOLS in WebsiteRenderer: Jeder Pool hat jetzt 1 dunkel + 1 hell + 1 strukturell anders
+- [x] Server-seitige POOLS in industryImages.ts: identisch aktualisiert
+- [x] Bau-Pool: bold (dunkel) + trust (hell/professionell) + modern (minimal)
+- [x] Auto-Pool: luxury (dunkel) + craft (dunkel/roh) + clean (hell)
+- [x] Beauty-Pool: luxury (dunkel) + elegant (hell/serif) + fresh (luftig)
+- [x] Legal/Finance-Pool: trust (hell) + luxury (dunkel) + modern (minimal)
+- [x] Fitness-Pool: vibrant (dunkel) + dynamic (dunkel) + fresh (hell/luftig)
+- [x] Debug Website 3: nicht in DB (Sandbox-Reset) – kein Code-Bug, muss neu generiert werden

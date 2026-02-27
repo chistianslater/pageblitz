@@ -363,52 +363,52 @@ export function getLayoutStyle(category: string, seed: string = ""): string {
     // Construction, Trades (DE + EN)
     {
       test: (s) => /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|plumbing|carpenter|carpentry|painter|painting|construction|renovation|installation|tischler|fliesenleger|electrician|electrical|hvac|heating|cooling|air.?condition|masonry|concrete|drywall|flooring|tile|insulation|waterproof|window|door|fence|deck|patio|siding|gutter|handyman|remodel/.test(s),
-      pool: ["bold", "craft", "modern"],
+      pool: ["bold", "trust", "modern"],  // dark bold | light professional | minimal
     },
     // Automotive (DE + EN)
     {
       test: (s) => /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire|auto.?repair|auto.?body|auto.?service|car.?wash|car.?dealer|dealership|transmission|oil.?change|brake|exhaust|collision|towing|used.?car|new.?car/.test(s),
-      pool: ["luxury", "bold", "craft"],
+      pool: ["luxury", "craft", "clean"],  // dark luxury | dark craft | light clean
     },
     // Fitness & Sport (DE + EN)
     {
       test: (s) => /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance|athletic|athletics|swimming|pool|tennis|golf|cycling|running|triathlon|weightlifting|zumba|barre|bootcamp|spin|hiit|stretch|flexibility|wellness.?center/.test(s),
-      pool: ["vibrant", "dynamic", "modern"],
+      pool: ["vibrant", "dynamic", "fresh"],  // dark vibrant | dark dynamic | light fresh
     },
     // Medical & Health (DE + EN)
     {
       test: (s) => /arzt|zahnarzt|medizin|doctor|dental|dentist|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker|physician|surgeon|orthopedic|pediatric|gynecolog|dermatolog|ophthalmolog|optometrist|optician|audiolog|cardiolog|neurolog|psychiatr|psycholog|therapist|counselor|mental.?health|urgent.?care|emergency|laboratory|lab|radiology|physical.?therapy|occupational|speech|dietitian|nutritionist|acupuncture|naturopath/.test(s),
-      pool: ["trust", "clean", "modern"],
+      pool: ["trust", "clean", "natural"],  // light trust | light clean | warm natural
     },
     // Legal, Finance, Consulting (DE + EN)
     {
       test: (s) => /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|accounting|tax|finanz|wirtschaft|unternehmensberatung|notariat|immobilien|makler|real.?estate|attorney|lawyer|notary|financial|finance|insurance|investment|mortgage|bank|credit|audit|bookkeeping|cpa|advisor|wealth|asset|property.?management|business.?consulting/.test(s),
-      pool: ["trust", "clean", "modern"],
+      pool: ["trust", "luxury", "modern"],  // light trust | dark luxury | minimal modern
     },
     // Organic, Eco, Garden, Landscaping (DE + EN)
     {
       test: (s) => /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable|landscaping|landscape|lawn|mowing|tree|arborist|nursery|greenhouse|horticulture|irrigation|outdoor|yard|groundskeeping/.test(s),
-      pool: ["natural", "fresh", "warm"],
+      pool: ["natural", "warm", "fresh"],  // light natural | warm earthy | fresh airy
     },
     // Pest Control, Cleaning, Facility (DE + EN)
     {
       test: (s) => /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving|janitorial|maid|housekeeping|carpet.?clean|window.?clean|pressure.?wash|power.?wash|disinfect|sanitiz|exterminator|termite|rodent|storage|self.?storage/.test(s),
-      pool: ["craft", "trust", "bold"],
+      pool: ["bold", "trust", "clean"],  // dark bold | light trust | minimal clean
     },
     // Tech, Agency, Digital, Creative (DE + EN)
     {
       test: (s) => /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup|photographer|photography|videograph|video.?production|graphic|print|signage|advertising|pr.?agency|social.?media|seo|branding|copywriting|content/.test(s),
-      pool: ["modern", "vibrant", "dynamic"],
+      pool: ["modern", "dynamic", "vibrant"],  // minimal modern | dark dynamic | vibrant
     },
     // Education, Coaching (DE + EN)
     {
       test: (s) => /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung|driving.?school|music.?school|art.?school|language|childcare|daycare|preschool|kindergarten|montessori|after.?school|college|university/.test(s),
-      pool: ["trust", "clean", "fresh"],
+      pool: ["trust", "fresh", "natural"],  // light trust | fresh airy | warm natural
     },
     // Hotel, Tourism, Events (DE + EN)
     {
       test: (s) => /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour|resort|motel|bed.?and.?breakfast|b&b|vacation|rental|venue|banquet|conference|catering.?event|entertainment|nightclub|bar|lounge|brewery|winery|distillery/.test(s),
-      pool: ["luxury", "elegant", "warm"],
+      pool: ["luxury", "warm", "elegant"],  // dark luxury | warm earthy | light elegant
     },
   ];
 

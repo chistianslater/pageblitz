@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, previewToken, layoutStyle, industry, createdAt FROM generated_websites ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, previewToken, layoutStyle, industry, createdAt FROM generated_websites ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "60001",
+      "previewToken": "GvKc7eKJu03c63-Y0Z8RYKj97GlOgQw0",
+      "layoutStyle": "craft",
+      "industry": "general contractor",
+      "createdAt": "2026-02-25 13:06:15"
+    },
+    {
+      "id": "30001",
+      "previewToken": "BY1_qhIYyvh_NBxWE68hj7z1T3dv5xPM",
+      "layoutStyle": "craft",
+      "industry": "general contractor",
+      "createdAt": "2026-02-25 09:35:33"
+    },
+    {
+      "id": "4",
+      "previewToken": "63dxnOyf0dQrbEc44yUzzYfLaSiIey09",
+      "layoutStyle": "bold",
+      "industry": "general contractor",
+      "createdAt": "2026-02-25 06:53:41"
+    },
+    {
+      "id": "3",
+      "previewToken": "5lxkF1uE4rgKMo3u0AsnYQ6YIy1srG4E",
+      "layoutStyle": "modern",
+      "industry": "roofing contractor",
+      "createdAt": "2026-02-25 06:21:10"
+    },
+    {
+      "id": "2",
+      "previewToken": "rfRpizhnDO2VQRK5voy4LYJ78s4F2ejB",
+      "layoutStyle": "elegant",
+      "industry": "hair care",
+      "createdAt": "2026-02-25 06:16:16"
+    },
+    {
+      "id": "1",
+      "previewToken": "GPlOqB6ac1-DXOBxataZY1F-IYzs-O07",
+      "layoutStyle": "classic",
+      "industry": "hair care",
+      "createdAt": "2026-02-25 06:13:16"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpreviewToken\tlayoutStyle\tindustry\tcreatedAt\n60001\tGvKc7eKJu03c63-Y0Z8RYKj97GlOgQw0\tcraft\tgeneral contractor\t2026-02-25 13:06:15\n30001\tBY1_qhIYyvh_NBxWE68hj7z1T3dv5xPM\tcraft\tgeneral contractor\t2026-02-25 09:35:33\n4\t63dxnOyf0dQrbEc44yUzzYfLaSiIey09\tbold\tgeneral contractor\t2026-02-25 06:53:41\n3\t5lxkF1uE4rgKMo3u0AsnYQ6YIy1srG4E\tmodern\troofing contractor\t2026-02-25 06:21:10\n2\trfRpizhnDO2VQRK5voy4LYJ78s4F2ejB\telegant\thair care\t2026-02-25 06:16:16\n1\tGPlOqB6ac1-DXOBxataZY1F-IYzs-O07\tclassic\thair care\t2026-02-25 06:13:16\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}
