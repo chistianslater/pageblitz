@@ -325,3 +325,9 @@
 - [x] Chat-Panel: Schmaler (360px statt 480px)
 - [x] Chat-Panel: Hide/Show-Toggle-Button (ChevronLeft/Right-Icon)
 - [x] Preview: Wenn Chat versteckt, volle Breite für MacBook-Mockup
+
+## MacBook Preview Fixes (Runde 21)
+- [x] Blauer Streifen rechts neben MacBook entfernen (max-w-7xl entfernt, volle Breite)
+- [x] Chat-Panel: items-center für horizontale Zentrierung
+- [x] MacBook-Viewport: Scrollen via onWheel-Handler mit scrollTop-State
+- [x] MacBook-Padding: px-8 py-10 (größer als vorher)

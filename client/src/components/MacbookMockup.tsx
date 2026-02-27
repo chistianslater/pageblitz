@@ -1,4 +1,4 @@
-import { ReactNode, useRef, useState, useEffect } from "react";
+import { ReactNode, useRef, useState, useEffect, useCallback } from "react";
 
 interface Props {
   children: ReactNode;
@@ -7,17 +7,22 @@ interface Props {
 
 /**
  * MacBook-style browser mockup.
- * The inner website is rendered at DESKTOP_WIDTH and scaled down proportionally
- * via ResizeObserver so the user always sees the full desktop view without
- * any empty blue/grey strips on the sides.
+ * - Renders the site at DESKTOP_WIDTH (1280px) and scales it down proportionally
+ *   via ResizeObserver so the user always sees the full desktop view.
+ * - Scroll wheel events on the outer container are forwarded to the inner
+ *   scaled div so the user can scroll through the page.
  */
 const DESKTOP_WIDTH = 1280;
-const ASPECT_RATIO = 0.62; // height / width ≈ 16:10
+// Visible viewport height as a fraction of desktop width (≈ 16:10)
+const ASPECT_RATIO = 0.62;
 
 export default function MacbookMockup({ children, label }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [scrollTop, setScrollTop] = useState(0);
 
+  // Measure container width and compute scale
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -29,11 +34,26 @@ export default function MacbookMockup({ children, label }: Props) {
     return () => ro.disconnect();
   }, []);
 
+  // Forward wheel events: divide delta by scale so 1px of wheel = 1px of real scroll
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      const inner = innerRef.current;
+      if (!inner) return;
+      // The inner content height in scaled pixels
+      const innerContentH = inner.scrollHeight * scale;
+      const visibleH = Math.round(DESKTOP_WIDTH * ASPECT_RATIO * scale);
+      const maxScroll = Math.max(0, innerContentH - visibleH);
+      setScrollTop((prev) => Math.max(0, Math.min(prev + e.deltaY / scale, maxScroll)));
+    },
+    [scale]
+  );
+
   const viewportH = Math.round(DESKTOP_WIDTH * ASPECT_RATIO);
   const scaledH = Math.round(viewportH * scale);
 
   return (
-    <div className="flex flex-col w-full h-full px-4 py-6 select-none">
+    <div className="flex flex-col w-full select-none px-8 py-10">
       {label && (
         <p className="text-slate-400 text-xs mb-3 font-medium tracking-widest uppercase text-center">
           {label}
@@ -78,32 +98,55 @@ export default function MacbookMockup({ children, label }: Props) {
                 border: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <svg className="w-3 h-3 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <svg
+                className="w-3 h-3 text-green-400 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
               </svg>
               <span className="truncate">deine-website.pageblitz.de</span>
             </div>
-            <svg className="w-3 h-3 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              className="w-3 h-3 text-slate-500 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
           </div>
 
-          {/* Scaled viewport */}
-          {/* Outer div: measured by ResizeObserver, height = scaled viewport height */}
+          {/*
+           * Scaled viewport:
+           * - Outer div: measured by ResizeObserver, clips to scaledH
+           * - Wheel handler: intercepts scroll and updates scrollTop state
+           * - Inner div: full DESKTOP_WIDTH, translated by -scrollTop (unscaled)
+           */}
           <div
             ref={containerRef}
-            className="w-full overflow-hidden"
+            className="w-full overflow-hidden cursor-ns-resize"
             style={{ height: `${scaledH}px`, background: "#fff" }}
+            onWheel={handleWheel}
           >
-            {/* Inner div: always DESKTOP_WIDTH wide, scaled down */}
             <div
+              ref={innerRef}
               style={{
                 width: `${DESKTOP_WIDTH}px`,
-                height: `${viewportH}px`,
                 transformOrigin: "top left",
-                transform: `scale(${scale})`,
+                transform: `scale(${scale}) translateY(-${scrollTop}px)`,
                 pointerEvents: "none",
-                overflow: "hidden",
               }}
             >
               {children}
@@ -146,7 +189,8 @@ export default function MacbookMockup({ children, label }: Props) {
       <div
         style={{
           height: "3px",
-          background: "radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, transparent 70%)",
+          background:
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, transparent 70%)",
           marginTop: "2px",
         }}
       />

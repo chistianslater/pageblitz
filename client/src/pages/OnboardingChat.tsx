@@ -504,9 +504,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       </div>
 
       {/* Main layout */}
-      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full">
+      <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
         {/* Chat panel */}
-        <div className={`${chatHidden ? "hidden" : "flex"} w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0`}>
+        <div className={`${chatHidden ? "hidden" : "flex"} w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0 items-center`}>
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-700/50 flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg">
@@ -889,7 +889,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         )}
 
         {/* Preview panel – MacBook mockup */}
-        <div className="relative flex-1 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col">
           {websiteData && colorScheme ? (
             <MacbookMockup label="Live-Vorschau deiner Website">
               <WebsiteRenderer
