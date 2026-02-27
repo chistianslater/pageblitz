@@ -39,6 +39,7 @@ function Router() {
       <Route path="/site/:slug" component={SitePage} />
       <Route path="/site/:slug/impressum" component={LegalPage} />
       <Route path="/site/:slug/datenschutz" component={LegalPage} />
+      <Route path="/preview/:token/onboarding">{(params) => <OnboardingWizard previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingWizard websiteId={parseInt(params.id || "0")} />}</Route>
       <Route>
         <AdminRouter />

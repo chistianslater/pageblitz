@@ -259,5 +259,28 @@
 ### Legal Pages
 - [x] Impressum-Generator: Template mit echten Firmendaten befüllen
 - [x] Datenschutz-Generator: DSGVO-konformes Template mit echten Daten
-- [ ] Cookie-Banner: einfaches Opt-in Banner für alle generierten Websites
+- [x] Cookie-Banner: einfaches Opt-in Banner für alle generierten Websites
 - [x] Routing: /site/{slug}/impressum und /site/{slug}/datenschutz
+
+## Funnel-Umbau & Cookie-Banner (Runde 17)
+
+### Funnel-Reihenfolge: Onboarding VOR Checkout
+- [x] PreviewPage: "Jetzt aktivieren"-Button → führt zu Onboarding (nicht direkt zu Stripe)
+- [x] OnboardingWizard: Letzter Schritt zeigt "Jetzt für 79 €/Monat freischalten" → Stripe Checkout
+- [x] OnboardingWizard: Kann auch ohne Login gestartet werden (Token-basiert via previewToken)
+- [x] OnboardingWizard: Fortschritt in localStorage speichern (falls Nutzer abbricht und zurückkommt)
+- [x] Checkout: Nach Zahlung → Website wird mit Onboarding-Daten gepatcht + aktiviert
+
+### Pricing im Header
+- [x] PreviewPage: Preis im Header/CTA auf 79 €/Monat aktualisieren (war 490 € Setup + 99 €/Monat)
+- [x] PreviewPage: Pricing-Sektion mit Add-on-Übersicht (Unterseiten +9,90 €, Galerie +4,90 €)
+- [ ] WebsitesPage (Admin): Checkout-Dialog Preis auf 79 €/Monat aktualisieren
+
+### Cookie-Banner (DSGVO)
+- [x] CookieBanner-Komponente: Opt-in Banner für alle generierten Websites
+- [x] Cookie-Kategorien: Notwendig (immer), Statistiken (optional), Marketing (optional)
+- [x] Consent in localStorage speichern (cookieConsent: { necessary: true, stats: bool, marketing: bool })
+- [x] Banner erscheint beim ersten Besuch, verschwindet nach Bestätigung
+- [ ] "Einstellungen" Link im Footer öffnet Banner erneut
+- [x] SitePage: CookieBanner einbinden
+- [ ] Alle 12 Layouts: "Cookie-Einstellungen" Link im Footer

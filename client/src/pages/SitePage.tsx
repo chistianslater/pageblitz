@@ -1,6 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { useParams } from "wouter";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
+import CookieBanner from "@/components/CookieBanner";
 import { Loader2, AlertCircle } from "lucide-react";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -42,16 +43,19 @@ export default function SitePage() {
   const business = data.business;
 
   return (
-    <WebsiteRenderer
-      websiteData={websiteData}
-      colorScheme={colorScheme}
-      heroImageUrl={heroImageUrl}
-      layoutStyle={layoutStyle}
-      businessPhone={business?.phone || undefined}
-      businessAddress={business?.address || undefined}
-      businessEmail={business?.email || undefined}
-      openingHours={business?.openingHours as string[] | undefined}
-      slug={params.slug}
-    />
+    <>
+      <WebsiteRenderer
+        websiteData={websiteData}
+        colorScheme={colorScheme}
+        heroImageUrl={heroImageUrl}
+        layoutStyle={layoutStyle}
+        businessPhone={business?.phone || undefined}
+        businessAddress={business?.address || undefined}
+        businessEmail={business?.email || undefined}
+        openingHours={business?.openingHours as string[] | undefined}
+        slug={params.slug}
+      />
+      <CookieBanner slug={params.slug} primaryColor={colorScheme.primary} />
+    </>
   );
 }
