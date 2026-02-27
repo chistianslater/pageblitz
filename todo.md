@@ -424,3 +424,16 @@
 - [x] Flackern bei Themenüberschriften beheben
 - [x] KI-Intent-Erkennung: "mach mir einen Vorschlag" → KI generiert automatisch
 - [x] Kontaktformular-Overlay: nur wenn wirklich Formularfelder vorhanden
+
+## Fixes (Feb 27 2026 – Runde 7)
+- [ ] Branding (Farbe + Logo) wirklich als allererster Schritt im STEP_ORDER
+- [ ] Chat-Input sticky: Eingabefeld unten fixiert, Nachrichten-Bereich scrollbar
+- [ ] Branchenspezifische Bilder: fein-granulares Kategorie-Mapping (Restaurant, Bar, Bau, etc.)
+
+## Bugfixes & UX-Verbesserungen (Runde N)
+- [x] Branding-First Flow: businessCategory → brandColor → brandLogo VOR businessName im OnboardingChat
+- [x] businessCategory Feld in DB-Schema (onboarding_responses) und Migration ausgeführt
+- [x] Sticky Chat-Input: h-screen + overflow-hidden auf äußerem Container, Input-Bereich bleibt am unteren Rand
+- [x] Branchenspezifische Bilder: Bar/Tapas, Café/Bistro, Hotel, Bauunternehmen als eigene Kategorien in industryImages.ts
+- [x] buildIndustryContext: Bar/Tapas und Bauunternehmen als eigene Layout-Pools mit spezifischen Schreibstil-Anweisungen
+- [x] mapCategoryToIndustryKey: Bar, Café, Bauunternehmen korrekt zugeordnet

@@ -28,7 +28,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   },
   // ── Restaurant & Food ──────────────────────────────
   restaurant: {
-    keywords: ["restaurant", "gastro", "essen", "food", "cafe", "bistro", "küche", "speise", "pizza", "sushi", "burger"],
+    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "pizza", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food"],
     hero: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop",
@@ -39,9 +39,66 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&auto=format&fit=crop",
     ],
   },
+  // ── Bar & Tapas ────────────────────────────────────
+  bar: {
+    keywords: ["bar", "tapas", "cocktail", "lounge", "pub", "kneipe", "weinbar", "wein", "bier", "brauerei", "brewery", "nightlife", "nachtleben", "aperitivo", "tapasbar"],
+    hero: [
+      "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1527761939622-933c972a0b08?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Café & Bistro ──────────────────────────────────
+  cafe: {
+    keywords: ["café", "cafe", "bistro", "kaffee", "coffee", "coffeeshop", "bäckerei", "bakery", "konditorei", "patisserie", "brunch", "frühstück"],
+    hero: [
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Hotel & Pension ────────────────────────────────
+  hotel: {
+    keywords: ["hotel", "pension", "hostel", "unterkunft", "übernachtung", "bed and breakfast", "b&b", "resort", "ferienwohnung", "gästehaus"],
+    hero: [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1455587734955-081b22074882?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Bauunternehmen ─────────────────────────────────
+  bauunternehmen: {
+    keywords: ["bauunternehmen", "baufirma", "hochbau", "tiefbau", "rohbau", "bauprojekt", "bauträger", "generalunternehmer", "schlüsselfertig", "neubau", "umbau", "anbau"],
+    hero: [
+      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
   // ── Handwerk & Bau ─────────────────────────────────
   handwerk: {
-    keywords: ["handwerk", "bau", "elektriker", "klempner", "maler", "schreiner", "tischler", "zimmerer", "dachdecker", "sanitär", "heizung", "installation", "craft", "construction"],
+    keywords: ["handwerk", "bau", "elektriker", "klempner", "maler", "schreiner", "tischler", "zimmerer", "dachdecker", "sanitär", "heizung", "installation", "craft", "construction", "renovierung", "fliesenleger"],
     hero: [
       "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&q=85&auto=format&fit=crop",

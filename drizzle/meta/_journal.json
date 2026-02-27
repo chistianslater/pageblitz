@@ -50,6 +50,13 @@
       "when": 1772217236564,
       "tag": "0006_naive_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1772223203861,
+      "tag": "0007_regular_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

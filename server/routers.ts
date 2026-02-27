@@ -299,6 +299,17 @@ Services: Konkrete Behandlungen mit sensorischen Details (Duft, Gefühl, Ergebni
 VERBOTEN: "Ihr Wohlbefinden liegt uns am Herzen", "Wir freuen uns auf Ihren Besuch", generische Phrasen.`;
   }
 
+  // Bar, Tapas, Cocktail, Pub → Pool: dark, vibrant, nightlife
+  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|nachtleben|aperitivo/.test(lower)) {
+    return `LAYOUT-POOL: BAR (dark / vibrant / nightlife)
+Schreibstil: Stimmungsvoll, verführerisch, atmosphärisch. Kurze, knackige Sätze. Nacht-Feeling.
+Sprache: Lässig, einladend, cool. Erlebnisse und Atmosphäre betonen.
+Betone: Atmosphäre, Signature-Drinks, Musik, Abend-/Nacht-Erlebnis, Gastfreundschaft.
+Hero-Headline: Einladend und stimmungsvoll. Z.B. "Wo der Abend beginnt" oder "Dein Lieblingsplatz wartet."
+Services: Konkrete Drinks/Speisen mit verlockenden Beschreibungen.
+VERBOTEN: "Wir bieten eine große Auswahl", generische Gastro-Phrasen.`;
+  }
+
   // Restaurant, Café, Food → Pool: warm, fresh, modern
   if (/restaurant|gastro|cafe|café|bistro|pizza|küche|bäckerei|catering|food|sushi|burger|gastronomie|bakery/.test(lower)) {
     return `LAYOUT-POOL: GASTRONOMIE (warm / fresh / modern)
@@ -308,6 +319,17 @@ Betone: Frische Zutaten, Rezepttradition, Atmosphäre, konkrete Gerichte, Reserv
 Hero-Headline: Soll Hunger und Vorfreude wecken. Z.B. "Wo jeder Bissen zählt" oder "Echte Küche. Echter Geschmack."
 Services: Konkrete Gerichte/Menüs mit verlockenden Beschreibungen.
 VERBOTEN: "Wir bieten eine große Auswahl", "für jeden Geschmack etwas dabei", generische Phrasen.`;
+  }
+
+  // Bauunternehmen → Pool: bold, industrial, modern
+  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau|umbau|anbau/.test(lower)) {
+    return `LAYOUT-POOL: BAUUNTERNEHMEN (bold / industrial / modern)
+Schreibstil: Kraftvoll, kompetent, zuverlässig. Zahlen, Projekte, Referenzen betonen.
+Sprache: Professionell, direkt, vertrauensweckend. Großprojekte und Expertise hervorheben.
+Betone: Referenzprojekte, Erfahrung in Jahren, Fachkompetenz, Terminzuverlässigkeit, Schlüsselfertig-Lösungen.
+Hero-Headline: Stark und kompetent. Z.B. "Wir bauen Ihre Zukunft" oder "Von der Planung bis zum Schlüssel."
+Services: Konkrete Bauleistungen mit Projektbeispielen und Größenangaben.
+VERBOTEN: "Qualität steht bei uns an erster Stelle", "Ihr Partner für...", weiche Phrasen.`;
   }
 
   // Construction, Trades → Pool: bold, craft, modern
@@ -630,11 +652,14 @@ Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Z
 function mapCategoryToIndustryKey(category: string): string {
   const lower = (category || "").toLowerCase();
   if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|lash|brow|make.?up/.test(lower)) return "beauty";
-  if (/restaurant|gastro|cafe|café|bistro|pizza|küche|bäckerei|catering|food|sushi|burger|bakery/.test(lower)) return "restaurant";
+  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|aperitivo/.test(lower)) return "restaurant";
+  if (/café|cafe|bistro|kaffee|coffee|coffeeshop|bäckerei|bakery|konditorei|patisserie|brunch/.test(lower)) return "restaurant";
+  if (/restaurant|gastro|gastronomie|pizza|küche|bäckerei|catering|food|sushi|burger|bakery/.test(lower)) return "restaurant";
   if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|personal.?trainer|physiotherap|boxing/.test(lower)) return "fitness";
   if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|motorrad|reifenservice/.test(lower)) return "automotive";
   if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|chiropractor/.test(lower)) return "medical";
   if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien/.test(lower)) return "legal";
+  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau/.test(lower)) return "trades";
   if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|roofing|construction|tischler|schreiner/.test(lower)) return "trades";
   if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|startup/.test(lower)) return "tech";
   if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|naturopath/.test(lower)) return "other";

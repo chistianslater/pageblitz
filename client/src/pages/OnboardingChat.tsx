@@ -16,6 +16,7 @@ interface SubPage {
 }
 
 interface OnboardingData {
+  businessCategory: string;
   businessName: string;
   tagline: string;
   description: string;
@@ -39,6 +40,7 @@ interface OnboardingData {
 
 type ChatStep =
   | "welcome"
+  | "businessCategory"
   | "businessName"
   | "tagline"
   | "description"
@@ -72,6 +74,7 @@ interface ChatMessage {
 const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const STEP_ORDER: ChatStep[] = [
+  "businessCategory",
   "brandColor",
   "brandLogo",
   "welcome",
@@ -153,6 +156,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Onboarding data ─────────────────────────────────────────────────────
   const [data, setData] = useState<OnboardingData>({
+    businessCategory: "",
     businessName: "",
     tagline: "",
     description: "",
@@ -261,6 +265,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     (step: ChatStep): string[] => {
       const name = data.businessName || business?.name || "";
       switch (step) {
+        case "businessCategory":
+          return [
+            "Restaurant",
+            "Friseur",
+            "Bauunternehmen",
+            "Fitness-Studio",
+            "Anwaltskanzlei",
+            "Zahnarzt",
+            "Handwerk",
+            "Bar/Tapas",
+          ];
         case "businessName":
           return name ? [`✓ Ja, "${name}" stimmt so`] : [];
         case "tagline":
@@ -326,14 +341,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return [];
       }
     },
-    [data.businessName, data.legalEmail, business?.name, business?.address, business?.email]
+    [data.businessName, data.businessCategory, data.legalEmail, business?.name, business?.address, business?.email]
   );
-
-  // ── Step prompts ────────────────────────────────────────────────────────
+  // ── Step promptss ────────────────────────────────────────────────────────
   const getStepPrompt = useCallback(
     (step: ChatStep): string => {
       const name = data.businessName || business?.name || "dein Unternehmen";
       switch (step) {
+        case "businessCategory":
+          return `Hallo! Bevor wir starten – welche **Branche** ist dein Unternehmen?\n\nBeispiel: Restaurant, Friseur, Bauunternehmen, Fitness-Studio, Anwaltskanzlei, etc.\n\nDas hilft mir, deine Website perfekt auf deine Branche abzustimmen!`;
         case "welcome":
           return `Hey! 👋 Ich bin dein persönlicher Website-Assistent. Ich helfe dir in wenigen Minuten, deine Website mit echten Infos zu befüllen – damit sie nicht mehr generisch klingt, sondern wirklich nach **${name}** aussieht.\n\nKlingt gut? Dann lass uns starten! 🚀`;
         case "businessName":
@@ -359,7 +375,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "legalPhone":
           return `Welche **Telefonnummer** soll im Impressum und auf der Website stehen?\n\nBeispiel: *+49 2871 123456*`;
         case "legalVat":
-          return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach „Nein" oder lass das Feld leer.`;
+          return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach "Nein" oder lass das Feld leer.`;
+        case "hideSections":
+          return `Welche Bereiche möchtest du auf deiner Website ausblenden?`;
         case "brandColor":
           return `Jetzt zum Look deiner Website! 🎨\n\nWelche **Hauptfarbe** soll deine Website haben? Wähle unten eine Farbe aus oder gib einen eigenen Hex-Code ein.`;
         case "brandLogo":
@@ -386,10 +404,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!siteLoading && !initialized) {
       setInitialized(true);
       const initChat = async () => {
-        await addBotMessage(getStepPrompt("welcome"), 800);
-        await new Promise((r) => setTimeout(r, 400));
-        setCurrentStep("businessName");
-        await addBotMessage(getStepPrompt("businessName"), 1000);
+        setCurrentStep("businessCategory");
+        await addBotMessage(getStepPrompt("businessCategory"), 800);
       };
       initChat();
     }
@@ -440,8 +456,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Step advancement ────────────────────────────────────────────────────
   // Group headers shown before certain thematic sections
   const GROUP_HEADERS: Partial<Record<ChatStep, string>> = {
-    brandColor: "🎨 **Willkommen! Lass uns mit dem Look starten.**\n\nWähle deine Hauptfarbe – du siehst sofort rechts, wie deine Website damit aussieht!",
-    welcome: "✅ **Perfekt! Dein Design ist festgelegt.**\n\nJetzt sammle ich noch ein paar Infos über dein Unternehmen.",
+    brandColor: "🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine Hauptfarbe – du siehst sofort rechts, wie deine Website damit aussieht!",
+    welcome: "✅ **Perfekt! Dein Design ist festgelegt.**\n\nJetzt sammle ich noch ein paar Infos über dein Unternehmen. Das dauert nur wenige Minuten!",
     legalOwner: "📋 **Abschnitt 2: Rechtliche Pflichtangaben**\n\nFür ein vollständiges Impressum und eine korrekte Datenschutzerklärung brauche ich noch ein paar Angaben. Das dauert nur 2 Minuten!",
     addons: "⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern?",
   };
@@ -573,6 +589,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "email":
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
+          break;
+        case "businessCategory":
+          if (val) {
+            addUserMessage(val);
+            setData((p) => ({ ...p, businessCategory: val }));
+            await trySaveStep(stepIdx, { businessCategory: val });
+          }
           break;
         case "brandColor":
         case "brandLogo":
@@ -719,7 +742,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const slug = siteData?.website?.slug;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
       {/* FOMO Header */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
         <Clock className="w-4 h-4 flex-shrink-0" />
@@ -760,7 +783,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </button>
           </div>
 
-          {/* Messages */}
+          {/* Messages + Input: flex column, messages scroll, input sticky */}
+          <div className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
             {messages.map((msg) => (
               <div
@@ -942,6 +966,41 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </div>
             )}
 
+            {!isTyping && currentStep === "businessCategory" && (
+              <div className="ml-9 space-y-3">
+                <p className="text-xs text-slate-400">Branche auswählen oder selbst eingeben:</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: "Restaurant", icon: "🍽️" },
+                    { label: "Bar / Tapas", icon: "🍷" },
+                    { label: "Café / Bistro", icon: "☕" },
+                    { label: "Bäckerei", icon: "🥐" },
+                    { label: "Friseur", icon: "✂️" },
+                    { label: "Beauty / Kosmetik", icon: "💅" },
+                    { label: "Bauunternehmen", icon: "🏗️" },
+                    { label: "Handwerk", icon: "🔧" },
+                    { label: "Fitness-Studio", icon: "💪" },
+                    { label: "Arzt / Zahnarzt", icon: "🏥" },
+                    { label: "Rechtsanwalt", icon: "⚖️" },
+                    { label: "Immobilien", icon: "🏠" },
+                    { label: "IT / Software", icon: "💻" },
+                    { label: "Fotografie", icon: "📷" },
+                    { label: "Autowerkstatt", icon: "🚗" },
+                    { label: "Hotel / Pension", icon: "🏨" },
+                  ].map(({ label, icon }) => (
+                    <button
+                      key={label}
+                      onClick={() => handleSubmit(label)}
+                      className="flex items-center gap-1.5 text-sm bg-slate-700/60 hover:bg-blue-600/40 border border-slate-600/50 hover:border-blue-500/60 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all"
+                    >
+                      <span>{icon}</span>
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500">Nicht dabei? Einfach oben eintippen.</p>
+              </div>
+            )}
             {!isTyping && currentStep === "brandColor" && (
               <div className="ml-9 space-y-3">
                 <div className="grid grid-cols-6 gap-2">
@@ -1389,10 +1448,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             <div ref={messagesEndRef} />
           </div>
-
-          {/* Input area */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "brandColor", "brandLogo"].includes(currentStep) && (
-            <div className="px-4 py-4 border-t border-slate-700/50">
+          {/* Input area – sticky at bottom */}
+          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "brandColor", "brandLogo", "businessCategory"].includes(currentStep) && (
+            <div className="flex-shrink-0 px-4 py-4 border-t border-slate-700/50">
               <div className="flex gap-2">
                 {/* AI generate button for text fields */}
                 {["tagline", "description", "usp", "targetAudience"].includes(currentStep) && (
@@ -1490,9 +1548,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             </div>
           )}
+          </div>{/* end messages+input wrapper */}
         </div>
-
-        {/* Preview panel – MacBook mockup */}
+        {/* Preview panell – MacBook mockup */}
         <div className="relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col">
           {/* Preview top bar: chat toggle + progress bar */}
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-700/50">

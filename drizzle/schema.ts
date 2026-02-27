@@ -95,6 +95,7 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   status: mysqlEnum("status", ["pending", "in_progress", "completed"]).notNull().default("pending"),
   stepCurrent: int("stepCurrent").notNull().default(0),
   // Business info
+  businessCategory: varchar("businessCategory", { length: 255 }),
   businessName: varchar("businessName", { length: 255 }),
   tagline: varchar("tagline", { length: 255 }),
   description: text("description"),
