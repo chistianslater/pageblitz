@@ -394,3 +394,7 @@
 - [x] Sektionen-Ausblenden-Schritt vor Checkout (Kunde klickt Bereiche an zum Deaktivieren)
 - [x] Echte Google-Rezensionen aus GMB API statt Fake-Testimonials
 - [x] MacBook-Mockup Scroll-Clipping fix (Footer/Impressum vollständig sichtbar)
+
+## Bugfixes (Feb 27 2026 – Runde 3)
+- [x] Kontaktformular-Upsell-Overlay: korrekte Position direkt über der Kontakt-Sektion
+- [x] Testimonials-Sektion: komplett entfernen wenn keine echten Google-Rezensionen vorhanden

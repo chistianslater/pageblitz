@@ -25,6 +25,7 @@ interface Props {
   businessEmail?: string | null;
   openingHours?: string[];
   slug?: string | null;
+  contactFormLocked?: boolean;
 }
 
 export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
