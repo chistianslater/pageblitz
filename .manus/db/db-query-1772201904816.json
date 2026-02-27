@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, slug, layoutStyle, previewToken FROM generated_websites LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, slug, layoutStyle, previewToken FROM generated_websites LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "slug": "friseur-gudhair-by-guido-schnucklake-6ULF",
+      "layoutStyle": "classic",
+      "previewToken": "GPlOqB6ac1-DXOBxataZY1F-IYzs-O07"
+    },
+    {
+      "id": "2",
+      "slug": "friseur-bocholt-by-aras-NyqU",
+      "layoutStyle": "elegant",
+      "previewToken": "rfRpizhnDO2VQRK5voy4LYJ78s4F2ejB"
+    },
+    {
+      "id": "3",
+      "slug": "ritte-bedachungen-rFNR",
+      "layoutStyle": "trust",
+      "previewToken": "9bL0s2Vf5JCI3DqbCJHJDZgdy9-1J7Nn"
+    },
+    {
+      "id": "4",
+      "slug": "pesch-hochbau-gmbh-2aTU",
+      "layoutStyle": "bold",
+      "previewToken": "63dxnOyf0dQrbEc44yUzzYfLaSiIey09"
+    },
+    {
+      "id": "30001",
+      "slug": "rainer-demming-bauunternehmen-gmbh-6aTB",
+      "layoutStyle": "craft",
+      "previewToken": "BY1_qhIYyvh_NBxWE68hj7z1T3dv5xPM"
+    },
+    {
+      "id": "60001",
+      "slug": "suki-bau-reinigung-service-ld0v",
+      "layoutStyle": "trust",
+      "previewToken": "85QDlWNVw1-1WF92tX37EalfotsU1PfS"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tslug\tlayoutStyle\tpreviewToken\n1\tfriseur-gudhair-by-guido-schnucklake-6ULF\tclassic\tGPlOqB6ac1-DXOBxataZY1F-IYzs-O07\n2\tfriseur-bocholt-by-aras-NyqU\telegant\trfRpizhnDO2VQRK5voy4LYJ78s4F2ejB\n3\tritte-bedachungen-rFNR\ttrust\t9bL0s2Vf5JCI3DqbCJHJDZgdy9-1J7Nn\n4\tpesch-hochbau-gmbh-2aTU\tbold\t63dxnOyf0dQrbEc44yUzzYfLaSiIey09\n30001\trainer-demming-bauunternehmen-gmbh-6aTB\tcraft\tBY1_qhIYyvh_NBxWE68hj7z1T3dv5xPM\n60001\tsuki-bau-reinigung-service-ld0v\ttrust\t85QDlWNVw1-1WF92tX37EalfotsU1PfS\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

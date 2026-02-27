@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, previewToken, layoutStyle, industry, businessName FROM generated_websites WHERE previewToken IN ('9bL0s2Vf5JCI3DqbCJHJDZgdy9-1J7Nn', '85QDlWNVw1-1WF92tX37EalfotsU1PfS');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute SELECT id, previewToken, layoutStyle, industry, businessName FROM generated_websites WHERE previewToken IN ('9bL0s2Vf5JCI3DqbCJHJDZgdy9-1J7Nn', '85QDlWNVw1-1WF92tX37EalfotsU1PfS');",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'businessname' in 'field list'"
+  ]
+}

@@ -18,7 +18,8 @@ import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import { notifyOwner } from "./_core/notification";
 import { TRPCError } from "@trpc/server";
-import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutStyle } from "./industryImages";
+import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutStyle, getLayoutPool } from "./industryImages";
+import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
 
@@ -665,7 +666,10 @@ export const appRouter = router({
         const industryContext = buildIndustryContext(category);
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
         const colorScheme = getIndustryColorScheme(category, business.name);
-        const layoutStyle = getLayoutStyle(category, business.name);
+        // Round-robin layout assignment: guarantees consecutive same-industry
+        // websites always get a different layout from the pool.
+        const { pool: layoutPool, industryKey } = getLayoutPool(category);
+        const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
         const heroImageUrl = getHeroImageUrl(category, business.name);
         const galleryImages = getGalleryImages(category);
 
@@ -676,7 +680,7 @@ export const appRouter = router({
 
         // Merge with admin-uploaded templates for this industry+pool
         const uploadedTemplates = await listTemplateUploadsByPool(
-          mapCategoryToIndustryKey(category),
+          industryKey,
           layoutStyle
         );
         const uploadedImageUrls = uploadedTemplates.slice(0, 3).map(t => t.imageUrl);
@@ -816,7 +820,9 @@ export const appRouter = router({
         const industryContext = buildIndustryContext(category);
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
         const colorScheme = getIndustryColorScheme(category, seed);
-        const layoutStyle = getLayoutStyle(category, seed);
+        // Round-robin: guarantees a different layout than the previous generation
+        const { pool: layoutPoolRegen, industryKey: industryKeyRegen } = getLayoutPool(category);
+        const layoutStyle = await getNextLayoutForIndustry(industryKeyRegen, layoutPoolRegen);
         const heroImageUrl = getHeroImageUrl(category, seed);
         const galleryImages = getGalleryImages(category);
 
@@ -827,7 +833,7 @@ export const appRouter = router({
 
         // Merge with admin-uploaded templates for this industry+pool
         const uploadedTemplatesRegen = await listTemplateUploadsByPool(
-          mapCategoryToIndustryKey(category),
+          industryKeyRegen,
           layoutStyle
         );
         const uploadedImageUrlsRegen = uploadedTemplatesRegen.slice(0, 3).map(t => t.imageUrl);

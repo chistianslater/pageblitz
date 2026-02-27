@@ -292,3 +292,36 @@ export async function countTemplateUploads(): Promise<number> {
   const result = await db.select({ count: sql<number>`count(*)` }).from(templateUploads);
   return result[0]?.count ?? 0;
 }
+// ── Layout Round-Robin ─────────────────────────────────
+// Atomically increments the counter for an industry key and returns the
+// next layout from the given pool. Guarantees that consecutive websites in
+// the same industry always get a different layout.
+export async function getNextLayoutForIndustry(
+  industryKey: string,
+  pool: string[]
+): Promise<string> {
+  if (!pool.length) return "trust";
+  const db = await getDb();
+  if (!db) {
+    // Fallback: random pick when DB is unavailable
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  try {
+    // Upsert: insert with counter=1 on first use, otherwise increment
+    await db.execute(
+      sql`INSERT INTO layout_counters (industryKey, counter)
+          VALUES (${industryKey}, 1)
+          ON DUPLICATE KEY UPDATE counter = counter + 1`
+    );
+    const rows = await db.execute(
+      sql`SELECT counter FROM layout_counters WHERE industryKey = ${industryKey}`
+    );
+    // rows[0] is the result array from a SELECT via db.execute
+    const resultRows = (rows as unknown as { counter: number }[][])[0] ?? (rows as unknown as { counter: number }[]);
+    const counter = Array.isArray(resultRows) ? (resultRows[0]?.counter ?? 1) : 1;
+    return pool[(counter - 1) % pool.length];
+  } catch (err) {
+    console.warn("[DB] getNextLayoutForIndustry failed, falling back to random:", err);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+}

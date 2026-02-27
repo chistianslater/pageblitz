@@ -204,3 +204,10 @@
 - [x] Legal/Finance-Pool: trust (hell) + luxury (dunkel) + modern (minimal)
 - [x] Fitness-Pool: vibrant (dunkel) + dynamic (dunkel) + fresh (hell/luftig)
 - [x] Debug Website 3: nicht in DB (Sandbox-Reset) – kein Code-Bug, muss neu generiert werden
+
+## Round-Robin Layout-Zuweisung (Runde 14)
+- [ ] DB-Schema: layout_counters Tabelle (industryKey, counter) für Round-Robin
+- [ ] DB-Migration ausführen
+- [ ] Server: getNextLayout(industryKey) Funktion – atomarer Counter-Increment
+- [ ] generate + regenerate: Hash durch Round-Robin ersetzen
+- [ ] Strukturell radikaler: BoldLayout (dunkel/diagonal), TrustLayout (hell/zentriert), ModernLayout (minimal/asymmetrisch)

@@ -36,6 +36,13 @@
       "when": 1772017096113,
       "tag": "0004_white_husk",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1772201445334,
+      "tag": "0005_fancy_omega_red",
+      "breakpoints": true
     }
   ]
 }

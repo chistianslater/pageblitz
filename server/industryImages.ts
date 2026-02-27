@@ -414,18 +414,50 @@ export function getLayoutStyle(category: string, seed: string = ""): string {
 
   // Find matching pool
   let pool: string[] = ["clean", "modern", "trust", "fresh"];
-  for (const entry of POOLS) {
-    if (entry.test(lower)) {
-      pool = entry.pool;
+  let industryKey = "general";
+  const INDUSTRY_KEYS = [
+    "beauty", "food", "construction", "automotive", "fitness",
+    "medical", "legal", "nature", "cleaning", "tech", "education", "hospitality"
+  ];
+  for (let i = 0; i < POOLS.length; i++) {
+    if (POOLS[i].test(lower)) {
+      pool = POOLS[i].pool;
+      industryKey = INDUSTRY_KEYS[i] || "general";
       break;
     }
   }
 
-  // Deterministic hash of seed → pick from pool
+  // Deterministic hash of seed → pick from pool (legacy fallback)
   let hash = 0;
   const s = seed || category || "default";
   for (let i = 0; i < s.length; i++) {
     hash = Math.imul(31, hash) + s.charCodeAt(i) | 0;
   }
   return pool[Math.abs(hash) % pool.length];
+}
+
+/**
+ * Returns the layout pool and industry key for a category.
+ * Use this with getNextLayoutForIndustry() for round-robin assignment.
+ */
+export function getLayoutPool(category: string): { pool: string[]; industryKey: string } {
+  const lower = (category || "").toLowerCase();
+  const POOLS_SIMPLE = [
+    { test: (s: string) => /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading|esthetician|eyebrow|eyelash|skincare|skin care|facial|pedicure|manicure|hairdresser|hairstylist/.test(s), pool: ["elegant", "fresh", "luxury"], key: "beauty" },
+    { test: (s: string) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|coffee.?shop|coffee house|diner|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|fast.?food|takeout|takeaway|deli|sandwich|brunch|breakfast|lunch|dinner/.test(s), pool: ["warm", "fresh", "modern"], key: "food" },
+    { test: (s: string) => /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|plumbing|carpenter|carpentry|painter|painting|construction|renovation|installation|tischler|fliesenleger|electrician|electrical|hvac|heating|cooling|air.?condition|masonry|concrete|drywall|flooring|tile|insulation|waterproof|window|door|fence|deck|patio|siding|gutter|handyman|remodel/.test(s), pool: ["bold", "trust", "modern"], key: "construction" },
+    { test: (s: string) => /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire|auto.?repair|auto.?body|auto.?service|car.?wash|car.?dealer|dealership|transmission|oil.?change|brake|exhaust|collision|towing|used.?car|new.?car/.test(s), pool: ["luxury", "craft", "clean"], key: "automotive" },
+    { test: (s: string) => /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance|athletic|athletics|swimming|pool|tennis|golf|cycling|running|triathlon|weightlifting|zumba|barre|bootcamp|spin|hiit|stretch|flexibility|wellness.?center/.test(s), pool: ["vibrant", "dynamic", "fresh"], key: "fitness" },
+    { test: (s: string) => /arzt|zahnarzt|medizin|doctor|dental|dentist|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker|physician|surgeon|orthopedic|pediatric|gynecolog|dermatolog|ophthalmolog|optometrist|optician|audiolog|cardiolog|neurolog|psychiatr|psycholog|therapist|counselor|mental.?health|urgent.?care|emergency|laboratory|lab|radiology|physical.?therapy|occupational|speech|dietitian|nutritionist|acupuncture|naturopath/.test(s), pool: ["trust", "clean", "natural"], key: "medical" },
+    { test: (s: string) => /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|accounting|tax|finanz|wirtschaft|unternehmensberatung|notariat|immobilien|makler|real.?estate|attorney|lawyer|notary|financial|finance|insurance|investment|mortgage|bank|credit|audit|bookkeeping|cpa|advisor|wealth|asset|property.?management|business.?consulting/.test(s), pool: ["trust", "luxury", "modern"], key: "legal" },
+    { test: (s: string) => /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable|landscaping|landscape|lawn|mowing|tree|arborist|nursery|greenhouse|horticulture|irrigation|outdoor|yard|groundskeeping/.test(s), pool: ["natural", "warm", "fresh"], key: "nature" },
+    { test: (s: string) => /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving|janitorial|maid|housekeeping|carpet.?clean|window.?clean|pressure.?wash|power.?wash|disinfect|sanitiz|exterminator|termite|rodent|storage|self.?storage/.test(s), pool: ["bold", "trust", "clean"], key: "cleaning" },
+    { test: (s: string) => /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup|photographer|photography|videograph|video.?production|graphic|print|signage|advertising|pr.?agency|social.?media|seo|branding|copywriting|content/.test(s), pool: ["modern", "dynamic", "vibrant"], key: "tech" },
+    { test: (s: string) => /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung|driving.?school|music.?school|art.?school|language|childcare|daycare|preschool|kindergarten|montessori|after.?school|college|university/.test(s), pool: ["trust", "fresh", "natural"], key: "education" },
+    { test: (s: string) => /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour|resort|motel|bed.?and.?breakfast|b&b|vacation|rental|venue|banquet|conference|catering.?event|entertainment|nightclub|bar|lounge|brewery|winery|distillery/.test(s), pool: ["luxury", "warm", "elegant"], key: "hospitality" },
+  ];
+  for (const entry of POOLS_SIMPLE) {
+    if (entry.test(lower)) return { pool: entry.pool, industryKey: entry.key };
+  }
+  return { pool: ["clean", "modern", "trust", "fresh"], industryKey: "general" };
 }

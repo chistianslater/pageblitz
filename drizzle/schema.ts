@@ -105,3 +105,13 @@ export const templateUploads = mysqlTable("template_uploads", {
 
 export type TemplateUpload = typeof templateUploads.$inferSelect;
 export type InsertTemplateUpload = typeof templateUploads.$inferInsert;
+
+// Round-robin counter per industry key – ensures consecutive websites in the same
+// industry always get a different layout from the pool.
+export const layoutCounters = mysqlTable("layout_counters", {
+  industryKey: varchar("industryKey", { length: 100 }).primaryKey(),
+  counter: int("counter").notNull().default(0),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LayoutCounter = typeof layoutCounters.$inferSelect;

@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `layout_counters` (\n\t`industryKey` varchar(100) NOT NULL,\n\t`counter` int NOT NULL DEFAULT 0,\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `layout_counters_industryKey` PRIMARY KEY(`industryKey`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute CREATE TABLE `layout_counters` (\n\t`industryKey` varchar(100) NOT NULL,\n\t`counter` int NOT NULL DEFAULT 0,\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `layout_counters_industryKey` PRIMARY KEY(`industryKey`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 500
+}

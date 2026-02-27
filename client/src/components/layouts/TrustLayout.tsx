@@ -84,72 +84,85 @@ function TrustNav({ websiteData, cs, businessPhone }: { websiteData: WebsiteData
 
 function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessPhone }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessPhone?: string | null }) {
   return (
-    <>
-      {/* Centered headline section */}
-      <section style={{ backgroundColor: "#f7f9fc", padding: "5rem 0 3rem", textAlign: "center" }}>
-        <div className="max-w-4xl mx-auto px-6">
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: `${cs.primary}12`, border: `1px solid ${cs.primary}30`, padding: "0.4rem 1.2rem", marginBottom: "2rem" }}>
-            <Shield className="h-3.5 w-3.5" style={{ color: cs.primary }} />
-            <span style={{ fontSize: "0.75rem", color: cs.primary, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>Vertrauen seit Jahren</span>
-          </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#1a2332", lineHeight: 1.2, marginBottom: "1.5rem", letterSpacing: "-0.02em" }} className="hero-animate-headline">
-            {section.headline}
-          </h1>
-          {section.subheadline && (
-            <p style={{ fontSize: "1.15rem", color: "#5a6a7e", lineHeight: 1.7, maxWidth: "600px", margin: "0 auto 2.5rem" }}>{section.subheadline}</p>
-          )}
-          <div className="flex flex-wrap justify-center gap-4">
-            <a href="#kontakt" onClick={showActivateButton ? onActivate : undefined}
-              style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
-              className="btn-premium transition-opacity">
-              {section.ctaText || "Jetzt anfragen"} <ArrowRight className="h-4 w-4" />
-            </a>
-            {businessPhone && (
-              <a href={`tel:${businessPhone}`}
-                style={{ backgroundColor: "#fff", color: "#1a2332", padding: "0.9rem 2rem", fontSize: "1rem", fontWeight: 600, border: "2px solid #1a2332", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
-                className="hover:bg-gray-50 transition-colors">
-                <Phone className="h-4 w-4" /> Direkt anrufen
-              </a>
-            )}
-          </div>
-          {(websiteData.googleRating || websiteData.googleReviewCount) && (
-            <div className="mt-6 flex justify-center">
-              <GoogleRatingBadge rating={websiteData.googleRating ?? undefined} reviewCount={websiteData.googleReviewCount ?? undefined} variant="light" />
-            </div>
-          )}
+    <section style={{ position: "relative", minHeight: "92vh", display: "flex", overflow: "hidden" }}>
+      {/* LEFT: Dark panel with text – 55% width */}
+      <div style={{
+        position: "relative",
+        zIndex: 2,
+        width: "55%",
+        backgroundColor: "#1a2332",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "5rem 4rem 5rem 6%",
+        clipPath: "polygon(0 0, 100% 0, 88% 100%, 0 100%)",
+      }}>
+        {/* Accent line */}
+        <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, marginBottom: "2rem" }} />
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.5rem" }}>
+          <Shield className="h-3.5 w-3.5" style={{ color: cs.primary }} />
+          <span style={{ fontSize: "0.72rem", color: cs.primary, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Vertrauen seit Jahren</span>
         </div>
-      </section>
-
-      {/* Full-width photo band */}
-      <div style={{ height: "380px", overflow: "hidden", position: "relative" }}>
-        <img src={heroImageUrl} alt={websiteData.businessName} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
-        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, ${cs.primary}60 0%, transparent 50%)` }} />
-        {showActivateButton && (
-          <div style={{ position: "absolute", bottom: "2rem", right: "2rem" }}>
-            <button onClick={onActivate} style={{ backgroundColor: "#fff", color: cs.primary, padding: "0.8rem 2rem", fontWeight: 700, fontSize: "0.9rem", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>
-              Website aktivieren
-            </button>
+        <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.4rem, 4.5vw, 4rem)", fontWeight: 700, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: "1.5rem" }} className="hero-animate-headline">
+          {section.headline}
+        </h1>
+        {section.subheadline && (
+          <p style={{ fontSize: "1.05rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.75, maxWidth: "420px", marginBottom: "0.75rem" }}>{section.subheadline}</p>
+        )}
+        {section.content && (
+          <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: "400px", marginBottom: "2.5rem" }}>{section.content}</p>
+        )}
+        {(websiteData.googleRating || websiteData.googleReviewCount) && (
+          <div style={{ marginBottom: "2rem" }}>
+            <GoogleRatingBadge rating={websiteData.googleRating ?? undefined} reviewCount={websiteData.googleReviewCount ?? undefined} variant="dark" starColor={cs.primary} />
           </div>
         )}
-      </div>
-
-      {/* Stats bar */}
-      <div style={{ backgroundColor: "#1a2332", padding: "2rem 0" }}>
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            { num: "100%", label: "Diskretion" },
-            { num: "24h", label: "Reaktionszeit" },
-            { num: "15+", label: "Jahre Erfahrung" },
-            { num: "500+", label: "Zufriedene Mandanten" },
-          ].map((stat, i) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+          <a href="#kontakt" onClick={showActivateButton ? onActivate : undefined}
+            style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2.2rem", fontSize: "0.95rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem", letterSpacing: "0.02em" }}
+            className="btn-premium transition-opacity hero-animate-cta">
+            {section.ctaText || "Jetzt anfragen"} <ArrowRight className="h-4 w-4" />
+          </a>
+          {businessPhone && (
+            <a href={`tel:${businessPhone}`}
+              style={{ backgroundColor: "transparent", color: "rgba(255,255,255,0.85)", padding: "0.9rem 2rem", fontSize: "0.95rem", fontWeight: 600, border: "1px solid rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+              className="hover:border-white transition-colors hero-animate-cta">
+              <Phone className="h-4 w-4" /> {businessPhone}
+            </a>
+          )}
+        </div>
+        {/* Stats row at bottom */}
+        <div style={{ display: "flex", gap: "2.5rem", marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+          {["15+ Jahre", "500+ Projekte", "100% Qualität"].map((s, i) => (
             <div key={i}>
-              <div style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 700, color: cs.primary }}>{stat.num}</div>
-              <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "0.25rem" }}>{stat.label}</div>
+              <div style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: cs.primary }}>{s.split(" ")[0]}</div>
+              <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.split(" ").slice(1).join(" ")}</div>
             </div>
           ))}
         </div>
+        {showActivateButton && (
+          <button onClick={onActivate} style={{ marginTop: "1.5rem", backgroundColor: "rgba(255,255,255,0.1)", color: "#fff", padding: "0.7rem 1.5rem", fontSize: "0.85rem", fontWeight: 600, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", alignSelf: "flex-start" }}
+            className="hover:bg-white hover:text-gray-900 transition-colors">
+            Website aktivieren
+          </button>
+        )}
       </div>
-    </>
+
+      {/* RIGHT: Full-bleed photo – 45% + overlap */}
+      <div style={{
+        position: "absolute",
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: "50%",
+        zIndex: 1,
+      }}>
+        <img src={heroImageUrl} alt={websiteData.businessName}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+          className="hero-animate-image" />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #1a2332 0%, transparent 30%)" }} />
+      </div>
+    </section>
   );
 }
 
