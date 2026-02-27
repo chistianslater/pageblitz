@@ -388,3 +388,9 @@
 - [x] Branding-Schritte (Farbe + Logo) an den Anfang des Onboardings verschieben (nach Welcome)
 - [x] Live-Vorschau: Farbauswahl ändert Preview sofort in Echtzeit (kein Weiter-Klick nötig)
 - [x] Live-Vorschau: Font-Logo-Auswahl ändert Navbar/Hero-Logo sofort in Echtzeit
+
+## Chat & Onboarding Verbesserungen (Feb 27 2026 – Runde 2)
+- [x] Wort-für-Wort-Tipp-Animation für Bot-Nachrichten (menschlicherer Effekt)
+- [x] Sektionen-Ausblenden-Schritt vor Checkout (Kunde klickt Bereiche an zum Deaktivieren)
+- [x] Echte Google-Rezensionen aus GMB API statt Fake-Testimonials
+- [x] MacBook-Mockup Scroll-Clipping fix (Footer/Impressum vollständig sichtbar)

@@ -683,7 +683,7 @@ export const appRouter = router({
           try {
             const details = await makeRequest<PlaceDetailsResult>(
               "/maps/api/place/details/json",
-              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types" }
+              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews" }
             );
             const hasWebsite = !!(details.result?.website);
             const category = place.types?.[0]?.replace(/_/g, " ") || input.query;
@@ -937,6 +937,29 @@ export const appRouter = router({
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
+        // Inject real Google reviews into testimonials section if available
+        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        if (realReviews && realReviews.length >= 3 && websiteData.sections) {
+          const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
+          if (testimonialsSection) {
+            const topReviews = realReviews
+              .filter((r) => r.text && r.text.length >= 50)
+              .sort((a, b) => b.rating - a.rating)
+              .slice(0, 5)
+              .map((r) => ({
+                title: r.text.slice(0, 60) + (r.text.length > 60 ? "…" : ""),
+                description: r.text,
+                author: r.author_name,
+                rating: r.rating,
+                isRealReview: true,
+              }));
+            if (topReviews.length >= 2) {
+              testimonialsSection.items = topReviews;
+              testimonialsSection.isRealReviews = true;
+            }
+          }
+        }
+
         // Sanitize designTokens: ensure enum values are valid
         if (websiteData.designTokens) {
           const dt = websiteData.designTokens;
@@ -1078,6 +1101,29 @@ export const appRouter = router({
         // Inject real Google rating data
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
+
+        // Inject real Google reviews into testimonials section if available
+        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        if (realReviews && realReviews.length >= 3 && websiteData.sections) {
+          const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
+          if (testimonialsSection) {
+            const topReviews = realReviews
+              .filter((r) => r.text && r.text.length >= 50)
+              .sort((a, b) => b.rating - a.rating)
+              .slice(0, 5)
+              .map((r) => ({
+                title: r.text.slice(0, 60) + (r.text.length > 60 ? "…" : ""),
+                description: r.text,
+                author: r.author_name,
+                rating: r.rating,
+                isRealReview: true,
+              }));
+            if (topReviews.length >= 2) {
+              testimonialsSection.items = topReviews;
+              testimonialsSection.isRealReviews = true;
+            }
+          }
+        }
 
         // Sanitize designTokens: ensure enum values are valid
         if (websiteData.designTokens) {

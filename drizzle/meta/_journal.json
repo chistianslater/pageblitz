@@ -43,6 +43,13 @@
       "when": 1772201445334,
       "tag": "0005_fancy_omega_red",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1772217236564,
+      "tag": "0006_naive_moonstone",
+      "breakpoints": true
     }
   ]
 }

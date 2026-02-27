@@ -55,6 +55,7 @@ type ChatStep =
   | "addons"
   | "subpages"
   | "email"
+  | "hideSections"
   | "preview"
   | "checkout";
 
@@ -142,6 +143,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
+  const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set<string>());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -210,17 +212,35 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // ── Bot message helper ──────────────────────────────────────────────────
+  // ── Bot message helper (word-by-word typing animation) ─────────────────
   const addBotMessage = useCallback((content: string, delay = 600) => {
     return new Promise<void>((resolve) => {
       setIsTyping(true);
+      // Show 3-dot indicator for `delay` ms, then start word-by-word typing
       setTimeout(() => {
-        setIsTyping(false);
+        const msgId = genId();
+        const words = content.split(" ");
+        // Insert empty message first
         setMessages((prev) => [
           ...prev,
-          { id: genId(), role: "bot", content, timestamp: Date.now() },
+          { id: msgId, role: "bot", content: "", timestamp: Date.now() },
         ]);
-        resolve();
+        // Type word by word
+        const WPM = 280; // words per minute
+        const msPerWord = Math.max(20, Math.min(60000 / WPM, 80));
+        let wordIdx = 0;
+        const interval = setInterval(() => {
+          wordIdx++;
+          const partial = words.slice(0, wordIdx).join(" ");
+          setMessages((prev) =>
+            prev.map((m) => (m.id === msgId ? { ...m, content: partial } : m))
+          );
+          if (wordIdx >= words.length) {
+            clearInterval(interval);
+            setIsTyping(false);
+            resolve();
+          }
+        }, msPerWord);
       }, delay);
     });
   }, []);
@@ -547,6 +567,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "subpages":
           // These are handled by the interactive UI below
           break;
+        case "hideSections":
+          // handled by interactive UI
+          break;
         case "preview":
           addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
           break;
@@ -597,6 +620,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (data.businessName) patched.businessName = data.businessName;
     if (data.tagline) patched.tagline = data.tagline;
     if (data.description) patched.description = data.description;
+
+    // Filter hidden sections
+    if (hiddenSections.size > 0) {
+      patched.sections = patched.sections.filter((s) => !hiddenSections.has(s.type));
+    }
 
     // Patch sections
     patched.sections = patched.sections.map((section) => {
@@ -1088,6 +1116,78 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     Weiter <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "hideSections" && (
+              <div className="ml-9 space-y-2">
+                {(() => {
+                  const base = siteData?.website?.websiteData as any;
+                  const allSections: Array<{ type: string; label: string; emoji: string }> = (base?.sections || [])
+                    .filter((s: any) => s.type !== "hero")
+                    .map((s: any) => {
+                      const labels: Record<string, { label: string; emoji: string }> = {
+                        about: { label: "Über uns", emoji: "👤" },
+                        services: { label: "Leistungen", emoji: "🔧" },
+                        testimonials: { label: "Kundenstimmen", emoji: "⭐" },
+                        gallery: { label: "Bildergalerie", emoji: "🖼️" },
+                        contact: { label: "Kontaktformular", emoji: "📬" },
+                        cta: { label: "Call-to-Action", emoji: "🎯" },
+                        features: { label: "Vorteile", emoji: "✅" },
+                        faq: { label: "FAQ", emoji: "❓" },
+                        team: { label: "Team", emoji: "👥" },
+                      };
+                      return { type: s.type, ...(labels[s.type] || { label: s.type, emoji: "📄" }) };
+                    });
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        {allSections.map((sec) => {
+                          const isHidden = hiddenSections.has(sec.type);
+                          return (
+                            <button
+                              key={sec.type}
+                              onClick={() => {
+                                setHiddenSections((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(sec.type)) next.delete(sec.type);
+                                  else next.add(sec.type);
+                                  return next;
+                                });
+                              }}
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-xs font-medium transition-all text-left ${
+                                isHidden
+                                  ? "border-red-500/60 bg-red-900/30 text-red-300 line-through opacity-60"
+                                  : "border-slate-600 bg-slate-700/40 text-slate-200 hover:border-slate-500"
+                              }`}
+                            >
+                              <span>{sec.emoji}</span>
+                              <span>{sec.label}</span>
+                              {isHidden && <span className="ml-auto text-red-400">✕</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {hiddenSections.size > 0 && (
+                        <p className="text-xs text-amber-400/80 mt-1">
+                          {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – du kannst sie jederzeit wieder aktivieren.
+                        </p>
+                      )}
+                      <button
+                        disabled={isTyping}
+                        onClick={async () => {
+                          if (isTyping) return;
+                          const hidden = Array.from(hiddenSections);
+                          addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
+                          await advanceToStep("hideSections");
+                        }}
+                        className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+                      >
+                        Weiter <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  );
+                })()}
               </div>
             )}
 

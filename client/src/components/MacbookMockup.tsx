@@ -34,23 +34,22 @@ export default function MacbookMockup({ children, label }: Props) {
     return () => ro.disconnect();
   }, []);
 
+  const viewportH = Math.round(DESKTOP_WIDTH * ASPECT_RATIO);
+  const scaledH = Math.round(viewportH * scale);
+
   // Forward wheel events: divide delta by scale so 1px of wheel = 1px of real scroll
   const handleWheel = useCallback(
     (e: React.WheelEvent<HTMLDivElement>) => {
       e.preventDefault();
       const inner = innerRef.current;
       if (!inner) return;
-      // The inner content height in scaled pixels
-      const innerContentH = inner.scrollHeight * scale;
-      const visibleH = Math.round(DESKTOP_WIDTH * ASPECT_RATIO * scale);
-      const maxScroll = Math.max(0, innerContentH - visibleH);
+      // inner.scrollHeight is in unscaled (DESKTOP_WIDTH) pixels
+      // The visible viewport in unscaled pixels is viewportH
+      const maxScroll = Math.max(0, inner.scrollHeight - viewportH);
       setScrollTop((prev) => Math.max(0, Math.min(prev + e.deltaY / scale, maxScroll)));
     },
-    [scale]
+    [scale, viewportH]
   );
-
-  const viewportH = Math.round(DESKTOP_WIDTH * ASPECT_RATIO);
-  const scaledH = Math.round(viewportH * scale);
 
   return (
     <div className="flex flex-col w-full select-none px-8 py-10">

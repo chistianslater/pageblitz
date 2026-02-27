@@ -27,6 +27,7 @@ export const businesses = mysqlTable("businesses", {
   category: varchar("category", { length: 255 }),
   rating: decimal("rating", { precision: 2, scale: 1 }),
   reviewCount: int("reviewCount").default(0),
+  googleReviews: json("googleReviews"),
   openingHours: json("openingHours"),
   lat: decimal("lat", { precision: 10, scale: 7 }),
   lng: decimal("lng", { precision: 10, scale: 7 }),
