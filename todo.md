@@ -343,3 +343,33 @@
 - [x] Hero-Section: tagline → headline, description → subheadline
 - [x] About-Section: description → content, businessName → headline
 - [x] Services-Section: topServices → items (wenn ausgefüllt)
+
+## Onboarding Visual Branding (Runde 15)
+- [ ] Onboarding-Schritt: Hauptfarbe auswählen (Farbpalette mit 12 Presets + Custom Hex)
+- [ ] Onboarding-Schritt: Logo hochladen ODER Font-Logo-Builder (3 Schriftart-Optionen)
+- [ ] Font-Logo-Builder: Firmenname in 3 verschiedenen Schriften rendern (z.B. Playfair, Oswald, Montserrat)
+- [ ] Logo/Farbe in liveWebsiteData einfließen lassen (Echtzeit-Preview)
+
+## Kontaktformular als Upsell im Preview (Runde 15)
+- [ ] Kontaktformular-Section in allen Layouts: ausgegraut/gesperrt anzeigen wenn addOnContactForm=false
+- [ ] Upsell-Badge "+4,90 €/Monat" auf gesperrter Kontaktformular-Section
+- [ ] Section verschwindet wenn addOnContactForm im Onboarding nicht aktiviert wird
+
+## Rechtliche Einwilligung beim Checkout (Runde 15)
+- [ ] Checkbox: "Ich bestätige, dass alle Angaben korrekt sind und übernehme die Verantwortung für Impressum & Datenschutz"
+- [ ] Checkout-Button erst aktiv wenn Checkbox angehakt
+- [ ] Einwilligungstext mit Link zu AGB/Haftungsausschluss
+
+## Visueller Sektions-Editor (Runde 15)
+- [ ] Klickbare Sektionen in der Website-Preview (Hover-Highlight + Edit-Overlay)
+- [ ] Klick auf Sektion öffnet Chat-Eingabe mit Kontext ("Was soll in dieser Sektion geändert werden?")
+- [ ] X-Button pro Sektion zum Entfernen
+- [ ] "+ Sektion hinzufügen" Button zwischen Sektionen
+- [ ] Chat-Antwort patcht die entsprechende Sektion in liveWebsiteData
+
+## Branding & Legal Features (Feb 27 2026)
+- [x] Branding-Schritt: Hauptfarbe (12 Presets + Hex-Eingabe)
+- [x] Branding-Schritt: Logo-Builder (3 Schriftarten als Font-Logo)
+- [x] Kontaktformular-Upsell: ausgegraut in Preview mit +4,90 € Badge wenn nicht aktiviert
+- [x] Haftungs-Checkbox beim Checkout (Nutzer bestätigt Verantwortung für Impressum-Daten)
+- [ ] Visueller Sektions-Editor (post-purchase, im Kunden-Dashboard)

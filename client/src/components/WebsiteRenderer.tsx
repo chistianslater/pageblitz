@@ -42,6 +42,8 @@ interface WebsiteRendererProps {
   businessEmail?: string | null;
   openingHours?: string[];
   slug?: string | null;
+  /** When true, the contact section is shown as locked/upsell overlay */
+  contactFormLocked?: boolean;
 }
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
@@ -214,6 +216,7 @@ export default function WebsiteRenderer({
   businessEmail,
   openingHours = [],
   slug,
+  contactFormLocked = false,
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
   const cs: ColorScheme = colorScheme && colorScheme.primary
@@ -255,6 +258,7 @@ export default function WebsiteRenderer({
     businessEmail,
     openingHours,
     slug,
+    contactFormLocked,
   };
 
   // Build CSS custom properties string – always set at least the font defaults
@@ -287,9 +291,47 @@ export default function WebsiteRenderer({
       ref={(el) => {
         if (el) el.setAttribute("style", tokenStyle);
       }}
-      style={{ display: "block", minHeight: "100vh" }}
+      style={{ display: "block", minHeight: "100vh", position: "relative" }}
     >
       {layout}
+      {contactFormLocked && websiteData.sections.some(s => s.type === "contact") && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "320px",
+            background: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.95) 100%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            paddingBottom: "3rem",
+            zIndex: 10,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ textAlign: "center", pointerEvents: "auto" }}>
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              backgroundColor: "rgba(59,130,246,0.15)",
+              border: "1px solid rgba(59,130,246,0.4)",
+              borderRadius: "9999px",
+              padding: "0.4rem 1rem",
+              marginBottom: "0.75rem",
+            }}>
+              <span style={{ fontSize: "0.75rem", color: "#93c5fd", fontWeight: 600 }}>🔒 Kontaktformular</span>
+              <span style={{ fontSize: "0.75rem", color: "#60a5fa", backgroundColor: "rgba(59,130,246,0.2)", padding: "0.1rem 0.5rem", borderRadius: "9999px" }}>+4,90 €/Monat</span>
+            </div>
+            <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)", margin: 0 }}>
+              Im nächsten Schritt aktivierbar
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

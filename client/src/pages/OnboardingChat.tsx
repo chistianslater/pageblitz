@@ -29,6 +29,8 @@ interface OnboardingData {
   legalEmail: string;
   legalPhone: string;
   legalVatId: string;
+  brandColor: string;
+  brandLogo: string; // base64 or "font:<fontName>"
   addOnContactForm: boolean;
   addOnGallery: boolean;
   subPages: SubPage[];
@@ -48,6 +50,8 @@ type ChatStep =
   | "legalZipCity"
   | "legalEmail"
   | "legalVat"
+  | "brandColor"
+  | "brandLogo"
   | "addons"
   | "subpages"
   | "email"
@@ -78,6 +82,8 @@ const STEP_ORDER: ChatStep[] = [
   "legalZipCity",
   "legalEmail",
   "legalVat",
+  "brandColor",
+  "brandLogo",
   "addons",
   "subpages",
   "email",
@@ -133,6 +139,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [chatHidden, setChatHidden] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [legalConsent, setLegalConsent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -151,6 +158,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalEmail: "",
     legalPhone: "",
     legalVatId: "",
+    brandColor: "",
+    brandLogo: "",
     addOnContactForm: false,
     addOnGallery: false,
     subPages: [],
@@ -284,6 +293,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
         case "legalVat":
           return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach „Nein" oder lass das Feld leer.`;
+        case "brandColor":
+          return `Jetzt zum Look deiner Website! 🎨\n\nWelche **Hauptfarbe** soll deine Website haben? Wähle unten eine Farbe aus oder gib einen eigenen Hex-Code ein.`;
+        case "brandLogo":
+          return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "addons":
           return `Möchtest du optionale Extras zu deiner Website hinzufügen?\n\n• **Kontaktformular** – Kunden können direkt anfragen (+4,90 €/Monat)\n• **Bildergalerie** – Zeig deine Projekte in einer schönen Galerie (+4,90 €/Monat)`;
         case "subpages":
@@ -453,6 +466,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
           break;
+        case "brandColor":
+        case "brandLogo":
         case "services":
         case "addons":
         case "subpages":
@@ -743,6 +758,98 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </div>
             )}
 
+            {!isTyping && currentStep === "brandColor" && (
+              <div className="ml-9 space-y-3">
+                <div className="grid grid-cols-6 gap-2">
+                  {[
+                    { label: "Blau", hex: "#2563EB" },
+                    { label: "Dunkelblau", hex: "#1E3A5F" },
+                    { label: "Grün", hex: "#16A34A" },
+                    { label: "Dunkelgrün", hex: "#14532D" },
+                    { label: "Rot", hex: "#DC2626" },
+                    { label: "Orange", hex: "#EA580C" },
+                    { label: "Gelb", hex: "#CA8A04" },
+                    { label: "Lila", hex: "#7C3AED" },
+                    { label: "Pink", hex: "#DB2777" },
+                    { label: "Türkis", hex: "#0891B2" },
+                    { label: "Grau", hex: "#374151" },
+                    { label: "Schwarz", hex: "#111827" },
+                  ].map((color) => (
+                    <button
+                      key={color.hex}
+                      title={color.label}
+                      onClick={() => setData((p) => ({ ...p, brandColor: color.hex }))}
+                      className={`w-full aspect-square rounded-lg border-2 transition-all ${data.brandColor === color.hex ? "border-white scale-110 shadow-lg" : "border-transparent hover:border-slate-400"}`}
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <div
+                    className="w-8 h-8 rounded-lg border border-slate-500 flex-shrink-0"
+                    style={{ backgroundColor: data.brandColor || "#2563EB" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="#2563EB"
+                    value={data.brandColor}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) setData((p) => ({ ...p, brandColor: v }));
+                    }}
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 font-mono"
+                  />
+                </div>
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const color = data.brandColor || "#2563EB";
+                    addUserMessage(`Meine Hauptfarbe: ${color} ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("brandColor"), { brandColor: color });
+                    await advanceToStep("brandLogo");
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "brandLogo" && (
+              <div className="ml-9 space-y-3">
+                <p className="text-slate-400 text-xs">Wähle eine Schriftart für deinen Firmennamen als Logo:</p>
+                {[
+                  { font: "Playfair Display", label: "Elegant & Klassisch", style: { fontFamily: "'Playfair Display', serif", fontWeight: 700 } },
+                  { font: "Oswald", label: "Stark & Modern", style: { fontFamily: "'Oswald', sans-serif", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" as const } },
+                  { font: "Montserrat", label: "Sauber & Professionell", style: { fontFamily: "'Montserrat', sans-serif", fontWeight: 700, letterSpacing: "0.02em" } },
+                ].map((opt) => (
+                  <button
+                    key={opt.font}
+                    onClick={() => setData((p) => ({ ...p, brandLogo: `font:${opt.font}` }))}
+                    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-blue-500 bg-blue-500/10" : "border-slate-600 bg-slate-700/40 hover:border-slate-500"}`}
+                  >
+                    <p className="text-white text-lg mb-1" style={opt.style}>{data.businessName || "Mein Unternehmen"}</p>
+                    <p className="text-slate-400 text-xs">{opt.label}</p>
+                  </button>
+                ))}
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const logo = data.brandLogo || "font:Montserrat";
+                    const fontName = logo.replace("font:", "");
+                    addUserMessage(`Schriftart gewählt: ${fontName} ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
+                    await advanceToStep("addons");
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             {!isTyping && currentStep === "addons" && (
               <div className="ml-9 space-y-2">
                 {[
@@ -888,10 +995,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <span>{totalPrice()} €/Monat</span>
                   </div>
                 </div>
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div
+                    onClick={() => setLegalConsent((v) => !v)}
+                    className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      legalConsent ? "border-green-500 bg-green-500" : "border-slate-500 bg-transparent group-hover:border-slate-400"
+                    }`}
+                  >
+                    {legalConsent && <Check className="w-3 h-3 text-white" />}
+                  </div>
+                  <span className="text-xs text-slate-400 leading-relaxed" onClick={() => setLegalConsent((v) => !v)}>
+                    Ich bestätige, dass alle Angaben (insbesondere Impressum & Datenschutz) korrekt und vollständig sind. Ich übernehme die alleinige Verantwortung für die Richtigkeit dieser Daten. Pageblitz haftet nicht für fehlerhafte oder unvollständige Angaben.
+                  </span>
+                </label>
                 <button
                   onClick={handleCheckout}
-                  disabled={completeMutation.isPending || checkoutMutation.isPending}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold px-5 py-4 rounded-xl transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 text-base disabled:opacity-50"
+                  disabled={completeMutation.isPending || checkoutMutation.isPending || !legalConsent}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold px-5 py-4 rounded-xl transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {completeMutation.isPending || checkoutMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -911,7 +1031,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
 
           {/* Input area */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome"].includes(currentStep) && (
+          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "brandColor", "brandLogo"].includes(currentStep) && (
             <div className="px-4 py-4 border-t border-slate-700/50">
               <div className="flex gap-2">
                 {/* AI generate button for text fields */}
@@ -1008,6 +1128,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 businessEmail={business?.email || undefined}
                 openingHours={business?.openingHours as string[] | undefined}
                 slug={slug}
+                contactFormLocked={!data.addOnContactForm}
               />
             </MacbookMockup>
           ) : (
