@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, MapPin, Phone, Globe, Star, Save, Loader2, CheckCircle, XCircle, Building2 } from "lucide-react";
+import { Search, MapPin, Phone, Globe, Star, Save, Loader2, CheckCircle, XCircle, Building2, AlertTriangle, Clock, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SearchPage() {
@@ -134,7 +134,7 @@ export default function SearchPage() {
                     <TableHead>Adresse</TableHead>
                     <TableHead>Telefon</TableHead>
                     <TableHead>Bewertung</TableHead>
-                    <TableHead>Website</TableHead>
+                    <TableHead>Website / Lead-Typ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -180,15 +180,7 @@ export default function SearchPage() {
                         ) : "–"}
                       </TableCell>
                       <TableCell>
-                        {r.hasWebsite ? (
-                          <Badge variant="outline" className="text-emerald-400 border-emerald-400/30">
-                            <CheckCircle className="h-3 w-3 mr-1" /> Ja
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-red-400 border-red-400/30">
-                            <XCircle className="h-3 w-3 mr-1" /> Nein
-                          </Badge>
-                        )}
+                        <LeadTypeBadge hasWebsite={r.hasWebsite} leadType={r.leadType} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -198,6 +190,41 @@ export default function SearchPage() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+type LeadType = "no_website" | "outdated_website" | "poor_website" | "unknown";
+
+function LeadTypeBadge({ hasWebsite, leadType }: { hasWebsite: boolean; leadType?: LeadType }) {
+  if (!hasWebsite || leadType === "no_website") {
+    return (
+      <Badge variant="outline" className="text-red-400 border-red-400/30 gap-1">
+        <XCircle className="h-3 w-3" /> Keine Website
+      </Badge>
+    );
+  }
+  if (leadType === "outdated_website") {
+    return (
+      <Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1">
+        <Clock className="h-3 w-3" /> Veraltete Website
+      </Badge>
+    );
+  }
+  if (leadType === "poor_website") {
+    return (
+      <Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1">
+        <TrendingDown className="h-3 w-3" /> Schlechte Website
+      </Badge>
+    );
+  }
+  // hasWebsite but leadType === "unknown" – not yet analyzed
+  return (
+    <div className="flex flex-col gap-1">
+      <Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1">
+        <CheckCircle className="h-3 w-3" /> Hat Website
+      </Badge>
+      <span className="text-xs text-muted-foreground">Noch nicht analysiert</span>
     </div>
   );
 }

@@ -515,3 +515,7 @@
 - [x] Backend: deleteBusiness in db.ts (löscht auch zugehörige Websites + Onboarding-Daten)
 - [x] Backend: adminProcedure business.delete im Router
 - [x] Frontend: Löschen-Button in der Unternehmensliste (WebsitesPage) mit Bestätigungsdialog
+
+## Lead-Einstufung sichtbar machen (Feb 28 2026)
+- [x] SearchPage: leadType-Badge in der Suchergebnistabelle anzeigen (keine Website / alte Website / schlechte Website / unbekannt)
+- [x] WebsitesPage: leadType-Badge in der Unternehmensliste anzeigen

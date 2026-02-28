@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2 } from "lucide-react";
+import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle, Clock, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
@@ -72,7 +72,7 @@ export default function WebsitesPage() {
                     <TableHead>Unternehmen</TableHead>
                     <TableHead>Branche</TableHead>
                     <TableHead>Bewertung</TableHead>
-                    <TableHead>Hat Website</TableHead>
+                    <TableHead>Lead-Typ</TableHead>
                     <TableHead className="text-right">Aktion</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -93,9 +93,7 @@ export default function WebsitesPage() {
                         ) : "–"}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={b.hasWebsite ? "text-emerald-400" : "text-red-400"}>
-                          {b.hasWebsite ? "Ja" : "Nein"}
-                        </Badge>
+                        <BusinessLeadTypeBadge hasWebsite={!!b.hasWebsite} leadType={b.leadType} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -642,5 +640,37 @@ function DeleteBusinessDialog({ business }: { business: any }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+type LeadType = "no_website" | "outdated_website" | "poor_website" | "unknown";
+
+function BusinessLeadTypeBadge({ hasWebsite, leadType }: { hasWebsite: boolean; leadType?: string | null }) {
+  const lt = leadType as LeadType | undefined;
+  if (!hasWebsite || lt === "no_website") {
+    return (
+      <Badge variant="outline" className="text-red-400 border-red-400/30 gap-1">
+        <XCircle className="h-3 w-3" /> Keine Website
+      </Badge>
+    );
+  }
+  if (lt === "outdated_website") {
+    return (
+      <Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1">
+        <Clock className="h-3 w-3" /> Veraltete Website
+      </Badge>
+    );
+  }
+  if (lt === "poor_website") {
+    return (
+      <Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1">
+        <TrendingDown className="h-3 w-3" /> Schlechte Website
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1">
+      <CheckCircle className="h-3 w-3" /> Hat Website
+    </Badge>
   );
 }
