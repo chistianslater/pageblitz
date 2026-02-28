@@ -474,3 +474,6 @@
 
 ## Bugfix: selfService.start Error (Feb 28 2026)
 - [x] Fix: selfService.start wirft 500er – onboarding_responses Spaltennamen waren snake_case statt camelCase (DB-Migration fehlte); Migration ausgeführt, alle 17 Tests bestanden
+
+## Kleinfix (Feb 28 2026)
+- [x] Doppelten Pfeil-Button (Chat ausblenden) im Chat-Header neben Preis-Badge entfernen

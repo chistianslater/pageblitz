@@ -869,14 +869,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <p className="text-amber-300 text-xs font-bold leading-tight">Ab 39 €</p>
               <p className="text-amber-400/70 text-[10px] leading-tight">/Monat</p>
             </div>
-            {/* Hide chat toggle */}
-            <button
-              onClick={() => setChatHidden(true)}
-              className="w-7 h-7 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center text-slate-400 hover:text-white transition-colors flex-shrink-0"
-              title="Chat ausblenden"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+
           </div>
 
           {/* Messages + Input: flex column, messages scroll, input sticky */}
