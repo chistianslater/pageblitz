@@ -150,7 +150,7 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
 
 function CleanAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: "#f8fafc", padding: "5rem 0" }}>
+    <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
         <div>
           <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, marginBottom: "1rem" }}>Über uns</p>
@@ -186,7 +186,7 @@ function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: "#f8fafc", borderRadius: "1rem", padding: "2rem", border: `1px solid ${cs.primary}15` }} className="hover:shadow-md transition-shadow card-premium">
+            <div key={i} style={{ backgroundColor: cs.surface, borderRadius: "1rem", padding: "2rem", border: `1px solid ${cs.primary}15` }} className="hover:shadow-md transition-shadow card-premium">
               <div style={{ width: "3rem", height: "3rem", borderRadius: "0.75rem", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
                 <Heart className="h-5 w-5" style={{ color: cs.primary }} />
               </div>
@@ -203,7 +203,7 @@ function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
 function CleanTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#f8fafc", padding: "5rem 0" }}>
+    <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text, textAlign: "center", marginBottom: "3rem" }}>{section.headline}</h2>
         <div className="grid md:grid-cols-3 gap-6">
@@ -250,7 +250,7 @@ function CleanFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
 
 function CleanContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[] }) {
   return (
-    <section id="kontakt" style={{ backgroundColor: "#f8fafc", padding: "5rem 0" }}>
+    <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
         <div>
           <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, marginBottom: "1rem" }}>Kontakt</p>

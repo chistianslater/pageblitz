@@ -2203,16 +2203,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             <MacbookMockup label="Live-Vorschau deiner Website" innerRef={previewInnerRef}>
               <WebsiteRenderer
                 websiteData={liveWebsiteData}
-                colorScheme={data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor)
-                  ? { 
-                      ...colorScheme, 
-                      primary: data.brandColor, 
-                      accent: data.brandColor,
-                      ...(data.brandSecondaryColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandSecondaryColor)
-                        ? { secondary: data.brandSecondaryColor }
-                        : {})
-                    } as any
-                  : colorScheme}
+                colorScheme={{
+                    ...colorScheme,
+                    ...(data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor)
+                      ? { primary: data.brandColor, accent: data.brandColor }
+                      : {}),
+                    ...(data.brandSecondaryColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandSecondaryColor)
+                      ? { secondary: data.brandSecondaryColor }
+                      : {}),
+                  } as any}
                 heroImageUrl={data.heroPhotoUrl || heroImageUrl}
                 aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
                 layoutStyle={layoutStyle}

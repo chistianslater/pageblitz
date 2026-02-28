@@ -237,11 +237,19 @@ export default function WebsiteRenderer({
   // Merge DB colorScheme with defaults so surface/background/textLight are always defined.
   // User-chosen brandSecondaryColor is stored as colorScheme.secondary → also map to surface
   // so section backgrounds update in real-time during onboarding.
+  // Determine if the user has explicitly chosen a secondary color (not just the DB default).
+  // The user-chosen secondary should be used as the surface/section-background color.
+  // We detect a user override when colorScheme.secondary differs from the defaultCs.secondary.
+  const userSecondary = colorScheme?.secondary && colorScheme.secondary !== defaultCs.secondary
+    ? colorScheme.secondary
+    : null;
   const cs: ColorScheme = colorScheme && colorScheme.primary
     ? {
         ...defaultCs,
         ...colorScheme,
-        surface: colorScheme.secondary || defaultCs.surface,
+        // Map user-chosen secondary to surface so ALL layouts that use cs.surface
+        // immediately reflect the user's color choice.
+        surface: userSecondary || colorScheme.secondary || defaultCs.surface,
       }
     : defaultCs;
   const effectiveHeroImage = heroImageUrl || FALLBACK_IMAGES[effectiveLayout] || FALLBACK_IMAGES.clean;
@@ -310,6 +318,14 @@ export default function WebsiteRenderer({
   let tokenStyle = tokens
     ? buildTokenStyles(tokens, cs)
     : `--site-font-headline: ${fontDefaults.headline}; --site-font-body: ${fontDefaults.body};`;
+
+  // Always inject the surface color as --site-color-surface so layouts without designTokens
+  // can also pick it up. Also override --site-section-bg-2 with the user secondary.
+  tokenStyle += `; --site-color-surface: ${cs.surface}; --site-section-bg-2: ${cs.surface};`;
+  if (userSecondary) {
+    // Explicit user-chosen secondary: also override section-bg-2 for layouts that use it
+    tokenStyle += `; --site-user-secondary: ${userSecondary};`;
+  }
 
   // Real-time headline font override (from onboarding chat selection)
   if (headlineFontOverride) {

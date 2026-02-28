@@ -240,7 +240,7 @@ function TrustAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
 function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section data-section="services" id="leistungen" style={{ padding: "5rem 0", backgroundColor: "#f7f9fc" }}>
+    <section data-section="services" id="leistungen" style={{ padding: "5rem 0", backgroundColor: cs.surface }}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.75rem" }}>{section.headline}</h2>
@@ -346,7 +346,7 @@ function TrustCTA({ section, cs, showActivateButton, onActivate }: { section: We
 
 function TrustContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
   return (
-    <section id="kontakt" style={{ padding: "5rem 0", backgroundColor: "#f7f9fc" }}>
+    <section id="kontakt" style={{ padding: "5rem 0", backgroundColor: cs.surface }}>
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, marginBottom: "1.5rem" }} />
@@ -381,12 +381,12 @@ function TrustContact({ section, cs, phone, address, email, hours }: { section: 
             {[{ label: "Name", type: "text" }, { label: "E-Mail", type: "email" }, { label: "Telefon", type: "tel" }].map(f => (
               <div key={f.label}>
                 <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>{f.label}</label>
-                <input type={f.type} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", backgroundColor: "#f7f9fc" }} />
+                <input type={f.type} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", backgroundColor: cs.surface }} />
               </div>
             ))}
             <div>
               <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>Anliegen</label>
-              <textarea rows={4} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", resize: "vertical", backgroundColor: "#f7f9fc" }} />
+              <textarea rows={4} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", resize: "vertical", backgroundColor: cs.surface }} />
             </div>
             <button style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.9rem", fontWeight: 700, fontSize: "0.95rem", border: "none", cursor: "pointer", width: "100%" }}
               className="btn-premium transition-opacity">

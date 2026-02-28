@@ -557,3 +557,9 @@
 - [x] buildIndustryContext: konkrete Leistungsbeispiele als Seed im Prompt
 - [x] patchWebsiteData: Services mit Branchen-Defaults befüllen wenn keine eigenen angegeben
 - [x] Onboarding complete: Kategorie-Update auch in business-Tabelle schreiben
+
+## Sekundärfarbe Fix (Feb 28 2026)
+- [x] Analyse: Wie wird cs.secondary in Layouts aktuell verwendet?
+- [x] Secondary color als Section-Hintergrund in allen Layouts einbauen (about, features, cta sections)
+- [x] WebsiteRenderer: secondary color korrekt in CSS-Variable --color-secondary mappen
+- [x] Echtzeit-Vorschau: secondary color live patchen wenn Nutzer sie im Onboarding wählt

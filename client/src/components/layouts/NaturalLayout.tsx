@@ -162,7 +162,7 @@ function NaturalHero({ section, cs, heroImageUrl, showActivateButton, onActivate
 
 function NaturalAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: "#f0ece4", padding: "6rem 0" }}>
+    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
         <div style={{ position: "relative" }}>
           <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: "1rem" }} />
@@ -247,7 +247,7 @@ function NaturalFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
   const [open, setOpen] = useState<number | null>(null);
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#f0ece4", padding: "6rem 0" }}>
+    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-3xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>

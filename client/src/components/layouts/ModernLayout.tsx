@@ -156,7 +156,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
 
 function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section data-section="hero" style={{ backgroundColor: "#f8f8f8", padding: "7rem 0" }}>
+    <section data-section="hero" style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           <div style={{ position: "relative" }}>
@@ -307,7 +307,7 @@ function ModernCTA({ section, cs, showActivateButton, onActivate }: { section: W
 
 function ModernContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
   return (
-    <section id="kontakt" style={{ backgroundColor: "#f8f8f8", padding: "7rem 0" }}>
+    <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 grid lg:grid-cols-2 gap-20">
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>

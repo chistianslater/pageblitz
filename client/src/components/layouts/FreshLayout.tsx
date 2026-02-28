@@ -217,7 +217,7 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
 function FreshTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#f5f5f0", padding: "6rem 0" }}>
+    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Was unsere Gäste sagen</span>
@@ -250,7 +250,7 @@ function FreshFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
   const [open, setOpen] = useState<number | null>(null);
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#fafaf8", padding: "6rem 0" }}>
+    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-3xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
@@ -303,7 +303,7 @@ function FreshCTA({ section, cs, showActivateButton, onActivate }: { section: We
 
 function FreshContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
   return (
-    <section id="kontakt" style={{ backgroundColor: "#fafaf8", padding: "6rem 0" }}>
+    <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
