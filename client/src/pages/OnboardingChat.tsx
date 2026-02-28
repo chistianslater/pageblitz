@@ -509,16 +509,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     try {
       switch (currentStep) {
-        case "businessName":
-          if (val) {
+        case "businessName": {
+          const confirmationPattern = /^(ja|j|yes|y|yep|yup|stimmt|ok|okay|klar)$/i;
+          if (val && confirmationPattern.test(val.trim())) {
+            addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
+          } else if (val) {
             addUserMessage(val);
             setData((p) => ({ ...p, businessName: val }));
             await trySaveStep(stepIdx, { businessName: val });
           } else {
-            // Confirmed existing name
-            addUserMessage(`Ja, „${data.businessName}“ stimmt! ✓`);
+            addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
           }
           break;
+        }
         case "tagline":
         case "description":
         case "usp":
