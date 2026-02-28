@@ -493,3 +493,6 @@
 - [x] Quick-Replies nach Auswahl ausblenden (selectedQuickReply State)
 - [x] Dynamische Placeholders je nach Schritt (Tagline, Beschreibung, USP, Zielgruppe etc.)
 - [x] Preiszusammenfassung im Checkout-Schritt (Basis + Add-ons übersichtlich)
+
+## Bug: Preview-Ladezustand (Feb 28 2026)
+- [x] Bug: Preview im OnboardingChat zeigt dauerhaft "Vorschau wird erstellt" – Fix: selfService.generateWebsite wird beim Laden automatisch aufgerufen wenn websiteData fehlt, mit Fortschrittsanzeige (Phasen + Balken)

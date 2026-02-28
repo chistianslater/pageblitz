@@ -1958,6 +1958,105 @@ Kontext: ${input.context}`,
         return { resolved: false, businessName: null, placeId: null };
       }),
 
+    generateWebsite: publicProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        // Already has content – skip re-generation
+        if (website.websiteData) return { success: true, alreadyGenerated: true };
+
+        const business = await getBusinessById(website.businessId);
+        if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
+
+        const category = business.category || "Dienstleistung";
+        const industryContext = buildIndustryContext(category);
+        const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
+        const colorScheme = getIndustryColorScheme(category, business.name);
+        const { pool: layoutPool, industryKey } = getLayoutPool(category);
+        const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
+        const heroImageUrl = getHeroImageUrl(category, business.name);
+        const galleryImages = getGalleryImages(category);
+        const gmbPhotos = business.placeId && !business.placeId.startsWith("self-") ? await getGmbPhotos(business.placeId, 7) : [];
+        const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
+        const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
+        const baseTemplateImageUrls = getTemplateImageUrls(matchingTemplates);
+        const uploadedTemplates = await listTemplateUploadsByPool(industryKey, layoutStyle);
+        const uploadedImageUrls = uploadedTemplates.slice(0, 3).map((t: any) => t.imageUrl);
+        const templateImageUrls = [...uploadedImageUrls, ...baseTemplateImageUrls].slice(0, 5);
+
+        let hoursText = "Nicht angegeben";
+        if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
+          hoursText = (business.openingHours as string[]).join(", ");
+        }
+
+        const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText });
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke." },
+            ...(templateImageUrls.length > 0 ? [{
+              role: "user" as const,
+              content: [
+                { type: "text" as const, text: `DESIGN-REFERENZEN: ${templateImageUrls.length} professionelle Website-Templates als Qualitätsreferenz.` },
+                ...templateImageUrls.map(url => ({ type: "image_url" as const, image_url: { url, detail: "low" as const } }))
+              ]
+            }] : []),
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== "string") throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Generierung fehlgeschlagen" });
+
+        let websiteData: any;
+        try {
+          const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+          websiteData = JSON.parse(cleaned);
+        } catch {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI hat kein valides JSON zurückgegeben" });
+        }
+
+        const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
+        const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
+        if (effectiveGalleryImages.length > 0 && websiteData.sections) {
+          const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
+          if (gallerySection) gallerySection.images = effectiveGalleryImages;
+        }
+        if (business.rating) websiteData.googleRating = parseFloat(business.rating);
+        if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
+
+        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        if (realReviews && realReviews.length >= 3 && websiteData.sections) {
+          const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
+          if (testimonialsSection) {
+            const topReviews = realReviews.filter((r) => r.text && r.text.length >= 50).sort((a, b) => b.rating - a.rating).slice(0, 5).map((r) => ({ title: r.text.slice(0, 60) + (r.text.length > 60 ? "\u2026" : ""), description: r.text, author: r.author_name, rating: r.rating, isRealReview: true }));
+            if (topReviews.length >= 2) { testimonialsSection.items = topReviews; testimonialsSection.isRealReviews = true; }
+          }
+        }
+
+        if (websiteData.designTokens) {
+          const dt = websiteData.designTokens;
+          if (!["none","sm","md","lg","full"].includes(dt.borderRadius)) dt.borderRadius = "md";
+          if (!["none","flat","soft","dramatic","glow"].includes(dt.shadowStyle)) dt.shadowStyle = "soft";
+          if (!["tight","normal","spacious","ultra"].includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
+          if (!["filled","outline","ghost","pill"].includes(dt.buttonStyle)) dt.buttonStyle = "filled";
+          if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
+          if (dt.headlineFont && dt.headlineFont.includes("[")) dt.headlineFont = "Playfair Display";
+          if (dt.bodyFont && dt.bodyFont.includes("[")) dt.bodyFont = "Inter";
+          const FORBIDDEN_BODY_FONTS = ["lora","playfair","merriweather","georgia","cormorant","fraunces","dm serif","crimson","garamond","times","palatino","baskerville","didot"];
+          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = "Inter";
+          if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
+          if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
+          if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
+          if (!dt.cardBackground || dt.cardBackground.includes("[")) dt.cardBackground = colorScheme.surface;
+        }
+
+        await updateWebsite(input.websiteId, { websiteData, colorScheme, industry: category, heroImageUrl: finalHeroImageUrl, layoutStyle });
+        return { success: true, alreadyGenerated: false };
+      }),
+
     start: publicProcedure
       .input(z.object({
         gmbUrl: z.string().optional(), // optional GMB URL

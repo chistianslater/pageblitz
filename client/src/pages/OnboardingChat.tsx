@@ -267,6 +267,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const generateTextMutation = trpc.onboarding.generateText.useMutation();
   const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
+  const generateWebsiteMutation = trpc.selfService.generateWebsite.useMutation();
+  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationPhase, setGenerationPhase] = useState("");
 
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
@@ -470,8 +474,45 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   );
 
   // ── Initialize chat ─────────────────────────────────────────────────────
+  // ── Auto-generate website if websiteData is missing ────────────────────
   useEffect(() => {
-    if (!siteLoading && !initialized) {
+    if (siteLoading || !websiteId || isGeneratingInitialWebsite) return;
+    const hasWebsiteData = !!(siteData?.website?.websiteData);
+    if (!hasWebsiteData) {
+      setIsGeneratingInitialWebsite(true);
+      const phases = [
+        "Analysiere dein Unternehmen...",
+        "Erstelle Texte...",
+        "Generiere Design...",
+        "Finalisiere deine Website...",
+      ];
+      let phaseIdx = 0;
+      setGenerationPhase(phases[0]);
+      setGenerationProgress(10);
+      const phaseInterval = setInterval(() => {
+        phaseIdx = Math.min(phaseIdx + 1, phases.length - 1);
+        setGenerationPhase(phases[phaseIdx]);
+        setGenerationProgress(Math.min(10 + phaseIdx * 22, 88));
+      }, 8000);
+      generateWebsiteMutation.mutateAsync({ websiteId }).then(() => {
+        clearInterval(phaseInterval);
+        setGenerationProgress(100);
+        setGenerationPhase("Website bereit!");
+        setTimeout(() => {
+          setIsGeneratingInitialWebsite(false);
+        }, 800);
+        // Refetch site data
+        window.location.reload();
+      }).catch(() => {
+        clearInterval(phaseInterval);
+        setIsGeneratingInitialWebsite(false);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [siteLoading, websiteId, siteData?.website?.websiteData]);
+
+  useEffect(() => {
+    if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
       const initChat = async () => {
         setCurrentStep("businessCategory");
@@ -479,7 +520,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       };
       initChat();
     }
-  }, [siteLoading, initialized, addBotMessage, getStepPrompt]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt]);
 
   // ── AI text generation ──────────────────────────────────────────────────
   const generateWithAI = async (field: keyof OnboardingData) => {
@@ -820,12 +861,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Render ──────────────────────────────────────────────────────────────
 
-  if (siteLoading) {
+  if (siteLoading || isGeneratingInitialWebsite) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="text-center text-white">
-          <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4 text-blue-400" />
-          <p className="text-slate-300">Deine Website wird vorbereitet...</p>
+        <div className="text-center text-white max-w-sm mx-auto px-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <Loader2 className="h-8 w-8 animate-spin text-white" />
+          </div>
+          <h2 className="text-xl font-bold mb-2">Deine Website wird erstellt</h2>
+          <p className="text-slate-400 text-sm mb-6">{generationPhase || "Bitte warte einen Moment..."}</p>
+          <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div
+              className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-1000"
+              style={{ width: `${generationProgress}%` }}
+            />
+          </div>
+          <p className="text-slate-500 text-xs mt-3">{Math.round(generationProgress)}% abgeschlossen</p>
         </div>
       </div>
     );
