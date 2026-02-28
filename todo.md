@@ -496,3 +496,9 @@
 
 ## Bug: Preview-Ladezustand (Feb 28 2026)
 - [x] Bug: Preview im OnboardingChat zeigt dauerhaft "Vorschau wird erstellt" – Fix: selfService.generateWebsite wird beim Laden automatisch aufgerufen wenn websiteData fehlt, mit Fortschrittsanzeige (Phasen + Balken)
+
+## In-Place-Edit für Chat-Bubbles (Feb 28 2026)
+- [x] Stift-Klick macht die Nutzer-Sprechblase direkt editierbar (Textarea in-place)
+- [x] Speichern-Button aktualisiert nur das betroffene Feld in data-State und liveWebsiteData
+- [x] Abbrechen-Button verwirft Änderungen
+- [x] Kein Einfügen ins Chat-Eingabefeld mehr, kein Durcheinander mit aktuellem Schritt
