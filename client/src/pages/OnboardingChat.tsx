@@ -285,7 +285,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Bar/Tapas",
           ];
         case "businessName":
-          return name ? [`✓ Ja, "${name}" stimmt so`] : [];
+          return name ? ["Ja, stimmt!"] : [];
         case "tagline":
           return [
             `Qualität, die bleibt – seit ${new Date().getFullYear() - 10}`,
@@ -1697,7 +1697,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       key={reply}
                       onClick={() => {
-                        if (currentStep === "businessName" && reply.startsWith("✓")) {
+                        if (currentStep === "businessName" && reply === "Ja, stimmt!") {
                           handleSubmit("");
                         } else {
                           handleSubmit(reply);
