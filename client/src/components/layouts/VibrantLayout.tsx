@@ -89,7 +89,7 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActiv
 
 function VibrantNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "rgba(13,13,13,0.95)", backdropFilter: "blur(10px)", borderBottom: `1px solid rgba(255,255,255,0.05)`, fontFamily: BODY }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "rgba(13,13,13,0.95)", backdropFilter: "blur(10px)", borderBottom: `1px solid rgba(255,255,255,0.05)`, fontFamily: BODY }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <div style={{ width: "2rem", height: "2rem", backgroundColor: cs.primary, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -201,7 +201,7 @@ function VibrantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
   const items = section.items || [];
   const icons = [Dumbbell, Zap, Target, TrendingUp, Clock, Star];
   return (
-    <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Programme</span>
@@ -336,7 +336,7 @@ function VibrantContact({ section, cs, phone, address, email, hours }: { section
 
 function VibrantFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
-    <footer style={{ backgroundColor: "#000", borderTop: `3px solid ${cs.primary}`, padding: "2.5rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#000", borderTop: `3px solid ${cs.primary}`, padding: "2.5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>{websiteData.businessName}</span>
         <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.2)" }}>{websiteData.footer?.text}</p>

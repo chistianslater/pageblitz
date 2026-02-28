@@ -61,7 +61,7 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivat
 
 function CleanNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {logoUrl ? (
@@ -176,7 +176,7 @@ function CleanAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
 function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#fff", padding: "5rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#fff", padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
           <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, marginBottom: "0.75rem" }}>Leistungen</p>
@@ -299,7 +299,7 @@ function CleanCTA({ section, cs, showActivateButton, onActivate }: { section: We
 
 function CleanFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer style={{ backgroundColor: "#1e293b", padding: "2.5rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#1e293b", padding: "2.5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div style={{ width: "2rem", height: "2rem", borderRadius: "0.375rem", backgroundColor: cs.primary, display: "flex", alignItems: "center", justifyContent: "center" }}>

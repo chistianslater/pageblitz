@@ -34,6 +34,7 @@ interface OnboardingData {
   legalVatId: string;
   brandColor: string;
   brandLogo: string; // base64 or "font:<fontName>"
+  headlineFont: string; // Serif or Sans-serif font name
   addOnContactForm: boolean;
   addOnGallery: boolean;
   addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
@@ -59,6 +60,7 @@ type ChatStep =
   | "legalVat"
   | "brandColor"
   | "brandLogo"
+  | "headlineFont"
   | "addons"
   | "subpages"
   | "email"
@@ -81,6 +83,7 @@ const STEP_ORDER: ChatStep[] = [
   "businessCategory",
   "brandColor",
   "brandLogo",
+  "headlineFont",
   "businessName",
   "tagline",
   "description",
@@ -106,6 +109,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   businessCategory: "hero",
   brandColor: "hero",
   brandLogo: "header",
+  headlineFont: "hero",
   businessName: "header",
   tagline: "hero",
   description: "hero",
@@ -218,7 +222,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     tagline: "",
     description: "",
     usp: "",
-    topServices: [{ title: "", description: "" }],
+    topServices: [],
     targetAudience: "",
     legalOwner: "",
     legalStreet: "",
@@ -227,9 +231,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalEmail: "",
     legalPhone: "",
     legalVatId: "",
-    brandColor: "",
-    brandLogo: "",
-    addOnContactForm: false,
+    brandColor: "#3B82F6",
+    brandLogo: "font:Inter",
+    headlineFont: "Georgia",
+    addOnContactForm: true,
     addOnGallery: false,
     addOnMenu: false,
     addOnPricelist: false,
@@ -443,6 +448,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine Hauptfarbe – du siehst sofort rechts, wie deine Website damit aussieht!`;
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
+        case "headlineFont":
+          return `Perfekt! Jetzt wählen wir noch die **Schriftart für deine Überschriften**. Das gibt deiner Website einen ganz eigenen Charakter!\n\nMöchtest du eine **elegante Serifenschrift** (klassisch, zeitlos) oder eine **moderne Serifenlose** (clean, aktuell)?`;
         case "addons":
           return `⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern? Du kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
         case "subpages":
@@ -454,10 +461,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "checkout":
           return `Bereit zum Freischalten? 🚀 Wähle dein Paket und starte durch!`;
         default:
-          return "";
+          return "Nächster Schritt...";
       }
     },
-    [data.businessName, business?.name]
+    [data.businessName, business?.name, data.headlineFont]
   );
 
   // ── Initialize chat ─────────────────────────────────────────────────────
@@ -1274,6 +1281,72 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
                     addUserMessage(`Logo gewählt: ${label} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
+                    await advanceToStep("headlineFont");
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "headlineFont" && (
+              <div className="ml-9 space-y-3">
+                <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften:</p>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-slate-300 text-xs font-semibold mb-2">Serifenschriften (klassisch, elegant):</p>
+                    {[
+                      { font: "Georgia", label: "Georgia – Zeitlos & Elegant" },
+                      { font: "Garamond", label: "Garamond – Traditionell & Fein" },
+                      { font: "Playfair Display", label: "Playfair Display – Luxuriös & Modern" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.font}
+                        onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
+                        className={`w-full p-3 rounded-lg border-2 transition-all text-left mb-2 ${
+                          data.headlineFont === opt.font
+                            ? "border-blue-500 bg-blue-500/10"
+                            : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                        }`}
+                      >
+                        <p className="text-white text-base" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
+                          {opt.label}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                  <div>
+                    <p className="text-slate-300 text-xs font-semibold mb-2 mt-3">Serifenlose (modern, clean):</p>
+                    {[
+                      { font: "Inter", label: "Inter – Sauber & Minimal" },
+                      { font: "Poppins", label: "Poppins – Freundlich & Dynamisch" },
+                      { font: "Montserrat", label: "Montserrat – Stark & Geometrisch" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.font}
+                        onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
+                        className={`w-full p-3 rounded-lg border-2 transition-all text-left mb-2 ${
+                          data.headlineFont === opt.font
+                            ? "border-blue-500 bg-blue-500/10"
+                            : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                        }`}
+                      >
+                        <p className="text-white text-base" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
+                          {opt.label}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const fontLabel = data.headlineFont;
+                    addUserMessage(`Schriftart gewählt: ${fontLabel} ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
                     await advanceToStep("businessName");
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

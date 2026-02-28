@@ -63,7 +63,7 @@ function ElegantNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: 
   const navRef = useRef<HTMLElement>(null);
   useNavbarScroll(navRef);
   return (
-    <nav ref={navRef} style={{ backgroundColor: cs.background, borderBottom: `1px solid ${cs.primary}22`, fontFamily: SANS }} className="sticky top-0 z-50 backdrop-blur-md bg-opacity-95 hero-animate-nav transition-all duration-300">
+    <nav data-section="header" ref={navRef} style={{ backgroundColor: cs.background, borderBottom: `1px solid ${cs.primary}22`, fontFamily: SANS }} className="sticky top-0 z-50 backdrop-blur-md bg-opacity-95 hero-animate-nav transition-all duration-300">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
         <div className="flex flex-col">
           {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.5rem", fontWeight: 600, letterSpacing: "0.05em", color: cs.text }}>{websiteData.businessName}</span>}
@@ -167,7 +167,7 @@ function ElegantAbout({ section, cs, heroImageUrl, businessCategory }: { section
 function ElegantServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
           <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>Unsere Leistungen</p>
@@ -302,7 +302,7 @@ function ElegantCTA({ section, cs, showActivateButton, onActivate }: { section: 
 
 function ElegantFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer style={{ backgroundColor: cs.text, padding: "3rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: cs.text, padding: "3rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
           <p style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 600, color: "#fff", letterSpacing: "0.05em" }}>{websiteData.businessName}</p>

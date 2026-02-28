@@ -92,7 +92,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivat
 
 function TrustNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "#fff", borderBottom: `3px solid ${cs.primary}` }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "#fff", borderBottom: `3px solid ${cs.primary}` }} className="sticky top-0 z-50">
       {/* Top bar */}
       <div style={{ backgroundColor: cs.primary, padding: "0.35rem 0" }}>
         <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
@@ -239,7 +239,7 @@ function TrustAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
 function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section id="leistungen" style={{ padding: "5rem 0", backgroundColor: "#f7f9fc" }}>
+    <section data-section="services" id="leistungen" style={{ padding: "5rem 0", backgroundColor: "#f7f9fc" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "2.2rem", fontWeight: 700, color: "#1a2332", marginBottom: "0.75rem" }}>{section.headline}</h2>
@@ -400,7 +400,7 @@ function TrustContact({ section, cs, phone, address, email, hours }: { section: 
 
 function TrustFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer style={{ backgroundColor: "#0f1724", padding: "3rem 0 1.5rem" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#0f1724", padding: "3rem 0 1.5rem" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid md:grid-cols-3 gap-8 pb-6 mb-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
           <div>

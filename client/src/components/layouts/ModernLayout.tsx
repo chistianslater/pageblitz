@@ -88,7 +88,7 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, showActiva
 
 function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "#fff", borderBottom: "1px solid #f0f0f0", fontFamily: BODY }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "#fff", borderBottom: "1px solid #f0f0f0", fontFamily: BODY }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
         {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontSize: "1.1rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#0a0a0a", fontFamily: LOGO_FONT }}>{websiteData.businessName}</span>}
         <div className="hidden md:flex items-center gap-10">
@@ -155,7 +155,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
 
 function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: "#f8f8f8", padding: "7rem 0" }}>
+    <section data-section="hero" style={{ backgroundColor: "#f8f8f8", padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           <div style={{ position: "relative" }}>
@@ -183,7 +183,7 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
 function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "4rem" }}>
           <div>
@@ -213,7 +213,7 @@ function ModernTestimonials({ section, cs }: { section: WebsiteSection; cs: Colo
   const featured = items[0];
   const rest = items.slice(1);
   return (
-    <section style={{ backgroundColor: "#0a0a0a", padding: "7rem 0" }}>
+    <section data-section="testimonials" style={{ backgroundColor: "#0a0a0a", padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
         <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "3rem" }}>Was Kunden sagen</span>
         {featured && (
@@ -336,7 +336,7 @@ function ModernContact({ section, cs, phone, address, email, hours }: { section:
 
 function ModernFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
-    <footer style={{ backgroundColor: "#0a0a0a", padding: "2.5rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#0a0a0a", padding: "2.5rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <span style={{ fontSize: "1rem", fontWeight: 900, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.3)" }}>{websiteData.businessName}</span>
         <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.2)" }}>{websiteData.footer?.text}</p>

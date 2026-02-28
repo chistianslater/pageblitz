@@ -89,7 +89,7 @@ export default function NaturalLayout({ websiteData, cs, heroImageUrl, showActiv
 
 function NaturalNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "#faf8f4", borderBottom: "1px solid #e8e0d0", fontFamily: ROUND }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "#faf8f4", borderBottom: "1px solid #e8e0d0", fontFamily: ROUND }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <Leaf className="h-5 w-5" style={{ color: cs.primary }} />
@@ -191,7 +191,7 @@ function NaturalServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
   const items = section.items || [];
   const icons = [Leaf, Sun, Flower, Droplets, Star, Clock];
   return (
-    <section style={{ backgroundColor: "#faf8f4", padding: "6rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#faf8f4", padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Unser Angebot</span>
@@ -330,7 +330,7 @@ function NaturalContact({ section, cs, phone, address, email, hours }: { section
 
 function NaturalFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
-    <footer style={{ backgroundColor: "#2a2018", padding: "2.5rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#2a2018", padding: "2.5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <Leaf className="h-4 w-4" style={{ color: cs.primary }} />

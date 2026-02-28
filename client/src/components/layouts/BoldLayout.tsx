@@ -61,7 +61,7 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivate
 
 function BoldNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "#0d0d0d", borderBottom: `3px solid ${cs.primary}` }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "#0d0d0d", borderBottom: `3px solid ${cs.primary}` }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div style={{ width: "4px", height: "2rem", backgroundColor: cs.primary }} />
@@ -162,7 +162,7 @@ function BoldAbout({ section, cs, businessCategory }: { section: WebsiteSection;
 function BoldServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: cs.background, padding: "5rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: cs.background, padding: "5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-12">
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
@@ -288,7 +288,7 @@ function BoldCTA({ section, cs, showActivateButton, onActivate }: { section: Web
 
 function BoldFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer style={{ backgroundColor: "#000", padding: "2.5rem 0", borderTop: `3px solid ${cs.primary}` }}>
+    <footer data-section="footer" style={{ backgroundColor: "#000", padding: "2.5rem 0", borderTop: `3px solid ${cs.primary}` }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <span style={{ fontFamily: HEADING, fontSize: "1.2rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.08em" }}>{websiteData.businessName}</span>
         <p style={{ fontFamily: BODY, fontSize: "0.8rem", color: "rgba(255,255,255,0.35)" }}>{websiteData.footer?.text}</p>

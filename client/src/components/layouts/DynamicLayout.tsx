@@ -61,7 +61,7 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, showActiv
 
 function DynamicNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "rgba(10,10,10,0.95)", backdropFilter: "blur(8px)" }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "rgba(10,10,10,0.95)", backdropFilter: "blur(8px)" }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {logoUrl ? (
@@ -157,7 +157,7 @@ function DynamicAbout({ section, cs, businessCategory }: { section: WebsiteSecti
 function DynamicServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: "#0a0a0a", padding: "5rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#0a0a0a", padding: "5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-12">
           <Zap className="h-6 w-6" style={{ color: cs.primary }} />
@@ -280,7 +280,7 @@ function DynamicCTA({ section, cs, showActivateButton, onActivate }: { section: 
 
 function DynamicFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer style={{ backgroundColor: "#000", padding: "2.5rem 0", borderTop: `3px solid ${cs.primary}` }}>
+    <footer data-section="footer" style={{ backgroundColor: "#000", padding: "2.5rem 0", borderTop: `3px solid ${cs.primary}` }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Zap className="h-4 w-4" style={{ color: cs.primary }} />

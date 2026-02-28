@@ -58,7 +58,7 @@ export default function WarmLayout({ websiteData, cs, heroImageUrl, showActivate
 
 function WarmNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "rgba(255,255,255,0.97)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${cs.primary}30` }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "rgba(255,255,255,0.97)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${cs.primary}30` }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
         <div className="text-center">
           <div className="flex items-center gap-2">
@@ -270,7 +270,7 @@ function WarmCTA({ section, cs, showActivateButton, onActivate }: { section: Web
 
 function WarmFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer style={{ backgroundColor: "#2d1a0e", padding: "3rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#2d1a0e", padding: "3rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Utensils className="h-5 w-5" style={{ color: cs.primary }} />

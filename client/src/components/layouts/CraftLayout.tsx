@@ -109,7 +109,7 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivat
 
 function CraftNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: cs.background, fontFamily: BODY }} className="sticky top-0 z-50" >
+    <nav data-section="header" style={{ backgroundColor: cs.background, fontFamily: BODY }} className="sticky top-0 z-50" >
       <div className="max-w-7xl mx-auto px-6 h-18 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div style={{ backgroundColor: cs.primary, padding: "0.4rem 0.6rem" }}>
@@ -229,7 +229,7 @@ function CraftAbout({ section, cs, heroImageUrl, businessCategory }: { section: 
 function CraftServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Unsere Leistungen</span>
@@ -369,7 +369,7 @@ function CraftContact({ section, cs, phone, address, email, hours }: { section: 
 
 function CraftFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
-    <footer style={{ backgroundColor: "#000", borderTop: `3px solid ${cs.primary}`, padding: "2.5rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#000", borderTop: `3px solid ${cs.primary}`, padding: "2.5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>{websiteData.businessName}</span>
         <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.25)" }}>{websiteData.footer?.text}</p>

@@ -100,7 +100,7 @@ export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActiva
 
 function LuxuryNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav style={{ backgroundColor: "rgba(10,10,10,0.95)", borderBottom: `1px solid rgba(255,255,255,0.08)`, fontFamily: BODY, backdropFilter: "blur(10px)" }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "rgba(10,10,10,0.95)", borderBottom: `1px solid rgba(255,255,255,0.08)`, fontFamily: BODY, backdropFilter: "blur(10px)" }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div style={{ width: "8px", height: "8px", backgroundColor: cs.primary, borderRadius: "50%" }} />
@@ -207,7 +207,7 @@ function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section:
 function LuxuryServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: cs.background, padding: "7rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: cs.background, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-end justify-between mb-16">
           <div>
@@ -354,7 +354,7 @@ function LuxuryContact({ section, cs, phone, address, email, hours }: { section:
 
 function LuxuryFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
-    <footer style={{ backgroundColor: "#000", borderTop: `1px solid rgba(255,255,255,0.06)`, padding: "2.5rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#000", borderTop: `1px solid rgba(255,255,255,0.06)`, padding: "2.5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>{websiteData.businessName.toUpperCase()}</span>
         <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.25)" }}>{websiteData.footer?.text}</p>
