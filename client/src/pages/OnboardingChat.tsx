@@ -7,6 +7,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
+import { translateGmbCategory } from "@shared/gmbCategories";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,8 @@ interface OnboardingData {
   brandLogo: string; // base64 or "font:<fontName>"
   addOnContactForm: boolean;
   addOnGallery: boolean;
+  addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
+  addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
   subPages: SubPage[];
   email: string; // for FOMO reminder
 }
@@ -175,6 +178,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     brandLogo: "",
     addOnContactForm: false,
     addOnGallery: false,
+    addOnMenu: false,
+    addOnPricelist: false,
     subPages: [],
     email: "",
   });
@@ -210,7 +215,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       setData((prev) => ({
         ...prev,
         businessName: business.name || prev.businessName,
-        businessCategory: (business as any).category || prev.businessCategory,
+        businessCategory: translateGmbCategory((business as any).category || "") || prev.businessCategory,
         legalEmail: business.email || prev.legalEmail,
         legalPhone: business.phone || prev.legalPhone,
         email: business.email || prev.email,
@@ -358,17 +363,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "businessName":
           return `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName || "noch keinen Namen"}** vorausgefüllt – stimmt das so?`;
         case "tagline":
-          return `Super! Jetzt brauchen wir einen knackigen Slogan für **${data.businessName}** – einen Satz, der sofort klar macht, was ihr macht und warum ihr besonders seid.\n\nBeispiel: *"Qualität, die bleibt – seit 1998"* oder *"Ihr Dach in besten Händen"*\n\nOder soll ich dir einen Vorschlag machen? 💡`;
+          return `Super! Jetzt brauchen wir einen knackigen Slogan für **${data.businessName}** – einen Satz, der sofort klar macht, was ihr macht und warum ihr besonders seid.\n\nBeispiel: *"Qualität, die bleibt – seit 1998"* oder *"Ihr Dach in besten Händen"*\n\nOder soll ich dir einen Vorschlag machen? 💡\n\n*💡 Keine Sorge: Du kannst alle Texte später jederzeit ändern.*`;
         case "description":
-          return `Perfekt! Jetzt eine kurze Beschreibung deines Unternehmens – 2-3 Sätze, die erklären, was ihr macht, für wen und was euch auszeichnet.\n\nKein Stress, ich kann dir auch einen Entwurf generieren! ✨`;
+          return `Perfekt! Jetzt eine kurze Beschreibung deines Unternehmens – 2-3 Sätze, die erklären, was ihr macht, für wen und was euch auszeichnet.\n\nKein Stress, ich kann dir auch einen Entwurf generieren! ✨\n\n*📸 Fotos, Texte und Farben kannst du übrigens später jederzeit austauschen.*`;
         case "usp":
           return `Was macht **${data.businessName}** einzigartig? Was können Kunden bei euch bekommen, was sie woanders nicht finden?\n\nDein Alleinstellungsmerkmal (USP) – in einem Satz. Ich helfe dir gerne dabei! 🎯`;
         case "services":
-          return `Welche sind eure Top-Leistungen? Nenn mir 2-4 Dinge, die ihr am häufigsten anbietet.\n\nIch habe unten Felder vorbereitet – füll sie aus oder lass mich Vorschläge machen! 🔧`;
+          return `Welche sind eure Top-Leistungen? Nenn mir 2-4 Dinge, die ihr am häufigsten anbietet.\n\nIch habe unten Felder vorbereitet – füll sie aus oder lass mich Vorschläge machen! 🔧\n\n*✅ Du kannst Leistungen später jederzeit ergänzen oder ändern.*`;
         case "targetAudience":
           return `Für wen macht ihr das alles? Beschreib kurz eure idealen Kunden – wer ruft euch an, wer schreibt euch?\n\nBeispiel: *"Privathaushalte in Bocholt, die ein neues Dach brauchen"*`;
         case "legalOwner":
-          return `Fast geschafft! 🎉 Jetzt noch ein paar rechtliche Pflichtangaben für Impressum & Datenschutz.\n\nWer ist der **Inhaber oder Geschäftsführer**? (Vollständiger Name, z.B. „Max Mustermann")`;
+          return `Fast geschafft! 🎉 Jetzt noch ein paar rechtliche Pflichtangaben für Impressum & Datenschutz.\n\nWer ist der **Inhaber oder Geschäftsführer**? (Vollständiger Name, z.B. „Max Mustermann“)\n\n*🔒 Diese Angaben sind gesetzlich vorgeschrieben und werden nur im Impressum angezeigt.*`;
         case "legalStreet":
           return `Wie lautet die **Straße und Hausnummer** der Geschäftsadresse?\n\nBeispiel: *Musterstraße 12*`;
         case "legalZipCity":
@@ -386,13 +391,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "addons":
-          return `Möchtest du optionale Extras zu deiner Website hinzufügen?\n\n• **Kontaktformular** – Kunden können direkt anfragen (+4,90 €/Monat)\n• **Bildergalerie** – Zeig deine Projekte in einer schönen Galerie (+4,90 €/Monat)`;
+          return `Möchtest du deine Website mit optionalen Extras erweitern? 🚀\n\nDu kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
         case "subpages":
           return `Brauchst du zusätzliche Unterseiten? Zum Beispiel "Über uns", "Projekte", "Referenzen" oder "Team".\n\nJede Unterseite kostet +9,90 €/Monat. Du kannst sie unten hinzufügen oder überspringen.`;
         case "email":
           return `Fast fertig! 🎊 An welche E-Mail-Adresse sollen wir deine Website-Infos und die Freischalt-Bestätigung schicken?`;
         case "preview":
-          return `🎉 **Deine Website ist fertig personalisiert!**\n\nSchau dir unten die Vorschau an – das ist deine echte Website mit deinen echten Daten. Wenn alles passt, kannst du sie freischalten!`;
+          return `🎉 **Deine Website ist fertig personalisiert!**\n\nSchau dir unten die Vorschau an – das ist deine echte Website mit deinen echten Daten. Wenn alles passt, kannst du sie freischalten!\n\n*💡 Keine Sorge: Fotos, Texte, Farben – alles kann nach der Freischaltung jederzeit geändert werden. Du bist nicht festgelegt!*`;
         case "checkout":
           return `Bereit zum Freischalten? 🚀 Wähle dein Paket und starte durch!`;
         default:
@@ -721,10 +726,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   ]);
 
   // ── Price calculation ───────────────────────────────────────────────────
-  const totalPrice = () => {
-    let price = 79;
+  const BASE_PRICE_INTRO = 39;  // First month intro offer
+  const BASE_PRICE_REGULAR = 79; // Regular monthly price
+  
+  const totalPrice = (isFirstMonth = false) => {
+    let price = isFirstMonth ? BASE_PRICE_INTRO : BASE_PRICE_REGULAR;
     if (data.addOnContactForm) price += 4.9;
     if (data.addOnGallery) price += 4.9;
+    if (data.addOnMenu) price += 4.9;
+    if (data.addOnPricelist) price += 4.9;
     price += data.subPages.length * 9.9;
     return price.toFixed(2);
   };
@@ -992,7 +1002,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 )}
-                <p className="text-xs text-slate-400">Branche auswählen oder selbst eingeben:</p>
+                <p className="text-xs text-slate-400">Branche auswählen:</p>
                 <div className="flex flex-wrap gap-2">
                   {[
                     { label: "Restaurant", icon: "🍽️" },
@@ -1026,7 +1036,28 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-slate-500">Nicht dabei? Einfach oben eintippen.</p>
+                {/* Free-text input for custom category */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Andere Branche eintippen…"
+                    className="flex-1 bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-blue-500/60 focus:bg-blue-600/10 transition-all"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+                        handleSubmit((e.target as HTMLInputElement).value.trim());
+                      }
+                    }}
+                  />
+                  <button
+                    className="bg-slate-600 hover:bg-slate-500 text-white text-sm px-3 py-2 rounded-xl transition-colors flex-shrink-0"
+                    onClick={(e) => {
+                      const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                      if (input?.value.trim()) handleSubmit(input.value.trim());
+                    }}
+                  >
+                    OK
+                  </button>
+                </div>
               </div>
             )}
             {!isTyping && currentStep === "brandColor" && (
@@ -1185,29 +1216,44 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             {!isTyping && currentStep === "addons" && (
               <div className="ml-9 space-y-2">
-                {[
-                  { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+4,90 €/Monat", desc: "Kunden können direkt anfragen" },
-                  { key: "addOnGallery" as const, label: "Bildergalerie", price: "+4,90 €/Monat", desc: "Zeig deine Projekte" },
-                ].map((addon) => (
-                  <button
-                    key={addon.key}
-                    onClick={() => setData((p) => ({ ...p, [addon.key]: !p[addon.key] }))}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-                      data[addon.key]
-                        ? "border-blue-500 bg-blue-500/10"
-                        : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${data[addon.key] ? "border-blue-500 bg-blue-500" : "border-slate-500"}`}>
-                      {data[addon.key] && <Check className="w-3 h-3 text-white" />}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-white text-sm font-medium">{addon.label}</p>
-                      <p className="text-slate-400 text-xs">{addon.desc}</p>
-                    </div>
-                    <span className="text-blue-400 text-xs font-medium">{addon.price}</span>
-                  </button>
-                ))}
+                {/* Build industry-specific addon list */}
+                {(() => {
+                  const cat = data.businessCategory.toLowerCase();
+                  const isFood = /restaurant|café|cafe|bistro|bäckerei|bakery|bar|tapas|pizza|sushi|burger|imbiss|gastronomie/.test(cat);
+                  const isBeauty = /friseur|hair|beauty|kosmetik|nail|spa|massage|barber|waxing|lash|brow/.test(cat);
+                  const isFitness = /fitness|gym|sport|yoga|pilates|crossfit|kampfsport|personal trainer/.test(cat);
+                  const showMenu = isFood;
+                  const showPricelist = isBeauty || isFitness;
+
+                  const addons: { key: keyof OnboardingData; label: string; price: string; desc: string; emoji: string }[] = [
+                    { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+4,90 €/Monat", desc: "Kunden können direkt anfragen", emoji: "📬" },
+                    { key: "addOnGallery" as const, label: "Bildergalerie", price: "+4,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
+                    ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+4,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
+                    ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+4,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
+                  ];
+
+                  return addons.map((addon) => (
+                    <button
+                      key={addon.key}
+                      onClick={() => setData((p) => ({ ...p, [addon.key]: !(p as any)[addon.key] }))}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        (data as any)[addon.key]
+                          ? "border-blue-500 bg-blue-500/10"
+                          : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${(data as any)[addon.key] ? "border-blue-500 bg-blue-500" : "border-slate-500"}`}>
+                        {(data as any)[addon.key] && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className="text-lg">{addon.emoji}</span>
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium">{addon.label}</p>
+                        <p className="text-slate-400 text-xs">{addon.desc}</p>
+                      </div>
+                      <span className="text-blue-400 text-xs font-medium">{addon.price}</span>
+                    </button>
+                  ));
+                })()}
                 <button
                   disabled={isTyping}
                   onClick={async () => {
@@ -1215,6 +1261,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const selected = [];
                     if (data.addOnContactForm) selected.push("Kontaktformular");
                     if (data.addOnGallery) selected.push("Bildergalerie");
+                    if (data.addOnMenu) selected.push("Speisekarte");
+                    if (data.addOnPricelist) selected.push("Preisliste");
                     addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
                     await trySaveStep(STEP_ORDER.indexOf("addons"), { addOnContactForm: data.addOnContactForm, addOnGallery: data.addOnGallery });
                     await advanceToStep("subpages");
@@ -1477,31 +1525,61 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             {!isTyping && currentStep === "checkout" && (
               <div className="ml-9 space-y-3">
                 <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
-                  <div className="flex justify-between text-sm text-slate-300">
-                    <span>Basis-Website</span>
-                    <span>79,00 €/Monat</span>
+                  {/* Intro offer banner */}
+                  <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-3 py-2 mb-2">
+                    <p className="text-xs font-semibold text-amber-300">🎉 Einführungsangebot: Erster Monat nur 39€!</p>
                   </div>
-                  {data.addOnContactForm && (
+                  
+                  {/* First month pricing */}
+                  <div className="space-y-2 pb-2 border-b border-slate-600">
+                    <p className="text-xs text-slate-400 font-medium">1. Monat:</p>
                     <div className="flex justify-between text-sm text-slate-300">
-                      <span>Kontaktformular</span>
-                      <span>+4,90 €/Monat</span>
+                      <span>Basis-Website</span>
+                      <span className="text-amber-400 font-semibold">39,00 €</span>
                     </div>
-                  )}
-                  {data.addOnGallery && (
+                  </div>
+                  
+                  {/* Regular pricing */}
+                  <div className="space-y-2 pt-2">
+                    <p className="text-xs text-slate-400 font-medium">Ab 2. Monat:</p>
                     <div className="flex justify-between text-sm text-slate-300">
-                      <span>Bildergalerie</span>
-                      <span>+4,90 €/Monat</span>
+                      <span>Basis-Website</span>
+                      <span>79,00 €/Monat</span>
                     </div>
-                  )}
-                  {data.subPages.filter((p) => p.name).map((page) => (
-                    <div key={page.id} className="flex justify-between text-sm text-slate-300">
-                      <span>Unterseite: {page.name}</span>
-                      <span>+9,90 €/Monat</span>
+                    {data.addOnContactForm && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>Kontaktformular</span>
+                        <span>+4,90 €/Monat</span>
+                      </div>
+                    )}
+                    {data.addOnGallery && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>Bildergalerie</span>
+                        <span>+4,90 €/Monat</span>
+                      </div>
+                    )}
+                    {data.addOnMenu && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>Speisekarte</span>
+                        <span>+4,90 €/Monat</span>
+                      </div>
+                    )}
+                    {data.addOnPricelist && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>Preisliste</span>
+                        <span>+4,90 €/Monat</span>
+                      </div>
+                    )}
+                    {data.subPages.filter((p) => p.name).map((page) => (
+                      <div key={page.id} className="flex justify-between text-sm text-slate-300">
+                        <span>Unterseite: {page.name}</span>
+                        <span>+9,90 €/Monat</span>
+                      </div>
+                    ))}
+                    <div className="border-t border-slate-600 pt-2 flex justify-between font-bold text-white">
+                      <span>Gesamt ab Monat 2</span>
+                      <span>{totalPrice(false)} €/Monat</span>
                     </div>
-                  ))}
-                  <div className="border-t border-slate-600 pt-2 flex justify-between font-bold text-white">
-                    <span>Gesamt</span>
-                    <span>{totalPrice()} €/Monat</span>
                   </div>
                 </div>
                 <label className="flex items-start gap-3 cursor-pointer group">
@@ -1525,10 +1603,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {completeMutation.isPending || checkoutMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <>
-                      <Zap className="w-5 h-5" /> Jetzt für {totalPrice()} €/Monat freischalten
-                    </>
-                  )}
+                    <>\n                      <Zap className="w-5 h-5" /> Jetzt für {totalPrice(true)} € freischalten (1. Monat)\n                    </>                 )}
                 </button>
                 <p className="text-center text-xs text-slate-500">
                   Monatlich kündbar • Keine Einrichtungsgebühr • SSL inklusive
