@@ -1,0 +1,98 @@
+{
+  "query": "DESCRIBE subscriptions;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute DESCRIBE subscriptions;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "websiteId",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "userId",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stripeCustomerId",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stripeSubscriptionId",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "status",
+      "Type": "enum('active','canceled','past_due','trialing','incomplete')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "incomplete",
+      "Extra": ""
+    },
+    {
+      "Field": "plan",
+      "Type": "varchar(50)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "base",
+      "Extra": ""
+    },
+    {
+      "Field": "addOns",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "currentPeriodEnd",
+      "Type": "bigint(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "bigint(20)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "bigint(20)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nwebsiteId\tint(11)\tNO\tMUL\tNULL\t\nuserId\tint(11)\tNO\tMUL\tNULL\t\nstripeCustomerId\tvarchar(255)\tYES\t\tNULL\t\nstripeSubscriptionId\tvarchar(255)\tYES\tMUL\tNULL\t\nstatus\tenum('active','canceled','past_due','trialing','incomplete')\tNO\t\tincomplete\t\nplan\tvarchar(50)\tNO\t\tbase\t\naddOns\tjson\tYES\t\tNULL\t\ncurrentPeriodEnd\tbigint(20)\tYES\t\tNULL\t\ncreatedAt\tbigint(20)\tNO\t\tNULL\t\nupdatedAt\tbigint(20)\tNO\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

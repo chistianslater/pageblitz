@@ -507,3 +507,6 @@
 - [x] Backend: adminProcedure website.delete – löscht Website + onboarding_responses aus DB
 - [x] Frontend: Löschen-Button (Trash-Icon) in der Websites-Liste mit Bestätigungsdialog
 - [x] Optimistic Update: Website verschwindet sofort aus der Liste nach Bestätigung
+
+## Bugfix: deleteWebsite subscriptions-Fehler (Feb 28 2026)
+- [x] Fix: deleteWebsite schlägt fehl – subscriptions hatte snake_case Spalten (website_id); Migration auf camelCase ausgeführt; generated_websites hatte Duplikat-Spalten – bereinigt
