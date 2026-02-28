@@ -35,6 +35,8 @@ interface WebsiteRendererProps {
   colorScheme?: ColorScheme;
   layoutStyle?: string | null;
   heroImageUrl?: string | null;
+  /** Optional second image for About/Info sections (defaults to heroImageUrl if not set) */
+  aboutImageUrl?: string | null;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -217,6 +219,7 @@ export default function WebsiteRenderer({
   colorScheme,
   layoutStyle,
   heroImageUrl,
+  aboutImageUrl,
   showActivateButton,
   onActivate,
   businessPhone,
@@ -230,9 +233,17 @@ export default function WebsiteRenderer({
   businessCategory,
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
+  const defaultCs = DEFAULT_COLOR_SCHEMES[effectiveLayout] || DEFAULT_COLOR_SCHEMES.clean;
+  // Merge DB colorScheme with defaults so surface/background/textLight are always defined.
+  // User-chosen brandSecondaryColor is stored as colorScheme.secondary → also map to surface
+  // so section backgrounds update in real-time during onboarding.
   const cs: ColorScheme = colorScheme && colorScheme.primary
-    ? colorScheme
-    : DEFAULT_COLOR_SCHEMES[effectiveLayout] || DEFAULT_COLOR_SCHEMES.clean;
+    ? {
+        ...defaultCs,
+        ...colorScheme,
+        surface: colorScheme.secondary || defaultCs.surface,
+      }
+    : defaultCs;
   const effectiveHeroImage = heroImageUrl || FALLBACK_IMAGES[effectiveLayout] || FALLBACK_IMAGES.clean;
 
   const tokens = websiteData.designTokens;
@@ -276,10 +287,13 @@ export default function WebsiteRenderer({
   }, [fontsToLoad.join(",")]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Show all sections including AI-generated testimonials (they are always in German)
+  const effectiveAboutImage = aboutImageUrl || effectiveHeroImage;
+
   const sharedProps = {
     websiteData,
     cs,
     heroImageUrl: effectiveHeroImage,
+    aboutImageUrl: effectiveAboutImage,
     showActivateButton,
     onActivate,
     businessPhone,

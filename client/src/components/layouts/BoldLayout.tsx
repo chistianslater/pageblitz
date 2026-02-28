@@ -19,6 +19,7 @@ interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
+  aboutImageUrl?: string;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -31,7 +32,7 @@ interface Props {
   businessCategory?: string | null;
 }
 
-export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function BoldLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,

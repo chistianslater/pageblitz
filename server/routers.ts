@@ -1859,18 +1859,22 @@ Kontext: ${input.context}`,
         };
 
         // Save patched data and legal pages
-        await updateWebsite(input.websiteId, {
+        const websiteUpdateData: any = {
           websiteData: {
             ...(patchedData || {}),
             impressumHtml,
             datenschutzHtml,
             hasLegalPages: !!(impressumHtml && datenschutzHtml),
-          } as any,
+          },
           colorScheme: patchedColorScheme,
           onboardingStatus: "completed",
           hasLegalPages: !!(impressumHtml && datenschutzHtml),
           status: "active",
-        });
+        };
+        // Persist hero and about photo URLs chosen during onboarding
+        if (onboarding.heroPhotoUrl) websiteUpdateData.heroImageUrl = onboarding.heroPhotoUrl;
+        if (onboarding.aboutPhotoUrl) websiteUpdateData.aboutImageUrl = onboarding.aboutPhotoUrl;
+        await updateWebsite(input.websiteId, websiteUpdateData);
         
         // Mark onboarding as completed
         await updateOnboarding(input.websiteId, {
@@ -1967,6 +1971,7 @@ Kontext: ${input.context}`,
           email: z.string().optional(),
           address: z.string().optional(),
           heroPhotoUrl: z.string().optional(),
+          aboutPhotoUrl: z.string().optional(),
           brandColor: z.string().optional(),
           brandSecondaryColor: z.string().optional(),
         }),
@@ -1979,7 +1984,7 @@ Kontext: ${input.context}`,
         const website = owned.website;
         // Patch websiteData
         const websiteData = (website.websiteData as any) || {};
-        const { tagline, description, businessName, phone, email, address, heroPhotoUrl } = input.patch;
+        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl } = input.patch;
         if (tagline !== undefined) websiteData.tagline = tagline;
         if (description !== undefined) websiteData.description = description;
         if (businessName !== undefined) websiteData.businessName = businessName;
@@ -1998,6 +2003,7 @@ Kontext: ${input.context}`,
         if (input.patch.brandSecondaryColor) colorScheme.secondary = input.patch.brandSecondaryColor;
         const updateData: any = { websiteData, colorScheme };
         if (heroPhotoUrl !== undefined) updateData.heroImageUrl = heroPhotoUrl;
+        if (aboutPhotoUrl !== undefined) updateData.aboutImageUrl = aboutPhotoUrl;
         // Patch business contact info
         if (phone !== undefined || email !== undefined || address !== undefined) {
           const biz = await getBusinessById(website.businessId);

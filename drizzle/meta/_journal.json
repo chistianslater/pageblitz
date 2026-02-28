@@ -57,6 +57,20 @@
       "when": 1772223203861,
       "tag": "0007_regular_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1772287002471,
+      "tag": "0008_glorious_big_bertha",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1772287089417,
+      "tag": "0009_modern_blade",
+      "breakpoints": true
     }
   ]
 }

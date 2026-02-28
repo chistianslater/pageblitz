@@ -396,6 +396,60 @@ export default function CustomerDashboard() {
             </label>
           </div>
 
+          {/* About photo */}
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
+            <h2 className="text-white font-semibold flex items-center gap-2">
+              <Image className="w-4 h-4 text-violet-400" />
+              Über-uns-Bild
+            </h2>
+            {(website as any).aboutImageUrl ? (
+              <div className="relative rounded-xl overflow-hidden aspect-video">
+                <img src={(website as any).aboutImageUrl} alt="Über uns" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => updateMutation.mutate({ websiteId: website.id, patch: { aboutPhotoUrl: "" } })}
+                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
+                  title="Bild entfernen"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="aspect-video rounded-xl bg-slate-700/40 border-2 border-dashed border-slate-600 flex items-center justify-center">
+                <div className="text-center">
+                  <Image className="w-8 h-8 text-slate-500 mx-auto mb-2" />
+                  <p className="text-slate-400 text-xs">Kein Über-uns-Bild</p>
+                </div>
+              </div>
+            )}
+            <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    const base64 = (reader.result as string).split(",")[1];
+                    try {
+                      const result = await (window as any).__trpcUpload?.({ websiteId: website.id, imageData: base64, mimeType: file.type });
+                      if (result?.url) {
+                        await updateMutation.mutateAsync({ websiteId: website.id, patch: { aboutPhotoUrl: result.url } });
+                      }
+                    } catch {
+                      toast.error("Upload fehlgeschlagen");
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+              <RefreshCw className="w-3.5 h-3.5" />
+              Bild ersetzen
+            </label>
+          </div>
+
           {/* Support */}
           <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
             <h2 className="text-white font-semibold flex items-center gap-2 mb-3">
@@ -446,6 +500,7 @@ export default function CustomerDashboard() {
                     websiteData={websiteData}
                     colorScheme={colorScheme}
                     heroImageUrl={website.heroImageUrl || undefined}
+                    aboutImageUrl={(website as any).aboutImageUrl || undefined}
                     layoutStyle={(website as any).layoutStyle || undefined}
                     businessPhone={business?.phone || undefined}
                     businessAddress={business?.address || undefined}

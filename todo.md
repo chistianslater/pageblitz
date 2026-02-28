@@ -542,3 +542,11 @@
 - [x] Foto-Austausch im Onboarding: neuer Schritt heroImage (Upload eigener Fotos oder Unsplash-Auswahl)
 - [x] Kunden-Dashboard: Admin kann eine Website auf "aktiv" setzen + Link zur Kunden-Edit-Ansicht generieren
 - [x] Kunden-Edit-Ansicht: Kunde kann Texte, Farben, Fotos bearbeiten (ähnlich Onboarding-Chat aber vereinfacht)
+
+## Foto & Farb-Fixes im Onboarding (Feb 28 2026)
+- [x] Sekundärfarbe: Echtzeit-Vorschau in liveWebsiteData (colorScheme.secondary patchen)
+- [x] heroPhoto: Label "Bestehendes behalten" statt "Kein Foto"
+- [x] heroPhoto: Echtzeit-Vorschau wenn neues Foto gewählt wird
+- [x] aboutPhoto: Neuer Onboarding-Schritt nach heroPhoto für das zweite Bild
+- [x] aboutImageUrl: DB-Spalte, Migration, WebsiteRenderer und alle Layouts
+- [x] aboutImageUrl: Echtzeit-Vorschau im Onboarding und im Kunden-Dashboard bearbeitbar

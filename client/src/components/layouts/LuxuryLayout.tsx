@@ -20,6 +20,7 @@ interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
+  aboutImageUrl?: string;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -32,7 +33,7 @@ interface Props {
   businessCategory?: string | null;
 }
 
-export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function LuxuryLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
@@ -53,7 +54,7 @@ export default function LuxuryLayout({ websiteData, cs, heroImageUrl, showActiva
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <LuxuryHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <LuxuryAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "about" && <LuxuryAbout section={section} cs={darkCs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <LuxuryServices section={section} cs={darkCs} />}
           {section.type === "testimonials" && <LuxuryTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <LuxuryFAQ section={section} cs={darkCs} />}

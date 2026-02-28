@@ -19,6 +19,7 @@ interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
+  aboutImageUrl?: string;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -31,7 +32,7 @@ interface Props {
   businessCategory?: string | null;
 }
 
-export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function CleanLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
@@ -44,7 +45,7 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, showActivat
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
-          {section.type === "about" && <CleanAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
+          {section.type === "about" && <CleanAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <CleanServices section={section} cs={cs} />}
           {section.type === "testimonials" && <CleanTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <CleanFAQ section={section} cs={cs} />}

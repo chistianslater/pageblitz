@@ -19,6 +19,7 @@ interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
+  aboutImageUrl?: string;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -30,7 +31,7 @@ interface Props {
   logoUrl?: string | null;
 }
 
-export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
@@ -42,7 +43,7 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, showActivat
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <FreshHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <FreshAbout section={section} cs={cs} heroImageUrl={heroImageUrl} />}
+          {section.type === "about" && <FreshAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <FreshServices section={section} cs={cs} />}
           {section.type === "testimonials" && <FreshTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <FreshFAQ section={section} cs={cs} />}

@@ -61,6 +61,7 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   paidAt: timestamp("paidAt"),
   addons: json("addons"),
   heroImageUrl: text("heroImageUrl"),
+  aboutImageUrl: text("aboutImageUrl"),
   layoutStyle: varchar("layoutStyle", { length: 50 }).default("classic"),
   // Onboarding & subscription state
   onboardingStatus: mysqlEnum("onboardingStatus", ["pending", "in_progress", "completed"]).default("pending"),
@@ -108,6 +109,8 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   faqItems: json("faqItems"), // [{ question, answer }]
   // Media
   logoUrl: varchar("logoUrl", { length: 1024 }),
+  heroPhotoUrl: text("heroPhotoUrl"),
+  aboutPhotoUrl: text("aboutPhotoUrl"),
   photoUrls: json("photoUrls"), // string[]
   // Legal data
   legalOwner: varchar("legalOwner", { length: 255 }),

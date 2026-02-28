@@ -19,6 +19,7 @@ interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
+  aboutImageUrl?: string;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -31,7 +32,7 @@ interface Props {
   businessCategory?: string | null;
 }
 
-export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function ElegantLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
@@ -44,7 +45,7 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, showActiv
         {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <ElegantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <ElegantServices section={section} cs={cs} />}
           {section.type === "testimonials" && <ElegantTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <ElegantFAQ section={section} cs={cs} />}

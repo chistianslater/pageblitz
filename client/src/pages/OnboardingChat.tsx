@@ -35,6 +35,7 @@ interface OnboardingData {
   brandColor: string;
   brandSecondaryColor: string;
   heroPhotoUrl: string; // selected or uploaded hero photo URL
+  aboutPhotoUrl: string; // selected or uploaded about/second photo URL
   brandLogo: string; // base64 or "font:<fontName>"
   headlineFont: string; // Serif or Sans-serif font name
   addOnContactForm: boolean;
@@ -64,6 +65,7 @@ type ChatStep =
   | "brandColor"
   | "brandSecondaryColor"
   | "heroPhoto"
+  | "aboutPhoto"
   | "brandLogo"
   | "headlineFont"
   | "addons"
@@ -90,6 +92,7 @@ const STEP_ORDER: ChatStep[] = [
   "brandColor",
   "brandSecondaryColor",
   "heroPhoto",
+  "aboutPhoto",
   "brandLogo",
   "headlineFont",
   "businessName",
@@ -118,6 +121,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   brandColor: "hero",
   brandSecondaryColor: "hero",
   heroPhoto: "hero",
+  aboutPhoto: "about",
   brandLogo: "header",
   headlineFont: "hero",
   businessName: "header",
@@ -247,6 +251,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     brandColor: "#3B82F6",
     brandSecondaryColor: "#F1F5F9",
     heroPhotoUrl: "",
+    aboutPhotoUrl: "",
     brandLogo: "font:Inter",
     headlineFont: "Georgia",
     addOnContactForm: true,
@@ -470,6 +475,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Perfekt! Jetzt wähle noch deine **Sekundärfarbe** – sie wird für Hintergründe, Abschnitte und Akzente genutzt und gibt deiner Website mehr Tiefe.`;
         case "heroPhoto":
           return `Schön! Jetzt wählen wir ein **Hauptbild** für deine Website. Du kannst ein eigenes Foto hochladen oder aus unseren Vorschlägen wählen – passend zu deiner Branche.`;
+        case "aboutPhoto":
+          return `Super! Jetzt wählen wir noch ein **zweites Bild** für den "\u00dcber uns"-Bereich deiner Website. Dieses Bild erscheint im Abschnitt, der dein Unternehmen vorstellt.`;
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "headlineFont":
@@ -905,6 +912,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;
   const colorScheme = siteData?.website?.colorScheme as ColorScheme | undefined;
   const heroImageUrl = (siteData?.website as any)?.heroImageUrl as string | undefined;
+  const aboutImageUrl = (siteData?.website as any)?.aboutImageUrl as string | undefined;
   const layoutStyle = (siteData?.website as any)?.layoutStyle as string | undefined;
   const slug = siteData?.website?.slug;
 
@@ -1458,9 +1466,25 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 onSelect={(url) => setData((p) => ({ ...p, heroPhotoUrl: url }))}
                 onNext={async () => {
                   const url = data.heroPhotoUrl || "";
-                  const label = url ? "Foto ausgewählt ✓" : "Kein Foto (Standard) ✓";
+                  const label = url ? "Hauptbild ausgewählt ✓" : "Bestehendes Hauptbild behalten ✓";
                   addUserMessage(label);
                   await trySaveStep(STEP_ORDER.indexOf("heroPhoto"), { heroPhotoUrl: url });
+                  await advanceToStep("aboutPhoto");
+                }}
+              />
+            )}
+            {!isTyping && currentStep === "aboutPhoto" && (
+              <HeroPhotoStep
+                businessCategory={data.businessCategory}
+                heroPhotoUrl={data.aboutPhotoUrl}
+                websiteId={websiteId}
+                isAboutPhoto
+                onSelect={(url) => setData((p) => ({ ...p, aboutPhotoUrl: url }))}
+                onNext={async () => {
+                  const url = data.aboutPhotoUrl || "";
+                  const label = url ? "Über-uns-Bild ausgewählt ✓" : "Bestehendes Bild behalten ✓";
+                  addUserMessage(label);
+                  await trySaveStep(STEP_ORDER.indexOf("aboutPhoto"), { aboutPhotoUrl: url });
                   await advanceToStep("brandLogo");
                 }}
               />
@@ -2189,7 +2213,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         : {})
                     } as any
                   : colorScheme}
-                heroImageUrl={heroImageUrl}
+                heroImageUrl={data.heroPhotoUrl || heroImageUrl}
+                aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
                 layoutStyle={layoutStyle}
                 businessPhone={business?.phone || undefined}
                 businessAddress={business?.address || undefined}
@@ -2285,11 +2310,12 @@ interface HeroPhotoStepProps {
   businessCategory: string;
   heroPhotoUrl: string;
   websiteId?: number;
+  isAboutPhoto?: boolean;
   onSelect: (url: string) => void;
   onNext: () => Promise<void>;
 }
 
-function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, onSelect, onNext }: HeroPhotoStepProps) {
+function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto, onSelect, onNext }: HeroPhotoStepProps) {
   const [isUploading, setIsUploading] = useState(false);
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
 
@@ -2297,7 +2323,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, onSelect, on
 
   return (
     <div className="ml-9 space-y-3">
-      <p className="text-slate-400 text-xs">Wähle ein passendes Foto für den Hero-Bereich deiner Website:</p>
+      <p className="text-slate-400 text-xs">{isAboutPhoto ? "Wähle ein Foto für den \"Über uns\"-Bereich deiner Website:" : "Wähle ein passendes Foto für den Hero-Bereich deiner Website:"}</p>
 
       {/* Photo grid */}
       <div className="grid grid-cols-3 gap-2">
@@ -2396,7 +2422,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, onSelect, on
           onClick={() => { onSelect(""); onNext(); }}
           className="flex-1 text-xs text-slate-400 hover:text-slate-300 px-3 py-2 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors"
         >
-          Kein Foto (Standard)
+          Bestehendes behalten
         </button>
         <button
           disabled={isUploading}

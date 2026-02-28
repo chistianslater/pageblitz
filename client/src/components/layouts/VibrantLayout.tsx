@@ -19,6 +19,7 @@ interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
+  aboutImageUrl?: string;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -30,7 +31,7 @@ interface Props {
   logoUrl?: string | null;
 }
 
-export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function VibrantLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
@@ -42,7 +43,7 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, showActiv
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <VibrantHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <VibrantAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} />}
+          {section.type === "about" && <VibrantAbout section={section} cs={darkCs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <VibrantServices section={section} cs={darkCs} />}
           {section.type === "testimonials" && <VibrantTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <VibrantFAQ section={section} cs={darkCs} />}

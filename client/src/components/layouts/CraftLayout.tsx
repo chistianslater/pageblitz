@@ -20,6 +20,7 @@ interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
+  aboutImageUrl?: string;
   showActivateButton?: boolean;
   onActivate?: () => void;
   businessPhone?: string | null;
@@ -32,7 +33,7 @@ interface Props {
   businessCategory?: string | null;
 }
 
-export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function CraftLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
@@ -62,7 +63,7 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, showActivat
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <CraftHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
-          {section.type === "about" && <CraftAbout section={section} cs={darkCs} heroImageUrl={heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "about" && <CraftAbout section={section} cs={darkCs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
           {(section.type === "services" || section.type === "features") && <CraftServices section={section} cs={darkCs} />}
           {section.type === "testimonials" && <CraftTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <CraftFAQ section={section} cs={darkCs} />}
