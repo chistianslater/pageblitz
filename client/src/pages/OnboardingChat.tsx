@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -200,7 +200,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const scaleMatch = computedStyle.match(/scale\(([^)]+)\)/);
     const scale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
 
-    previewInnerRef.current.style.transform = `scale(${scale}) translateY(-${targetScroll}px)`;
+    const el = previewInnerRef.current;
+    el.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+    el.style.transform = `scale(${scale}) translateY(-${targetScroll}px)`;
+
+    const timer = setTimeout(() => {
+      el.style.transition = "";
+    }, 600);
+
+    return () => clearTimeout(timer);
   }, [currentStep]);
 
   // ── Onboarding data ─────────────────────────────────────────────────────
@@ -861,19 +869,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <Zap className="w-3.5 h-3.5 text-white" />
                   </div>
                 )}
-                <div
-                  className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === "bot"
-                      ? "bg-slate-700/80 text-slate-100 rounded-tl-sm"
-                      : "bg-blue-600 text-white rounded-tr-sm"
-                  }`}
-                  dangerouslySetInnerHTML={{
-                    __html: msg.content
-                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                      .replace(/\n/g, "<br/>"),
-                  }}
-                />
+                <div className="flex gap-2 items-end">
+                  <div
+                    className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                      msg.role === "bot"
+                        ? "bg-slate-700/80 text-slate-100 rounded-tl-sm"
+                        : "bg-blue-600 text-white rounded-tr-sm"
+                    }`}
+                    dangerouslySetInnerHTML={{
+                      __html: msg.content
+                        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                        .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                        .replace(/\n/g, "<br/>"),
+                    }}
+                  />
+                  {msg.role === "user" && (
+                    <button
+                      onClick={() => {
+                        setInputValue(msg.content);
+                      }}
+                      className="w-6 h-6 rounded-md bg-slate-600/50 hover:bg-slate-500/50 flex items-center justify-center transition-colors flex-shrink-0"
+                      title="Bearbeiten"
+                    >
+                      <Edit2 className="w-3.5 h-3.5 text-slate-300 hover:text-white" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
 
