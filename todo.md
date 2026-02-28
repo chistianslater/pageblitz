@@ -529,3 +529,9 @@
 
 ## Bugfix: Ladeanimation Website-Generieren (Feb 28 2026)
 - [x] WebsitesPage: Ladeanimation nur beim geklickten Button anzeigen (generatingId State statt globalem isPending)
+
+## Sekundärfarbe im Onboarding (Feb 28 2026)
+- [x] colorScheme-Struktur prüfen: wo wird Sekundärfarbe gespeichert und wie wird sie im WebsiteRenderer verwendet
+- [x] Neuer Chat-Schritt "brandSecondaryColor" nach brandColor hinzufügen
+- [x] Echtzeit-Vorschau: Sekundärfarbe wird sofort in liveWebsiteData übernommen
+- [x] Speicherung: Sekundärfarbe wird in colorScheme.secondary gespeichert

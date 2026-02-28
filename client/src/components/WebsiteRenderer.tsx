@@ -195,6 +195,8 @@ function buildTokenStyles(tokens: DesignTokens, cs: ColorScheme): string {
     --site-headline-weight: ${tokens.headlineFontWeight || "700"};
     --site-headline-ls: ${tokens.headlineLetterSpacing || "-0.02em"};
     --site-body-lh: ${tokens.bodyLineHeight || "1.75"};
+    --site-color-primary: ${cs.primary};
+    --site-color-secondary: ${cs.secondary};
     --site-color-accent: ${accent};
     --site-color-bg: ${bg};
     --site-color-text: ${text};

@@ -33,6 +33,7 @@ interface OnboardingData {
   legalPhone: string;
   legalVatId: string;
   brandColor: string;
+  brandSecondaryColor: string;
   brandLogo: string; // base64 or "font:<fontName>"
   headlineFont: string; // Serif or Sans-serif font name
   addOnContactForm: boolean;
@@ -60,6 +61,7 @@ type ChatStep =
   | "legalPhone"
   | "legalVat"
   | "brandColor"
+  | "brandSecondaryColor"
   | "brandLogo"
   | "headlineFont"
   | "addons"
@@ -84,6 +86,7 @@ const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 const STEP_ORDER: ChatStep[] = [
   "businessCategory",
   "brandColor",
+  "brandSecondaryColor",
   "brandLogo",
   "headlineFont",
   "businessName",
@@ -110,6 +113,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   welcome: null,
   businessCategory: "hero",
   brandColor: "hero",
+  brandSecondaryColor: "hero",
   brandLogo: "header",
   headlineFont: "hero",
   businessName: "header",
@@ -237,6 +241,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalPhone: "",
     legalVatId: "",
     brandColor: "#3B82F6",
+    brandSecondaryColor: "#F1F5F9",
     brandLogo: "font:Inter",
     headlineFont: "Georgia",
     addOnContactForm: true,
@@ -455,7 +460,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "hideSections":
           return `Wir sind fast fertig! 🎉 Gibt es Bereiche, die du zum Start ausblenden möchtest? Klick einfach drauf – keine Sorge, du kannst sie jederzeit wieder einblenden.`;
         case "brandColor":
-          return `🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine Hauptfarbe – du siehst sofort rechts, wie deine Website damit aussieht!`;
+          return `🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine **Hauptfarbe** – du siehst sofort rechts, wie deine Website damit aussieht!`;
+        case "brandSecondaryColor":
+          return `Perfekt! Jetzt wähle noch deine **Sekundärfarbe** – sie wird für Hintergründe, Abschnitte und Akzente genutzt und gibt deiner Website mehr Tiefe.`;
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "headlineFont":
@@ -727,6 +734,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           break;
         case "brandColor":
+        case "brandSecondaryColor":
         case "brandLogo":
         case "services":
         case "addons":
@@ -845,6 +853,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.topServices,
     data.topServicesSkipped,
     data.brandColor,
+    data.brandSecondaryColor,
     data.brandLogo,
     hiddenSections,
   ]);
@@ -1334,6 +1343,69 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const color = data.brandColor || "#2563EB";
                     addUserMessage(`Meine Hauptfarbe: ${color} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("brandColor"), { brandColor: color });
+                    await advanceToStep("brandSecondaryColor");
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "brandSecondaryColor" && (
+              <div className="ml-9 space-y-3">
+                <p className="text-slate-400 text-xs">Helle Töne eignen sich gut als Hintergrundfarbe, kräftige Farben als Akzent:</p>
+                <div className="grid grid-cols-6 gap-2">
+                  {[
+                    { label: "Hellgrau", hex: "#F1F5F9" },
+                    { label: "Warmweiß", hex: "#FFFBEB" },
+                    { label: "Hellblau", hex: "#EFF6FF" },
+                    { label: "Hellgrün", hex: "#F0FDF4" },
+                    { label: "Hellrot", hex: "#FFF1F2" },
+                    { label: "Helllila", hex: "#F5F3FF" },
+                    { label: "Dunkelgrau", hex: "#1E293B" },
+                    { label: "Dunkelblau", hex: "#0F172A" },
+                    { label: "Dunkelgrün", hex: "#052E16" },
+                    { label: "Dunkelrot", hex: "#450A0A" },
+                    { label: "Dunkelbraun", hex: "#1C0A00" },
+                    { label: "Schwarz", hex: "#111827" },
+                  ].map((color) => (
+                    <button
+                      key={color.hex}
+                      title={color.label}
+                      onClick={() => setData((p) => ({ ...p, brandSecondaryColor: color.hex }))}
+                      className={`w-full aspect-square rounded-lg border-2 transition-all ${
+                        data.brandSecondaryColor === color.hex
+                          ? "border-white scale-110 shadow-lg"
+                          : "border-transparent hover:border-slate-400"
+                      }`}
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <div
+                    className="w-8 h-8 rounded-lg border border-slate-500 flex-shrink-0"
+                    style={{ backgroundColor: data.brandSecondaryColor || "#F1F5F9" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="#F1F5F9"
+                    value={data.brandSecondaryColor}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) setData((p) => ({ ...p, brandSecondaryColor: v }));
+                    }}
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 font-mono"
+                  />
+                </div>
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const color = data.brandSecondaryColor || "#F1F5F9";
+                    addUserMessage(`Meine Sekundärfarbe: ${color} ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("brandSecondaryColor"), { brandColor: data.brandColor });
                     await advanceToStep("brandLogo");
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2057,7 +2129,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <WebsiteRenderer
                 websiteData={liveWebsiteData}
                 colorScheme={data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor)
-                  ? { ...colorScheme, primary: data.brandColor, secondary: data.brandColor, accent: data.brandColor } as any
+                  ? { 
+                      ...colorScheme, 
+                      primary: data.brandColor, 
+                      accent: data.brandColor,
+                      ...(data.brandSecondaryColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandSecondaryColor)
+                        ? { secondary: data.brandSecondaryColor }
+                        : {})
+                    } as any
                   : colorScheme}
                 heroImageUrl={heroImageUrl}
                 layoutStyle={layoutStyle}
