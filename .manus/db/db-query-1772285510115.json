@@ -1,0 +1,9 @@
+{
+  "query": "\nALTER TABLE `onboarding_responses`\n  ADD COLUMN IF NOT EXISTS `brandColor` VARCHAR(20) NULL,\n  ADD COLUMN IF NOT EXISTS `brandSecondaryColor` VARCHAR(20) NULL,\n  ADD COLUMN IF NOT EXISTS `headlineFont` VARCHAR(100) NULL;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute \nALTER TABLE `onboarding_responses`\n  ADD COLUMN IF NOT EXISTS `brandColor` VARCHAR(20) NULL,\n  ADD COLUMN IF NOT EXISTS `brandSecondaryColor` VARCHAR(20) NULL,\n  ADD COLUMN IF NOT EXISTS `headlineFont` VARCHAR(100) NULL;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1049
+}

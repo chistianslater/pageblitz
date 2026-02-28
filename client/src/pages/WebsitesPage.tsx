@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle, Clock, TrendingDown } from "lucide-react";
+import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle, Clock, TrendingDown, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 const statusColors: Record<string, string> = {
   preview: "bg-amber-500/20 text-amber-400 border-amber-500/30",
@@ -188,6 +189,8 @@ export default function WebsitesPage() {
                             </a>
                           </Button>
                           <CheckoutDialog website={w} />
+                          <ActivateWebsiteButton website={w} />
+                          <TestSubscriptionButton website={w} />
                           <RegenerateDialog website={w} />
                           <OutreachDialog website={w} />
                           <DeleteWebsiteDialog website={w} />
@@ -566,6 +569,70 @@ function DeleteWebsiteDialog({ website }: { website: any }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function TestSubscriptionButton({ website }: { website: any }) {
+  const { user } = useAuth();
+  const utils = trpc.useUtils();
+  const createTestSub = trpc.customer.createTestSubscription.useMutation({
+    onSuccess: () => {
+      utils.website.list.invalidate();
+      toast.success("Test-Abo erstellt! Website ist jetzt unter /my-website sichtbar.");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  if (!user) return null;
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
+      onClick={() => createTestSub.mutate({ websiteId: website.id, userId: user.id })}
+      disabled={createTestSub.isPending}
+      title="Verknüpft diese Website mit deinem Account (für Test-Zwecke)"
+    >
+      {createTestSub.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserPlus className="h-3 w-3 mr-1" />}
+      Test-Abo
+    </Button>
+  );
+}
+
+function ActivateWebsiteButton({ website }: { website: any }) {
+  const utils = trpc.useUtils();
+  const [loading, setLoading] = useState(false);
+  const updateStatusMutation = trpc.website.updateStatus.useMutation({
+    onSuccess: () => {
+      utils.website.list.invalidate();
+      toast.success("Website-Status aktualisiert");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  if (website.status === "active") {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
+        onClick={() => updateStatusMutation.mutate({ id: website.id, status: "preview" })}
+        disabled={updateStatusMutation.isPending}
+      >
+        {updateStatusMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 mr-1" />}
+        Deaktivieren
+      </Button>
+    );
+  }
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
+      onClick={() => updateStatusMutation.mutate({ id: website.id, status: "active" })}
+      disabled={updateStatusMutation.isPending}
+    >
+      {updateStatusMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3 mr-1" />}
+      Aktivieren
+    </Button>
   );
 }
 

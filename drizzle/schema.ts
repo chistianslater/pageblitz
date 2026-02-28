@@ -121,6 +121,10 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   legalRegister: varchar("legalRegister", { length: 255 }),
   legalRegisterCourt: varchar("legalRegisterCourt", { length: 255 }),
   legalResponsible: varchar("legalResponsible", { length: 255 }),
+  // Brand colors
+  brandColor: varchar("brandColor", { length: 20 }),
+  brandSecondaryColor: varchar("brandSecondaryColor", { length: 20 }),
+  headlineFont: varchar("headlineFont", { length: 100 }),
   // Add-ons
   addOnContactForm: boolean("addOnContactForm").default(false),
   addOnGallery: boolean("addOnGallery").default(false),

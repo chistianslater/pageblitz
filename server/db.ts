@@ -403,3 +403,17 @@ export async function deleteBusiness(businessId: number): Promise<void> {
   if (!db) throw new Error("DB not available");
   await db.delete(businesses).where(eq(businesses.id, businessId));
 }
+
+export async function getWebsitesByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      website: generatedWebsites,
+      subscription: subscriptions,
+    })
+    .from(subscriptions)
+    .innerJoin(generatedWebsites, eq(subscriptions.websiteId, generatedWebsites.id))
+    .where(eq(subscriptions.userId, userId));
+  return rows;
+}

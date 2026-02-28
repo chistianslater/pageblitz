@@ -535,3 +535,10 @@
 - [x] Neuer Chat-Schritt "brandSecondaryColor" nach brandColor hinzufügen
 - [x] Echtzeit-Vorschau: Sekundärfarbe wird sofort in liveWebsiteData übernommen
 - [x] Speicherung: Sekundärfarbe wird in colorScheme.secondary gespeichert
+
+## 4 neue Features (Feb 28 2026 – Runde N+6)
+- [x] Sekundärfarbe persistieren: beim Abschluss in colorScheme.secondary in DB speichern (trySaveStep)
+- [x] Farbharmonie-Vorschläge: nach Hauptfarb-Auswahl automatisch 3 harmonische Sekundärfarben vorschlagen
+- [x] Foto-Austausch im Onboarding: neuer Schritt heroImage (Upload eigener Fotos oder Unsplash-Auswahl)
+- [x] Kunden-Dashboard: Admin kann eine Website auf "aktiv" setzen + Link zur Kunden-Edit-Ansicht generieren
+- [x] Kunden-Edit-Ansicht: Kunde kann Texte, Farben, Fotos bearbeiten (ähnlich Onboarding-Chat aber vereinfacht)

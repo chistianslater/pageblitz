@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router, adminProcedure } from "./_core/trpc";
+import { publicProcedure, router, adminProcedure, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import {
@@ -14,7 +14,7 @@ import {
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
   createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
-  deleteWebsite, deleteBusiness,
+  deleteWebsite, deleteBusiness, getWebsitesByUserId,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -1850,6 +1850,14 @@ Kontext: ${input.context}`,
           datenschutzHtml = generateDatenschutz(legalData);
         }
         
+        // Patch color scheme with user's chosen brand colors
+        const existingColorScheme = (website.colorScheme as any) || {};
+        const patchedColorScheme = {
+          ...existingColorScheme,
+          ...(onboarding.brandColor ? { primary: onboarding.brandColor, accent: onboarding.brandColor } : {}),
+          ...(onboarding.brandSecondaryColor ? { secondary: onboarding.brandSecondaryColor } : {}),
+        };
+
         // Save patched data and legal pages
         await updateWebsite(input.websiteId, {
           websiteData: {
@@ -1858,6 +1866,7 @@ Kontext: ${input.context}`,
             datenschutzHtml,
             hasLegalPages: !!(impressumHtml && datenschutzHtml),
           } as any,
+          colorScheme: patchedColorScheme,
           onboardingStatus: "completed",
           hasLegalPages: !!(impressumHtml && datenschutzHtml),
           status: "active",
@@ -1917,9 +1926,121 @@ Kontext: ${input.context}`,
         });
         return { url: result.url, key: result.key, totalPhotos: updatedPhotos.length };
       }),
+
+    // Get industry-specific photo suggestions for the hero image step
+    getPhotoSuggestions: publicProcedure
+      .input(z.object({ category: z.string(), businessName: z.string().optional() }))
+      .query(async ({ input }) => {
+        const { getIndustryImages } = await import('./industryImages');
+        const imageSet = getIndustryImages(input.category);
+        const suggestions = [
+          ...imageSet.hero.slice(0, 4),
+          ...(imageSet.gallery || []).slice(0, 2),
+        ].slice(0, 6);
+        return { suggestions };
+      }),
   }),
 
   // ── Self-Service: Start without GMB ────────────────────────────────
+  // ── Customer Dashboard ──────────────────────────────
+  customer: router({
+    getMyWebsites: protectedProcedure.query(async ({ ctx }) => {
+      const userId = ctx.user.id;
+      const rows = await getWebsitesByUserId(userId);
+      // Enrich with business data
+      const results = await Promise.all(
+        rows.map(async (row) => {
+          const business = await getBusinessById(row.website.businessId);
+          return { website: row.website, subscription: row.subscription, business };
+        })
+      );
+      return results;
+    }),
+    updateWebsiteContent: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        patch: z.object({
+          tagline: z.string().optional(),
+          description: z.string().optional(),
+          businessName: z.string().optional(),
+          phone: z.string().optional(),
+          email: z.string().optional(),
+          address: z.string().optional(),
+          heroPhotoUrl: z.string().optional(),
+          brandColor: z.string().optional(),
+          brandSecondaryColor: z.string().optional(),
+        }),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership via subscription
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        const website = owned.website;
+        // Patch websiteData
+        const websiteData = (website.websiteData as any) || {};
+        const { tagline, description, businessName, phone, email, address, heroPhotoUrl } = input.patch;
+        if (tagline !== undefined) websiteData.tagline = tagline;
+        if (description !== undefined) websiteData.description = description;
+        if (businessName !== undefined) websiteData.businessName = businessName;
+        // Patch sections
+        if ((tagline || description) && Array.isArray(websiteData.sections)) {
+          websiteData.sections = websiteData.sections.map((s: any) => {
+            if (s.type === "hero") {
+              return { ...s, headline: tagline ?? s.headline, subheadline: description ?? s.subheadline };
+            }
+            return s;
+          });
+        }
+        // Patch color scheme
+        const colorScheme = (website.colorScheme as any) || {};
+        if (input.patch.brandColor) colorScheme.primary = input.patch.brandColor;
+        if (input.patch.brandSecondaryColor) colorScheme.secondary = input.patch.brandSecondaryColor;
+        const updateData: any = { websiteData, colorScheme };
+        if (heroPhotoUrl !== undefined) updateData.heroImageUrl = heroPhotoUrl;
+        // Patch business contact info
+        if (phone !== undefined || email !== undefined || address !== undefined) {
+          const biz = await getBusinessById(website.businessId);
+          if (biz) {
+            await updateBusiness(biz.id, {
+              ...(phone !== undefined ? { phone } : {}),
+              ...(email !== undefined ? { email } : {}),
+              ...(address !== undefined ? { address } : {}),
+            });
+          }
+        }
+        await updateWebsite(input.websiteId, updateData);
+        return { success: true };
+      }),
+    setWebsiteActive: adminProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input }) => {
+        await updateWebsite(input.websiteId, { status: "active" });
+        return { success: true };
+      }),
+    createTestSubscription: adminProcedure
+      .input(z.object({ websiteId: z.number(), userId: z.number() }))
+      .mutation(async ({ input }) => {
+        // Check if subscription already exists
+        const existing = await getSubscriptionByWebsiteId(input.websiteId);
+        if (existing) {
+          // Update userId
+          await updateSubscriptionByWebsiteId(input.websiteId, { userId: input.userId });
+        } else {
+          await createSubscription({
+            websiteId: input.websiteId,
+            userId: input.userId,
+            status: "active",
+            plan: "base",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }
+        await updateWebsite(input.websiteId, { status: "active" });
+        return { success: true };
+      }),
+  }),
+
   selfService: router({
     /**
      * Resolve a Google share link (share.google/xxx, maps.app.goo.gl/xxx,

@@ -34,6 +34,7 @@ interface OnboardingData {
   legalVatId: string;
   brandColor: string;
   brandSecondaryColor: string;
+  heroPhotoUrl: string; // selected or uploaded hero photo URL
   brandLogo: string; // base64 or "font:<fontName>"
   headlineFont: string; // Serif or Sans-serif font name
   addOnContactForm: boolean;
@@ -62,6 +63,7 @@ type ChatStep =
   | "legalVat"
   | "brandColor"
   | "brandSecondaryColor"
+  | "heroPhoto"
   | "brandLogo"
   | "headlineFont"
   | "addons"
@@ -87,6 +89,7 @@ const STEP_ORDER: ChatStep[] = [
   "businessCategory",
   "brandColor",
   "brandSecondaryColor",
+  "heroPhoto",
   "brandLogo",
   "headlineFont",
   "businessName",
@@ -114,6 +117,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   businessCategory: "hero",
   brandColor: "hero",
   brandSecondaryColor: "hero",
+  heroPhoto: "hero",
   brandLogo: "header",
   headlineFont: "hero",
   businessName: "header",
@@ -242,6 +246,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalVatId: "",
     brandColor: "#3B82F6",
     brandSecondaryColor: "#F1F5F9",
+    heroPhotoUrl: "",
     brandLogo: "font:Inter",
     headlineFont: "Georgia",
     addOnContactForm: true,
@@ -463,6 +468,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine **Hauptfarbe** – du siehst sofort rechts, wie deine Website damit aussieht!`;
         case "brandSecondaryColor":
           return `Perfekt! Jetzt wähle noch deine **Sekundärfarbe** – sie wird für Hintergründe, Abschnitte und Akzente genutzt und gibt deiner Website mehr Tiefe.`;
+        case "heroPhoto":
+          return `Schön! Jetzt wählen wir ein **Hauptbild** für deine Website. Du kannst ein eigenes Foto hochladen oder aus unseren Vorschlägen wählen – passend zu deiner Branche.`;
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "headlineFont":
@@ -1354,7 +1361,35 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             {!isTyping && currentStep === "brandSecondaryColor" && (
               <div className="ml-9 space-y-3">
-                <p className="text-slate-400 text-xs">Helle Töne eignen sich gut als Hintergrundfarbe, kräftige Farben als Akzent:</p>
+                {/* Harmony suggestions based on primary color */}
+                {data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor) && (() => {
+                  const hex = data.brandColor.replace('#', '');
+                  const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+                  // Light tint (mix with white at 90%)
+                  const tint = `#${Math.round(r*0.15+255*0.85).toString(16).padStart(2,'0')}${Math.round(g*0.15+255*0.85).toString(16).padStart(2,'0')}${Math.round(b*0.15+255*0.85).toString(16).padStart(2,'0')}`;
+                  // Complementary (invert hue roughly)
+                  const comp = `#${(255-r).toString(16).padStart(2,'0')}${(255-g).toString(16).padStart(2,'0')}${(255-b).toString(16).padStart(2,'0')}`;
+                  // Warm neutral
+                  const warm = '#FAF7F2';
+                  return (
+                    <div className="space-y-1">
+                      <p className="text-slate-400 text-xs font-medium">Harmonische Vorschläge zur Hauptfarbe:</p>
+                      <div className="flex gap-2">
+                        {[{ label: 'Heller Ton', hex: tint }, { label: 'Komplementär', hex: comp }, { label: 'Warmweiß', hex: warm }].map((s) => (
+                          <button key={s.hex} title={s.label}
+                            onClick={() => setData((p) => ({ ...p, brandSecondaryColor: s.hex }))}
+                            className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${
+                              data.brandSecondaryColor === s.hex ? 'border-blue-400 bg-slate-700/50' : 'border-slate-600/40 hover:border-slate-400'
+                            }`}>
+                            <div className="w-8 h-8 rounded-md" style={{ backgroundColor: s.hex, border: '1px solid rgba(255,255,255,0.15)' }} />
+                            <span className="text-slate-300 text-xs">{s.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                <p className="text-slate-400 text-xs">Oder wähle eine andere Farbe:</p>
                 <div className="grid grid-cols-6 gap-2">
                   {[
                     { label: "Hellgrau", hex: "#F1F5F9" },
@@ -1405,14 +1440,30 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     if (isTyping) return;
                     const color = data.brandSecondaryColor || "#F1F5F9";
                     addUserMessage(`Meine Sekundärfarbe: ${color} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("brandSecondaryColor"), { brandColor: data.brandColor });
-                    await advanceToStep("brandLogo");
+                    await trySaveStep(STEP_ORDER.indexOf("brandSecondaryColor"), { brandColor: data.brandColor, brandSecondaryColor: color });
+                    await advanceToStep("heroPhoto");
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
+            )}
+
+            {!isTyping && currentStep === "heroPhoto" && (
+              <HeroPhotoStep
+                businessCategory={data.businessCategory}
+                heroPhotoUrl={data.heroPhotoUrl}
+                websiteId={websiteId}
+                onSelect={(url) => setData((p) => ({ ...p, heroPhotoUrl: url }))}
+                onNext={async () => {
+                  const url = data.heroPhotoUrl || "";
+                  const label = url ? "Foto ausgewählt ✓" : "Kein Foto (Standard) ✓";
+                  addUserMessage(label);
+                  await trySaveStep(STEP_ORDER.indexOf("heroPhoto"), { heroPhotoUrl: url });
+                  await advanceToStep("brandLogo");
+                }}
+              />
             )}
 
             {!isTyping && currentStep === "brandLogo" && (
@@ -2160,6 +2211,200 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── HeroPhotoStep ─────────────────────────────────────────────────────────────
+
+const INDUSTRY_KEYWORDS: Record<string, string> = {
+  "Restaurant": "restaurant interior food",
+  "Bar / Tapas": "bar cocktails night",
+  "Café / Bistro": "cafe coffee cozy",
+  "Bäckerei": "bakery bread pastry",
+  "Friseur": "hair salon barber",
+  "Beauty / Kosmetik": "beauty salon cosmetics",
+  "Bauunternehmen": "construction building",
+  "Handwerk": "craftsman workshop tools",
+  "Fitness-Studio": "gym fitness workout",
+  "Arzt / Zahnarzt": "modern medical clinic",
+  "Rechtsanwalt": "law office professional",
+  "Immobilien": "modern real estate house",
+  "IT / Software": "modern tech office",
+  "Fotografie": "photography studio camera",
+  "Autowerkstatt": "auto repair garage",
+  "Hotel / Pension": "hotel lobby elegant",
+};
+
+// Curated Unsplash photo IDs per industry (free, no API key needed)
+const INDUSTRY_PHOTOS: Record<string, { id: string; url: string; thumb: string; alt: string }[]> = {
+  default: [
+    { id: "1", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70", alt: "Modernes Büro" },
+    { id: "2", url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=70", alt: "Helles Büro" },
+    { id: "3", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&q=70", alt: "Gebäude" },
+    { id: "4", url: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=70", alt: "Team Meeting" },
+    { id: "5", url: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&q=70", alt: "Teamarbeit" },
+    { id: "6", url: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&q=70", alt: "Professionell" },
+  ],
+  "Restaurant": [
+    { id: "r1", url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=70", alt: "Restaurant Innenraum" },
+    { id: "r2", url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70", alt: "Elegantes Dinner" },
+    { id: "r3", url: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&q=70", alt: "Restaurant Tische" },
+    { id: "r4", url: "https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=400&q=70", alt: "Gericht" },
+    { id: "r5", url: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&q=70", alt: "Restaurant Ambiente" },
+    { id: "r6", url: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&q=70", alt: "Speisen" },
+  ],
+  "Café / Bistro": [
+    { id: "c1", url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&q=70", alt: "Café Innenraum" },
+    { id: "c2", url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=400&q=70", alt: "Kaffee" },
+    { id: "c3", url: "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=400&q=70", alt: "Café Tische" },
+    { id: "c4", url: "https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=400&q=70", alt: "Latte Art" },
+    { id: "c5", url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&q=70", alt: "Kaffeetasse" },
+    { id: "c6", url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=70", alt: "Café Atmosphäre" },
+  ],
+  "Friseur": [
+    { id: "f1", url: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&q=70", alt: "Friseursalon" },
+    { id: "f2", url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&q=70", alt: "Haarstyling" },
+    { id: "f3", url: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=70", alt: "Salon Spiegel" },
+    { id: "f4", url: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=70", alt: "Haarschnitt" },
+    { id: "f5", url: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400&q=70", alt: "Barber" },
+    { id: "f6", url: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400&q=70", alt: "Friseursalon modern" },
+  ],
+  "Handwerk": [
+    { id: "h1", url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=70", alt: "Handwerker" },
+    { id: "h2", url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=70", alt: "Werkzeuge" },
+    { id: "h3", url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70", alt: "Werkstatt" },
+    { id: "h4", url: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=70", alt: "Holzarbeit" },
+    { id: "h5", url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=400&q=70", alt: "Baustelle" },
+    { id: "h6", url: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&q=70", alt: "Handwerker Arbeit" },
+  ],
+};
+
+interface HeroPhotoStepProps {
+  businessCategory: string;
+  heroPhotoUrl: string;
+  websiteId?: number;
+  onSelect: (url: string) => void;
+  onNext: () => Promise<void>;
+}
+
+function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, onSelect, onNext }: HeroPhotoStepProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
+
+  const photos = INDUSTRY_PHOTOS[businessCategory] || INDUSTRY_PHOTOS["default"];
+
+  return (
+    <div className="ml-9 space-y-3">
+      <p className="text-slate-400 text-xs">Wähle ein passendes Foto für den Hero-Bereich deiner Website:</p>
+
+      {/* Photo grid */}
+      <div className="grid grid-cols-3 gap-2">
+        {photos.map((photo) => (
+          <button
+            key={photo.id}
+            onClick={() => onSelect(heroPhotoUrl === photo.url ? "" : photo.url)}
+            className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
+              heroPhotoUrl === photo.url
+                ? "border-blue-400 ring-2 ring-blue-400/40"
+                : "border-slate-600/40 hover:border-slate-400"
+            }`}
+            title={photo.alt}
+          >
+            <img
+              src={photo.thumb}
+              alt={photo.alt}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            {heroPhotoUrl === photo.url && (
+              <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                  <Check className="w-3.5 h-3.5 text-white" />
+                </div>
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Upload option */}
+      <div className="border-t border-slate-700 pt-3">
+        <p className="text-slate-400 text-xs mb-2">Oder eigenes Foto hochladen:</p>
+        {heroPhotoUrl && !photos.some((p) => p.url === heroPhotoUrl) ? (
+          <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-blue-500 bg-blue-500/10">
+            <img src={heroPhotoUrl} alt="Eigenes Foto" className="h-12 w-20 object-cover rounded" />
+            <div className="flex-1">
+              <p className="text-white text-sm font-medium">Eigenes Foto ✓</p>
+              <button
+                onClick={() => onSelect("")}
+                className="text-slate-400 text-xs hover:text-white transition-colors"
+              >
+                Entfernen
+              </button>
+            </div>
+          </div>
+        ) : (
+          <label className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${isUploading ? "opacity-50 pointer-events-none" : ""}`}>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file || !websiteId) return;
+                if (file.size > 5 * 1024 * 1024) {
+                  alert("Foto darf maximal 5 MB groß sein.");
+                  return;
+                }
+                setIsUploading(true);
+                const reader = new FileReader();
+                reader.onload = async () => {
+                  const base64 = (reader.result as string).split(",")[1];
+                  try {
+                    const result = await uploadLogoMutation.mutateAsync({
+                      websiteId,
+                      imageData: base64,
+                      mimeType: file.type,
+                    });
+                    onSelect(result.url);
+                  } catch {
+                    alert("Upload fehlgeschlagen. Bitte erneut versuchen.");
+                  } finally {
+                    setIsUploading(false);
+                  }
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+            {isUploading ? (
+              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+            ) : (
+              <Upload className="w-5 h-5 text-slate-400" />
+            )}
+            <div>
+              <p className="text-white text-sm">{isUploading ? "Wird hochgeladen…" : "Foto hochladen"}</p>
+              <p className="text-slate-400 text-xs">JPG, PNG oder WebP · max. 5 MB</p>
+            </div>
+          </label>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => { onSelect(""); onNext(); }}
+          className="flex-1 text-xs text-slate-400 hover:text-slate-300 px-3 py-2 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors"
+        >
+          Kein Foto (Standard)
+        </button>
+        <button
+          disabled={isUploading}
+          onClick={onNext}
+          className="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Weiter <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

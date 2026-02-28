@@ -17,6 +17,7 @@ import OnboardingWizard from "./pages/OnboardingWizard";
 import OnboardingChat from "./pages/OnboardingChat";
 import LegalPage from "./pages/LegalPage";
 import StartPage from "./pages/StartPage";
+import CustomerDashboard from "./pages/CustomerDashboard";
 
 function AdminRouter() {
   return (
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/site/:slug/datenschutz" component={LegalPage} />
       <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
+      <Route path="/my-website" component={CustomerDashboard} />
       <Route>
         <AdminRouter />
       </Route>
