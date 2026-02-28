@@ -101,6 +101,31 @@ const STEP_ORDER: ChatStep[] = [
   "checkout",
 ];
 
+const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
+  welcome: null,
+  businessCategory: "hero",
+  brandColor: "hero",
+  brandLogo: "header",
+  businessName: "header",
+  tagline: "hero",
+  description: "hero",
+  usp: "features",
+  services: "services",
+  targetAudience: "cta",
+  legalOwner: "footer",
+  legalStreet: "footer",
+  legalZipCity: "footer",
+  legalEmail: "footer",
+  legalPhone: "footer",
+  legalVat: "footer",
+  addons: null,
+  subpages: null,
+  email: null,
+  hideSections: null,
+  preview: null,
+  checkout: null,
+};
+
 // ── Helper ───────────────────────────────────────────────────────────────────
 
 function genId() {
@@ -157,6 +182,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewInnerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll preview to current section
+  useEffect(() => {
+    const sectionId = STEP_TO_SECTION_ID[currentStep];
+    if (!sectionId || !previewInnerRef.current) return;
+
+    const element = previewInnerRef.current.querySelector(`[data-section="${sectionId}"]`);
+    if (!element) return;
+
+    const elementTop = (element as HTMLElement).offsetTop;
+    const viewportHeight = 1280 * 0.62;
+    const targetScroll = Math.max(0, elementTop - viewportHeight / 3);
+
+    const computedStyle = previewInnerRef.current.style.transform;
+    const scaleMatch = computedStyle.match(/scale\(([^)]+)\)/);
+    const scale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
+
+    previewInnerRef.current.style.transform = `scale(${scale}) translateY(-${targetScroll}px)`;
+  }, [currentStep]);
 
   // ── Onboarding data ─────────────────────────────────────────────────────
   const [data, setData] = useState<OnboardingData>({
@@ -1750,7 +1795,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             })()}
           </div>
           {liveWebsiteData && colorScheme ? (
-            <MacbookMockup label="Live-Vorschau deiner Website">
+            <MacbookMockup label="Live-Vorschau deiner Website" innerRef={previewInnerRef}>
               <WebsiteRenderer
                 websiteData={liveWebsiteData}
                 colorScheme={data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor)

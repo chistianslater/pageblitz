@@ -3,6 +3,7 @@ import { ReactNode, useRef, useState, useEffect, useCallback } from "react";
 interface Props {
   children: ReactNode;
   label?: string;
+  innerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 /**
@@ -16,7 +17,7 @@ const DESKTOP_WIDTH = 1280;
 // Visible viewport height as a fraction of desktop width (≈ 16:10)
 const ASPECT_RATIO = 0.62;
 
-export default function MacbookMockup({ children, label }: Props) {
+export default function MacbookMockup({ children, label, innerRef: propsInnerRef }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -140,7 +141,10 @@ export default function MacbookMockup({ children, label }: Props) {
             onWheel={handleWheel}
           >
             <div
-              ref={innerRef}
+              ref={(el) => {
+                innerRef.current = el;
+                if (propsInnerRef && el) propsInnerRef.current = el;
+              }}
               style={{
                 width: `${DESKTOP_WIDTH}px`,
                 transformOrigin: "top left",
