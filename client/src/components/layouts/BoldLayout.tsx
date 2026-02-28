@@ -74,7 +74,7 @@ function BoldNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: Web
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.5rem", fontFamily: HEADING, fontSize: "0.9rem", fontWeight: 600, letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.6rem 1.5rem", fontFamily: HEADING, fontSize: "0.9rem", fontWeight: 600, letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-4 w-4" /> {businessPhone}
           </a>
         )}
@@ -104,7 +104,7 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate, w
         {section.subheadline && <p style={{ fontFamily: BODY, fontSize: "1.1rem", color: "rgba(255,255,255,0.75)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "2.5rem" }}>{section.subheadline}</p>}
         <div className="flex flex-wrap gap-4">
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }} className="btn-premium transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
@@ -244,7 +244,7 @@ function BoldContact({ section, cs, phone, address, email, hours }: { section: W
           </div>
           <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
           <div className="space-y-4">
-            {phone && <div className="flex items-center gap-3"><div style={{ backgroundColor: cs.primary, padding: "0.5rem" }}><Phone className="h-4 w-4 text-white" /></div><a href={`tel:${phone}`} style={{ fontFamily: BODY, fontSize: "1rem", color: "#fff", fontWeight: 500 }}>{phone}</a></div>}
+            {phone && <div className="flex items-center gap-3"><div style={{ backgroundColor: cs.primary, padding: "0.5rem" }}><Phone className="h-4 w-4 text-white" /></div><a href={`tel:${phone}`} style={{ fontFamily: BODY, fontSize: "1rem", color: "var(--site-nav-text)", fontWeight: 500 }}>{phone}</a></div>}
             {address && <div className="flex items-start gap-3"><div style={{ backgroundColor: cs.primary, padding: "0.5rem", flexShrink: 0 }}><MapPin className="h-4 w-4 text-white" /></div><span style={{ fontFamily: BODY, fontSize: "1rem", color: "rgba(255,255,255,0.75)" }}>{address}</span></div>}
             {email && <div className="flex items-center gap-3"><div style={{ backgroundColor: cs.primary, padding: "0.5rem" }}><Mail className="h-4 w-4 text-white" /></div><a href={`mailto:${email}`} style={{ fontFamily: BODY, fontSize: "1rem", color: "rgba(255,255,255,0.75)" }}>{email}</a></div>}
           </div>
@@ -260,7 +260,7 @@ function BoldContact({ section, cs, phone, address, email, hours }: { section: W
             ))}
           </div>
           {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "0.9rem 2rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "2rem" }} className="btn-premium transition-opacity">
+            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem 2rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "2rem" }} className="btn-premium transition-opacity">
               <Phone className="h-4 w-4" /> Jetzt anrufen
             </a>
           )}
@@ -275,8 +275,8 @@ function BoldCTA({ section, cs, showActivateButton, onActivate }: { section: Web
     <section style={{ backgroundColor: cs.primary, padding: "4rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
-          {section.content && <p style={{ fontFamily: BODY, fontSize: "1rem", color: "rgba(255,255,255,0.8)", marginTop: "0.5rem" }}>{section.content}</p>}
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "var(--site-nav-text)", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+          {section.content && <p style={{ fontFamily: BODY, fontSize: "1rem", color: "var(--site-nav-text-muted, rgba(0,0,0,0.7))", marginTop: "0.5rem" }}>{section.content}</p>}
         </div>
         <div className="flex flex-wrap gap-4 flex-shrink-0">
           {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}

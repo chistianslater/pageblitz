@@ -567,3 +567,10 @@
 ## Foto & Farb-Chat-Fixes (Feb 28 2026)
 - [x] Unsplash-Foto-Vorschläge nach Branche filtern (businessCategory → passende Suchbegriffe)
 - [x] Farb-Bearbeitung via Stift-Icon: Color Picker öffnen statt Hex-Input
+
+## Kontrast-Fix (Feb 28 2026)
+- [x] Utility: getContrastColor(bg) → "#fff" oder "#000" (WCAG-Luminanz-Formel)
+- [x] Utility: isLightColor(hex) → boolean
+- [x] Alle Layouts: Headline-Farbe dynamisch (primary auf hellem Hintergrund → dunkel)
+- [x] Alle Layouts: Logo/Navbar-Textfarbe dynamisch je nach Hintergrundfarbe
+- [x] WebsiteRenderer: --site-heading-color und --site-nav-text als CSS-Variablen injizieren

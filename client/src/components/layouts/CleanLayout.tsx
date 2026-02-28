@@ -85,7 +85,7 @@ function CleanNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.6rem 1.25rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.85rem", fontWeight: 600 }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.6rem 1.25rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.85rem", fontWeight: 600 }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-3.5 w-3.5" /> {businessPhone}
           </a>
         )}
@@ -101,19 +101,19 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
         <div className="py-8">
           <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: `${cs.primary}12`, borderRadius: "2rem", padding: "0.4rem 1rem", marginBottom: "1.5rem" }}>
-            <CheckCircle className="h-3.5 w-3.5" style={{ color: cs.primary }} />
-            <span style={{ fontFamily: SANS, fontSize: "0.75rem", color: cs.primary, fontWeight: 600 }}>Zertifizierter Fachbetrieb</span>
+            <CheckCircle className="h-3.5 w-3.5" style={{ color: "var(--site-primary-on-surface)" }} />
+            <span style={{ fontFamily: SANS, fontSize: "0.75rem", color: "var(--site-primary-on-surface)", fontWeight: 600 }}>Zertifizierter Fachbetrieb</span>
           </div>
           <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.2rem, 4.5vw, 3.8rem)", fontWeight: 400, color: cs.text, lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: "1.25rem" }} className="hero-animate-headline">{section.headline}</h1>
           {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1.05rem", lineHeight: 1.7, color: cs.textLight, marginBottom: "2rem" }}>{section.subheadline}</p>}
           <div className="flex flex-wrap gap-3 mb-8">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600 }} className="btn-premium transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600 }} className="btn-premium transition-opacity">
                 {section.ctaText}
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `1.5px solid ${cs.primary}`, color: cs.primary, padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
+              <button onClick={onActivate} style={{ border: `1.5px solid ${cs.primary}`, color: "var(--site-primary-on-surface)", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
                 Jetzt aktivieren
               </button>
             )}
@@ -122,7 +122,7 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
           <div className="flex flex-wrap gap-6">
             {[{ icon: Shield, text: "Datenschutz" }, { icon: Award, text: "Zertifiziert" }, { icon: Users, text: "1000+ Patienten" }].map(({ icon: Icon, text }, i) => (
               <div key={i} className="flex items-center gap-2">
-                <Icon className="h-4 w-4" style={{ color: cs.primary }} />
+                <Icon className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} />
                 <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: cs.textLight, fontWeight: 500 }}>{text}</span>
               </div>
             ))}
@@ -153,14 +153,14 @@ function CleanAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
     <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
         <div>
-          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, marginBottom: "1rem" }}>Über uns</p>
+          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "1rem" }}>Über uns</p>
           <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text, marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight }}>{section.content}</p>}
           <div className="mt-6 space-y-3">
             {["Persönliche Betreuung", "Modernste Ausstattung", "Flexible Terminvergabe"].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
-                <CheckCircle className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} />
+                <CheckCircle className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} />
                 <span style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight }}>{item}</span>
               </div>
             ))}
@@ -180,7 +180,7 @@ function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
     <section data-section="services" style={{ backgroundColor: "#fff", padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
-          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, marginBottom: "0.75rem" }}>Leistungen</p>
+          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "0.75rem" }}>Leistungen</p>
           <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.textLight, marginTop: "0.75rem" }}>{section.subheadline}</p>}
         </div>
@@ -188,7 +188,7 @@ function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: cs.surface, borderRadius: "1rem", padding: "2rem", border: `1px solid ${cs.primary}15` }} className="hover:shadow-md transition-shadow card-premium">
               <div style={{ width: "3rem", height: "3rem", borderRadius: "0.75rem", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
-                <Heart className="h-5 w-5" style={{ color: cs.primary }} />
+                <Heart className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
               </div>
               <h3 style={{ fontFamily: SANS, fontSize: "1rem", fontWeight: 700, color: cs.text, marginBottom: "0.5rem" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "0.875rem", lineHeight: 1.6, color: cs.textLight }}>{item.description}</p>
@@ -213,7 +213,7 @@ function CleanTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
               <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.7, color: cs.textLight, marginBottom: "1.25rem" }}>{item.description || item.title}</p>
               <div className="flex items-center gap-3">
                 <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700, color: cs.primary }}>{(item.author || item.title || "K").charAt(0)}</span>
+                  <span style={{ fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }}>{(item.author || item.title || "K").charAt(0)}</span>
                 </div>
                 <p style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 600, color: cs.text }}>{item.author || item.title}</p>
               </div>
@@ -237,7 +237,7 @@ function CleanFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
             <div key={i} style={{ border: `1px solid ${cs.primary}20`, borderRadius: "0.75rem", overflow: "hidden" }}>
               <button onClick={() => setOpen(open === i ? null : i)} className="w-full text-left px-5 py-4 flex items-center justify-between" style={{ fontFamily: SANS, fontSize: "0.95rem", fontWeight: 600, color: cs.text }}>
                 {item.question || item.title}
-                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} />}
+                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} />}
               </button>
               {open === i && <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.7, color: cs.textLight, padding: "0 1.25rem 1.25rem" }}>{item.answer || item.description}</p>}
             </div>
@@ -253,17 +253,17 @@ function CleanContact({ section, cs, phone, address, email, hours }: { section: 
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
         <div>
-          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, marginBottom: "1rem" }}>Kontakt</p>
+          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "1rem" }}>Kontakt</p>
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text, marginBottom: "2rem" }}>{section.headline}</h2>
           <div className="space-y-4">
-            {phone && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Phone className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 500 }}>{phone}</a></div>}
-            {address && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "start", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: cs.primary }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
-            {email && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Mail className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
+            {phone && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Phone className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 500 }}>{phone}</a></div>}
+            {address && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "start", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: "var(--site-primary-on-surface)" }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
+            {email && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Mail className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
           </div>
         </div>
         <div style={{ backgroundColor: "#fff", borderRadius: "1.5rem", padding: "2.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5" style={{ color: cs.primary }} />
+            <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
             <h3 style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 700, color: cs.text }}>Öffnungszeiten</h3>
           </div>
           <div className="space-y-2">
@@ -272,7 +272,7 @@ function CleanContact({ section, cs, phone, address, email, hours }: { section: 
             ))}
           </div>
           {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, marginTop: "2rem" }} className="btn-premium transition-opacity">
+            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, marginTop: "2rem" }} className="btn-premium transition-opacity">
               <Phone className="h-4 w-4" /> Termin vereinbaren
             </a>
           )}
@@ -287,10 +287,10 @@ function CleanCTA({ section, cs, showActivateButton, onActivate }: { section: We
     <section style={{ backgroundColor: cs.primary, padding: "4rem 0" }}>
       <div className="max-w-3xl mx-auto px-6 text-center">
         <Lock className="h-8 w-8 mx-auto mb-4 text-white opacity-70" />
-        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: "#fff", marginBottom: "1rem" }}>{section.headline}</h2>
-        {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: "rgba(255,255,255,0.8)", marginBottom: "2rem" }}>{section.content}</p>}
+        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: "var(--site-nav-text)", marginBottom: "1rem" }}>{section.headline}</h2>
+        {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: "var(--site-nav-text-muted, rgba(0,0,0,0.7))", marginBottom: "2rem" }}>{section.content}</p>}
         <div className="flex flex-wrap justify-center gap-4">
-          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: cs.primary, padding: "0.85rem 2.5rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
+          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-surface)", padding: "0.85rem 2.5rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
           {showActivateButton && <button onClick={onActivate} style={{ border: "1.5px solid rgba(255,255,255,0.6)", color: "#fff", padding: "0.85rem 2.5rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
         </div>
       </div>
@@ -309,7 +309,7 @@ function CleanFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorS
           <span style={{ fontFamily: SANS, fontSize: "0.95rem", fontWeight: 600, color: "#fff" }}>{websiteData.businessName}</span>
         </div>
         <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: "rgba(255,255,255,0.35)" }}>{websiteData.footer?.text}</p>
-        <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }}>Erstellt mit <span style={{ color: cs.primary }}>Pageblitz</span></p>
+        <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }}>Erstellt mit <span style={{ color: "var(--site-primary-on-surface)" }}>Pageblitz</span></p>
       </div>
     </footer>
   );

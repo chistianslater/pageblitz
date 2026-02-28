@@ -94,7 +94,7 @@ function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
           {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: "#1a1a1a" }}>{websiteData.businessName}</span>}
-          {websiteData.tagline && <span style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.1em", fontWeight: 600 }}>{websiteData.tagline.slice(0, 35)}</span>}
+          {websiteData.tagline && <span style={{ fontSize: "0.65rem", color: "var(--site-primary-on-surface)", letterSpacing: "0.1em", fontWeight: 600 }}>{websiteData.tagline.slice(0, 35)}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Angebot", "Über uns", "Kontakt"].map(label => (
@@ -102,7 +102,7 @@ function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="btn-premium transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="btn-premium transition-opacity">
             <Phone className="h-3.5 w-3.5" /> Reservieren
           </a>
         )}
@@ -128,12 +128,12 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
           )}
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "0.85rem 2.5rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.85rem 2.5rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
                 {section.ctaText}
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `2px solid ${cs.primary}`, color: cs.primary, padding: "0.85rem 2.5rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
+              <button onClick={onActivate} style={{ border: `2px solid ${cs.primary}`, color: "var(--site-primary-on-surface)", padding: "0.85rem 2.5rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
                 Website aktivieren
               </button>
             )}
@@ -145,7 +145,7 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
           {/* Floating info badge */}
           <div style={{ position: "absolute", bottom: "-1.5rem", left: "2rem", backgroundColor: "#fff", borderRadius: "1rem", padding: "1rem 1.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Heart className="h-5 w-5" style={{ color: cs.primary }} />
+              <Heart className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
             </div>
             <div>
               <p style={{ fontSize: "0.75rem", fontWeight: 700, color: "#1a1a1a" }}>Handgemacht</p>
@@ -164,13 +164,13 @@ function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", fontWeight: 600, display: "block", marginBottom: "1rem" }}>Unsere Geschichte</span>
-          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#fff", marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "rgba(255,255,255,0.8)", marginBottom: "1rem" }}>{section.subheadline}</p>}
+          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "var(--site-nav-text)", marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
+          {section.subheadline && <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "var(--site-nav-text-muted, rgba(0,0,0,0.7))", marginBottom: "1rem" }}>{section.subheadline}</p>}
           {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.7)", marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", gap: "2rem" }}>
             {[["100%", "Frisch täglich"], ["5★", "Bewertungen"], ["10+", "Jahre"]].map(([num, label]) => (
               <div key={label} style={{ textAlign: "center" }}>
-                <p style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: "#fff" }}>{num}</p>
+                <p style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: "var(--site-nav-text)" }}>{num}</p>
                 <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.6)", letterSpacing: "0.08em" }}>{label}</p>
               </div>
             ))}
@@ -191,7 +191,7 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
     <section data-section="services" style={{ backgroundColor: "#fafaf8", padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Unser Angebot</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Unser Angebot</span>
           <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
           {section.subheadline && <p style={{ fontSize: "1rem", color: "#666", marginTop: "0.75rem" }}>{section.subheadline}</p>}
         </div>
@@ -201,7 +201,7 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
             return (
               <div key={i} style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "1rem", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid #f0f0ec" }} className="hover:-translate-y-1 transition-transform">
                 <div style={{ width: "3rem", height: "3rem", backgroundColor: `${cs.primary}15`, borderRadius: "0.75rem", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
-                  <Icon className="h-6 w-6" style={{ color: cs.primary }} />
+                  <Icon className="h-6 w-6" style={{ color: "var(--site-primary-on-surface)" }} />
                 </div>
                 <h3 style={{ fontFamily: SERIF, fontSize: "1.15rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.75rem" }}>{item.title}</h3>
                 <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#666" }}>{item.description}</p>
@@ -220,7 +220,7 @@ function FreshTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Was unsere Gäste sagen</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Was unsere Gäste sagen</span>
           <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
@@ -234,7 +234,7 @@ function FreshTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
               <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: "#444", marginBottom: "1.25rem", fontStyle: "italic" }}>{item.description || item.title}</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}20`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: cs.primary }}>{(item.author || "K")[0]}</span>
+                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }}>{(item.author || "K")[0]}</span>
                 </div>
                 <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#1a1a1a" }}>{item.author || "Gast"}</span>
               </div>
@@ -253,7 +253,7 @@ function FreshFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-3xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -286,7 +286,7 @@ function FreshCTA({ section, cs, showActivateButton, onActivate }: { section: We
         {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.6)", marginBottom: "2.5rem" }}>{section.content}</p>}
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
@@ -306,14 +306,14 @@ function FreshContact({ section, cs, phone, address, email, hours }: { section: 
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a", marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ color: "#1a1a1a", fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
-            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: cs.primary }} /></div><span style={{ color: "#666", fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
-            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`mailto:${email}`} style={{ color: "#1a1a1a", fontSize: "1rem" }}>{email}</a></div>}
-            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: cs.primary }} /></div><div style={{ marginTop: "0.5rem" }}>{hours.map((h, i) => <p key={i} style={{ color: "#666", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
+            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><a href={`tel:${phone}`} style={{ color: "#1a1a1a", fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
+            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><span style={{ color: "#666", fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
+            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><a href={`mailto:${email}`} style={{ color: "#1a1a1a", fontSize: "1rem" }}>{email}</a></div>}
+            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><div style={{ marginTop: "0.5rem" }}>{hours.map((h, i) => <p key={i} style={{ color: "#666", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
         <div style={{ backgroundColor: "#fff", padding: "2.5rem", borderRadius: "1rem", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
@@ -322,7 +322,7 @@ function FreshContact({ section, cs, phone, address, email, hours }: { section: 
             <input type="text" placeholder="Ihr Name" style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
             <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
             <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", resize: "vertical", borderRadius: "0.5rem" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
               Nachricht senden
             </button>
           </form>

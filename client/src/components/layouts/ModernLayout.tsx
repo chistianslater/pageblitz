@@ -99,7 +99,7 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
         </div>
         {businessPhone && (
           <a href={`tel:${businessPhone}`} style={{ fontSize: "0.85rem", color: "#0a0a0a", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }} className="hover:opacity-60 transition-opacity">
-            <Phone className="h-4 w-4" style={{ color: cs.primary }} /> {businessPhone}
+            <Phone className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /> {businessPhone}
           </a>
         )}
       </div>
@@ -115,7 +115,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
         <div className="lg:col-span-3 flex flex-col justify-center py-20 pr-12">
           <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", marginBottom: "2rem" }}>
             <div style={{ width: "1.5rem", height: "2px", backgroundColor: cs.primary }} />
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Professionell & Zuverlässig</span>
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>Professionell & Zuverlässig</span>
           </div>
           <h1 style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem" }} className="hero-animate-headline">
             {section.headline}
@@ -167,11 +167,11 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
             </div>
           </div>
           <div>
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1rem" }}>Über uns</span>
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "1rem" }}>Über uns</span>
             <h2 data-reveal data-delay="0" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem", lineHeight: 1.05 }}>{section.headline}</h2>
             {section.subheadline && <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "#555", marginBottom: "1rem" }}>{section.subheadline}</p>}
             {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "#777", marginBottom: "2rem" }}>{section.content}</p>}
-            <a href="#kontakt" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", fontWeight: 700, color: cs.primary }} className="hover:opacity-70 transition-opacity">
+            <a href="#kontakt" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }} className="hover:opacity-70 transition-opacity">
               Mehr erfahren <ArrowUpRight className="h-4 w-4" />
             </a>
           </div>
@@ -188,7 +188,7 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
       <div className="max-w-7xl mx-auto px-8">
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "4rem" }}>
           <div>
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Leistungen</span>
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Leistungen</span>
             <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1.05 }}>{section.headline}</h2>
           </div>
         </div>
@@ -198,7 +198,7 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
               <div style={{ fontSize: "0.75rem", letterSpacing: "0.1em", color: "#bbb", fontWeight: 600, marginBottom: "1.5rem" }}>{String(i + 1).padStart(2, "0")}</div>
               <h3 style={{ fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#0a0a0a", marginBottom: "0.75rem" }}>{item.title}</h3>
               <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#666" }}>{item.description}</p>
-              <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", fontWeight: 700, color: cs.primary }} className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }} className="opacity-0 group-hover:opacity-100 transition-opacity">
                 Mehr <ArrowRight className="h-3.5 w-3.5" />
               </div>
             </div>
@@ -216,7 +216,7 @@ function ModernTestimonials({ section, cs }: { section: WebsiteSection; cs: Colo
   return (
     <section data-section="testimonials" style={{ backgroundColor: "#0a0a0a", padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
-        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "3rem" }}>Was Kunden sagen</span>
+        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "3rem" }}>Was Kunden sagen</span>
         {featured && (
           <div style={{ marginBottom: "4rem" }}>
             <p style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", fontWeight: 700, lineHeight: 1.3, color: "#fff", letterSpacing: "-0.02em", maxWidth: "800px", marginBottom: "2rem" }}>
@@ -229,7 +229,7 @@ function ModernTestimonials({ section, cs }: { section: WebsiteSection; cs: Colo
               <div>
                 <p style={{ fontSize: "0.9rem", fontWeight: 700, color: "#fff" }}>{featured.author || "Kunde"}</p>
                 <div style={{ display: "flex", gap: "2px", marginTop: "2px" }}>
-                  {Array.from({ length: featured.rating || 5 }).map((_, j) => <Star key={j} className="h-3.5 w-3.5" style={{ fill: cs.primary, color: cs.primary }} />)}
+                  {Array.from({ length: featured.rating || 5 }).map((_, j) => <Star key={j} className="h-3.5 w-3.5" style={{ fill: cs.primary, color: "var(--site-primary-on-surface)" }} />)}
                 </div>
               </div>
             </div>
@@ -256,7 +256,7 @@ function ModernFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
   return (
     <section style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
       <div className="max-w-4xl mx-auto px-8">
-        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>FAQ</span>
+        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>FAQ</span>
         <h2 data-reveal data-delay="200" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "3rem", lineHeight: 1.05 }}>{section.headline}</h2>
         <div>
           {items.map((item, i) => (
@@ -290,7 +290,7 @@ function ModernCTA({ section, cs, showActivateButton, onActivate }: { section: W
         </div>
         <div style={{ display: "flex", gap: "1rem", flexShrink: 0, flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-surface)", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
               {section.ctaText} <ArrowRight className="h-4 w-4" />
             </a>
           )}
@@ -310,14 +310,14 @@ function ModernContact({ section, cs, phone, address, email, hours }: { section:
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 grid lg:grid-cols-2 gap-20">
         <div>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
           <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2.5rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: "#0a0a0a", fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}
-            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><span style={{ color: "#555", fontSize: "0.95rem" }}>{address}</span></div>}
-            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ color: "#0a0a0a", fontSize: "1rem" }}>{email}</a></div>}
-            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><div>{hours.map((h, i) => <p key={i} style={{ color: "#555", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
+            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`tel:${phone}`} style={{ color: "#0a0a0a", fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}
+            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: "var(--site-primary-on-surface)" }} /><span style={{ color: "#555", fontSize: "0.95rem" }}>{address}</span></div>}
+            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`mailto:${email}`} style={{ color: "#0a0a0a", fontSize: "1rem" }}>{email}</a></div>}
+            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: "var(--site-primary-on-surface)" }} /><div>{hours.map((h, i) => <p key={i} style={{ color: "#555", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
         <div style={{ backgroundColor: "#fff", padding: "3rem" }}>

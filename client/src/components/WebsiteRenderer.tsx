@@ -17,6 +17,7 @@
  */
 import { useEffect } from "react";
 import type { WebsiteData, ColorScheme, DesignTokens } from "@shared/types";
+import { getSafeHeadingColor, getContrastColor, isLightColor, getLuminance } from "@shared/colorContrast";
 import ElegantLayout from "./layouts/ElegantLayout";
 import BoldLayout from "./layouts/BoldLayout";
 import WarmLayout from "./layouts/WarmLayout";
@@ -243,7 +244,7 @@ export default function WebsiteRenderer({
   const userSecondary = colorScheme?.secondary && colorScheme.secondary !== defaultCs.secondary
     ? colorScheme.secondary
     : null;
-  const cs: ColorScheme = colorScheme && colorScheme.primary
+  const rawCs: ColorScheme = colorScheme && colorScheme.primary
     ? {
         ...defaultCs,
         ...colorScheme,
@@ -252,6 +253,45 @@ export default function WebsiteRenderer({
         surface: userSecondary || colorScheme.secondary || defaultCs.surface,
       }
     : defaultCs;
+
+  // ─── Enforce contrast: text must always be readable on background ───────────────
+  // If the AI or DB produced a text color with insufficient contrast against the
+  // background (e.g. light text on light bg), replace it with a safe fallback.
+  const bgColor = rawCs.background || "#ffffff";
+  const surfaceColor = rawCs.surface || "#f5f5f5";
+
+  // Safe text color on background
+  const safeText = (() => {
+    const lum = getLuminance(bgColor);
+    const textLum = getLuminance(rawCs.text || "#000000");
+    const lighter = Math.max(lum, textLum);
+    const darker = Math.min(lum, textLum);
+    const ratio = (lighter + 0.05) / (darker + 0.05);
+    if (ratio >= 3.0) return rawCs.text; // sufficient contrast → keep
+    return isLightColor(bgColor) ? "#1a1a1a" : "#f5f5f5";
+  })();
+
+  // Safe textLight color on background
+  const safeTextLight = (() => {
+    const lum = getLuminance(bgColor);
+    const textLum = getLuminance(rawCs.textLight || "#666666");
+    const lighter = Math.max(lum, textLum);
+    const darker = Math.min(lum, textLum);
+    const ratio = (lighter + 0.05) / (darker + 0.05);
+    if (ratio >= 2.5) return rawCs.textLight;
+    return isLightColor(bgColor) ? "#555555" : "rgba(255,255,255,0.65)";
+  })();
+
+  // Safe primary color on background (for headings that use cs.primary as text color)
+  const safePrimaryOnBg = getSafeHeadingColor(bgColor, rawCs.primary);
+  // Safe primary on surface (for headings in surface-colored sections)
+  const safePrimaryOnSurface = getSafeHeadingColor(surfaceColor, rawCs.primary);
+
+  const cs: ColorScheme = {
+    ...rawCs,
+    text: safeText,
+    textLight: safeTextLight,
+  };
   const effectiveHeroImage = heroImageUrl || FALLBACK_IMAGES[effectiveLayout] || FALLBACK_IMAGES.clean;
 
   const tokens = websiteData.designTokens;
@@ -326,6 +366,20 @@ export default function WebsiteRenderer({
     // Explicit user-chosen secondary: also override section-bg-2 for layouts that use it
     tokenStyle += `; --site-user-secondary: ${userSecondary};`;
   }
+
+  // ─── Contrast-safe text colors ───────────────────────────────────────────────
+  // Ensure headings and nav/logo text are always readable against their backgrounds.
+  // --site-heading-on-bg: safe heading color on the main background
+  // --site-heading-on-surface: safe heading color on surface/section-bg-2
+  // --site-nav-text: safe nav/logo text color on the primary-colored navbar
+  const headingOnBg = getSafeHeadingColor(cs.background || "#ffffff", cs.primary);
+  const headingOnSurface = getSafeHeadingColor(cs.surface || "#f5f5f5", cs.primary);
+  const navTextColor = getContrastColor(cs.primary);
+  // On very light primary (e.g. cream/white), the nav bg is often white → use dark text
+  const navBgIsLight = isLightColor(cs.primary);
+  // Muted text on primary background (for subtitles in CTA sections)
+  const navTextMuted = navBgIsLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.75)";
+  tokenStyle += `; --site-heading-on-bg: ${headingOnBg}; --site-heading-on-surface: ${headingOnSurface}; --site-nav-text: ${navTextColor}; --site-nav-text-muted: ${navTextMuted}; --site-nav-bg-is-light: ${navBgIsLight ? "1" : "0"}; --site-primary-on-bg: ${safePrimaryOnBg}; --site-primary-on-surface: ${safePrimaryOnSurface};`;
 
   // Real-time headline font override (from onboarding chat selection)
   if (headlineFontOverride) {
