@@ -1593,7 +1593,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         contact: { label: "Kontaktformular", emoji: "📬" },
                         cta: { label: "Call-to-Action", emoji: "🎯" },
                         features: { label: "Vorteile", emoji: "✅" },
-                        faq: { label: "FAQ", emoji: "❓" },
                         team: { label: "Team", emoji: "👥" },
                       };
                       return { type: s.type, ...(labels[s.type] || { label: s.type, emoji: "📄" }) };

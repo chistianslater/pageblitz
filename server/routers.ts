@@ -630,13 +630,13 @@ PFLICHT-AUSGABE (exaktes JSON-Format)
       ]
     },
     {
-      "type": "faq",
-      "headline": "Häufige Fragen",
+      "type": "about",
+      "headline": "Kreative Überschrift für 'Über uns' (NICHT 'Über uns'! Beispiel: 'Unsere Geschichte', 'Wer wir sind', 'Seit [Jahr] für Sie da')",
+      "content": "Authentischer Text über das Unternehmen (4-5 Sätze: Gründungsgeschichte oder Leidenschaft, Expertise, lokale Verwurzelung, Was uns besonders macht, Versprechen an den Kunden)",
       "items": [
-        { "question": "Branchenspezifische Frage 1 (echte Kundenfrage)?", "answer": "Detaillierte, hilfreiche Antwort als Guide (2-3 Sätze)" },
-        { "question": "Branchenspezifische Frage 2?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" },
-        { "question": "Branchenspezifische Frage 3?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" },
-        { "question": "Branchenspezifische Frage 4?", "answer": "Detaillierte, hilfreiche Antwort (2-3 Sätze)" }
+        { "title": "Starke Zahl oder Aussage", "description": "Erklärung (z.B. '15+ Jahre Erfahrung', '500+ zufriedene Kunden', 'Familienunternehmen')" },
+        { "title": "Starke Zahl oder Aussage", "description": "Erklärung" },
+        { "title": "Starke Zahl oder Aussage", "description": "Erklärung" }
       ]
     },
     {
@@ -1866,6 +1866,47 @@ Kontext: ${input.context}`,
           updatedAt: Date.now(),
         });
         return { url: result.url, key: result.key, totalPhotos: updatedPhotos.length };
+      }),
+  }),
+
+  // ── Self-Service: Start without GMB ────────────────────────────────
+  selfService: router({
+    start: publicProcedure
+      .input(z.object({
+        gmbUrl: z.string().optional(), // optional GMB URL
+        businessName: z.string().optional(), // optional pre-filled name
+      }))
+      .mutation(async ({ input }) => {
+        // Create a placeholder business
+        const placeholderName = input.businessName || "Neues Unternehmen";
+        const baseSlug = slugify(placeholderName);
+        const uniqueSlug = `${baseSlug}-${nanoid(6)}`;
+        const businessId = await upsertBusiness({
+          name: placeholderName,
+          slug: uniqueSlug,
+          placeId: input.gmbUrl ? `self-${nanoid(8)}` : `self-${nanoid(8)}`,
+          category: "",
+          address: "",
+        });
+        // Create a preview website
+        const previewToken = nanoid(32);
+        const websiteSlug = `preview-${uniqueSlug}`;
+        const websiteId = await createGeneratedWebsite({
+          businessId,
+          slug: websiteSlug,
+          status: "preview",
+          previewToken,
+          onboardingStatus: "in_progress",
+        });
+        // Create onboarding record
+        await createOnboarding({
+          websiteId,
+          status: "in_progress",
+          stepCurrent: 0,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+        return { previewToken, websiteId };
       }),
   }),
 });

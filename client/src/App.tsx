@@ -16,6 +16,7 @@ import SitePage from "./pages/SitePage";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import OnboardingChat from "./pages/OnboardingChat";
 import LegalPage from "./pages/LegalPage";
+import StartPage from "./pages/StartPage";
 
 function AdminRouter() {
   return (
@@ -36,6 +37,7 @@ function AdminRouter() {
 function Router() {
   return (
     <Switch>
+      <Route path="/start" component={StartPage} />
       <Route path="/preview/:token" component={PreviewPage} />
       <Route path="/site/:slug" component={SitePage} />
       <Route path="/site/:slug/impressum" component={LegalPage} />
