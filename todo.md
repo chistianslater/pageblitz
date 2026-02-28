@@ -477,3 +477,7 @@
 
 ## Kleinfix (Feb 28 2026)
 - [x] Doppelten Pfeil-Button (Chat ausblenden) im Chat-Header neben Preis-Badge entfernen
+
+## Fixes (Feb 28 2026 – Runde N+3)
+- [x] Preview-Seite: "Jetzt aktivieren ab 79 €" → auf 39 €/Monat korrigieren
+- [x] Chat: Quick-Reply-Buttons über das Eingabefeld verschieben (immer ganz unten)

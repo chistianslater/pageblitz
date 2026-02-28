@@ -214,7 +214,7 @@ export default function PreviewPage() {
               onClick={goToOnboarding}
               className="px-5 py-2 rounded-full text-sm font-semibold bg-white text-gray-900 hover:bg-gray-100 transition-colors whitespace-nowrap"
             >
-              Jetzt aktivieren – ab 79 €/Mo
+              Jetzt aktivieren – ab 39 €/Mo
             </button>
           </div>
         </div>

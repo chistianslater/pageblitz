@@ -1795,7 +1795,30 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
           {/* Input area – sticky at bottom */}
           {!["services", "addons", "subpages", "preview", "checkout", "welcome", "brandColor", "brandLogo", "businessCategory"].includes(currentStep) && (
-            <div className="flex-shrink-0 px-4 py-4 border-t border-slate-700/50">
+            <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
+              {/* Quick-reply chips – above input */}
+              {!isTyping && getQuickReplies(currentStep).length > 0 && (
+                <div className="pt-3 pb-2">
+                  <p className="text-xs text-slate-500 mb-2 font-medium">Schnellantworten:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {getQuickReplies(currentStep).map((reply) => (
+                      <button
+                        key={reply}
+                        onClick={() => {
+                          if (currentStep === "businessName" && reply === "Ja, stimmt!") {
+                            handleSubmit("");
+                          } else {
+                            handleSubmit(reply);
+                          }
+                        }}
+                        className="text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
+                      >
+                        {reply}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="flex gap-2">
                 {/* AI generate button for text fields */}
                 {["tagline", "description", "usp", "targetAudience"].includes(currentStep) && (
@@ -1870,29 +1893,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <Send className="w-4 h-4 text-white" />
                 </button>
               </div>
-              {/* Quick-reply chips */}
-              {!isTyping && getQuickReplies(currentStep).length > 0 && (
-                <div className="mt-3 pt-3 border-t border-slate-700/60">
-                  <p className="text-xs text-slate-500 mb-2 font-medium">Schnellantworten:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {getQuickReplies(currentStep).map((reply) => (
-                      <button
-                        key={reply}
-                        onClick={() => {
-                          if (currentStep === "businessName" && reply === "Ja, stimmt!") {
-                            handleSubmit("");
-                          } else {
-                            handleSubmit(reply);
-                          }
-                        }}
-                        className="text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
-                      >
-                        {reply}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+
 
             </div>
           )}
