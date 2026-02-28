@@ -535,9 +535,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             await generateWithAI(currentStep as keyof OnboardingData);
             return; // Don't advance, let user review and submit
           }
-          addUserMessage(val);
-          setData((p) => ({ ...p, [currentStep]: val }));
-          await trySaveStep(stepIdx, { [currentStep]: val });
+          // Use submitted value or fallback to inputValue if empty
+          const finalValue = val || inputValue;
+          if (!finalValue) return; // Don't submit empty
+          
+          addUserMessage(finalValue);
+          setData((p) => ({ ...p, [currentStep]: finalValue }));
+          await trySaveStep(stepIdx, { [currentStep]: finalValue });
           break;
         }
         case "legalOwner": {
