@@ -471,3 +471,6 @@
 - [x] USt-ID leeres Feld: Leeres Absenden = "Nein" (Kleinunternehmer) – Weiter-Button funktioniert auch ohne Eingabe
 - [x] Unterseiten-Button: Sichtbarer "Unterseite hinzufügen"-Button im subpages-Schritt
 - [x] Preis-Badge: Persistentes "Ab 39 €/Monat"-Badge im Chat sichtbar (z.B. oben rechts oder im Footer)
+
+## Bugfix: selfService.start Error (Feb 28 2026)
+- [x] Fix: selfService.start wirft 500er – onboarding_responses Spaltennamen waren snake_case statt camelCase (DB-Migration fehlte); Migration ausgeführt, alle 17 Tests bestanden
