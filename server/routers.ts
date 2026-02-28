@@ -1871,10 +1871,101 @@ Kontext: ${input.context}`,
 
   // ── Self-Service: Start without GMB ────────────────────────────────
   selfService: router({
+    /**
+     * Resolve a Google share link (share.google/xxx, maps.app.goo.gl/xxx,
+     * or a full google.com/maps/place/... URL) to a business name and
+     * optionally a Place ID for data pre-fill.
+     */
+    resolveLink: publicProcedure
+      .input(z.object({ url: z.string() }))
+      .mutation(async ({ input }) => {
+        const url = input.url.trim();
+
+        // ── Pattern 1: share.google/CODE ─────────────────────────────────
+        if (/share\.google\//.test(url)) {
+          try {
+            // Step 1: follow the first redirect to google.com/share.google?q=...
+            const r1 = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(8000) });
+            const loc = r1.headers.get("location") || "";
+            if (!loc) return { resolved: false, businessName: null, placeId: null };
+
+            // Step 2: fetch the google.com/share.google page and extract search query
+            const r2 = await fetch(loc, { redirect: "follow", signal: AbortSignal.timeout(8000) });
+            const html = await r2.text();
+
+            // The page contains a fallback link like /search?q=SCHAU+%26+HORCH
+            const match = html.match(/\/search\?q=([^"&<>]+)/);
+            if (!match) return { resolved: false, businessName: null, placeId: null };
+            const businessName = decodeURIComponent(match[1].replace(/\+/g, " "));
+
+            // Step 3: search Places API with the extracted name
+            const placesResult = await makeRequest<PlacesSearchResult>(
+              "/maps/api/place/textsearch/json",
+              { query: businessName, language: "de" }
+            );
+            const place = placesResult.results?.[0];
+            if (!place) return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+
+            // Step 4: fetch place details
+            const details = await makeRequest<PlaceDetailsResult>(
+              "/maps/api/place/details/json",
+              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+            );
+            const r = details.result;
+            return {
+              resolved: true,
+              businessName: r?.name || businessName,
+              placeId: place.place_id,
+              address: r?.formatted_address || place.formatted_address || null,
+              phone: r?.formatted_phone_number || null,
+              website: r?.website || null,
+              rating: r?.rating || null,
+              reviewCount: r?.user_ratings_total || 0,
+              category: place.types?.[0]?.replace(/_/g, " ") || null,
+              openingHours: r?.opening_hours?.weekday_text || [],
+              reviews: r?.reviews || [],
+            };
+          } catch {
+            return { resolved: false, businessName: null, placeId: null };
+          }
+        }
+
+        // ── Pattern 2: maps.app.goo.gl/CODE (short link) ─────────────────
+        if (/maps\.app\.goo\.gl\//.test(url)) {
+          try {
+            const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(8000) });
+            const finalUrl = r.url;
+            // Extract place name from URL: /maps/place/NAME/@...
+            const nameMatch = finalUrl.match(/\/maps\/place\/([^/@?]+)/);
+            const placeIdMatch = finalUrl.match(/0x[0-9a-f]+:0x[0-9a-f]+/i);
+            if (nameMatch) {
+              const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
+              return { resolved: true, businessName, placeId: placeIdMatch?.[0] || null };
+            }
+            return { resolved: false, businessName: null, placeId: null };
+          } catch {
+            return { resolved: false, businessName: null, placeId: null };
+          }
+        }
+
+        // ── Pattern 3: Full google.com/maps/place/NAME/... URL ────────────
+        const fullUrlMatch = url.match(/google\.com\/maps\/place\/([^/@?]+)/);
+        if (fullUrlMatch) {
+          const businessName = decodeURIComponent(fullUrlMatch[1].replace(/\+/g, " "));
+          return { resolved: true, businessName, placeId: null };
+        }
+
+        return { resolved: false, businessName: null, placeId: null };
+      }),
+
     start: publicProcedure
       .input(z.object({
         gmbUrl: z.string().optional(), // optional GMB URL
         businessName: z.string().optional(), // optional pre-filled name
+        placeId: z.string().optional(), // optional Place ID from resolveLink
+        address: z.string().optional(),
+        phone: z.string().optional(),
+        category: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         // Create a placeholder business
@@ -1884,9 +1975,10 @@ Kontext: ${input.context}`,
         const businessId = await upsertBusiness({
           name: placeholderName,
           slug: uniqueSlug,
-          placeId: input.gmbUrl ? `self-${nanoid(8)}` : `self-${nanoid(8)}`,
-          category: "",
-          address: "",
+          placeId: input.placeId || `self-${nanoid(8)}`,
+          category: input.category || "",
+          address: input.address || "",
+          phone: input.phone || "",
         });
         // Create a preview website
         const previewToken = nanoid(32);

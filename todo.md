@@ -456,3 +456,9 @@
 - [ ] Add logo upload functionality in onboarding brandLogo step
 - [ ] Improve hideSections prompt text ("Wir sind fast fertig...")
 - [ ] Fix DB error in checkout step: websiteId type mismatch (string vs number)
+
+## share.google Kurzlink-Unterstützung
+- [x] Server: resolveShareGoogleLink() Funktion – löst share.google/... Links auf, extrahiert Firmennamen
+- [x] Server: selfService.start Mutation – wenn gmbUrl ein share.google Link ist, Firmennamen extrahieren und als Suchbegriff verwenden
+- [x] Frontend: StartPage – Placeholder-Text und Hinweis auf share.google Links aktualisieren
+- [x] Frontend: StartPage – Validierung akzeptiert share.google Links als gültige Eingabe

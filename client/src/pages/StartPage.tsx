@@ -3,12 +3,45 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Globe, Zap, ArrowRight, CheckCircle } from "lucide-react";
+import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2 } from "lucide-react";
+
+// Detect whether a URL looks like a Google Maps / share link
+function isGoogleLink(url: string): boolean {
+  return /share\.google\/|maps\.app\.goo\.gl\/|google\.com\/maps\/|maps\.google\.com\//.test(url);
+}
 
 export default function StartPage() {
   const [gmbUrl, setGmbUrl] = useState("");
   const [mode, setMode] = useState<"choice" | "gmb" | "manual">("choice");
+  const [resolvedInfo, setResolvedInfo] = useState<{
+    businessName: string | null;
+    placeId: string | null;
+    address: string | null;
+    phone: string | null;
+    category: string | null;
+  } | null>(null);
+  const [resolveError, setResolveError] = useState<string | null>(null);
   const [, navigate] = useLocation();
+
+  const resolveMutation = trpc.selfService.resolveLink.useMutation({
+    onSuccess: (data) => {
+      if (data.resolved && data.businessName) {
+        setResolvedInfo({
+          businessName: data.businessName,
+          placeId: data.placeId ?? null,
+          address: (data as any).address ?? null,
+          phone: (data as any).phone ?? null,
+          category: (data as any).category ?? null,
+        });
+        setResolveError(null);
+      } else {
+        setResolveError("Link konnte nicht aufgelöst werden. Bitte versuche es erneut oder starte ohne GMB.");
+      }
+    },
+    onError: () => {
+      setResolveError("Fehler beim Abrufen der Daten. Bitte versuche es erneut.");
+    },
+  });
 
   const startMutation = trpc.selfService.start.useMutation({
     onSuccess: (data) => {
@@ -16,13 +49,42 @@ export default function StartPage() {
     },
   });
 
-  const handleGmbStart = () => {
-    startMutation.mutate({ gmbUrl: gmbUrl.trim() || undefined });
+  const handleUrlChange = (value: string) => {
+    setGmbUrl(value);
+    setResolvedInfo(null);
+    setResolveError(null);
+  };
+
+  const handleResolveAndStart = async () => {
+    const url = gmbUrl.trim();
+    if (!url) return;
+
+    if (isGoogleLink(url)) {
+      // Resolve the link first to get business data
+      resolveMutation.mutate({ url });
+    } else {
+      // Not a Google link – start without prefill
+      startMutation.mutate({ gmbUrl: url });
+    }
+  };
+
+  const handleStartWithResolved = () => {
+    if (!resolvedInfo) return;
+    startMutation.mutate({
+      gmbUrl: gmbUrl.trim(),
+      businessName: resolvedInfo.businessName || undefined,
+      placeId: resolvedInfo.placeId || undefined,
+      address: resolvedInfo.address || undefined,
+      phone: resolvedInfo.phone || undefined,
+      category: resolvedInfo.category || undefined,
+    });
   };
 
   const handleManualStart = () => {
     startMutation.mutate({});
   };
+
+  const isLoading = resolveMutation.isPending || startMutation.isPending;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center px-4">
@@ -76,7 +138,7 @@ export default function StartPage() {
                   <div className="text-slate-400 text-xs mt-0.5">Beantworte ein paar kurze Fragen im Chat</div>
                 </div>
                 {startMutation.isPending ? (
-                  <div className="w-4 h-4 border-2 border-slate-400/30 border-t-slate-400 rounded-full animate-spin" />
+                  <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
                 ) : (
                   <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
                 )}
@@ -104,7 +166,7 @@ export default function StartPage() {
         {mode === "gmb" && (
           <>
             <button
-              onClick={() => setMode("choice")}
+              onClick={() => { setMode("choice"); setResolvedInfo(null); setResolveError(null); }}
               className="text-slate-400 hover:text-white text-sm mb-6 flex items-center gap-1 transition-colors"
             >
               ← Zurück
@@ -112,56 +174,103 @@ export default function StartPage() {
             <h1 className="text-white text-2xl font-bold mb-2">
               Google My Business Link
             </h1>
-            <p className="text-slate-400 text-sm mb-6">
-              Füge den Link zu deinem Google My Business-Profil ein. Du findest ihn, indem du auf Google Maps nach deinem Unternehmen suchst und auf "Teilen" klickst.
+            <p className="text-slate-400 text-sm mb-1">
+              Öffne Google Maps, suche dein Unternehmen und tippe auf <strong className="text-slate-300">„Teilen"</strong> – dann den Link hier einfügen.
             </p>
+
+            {/* How-to hint */}
+            <div className="mb-5 p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-start gap-2">
+              <Share2 className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+              <p className="text-indigo-300 text-xs leading-relaxed">
+                Alle Link-Formate werden unterstützt:<br />
+                <span className="text-indigo-400 font-mono">share.google/…</span> · <span className="text-indigo-400 font-mono">maps.app.goo.gl/…</span> · <span className="text-indigo-400 font-mono">google.com/maps/place/…</span>
+              </p>
+            </div>
 
             <div className="space-y-4">
               <div>
                 <Input
                   value={gmbUrl}
-                  onChange={(e) => setGmbUrl(e.target.value)}
-                  placeholder="https://maps.google.com/..."
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  placeholder="https://share.google/…"
                   className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
-                  onKeyDown={(e) => e.key === "Enter" && gmbUrl.trim() && handleGmbStart()}
+                  onKeyDown={(e) => e.key === "Enter" && gmbUrl.trim() && !isLoading && handleResolveAndStart()}
+                  disabled={isLoading}
                 />
-                <p className="text-slate-500 text-xs mt-2">
-                  Beispiel: https://maps.app.goo.gl/... oder https://www.google.com/maps/place/...
-                </p>
               </div>
 
-              <Button
-                onClick={handleGmbStart}
-                disabled={!gmbUrl.trim() || startMutation.isPending}
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl"
-              >
-                {startMutation.isPending ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Wird vorbereitet...
+              {/* Resolved info card */}
+              {resolvedInfo && resolvedInfo.businessName && (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-400 text-sm font-semibold">Unternehmen gefunden!</span>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    Jetzt starten
-                  </div>
-                )}
-              </Button>
+                  <p className="text-white font-semibold text-base">{resolvedInfo.businessName}</p>
+                  {resolvedInfo.address && (
+                    <p className="text-slate-400 text-xs mt-1">{resolvedInfo.address}</p>
+                  )}
+                  {resolvedInfo.phone && (
+                    <p className="text-slate-400 text-xs">{resolvedInfo.phone}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Error */}
+              {resolveError && (
+                <div className="p-3 rounded-lg bg-red-900/30 border border-red-700/50 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-red-400 text-sm">{resolveError}</p>
+                </div>
+              )}
+
+              {/* Main CTA */}
+              {resolvedInfo ? (
+                <Button
+                  onClick={handleStartWithResolved}
+                  disabled={isLoading}
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl"
+                >
+                  {startMutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Wird vorbereitet...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Mit diesen Daten starten
+                    </div>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleResolveAndStart}
+                  disabled={!gmbUrl.trim() || isLoading}
+                  className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {resolveMutation.isPending ? "Daten werden abgerufen…" : "Wird vorbereitet…"}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Jetzt starten
+                    </div>
+                  )}
+                </Button>
+              )}
 
               <button
                 onClick={handleManualStart}
-                disabled={startMutation.isPending}
+                disabled={isLoading}
                 className="w-full text-slate-400 hover:text-white text-sm transition-colors py-2"
               >
                 Ohne GMB-Link fortfahren →
               </button>
             </div>
-
-            {startMutation.isError && (
-              <div className="mt-4 p-3 rounded-lg bg-red-900/30 border border-red-700/50 text-red-400 text-sm">
-                Fehler beim Starten. Bitte versuche es erneut.
-              </div>
-            )}
           </>
         )}
       </div>
