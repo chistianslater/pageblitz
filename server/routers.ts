@@ -840,9 +840,11 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         let saved = 0;
+        const toAnalyze: { businessId: number; websiteUrl: string }[] = [];
+
         for (const r of input.results) {
           const slug = slugify(r.name) + "-" + nanoid(6);
-          await upsertBusiness({
+          const businessId = await upsertBusiness({
             placeId: r.placeId,
             name: r.name,
             slug,
@@ -862,7 +864,32 @@ export const appRouter = router({
             googleReviews: r.reviews && r.reviews.length > 0 ? r.reviews : null,
           });
           saved++;
+
+          // Queue for background analysis if has website and leadType is unknown
+          if (r.hasWebsite && r.website && (!r.leadType || r.leadType === "unknown")) {
+            toAnalyze.push({ businessId, websiteUrl: r.website });
+          }
         }
+
+        // Run website analysis in background (non-blocking)
+        if (toAnalyze.length > 0) {
+          Promise.allSettled(
+            toAnalyze.map(async ({ businessId, websiteUrl }) => {
+              try {
+                const analysis = await analyzeWebsite(websiteUrl);
+                await updateBusiness(businessId, {
+                  leadType: analysis.leadType,
+                  websiteAge: analysis.websiteAge,
+                  websiteScore: analysis.websiteScore,
+                  websiteAnalysis: analysis.details,
+                });
+              } catch {
+                // Silently ignore analysis failures
+              }
+            })
+          ).catch(() => {});
+        }
+
         return { saved };
       }),
   }),

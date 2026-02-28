@@ -519,3 +519,6 @@
 ## Lead-Einstufung sichtbar machen (Feb 28 2026)
 - [x] SearchPage: leadType-Badge in der Suchergebnistabelle anzeigen (keine Website / alte Website / schlechte Website / unbekannt)
 - [x] WebsitesPage: leadType-Badge in der Unternehmensliste anzeigen
+
+## Automatische Website-Analyse beim Speichern (Feb 28 2026)
+- [x] saveResults: Für jedes Unternehmen mit Website wird analyzeWebsite() im Hintergrund aufgerufen und leadType/websiteScore automatisch gesetzt
