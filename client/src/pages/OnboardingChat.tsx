@@ -373,7 +373,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "targetAudience":
           return `Für wen macht ihr das alles? Beschreib kurz eure idealen Kunden – wer ruft euch an, wer schreibt euch?\n\nBeispiel: *"Privathaushalte in Bocholt, die ein neues Dach brauchen"*`;
         case "legalOwner":
-          return `Fast geschafft! 🎉 Jetzt noch ein paar rechtliche Pflichtangaben für Impressum & Datenschutz.\n\nWer ist der **Inhaber oder Geschäftsführer**? (Vollständiger Name, z.B. „Max Mustermann“)\n\n*🔒 Diese Angaben sind gesetzlich vorgeschrieben und werden nur im Impressum angezeigt.*`;
+          return `📋 **Abschnitt 2: Rechtliche Pflichtangaben**\n\nFür ein vollständiges Impressum und eine korrekte Datenschutzerklärung brauche ich noch ein paar Angaben. Das dauert nur 2 Minuten!\n\nWer ist der **Inhaber oder Geschäftsführer**? (Vollständiger Name, z.B. „Max Mustermann")\n\n*🔒 Diese Angaben sind gesetzlich vorgeschrieben und werden nur im Impressum angezeigt.*`;
         case "legalStreet":
           return `Wie lautet die **Straße und Hausnummer** der Geschäftsadresse?\n\nBeispiel: *Musterstraße 12*`;
         case "legalZipCity":
@@ -387,11 +387,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "hideSections":
           return `Wir sind fast fertig! 🎉 Gibt es Bereiche, die du zum Start ausblenden möchtest? Klick einfach drauf – keine Sorge, du kannst sie jederzeit wieder einblenden.`;
         case "brandColor":
-          return `Jetzt zum Look deiner Website! 🎨\n\nWelche **Hauptfarbe** soll deine Website haben? Wähle unten eine Farbe aus oder gib einen eigenen Hex-Code ein.`;
+          return `🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine Hauptfarbe – du siehst sofort rechts, wie deine Website damit aussieht!`;
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "addons":
-          return `Möchtest du deine Website mit optionalen Extras erweitern? 🚀\n\nDu kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
+          return `⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern? Du kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
         case "subpages":
           return `Brauchst du zusätzliche Unterseiten? Zum Beispiel "Über uns", "Projekte", "Referenzen" oder "Team".\n\nJede Unterseite kostet +9,90 €/Monat. Du kannst sie unten hinzufügen oder überspringen.`;
         case "email":
@@ -473,11 +473,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const advanceToStep = useCallback(
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
-      // Show group header if this step starts a new thematic section
-      if (GROUP_HEADERS[nextStep]) {
-        await addBotMessage(GROUP_HEADERS[nextStep]!, 600);
-        await new Promise((r) => setTimeout(r, 300));
-      }
+      // Show step prompt (which now includes group headers where needed)
       await addBotMessage(getStepPrompt(nextStep), 800);
       setTimeout(() => {
         if (["tagline", "description", "usp", "targetAudience"].includes(nextStep)) {
