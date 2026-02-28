@@ -462,3 +462,12 @@
 - [x] Server: selfService.start Mutation – wenn gmbUrl ein share.google Link ist, Firmennamen extrahieren und als Suchbegriff verwenden
 - [x] Frontend: StartPage – Placeholder-Text und Hinweis auf share.google Links aktualisieren
 - [x] Frontend: StartPage – Validierung akzeptiert share.google Links als gültige Eingabe
+
+## Chat UX-Verbesserungen (Runde N+2)
+- [x] Fix Edit-Modus: Bearbeitete Nachricht erscheint nicht nochmal unten; Quick-Replies und andere Logik bleiben erhalten
+- [x] Schriftart Echtzeit-Vorschau: headlineFont-Änderung sofort in der Preview sichtbar; aktuell gewählte Schrift vorausgewählt
+- [x] Quick-Replies prägnanter: Größere, auffälligere Buttons mit mehr Kontrast
+- [x] Abschnitts-Trenner: Neue Abschnitte (Abschnitt 2, 3) als visueller Divider zwischen Chat-Bubbles, nicht als Chat-Nachricht
+- [x] USt-ID leeres Feld: Leeres Absenden = "Nein" (Kleinunternehmer) – Weiter-Button funktioniert auch ohne Eingabe
+- [x] Unterseiten-Button: Sichtbarer "Unterseite hinzufügen"-Button im subpages-Schritt
+- [x] Preis-Badge: Persistentes "Ab 39 €/Monat"-Badge im Chat sichtbar (z.B. oben rechts oder im Footer)

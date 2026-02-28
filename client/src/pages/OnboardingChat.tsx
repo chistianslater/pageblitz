@@ -522,19 +522,28 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   };
 
   // ── Step advancement ────────────────────────────────────────────────────
-  // Group headers shown before certain thematic sections
-  const GROUP_HEADERS: Partial<Record<ChatStep, string>> = {
-    brandColor: "🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine Hauptfarbe – du siehst sofort rechts, wie deine Website damit aussieht!",
-    welcome: "✅ **Perfekt! Dein Design ist festgelegt.**\n\nJetzt sammle ich noch ein paar Infos über dein Unternehmen. Das dauert nur wenige Minuten!",
-    legalOwner: "📋 **Abschnitt 2: Rechtliche Pflichtangaben**\n\nFür ein vollständiges Impressum und eine korrekte Datenschutzerklärung brauche ich noch ein paar Angaben. Das dauert nur 2 Minuten!",
-    addons: "⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern?",
+  // Steps that get a visual section divider in the chat (instead of a chat bubble)
+  const SECTION_DIVIDERS: Partial<Record<ChatStep, { icon: string; title: string; subtitle: string }>> = {
+    legalOwner: { icon: "\uD83D\uDCCB", title: "Abschnitt 2: Rechtliche Angaben", subtitle: "Impressum & Datenschutz \u2013 dauert nur 2 Minuten" },
+    addons: { icon: "\u26A1", title: "Abschnitt 3: Extras & Fertigstellung", subtitle: "Optionale Features und letzter Schliff" },
   };
 
   const advanceToStep = useCallback(
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
-      // Show step prompt (which now includes group headers where needed)
-      await addBotMessage(getStepPrompt(nextStep), 800);
+
+      // If this step has a section divider, inject it as a special message type
+      const divider = SECTION_DIVIDERS[nextStep];
+      if (divider) {
+        setMessages((prev) => [
+          ...prev,
+          { id: genId(), role: "divider" as any, content: JSON.stringify(divider), timestamp: Date.now() },
+        ]);
+        await new Promise((r) => setTimeout(r, 400));
+      }
+
+      // Show step prompt
+      await addBotMessage(getStepPrompt(nextStep), divider ? 200 : 800);
       setTimeout(() => {
         if (["tagline", "description", "usp", "targetAudience"].includes(nextStep)) {
           textareaRef.current?.focus();
@@ -543,7 +552,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }, 900);
     },
-    [addBotMessage, getStepPrompt]
+    [addBotMessage, getStepPrompt, SECTION_DIVIDERS]
   );
 
   // Helper to save step data without blocking chat advancement
@@ -648,10 +657,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           break;
         }
         case "legalVat": {
-          const skip = ["nein", "keine", "n/a", "-", ""].includes(val.trim().toLowerCase());
+          // Empty input or explicit "no" = Kleinunternehmer (no VAT ID)
+          const trimmed = val.trim();
+          const skip = ["nein", "keine", "n/a", "-", ""].includes(trimmed.toLowerCase()) || trimmed === "";
           const vatRegex = /^DE\d{9}$/i;
-          if (!skip && !vatRegex.test(val.trim())) { toast.error("USt-IdNr. muss das Format DE123456789 haben. Schreib 'Nein' wenn du keine hast."); return; }
-          const vatId = skip ? "" : val.trim().toUpperCase();
+          if (!skip && !vatRegex.test(trimmed)) { toast.error("USt-IdNr. muss das Format DE123456789 haben. Schreib 'Nein' oder lass das Feld leer, wenn du keine hast."); return; }
+          const vatId = skip ? "" : trimmed.toUpperCase();
           addUserMessage(skip ? "Keine USt-IdNr. (Kleinunternehmer)" : vatId);
           setData((p) => ({ ...p, legalVatId: vatId }));
           await trySaveStep(stepIdx, { legalVatId: vatId });
@@ -845,18 +856,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }}
         >
           {/* Header */}
-          <div className="px-6 py-5 border-b border-slate-700/50 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg">
-              <Zap className="w-5 h-5 text-white" />
+          <div className="px-4 py-4 border-b border-slate-700/50 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg flex-shrink-0">
+              <Zap className="w-4.5 h-4.5 text-white" />
             </div>
-            <div>
-              <h1 className="text-white font-semibold text-base">Pageblitz Assistent</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-white font-semibold text-sm">Pageblitz Assistent</h1>
               <p className="text-slate-400 text-xs">Personalisiert deine Website in Minuten</p>
             </div>
-            {/* Hide chat toggle – sits at the right edge of the header */}
+            {/* Price badge */}
+            <div className="flex-shrink-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-center">
+              <p className="text-amber-300 text-xs font-bold leading-tight">Ab 39 €</p>
+              <p className="text-amber-400/70 text-[10px] leading-tight">/Monat</p>
+            </div>
+            {/* Hide chat toggle */}
             <button
               onClick={() => setChatHidden(true)}
-              className="ml-auto w-7 h-7 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center text-slate-400 hover:text-white transition-colors flex-shrink-0"
+              className="w-7 h-7 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 flex items-center justify-center text-slate-400 hover:text-white transition-colors flex-shrink-0"
               title="Chat ausblenden"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -866,7 +882,28 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           {/* Messages + Input: flex column, messages scroll, input sticky */}
           <div className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
-            {messages.map((msg) => (
+            {messages.map((msg) => {
+              // Section divider rendering
+              if ((msg.role as string) === "divider") {
+                let divInfo: { icon: string; title: string; subtitle: string } | null = null;
+                try { divInfo = JSON.parse(msg.content); } catch {}
+                if (!divInfo) return null;
+                return (
+                  <div key={msg.id} className="flex items-center gap-3 my-2 px-1">
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
+                    <div className="flex items-center gap-2 bg-slate-700/80 border border-slate-600/60 rounded-xl px-4 py-2 flex-shrink-0 shadow-sm">
+                      <span className="text-base">{divInfo.icon}</span>
+                      <div>
+                        <p className="text-white text-xs font-bold leading-tight">{divInfo.title}</p>
+                        <p className="text-slate-400 text-xs leading-tight">{divInfo.subtitle}</p>
+                      </div>
+                    </div>
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
+                  </div>
+                );
+              }
+
+              return (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -893,17 +930,27 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {msg.role === "user" && (
                     <button
                       onClick={() => {
+                        // Only pre-fill the input – do NOT re-submit or add a new message
                         setInputValue(msg.content);
+                        // Focus the correct input
+                        setTimeout(() => {
+                          if (["tagline", "description", "usp", "targetAudience"].includes(currentStep)) {
+                            textareaRef.current?.focus();
+                          } else {
+                            inputRef.current?.focus();
+                          }
+                        }, 50);
                       }}
                       className="w-6 h-6 rounded-md bg-slate-600/50 hover:bg-slate-500/50 flex items-center justify-center transition-colors flex-shrink-0"
-                      title="Bearbeiten"
+                      title="Antwort bearbeiten"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-slate-300 hover:text-white" />
                     </button>
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             {/* Typing indicator */}
             {isTyping && (
@@ -1289,10 +1336,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 </button>
               </div>
             )}
-
             {!isTyping && currentStep === "headlineFont" && (
               <div className="ml-9 space-y-3">
-                <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften:</p>
+                <p className="text-slate-400 text-xs">W\u00e4hle eine Schriftart f\u00fcr deine \u00dcberschriften – die Vorschau rechts \u00e4ndert sich sofort:</p>
                 <div className="space-y-2">
                   <div>
                     <p className="text-slate-300 text-xs font-semibold mb-2">Serifenschriften (klassisch, elegant):</p>
@@ -1450,12 +1496,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 ))}
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center flex-wrap">
                   <button
                     onClick={() => setData((p) => ({ ...p, subPages: [...p.subPages, { id: genId(), name: "", description: "" }] }))}
-                    className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    className="flex items-center gap-2 text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-4 py-2 rounded-xl transition-all font-medium"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Unterseite hinzufügen (+9,90 €/Mo)
+                    <Plus className="w-4 h-4" /> Unterseite hinzuf\u00fcgen <span className="text-blue-400 text-xs">(+9,90 \u20ac/Mo)</span>
                   </button>
                   <button
                     disabled={isTyping}
@@ -1825,7 +1871,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 )}
                 <button
                   onClick={() => handleSubmit()}
-                  disabled={!inputValue.trim() && currentStep !== "businessName"}
+                  disabled={!inputValue.trim() && currentStep !== "businessName" && currentStep !== "legalVat"}
                   className="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-colors disabled:opacity-40 flex-shrink-0"
                 >
                   <Send className="w-4 h-4 text-white" />
@@ -1833,22 +1879,25 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </div>
               {/* Quick-reply chips */}
               {!isTyping && getQuickReplies(currentStep).length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {getQuickReplies(currentStep).map((reply) => (
-                    <button
-                      key={reply}
-                      onClick={() => {
-                        if (currentStep === "businessName" && reply === "Ja, stimmt!") {
-                          handleSubmit("");
-                        } else {
-                          handleSubmit(reply);
-                        }
-                      }}
-                      className="text-xs bg-slate-700/60 hover:bg-blue-600/30 border border-slate-600/50 hover:border-blue-500/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-full transition-all"
-                    >
-                      {reply}
-                    </button>
-                  ))}
+                <div className="mt-3 pt-3 border-t border-slate-700/60">
+                  <p className="text-xs text-slate-500 mb-2 font-medium">Schnellantworten:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {getQuickReplies(currentStep).map((reply) => (
+                      <button
+                        key={reply}
+                        onClick={() => {
+                          if (currentStep === "businessName" && reply === "Ja, stimmt!") {
+                            handleSubmit("");
+                          } else {
+                            handleSubmit(reply);
+                          }
+                        }}
+                        className="text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
+                      >
+                        {reply}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -1903,6 +1952,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 slug={slug}
                 contactFormLocked={!data.addOnContactForm}
                 logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
+                headlineFontOverride={data.headlineFont || undefined}
               />
             </MacbookMockup>
           ) : (

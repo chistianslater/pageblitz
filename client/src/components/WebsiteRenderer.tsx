@@ -46,6 +46,8 @@ interface WebsiteRendererProps {
   contactFormLocked?: boolean;
   /** Optional font override for the logo (e.g. 'Montserrat', 'Oswald') */
   logoFont?: string;
+  /** Real-time headline font override during onboarding (e.g. 'Georgia', 'Poppins') */
+  headlineFontOverride?: string;
   /** Business category/industry for industry-specific stats and content */
   businessCategory?: string | null;
 }
@@ -222,6 +224,7 @@ export default function WebsiteRenderer({
   slug,
   contactFormLocked = false,
   logoFont,
+  headlineFontOverride,
   businessCategory,
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
@@ -288,9 +291,14 @@ export default function WebsiteRenderer({
   };
 
   // Build CSS custom properties string – always set at least the font defaults
-  const tokenStyle = tokens
+  let tokenStyle = tokens
     ? buildTokenStyles(tokens, cs)
     : `--site-font-headline: ${fontDefaults.headline}; --site-font-body: ${fontDefaults.body};`;
+
+  // Real-time headline font override (from onboarding chat selection)
+  if (headlineFontOverride) {
+    tokenStyle += `; --site-font-headline: '${headlineFontOverride}', serif;`;
+  }
 
   const layout = (() => {
     switch (effectiveLayout) {
