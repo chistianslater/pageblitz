@@ -481,3 +481,15 @@
 ## Fixes (Feb 28 2026 – Runde N+3)
 - [x] Preview-Seite: "Jetzt aktivieren ab 79 €" → auf 39 €/Monat korrigieren
 - [x] Chat: Quick-Reply-Buttons über das Eingabefeld verschieben (immer ganz unten)
+
+## Chat-Verbesserungen (Feb 28 2026 – Runde N+4)
+- [x] Bug: Leistungen überspringen → Services-Section aus liveWebsiteData entfernen (nicht mehr in Preview anzeigen)
+- [x] Quick-Replies nach Auswahl ausblenden (selectedQuickReply State)
+- [x] Dynamische Placeholders je nach Schritt (Tagline, Beschreibung, USP, Zielgruppe etc.)
+- [x] Preiszusammenfassung im Checkout-Schritt (Basis + Add-ons übersichtlich)
+
+## Chat-Verbesserungen (Feb 28 2026 – Runde N+4)
+- [x] Bug: Leistungen überspringen → Services-Section aus liveWebsiteData entfernen (nicht mehr in Preview anzeigen)
+- [x] Quick-Replies nach Auswahl ausblenden (selectedQuickReply State)
+- [x] Dynamische Placeholders je nach Schritt (Tagline, Beschreibung, USP, Zielgruppe etc.)
+- [x] Preiszusammenfassung im Checkout-Schritt (Basis + Add-ons übersichtlich)

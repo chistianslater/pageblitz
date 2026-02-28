@@ -41,6 +41,7 @@ interface OnboardingData {
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
   subPages: SubPage[];
   email: string; // for FOMO reminder
+  topServicesSkipped?: boolean;
 }
 
 type ChatStep =
@@ -183,6 +184,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [legalConsent, setLegalConsent] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set<string>());
   const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
+  const [quickReplySelected, setQuickReplySelected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -761,7 +763,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           headline: data.businessName ? `Über ${data.businessName}` : section.headline,
         };
       }
-      if (section.type === "services" && data.topServices.some((s) => s.title)) {
+      if (section.type === "services") {
+        // If user explicitly skipped services (topServices is empty array after skip), remove section
+        if (data.topServicesSkipped) return null;
         const filledServices = data.topServices.filter((s) => s.title.trim());
         if (filledServices.length > 0) {
           return {
@@ -771,7 +775,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }
       return section;
-    });
+    }).filter(Boolean) as typeof patched.sections;
 
     // Patch brandColor into colorScheme override (stored in patched.colorScheme if present)
     if (data.brandColor && data.brandColor.match(/^#[0-9A-Fa-f]{6}$/)) {
@@ -794,6 +798,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.tagline,
     data.description,
     data.topServices,
+    data.topServicesSkipped,
     data.brandColor,
     data.brandLogo,
     hiddenSections,
@@ -1049,7 +1054,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         onClick={async () => {
                           setShowSkipServicesWarning(false);
                           addUserMessage("Keine Leistungen anzeigen");
-                          setData((p) => ({ ...p, topServices: [] }));
+                          setData((p) => ({ ...p, topServices: [], topServicesSkipped: true }));
                           await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: [] });
                           await advanceToStep("targetAudience");
                         }}
@@ -1797,7 +1802,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           {!["services", "addons", "subpages", "preview", "checkout", "welcome", "brandColor", "brandLogo", "businessCategory"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
-              {!isTyping && getQuickReplies(currentStep).length > 0 && (
+              {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (
                 <div className="pt-3 pb-2">
                   <p className="text-xs text-slate-500 mb-2 font-medium">Schnellantworten:</p>
                   <div className="flex flex-wrap gap-2">
@@ -1805,6 +1810,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       <button
                         key={reply}
                         onClick={() => {
+                          setQuickReplySelected(true);
                           if (currentStep === "businessName" && reply === "Ja, stimmt!") {
                             handleSubmit("");
                           } else {
@@ -1857,7 +1863,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       el.style.height = Math.min(el.scrollHeight, 160) + "px";
                     }}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
-                    placeholder="Deine Antwort... (Shift+Enter für neue Zeile)"
+                    placeholder={
+                      currentStep === "tagline"
+                        ? `z.B. "Ihr ${(data as any).businessCategory || 'Fachbetrieb'} in ${data.legalCity || 'Ihrer Stadt'}"`
+                        : currentStep === "description"
+                        ? "Was macht dein Unternehmen besonders? (2-3 Sätze)"
+                        : currentStep === "usp"
+                        ? "z.B. 'Wir sind der einzige Anbieter in der Region, der...' "
+                        : currentStep === "targetAudience"
+                        ? "z.B. 'Privatkunden und kleine Unternehmen in der Region'"
+                        : "Deine Antwort... (Shift+Enter für neue Zeile)"
+                    }
                     className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none leading-relaxed"
                     style={{ minHeight: "72px", maxHeight: "160px" }}
                   />
@@ -1870,6 +1886,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     placeholder={
                       currentStep === "businessName"
                         ? data.businessName || "Unternehmensname eingeben..."
+                        : currentStep === "legalOwner"
+                        ? "Vorname Nachname"
                         : currentStep === "legalStreet"
                         ? "Musterstraße 12"
                         : currentStep === "legalZipCity"
@@ -1877,7 +1895,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         : currentStep === "legalEmail"
                         ? "info@musterfirma.de"
                         : currentStep === "legalVat"
-                        ? "DE123456789 oder 'Nein'"
+                        ? "DE123456789 – oder leer lassen (Kleinunternehmer)"
                         : currentStep === "email"
                         ? "deine@email.de"
                         : "Deine Antwort..."
