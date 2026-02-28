@@ -98,18 +98,21 @@ export default function WebsitesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          onClick={() => generateMutation.mutate({ businessId: b.id })}
-                          disabled={generateMutation.isPending}
-                        >
-                          {generateMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          ) : (
-                            <Wand2 className="h-4 w-4 mr-2" />
-                          )}
-                          Website generieren
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => generateMutation.mutate({ businessId: b.id })}
+                            disabled={generateMutation.isPending}
+                          >
+                            {generateMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Wand2 className="h-4 w-4 mr-2" />
+                            )}
+                            Website generieren
+                          </Button>
+                          <DeleteBusinessDialog business={b} />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -545,6 +548,88 @@ function DeleteWebsiteDialog({ website }: { website: any }) {
           <Button
             variant="destructive"
             onClick={() => deleteMutation.mutate({ id: website.id })}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Trash2 className="h-4 w-4 mr-2" />
+            )}
+            Endgültig löschen
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DeleteBusinessDialog({ business }: { business: any }) {
+  const utils = trpc.useUtils();
+  const [open, setOpen] = useState(false);
+
+  const deleteMutation = trpc.business.delete.useMutation({
+    onMutate: async () => {
+      await utils.business.list.cancel();
+      const previous = utils.business.list.getData({ limit: 100, offset: 0 });
+      utils.business.list.setData({ limit: 100, offset: 0 }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          businesses: old.businesses.filter((b: any) => b.id !== business.id),
+          total: (old.total ?? 1) - 1,
+        };
+      });
+      return { previous };
+    },
+    onSuccess: () => {
+      toast.success(`Unternehmen "${business.name}" wurde gelöscht.`);
+      utils.business.list.invalidate();
+      utils.website.list.invalidate();
+      utils.stats.dashboard.invalidate();
+      setOpen(false);
+    },
+    onError: (err, _vars, ctx) => {
+      if (ctx?.previous) {
+        utils.business.list.setData({ limit: 100, offset: 0 }, ctx.previous);
+      }
+      toast.error("Löschen fehlgeschlagen: " + err.message);
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-red-400" />
+            Unternehmen löschen
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Möchtest du <span className="font-medium text-foreground">{business.name}</span> wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+          <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-red-300">
+            Das Unternehmen und alle zugehörigen Websites, Onboarding-Daten und Abonnements werden dauerhaft gelöscht.
+          </p>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => deleteMutation.mutate({ id: business.id })}
             disabled={deleteMutation.isPending}
           >
             {deleteMutation.isPending ? (

@@ -14,7 +14,7 @@ import {
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
   createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
-  deleteWebsite,
+  deleteWebsite, deleteBusiness,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -891,6 +891,19 @@ export const appRouter = router({
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
         const website = await getWebsiteByBusinessId(input.id);
         return { business, website };
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const business = await getBusinessById(input.id);
+        if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
+        // Delete associated website (and its dependencies) first
+        const website = await getWebsiteByBusinessId(input.id);
+        if (website) await deleteWebsite(website.id);
+        // Delete the business itself
+        await deleteBusiness(input.id);
+        return { success: true };
       }),
   }),
 

@@ -510,3 +510,8 @@
 
 ## Bugfix: deleteWebsite subscriptions-Fehler (Feb 28 2026)
 - [x] Fix: deleteWebsite schlägt fehl – subscriptions hatte snake_case Spalten (website_id); Migration auf camelCase ausgeführt; generated_websites hatte Duplikat-Spalten – bereinigt
+
+## Unternehmen löschen im Dashboard (Feb 28 2026)
+- [x] Backend: deleteBusiness in db.ts (löscht auch zugehörige Websites + Onboarding-Daten)
+- [x] Backend: adminProcedure business.delete im Router
+- [x] Frontend: Löschen-Button in der Unternehmensliste (WebsitesPage) mit Bestätigungsdialog

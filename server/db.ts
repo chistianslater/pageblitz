@@ -397,3 +397,9 @@ export async function deleteWebsite(websiteId: number): Promise<void> {
   await db.delete(subscriptions).where(eq(subscriptions.websiteId, websiteId));
   await db.delete(generatedWebsites).where(eq(generatedWebsites.id, websiteId));
 }
+
+export async function deleteBusiness(businessId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(businesses).where(eq(businesses.id, businessId));
+}
