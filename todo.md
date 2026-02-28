@@ -550,3 +550,10 @@
 - [x] aboutPhoto: Neuer Onboarding-Schritt nach heroPhoto für das zweite Bild
 - [x] aboutImageUrl: DB-Spalte, Migration, WebsiteRenderer und alle Layouts
 - [x] aboutImageUrl: Echtzeit-Vorschau im Onboarding und im Kunden-Dashboard bearbeitbar
+
+## Kategorie-Mapping Fix (Feb 28 2026)
+- [x] onboarding.businessCategory in complete-Prozedur nutzen (überschreibt business.category)
+- [x] Branchenspezifische Service-Vorlagen für alle 16 Kategorien (shared/industryServices.ts)
+- [x] buildIndustryContext: konkrete Leistungsbeispiele als Seed im Prompt
+- [x] patchWebsiteData: Services mit Branchen-Defaults befüllen wenn keine eigenen angegeben
+- [x] Onboarding complete: Kategorie-Update auch in business-Tabelle schreiben

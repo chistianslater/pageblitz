@@ -27,6 +27,7 @@ import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
+import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
@@ -554,6 +555,7 @@ Interaktive Elemente:
 BRANCHENKONTEXT & PERSÖNLICHKEIT
 ═══════════════════════════════════════
 ${industryContext}
+${getIndustryServicesSeed(category)}
 ${personalityHint}
 ${templateStyleDesc}
 
@@ -1816,16 +1818,35 @@ Kontext: ${input.context}`,
         const onboarding = await getOnboardingByWebsiteId(input.websiteId);
         if (!onboarding) throw new TRPCError({ code: "NOT_FOUND", message: "Onboarding not found" });
         
+        // Determine the effective category: prefer user-chosen onboarding category over original GMB category
+        const effectiveCategory = (onboarding as any).businessCategory || (website as any).business?.category || "Dienstleistung";
+        
+        // If user didn't provide custom services, fall back to industry defaults from the profile
+        let topServices = onboarding.topServices;
+        if (!topServices || (Array.isArray(topServices) && topServices.length === 0)) {
+          const profile = getIndustryProfile(effectiveCategory);
+          if (profile) {
+            topServices = profile.services.slice(0, 5).map(s => ({ title: s.title, description: s.description, icon: s.icon }));
+          }
+        }
+        
         // Patch website data with real onboarding content (no redesign)
         const patchedData = patchWebsiteData(website.websiteData, {
           businessName: onboarding.businessName,
           tagline: onboarding.tagline,
           description: onboarding.description,
           usp: onboarding.usp,
-          topServices: onboarding.topServices,
+          topServices,
           logoUrl: onboarding.logoUrl,
           photoUrls: onboarding.photoUrls,
         });
+        
+        // Also update the business category in the business table if it changed
+        if ((onboarding as any).businessCategory && website.businessId) {
+          try {
+            await updateBusiness(website.businessId, { category: (onboarding as any).businessCategory });
+          } catch { /* non-critical */ }
+        }
         
         // Generate legal pages if legal data is present
         let impressumHtml: string | null = null;
