@@ -563,3 +563,7 @@
 - [x] Secondary color als Section-Hintergrund in allen Layouts einbauen (about, features, cta sections)
 - [x] WebsiteRenderer: secondary color korrekt in CSS-Variable --color-secondary mappen
 - [x] Echtzeit-Vorschau: secondary color live patchen wenn Nutzer sie im Onboarding wählt
+
+## Foto & Farb-Chat-Fixes (Feb 28 2026)
+- [x] Unsplash-Foto-Vorschläge nach Branche filtern (businessCategory → passende Suchbegriffe)
+- [x] Farb-Bearbeitung via Stift-Icon: Color Picker öffnen statt Hex-Input

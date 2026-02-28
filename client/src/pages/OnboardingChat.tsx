@@ -994,55 +994,108 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {/* In-place edit mode */}
                   {msg.role === "user" && inPlaceEditId === msg.id ? (
                     <div className="flex flex-col gap-2 max-w-[85%]">
-                      <textarea
-                        className="bg-slate-700 text-white text-sm px-3 py-2 rounded-xl border border-blue-500 outline-none resize-none min-h-[60px] w-full"
-                        value={inPlaceEditValue}
-                        onChange={(e) => setInPlaceEditValue(e.target.value)}
-                        autoFocus
-                        rows={3}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            // Save in-place
-                            const step = msg.step;
-                            if (!step || !inPlaceEditValue.trim()) { setInPlaceEditId(null); return; }
-                            const newVal = inPlaceEditValue.trim();
-                            // Update message content
-                            setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
-                            // Update data state for the relevant field
-                            if (step === "legalZipCity") {
-                              const m = newVal.match(/^(\d{5})\s+(.+)$/);
-                              if (m) setData((p) => ({ ...p, legalZip: m[1], legalCity: m[2] }));
-                            } else if (step in data) {
-                              setData((p) => ({ ...p, [step]: newVal }));
+                      {/* Color picker for color steps */}
+                      {(msg.step === "brandColor" || msg.step === "brandSecondaryColor") ? (
+                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-blue-500">
+                          <p className="text-slate-300 text-xs">
+                            {msg.step === "brandColor" ? "Hauptfarbe wählen:" : "Sekundärfarbe wählen:"}
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              value={inPlaceEditValue.match(/^#[0-9A-Fa-f]{6}$/) ? inPlaceEditValue : "#3b82f6"}
+                              onChange={(e) => setInPlaceEditValue(e.target.value)}
+                              className="w-12 h-12 rounded-lg cursor-pointer border-2 border-slate-500 bg-transparent"
+                              style={{ padding: "2px" }}
+                            />
+                            <div className="flex-1">
+                              <div
+                                className="w-full h-10 rounded-lg border border-slate-500"
+                                style={{ backgroundColor: inPlaceEditValue.match(/^#[0-9A-Fa-f]{6}$/) ? inPlaceEditValue : "#3b82f6" }}
+                              />
+                              <p className="text-slate-400 text-xs mt-1 font-mono">{inPlaceEditValue}</p>
+                            </div>
+                          </div>
+                          {/* Quick presets */}
+                          <div className="flex flex-wrap gap-1.5">
+                            {["#2563eb","#16a34a","#dc2626","#d97706","#7c3aed","#0891b2","#db2777","#1a1a1a","#f5f5f5","#b8860b"].map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => setInPlaceEditValue(c)}
+                                className="w-6 h-6 rounded-full border-2 transition-all"
+                                style={{ backgroundColor: c, borderColor: inPlaceEditValue === c ? "white" : "transparent" }}
+                                title={c}
+                              />
+                            ))}
+                          </div>
+                          <div className="flex gap-1 justify-end">
+                            <button
+                              onClick={() => setInPlaceEditId(null)}
+                              className="px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
+                            >Abbrechen</button>
+                            <button
+                              onClick={() => {
+                                const step = msg.step;
+                                if (!step || !inPlaceEditValue.match(/^#[0-9A-Fa-f]{6}$/)) { setInPlaceEditId(null); return; }
+                                const newVal = inPlaceEditValue;
+                                setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
+                                setData((p) => ({ ...p, [step]: newVal }));
+                                setInPlaceEditId(null);
+                              }}
+                              className="px-2 py-1 text-xs rounded-lg bg-blue-600 hover:bg-blue-500 text-white"
+                            >Übernehmen</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                        <textarea
+                          className="bg-slate-700 text-white text-sm px-3 py-2 rounded-xl border border-blue-500 outline-none resize-none min-h-[60px] w-full"
+                          value={inPlaceEditValue}
+                          onChange={(e) => setInPlaceEditValue(e.target.value)}
+                          autoFocus
+                          rows={3}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              const step = msg.step;
+                              if (!step || !inPlaceEditValue.trim()) { setInPlaceEditId(null); return; }
+                              const newVal = inPlaceEditValue.trim();
+                              setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
+                              if (step === "legalZipCity") {
+                                const m = newVal.match(/^(\d{5})\s+(.+)$/);
+                                if (m) setData((p) => ({ ...p, legalZip: m[1], legalCity: m[2] }));
+                              } else if (step in data) {
+                                setData((p) => ({ ...p, [step]: newVal }));
+                              }
+                              setInPlaceEditId(null);
                             }
-                            setInPlaceEditId(null);
-                          }
-                          if (e.key === "Escape") setInPlaceEditId(null);
-                        }}
-                      />
-                      <div className="flex gap-1 justify-end">
-                        <button
-                          onClick={() => setInPlaceEditId(null)}
-                          className="px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
-                        >Abbrechen</button>
-                        <button
-                          onClick={() => {
-                            const step = msg.step;
-                            if (!step || !inPlaceEditValue.trim()) { setInPlaceEditId(null); return; }
-                            const newVal = inPlaceEditValue.trim();
-                            setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
-                            if (step === "legalZipCity") {
-                              const m = newVal.match(/^(\d{5})\s+(.+)$/);
-                              if (m) setData((p) => ({ ...p, legalZip: m[1], legalCity: m[2] }));
-                            } else if (step in data) {
-                              setData((p) => ({ ...p, [step]: newVal }));
-                            }
-                            setInPlaceEditId(null);
+                            if (e.key === "Escape") setInPlaceEditId(null);
                           }}
-                          className="px-2 py-1 text-xs rounded-lg bg-blue-600 hover:bg-blue-500 text-white"
-                        >Speichern</button>
-                      </div>
+                        />
+                        <div className="flex gap-1 justify-end">
+                          <button
+                            onClick={() => setInPlaceEditId(null)}
+                            className="px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
+                          >Abbrechen</button>
+                          <button
+                            onClick={() => {
+                              const step = msg.step;
+                              if (!step || !inPlaceEditValue.trim()) { setInPlaceEditId(null); return; }
+                              const newVal = inPlaceEditValue.trim();
+                              setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
+                              if (step === "legalZipCity") {
+                                const m = newVal.match(/^(\d{5})\s+(.+)$/);
+                                if (m) setData((p) => ({ ...p, legalZip: m[1], legalCity: m[2] }));
+                              } else if (step in data) {
+                                setData((p) => ({ ...p, [step]: newVal }));
+                              }
+                              setInPlaceEditId(null);
+                            }}
+                            className="px-2 py-1 text-xs rounded-lg bg-blue-600 hover:bg-blue-500 text-white"
+                          >Speichern</button>
+                        </div>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <>
@@ -2302,6 +2355,102 @@ const INDUSTRY_PHOTOS: Record<string, { id: string; url: string; thumb: string; 
     { id: "h4", url: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=70", alt: "Holzarbeit" },
     { id: "h5", url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=400&q=70", alt: "Baustelle" },
     { id: "h6", url: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&q=70", alt: "Handwerker Arbeit" },
+  ],
+  "Bauunternehmen": [
+    { id: "b1", url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=70", alt: "Baustelle" },
+    { id: "b2", url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=400&q=70", alt: "Bau" },
+    { id: "b3", url: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=400&q=70", alt: "Bauarbeiter" },
+    { id: "b4", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&q=70", alt: "Architektur" },
+    { id: "b5", url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=70", alt: "Gebäude" },
+    { id: "b6", url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70", alt: "Werkstatt" },
+  ],
+  "Beauty / Kosmetik": [
+    { id: "bk1", url: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&q=70", alt: "Beauty Salon" },
+    { id: "bk2", url: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&q=70", alt: "Kosmetik" },
+    { id: "bk3", url: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400&q=70", alt: "Nails" },
+    { id: "bk4", url: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&q=70", alt: "Spa" },
+    { id: "bk5", url: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=70", alt: "Make-up" },
+    { id: "bk6", url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&q=70", alt: "Styling" },
+  ],
+  "Fitness-Studio": [
+    { id: "fi1", url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=70", alt: "Fitnessstudio" },
+    { id: "fi2", url: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=70", alt: "Training" },
+    { id: "fi3", url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=70", alt: "Gym" },
+    { id: "fi4", url: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400&q=70", alt: "Geräte" },
+    { id: "fi5", url: "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=400&q=70", alt: "Workout" },
+    { id: "fi6", url: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&q=70", alt: "Fitness" },
+  ],
+  "Arzt / Zahnarzt": [
+    { id: "az1", url: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&q=70", alt: "Arztpraxis" },
+    { id: "az2", url: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&q=70", alt: "Zahnarzt" },
+    { id: "az3", url: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&q=70", alt: "Praxis" },
+    { id: "az4", url: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&q=70", alt: "Medizin" },
+    { id: "az5", url: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=70", alt: "Arzt" },
+    { id: "az6", url: "https://images.unsplash.com/photo-1551076805-e1869033e561?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1551076805-e1869033e561?w=400&q=70", alt: "Klinik" },
+  ],
+  "Rechtsanwalt": [
+    { id: "ra1", url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&q=70", alt: "Anwaltskanzlei" },
+    { id: "ra2", url: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=400&q=70", alt: "Bücher" },
+    { id: "ra3", url: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?w=400&q=70", alt: "Recht" },
+    { id: "ra4", url: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&q=70", alt: "Vertrag" },
+    { id: "ra5", url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=70", alt: "Anwalt" },
+    { id: "ra6", url: "https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=400&q=70", alt: "Kanzlei" },
+  ],
+  "Immobilien": [
+    { id: "im1", url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=70", alt: "Haus" },
+    { id: "im2", url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=70", alt: "Villa" },
+    { id: "im3", url: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=70", alt: "Wohnhaus" },
+    { id: "im4", url: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&q=70", alt: "Küche" },
+    { id: "im5", url: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400&q=70", alt: "Wohnzimmer" },
+    { id: "im6", url: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&q=70", alt: "Immobilien" },
+  ],
+  "IT / Software": [
+    { id: "it1", url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=70", alt: "Coding" },
+    { id: "it2", url: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=70", alt: "Programmieren" },
+    { id: "it3", url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=70", alt: "Technik" },
+    { id: "it4", url: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&q=70", alt: "Büro" },
+    { id: "it5", url: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&q=70", alt: "Laptop" },
+    { id: "it6", url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=70", alt: "Code" },
+  ],
+  "Fotografie": [
+    { id: "fo1", url: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&q=70", alt: "Kamera" },
+    { id: "fo2", url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=70", alt: "Fotostudio" },
+    { id: "fo3", url: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=400&q=70", alt: "Fotografie" },
+    { id: "fo4", url: "https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=400&q=70", alt: "Portrait" },
+    { id: "fo5", url: "https://images.unsplash.com/photo-1500051638674-ff996a0ec29e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1500051638674-ff996a0ec29e?w=400&q=70", alt: "Shooting" },
+    { id: "fo6", url: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=400&q=70", alt: "Foto" },
+  ],
+  "Autowerkstatt": [
+    { id: "aw1", url: "https://images.unsplash.com/photo-1625047509168-a7026f36de04?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1625047509168-a7026f36de04?w=400&q=70", alt: "Werkstatt" },
+    { id: "aw2", url: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400&q=70", alt: "Auto" },
+    { id: "aw3", url: "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=400&q=70", alt: "Reparatur" },
+    { id: "aw4", url: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&q=70", alt: "KFZ" },
+    { id: "aw5", url: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400&q=70", alt: "Fahrzeug" },
+    { id: "aw6", url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=70", alt: "Garage" },
+  ],
+  "Hotel / Pension": [
+    { id: "ho1", url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=70", alt: "Hotel" },
+    { id: "ho2", url: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=400&q=70", alt: "Hotelzimmer" },
+    { id: "ho3", url: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=70", alt: "Lobby" },
+    { id: "ho4", url: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=70", alt: "Zimmer" },
+    { id: "ho5", url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=70", alt: "Pool" },
+    { id: "ho6", url: "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=400&q=70", alt: "Pension" },
+  ],
+  "Bäckerei": [
+    { id: "bae1", url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=70", alt: "Bäckerei" },
+    { id: "bae2", url: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&q=70", alt: "Brot" },
+    { id: "bae3", url: "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?w=400&q=70", alt: "Brötchen" },
+    { id: "bae4", url: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=400&q=70", alt: "Kuchen" },
+    { id: "bae5", url: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400&q=70", alt: "Croissant" },
+    { id: "bae6", url: "https://images.unsplash.com/photo-1549931319-a545dcf3bc7c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1549931319-a545dcf3bc7c?w=400&q=70", alt: "Backwaren" },
+  ],
+  "Bar / Tapas": [
+    { id: "bar1", url: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&q=70", alt: "Bar" },
+    { id: "bar2", url: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&q=70", alt: "Cocktails" },
+    { id: "bar3", url: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400&q=70", alt: "Barkeeper" },
+    { id: "bar4", url: "https://images.unsplash.com/photo-1543007631-283050bb3e8c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1543007631-283050bb3e8c?w=400&q=70", alt: "Tapas" },
+    { id: "bar5", url: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=70", alt: "Drinks" },
+    { id: "bar6", url: "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=400&q=70", alt: "Bar Ambiente" },
   ],
 };
 
