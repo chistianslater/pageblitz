@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle, ShoppingCart, CreditCard } from "lucide-react";
+import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
@@ -181,6 +181,7 @@ export default function WebsitesPage() {
                           <CheckoutDialog website={w} />
                           <RegenerateDialog website={w} />
                           <OutreachDialog website={w} />
+                          <DeleteWebsiteDialog website={w} />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -469,6 +470,91 @@ function OutreachDialog({ website }: { website: any }) {
             E-Mail senden
           </Button>
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DeleteWebsiteDialog({ website }: { website: any }) {
+  const utils = trpc.useUtils();
+  const [open, setOpen] = useState(false);
+
+  const deleteMutation = trpc.website.delete.useMutation({
+    onMutate: async () => {
+      // Optimistic update: remove from list immediately
+      await utils.website.list.cancel();
+      const previous = utils.website.list.getData({ limit: 100, offset: 0 });
+      utils.website.list.setData({ limit: 100, offset: 0 }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          websites: old.websites.filter((w: any) => w.id !== website.id),
+          total: (old.total ?? 1) - 1,
+        };
+      });
+      return { previous };
+    },
+    onSuccess: () => {
+      toast.success(`Website "${website.business?.name || website.slug}" wurde gelöscht.`);
+      utils.website.list.invalidate();
+      utils.stats.dashboard.invalidate();
+      setOpen(false);
+    },
+    onError: (err, _vars, ctx) => {
+      // Rollback optimistic update
+      if (ctx?.previous) {
+        utils.website.list.setData({ limit: 100, offset: 0 }, ctx.previous);
+      }
+      toast.error("Löschen fehlgeschlagen: " + err.message);
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-red-400" />
+            Website löschen
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Möchtest du die Website für{" "}
+            <span className="font-medium text-foreground">{website.business?.name || website.slug}</span>{" "}
+            wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+          <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-red-300">
+            Die Website, alle Onboarding-Daten und Abonnement-Informationen werden dauerhaft gelöscht.
+          </p>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => deleteMutation.mutate({ id: website.id })}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Trash2 className="h-4 w-4 mr-2" />
+            )}
+            Endgültig löschen
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -388,3 +388,12 @@ export async function listOnboardingInProgress(limit = 50, offset = 0): Promise<
   if (!db) return [];
   return db.select().from(onboardingResponses).where(eq(onboardingResponses.status, "in_progress")).orderBy(desc(onboardingResponses.updatedAt)).limit(limit).offset(offset);
 }
+
+export async function deleteWebsite(websiteId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  // Delete dependent records first
+  await db.delete(onboardingResponses).where(eq(onboardingResponses.websiteId, websiteId));
+  await db.delete(subscriptions).where(eq(subscriptions.websiteId, websiteId));
+  await db.delete(generatedWebsites).where(eq(generatedWebsites.id, websiteId));
+}

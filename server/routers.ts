@@ -14,6 +14,7 @@ import {
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
   createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
+  deleteWebsite,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -1274,6 +1275,15 @@ export const appRouter = router({
       .input(z.object({ id: z.number(), status: z.enum(["preview", "sold", "active", "inactive"]) }))
       .mutation(async ({ input }) => {
         await updateWebsite(input.id, { status: input.status });
+        return { success: true };
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.id);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        await deleteWebsite(input.id);
         return { success: true };
       }),
   }),

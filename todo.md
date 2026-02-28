@@ -502,3 +502,8 @@
 - [x] Speichern-Button aktualisiert nur das betroffene Feld in data-State und liveWebsiteData
 - [x] Abbrechen-Button verwirft Änderungen
 - [x] Kein Einfügen ins Chat-Eingabefeld mehr, kein Durcheinander mit aktuellem Schritt
+
+## Website löschen im Dashboard (Feb 28 2026)
+- [x] Backend: adminProcedure website.delete – löscht Website + onboarding_responses aus DB
+- [x] Frontend: Löschen-Button (Trash-Icon) in der Websites-Liste mit Bestätigungsdialog
+- [x] Optimistic Update: Website verschwindet sofort aus der Liste nach Bestätigung
