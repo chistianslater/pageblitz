@@ -522,3 +522,7 @@
 
 ## Automatische Website-Analyse beim Speichern (Feb 28 2026)
 - [x] saveResults: Für jedes Unternehmen mit Website wird analyzeWebsite() im Hintergrund aufgerufen und leadType/websiteScore automatisch gesetzt
+
+## Website-Link in Tabellen (Feb 28 2026)
+- [x] SearchPage: Website-URL als klickbarer Link neben dem Lead-Typ-Badge anzeigen
+- [x] WebsitesPage: Website-URL als klickbarer Link in der Unternehmensliste anzeigen

@@ -180,7 +180,7 @@ export default function SearchPage() {
                         ) : "–"}
                       </TableCell>
                       <TableCell>
-                        <LeadTypeBadge hasWebsite={r.hasWebsite} leadType={r.leadType} />
+                        <LeadTypeBadge hasWebsite={r.hasWebsite} leadType={r.leadType} website={r.website} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -196,7 +196,19 @@ export default function SearchPage() {
 
 type LeadType = "no_website" | "outdated_website" | "poor_website" | "unknown";
 
-function LeadTypeBadge({ hasWebsite, leadType }: { hasWebsite: boolean; leadType?: LeadType }) {
+function LeadTypeBadge({ hasWebsite, leadType, website }: { hasWebsite: boolean; leadType?: LeadType; website?: string | null }) {
+  const link = website ? (
+    <a
+      href={website.startsWith("http") ? website : `https://${website}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-xs text-blue-400 hover:underline truncate max-w-[160px] block mt-0.5"
+      onClick={e => e.stopPropagation()}
+    >
+      {website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+    </a>
+  ) : null;
+
   if (!hasWebsite || leadType === "no_website") {
     return (
       <Badge variant="outline" className="text-red-400 border-red-400/30 gap-1">
@@ -206,25 +218,32 @@ function LeadTypeBadge({ hasWebsite, leadType }: { hasWebsite: boolean; leadType
   }
   if (leadType === "outdated_website") {
     return (
-      <Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1">
-        <Clock className="h-3 w-3" /> Veraltete Website
-      </Badge>
+      <div>
+        <Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1">
+          <Clock className="h-3 w-3" /> Veraltete Website
+        </Badge>
+        {link}
+      </div>
     );
   }
   if (leadType === "poor_website") {
     return (
-      <Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1">
-        <TrendingDown className="h-3 w-3" /> Schlechte Website
-      </Badge>
+      <div>
+        <Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1">
+          <TrendingDown className="h-3 w-3" /> Schlechte Website
+        </Badge>
+        {link}
+      </div>
     );
   }
   // hasWebsite but leadType === "unknown" – not yet analyzed
   return (
-    <div className="flex flex-col gap-1">
+    <div>
       <Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1">
         <CheckCircle className="h-3 w-3" /> Hat Website
       </Badge>
-      <span className="text-xs text-muted-foreground">Noch nicht analysiert</span>
+      {link}
+      {!website && <span className="text-xs text-muted-foreground block mt-0.5">Noch nicht analysiert</span>}
     </div>
   );
 }

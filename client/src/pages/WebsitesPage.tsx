@@ -93,7 +93,7 @@ export default function WebsitesPage() {
                         ) : "–"}
                       </TableCell>
                       <TableCell>
-                        <BusinessLeadTypeBadge hasWebsite={!!b.hasWebsite} leadType={b.leadType} />
+                        <BusinessLeadTypeBadge hasWebsite={!!b.hasWebsite} leadType={b.leadType} website={b.website} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -645,8 +645,19 @@ function DeleteBusinessDialog({ business }: { business: any }) {
 
 type LeadType = "no_website" | "outdated_website" | "poor_website" | "unknown";
 
-function BusinessLeadTypeBadge({ hasWebsite, leadType }: { hasWebsite: boolean; leadType?: string | null }) {
+function BusinessLeadTypeBadge({ hasWebsite, leadType, website }: { hasWebsite: boolean; leadType?: string | null; website?: string | null }) {
   const lt = leadType as LeadType | undefined;
+  const link = website ? (
+    <a
+      href={website.startsWith("http") ? website : `https://${website}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-xs text-blue-400 hover:underline truncate max-w-[160px] block mt-0.5"
+    >
+      {website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+    </a>
+  ) : null;
+
   if (!hasWebsite || lt === "no_website") {
     return (
       <Badge variant="outline" className="text-red-400 border-red-400/30 gap-1">
@@ -656,21 +667,30 @@ function BusinessLeadTypeBadge({ hasWebsite, leadType }: { hasWebsite: boolean; 
   }
   if (lt === "outdated_website") {
     return (
-      <Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1">
-        <Clock className="h-3 w-3" /> Veraltete Website
-      </Badge>
+      <div>
+        <Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1">
+          <Clock className="h-3 w-3" /> Veraltete Website
+        </Badge>
+        {link}
+      </div>
     );
   }
   if (lt === "poor_website") {
     return (
-      <Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1">
-        <TrendingDown className="h-3 w-3" /> Schlechte Website
-      </Badge>
+      <div>
+        <Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1">
+          <TrendingDown className="h-3 w-3" /> Schlechte Website
+        </Badge>
+        {link}
+      </div>
     );
   }
   return (
-    <Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1">
-      <CheckCircle className="h-3 w-3" /> Hat Website
-    </Badge>
+    <div>
+      <Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1">
+        <CheckCircle className="h-3 w-3" /> Hat Website
+      </Badge>
+      {link}
+    </div>
   );
 }
