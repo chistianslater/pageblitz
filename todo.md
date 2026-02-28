@@ -526,3 +526,6 @@
 ## Website-Link in Tabellen (Feb 28 2026)
 - [x] SearchPage: Website-URL als klickbarer Link neben dem Lead-Typ-Badge anzeigen
 - [x] WebsitesPage: Website-URL als klickbarer Link in der Unternehmensliste anzeigen
+
+## Bugfix: Ladeanimation Website-Generieren (Feb 28 2026)
+- [x] WebsitesPage: Ladeanimation nur beim geklickten Button anzeigen (generatingId State statt globalem isPending)

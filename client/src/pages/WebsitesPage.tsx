@@ -31,14 +31,19 @@ export default function WebsitesPage() {
   const { data: businessData } = trpc.business.list.useQuery({ limit: 100, offset: 0 });
   const { data: websiteData, isLoading: webLoading } = trpc.website.list.useQuery({ limit: 100, offset: 0 });
 
+  const [generatingId, setGeneratingId] = useState<number | null>(null);
   const generateMutation = trpc.website.generate.useMutation({
     onSuccess: () => {
       toast.success("Website erfolgreich generiert!");
+      setGeneratingId(null);
       utils.website.list.invalidate();
       utils.business.list.invalidate();
       utils.stats.dashboard.invalidate();
     },
-    onError: (err) => toast.error("Generierung fehlgeschlagen: " + err.message),
+    onError: (err) => {
+      toast.error("Generierung fehlgeschlagen: " + err.message);
+      setGeneratingId(null);
+    },
   });
 
   const businessesWithoutWebsite = businessData?.businesses?.filter(b => {
@@ -99,10 +104,13 @@ export default function WebsitesPage() {
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
-                            onClick={() => generateMutation.mutate({ businessId: b.id })}
-                            disabled={generateMutation.isPending}
+                            onClick={() => {
+                              setGeneratingId(b.id);
+                              generateMutation.mutate({ businessId: b.id });
+                            }}
+                            disabled={generatingId !== null}
                           >
-                            {generateMutation.isPending ? (
+                            {generatingId === b.id ? (
                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             ) : (
                               <Wand2 className="h-4 w-4 mr-2" />
