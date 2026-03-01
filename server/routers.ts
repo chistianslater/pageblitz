@@ -28,7 +28,7 @@ import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateIma
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
-import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS } from "@shared/layoutConfig";
+import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
@@ -734,6 +734,7 @@ Return ONLY the key (one word, lowercase).`;
   }
 }
 
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -1087,7 +1088,7 @@ export const appRouter = router({
         if (realReviews && realReviews.length >= 3 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
           if (testimonialsSection) {
-            const topReviews = realReviews
+            const rawTopReviews = realReviews
               .filter((r) => r.text && r.text.length >= 50)
               .sort((a, b) => b.rating - a.rating)
               .slice(0, 5)
@@ -1098,8 +1099,9 @@ export const appRouter = router({
                 rating: r.rating,
                 isRealReview: true,
               }));
-            if (topReviews.length >= 2) {
-              testimonialsSection.items = topReviews;
+            
+            if (rawTopReviews.length >= 2) {
+              testimonialsSection.items = rawTopReviews;
               testimonialsSection.isRealReviews = true;
             }
           }
@@ -1108,14 +1110,10 @@ export const appRouter = router({
         // Sanitize designTokens: ensure enum values are valid
         if (websiteData.designTokens) {
           const dt = websiteData.designTokens;
-          const validRadius = ["none", "sm", "md", "lg", "full"];
-          const validShadow = ["none", "flat", "soft", "dramatic", "glow"];
-          const validSpacing = ["tight", "normal", "spacious", "ultra"];
-          const validButton = ["filled", "outline", "ghost", "pill"];
-          if (!validRadius.includes(dt.borderRadius)) dt.borderRadius = "md";
-          if (!validShadow.includes(dt.shadowStyle)) dt.shadowStyle = "soft";
-          if (!validSpacing.includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
-          if (!validButton.includes(dt.buttonStyle)) dt.buttonStyle = "filled";
+          if (!DESIGN_TOKEN_CONFIG.radius.includes(dt.borderRadius as any)) dt.borderRadius = "md";
+          if (!DESIGN_TOKEN_CONFIG.shadow.includes(dt.shadowStyle as any)) dt.shadowStyle = "soft";
+          if (!DESIGN_TOKEN_CONFIG.spacing.includes(dt.sectionSpacing as any)) dt.sectionSpacing = "normal";
+          if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any)) dt.buttonStyle = "filled";
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
@@ -1253,7 +1251,7 @@ export const appRouter = router({
         if (realReviews && realReviews.length >= 3 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
           if (testimonialsSection) {
-            const topReviews = realReviews
+            const rawTopReviews = realReviews
               .filter((r) => r.text && r.text.length >= 50)
               .sort((a, b) => b.rating - a.rating)
               .slice(0, 5)
@@ -1264,8 +1262,9 @@ export const appRouter = router({
                 rating: r.rating,
                 isRealReview: true,
               }));
-            if (topReviews.length >= 2) {
-              testimonialsSection.items = topReviews;
+            
+            if (rawTopReviews.length >= 2) {
+              testimonialsSection.items = rawTopReviews;
               testimonialsSection.isRealReviews = true;
             }
           }
@@ -1274,14 +1273,10 @@ export const appRouter = router({
         // Sanitize designTokens: ensure enum values are valid
         if (websiteData.designTokens) {
           const dt = websiteData.designTokens;
-          const validRadius = ["none", "sm", "md", "lg", "full"];
-          const validShadow = ["none", "flat", "soft", "dramatic", "glow"];
-          const validSpacing = ["tight", "normal", "spacious", "ultra"];
-          const validButton = ["filled", "outline", "ghost", "pill"];
-          if (!validRadius.includes(dt.borderRadius)) dt.borderRadius = "md";
-          if (!validShadow.includes(dt.shadowStyle)) dt.shadowStyle = "soft";
-          if (!validSpacing.includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
-          if (!validButton.includes(dt.buttonStyle)) dt.buttonStyle = "filled";
+          if (!DESIGN_TOKEN_CONFIG.radius.includes(dt.borderRadius as any)) dt.borderRadius = "md";
+          if (!DESIGN_TOKEN_CONFIG.shadow.includes(dt.shadowStyle as any)) dt.shadowStyle = "soft";
+          if (!DESIGN_TOKEN_CONFIG.spacing.includes(dt.sectionSpacing as any)) dt.sectionSpacing = "normal";
+          if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any)) dt.buttonStyle = "filled";
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
@@ -2369,17 +2364,31 @@ Kontext: ${input.context}`,
         if (realReviews && realReviews.length >= 3 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
           if (testimonialsSection) {
-            const topReviews = realReviews.filter((r) => r.text && r.text.length >= 50).sort((a, b) => b.rating - a.rating).slice(0, 5).map((r) => ({ title: r.text.slice(0, 60) + (r.text.length > 60 ? "\u2026" : ""), description: r.text, author: r.author_name, rating: r.rating, isRealReview: true }));
-            if (topReviews.length >= 2) { testimonialsSection.items = topReviews; testimonialsSection.isRealReviews = true; }
+            const rawTopReviews = realReviews
+              .filter((r) => r.text && r.text.length >= 50)
+              .sort((a, b) => b.rating - a.rating)
+              .slice(0, 5)
+              .map((r) => ({
+                title: r.text.slice(0, 60) + (r.text.length > 60 ? "…" : ""),
+                description: r.text,
+                author: r.author_name,
+                rating: r.rating,
+                isRealReview: true,
+              }));
+            
+            if (rawTopReviews.length >= 2) {
+              testimonialsSection.items = rawTopReviews;
+              testimonialsSection.isRealReviews = true;
+            }
           }
         }
 
         if (websiteData.designTokens) {
           const dt = websiteData.designTokens;
-          if (!["none","sm","md","lg","full"].includes(dt.borderRadius)) dt.borderRadius = "md";
-          if (!["none","flat","soft","dramatic","glow"].includes(dt.shadowStyle)) dt.shadowStyle = "soft";
-          if (!["tight","normal","spacious","ultra"].includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
-          if (!["filled","outline","ghost","pill"].includes(dt.buttonStyle)) dt.buttonStyle = "filled";
+          if (!DESIGN_TOKEN_CONFIG.radius.includes(dt.borderRadius as any)) dt.borderRadius = "md";
+          if (!DESIGN_TOKEN_CONFIG.shadow.includes(dt.shadowStyle as any)) dt.shadowStyle = "soft";
+          if (!DESIGN_TOKEN_CONFIG.spacing.includes(dt.sectionSpacing as any)) dt.sectionSpacing = "normal";
+          if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any)) dt.buttonStyle = "filled";
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           { const lfSS = getLayoutFonts(layoutStyle);
           if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfSS.headlineFont;

@@ -50,37 +50,7 @@ export default function WarmLayout({ websiteData, cs, heroImageUrl, aboutImageUr
           {section.type === "testimonials" && <WarmTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <WarmFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <WarmContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <WarmContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <WarmCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -432,48 +402,79 @@ function WarmFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) 
   );
 }
 
-function WarmContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[] }) {
+function WarmContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.background, padding: "5rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
+      <div className={`max-w-6xl mx-auto px-6 lg:px-8 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-12`}>
         <div>
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.onBackground, marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.onBackground, opacity: 0.7, marginBottom: "2rem" }}>{section.content}</p>}
-          <div className="space-y-4">
+          <div className="space-y-4" style={{ display: "flex", flexDirection: "column", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
             {phone && <div className="flex items-center gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground, fontWeight: 600 }}>{phone}</a></div>}
             {address && <div className="flex items-start gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: cs.primary }} /></div><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground, opacity: 0.8 }}>{address}</span></div>}
             {email && <div className="flex items-center gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground }}>{email}</a></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.surface, borderRadius: "1.5rem", padding: "2.5rem", border: `1px solid ${cs.onSurface}10` }}>
-          <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
-              (e.target as HTMLFormElement).reset();
-            }}
-          >
-            <input type="text" placeholder="Ihr Name" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.onSurface}10`, backgroundColor: cs.background, color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} />
-            <input type="email" placeholder="Ihre E-Mail-Adresse" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.onSurface}10`, backgroundColor: cs.background, color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} />
-            <textarea placeholder="Ihre Nachricht an uns..." rows={4} style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "1.25rem", border: `1px solid ${cs.onSurface}10`, backgroundColor: cs.background, color: cs.onBackground, fontSize: "0.95rem", outline: "none", resize: "none" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.9rem", borderRadius: "2rem", fontSize: "1rem", fontWeight: 700, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
-              {section.ctaText || "Jetzt anfragen"}
-            </button>
-          </form>
 
-          <div style={{ marginTop: "2.5rem", paddingTop: "2rem", borderTop: `1px solid ${cs.onSurface}10` }}>
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5" style={{ color: cs.primary }} />
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: cs.onSurface }}>Öffnungszeiten</h3>
-            </div>
-            <div className="space-y-2">
-              {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 22:00 Uhr", "Sa – So: 09:00 – 23:00 Uhr"]).map((h, i) => (
-                <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.onSurface, opacity: 0.7 }}>{h}</p>
-              ))}
+        {isLocked !== false && (
+          <div style={{ backgroundColor: cs.surface, borderRadius: "1.5rem", padding: "2.5rem", border: `1px solid ${cs.onSurface}10`, position: "relative" }}>
+            <form 
+              style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+                (e.target as HTMLFormElement).reset();
+              }}
+            >
+              <input type="text" placeholder="Ihr Name" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.onSurface}10`, backgroundColor: cs.background, color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} />
+              <input type="email" placeholder="Ihre E-Mail-Adresse" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.onSurface}10`, backgroundColor: cs.background, color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} />
+              <textarea placeholder="Ihre Nachricht an uns..." rows={4} style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "1.25rem", border: `1px solid ${cs.onSurface}10`, backgroundColor: cs.background, color: cs.onBackground, fontSize: "0.95rem", outline: "none", resize: "none" }} />
+              <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.9rem", borderRadius: "2rem", fontSize: "1rem", fontWeight: 700, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
+                {section.ctaText || "Jetzt anfragen"}
+              </button>
+            </form>
+
+            {isLocked && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.75rem",
+                zIndex: 10,
+                padding: "2rem",
+                textAlign: "center"
+              }}>
+                <div style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  backgroundColor: `${cs.primary}20`,
+                  border: `1px solid ${cs.primary}50`,
+                  borderRadius: "9999px",
+                  padding: "0.5rem 1.25rem",
+                }}>
+                  <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+                </div>
+                <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+              </div>
+            )}
+
+            <div style={{ marginTop: "2.5rem", paddingTop: "2rem", borderTop: `1px solid ${cs.onSurface}10` }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="h-5 w-5" style={{ color: cs.primary }} />
+                <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: cs.onSurface }}>Öffnungszeiten</h3>
+              </div>
+              <div className="space-y-2">
+                {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 22:00 Uhr", "Sa – So: 09:00 – 23:00 Uhr"]).map((h, i) => (
+                  <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.onSurface, opacity: 0.7 }}>{h}</p>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

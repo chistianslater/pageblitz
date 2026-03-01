@@ -11,8 +11,8 @@ import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
 
-const DISPLAY = "'Bricolage Grotesque', 'Inter', sans-serif";
-const LOGO_FONT = "var(--logo-font, 'Bricolage Grotesque', 'Inter', sans-serif)";
+const DISPLAY = "var(--site-font-headline, 'Bricolage Grotesque', 'Inter', sans-serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Bricolage Grotesque', 'Inter', sans-serif))";
 const BODY = "var(--site-font-body, 'Plus Jakarta Sans', 'Inter', sans-serif)";
 
 interface Props {
@@ -52,37 +52,7 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, aboutImag
           {section.type === "testimonials" && <VibrantTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <VibrantFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <VibrantContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <VibrantContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <VibrantCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -467,40 +437,71 @@ function VibrantPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
   );
 }
 
-function VibrantContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
+function VibrantContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
+      <div className={`max-w-7xl mx-auto px-6 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-16`}>
         <div>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1rem" }}>Kontakt</span>
           <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.onSurface, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "2.5rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.6, marginBottom: "2.5rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: cs.onSurface, fontSize: "1rem", fontWeight: 800 }}>{phone}</a></div>}
             {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><span style={{ color: cs.onSurface, opacity: 0.7, fontSize: "0.95rem" }}>{address}</span></div>}
             {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ color: cs.onSurface, fontSize: "1rem" }}>{email}</a></div>}
             {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><div>{hours.map((h, i) => <p key={i} style={{ color: cs.onSurface, opacity: 0.7, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.background, padding: "2.5rem", border: `1px solid ${cs.onBackground}0D` }}>
-          <h3 style={{ fontFamily: DISPLAY, fontSize: "1.5rem", letterSpacing: "0.05em", color: cs.onBackground, textTransform: "uppercase", marginBottom: "1.5rem", fontWeight: 800 }}>Probetraining buchen</h3>
-          <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
-              (e.target as HTMLFormElement).reset();
-            }}
-          >
-            <input type="text" placeholder="Dein Name" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
-            <input type="email" placeholder="Deine E-Mail" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
-            <input type="tel" placeholder="Telefon" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
-            <textarea placeholder="Dein Ziel" rows={3} style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none", resize: "none" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 900, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
-              Jetzt starten
-            </button>
-          </form>
-        </div>
+
+        {isLocked !== false && (
+          <div style={{ backgroundColor: cs.background, padding: "2.5rem", border: `1px solid ${cs.onBackground}0D`, position: "relative" }}>
+            <h3 style={{ fontFamily: DISPLAY, fontSize: "1.5rem", letterSpacing: "0.05em", color: cs.onBackground, textTransform: "uppercase", marginBottom: "1.5rem", fontWeight: 800 }}>Probetraining buchen</h3>
+            <form 
+              style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.2 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+                (e.target as HTMLFormElement).reset();
+              }}
+            >
+              <input type="text" placeholder="Dein Name" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
+              <input type="email" placeholder="Deine E-Mail" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
+              <input type="tel" placeholder="Telefon" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
+              <textarea placeholder="Dein Ziel" rows={3} style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}1A`, padding: "0.9rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none", resize: "none" }} />
+              <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 900, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
+                Jetzt starten
+              </button>
+            </form>
+
+            {isLocked && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.75rem",
+                zIndex: 10,
+                padding: "2rem",
+                textAlign: "center"
+              }}>
+                <div style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  backgroundColor: `${cs.primary}20`,
+                  border: `1px solid ${cs.primary}50`,
+                  borderRadius: "9999px",
+                  padding: "0.5rem 1.25rem",
+                }}>
+                  <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+                </div>
+                <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

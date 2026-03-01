@@ -12,7 +12,10 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
+import { getIndustryStats } from "@/lib/industryStats";
+
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
+const HEADLINE = "var(--site-font-headline, 'Plus Jakarta Sans', sans-serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Plus Jakarta Sans', 'Inter', sans-serif))";
 
 interface Props {
@@ -29,12 +32,14 @@ interface Props {
   slug?: string | null;
   contactFormLocked?: boolean;
   logoUrl?: string | null;
+  businessCategory?: string | null;
 }
 
 export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -43,45 +48,15 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
+          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
           {section.type === "gallery" && <ModernGallery section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} />}
           {section.type === "menu" && <ModernMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <ModernPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <ModernTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <ModernFAQ section={section} cs={cs} />}
-                    {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <ModernContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "rgba(0,0,0,0.78)",
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: "rgba(59,130,246,0.2)",
-                    border: "1px solid rgba(59,130,246,0.5)",
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: "#93c5fd", fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: "#60a5fa", backgroundColor: "rgba(59,130,246,0.25)", padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>+4,90 €/Monat</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.65)", margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+          {section.type === "contact" && (
+            <ModernContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <ModernCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -112,6 +87,13 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
 }
 
 function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
+  // Find a testimonial for the trust badge
+  const testimonialSection = websiteData.sections.find(s => s.type === "testimonials");
+  const firstTestimonial = testimonialSection?.items?.[0];
+  const trustText = firstTestimonial?.description 
+    ? (firstTestimonial.description.length > 70 ? firstTestimonial.description.slice(0, 67) + "..." : firstTestimonial.description)
+    : "Hervorragende Qualität und erstklassiger Service.";
+
   return (
     <section style={{ backgroundColor: cs.background, minHeight: "95vh", display: "flex", position: "relative", overflow: "hidden" }}>
       {/* Background Decorative Element */}
@@ -138,6 +120,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
           </div>
           
           <h1 style={{ 
+            fontFamily: HEADLINE,
             fontSize: "clamp(3.5rem, 8vw, 6.5rem)", 
             fontWeight: 900, 
             lineHeight: 0.9, 
@@ -194,11 +177,11 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} className="hover:scale-110 transition-transform duration-1000" />
           </div>
           {/* Floating badge */}
-          <div className="glass-card premium-shadow" style={{ position: "absolute", bottom: "20%", left: "-20%", padding: "2rem", zIndex: 30, maxWidth: "240px", backgroundColor: cs.surface, color: cs.onSurface }}>
+          <div className="glass-card premium-shadow" style={{ position: "absolute", bottom: "20%", left: "-20%", padding: "2rem", zIndex: 30, maxWidth: "240px", backgroundColor: cs.surface, color: cs.onSurface, border: `1px solid ${cs.onSurface}10` }}>
             <div className="flex gap-1 mb-2">
               {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />)}
             </div>
-            <p style={{ fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.4 }}>"Die beste Entscheidung für unser Business."</p>
+            <p style={{ fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.4 }}>"{trustText}"</p>
             <p style={{ fontSize: "0.7rem", opacity: 0.6, marginTop: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>Top Bewertung</p>
           </div>
         </div>
@@ -207,7 +190,9 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
   );
 }
 
-function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
+function ModernAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
+  const stats = getIndustryStats(businessCategory || "", 2);
+  
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-8">
@@ -241,7 +226,7 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
           
           <div className="lg:col-span-6">
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Über unser Team</span>
-            <h2 data-reveal style={{ fontSize: "clamp(2.5rem, 4vw, 4rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, marginBottom: "2.5rem", lineHeight: 1 }}>{section.headline}</h2>
+            <h2 data-reveal style={{ fontFamily: HEADLINE, fontSize: "clamp(2.5rem, 4vw, 4rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, marginBottom: "2.5rem", lineHeight: 1 }}>{section.headline}</h2>
             
             <div className="space-y-8">
               {section.subheadline && (
@@ -256,14 +241,12 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
             </div>
             
             <div className="grid grid-cols-2 gap-8 mt-12">
-              <div>
-                <p style={{ fontSize: "2.5rem", fontWeight: 900, color: cs.onBackground, marginBottom: "0.25rem" }}>15+</p>
-                <p style={{ fontSize: "0.75rem", color: cs.onBackground, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.1em" }}>Jahre Erfahrung</p>
-              </div>
-              <div>
-                <p style={{ fontSize: "2.5rem", fontWeight: 900, color: cs.onBackground, marginBottom: "0.25rem" }}>100%</p>
-                <p style={{ fontSize: "0.75rem", color: cs.onBackground, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.1em" }}>Leidenschaft</p>
-              </div>
+              {stats.map(({ n, label }, i) => (
+                <div key={i}>
+                  <p style={{ fontSize: "2.5rem", fontWeight: 900, color: cs.onBackground, marginBottom: "0.25rem" }}>{n}</p>
+                  <p style={{ fontSize: "0.75rem", color: cs.onBackground, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -280,7 +263,7 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
           <div className="max-w-2xl">
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1rem" }}>Was wir bieten</span>
-            <h2 data-reveal style={{ fontSize: "clamp(2.5rem, 4.5vw, 4.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, lineHeight: 1 }}>{section.headline}</h2>
+            <h2 data-reveal style={{ fontFamily: HEADLINE, fontSize: "clamp(2.5rem, 4.5vw, 4.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, lineHeight: 1 }}>{section.headline}</h2>
           </div>
           <div style={{ paddingBottom: "0.5rem" }}>
             <a href="#kontakt" style={{ fontSize: "0.9rem", fontWeight: 700, color: cs.onBackground, borderBottom: `2px solid ${cs.primary}`, paddingBottom: "4px" }} className="hover:opacity-60 transition-opacity">
@@ -315,7 +298,7 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
                 <Zap className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
               
-              <h3 style={{ fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", color: cs.onSurface, marginBottom: "1rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: HEADLINE, fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", color: cs.onSurface, marginBottom: "1rem" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2rem" }}>{item.description}</p>
               
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.onSurface, textTransform: "uppercase", letterSpacing: "0.05em" }} className="opacity-40 group-hover:opacity-100 transition-opacity">
@@ -411,7 +394,7 @@ function ModernGallery({ section, cs }: { section: WebsiteSection; cs: ColorSche
       <div className="max-w-7xl mx-auto px-8">
         <div className="mb-16">
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Galerie</span>
-          <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, lineHeight: 1.05 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: HEADLINE, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, lineHeight: 1.05 }}>{section.headline}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
           {items.map((item, i) => (
@@ -473,7 +456,7 @@ function ModernFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
     <section style={{ backgroundColor: cs.background, padding: "7rem 0" }}>
       <div className="max-w-4xl mx-auto px-8">
         <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>FAQ</span>
-        <h2 data-reveal data-delay="200" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, marginBottom: "3rem", lineHeight: 1.05 }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="200" style={{ fontFamily: HEADLINE, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onBackground, marginBottom: "3rem", lineHeight: 1.05 }}>{section.headline}</h2>
         <div>
           {items.map((item, i) => (
             <div key={i} style={{ borderBottom: `1px solid ${cs.onBackground}15` }}>
@@ -501,7 +484,7 @@ function ModernCTA({ section, cs, showActivateButton, onActivate }: { section: W
     <section style={{ backgroundColor: cs.primary, padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
         <div>
-          <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onPrimary, lineHeight: 1.05 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADLINE, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onPrimary, lineHeight: 1.05 }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1.1rem", color: cs.onPrimary, opacity: 0.8, marginTop: "0.75rem" }}>{section.content}</p>}
         </div>
         <div style={{ display: "flex", gap: "1rem", flexShrink: 0, flexWrap: "wrap" }}>
@@ -521,38 +504,71 @@ function ModernCTA({ section, cs, showActivateButton, onActivate }: { section: W
   );
 }
 
-function ModernContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
+function ModernContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isLocked?: boolean }) {
+  const showForm = !isLocked || isLocked; // In preview always show form, but locked
+  
   return (
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
-      <div className="max-w-7xl mx-auto px-8 grid lg:grid-cols-2 gap-20">
+      <div className={`max-w-7xl mx-auto px-8 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-20`}>
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
-          <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onSurface, marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADLINE, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onSurface, marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2.5rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: cs.onSurface, fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}
             {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><span style={{ color: cs.onSurface, opacity: 0.8, fontSize: "0.95rem" }}>{address}</span></div>}
             {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ color: cs.onSurface, fontSize: "1rem" }}>{email}</a></div>}
             {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><div>{hours.map((h, i) => <p key={i} style={{ color: cs.onSurface, opacity: 0.8, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.background, padding: "3rem", borderRadius: "2px" }}>
-          <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
-              (e.target as HTMLFormElement).reset();
-            }}
-          >
-            <input type="text" placeholder="Name" style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
-            <input type="email" placeholder="E-Mail" style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
-            <textarea placeholder="Nachricht" rows={4} style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none", resize: "vertical" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontSize: "0.9rem", fontWeight: 800, border: "none", cursor: "pointer", letterSpacing: "-0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">
-              Senden <ArrowRight className="h-4 w-4" />
-            </button>
-          </form>
-        </div>
+
+        {isLocked !== false && (
+          <div style={{ backgroundColor: cs.background, padding: "3rem", borderRadius: "2px", position: "relative" }}>
+            <form 
+              style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+                (e.target as HTMLFormElement).reset();
+              }}
+            >
+              <input type="text" placeholder="Name" style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
+              <input type="email" placeholder="E-Mail" style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
+              <textarea placeholder="Nachricht" rows={4} style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none", resize: "vertical" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
+              <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontSize: "0.9rem", fontWeight: 800, border: "none", cursor: "pointer", letterSpacing: "-0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">
+                Senden <ArrowRight className="h-4 w-4" />
+              </button>
+            </form>
+
+            {isLocked && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.75rem",
+                zIndex: 10,
+                padding: "2rem",
+                textAlign: "center"
+              }}>
+                <div style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  backgroundColor: "rgba(59,130,246,0.1)",
+                  border: "1px solid rgba(59,130,246,0.3)",
+                  borderRadius: "9999px",
+                  padding: "0.5rem 1.25rem",
+                }}>
+                  <span style={{ fontSize: "0.85rem", color: cs.primary, fontWeight: 700 }}>🔒 Kontaktformular</span>
+                </div>
+                <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

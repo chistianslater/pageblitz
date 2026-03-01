@@ -53,37 +53,7 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, aboutImageU
           {section.type === "testimonials" && <CleanTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <CleanFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <CleanContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <CleanContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <CleanCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -420,59 +390,90 @@ function CleanFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
   );
 }
 
-function CleanContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[] }) {
+function CleanContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
+      <div className={`max-w-6xl mx-auto px-6 lg:px-8 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-12`}>
         <div>
           <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, marginBottom: "1rem" }}>Kontakt</p>
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.onSurface, marginBottom: "2rem" }}>{section.headline}</h2>
-          <div className="space-y-4">
-            {phone && <div style={{ backgroundColor: cs.background, borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.03)", border: `1px solid ${cs.onBackground}05` }}><Phone className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground, fontWeight: 500 }}>{phone}</a></div>}
-            {address && <div style={{ backgroundColor: cs.background, borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "start", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.03)", border: `1px solid ${cs.onBackground}05` }}><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: cs.primary }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground }}>{address}</span></div>}
-            {email && <div style={{ backgroundColor: cs.background, borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.03)", border: `1px solid ${cs.onBackground}05` }}><Mail className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground }}>{email}</a></div>}
+          <div className="space-y-4" style={{ display: "flex", flexDirection: "column", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
+            {phone && <div style={{ width: isLocked === false ? 'fit-content' : 'auto', backgroundColor: cs.background, borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.03)", border: `1px solid ${cs.onBackground}05` }}><Phone className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground, fontWeight: 500 }}>{phone}</a></div>}
+            {address && <div style={{ width: isLocked === false ? 'fit-content' : 'auto', backgroundColor: cs.background, borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "start", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.03)", border: `1px solid ${cs.onBackground}05` }}><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: cs.primary }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground }}>{address}</span></div>}
+            {email && <div style={{ width: isLocked === false ? 'fit-content' : 'auto', backgroundColor: cs.background, borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.03)", border: `1px solid ${cs.onBackground}05` }}><Mail className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.onBackground }}>{email}</a></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.background, borderRadius: "1.5rem", padding: "2.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: `1px solid ${cs.onBackground}05` }}>
-          <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
-              (e.target as HTMLFormElement).reset();
-            }}
-          >
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.onBackground, opacity: 0.6 }}>Name</label>
-                <input type="text" placeholder="Ihren Namen eingeben" style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: `1px solid ${cs.onBackground}10`, backgroundColor: cs.surface, color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
+
+        {isLocked !== false && (
+          <div style={{ backgroundColor: cs.background, borderRadius: "1.5rem", padding: "2.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: `1px solid ${cs.onBackground}05`, position: "relative" }}>
+            <form 
+              style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+                (e.target as HTMLFormElement).reset();
+              }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.onBackground, opacity: 0.6 }}>Name</label>
+                  <input type="text" placeholder="Ihren Namen eingeben" style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: `1px solid ${cs.onBackground}10`, backgroundColor: cs.surface, color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.onBackground, opacity: 0.6 }}>E-Mail</label>
+                  <input type="email" placeholder="mail@beispiel.de" style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: `1px solid ${cs.onBackground}10`, backgroundColor: cs.surface, color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
+                </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.onBackground, opacity: 0.6 }}>E-Mail</label>
-                <input type="email" placeholder="mail@beispiel.de" style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: `1px solid ${cs.onBackground}10`, backgroundColor: cs.surface, color: cs.onSurface, fontSize: "0.9rem", outline: "none" }} />
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.onBackground, opacity: 0.6 }}>Nachricht</label>
+                <textarea placeholder="Wie können wir Ihnen helfen?" rows={4} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: `1px solid ${cs.onBackground}10`, backgroundColor: cs.surface, color: cs.onSurface, fontSize: "0.9rem", outline: "none", resize: "none" }} />
               </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.onBackground, opacity: 0.6 }}>Nachricht</label>
-              <textarea placeholder="Wie können wir Ihnen helfen?" rows={4} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: `1px solid ${cs.onBackground}10`, backgroundColor: cs.surface, color: cs.onSurface, fontSize: "0.9rem", outline: "none", resize: "none" }} />
-            </div>
-            <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.85rem", borderRadius: "0.5rem", fontSize: "0.95rem", fontWeight: 700, border: "none", cursor: "pointer", marginTop: "0.5rem" }} className="hover:opacity-90 transition-opacity">
-              {section.ctaText || "Nachricht senden"}
-            </button>
-          </form>
-          
-          <div style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: `1px solid ${cs.onBackground}05` }}>
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5" style={{ color: cs.primary }} />
-              <h3 style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 700, color: cs.onBackground }}>Öffnungszeiten</h3>
-            </div>
-            <div className="space-y-2">
-              {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 18:00 Uhr", "Sa: 09:00 – 13:00 Uhr", "So: Geschlossen"]).map((h, i) => (
-                <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.onBackground, opacity: 0.6 }}>{h}</p>
-              ))}
+              <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.85rem", borderRadius: "0.5rem", fontSize: "0.95rem", fontWeight: 700, border: "none", cursor: "pointer", marginTop: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+                {section.ctaText || "Nachricht senden"}
+              </button>
+            </form>
+
+            {isLocked && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.75rem",
+                zIndex: 10,
+                padding: "2rem",
+                textAlign: "center"
+              }}>
+                <div style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  backgroundColor: `${cs.primary}20`,
+                  border: `1px solid ${cs.primary}50`,
+                  borderRadius: "9999px",
+                  padding: "0.5rem 1.25rem",
+                }}>
+                  <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+                </div>
+                <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+              </div>
+            )}
+            
+            <div style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: `1px solid ${cs.onBackground}05` }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="h-5 w-5" style={{ color: cs.primary }} />
+                <h3 style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 700, color: cs.onBackground }}>Öffnungszeiten</h3>
+              </div>
+              <div className="space-y-2">
+                {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 18:00 Uhr", "Sa: 09:00 – 13:00 Uhr", "So: Geschlossen"]).map((h, i) => (
+                  <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.onBackground, opacity: 0.6 }}>{h}</p>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

@@ -43,20 +43,44 @@ export function getLuminance(hex: string): number {
 }
 
 /**
- * Returns true if the color is "light" (luminance > 0.35).
- * Threshold is slightly lower than 0.5 to account for mid-tones that still
+ * Returns true if the color is "light" (perceived brightness > 160).
+ * Threshold is slightly higher than 128 to account for mid-tones that still
  * need dark text (e.g. warm creams, light yellows).
  */
 export function isLightColor(hex: string): boolean {
-  return getLuminance(hex) > 0.35;
+  if (!hex || typeof hex !== "string") return true;
+  const clean = hex.replace("#", "");
+  if (clean.length !== 3 && clean.length !== 6) return true;
+  
+  const r = parseInt(clean.length === 3 ? clean[0] + clean[0] : clean.substring(0, 2), 16);
+  const g = parseInt(clean.length === 3 ? clean[1] + clean[1] : clean.substring(2, 4), 16);
+  const b = parseInt(clean.length === 3 ? clean[2] + clean[2] : clean.substring(4, 6), 16);
+  
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 160;
 }
 
 /**
- * Returns the best contrasting text color (#000000 or #ffffff) for a given
- * background color, based on WCAG contrast ratio.
+ * Returns the best contrasting text color (#0f172a or #f8fafc) for a given
+ * background color, based on YIQ perceived brightness.
  */
-export function getContrastColor(bgHex: string): "#000000" | "#ffffff" {
-  return isLightColor(bgHex) ? "#000000" : "#ffffff";
+export function getContrastColor(hexColor: string): "#0f172a" | "#f8fafc" {
+  if (!hexColor || typeof hexColor !== "string") return "#f8fafc";
+  const hex = hexColor.replace("#", "");
+  if (hex.length !== 3 && hex.length !== 6) return "#f8fafc";
+  
+  const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
+  const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
+  const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
+  
+  // YIQ formula for perceived brightness
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  
+  // High-End State of the Art: Instead of pure black/white, use very dark/light shades
+  // for better aesthetics and readability.
+  // Higher threshold (160 instead of 128) makes it switch to white earlier,
+  // preventing dark text on medium-dark backgrounds.
+  return yiq >= 160 ? "#0f172a" : "#f8fafc";
 }
 
 /**
@@ -86,7 +110,7 @@ export function getContrastColorWithBrand(
   }
 
   // Primary doesn't have enough contrast → fall back to black or white
-  return isLightColor(bgHex) ? "#000000" : "#ffffff";
+  return isLightColor(bgHex) ? "#0f172a" : "#f8fafc";
 }
 
 /**
@@ -109,6 +133,6 @@ export function getSafeHeadingColor(bgHex: string, headingHex: string): string {
  * Returns a safe navbar/logo text color for a given navbar background.
  * Prefers white on dark backgrounds, dark on light backgrounds.
  */
-export function getNavTextColor(navBgHex: string): "#000000" | "#ffffff" {
+export function getNavTextColor(navBgHex: string): "#0f172a" | "#f8fafc" {
   return getContrastColor(navBgHex);
 }

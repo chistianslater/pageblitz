@@ -51,37 +51,7 @@ export default function NaturalLayout({ websiteData, cs, heroImageUrl, aboutImag
           {section.type === "testimonials" && <NaturalTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <NaturalFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <NaturalContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <NaturalContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <NaturalCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>

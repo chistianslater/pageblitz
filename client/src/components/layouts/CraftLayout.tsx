@@ -12,8 +12,8 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
-const DISPLAY = "'Bricolage Grotesque', 'Impact', sans-serif";
-const LOGO_FONT = "var(--logo-font, 'Bricolage Grotesque', 'Impact', sans-serif)";
+const DISPLAY = "var(--site-font-headline, 'Bricolage Grotesque', 'Impact', sans-serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Bricolage Grotesque', 'Impact', sans-serif))";
 const BODY = "var(--site-font-body, 'Instrument Sans', 'Inter', sans-serif)";
 
 interface Props {

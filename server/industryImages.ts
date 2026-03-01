@@ -360,9 +360,9 @@ export function getContrastColor(hexColor: string): string {
   
   // High-End State of the Art: Instead of pure black/white, use very dark/light shades
   // for better aesthetics and readability. 
-  // Lower threshold (145 instead of 128) makes it switch to white earlier,
+  // Higher threshold (160 instead of 128) makes it switch to white earlier,
   // preventing dark text on medium-dark backgrounds.
-  return yiq >= 145 ? "#0f172a" : "#f8fafc";
+  return yiq >= 160 ? "#0f172a" : "#f8fafc";
 }
 
 const INDUSTRY_COLORS: Record<string, Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">[]> = {

@@ -33,7 +33,7 @@ interface Props {
   businessCategory?: string | null;
 }
 
-export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
+export default function TrustLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   contactFormLocked = false,
   logoUrl,
   businessCategory,
@@ -44,7 +44,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivat
       <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} businessCategory={businessCategory} />}
+          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} businessCategory={businessCategory} websiteData={websiteData} />}
           {section.type === "about" && <TrustAbout section={section} cs={cs} />}
           {section.type === "gallery" && <TrustGallery section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <TrustServices section={section} cs={cs} />}
@@ -53,37 +53,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, showActivat
           {section.type === "testimonials" && <TrustTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <TrustFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <TrustContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <TrustContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <TrustCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -128,8 +98,16 @@ function TrustNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
   );
 }
 
-function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; businessCategory?: string | null }) {
+function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, businessCategory, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; businessCategory?: string | null; websiteData: WebsiteData }) {
   const heroStats = getIndustryStats(businessCategory || "");
+  
+  // Find a testimonial for the trust badge
+  const testimonialSection = websiteData.sections.find(s => s.type === "testimonials");
+  const firstTestimonial = testimonialSection?.items?.[0];
+  const trustText = firstTestimonial?.description 
+    ? (firstTestimonial.description.length > 70 ? firstTestimonial.description.slice(0, 67) + "..." : firstTestimonial.description)
+    : "Exzellente Beratung und absolut zuverlässig.";
+
   return (
     <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: cs.background }}>
       {/* Background Decorative Frame */}
@@ -169,7 +147,7 @@ function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
             )}
             {showActivateButton && (
               <button onClick={onActivate} 
-                style={{ border: `1px solid ${cs.onBackground}20`, color: cs.onBackground, padding: "1.25rem 3.5rem", fontSize: "0.95rem", fontWeight: 700, backgroundColor: "transparent" }} 
+                style={{ border: `2px solid ${cs.onBackground}20`, color: cs.onBackground, padding: "1.25rem 3.5rem", fontSize: "0.95rem", fontWeight: 700, backgroundColor: "transparent" }} 
                 className="hover:bg-primary/5 transition-all">
                 Aktivieren
               </button>
@@ -196,7 +174,7 @@ function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
             <div className="flex gap-1 mb-3">
               {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" style={{ color: cs.primary }} />)}
             </div>
-            <p style={{ fontSize: "0.85rem", fontWeight: 800, color: cs.onBackground, lineHeight: 1.4 }}>"Exzellente Beratung und absolut zuverlässig."</p>
+            <p style={{ fontSize: "0.85rem", fontWeight: 800, color: cs.onBackground, lineHeight: 1.4 }}>"{trustText}"</p>
           </div>
         </div>
       </div>
@@ -275,7 +253,7 @@ function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
               </div>
               <h3 style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1.25rem" }}>{item.title}</h3>
               <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.6, marginBottom: "2.5rem" }}>{item.description}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 900, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-0 group-hover:opacity-100 transition-all">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 900, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }}>
                 Erfahren Sie mehr <ArrowRight className="h-4 w-4" />
               </div>
             </div>

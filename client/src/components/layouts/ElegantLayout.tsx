@@ -8,6 +8,7 @@ import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Scissors, Heart, Sparkles, Instagram, Quote } from "lucide-react";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
+import { isLightColor } from "@shared/colorContrast";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
@@ -54,37 +55,7 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, aboutImag
           {section.type === "testimonials" && <ElegantTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <ElegantFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <ElegantContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "rgba(0,0,0,0.78)",
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: "rgba(59,130,246,0.2)",
-                    border: "1px solid rgba(59,130,246,0.5)",
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: "#93c5fd", fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: "#60a5fa", backgroundColor: "rgba(59,130,246,0.25)", padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>+4,90 €/Monat</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.65)", margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <ElegantContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <ElegantCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -527,10 +498,10 @@ function ElegantCTA({ section, cs, showActivateButton, onActivate }: { section: 
     <section style={{ backgroundColor: cs.primary, padding: "5rem 0" }}>
       <div className="max-w-3xl mx-auto px-6 text-center">
         <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 400, color: cs.onPrimary, fontStyle: "italic", marginBottom: "1.5rem" }}>{section.headline}</h2>
-        {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", marginBottom: "2.5rem", fontWeight: 300 }}>{section.content}</p>}
+        {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: isLightColor(cs.onPrimary) ? "rgba(248,250,252,0.7)" : "rgba(15,23,42,0.7)", marginBottom: "2.5rem", fontWeight: 300 }}>{section.content}</p>}
         <div className="flex flex-wrap justify-center gap-4">
           {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.onPrimary, color: cs.primary, padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, fontFamily: SANS }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
-          {showActivateButton && <button onClick={onActivate} style={{ border: `1px solid ${cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)"}`, color: cs.onPrimary, padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
+          {showActivateButton && <button onClick={onActivate} style={{ border: `1px solid ${isLightColor(cs.onPrimary) ? "rgba(248,250,252,0.6)" : "rgba(15,23,42,0.6)"}`, color: cs.onPrimary, padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
         </div>
       </div>
     </section>

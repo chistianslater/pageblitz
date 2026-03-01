@@ -9,6 +9,7 @@ import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
+import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -63,6 +64,7 @@ interface OnboardingData {
   headlineFont: string; // Serif or Sans-serif font name
   addOnContactForm: boolean;
   addOnGallery: boolean;
+  addOnGalleryData: { headline?: string; images: string[] };
   addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
   addOnMenuData: { headline?: string; categories: MenuCategory[] };
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
@@ -97,6 +99,7 @@ type ChatStep =
   | "addons"
   | "editMenu"
   | "editPricelist"
+  | "editGallery"
   | "subpages"
   | "email"
   | "hideSections"
@@ -115,74 +118,7 @@ interface ChatMessage {
 
 const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-function makeColorScheme(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">): ColorScheme {
-  return {
-    ...cs,
-    onPrimary: getContrastColor(cs.primary),
-    onSecondary: getContrastColor(cs.secondary),
-    onAccent: getContrastColor(cs.accent),
-    onSurface: getContrastColor(cs.surface),
-    onBackground: getContrastColor(cs.background),
-  };
-}
-const COLOR_SCHEMES: { id: string; label: string; description: string; colors: ColorScheme }[] = [
-  {
-    id: "trust",
-    label: "Professional Trust",
-    description: "Tiefes Mitternachtsblau und Schiefer – seriös, kompetent und zeitlos.",
-    colors: makeColorScheme({
-      primary: "#1e3a8a",
-      secondary: "#0f172a",
-      accent: "#f59e0b",
-      background: "#ffffff",
-      surface: "#f8fafc",
-      text: "#0f172a",
-      textLight: "#64748b"
-    })
-  },
-  {
-    id: "warm",
-    label: "Heritage Warmth",
-    description: "Edles Terracotta und Sandtöne – ideal für exzellente Gastronomie.",
-    colors: makeColorScheme({
-      primary: "#9a3412",
-      secondary: "#431407",
-      accent: "#b3966a",
-      background: "#fffcfb",
-      surface: "#fef2f2",
-      text: "#1e1b1b",
-      textLight: "#71717a"
-    })
-  },
-  {
-    id: "elegant",
-    label: "Pure Elegance",
-    description: "Champagner und weiches Anthrazit – für Luxus und Ästhetik.",
-    colors: makeColorScheme({
-      primary: "#bfa37e",
-      secondary: "#1a1a1a",
-      accent: "#f2f2f2",
-      background: "#ffffff",
-      surface: "#faf9f6",
-      text: "#0f172a",
-      textLight: "#64748b"
-    })
-  },
-  {
-    id: "modern",
-    label: "Contemporary Dark",
-    description: "Scharfes Graphit und klares Weiß – puristisch und fokussiert.",
-    colors: makeColorScheme({
-      primary: "#bef264",
-      secondary: "#0a0a0a",
-      accent: "#ffffff",
-      background: "#050505",
-      surface: "#121212",
-      text: "#ffffff",
-      textLight: "rgba(255,255,255,0.6)"
-    })
-  }
-];
+const COLOR_SCHEMES = PREDEFINED_COLOR_SCHEMES;
 
 const STEP_ORDER: ChatStep[] = [
   "businessCategory",
@@ -206,6 +142,7 @@ const STEP_ORDER: ChatStep[] = [
   "addons",
   "editMenu",
   "editPricelist",
+  "editGallery",
   "subpages",
   "email",
   "hideSections",
@@ -238,6 +175,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   addons: null,
   editMenu: "menu",
   editPricelist: "pricelist",
+  editGallery: "gallery",
   subpages: null,
   email: null,
   hideSections: null,
@@ -395,6 +333,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     headlineFont: "",
     addOnContactForm: true,
     addOnGallery: false,
+    addOnGalleryData: { headline: "Unsere Galerie", images: [] },
     addOnMenu: false,
     addOnMenuData: { headline: "Unsere Speisekarte", categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
     addOnPricelist: false,
@@ -677,7 +616,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "heroPhoto":
           return `Schön! Jetzt wählen wir ein **Hauptbild** für deine Website. Du kannst ein eigenes Foto hochladen oder aus unseren Vorschlägen wählen – passend zu deiner Branche.`;
         case "aboutPhoto":
-          return `Super! Jetzt wählen wir noch ein **zweites Bild** für den "\u00dcber uns"-Bereich deiner Website. Dieses Bild erscheint im Abschnitt, der dein Unternehmen vorstellt.`;
+          return `Super! Jetzt wählen wir noch ein **zweites Bild** für den "Über uns"-Bereich deiner Website. Dieses Bild erscheint im Abschnitt, der dein Unternehmen vorstellt.`;
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "headlineFont":
@@ -688,6 +627,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Du hast die **Speisekarte** aktiviert! 📖\n\nHier kannst du schon mal ein paar Gerichte eintragen. Keine Sorge, du kannst das später jederzeit vervollständigen oder jetzt einfach überspringen.`;
         case "editPricelist":
           return `Du hast die **Preisliste** aktiviert! 🏷️\n\nHier kannst du deine wichtigsten Leistungen und Preise eintragen. Du kannst das auch später machen oder jetzt ein paar Beispiele hinzufügen.`;
+        case "editGallery":
+          return `Du hast die **Bildergalerie** aktiviert! 🖼️\n\nWähle hier die ersten Bilder für deine Galerie aus. Du kannst unsere Vorschläge nutzen oder eigene Fotos hochladen. Du kannst bis zu 12 Bilder wählen.`;
         case "subpages":
           return `Brauchst du zusätzliche Unterseiten? Zum Beispiel *"Projekte"*, *"Referenzen"* oder *"Team"*.\n\nDu kannst sie hier vormerken und nach der Freischaltung in deinem **Kunden-Dashboard** ganz einfach mit Inhalten füllen. Jede individuelle Unterseite kostet +9,90 €/Monat.\n\n*⚖️ Wichtig: Die rechtlich notwendigen Seiten wie **Impressum** und **Datenschutz** sind bereits kostenlos enthalten und müssen hier nicht hinzugefügt werden.*`;
         case "email":
@@ -808,8 +749,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Step advancement ────────────────────────────────────────────────────
   // Steps that get a visual section divider in the chat (instead of a chat bubble)
   const SECTION_DIVIDERS: Partial<Record<ChatStep, { icon: string; title: string; subtitle: string }>> = {
-    legalOwner: { icon: "\uD83D\uDCCB", title: "Abschnitt 2: Rechtliche Angaben", subtitle: "Impressum & Datenschutz \u2013 dauert nur 2 Minuten" },
-    addons: { icon: "\u26A1", title: "Abschnitt 3: Extras & Fertigstellung", subtitle: "Optionale Features und letzter Schliff" },
+    legalOwner: { icon: "📋", title: "Abschnitt 2: Rechtliche Angaben", subtitle: "Impressum & Datenschutz – dauert nur 2 Minuten" },
+    addons: { icon: "⚡", title: "Abschnitt 3: Extras & Fertigstellung", subtitle: "Optionale Features und letzter Schliff" },
   };
 
   const advanceToStep = useCallback(
@@ -972,6 +913,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "addons":
         case "editMenu":
         case "editPricelist":
+        case "editGallery":
         case "subpages":
           // These are handled by the interactive UI below
           return;
@@ -1103,21 +1045,39 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }
     }
 
-    // Add Gallery section if active
-    if (data.addOnGallery && !hiddenSections.has("gallery") && !patched.sections.some(s => s.type === "gallery")) {
-      patched.sections.push({
-        type: "gallery",
-        headline: "Unsere Galerie",
+    // Add or update Gallery section if active
+    if (data.addOnGallery && !hiddenSections.has("gallery")) {
+      const cat = data.businessCategory.toLowerCase();
+      // Use selected images if available, otherwise fall back to industry-themed placeholders
+      const galleryItems = data.addOnGalleryData.images.length > 0
+        ? data.addOnGalleryData.images.map((img, i) => ({ title: `Projekt ${i + 1}`, imageUrl: img }))
+        : Array.from({ length: 6 }).map((_, i) => {
+          let keyword = "business";
+          if (/friseur|hair|beauty/.test(cat)) keyword = "haircut";
+          else if (/restaurant|essen|food|pizza/.test(cat)) keyword = "food";
+          else if (/handwerk|bau|dach/.test(cat)) keyword = "craft";
+          else if (/fitness|sport|gym/.test(cat)) keyword = "fitness";
+          else if (/auto|kfz/.test(cat)) keyword = "car";
+          
+          return { 
+            title: `Projekt ${i + 1}`,
+            imageUrl: `https://images.unsplash.com/photo-${1500000000000 + i * 100000}?w=800&q=80&fit=crop&auto=format&auto=enhance&q=60&sig=${i}&${keyword}`
+          };
+        });
+
+      const existingGalleryIdx = patched.sections.findIndex(s => s.type === "gallery");
+      const gallerySection = {
+        type: "gallery" as const,
+        headline: data.addOnGalleryData.headline || "Unsere Galerie",
         content: "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
-        items: [
-          { title: "Projekt 1" },
-          { title: "Projekt 2" },
-          { title: "Projekt 3" },
-          { title: "Projekt 4" },
-          { title: "Projekt 5" },
-          { title: "Projekt 6" }
-        ]
-      });
+        items: galleryItems as any
+      };
+
+      if (existingGalleryIdx > -1) {
+        patched.sections[existingGalleryIdx] = gallerySection;
+      } else {
+        patched.sections.push(gallerySection);
+      }
     }
 
     // Ensure contact section exists so it can be shown (locked or unlocked)
@@ -1956,15 +1916,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             {!isTyping && currentStep === "brandLogo" && (
               <div className="ml-9 space-y-3">
                 <p className="text-slate-400 text-xs">Wähle eine Schriftart für deinen Firmennamen als Logo:</p>
-                {[
-                  { font: "Playfair Display", label: "Elegant & Klassisch", style: { fontFamily: "'Playfair Display', serif", fontWeight: 700 } },
-                  { font: "Oswald", label: "Stark & Modern", style: { fontFamily: "'Oswald', sans-serif", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" as const } },
-                  { font: "Montserrat", label: "Sauber & Professionell", style: { fontFamily: "'Montserrat', sans-serif", fontWeight: 700, letterSpacing: "0.02em" } },
-                ].map((opt) => (
+                {LOGO_FONT_OPTIONS.map((opt) => (
                   <button
                     key={opt.font}
                     onClick={() => setData((p) => ({ ...p, brandLogo: `font:${opt.font}` }))}
-                    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-blue-500 bg-blue-500/10" : "border-slate-600 bg-slate-700/40 hover:border-slate-500"}`}
+                    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-blue-500 bg-blue-500/10" : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"}`}
                   >
                     <p className="text-white text-lg mb-1" style={opt.style}>{data.businessName || business?.name || "Mein Unternehmen"}</p>
                     <p className="text-slate-400 text-xs">{opt.label}</p>
@@ -2050,15 +2006,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             )}
             {!isTyping && currentStep === "headlineFont" && (
               <div className="ml-9 space-y-3">
-                <p className="text-slate-400 text-xs">W\u00e4hle eine Schriftart f\u00fcr deine \u00dcberschriften – die Vorschau rechts \u00e4ndert sich sofort:</p>
+                <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau rechts ändert sich sofort:</p>
                 <div className="space-y-2">
                   <div>
                     <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenschriften (klassisch, edel)</p>
-                    {[
-                      { font: "Fraunces", label: "Fraunces \u2013 Markant & Hochwertig" },
-                      { font: "Cormorant Garamond", label: "Cormorant \u2013 Zeitlos & Edel" },
-                      { font: "Libre Baskerville", label: "Baskerville \u2013 Traditionell & Sicher" },
-                    ].map((opt) => (
+                    {FONT_OPTIONS.serif.map((opt) => (
                       <button
                         key={opt.font}
                         onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
@@ -2076,13 +2028,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   </div>
                   <div className="mt-6">
                     <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenlose (modern, progressiv)</p>
-                    {[
-                      { font: "Instrument Sans", label: "Instrument \u2013 Pr\u00e4zise & Modern" },
-                      { font: "Plus Jakarta Sans", label: "Jakarta \u2013 Progressiv & Frisch" },
-                      { font: "Outfit", label: "Outfit \u2013 Clean & Geometrisch" },
-                      { font: "Bricolage Grotesque", label: "Bricolage \u2013 Einzigartig & K\u00fchn" },
-                      { font: "Space Grotesque", label: "Space \u2013 Direkt & Stark" },
-                    ].map((opt) => (
+                    {FONT_OPTIONS.sans.map((opt) => (
                       <button
                         key={opt.font}
                         onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
@@ -2121,11 +2067,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Build industry-specific addon list */}
                 {(() => {
                   const cat = data.businessCategory.toLowerCase();
-                  const isFood = /restaurant|café|cafe|bistro|bäckerei|bakery|bar|tapas|pizza|sushi|burger|imbiss|gastronomie/.test(cat);
-                  const isBeauty = /friseur|hair|beauty|kosmetik|nail|spa|massage|barber|waxing|lash|brow/.test(cat);
-                  const isFitness = /fitness|gym|sport|yoga|pilates|crossfit|kampfsport|personal trainer/.test(cat);
+                  // Broad food industry detection
+                  const isFood = /restaurant|café|cafe|bistro|bäckerei|bakery|bar|tapas|pizza|sushi|burger|imbiss|gastronomie|lieferservice|delivery|lieferdienst|catering|food|kueche|küche|steakhouse|grill|gasthaus|wirtshaus|tavern|taverne|pizzeria|trattoria|osteria|ristorante/.test(cat);
+                  
+                  // For everything else, we offer a pricelist
                   const showMenu = isFood;
-                  const showPricelist = isBeauty || isFitness;
+                  const showPricelist = !isFood;
 
                   const addons: { key: keyof OnboardingData; label: string; price: string; desc: string; emoji: string }[] = [
                     { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+4,90 €/Monat", desc: "Kunden können direkt anfragen", emoji: "📬" },
@@ -2177,6 +2124,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       await advanceToStep("editMenu");
                     } else if (data.addOnPricelist) {
                       await advanceToStep("editPricelist");
+                    } else if (data.addOnGallery) {
+                      await advanceToStep("editGallery");
                     } else {
                       await advanceToStep("subpages");
                     }
@@ -2310,6 +2259,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       onClick={async () => {
                         addUserMessage("Speisekarte später ausfüllen");
                         if (data.addOnPricelist) await advanceToStep("editPricelist");
+                        else if (data.addOnGallery) await advanceToStep("editGallery");
                         else await advanceToStep("subpages");
                       }}
                       className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
@@ -2322,6 +2272,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         addUserMessage(`Speisekarte gespeichert (${filledCategories.length} Kategorien) ✓`);
                         await trySaveStep(STEP_ORDER.indexOf("editMenu"), { addOnMenuData: { categories: filledCategories } });
                         if (data.addOnPricelist) await advanceToStep("editPricelist");
+                        else if (data.addOnGallery) await advanceToStep("editGallery");
                         else await advanceToStep("subpages");
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
@@ -2440,7 +2391,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       onClick={async () => {
                         addUserMessage("Preisliste später ausfüllen");
-                        await advanceToStep("subpages");
+                        if (data.addOnGallery) await advanceToStep("editGallery");
+                        else await advanceToStep("subpages");
                       }}
                       className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
                     >
@@ -2451,13 +2403,60 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         const filledCategories = data.addOnPricelistData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
                         addUserMessage(`Preisliste gespeichert (${filledCategories.length} Kategorien) ✓`);
                         await trySaveStep(STEP_ORDER.indexOf("editPricelist"), { addOnPricelistData: { categories: filledCategories } });
-                        await advanceToStep("subpages");
+                        if (data.addOnGallery) await advanceToStep("editGallery");
+                        else await advanceToStep("subpages");
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
                     >
                       Speichern & weiter <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "editGallery" && (
+              <div className="ml-9 space-y-4">
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
+                  <input
+                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                    value={data.addOnGalleryData.headline}
+                    onChange={(e) => {
+                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, headline: e.target.value } }));
+                    }}
+                    placeholder="z.B. Unsere Galerie"
+                  />
+                </div>
+
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-4">
+                  <p className="text-slate-400 text-xs font-medium">Bilder für die Galerie auswählen (max. 12):</p>
+                  
+                  <MultiPhotoSelector
+                    websiteId={websiteId || ""}
+                    selectedPhotos={data.addOnGalleryData.images}
+                    onUpdate={(urls) => {
+                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, images: urls } }));
+                    }}
+                    industry={data.businessCategory}
+                  />
+
+                  <button
+                    disabled={isTyping}
+                    onClick={async () => {
+                      if (isTyping) return;
+                      const count = data.addOnGalleryData.images.length;
+                      addUserMessage(count > 0 ? `${count} Bilder für die Galerie ausgewählt ✓` : "Standard-Bilder für die Galerie behalten");
+                      await trySaveStep(STEP_ORDER.indexOf("editGallery"), { 
+                        galleryHeadline: data.addOnGalleryData.headline,
+                        galleryImages: data.addOnGalleryData.images 
+                      });
+                      await advanceToStep("subpages");
+                    }}
+                    className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors font-medium"
+                  >
+                    Weiter <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             )}
@@ -2670,7 +2669,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     sectionsToShow.push({ type: "contact" });
                   }
 
-                  const allSections: Array<{ type: string; label: string; emoji: string }> = sectionsToShow
+                  const allSectionsFull: Array<{ type: string; label: string; emoji: string }> = sectionsToShow
                     .map((s: any) => {
                       const labels: Record<string, { label: string; emoji: string }> = {
                         about: { label: "Über uns", emoji: "👤" },
@@ -2687,9 +2686,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       };
                       return { type: s.type, ...(labels[s.type] || { label: s.type, emoji: "📄" }) };
                     });
+
+                  // Unique by type to avoid duplicates in the UI
+                  const allSections = Array.from(new Map(allSectionsFull.map(s => [s.type, s])).values());
+
                   return (
                     <>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {allSections.map((sec) => {
                           const isHidden = hiddenSections.has(sec.type);
                           return (
@@ -2703,17 +2706,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                   return next;
                                 });
                               }}
-                              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-xs font-medium transition-all text-left ${
+                              className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all text-left ${
                                 isHidden
                                   ? "border-slate-700 bg-slate-800/40 text-slate-500 opacity-60"
                                   : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
                               }`}
                             >
-                              <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
+                              <div className={`w-4 h-4 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
                                 {!isHidden && <Check className="w-3 h-3 text-white" />}
                               </div>
-                              <span>{sec.emoji}</span>
-                              <span className={isHidden ? "line-through" : ""}>{sec.label}</span>
+                              <span className="flex-shrink-0">{sec.emoji}</span>
+                              <span className={`flex-1 leading-tight ${isHidden ? "line-through" : ""}`}>{sec.label}</span>
                             </button>
                           );
                         })}
@@ -3095,6 +3098,151 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── MultiPhotoSelector (for Gallery) ──────────────────────────────────────────
+
+interface MultiPhotoSelectorProps {
+  websiteId: string;
+  selectedPhotos: string[];
+  onUpdate: (urls: string[]) => void;
+  industry: string;
+}
+
+function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: MultiPhotoSelectorProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+  const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
+
+  const { data: suggestionsData, isLoading: isLoadingSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
+    { category: industry },
+    { enabled: !!industry }
+  );
+
+  const photos = suggestionsData?.suggestions || [];
+
+  const togglePhoto = (url: string) => {
+    if (selectedPhotos.includes(url)) {
+      onUpdate(selectedPhotos.filter(u => u !== url));
+    } else {
+      if (selectedPhotos.length >= 12) {
+        toast.error("Maximal 12 Bilder erlaubt.");
+        return;
+      }
+      onUpdate([...selectedPhotos, url]);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Photo grid */}
+      <div className="grid grid-cols-3 gap-2">
+        {isLoadingSuggestions ? (
+          <div className="col-span-3 py-10 flex flex-col items-center justify-center gap-3 bg-slate-800/30 rounded-xl border border-slate-700/30">
+            <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+            <p className="text-slate-500 text-[10px]">Passende Fotos werden geladen…</p>
+          </div>
+        ) : (
+          photos.filter(p => !brokenImages.has(p.url)).map((photo, idx) => (
+            <button
+              key={idx}
+              onClick={() => togglePhoto(photo.url)}
+              className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                selectedPhotos.includes(photo.url) ? "border-blue-500 ring-2 ring-blue-500/20" : "border-transparent hover:border-slate-500"
+              }`}
+            >
+              <img
+                src={photo.thumb || photo.url}
+                alt={photo.alt}
+                className="w-full h-full object-cover"
+                onError={() => setBrokenImages(prev => new Set(prev).add(photo.url))}
+              />
+              {selectedPhotos.includes(photo.url) && (
+                <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                    <Check className="w-3.5 h-3.5 text-white" />
+                  </div>
+                </div>
+              )}
+              <div className="absolute bottom-1 right-1 bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5 text-[8px] text-white/80">
+                Vorschlag
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* Upload option */}
+      <div className="border-t border-slate-700 pt-3">
+        <div className="flex flex-wrap gap-2 mb-3">
+          {selectedPhotos.filter(url => !photos.some(p => p.url === url)).map((url, i) => (
+            <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-blue-500 group">
+              <img src={url} alt="" className="w-full h-full object-cover" />
+              <button 
+                onClick={() => onUpdate(selectedPhotos.filter(u => u !== url))}
+                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+              >
+                <Trash2 className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          ))}
+          <label className={`w-16 h-16 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${isUploading ? "opacity-50 pointer-events-none" : ""}`}>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              multiple
+              onChange={async (e) => {
+                const files = Array.from(e.target.files || []);
+                if (files.length === 0 || !websiteId) return;
+                
+                if (selectedPhotos.length + files.length > 12) {
+                  toast.error("Maximal 12 Bilder insgesamt erlaubt.");
+                  return;
+                }
+
+                setIsUploading(true);
+                for (const file of files) {
+                  if (file.size > 5 * 1024 * 1024) {
+                    toast.error(`${file.name} ist zu groß (max. 5 MB).`);
+                    continue;
+                  }
+
+                  const reader = new FileReader();
+                  const promise = new Promise<string>((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                  });
+                  reader.readAsDataURL(file);
+                  
+                  try {
+                    const base64 = (await promise).split(",")[1];
+                    const result = await uploadLogoMutation.mutateAsync({
+                      websiteId: parseInt(websiteId),
+                      imageData: base64,
+                      mimeType: file.type,
+                    });
+                    onUpdate([...selectedPhotos, result.url]);
+                    selectedPhotos.push(result.url); // locally update for loop
+                  } catch {
+                    toast.error(`Upload von ${file.name} fehlgeschlagen.`);
+                  }
+                }
+                setIsUploading(false);
+              }}
+            />
+            {isUploading ? (
+              <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4 text-slate-400" />
+            )}
+            <span className="text-[8px] text-slate-500 mt-1 uppercase font-bold tracking-wider text-center px-1">Hochladen</span>
+          </label>
+        </div>
+        <p className="text-[10px] text-slate-500">Bilder auswählen oder eigene hochladen (PNG, JPG, WebP · max. 5 MB)</p>
+      </div>
     </div>
   );
 }

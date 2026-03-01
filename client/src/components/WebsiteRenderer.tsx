@@ -18,7 +18,7 @@
 import { useEffect } from "react";
 import type { WebsiteData, ColorScheme, DesignTokens } from "@shared/types";
 import { getSafeHeadingColor, getContrastColor, isLightColor, getLuminance, hexToRgb } from "@shared/colorContrast";
-import { LAYOUT_FONTS, LAYOUT_FONTS_DEFAULT } from "@shared/layoutConfig";
+import { LAYOUT_FONTS, LAYOUT_FONTS_DEFAULT, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FALLBACK_IMAGES } from "@shared/layoutConfig";
 import ElegantLayout from "./layouts/ElegantLayout";
 import BoldLayout from "./layouts/BoldLayout";
 import WarmLayout from "./layouts/WarmLayout";
@@ -107,48 +107,10 @@ function pickLayout(websiteData: WebsiteData, layoutStyleOverride?: string | nul
   return pool[hashString(seed) % pool.length];
 }
 
-// ── Default Color Schemes per Layout ─────────────────────────────────────────
-function withOnColors(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">): ColorScheme {
-  return {
-    ...cs,
-    onPrimary: getContrastColor(cs.primary),
-    onSecondary: getContrastColor(cs.secondary),
-    onAccent: getContrastColor(cs.accent),
-    onSurface: getContrastColor(cs.surface),
-    onBackground: getContrastColor(cs.background),
-  };
-}
-const DEFAULT_COLOR_SCHEMES: Record<string, ColorScheme> = {
-  elegant:  withOnColors({ primary: "#b8860b", secondary: "#f5f0e8", accent: "#d4a843", background: "#fefcf8", surface: "#f5f0e8", text: "#1a1208", textLight: "#6b5c3e" }),
-  bold:     withOnColors({ primary: "#e85d04", secondary: "#1a1a1a", accent: "#ff6b1a", background: "#f5f5f5", surface: "#ebebeb", text: "#1a1a1a", textLight: "#555" }),
-  warm:     withOnColors({ primary: "#c45c26", secondary: "#fdf6ee", accent: "#e07b3c", background: "#fffaf5", surface: "#fdf6ee", text: "#2d1a0e", textLight: "#7a5c42" }),
-  clean:    withOnColors({ primary: "#2563eb", secondary: "#eff6ff", accent: "#3b82f6", background: "#f8fafc", surface: "#fff", text: "#0f172a", textLight: "#64748b" }),
-  dynamic:  withOnColors({ primary: "#22c55e", secondary: "#0a0a0a", accent: "#16a34a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  luxury:   withOnColors({ primary: "#c9a84c", secondary: "#0a0a0a", accent: "#e8c87a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  craft:    withOnColors({ primary: "#f97316", secondary: "#1a1a1a", accent: "#fb923c", background: "#111", surface: "#1a1a1a", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  fresh:    withOnColors({ primary: "#0ea5e9", secondary: "#fafaf8", accent: "#38bdf8", background: "#fafaf8", surface: "#fff", text: "#1a1a1a", textLight: "#666" }),
-  trust:    withOnColors({ primary: "#1d4ed8", secondary: "#f8fafc", accent: "#3b82f6", background: "#fff", surface: "#f8fafc", text: "#1a2332", textLight: "#5a6a7e" }),
-  modern:   withOnColors({ primary: "#0a0a0a", secondary: "#f8f8f8", accent: "#e11d48", background: "#fff", surface: "#f8f8f8", text: "#0a0a0a", textLight: "#666" }),
-  vibrant:  withOnColors({ primary: "#f59e0b", secondary: "#0d0d0d", accent: "#fbbf24", background: "#0d0d0d", surface: "#161616", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  natural:  withOnColors({ primary: "#65a30d", secondary: "#f0ece4", accent: "#84cc16", background: "#faf8f4", surface: "#f0ece4", text: "#2a2018", textLight: "#7a6a5a" }),
-};
-
-const FALLBACK_IMAGES: Record<string, string> = {
-  elegant: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&q=85&fit=crop",
-  bold:    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=85&fit=crop",
-  warm:    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=85&fit=crop",
-  clean:   "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600&q=85&fit=crop",
-  dynamic: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=85&fit=crop",
-  luxury:  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=85&fit=crop",
-  craft:   "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=85&fit=crop",
-  fresh:   "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=85&fit=crop",
-  trust:   "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600&q=85&fit=crop",
-  modern:  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=85&fit=crop",
-  vibrant: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=85&fit=crop",
-  natural: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=85&fit=crop",
-};
-
 // ── Layout-specific font defaults – sourced from shared/layoutConfig (single source of truth) ────────
+const DEFAULT_COLOR_SCHEMES = DEFAULT_LAYOUT_COLOR_SCHEMES;
+const FALLBACK_IMAGES = LAYOUT_FALLBACK_IMAGES;
+
 const LAYOUT_FONT_DEFAULTS: Record<string, { headline: string; body: string }> = Object.fromEntries(
   Object.entries(LAYOUT_FONTS).map(([k, v]) => [k, { headline: v.headlineCss, body: v.bodyCss }])
 );
@@ -245,7 +207,7 @@ export default function WebsiteRenderer({
   const userSecondary = colorScheme?.secondary && colorScheme.secondary !== defaultCs.secondary
     ? colorScheme.secondary
     : null;
-  const rawCs: ColorScheme = colorScheme && colorScheme.primary
+  const mergedCs = colorScheme && colorScheme.primary
     ? {
         ...defaultCs,
         ...colorScheme,
@@ -254,6 +216,9 @@ export default function WebsiteRenderer({
         surface: userSecondary || colorScheme.secondary || defaultCs.surface,
       }
     : defaultCs;
+
+  // Recalculate on-colors to ensure contrast is correct even if user changed base colors
+  const rawCs = withOnColors(mergedCs);
 
   // ─── Enforce contrast: text must always be readable on background ───────────────
   // If the AI or DB produced a text color with insufficient contrast against the
@@ -269,7 +234,7 @@ export default function WebsiteRenderer({
     const darker = Math.min(lum, textLum);
     const ratio = (lighter + 0.05) / (darker + 0.05);
     if (ratio >= 3.0) return rawCs.text; // sufficient contrast → keep
-    return isLightColor(bgColor) ? "#1a1a1a" : "#f5f5f5";
+    return isLightColor(bgColor) ? "#0f172a" : "#f8fafc";
   })();
 
   // Safe textLight color on background
@@ -280,7 +245,7 @@ export default function WebsiteRenderer({
     const darker = Math.min(lum, textLum);
     const ratio = (lighter + 0.05) / (darker + 0.05);
     if (ratio >= 2.5) return rawCs.textLight;
-    return isLightColor(bgColor) ? "#555555" : "rgba(255,255,255,0.65)";
+    return isLightColor(bgColor) ? "#64748b" : "rgba(248, 250, 252, 0.65)";
   })();
 
   // Safe primary color on background (for headings that use cs.primary as text color)
