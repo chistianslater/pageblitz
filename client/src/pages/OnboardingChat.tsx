@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2 } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -55,8 +55,7 @@ interface OnboardingData {
   legalEmail: string;
   legalPhone: string;
   legalVatId: string;
-  brandColor: string;
-  brandSecondaryColor: string;
+  colorScheme: ColorScheme;
   heroPhotoUrl: string; // selected or uploaded hero photo URL
   aboutPhotoUrl: string; // selected or uploaded about/second photo URL
   brandLogo: string; // base64 or "font:<fontName>"
@@ -87,8 +86,7 @@ type ChatStep =
   | "legalEmail"
   | "legalPhone"
   | "legalVat"
-  | "brandColor"
-  | "brandSecondaryColor"
+  | "colorScheme"
   | "heroPhoto"
   | "aboutPhoto"
   | "brandLogo"
@@ -114,10 +112,68 @@ interface ChatMessage {
 
 const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+const COLOR_SCHEMES: { id: string; label: string; description: string; colors: ColorScheme }[] = [
+  {
+    id: "trust",
+    label: "Vertrauen & Professionalität",
+    description: "Seriöses Blau und Grau – ideal für Beratung, Recht und Handwerk.",
+    colors: {
+      primary: "#2563EB",
+      secondary: "#1E3A8A",
+      accent: "#60A5FA",
+      background: "#F8FAFC",
+      surface: "#FFFFFF",
+      text: "#0F172A",
+      textLight: "#475569"
+    }
+  },
+  {
+    id: "warm",
+    label: "Wärme & Geborgenheit",
+    description: "Warme Gold- und Erdtöne – perfekt für Gastronomie und Wellness.",
+    colors: {
+      primary: "#D97706",
+      secondary: "#78350F",
+      accent: "#FCD34D",
+      background: "#FFFBEB",
+      surface: "#FFFFFF",
+      text: "#451A03",
+      textLight: "#92400E"
+    }
+  },
+  {
+    id: "modern",
+    label: "Modern & Klar",
+    description: "Klassisches Schwarz/Weiß mit blauem Akzent – für moderne Brands.",
+    colors: {
+      primary: "#111827",
+      secondary: "#374151",
+      accent: "#3B82F6",
+      background: "#FFFFFF",
+      surface: "#F3F4F6",
+      text: "#111827",
+      textLight: "#6B7280"
+    }
+  },
+  {
+    id: "vibrant",
+    label: "Energie & Aktivität",
+    description: "Dynamisches Orange und Rot – ideal für Fitness und Sport.",
+    colors: {
+      primary: "#EA580C",
+      secondary: "#9A3412",
+      accent: "#F97316",
+      background: "#FFF7ED",
+      surface: "#FFFFFF",
+      text: "#431407",
+      textLight: "#9A3412"
+    }
+  }
+];
+
 const STEP_ORDER: ChatStep[] = [
   "businessCategory",
-  "brandColor",
-  "brandSecondaryColor",
+  "colorScheme",
   "heroPhoto",
   "aboutPhoto",
   "brandLogo",
@@ -147,8 +203,7 @@ const STEP_ORDER: ChatStep[] = [
 const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   welcome: null,
   businessCategory: "hero",
-  brandColor: "hero",
-  brandSecondaryColor: "hero",
+  colorScheme: "hero",
   heroPhoto: "hero",
   aboutPhoto: "about",
   brandLogo: "header",
@@ -260,6 +315,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [quickReplySelected, setQuickReplySelected] = useState(false);
   const [inPlaceEditId, setInPlaceEditId] = useState<string | null>(null);
   const [inPlaceEditValue, setInPlaceEditValue] = useState("");
+  const [showIndividualColors, setShowIndividualColors] = useState(false);
   const [previewScrollTop, setPreviewScrollTop] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -309,8 +365,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalEmail: "",
     legalPhone: "",
     legalVatId: "",
-    brandColor: "#3B82F6",
-    brandSecondaryColor: "#F1F5F9",
+    colorScheme: {
+      primary: "#3B82F6",
+      secondary: "#1E3A8A",
+      accent: "#60A5FA",
+      background: "#F8FAFC",
+      surface: "#FFFFFF",
+      text: "#0F172A",
+      textLight: "#475569"
+    },
     heroPhotoUrl: "",
     aboutPhotoUrl: "",
     brandLogo: "",
@@ -357,11 +420,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
   useEffect(() => {
     if (siteData?.website?.colorScheme && !initialized) {
-      const cs = siteData.website.colorScheme as any;
+      const cs = siteData.website.colorScheme as ColorScheme;
       setData((prev) => ({
         ...prev,
-        ...(cs.primary && /^#[0-9A-Fa-f]{6}$/.test(cs.primary) ? { brandColor: cs.primary } : {}),
-        ...(cs.secondary && /^#[0-9A-Fa-f]{6}$/.test(cs.secondary) ? { brandSecondaryColor: cs.secondary } : {}),
+        colorScheme: {
+          primary: cs.primary || prev.colorScheme.primary,
+          secondary: cs.secondary || prev.colorScheme.secondary,
+          accent: cs.accent || prev.colorScheme.accent,
+          background: cs.background || prev.colorScheme.background,
+          surface: cs.surface || prev.colorScheme.surface,
+          text: cs.text || prev.colorScheme.text,
+          textLight: cs.textLight || prev.colorScheme.textLight,
+          gradient: cs.gradient || prev.colorScheme.gradient,
+        }
       }));
     }
   }, [siteData?.website?.colorScheme, initialized]);
@@ -585,11 +656,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "legalVat":
           return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach "Nein" oder lass das Feld leer.`;
         case "hideSections":
-          return `Wir sind fast fertig! 🎉 Gibt es Bereiche, die du zum Start ausblenden möchtest? Klick einfach drauf – keine Sorge, du kannst sie jederzeit wieder einblenden.`;
-        case "brandColor":
-          return `🎨 **Super! Jetzt gestalten wir den Look deiner Website.**\n\nWähle deine **Hauptfarbe** – du siehst sofort rechts, wie deine Website damit aussieht!`;
-        case "brandSecondaryColor":
-          return `Perfekt! Jetzt wähle noch deine **Sekundärfarbe** – sie wird für Hintergründe, Abschnitte und Akzente genutzt und gibt deiner Website mehr Tiefe.`;
+          return `Wir sind fast fertig! 🎉 Hier siehst du alle Bereiche, die wir für dich vorbereitet haben. Standardmäßig sind alle aktiv (**grüner Haken**).\n\nFalls du einen Bereich zum Start doch lieber ausblenden möchtest, klicke ihn einfach an. Keine Sorge – du kannst alles später jederzeit im Dashboard wieder ändern!`;
+        case "colorScheme":
+          return `🎨 **Gestalte den Look deiner Website!**\n\nWähle ein Farbschema, das zu deinem Unternehmen passt. Alle Schemen wurden nach farbpsychologischen Aspekten optimiert.\n\n*💡 Keine Angst: Du kannst jede einzelne Farbe später in deinem Dashboard noch feiner anpassen!*`;
         case "heroPhoto":
           return `Schön! Jetzt wählen wir ein **Hauptbild** für deine Website. Du kannst ein eigenes Foto hochladen oder aus unseren Vorschlägen wählen – passend zu deiner Branche.`;
         case "aboutPhoto":
@@ -879,8 +948,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             await trySaveStep(stepIdx, { businessCategory: val });
           }
           break;
-        case "brandColor":
-        case "brandSecondaryColor":
+        case "colorScheme":
         case "brandLogo":
         case "heroPhoto":
         case "aboutPhoto":
@@ -987,7 +1055,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }).filter(Boolean) as typeof patched.sections;
 
     // Add Menu section if active
-    if (data.addOnMenu) {
+    if (data.addOnMenu && !hiddenSections.has("menu")) {
       const filledCategories = data.addOnMenuData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
       if (filledCategories.length > 0) {
         patched.sections.push({
@@ -1004,7 +1072,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
 
     // Add Pricelist section if active
-    if (data.addOnPricelist) {
+    if (data.addOnPricelist && !hiddenSections.has("pricelist")) {
       const filledCategories = data.addOnPricelistData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
       if (filledCategories.length > 0) {
         patched.sections.push({
@@ -1019,8 +1087,25 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }
     }
 
-    // Ensure contact section exists if addon is active
-    if (data.addOnContactForm && !patched.sections.some(s => s.type === "contact")) {
+    // Add Gallery section if active
+    if (data.addOnGallery && !hiddenSections.has("gallery") && !patched.sections.some(s => s.type === "gallery")) {
+      patched.sections.push({
+        type: "gallery",
+        headline: "Unsere Galerie",
+        content: "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
+        items: [
+          { title: "Projekt 1" },
+          { title: "Projekt 2" },
+          { title: "Projekt 3" },
+          { title: "Projekt 4" },
+          { title: "Projekt 5" },
+          { title: "Projekt 6" }
+        ]
+      });
+    }
+
+    // Ensure contact section exists so it can be shown (locked or unlocked)
+    if (!patched.sections.some(s => s.type === "contact") && !hiddenSections.has("contact")) {
       patched.sections.push({
         type: "contact",
         headline: "Kontaktier uns",
@@ -1029,9 +1114,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       });
     }
 
-    // Patch brandColor into colorScheme override (stored in patched.colorScheme if present)
-    if (data.brandColor && data.brandColor.match(/^#[0-9A-Fa-f]{6}$/)) {
-      (patched as any)._brandColorOverride = data.brandColor;
+    // Patch colorScheme override
+    if (data.colorScheme) {
+      (patched as any)._colorSchemeOverride = data.colorScheme;
     }
 
     // Patch brandLogo font or URL
@@ -1051,9 +1136,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.description,
     data.topServices,
     data.topServicesSkipped,
-    data.brandColor,
-    data.brandSecondaryColor,
+    data.colorScheme,
     data.brandLogo,
+    data.addOnContactForm,
+    data.addOnGallery,
     data.addOnMenu,
     data.addOnMenuData,
     data.addOnPricelist,
@@ -1701,123 +1787,120 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 </div>
               </div>
             )}
-            {!isTyping && currentStep === "brandColor" && (
-              <div className="ml-9 space-y-3">
-                <div className="grid grid-cols-6 gap-2">
-                  {[
-                    { label: "Blau", hex: "#2563EB" },
-                    { label: "Dunkelblau", hex: "#1E3A5F" },
-                    { label: "Grün", hex: "#16A34A" },
-                    { label: "Dunkelgrün", hex: "#14532D" },
-                    { label: "Rot", hex: "#DC2626" },
-                    { label: "Orange", hex: "#EA580C" },
-                    { label: "Gelb", hex: "#CA8A04" },
-                    { label: "Lila", hex: "#7C3AED" },
-                    { label: "Pink", hex: "#DB2777" },
-                    { label: "Türkis", hex: "#0891B2" },
-                    { label: "Grau", hex: "#374151" },
-                    { label: "Schwarz", hex: "#111827" },
-                  ].map((color) => (
+            {!isTyping && currentStep === "colorScheme" && (
+              <div className="ml-9 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {COLOR_SCHEMES.map((scheme) => (
                     <button
-                      key={color.hex}
-                      title={color.label}
-                      onClick={() => setData((p) => ({ ...p, brandColor: color.hex }))}
-                      className={`w-full aspect-square rounded-lg border-2 transition-all ${data.brandColor === color.hex ? "border-white scale-110 shadow-lg" : "border-transparent hover:border-slate-400"}`}
-                      style={{ backgroundColor: color.hex }}
-                    />
+                      key={scheme.id}
+                      onClick={() => {
+                        setData((p) => ({ ...p, colorScheme: scheme.colors }));
+                        setShowIndividualColors(false);
+                      }}
+                      className={`text-left p-4 rounded-2xl border-2 transition-all group ${
+                        JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors)
+                          ? "border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10"
+                          : "border-slate-700 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/60"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <p className={`text-sm font-bold transition-colors ${
+                          JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors) ? "text-white" : "text-slate-200 group-hover:text-white"
+                        }`}>
+                          {scheme.label}
+                        </p>
+                        {JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors) && (
+                          <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                            <Check className="w-2.5 h-2.5 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-tight mb-3 line-clamp-2 italic">
+                        {scheme.description}
+                      </p>
+                      <div className="flex gap-1">
+                        {[scheme.colors.primary, scheme.colors.secondary, scheme.colors.accent, scheme.colors.background].map((c, i) => (
+                          <div key={i} className="h-6 flex-1 rounded-md border border-white/10" style={{ backgroundColor: c }} />
+                        ))}
+                      </div>
+                    </button>
                   ))}
                 </div>
-                <div className="flex gap-2 items-center">
-                  <div
-                    className="w-8 h-8 rounded-lg border border-slate-500 flex-shrink-0"
-                    style={{ backgroundColor: data.brandColor || "#2563EB" }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="#2563EB"
-                    value={data.brandColor}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) setData((p) => ({ ...p, brandColor: v }));
-                    }}
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 font-mono"
-                  />
-                </div>
-                <button
-                  disabled={isTyping}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const color = data.brandColor || "#2563EB";
-                    addUserMessage(`Meine Hauptfarbe: ${color} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("brandColor"), { brandColor: color });
-                    await advanceToStep("brandSecondaryColor");
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
 
-            {!isTyping && currentStep === "brandSecondaryColor" && (
-              <div className="ml-9 space-y-3">
-                {/* Harmony suggestions based on primary color */}
-                {data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor) && (() => {
-                  const hex = data.brandColor.replace('#', '');
-                  const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
-                  // Light tint (mix with white at 90%)
-                  const tint = `#${Math.round(r*0.15+255*0.85).toString(16).padStart(2,'0')}${Math.round(g*0.15+255*0.85).toString(16).padStart(2,'0')}${Math.round(b*0.15+255*0.85).toString(16).padStart(2,'0')}`;
-                  // Complementary (invert hue roughly)
-                  const comp = `#${(255-r).toString(16).padStart(2,'0')}${(255-g).toString(16).padStart(2,'0')}${(255-b).toString(16).padStart(2,'0')}`;
-                  // Warm neutral
-                  const warm = '#FAF7F2';
-                  return (
-                    <div className="space-y-1">
-                      <p className="text-slate-400 text-xs font-medium">Harmonische Vorschläge zur Hauptfarbe:</p>
-                      <div className="flex gap-2">
-                        {[{ label: 'Heller Ton', hex: tint }, { label: 'Komplementär', hex: comp }, { label: 'Warmweiß', hex: warm }].map((s) => (
-                          <button key={s.hex} title={s.label}
-                            onClick={() => setData((p) => ({ ...p, brandSecondaryColor: s.hex }))}
-                            className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${
-                              data.brandSecondaryColor === s.hex ? 'border-blue-400 bg-slate-700/50' : 'border-slate-600/40 hover:border-slate-400'
-                            }`}>
-                            <div className="w-8 h-8 rounded-md" style={{ backgroundColor: s.hex, border: '1px solid rgba(255,255,255,0.15)' }} />
-                            <span className="text-slate-300 text-xs">{s.label}</span>
-                          </button>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setShowIndividualColors(!showIndividualColors)}
+                    className={`w-full py-3 px-4 rounded-xl border border-dashed transition-all flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider ${
+                      showIndividualColors 
+                        ? "border-blue-500/50 bg-blue-500/10 text-blue-400" 
+                        : "border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600 hover:text-slate-300"
+                    }`}
+                  >
+                    <Settings2 className="w-4 h-4" />
+                    Farben individuell anpassen
+                  </button>
+
+                  {showIndividualColors && (
+                    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="grid grid-cols-2 gap-4">
+                        {[
+                          { key: "primary", label: "Hauptfarbe" },
+                          { key: "secondary", label: "Sekundärfarbe" },
+                          { key: "accent", label: "Akzentfarbe" },
+                          { key: "background", label: "Hintergrund" },
+                          { key: "surface", label: "Oberflächen" },
+                          { key: "text", label: "Textfarbe" },
+                        ].map((item) => (
+                          <div key={item.key} className="space-y-1.5">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
+                            <div className="flex gap-2">
+                              <div 
+                                className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
+                                style={{ backgroundColor: (data.colorScheme as any)[item.key] }}
+                              >
+                                <input 
+                                  type="color" 
+                                  className="absolute inset-0 opacity-0 cursor-pointer"
+                                  value={(data.colorScheme as any)[item.key]}
+                                  onChange={(e) => setData(p => ({
+                                    ...p,
+                                    colorScheme: { ...p.colorScheme, [item.key]: e.target.value }
+                                  }))}
+                                />
+                              </div>
+                              <input 
+                                type="text"
+                                className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
+                                value={(data.colorScheme as any)[item.key]}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
+                                    setData(p => ({
+                                      ...p,
+                                      colorScheme: { ...p.colorScheme, [item.key]: v }
+                                    }));
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
-                  );
-                })()}
-
-                <div className="flex gap-2 items-center">
-                  <div
-                    className="w-8 h-8 rounded-lg border border-slate-500 flex-shrink-0"
-                    style={{ backgroundColor: data.brandSecondaryColor || "#F1F5F9" }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="#F1F5F9"
-                    value={data.brandSecondaryColor}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) setData((p) => ({ ...p, brandSecondaryColor: v }));
-                    }}
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 font-mono"
-                  />
+                  )}
                 </div>
+
                 <button
                   disabled={isTyping}
                   onClick={async () => {
                     if (isTyping) return;
-                    const color = data.brandSecondaryColor || "#F1F5F9";
-                    addUserMessage(`Meine Sekundärfarbe: ${color} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("brandSecondaryColor"), { brandColor: data.brandColor, brandSecondaryColor: color });
+                    addUserMessage(`Farbschema ausgewählt ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("colorScheme"), { colorScheme: data.colorScheme });
                     await advanceToStep("heroPhoto");
                   }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
                 >
-                  Weiter <ChevronRight className="w-4 h-4" />
+                  Farben übernehmen <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -2552,18 +2635,37 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div className="ml-9 space-y-2">
                 {(() => {
                   const base = siteData?.website?.websiteData as any;
-                  const allSections: Array<{ type: string; label: string; emoji: string }> = (base?.sections || [])
-                    .filter((s: any) => s.type !== "hero")
+                  const sectionsFromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
+                  
+                  // Add dynamic sections if they are active in data
+                  const sectionsToShow = [...sectionsFromBase];
+                  if (data.addOnMenu && !sectionsToShow.some(s => s.type === "menu")) {
+                    sectionsToShow.push({ type: "menu" });
+                  }
+                  if (data.addOnPricelist && !sectionsToShow.some(s => s.type === "pricelist")) {
+                    sectionsToShow.push({ type: "pricelist" });
+                  }
+                  if (data.addOnGallery && !sectionsToShow.some(s => s.type === "gallery")) {
+                    sectionsToShow.push({ type: "gallery" });
+                  }
+                  if (!sectionsToShow.some(s => s.type === "contact")) {
+                    sectionsToShow.push({ type: "contact" });
+                  }
+
+                  const allSections: Array<{ type: string; label: string; emoji: string }> = sectionsToShow
                     .map((s: any) => {
                       const labels: Record<string, { label: string; emoji: string }> = {
                         about: { label: "Über uns", emoji: "👤" },
                         services: { label: "Leistungen", emoji: "🔧" },
                         testimonials: { label: "Kundenstimmen", emoji: "⭐" },
                         gallery: { label: "Bildergalerie", emoji: "🖼️" },
-                        contact: { label: "Kontaktformular", emoji: "📬" },
-                        cta: { label: "Call-to-Action", emoji: "🎯" },
+                        contact: { label: "Kontaktbereich", emoji: "📬" },
+                        cta: { label: "Direktkontakt-Banner", emoji: "🎯" },
                         features: { label: "Vorteile", emoji: "✅" },
                         team: { label: "Team", emoji: "👥" },
+                        faq: { label: "FAQ", emoji: "❓" },
+                        menu: { label: "Speisekarte", emoji: "📖" },
+                        pricelist: { label: "Preisliste", emoji: "🏷️" },
                       };
                       return { type: s.type, ...(labels[s.type] || { label: s.type, emoji: "📄" }) };
                     });
@@ -2585,13 +2687,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               }}
                               className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-xs font-medium transition-all text-left ${
                                 isHidden
-                                  ? "border-red-500/60 bg-red-900/30 text-red-300 line-through opacity-60"
-                                  : "border-slate-600 bg-slate-700/40 text-slate-200 hover:border-slate-500"
+                                  ? "border-slate-700 bg-slate-800/40 text-slate-500 opacity-60"
+                                  : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
                               }`}
                             >
+                              <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
+                                {!isHidden && <Check className="w-3 h-3 text-white" />}
+                              </div>
                               <span>{sec.emoji}</span>
-                              <span>{sec.label}</span>
-                              {isHidden && <span className="ml-auto text-red-400">✕</span>}
+                              <span className={isHidden ? "line-through" : ""}>{sec.label}</span>
                             </button>
                           );
                         })}
@@ -2885,12 +2989,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 websiteData={liveWebsiteData}
                 colorScheme={{
                     ...colorScheme,
-                    ...(data.brandColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandColor)
-                      ? { primary: data.brandColor, accent: data.brandColor }
-                      : {}),
-                    ...(data.brandSecondaryColor && /^#[0-9A-Fa-f]{6}$/.test(data.brandSecondaryColor)
-                      ? { secondary: data.brandSecondaryColor }
-                      : {}),
+                    ...data.colorScheme,
                   } as any}
                 heroImageUrl={data.heroPhotoUrl || heroImageUrl}
                 aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
@@ -2995,6 +3094,7 @@ interface HeroPhotoStepProps {
 
 function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto, onSelect, onNext }: HeroPhotoStepProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
 
   const { data: suggestionsData, isLoading: isLoadingSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
@@ -3024,7 +3124,10 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
             <p className="text-slate-400 text-xs">Passende Fotos werden geladen…</p>
           </div>
         ) : (
-          (photos as any[]).map((photo, idx) => {
+          (photos as any[]).filter(p => {
+            const url = typeof p === "string" ? p : p.url;
+            return !brokenImages.has(url);
+          }).map((photo, idx) => {
             const url = typeof photo === "string" ? photo : photo.url;
             const thumb = typeof photo === "string" ? photo : photo.thumb || photo.url;
             const alt = typeof photo === "string" ? businessCategory : photo.alt;
@@ -3040,7 +3143,19 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
                 }`}
                 title={alt}
               >
-                <img src={thumb} alt={alt} className="w-full h-full object-cover" loading="lazy" />
+                <img 
+                  src={thumb} 
+                  alt={alt} 
+                  className="w-full h-full object-cover" 
+                  loading="lazy" 
+                  onError={() => {
+                    setBrokenImages(prev => {
+                      const next = new Set(prev);
+                      next.add(url);
+                      return next;
+                    });
+                  }}
+                />
                 {heroPhotoUrl === url && (
                   <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
                     <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">

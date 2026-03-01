@@ -286,6 +286,8 @@ export default function WebsiteRenderer({
   const safePrimaryOnBg = getSafeHeadingColor(bgColor, rawCs.primary);
   // Safe primary on surface (for headings in surface-colored sections)
   const safePrimaryOnSurface = getSafeHeadingColor(surfaceColor, rawCs.primary);
+  // Safe primary on white background (for white buttons)
+  const safePrimaryOnWhite = getSafeHeadingColor("#ffffff", rawCs.primary);
 
   // ─── Derivation of a "Deep" version of the secondary color ───────────────────
   // This is used for icons/accents in sections that use the secondary color as bg.
@@ -430,7 +432,7 @@ export default function WebsiteRenderer({
   const accentOnSurfaceSubtle = `${accentOnSurface}15`;
   
   // Use the accentOnSurface for icons and small labels on surface backgrounds
-  tokenStyle += `; --site-heading-on-bg: ${headingOnBg}; --site-heading-on-surface: ${headingOnSurface}; --site-nav-text: ${navTextColor}; --site-nav-text-muted: ${navTextMuted}; --site-nav-bg-is-light: ${navBgIsLight ? "1" : "0"}; --site-primary-on-bg: ${safePrimaryOnBg}; --site-primary-on-surface: ${accentOnSurface}; --site-primary-on-surface-subtle: ${accentOnSurfaceSubtle};`;
+  tokenStyle += `; --site-heading-on-bg: ${headingOnBg}; --site-heading-on-surface: ${headingOnSurface}; --site-nav-text: ${navTextColor}; --site-nav-text-muted: ${navTextMuted}; --site-nav-bg-is-light: ${navBgIsLight ? "1" : "0"}; --site-primary-on-bg: ${safePrimaryOnBg}; --site-primary-on-surface: ${accentOnSurface}; --site-primary-on-surface-subtle: ${accentOnSurfaceSubtle}; --site-primary-on-white: ${safePrimaryOnWhite};`;
 
   // Real-time headline font override (from onboarding chat selection)
   if (headlineFontOverride) {

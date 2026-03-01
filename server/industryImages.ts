@@ -33,10 +33,13 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80&auto=format&fit=crop",
     ],
   },
   // ── Bar & Tapas ────────────────────────────────────
@@ -47,11 +50,14 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1536935338212-3b6abf17ac42?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1527761939622-933c972a0b08?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80&auto=format&fit=crop",
     ],
   },
   // ── Café & Bistro ──────────────────────────────────
@@ -151,10 +157,13 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&auto=format&fit=crop",
     ],
   },
   // ── Bäckerei ───────────────────────────────────────
@@ -164,6 +173,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?w=800&q=80&auto=format&fit=crop",
@@ -177,6 +187,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1505664194779-8bebcec17ca2?w=1400&q=85&auto=format&fit=crop",
     ],
   },
   // ── Reinigung & Haushaltsservice ───────────────────
@@ -185,6 +196,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     hero: [
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=1400&q=85&auto=format&fit=crop",
     ],
   },
   // ── Fotografie ─────────────────────────────────────
@@ -228,6 +240,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     hero: [
       "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=1400&q=85&auto=format&fit=crop",
     ],
   },
   // ── IT & Tech ──────────────────────────────────────
@@ -237,6 +250,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1400&q=85&auto=format&fit=crop",
     ],
   },
   // ── Default / Generic ──────────────────────────────
@@ -246,6 +260,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1400&q=85&auto=format&fit=crop",
     ],
   },
 };

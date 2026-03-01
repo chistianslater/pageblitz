@@ -65,7 +65,10 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, aboutImageU
         <div key={i}>
           {section.type === "hero" && <CraftHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
           {section.type === "about" && <CraftAbout section={section} cs={darkCs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "gallery" && <CraftGallery section={section} cs={darkCs} />}
           {(section.type === "services" || section.type === "features") && <CraftServices section={section} cs={darkCs} />}
+          {section.type === "menu" && <CraftMenu section={section} cs={darkCs} />}
+          {section.type === "pricelist" && <CraftPricelist section={section} cs={darkCs} />}
           {section.type === "testimonials" && <CraftTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <CraftFAQ section={section} cs={darkCs} />}
                     {section.type === "contact" && (
@@ -140,57 +143,77 @@ function CraftNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
 function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessCategory?: string | null }) {
   const heroStats = getIndustryStats(businessCategory || "");
   return (
-    <section style={{ position: "relative", minHeight: "85vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0 }}>
-        <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.3) 100%)" }} />
+    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: "#000" }}>
+      {/* Heavy textured background overlay */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5, filter: "grayscale(20%) contrast(120%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle, transparent 20%, #000 100%)" }} />
       </div>
-      <div className="relative max-w-7xl mx-auto px-6 w-full py-20">
-        <div className="max-w-2xl">
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: `${cs.primary}20`, border: `1px solid ${cs.primary}40`, padding: "0.4rem 1rem", marginBottom: "1.5rem" }}>
-            <div style={{ width: "6px", height: "6px", backgroundColor: cs.primary, borderRadius: "50%" }} />
-            <span style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Zertifiziert & Versichert</span>
+      
+      {/* Centered Industrial Frame */}
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+        <div style={{ 
+          border: `1px solid rgba(255,255,255,0.1)`, 
+          padding: "6rem 4rem", 
+          position: "relative",
+          backgroundColor: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(10px)"
+        }}>
+          {/* Corner industrial accents */}
+          <div style={{ position: "absolute", top: "20px", left: "20px", width: "40px", height: "40px", borderTop: `4px solid ${cs.primary}`, borderLeft: `4px solid ${cs.primary}` }} />
+          <div style={{ position: "absolute", bottom: "20px", right: "20px", width: "40px", height: "40px", borderBottom: `4px solid ${cs.primary}`, borderRight: `4px solid ${cs.primary}` }} />
+
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", marginBottom: "3rem" }} className="hero-animate-badge">
+            <Zap className="h-5 w-5" style={{ color: cs.primary }} />
+            <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Hardworking Excellence</span>
           </div>
-          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.8rem, 6vw, 5.5rem)", lineHeight: 1, letterSpacing: "0.03em", color: "#fff", marginBottom: "0.5rem", textTransform: "uppercase" }} className="hero-animate-headline">
-            {section.headline?.split(" ").slice(0, Math.ceil((section.headline?.split(" ").length || 4) / 2)).join(" ")}
+
+          <h1 style={{ 
+            fontFamily: DISPLAY, 
+            fontSize: "clamp(3.5rem, 8vw, 7.5rem)", 
+            lineHeight: 0.9, 
+            letterSpacing: "0.02em", 
+            color: "#fff", 
+            marginBottom: "2.5rem", 
+            textTransform: "uppercase",
+            fontWeight: 700
+          }} className="hero-animate-headline">
+            {section.headline}
           </h1>
-          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.8rem, 6vw, 5.5rem)", lineHeight: 1, letterSpacing: "0.03em", color: cs.primary, marginBottom: "1.5rem", textTransform: "uppercase" }}>
-            {section.headline?.split(" ").slice(Math.ceil((section.headline?.split(" ").length || 4) / 2)).join(" ")}
-          </h1>
-          {section.subheadline && (
-            <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "rgba(255,255,255,0.7)", marginBottom: "0.75rem" }}>{section.subheadline}</p>
-          )}
-          {section.content && (
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem" }}>{section.content}</p>
-          )}
-          {websiteData.googleRating && websiteData.googleReviewCount ? (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="light" starColor={cs.primary} />
-            </div>
-          ) : null}
-          <div className="flex flex-wrap gap-4">
+
+          <div style={{ maxWidth: "600px", margin: "0 auto 4rem" }} className="hero-animate-sub">
+            {section.subheadline && <p style={{ fontSize: "1.25rem", color: "rgba(255,255,255,0.8)", lineHeight: 1.6, marginBottom: "1rem", fontWeight: 500 }}>{section.subheadline}</p>}
+            {section.content && <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.8 }}>{section.content}</p>}
+          </div>
+
+          <div className="flex flex-wrap gap-6 justify-center hero-animate-cta">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem 2.5rem", fontSize: "0.85rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
-                {section.ctaText} <ArrowRight className="h-4 w-4" />
+              <a href={section.ctaLink || "#kontakt"} 
+                style={{ backgroundColor: cs.primary, color: "#000", padding: "1.5rem 4rem", fontSize: "1rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 900, transition: "all 0.4s ease" }} 
+                className="hover:tracking-[0.2em] shadow-2xl">
+                {section.ctaText}
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `2px solid ${cs.primary}`, color: cs.primary, padding: "1rem 2.5rem", fontSize: "0.85rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, backgroundColor: "transparent" }} className="hover:bg-opacity-10 transition-colors">
-                Website aktivieren
+              <button onClick={onActivate} 
+                style={{ border: `2px solid rgba(255,255,255,0.3)`, color: "#fff", padding: "1.5rem 4rem", fontSize: "1rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, backgroundColor: "transparent" }} 
+                className="hover:bg-white hover:text-black transition-all">
+                Aktivieren
               </button>
             )}
           </div>
         </div>
-      </div>
-      {/* Trust badges */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "rgba(0,0,0,0.85)", borderTop: `2px solid ${cs.primary}` }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 grid grid-cols-3 gap-4">
-          {heroStats.map(({ n: num, label }) => (
-            <div key={label} style={{ textAlign: "center" }}>
-              <p style={{ fontFamily: DISPLAY, fontSize: "1.8rem", color: cs.primary, lineHeight: 1 }}>{num}</p>
-              <p style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "0.25rem" }}>{label}</p>
-            </div>
-          ))}
+        
+        {/* Stats integrated as a floating bar */}
+        <div style={{ marginTop: "-2rem", position: "relative", zIndex: 20 }}>
+          <div className="max-w-4xl mx-auto grid grid-cols-3 gap-px bg-white/10 premium-shadow">
+            {heroStats.slice(0, 3).map(({ n, label }, i) => (
+              <div key={i} style={{ backgroundColor: "#111", padding: "2rem 1rem" }}>
+                <p style={{ fontFamily: DISPLAY, fontSize: "2.5rem", color: cs.primary, lineHeight: 1 }}>{n}</p>
+                <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "0.5rem", fontWeight: 700 }}>{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -198,29 +221,38 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
 }
 
 function CraftAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
-  const firstStat = getIndustryStats(businessCategory || "")[1] || { n: "10+", label: "Jahre Erfahrung" };
   return (
-    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-        <div style={{ position: "relative" }}>
-          <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover" }} />
-          <div style={{ position: "absolute", top: "2rem", right: "-2rem", backgroundColor: cs.primary, padding: "1.5rem 2rem", textAlign: "center" }}>
-            <p style={{ fontFamily: DISPLAY, fontSize: "2.5rem", color: "#000", lineHeight: 1 }}>{firstStat.n}</p>
-            <p style={{ fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(0,0,0,0.7)", marginTop: "0.25rem" }}>{firstStat.label}</p>
+    <section style={{ backgroundColor: "#0a0a0a", padding: "12rem 0", position: "relative", overflow: "hidden" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-24 items-center">
+          <div className="lg:col-span-6 relative">
+            <div style={{ position: "absolute", top: "10%", left: "-5%", width: "100%", height: "100%", backgroundColor: cs.primary, zIndex: 0 }} />
+            <div className="premium-shadow-lg relative z-10 overflow-hidden">
+              <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover", filter: "contrast(110%)" }} />
+            </div>
           </div>
-        </div>
-        <div>
-          <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Über uns</span>
-          <h2 data-reveal data-delay="0" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1, marginBottom: "1.5rem" }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.6)", marginBottom: "1rem" }}>{section.subheadline}</p>}
-          {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)", marginBottom: "2rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {["Festpreisgarantie", "Zertifizierte Fachkräfte", "Schnelle Reaktionszeit"].map(item => (
-              <div key={item} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <CheckCircle className="h-5 w-5" style={{ color: cs.primary, flexShrink: 0 }} />
-                <span style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.7)" }}>{item}</span>
-              </div>
-            ))}
+          
+          <div className="lg:col-span-6">
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "1.5rem", marginBottom: "2rem" }}>
+              <div style={{ width: "4rem", height: "4px", backgroundColor: cs.primary }} />
+              <span style={{ fontSize: "0.9rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Ehrliches Handwerk</span>
+            </div>
+            
+            <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem", lineHeight: 0.9 }}>{section.headline}</h2>
+            
+            <div className="space-y-8">
+              <p style={{ fontSize: "1.2rem", lineHeight: 1.7, color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>{section.subheadline}</p>
+              <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)" }}>{section.content}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/10">
+              {["Meisterqualität", "24/7 Notdienst", "Termingarantie", "Faire Preise"].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5" style={{ color: cs.primary }} />
+                  <span style={{ fontSize: "1rem", color: "#fff", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -231,22 +263,47 @@ function CraftAbout({ section, cs, heroImageUrl, businessCategory }: { section: 
 function CraftServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section data-section="services" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#111", padding: "12rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center gap-6 mb-24">
+          <div style={{ width: "5rem", height: "12px", backgroundColor: cs.primary }} />
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>
+            Unsere <span style={{ color: cs.primary }}>Expertise</span>
+          </h2>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1px bg-white/10 border border-white/10">
+          {items.map((item, i) => (
+            <div key={i} className="group transition-all duration-500 hover:bg-white/[0.03]" style={{ backgroundColor: "#111", padding: "5rem 3rem" }}>
+              <div style={{ fontSize: "0.7rem", letterSpacing: "0.3em", color: "rgba(255,255,255,0.2)", marginBottom: "3rem" }}>SERVICE — {String(i + 1).padStart(2, "0")}</div>
+              
+              <h3 style={{ fontFamily: DISPLAY, fontSize: "2rem", fontWeight: 600, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem" }}>{item.title}</h3>
+              <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.45)", marginBottom: "3.5rem" }}>{item.description}</p>
+              
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.2em", borderBottom: `1px solid ${cs.primary}40`, paddingBottom: "0.5rem" }} className="opacity-0 group-hover:opacity-100 group-hover:gap-6 transition-all">
+                Details <ArrowRight className="h-4 w-4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CraftGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  return (
+    <section data-section="gallery" style={{ backgroundColor: cs.background, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Unsere Leistungen</span>
+          <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Unsere Projekte</span>
           <h2 data-reveal data-delay="100" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 1 }}>{section.headline}</h2>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.surface, padding: "2rem", borderBottom: `3px solid transparent`, transition: "border-color 0.2s, transform 0.2s" }} className="group hover:-translate-y-1" onMouseEnter={e => (e.currentTarget.style.borderBottomColor = cs.primary)} onMouseLeave={e => (e.currentTarget.style.borderBottomColor = "transparent")}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
-                <div style={{ width: "3rem", height: "3rem", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontFamily: DISPLAY, fontSize: "1.1rem", color: cs.primary }}>{String(i + 1).padStart(2, "0")}</span>
-                </div>
-                <h3 style={{ fontFamily: DISPLAY, fontSize: "1.2rem", letterSpacing: "0.05em", color: cs.text, textTransform: "uppercase" }}>{item.title}</h3>
-              </div>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)" }}>{item.description}</p>
+            <div key={i} style={{ aspectRatio: "4/3", overflow: "hidden", border: `1px solid ${cs.primary}20` }}>
+              <img src={`https://images.unsplash.com/photo-${1504307651254 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.9)" }} />
             </div>
           ))}
         </div>
@@ -330,6 +387,112 @@ function CraftCTA({ section, cs, showActivateButton, onActivate }: { section: We
             </button>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function CraftMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.background, padding: "7rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", backgroundColor: `${cs.primary}20`, border: `1px solid ${cs.primary}40`, padding: "0.5rem 1.25rem", marginBottom: "2rem" }}>
+            <div style={{ width: "8px", height: "8px", backgroundColor: cs.primary, borderRadius: "50%" }} />
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Kulinarik & Genuss</span>
+          </div>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1 }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="grid lg:grid-cols-2 gap-x-20 gap-y-16">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="space-y-8">
+                <h3 style={{ fontFamily: DISPLAY, fontSize: "2rem", fontWeight: 700, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em", borderBottom: `1px solid ${cs.primary}30`, paddingBottom: "0.5rem" }}>{cat}</h3>
+                <div className="space-y-8">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-baseline gap-4 mb-2">
+                        <h4 style={{ fontFamily: DISPLAY, fontSize: "1.2rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                        <div className="flex-1 border-b border-white/10 mx-2" />
+                        <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                      </div>
+                      {item.description && (
+                        <p style={{ fontFamily: BODY, fontSize: "0.95rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>{item.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-2 gap-x-20 gap-y-12">
+            {items.map((item, i) => (
+              <div key={i}>
+                <div className="flex justify-between items-baseline gap-4 mb-2">
+                  <h4 style={{ fontFamily: DISPLAY, fontSize: "1.2rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                  <div className="flex-1 border-b border-white/10 mx-2" />
+                  <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                </div>
+                {item.description && (
+                  <p style={{ fontFamily: BODY, fontSize: "0.95rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>{item.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function CraftPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", backgroundColor: cs.primary, padding: "0.5rem 1.25rem", marginBottom: "2rem" }}>
+            <div style={{ width: "8px", height: "8px", backgroundColor: "#000", borderRadius: "50%" }} />
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "#000", fontWeight: 800 }}>Preise & Leistungen</span>
+          </div>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1 }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+            {categories.map((cat, idx) => (
+              <div key={idx} style={{ backgroundColor: "rgba(255,255,255,0.03)", padding: "2.5rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <h3 style={{ fontFamily: DISPLAY, fontSize: "1.75rem", fontWeight: 700, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2rem" }}>{cat}</h3>
+                <div className="space-y-5">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i} className="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
+                      <span style={{ fontFamily: DISPLAY, fontSize: "1.1rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</span>
+                      <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ backgroundColor: "rgba(255,255,255,0.03)", padding: "3rem", border: "1px solid rgba(255,255,255,0.06)", maxWidth: "800px", margin: "0 auto" }}>
+            <div className="space-y-6">
+              {items.map((item, i) => (
+                <div key={i} className="flex justify-between items-center py-4 border-b border-white/5 last:border-0">
+                  <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</span>
+                  <span style={{ fontFamily: DISPLAY, fontSize: "1.3rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

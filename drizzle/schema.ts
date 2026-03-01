@@ -127,6 +127,7 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   // Brand colors
   brandColor: varchar("brandColor", { length: 20 }),
   brandSecondaryColor: varchar("brandSecondaryColor", { length: 20 }),
+  colorScheme: json("colorScheme"),
   headlineFont: varchar("headlineFont", { length: 100 }),
   // Add-ons
   addOnContactForm: boolean("addOnContactForm").default(false),

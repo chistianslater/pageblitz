@@ -44,11 +44,44 @@ export default function WarmLayout({ websiteData, cs, heroImageUrl, aboutImageUr
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <WarmHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <WarmAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
-          {(section.type === "services" || section.type === "features") && <WarmMenu section={section} cs={cs} />}
+          {section.type === "gallery" && <WarmGallery section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <WarmServices section={section} cs={cs} />}
+          {section.type === "menu" && <WarmMenu section={section} cs={cs} />}
+          {section.type === "pricelist" && <WarmPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <WarmTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <WarmFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <WarmContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+            <div style={{ position: "relative" }}>
+              <WarmContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+              {contactFormLocked && (
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.78)",
+                  backdropFilter: "blur(3px)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.75rem",
+                  zIndex: 20,
+                }}>
+                  <div style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    backgroundColor: "rgba(59,130,246,0.2)",
+                    border: "1px solid rgba(59,130,246,0.5)",
+                    borderRadius: "9999px",
+                    padding: "0.5rem 1.25rem",
+                  }}>
+                    <span style={{ fontSize: "0.85rem", color: "#93c5fd", fontWeight: 700 }}>🔒 Kontaktformular</span>
+                    <span style={{ fontSize: "0.8rem", color: "#60a5fa", backgroundColor: "rgba(59,130,246,0.25)", padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>+4,90 €/Monat</span>
+                  </div>
+                  <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.65)", margin: 0 }}>Im nächsten Schritt aktivierbar</p>
+                </div>
+              )}
+            </div>
           )}
           {section.type === "cta" && <WarmCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -86,53 +119,101 @@ function WarmNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: Web
 
 function WarmHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
-    <section style={{ position: "relative", minHeight: "88vh", display: "flex", alignItems: "flex-end" }}>
+    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden", backgroundColor: "#1a130e" }}>
+      {/* Full-bleed background image */}
       <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(20,10,5,0.9) 0%, rgba(20,10,5,0.3) 60%, transparent 100%)" }} />
-      <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 pb-20 w-full">
-        <div className="flex items-center gap-3 mb-4">
-          <Leaf className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} />
-          <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>Frisch & Regional</span>
-        </div>
-        <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 700, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: "1rem", maxWidth: "700px" }} className="hero-animate-headline">{section.headline}</h1>
-        {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1.1rem", color: "rgba(255,255,255,0.8)", maxWidth: "550px", lineHeight: 1.7, marginBottom: "2rem" }}>{section.subheadline}</p>}
-        <div className="flex flex-wrap gap-4">
-          {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700 }} className="btn-premium transition-opacity">
-              {section.ctaText}
-            </a>
-          )}
-          {showActivateButton && (
-            <button onClick={onActivate} style={{ border: "2px solid rgba(255,255,255,0.6)", color: "#fff", padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
-              Jetzt aktivieren
-            </button>
-          )}
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(26,19,14,0.95) 0%, rgba(26,19,14,0.4) 50%, transparent 100%)" }} />
+      
+      {/* Soft background blob */}
+      <div className="tech-glow absolute" style={{ bottom: "-10%", left: "-5%", width: "40vw", height: "40vw", background: cs.primary, opacity: 0.1, zIndex: 1 }} />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 pb-24 w-full">
+        <div className="max-w-3xl">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", marginBottom: "2.5rem" }} className="hero-animate-badge">
+            <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary }} />
+            <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Tradition & Leidenschaft</span>
+          </div>
+
+          <h1 style={{ 
+            fontFamily: SERIF, 
+            fontSize: "clamp(3.5rem, 8vw, 6.5rem)", 
+            fontWeight: 700, 
+            color: "#fff", 
+            lineHeight: 1, 
+            letterSpacing: "-0.02em", 
+            marginBottom: "2.5rem" 
+          }} className="hero-animate-headline">
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ display: i === 1 ? "block" : "inline", fontStyle: i === 1 ? "italic" : "normal", color: i === 1 ? cs.primary : "inherit" }}>
+                {word}{" "}
+              </span>
+            ))}
+          </h1>
+
+          <div style={{ display: "flex", gap: "2rem", marginBottom: "3.5rem" }} className="hero-animate-sub">
+            <div className="max-w-xl">
+              {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1.25rem", color: "rgba(255,255,255,0.9)", lineHeight: 1.6, marginBottom: "1rem", fontWeight: 500 }}>{section.subheadline}</p>}
+              {section.content && <p style={{ fontFamily: SANS, fontSize: "1.05rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.8 }}>{section.content}</p>}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-6 hero-animate-cta">
+            {section.ctaText && (
+              <a href={section.ctaLink || "#kontakt"} 
+                style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1.25rem 3.5rem", borderRadius: "100px", fontFamily: SANS, fontSize: "1rem", fontWeight: 800, transition: "all 0.4s ease" }} 
+                className="hover:scale-105 shadow-2xl shadow-primary/30">
+                {section.ctaText}
+              </a>
+            )}
+            {showActivateButton && (
+              <button onClick={onActivate} 
+                style={{ border: "2px solid rgba(255,255,255,0.3)", color: "#fff", padding: "1.25rem 3.5rem", borderRadius: "100px", fontFamily: SANS, fontSize: "1rem", fontWeight: 700, backgroundColor: "transparent" }} 
+                className="hover:bg-white/10 transition-all">
+                Jetzt aktivieren
+              </button>
+            )}
+          </div>
         </div>
       </div>
+      
+      {/* Curved bottom transition */}
+      <div style={{ position: "absolute", bottom: "-1px", left: 0, width: "100%", height: "100px", background: cs.surface, clipPath: "polygon(0 100%, 100% 100%, 100% 0, 0 80%)" }} />
     </section>
   );
 }
 
 function WarmAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-5 gap-12 items-center">
-        <div className="lg:col-span-2">
-          <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "1/1", objectFit: "cover", borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%" }} />
-        </div>
-        <div className="lg:col-span-3">
-          <div className="flex items-center gap-3 mb-4">
-            <div style={{ width: "2rem", height: "2px", backgroundColor: cs.primary }} />
-            <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>Unsere Geschichte</span>
+    <section style={{ backgroundColor: cs.surface, padding: "12rem 0", position: "relative", overflow: "hidden" }}>
+      {/* Background decoration */}
+      <div style={{ position: "absolute", top: "10%", right: "-10%", width: "30vw", height: "30vw", background: cs.primary, opacity: 0.03, borderRadius: "50%", filter: "blur(80px)" }} />
+      
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-24 items-center">
+        <div className="lg:col-span-5 relative">
+          <div style={{ position: "absolute", inset: "-2rem", border: `1px solid ${cs.primary}20`, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%", zIndex: 0 }} className="floating-element" />
+          <div className="premium-shadow-lg relative z-10" style={{ borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%", overflow: "hidden" }}>
+            <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "1/1", objectFit: "cover" }} />
           </div>
-          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "1rem" }}>{section.subheadline}</p>}
-          {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight }}>{section.content}</p>}
-          <div className="flex flex-wrap gap-6 mt-6">
-            {[{ icon: Leaf, text: "Regionale Zutaten" }, { icon: Coffee, text: "Hausgemacht" }, { icon: Star, text: "Seit 2005" }].map(({ icon: Icon, text }, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Icon className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} />
-                <span style={{ fontFamily: SANS, fontSize: "0.85rem", color: cs.textLight, fontWeight: 600 }}>{text}</span>
+        </div>
+        
+        <div className="lg:col-span-7">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1.5rem", marginBottom: "2rem" }}>
+            <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Unsere Geschichte</span>
+            <div style={{ width: "4rem", height: "1px", backgroundColor: `${cs.primary}40` }} />
+          </div>
+          
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: cs.text, marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
+          
+          <p style={{ fontFamily: SANS, fontSize: "1.15rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "2rem", fontWeight: 500 }}>{section.subheadline}</p>
+          <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.9, color: cs.textLight, marginBottom: "3rem" }}>{section.content}</p>
+          
+          <div className="grid grid-cols-3 gap-8 pt-10 border-t border-slate-200/50">
+            {[{ icon: Leaf, text: "Frisch" }, { icon: Coffee, text: "Hausgemacht" }, { icon: Star, text: "Prämiert" }].map(({ icon: Icon, text }, i) => (
+              <div key={i} className="text-center">
+                <div style={{ width: "3rem", height: "3rem", backgroundColor: `${cs.primary}10`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                  <Icon className="h-5 w-5" style={{ color: cs.primary }} />
+                </div>
+                <span style={{ fontFamily: SANS, fontSize: "0.75rem", color: cs.text, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>{text}</span>
               </div>
             ))}
           </div>
@@ -142,33 +223,161 @@ function WarmAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs:
   );
 }
 
-function WarmMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function WarmServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section style={{ backgroundColor: cs.background, padding: "5rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#fff", padding: "12rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-24">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
+            <Utensils className="h-5 w-5" style={{ color: cs.primary }} />
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
+          </div>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.text, lineHeight: 1.1 }}>Handwerk, das man <span style={{ fontStyle: "italic", color: cs.primary }}>schmeckt</span>.</h2>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {items.map((item, i) => (
+            <div key={i} className="group premium-shadow transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: cs.surface, borderRadius: "2rem", padding: "3.5rem 2.5rem", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, right: 0, width: "100%", height: "8px", backgroundColor: cs.primary, opacity: 0.2 }} />
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.text, marginBottom: "1.25rem" }}>{item.title}</h3>
+              <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.7, color: cs.textLight, marginBottom: "2rem" }}>{item.description}</p>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-40 group-hover:opacity-100 transition-all">
+                Entdecken <ArrowRight className="h-4 w-4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WarmMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
+            <Coffee className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
+          </div>
+          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.text, lineHeight: 1.15 }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="grid md:grid-cols-2 gap-x-12 gap-y-16">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="space-y-8">
+                <h3 style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: cs.text, borderBottom: `2px solid ${cs.primary}`, display: "inline-block", paddingBottom: "0.5rem" }}>{cat}</h3>
+                <div className="space-y-6">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-baseline gap-4 mb-1">
+                        <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.text }}>{item.title}</h4>
+                        <div className="flex-1 border-b border-dotted border-[#e8e0d0] mx-2" />
+                        <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                      </div>
+                      {item.description && (
+                        <p style={{ fontSize: "0.9rem", color: cs.textLight, lineHeight: 1.6 }}>{item.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
+            {items.map((item, i) => (
+              <div key={i}>
+                <div className="flex justify-between items-baseline gap-4 mb-1">
+                  <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.text }}>{item.title}</h4>
+                  <div className="flex-1 border-b border-dotted border-[#e8e0d0] mx-2" />
+                  <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                </div>
+                {item.description && (
+                  <p style={{ fontSize: "0.9rem", color: cs.textLight, lineHeight: 1.6 }}>{item.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function WarmPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
+      <div className="max-w-4xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
+            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: cs.text }}>{section.headline}</h2>
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
+          </div>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="space-y-12">
+            {categories.map((cat, idx) => (
+              <div key={idx} style={{ backgroundColor: cs.background, padding: "2.5rem", borderRadius: "1.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
+                <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.text, marginBottom: "2rem", textAlign: "center" }}>{cat}</h3>
+                <div className="grid gap-4">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i} className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
+                      <span style={{ fontSize: "1rem", color: cs.text, fontWeight: 500 }}>{item.title}</span>
+                      <span style={{ fontSize: "1.1rem", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>{item.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ backgroundColor: cs.background, padding: "3rem", borderRadius: "1.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.04)", maxWidth: "800px", margin: "0 auto" }}>
+            <div className="grid gap-2">
+              {items.map((item, i) => (
+                <div key={i} className="flex justify-between items-center py-4 border-b border-slate-100 last:border-0">
+                  <span style={{ fontSize: "1.1rem", color: cs.text, fontWeight: 500 }}>{item.title}</span>
+                  <span style={{ fontSize: "1.2rem", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>{item.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function WarmGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  return (
+    <section data-section="gallery" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-3">
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
-            <Utensils className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} />
+            <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>Galerie</span>
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
-          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.textLight, marginTop: "0.75rem" }}>{section.subheadline}</p>}
+          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700, color: cs.text }}>{section.headline}</h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.surface, borderRadius: "1rem", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
-              <div style={{ height: "10px", backgroundColor: cs.primary, opacity: 0.7 + (i % 3) * 0.1 }} />
-              <div style={{ padding: "1.75rem" }}>
-                <h3 style={{ fontFamily: SERIF, fontSize: "1.15rem", fontWeight: 700, color: cs.text, marginBottom: "0.5rem" }}>{item.title}</h3>
-                <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.6, color: cs.textLight }}>{item.description}</p>
-                {(item as any).price && (
-                  <div className="flex items-center justify-between mt-4">
-                    <span style={{ fontFamily: SERIF, fontSize: "1.1rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }}>{(item as any).price}</span>
-                  </div>
-                )}
-              </div>
+            <div key={i} style={{ borderRadius: "2rem", overflow: "hidden", aspectRatio: "1/1", boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}>
+              <img src={`https://images.unsplash.com/photo-${1414235077428 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           ))}
         </div>

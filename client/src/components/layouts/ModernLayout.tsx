@@ -44,6 +44,7 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
         <div key={i}>
           {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
+          {section.type === "gallery" && <ModernGallery section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} />}
           {section.type === "menu" && <ModernMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <ModernPricelist section={section} cs={cs} />}
@@ -112,45 +113,94 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
 
 function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
-    <section style={{ backgroundColor: "#fff", minHeight: "90vh", display: "flex" }}>
-      <div className="max-w-7xl mx-auto px-8 w-full grid lg:grid-cols-5 gap-0 items-stretch">
-        {/* Left 60% - Text */}
-        <div className="lg:col-span-3 flex flex-col justify-center py-20 pr-12">
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", marginBottom: "2rem" }}>
-            <div style={{ width: "1.5rem", height: "2px", backgroundColor: cs.primary }} />
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>Professionell & Zuverlässig</span>
+    <section style={{ backgroundColor: "#fff", minHeight: "95vh", display: "flex", position: "relative", overflow: "hidden" }}>
+      {/* Background Decorative Element */}
+      <div 
+        className="floating-element"
+        style={{ 
+          position: "absolute", 
+          top: "10%", 
+          right: "-5%", 
+          width: "40vw", 
+          height: "40vw", 
+          background: `radial-gradient(circle, ${cs.primary}10 0%, transparent 70%)`,
+          zIndex: 0 
+        }} 
+      />
+      
+      <div className="max-w-7xl mx-auto px-8 w-full grid lg:grid-cols-12 gap-0 items-center relative z-10">
+        {/* Left - Text (overlaps slightly) */}
+        <div className="lg:col-span-7 py-20 lg:pr-12 relative z-20">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.75rem", marginBottom: "2.5rem" }}>
+            <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 800, backgroundColor: `${cs.primary}10`, padding: "0.5rem 1rem", borderRadius: "2px" }}>
+              Premium Experience
+            </span>
           </div>
-          <h1 style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem" }} className="hero-animate-headline">
-            {section.headline}
+          
+          <h1 style={{ 
+            fontSize: "clamp(3.5rem, 8vw, 6.5rem)", 
+            fontWeight: 900, 
+            lineHeight: 0.9, 
+            letterSpacing: "-0.04em", 
+            color: "#0a0a0a", 
+            marginBottom: "2rem" 
+          }} className="hero-animate-headline">
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ display: i === 1 ? "block" : "inline", color: i === 1 ? cs.primary : "inherit" }}>
+                {word}{" "}
+              </span>
+            ))}
           </h1>
+          
+          <div style={{ width: "4rem", height: "4px", backgroundColor: cs.primary, marginBottom: "2rem" }} />
+          
           {section.subheadline && (
-            <p style={{ fontSize: "1.15rem", lineHeight: 1.6, color: "#555", marginBottom: "0.75rem", maxWidth: "480px" }}>{section.subheadline}</p>
+            <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: "#444", marginBottom: "1rem", maxWidth: "520px", fontWeight: 500 }}>{section.subheadline}</p>
           )}
           {section.content && (
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#777", marginBottom: "2.5rem", maxWidth: "480px" }}>{section.content}</p>
+            <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "#777", marginBottom: "3rem", maxWidth: "480px" }}>{section.content}</p>
           )}
-          {websiteData.googleRating && websiteData.googleReviewCount ? (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="dark" starColor={cs.primary} />
-            </div>
-          ) : null}
-          <div className="flex flex-wrap gap-4">
+          
+          <div className="flex flex-wrap gap-5">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#0a0a0a", color: "#fff", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 700, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">
-                {section.ctaText} <ArrowRight className="h-4 w-4" />
+              <a href={section.ctaLink || "#kontakt"} 
+                style={{ backgroundColor: "#0a0a0a", color: "#fff", padding: "1.25rem 3rem", fontSize: "0.95rem", fontWeight: 700, borderRadius: "0px", display: "inline-flex", alignItems: "center", gap: "0.75rem", transition: "transform 0.3s ease" }} 
+                className="hover:scale-105 shadow-2xl">
+                {section.ctaText} <ArrowRight className="h-5 w-5" />
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: "1px solid #ddd", color: "#0a0a0a", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 600, backgroundColor: "transparent" }} className="hover:border-black transition-colors">
+              <button onClick={onActivate} 
+                style={{ border: "2px solid #0a0a0a", color: "#0a0a0a", padding: "1.25rem 3rem", fontSize: "0.95rem", fontWeight: 700, backgroundColor: "transparent" }} 
+                className="hover:bg-black hover:text-white transition-all">
                 Website aktivieren
               </button>
             )}
           </div>
         </div>
-        {/* Right 40% - Image */}
-        <div className="lg:col-span-2 relative hidden lg:block">
-          <img src={heroImageUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, transparent 60%, ${cs.primary}40 100%)` }} />
+
+        {/* Right - Image (Editorial style) */}
+        <div className="lg:col-span-5 relative h-full min-h-[600px] hidden lg:flex items-center">
+          <div style={{ 
+            position: "absolute", 
+            left: "-10%", 
+            top: "15%", 
+            bottom: "15%", 
+            right: "0", 
+            backgroundColor: "#f8f8f8", 
+            zIndex: 0 
+          }} />
+          <div className="premium-shadow-lg" style={{ position: "relative", zIndex: 1, width: "100%", height: "80%", overflow: "hidden" }}>
+            <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} className="hover:scale-110 transition-transform duration-1000" />
+          </div>
+          {/* Floating badge */}
+          <div className="glass-card premium-shadow" style={{ position: "absolute", bottom: "20%", left: "-20%", padding: "2rem", zIndex: 30, maxWidth: "240px" }}>
+            <div className="flex gap-1 mb-2">
+              {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />)}
+            </div>
+            <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "#0a0a0a", lineHeight: 1.4 }}>"Die beste Entscheidung für unser Business."</p>
+            <p style={{ fontSize: "0.7rem", color: "#888", marginTop: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>Top Bewertung</p>
+          </div>
         </div>
       </div>
     </section>
@@ -159,24 +209,62 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
 
 function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section data-section="hero" style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
+    <section style={{ backgroundColor: "#fcfcfc", padding: "10rem 0", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-8">
-        <div className="grid lg:grid-cols-2 gap-20 items-center">
-          <div style={{ position: "relative" }}>
-            <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover" }} />
-            <div style={{ position: "absolute", bottom: "2rem", right: "-2rem", backgroundColor: cs.primary, padding: "1.5rem 2rem" }}>
-              <p style={{ fontSize: "2.5rem", fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.03em" }}>15+</p>
-              <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.7)", letterSpacing: "0.1em", marginTop: "0.25rem" }}>JAHRE</p>
+        <div className="grid lg:grid-cols-12 gap-20 items-center">
+          <div className="lg:col-span-6 relative">
+            <div style={{ 
+              position: "absolute", 
+              top: "-10%", 
+              left: "-10%", 
+              width: "100%", 
+              height: "100%", 
+              border: `1px solid ${cs.primary}20`, 
+              zIndex: 0 
+            }} />
+            <div className="premium-shadow-lg" style={{ position: "relative", zIndex: 1 }}>
+              <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} />
             </div>
+            {/* Big background number */}
+            <div style={{ 
+              position: "absolute", 
+              bottom: "-15%", 
+              right: "-10%", 
+              fontSize: "12rem", 
+              fontWeight: 900, 
+              color: `${cs.primary}08`, 
+              fontFamily: "sans-serif",
+              lineHeight: 1,
+              zIndex: 0
+            }}>01</div>
           </div>
-          <div>
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "1rem" }}>Über uns</span>
-            <h2 data-reveal data-delay="0" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "1.5rem", lineHeight: 1.05 }}>{section.headline}</h2>
-            {section.subheadline && <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "#555", marginBottom: "1rem" }}>{section.subheadline}</p>}
-            {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "#777", marginBottom: "2rem" }}>{section.content}</p>}
-            <a href="#kontakt" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }} className="hover:opacity-70 transition-opacity">
-              Mehr erfahren <ArrowUpRight className="h-4 w-4" />
-            </a>
+          
+          <div className="lg:col-span-6">
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Über unser Team</span>
+            <h2 data-reveal style={{ fontSize: "clamp(2.5rem, 4vw, 4rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "2.5rem", lineHeight: 1 }}>{section.headline}</h2>
+            
+            <div className="space-y-8">
+              {section.subheadline && (
+                <div className="flex gap-6">
+                  <div style={{ width: "2px", height: "auto", backgroundColor: cs.primary }} />
+                  <p style={{ fontSize: "1.2rem", lineHeight: 1.6, color: "#333", fontWeight: 500 }}>{section.subheadline}</p>
+                </div>
+              )}
+              {section.content && (
+                <p style={{ fontSize: "1rem", lineHeight: 1.9, color: "#666" }}>{section.content}</p>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-8 mt-12">
+              <div>
+                <p style={{ fontSize: "2.5rem", fontWeight: 900, color: "#0a0a0a", marginBottom: "0.25rem" }}>15+</p>
+                <p style={{ fontSize: "0.75rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>Jahre Erfahrung</p>
+              </div>
+              <div>
+                <p style={{ fontSize: "2.5rem", fontWeight: 900, color: "#0a0a0a", marginBottom: "0.25rem" }}>100%</p>
+                <p style={{ fontSize: "0.75rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>Leidenschaft</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -187,22 +275,51 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
 function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section data-section="services" style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
+    <section style={{ backgroundColor: "#fff", padding: "10rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "4rem" }}>
-          <div>
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Leistungen</span>
-            <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1.05 }}>{section.headline}</h2>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+          <div className="max-w-2xl">
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 800, display: "block", marginBottom: "1rem" }}>Was wir bieten</span>
+            <h2 data-reveal style={{ fontSize: "clamp(2.5rem, 4.5vw, 4.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1 }}>{section.headline}</h2>
+          </div>
+          <div style={{ paddingBottom: "0.5rem" }}>
+            <a href="#kontakt" style={{ fontSize: "0.9rem", fontWeight: 700, color: "#0a0a0a", borderBottom: `2px solid ${cs.primary}`, paddingBottom: "4px" }} className="hover:opacity-60 transition-opacity">
+              Alle Leistungen ansehen
+            </a>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1px", backgroundColor: "#f0f0f0" }}>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: "#fff", padding: "2.5rem 2rem" }} className="group hover:bg-gray-50 transition-colors">
-              <div style={{ fontSize: "0.75rem", letterSpacing: "0.1em", color: "#bbb", fontWeight: 600, marginBottom: "1.5rem" }}>{String(i + 1).padStart(2, "0")}</div>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#0a0a0a", marginBottom: "0.75rem" }}>{item.title}</h3>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#666" }}>{item.description}</p>
-              <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                Mehr <ArrowRight className="h-3.5 w-3.5" />
+            <div key={i} className="group premium-shadow transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: "#fff", padding: "3.5rem 2.5rem", position: "relative", overflow: "hidden" }}>
+              <div style={{ 
+                position: "absolute", 
+                top: "0", 
+                right: "0", 
+                width: "4rem", 
+                height: "4rem", 
+                backgroundColor: `${cs.primary}08`, 
+                clipPath: "polygon(100% 0, 0 0, 100% 100%)" 
+              }} />
+              
+              <div style={{ 
+                width: "3.5rem", 
+                height: "3.5rem", 
+                backgroundColor: `${cs.primary}10`, 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
+                marginBottom: "2rem",
+                borderRadius: "0px"
+              }} className="group-hover:bg-black transition-colors duration-300">
+                <Zap className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
+              </div>
+              
+              <h3 style={{ fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#0a0a0a", marginBottom: "1rem" }}>{item.title}</h3>
+              <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2rem" }}>{item.description}</p>
+              
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: "#0a0a0a", textTransform: "uppercase", letterSpacing: "0.05em" }} className="opacity-40 group-hover:opacity-100 transition-opacity">
+                <span>Details</span> <ArrowRight className="h-4 w-4" />
               </div>
             </div>
           ))}
@@ -279,6 +396,27 @@ function ModernPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSc
                   </div>
                 ))}
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ModernGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  return (
+    <section data-section="gallery" style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="mb-16">
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Galerie</span>
+          <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1.05 }}>{section.headline}</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+          {items.map((item, i) => (
+            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden" }} className="group">
+              <img src={`https://images.unsplash.com/photo-${1497366216548 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} className="group-hover:scale-105 transition-transform duration-500" />
             </div>
           ))}
         </div>
@@ -368,7 +506,7 @@ function ModernCTA({ section, cs, showActivateButton, onActivate }: { section: W
         </div>
         <div style={{ display: "flex", gap: "1rem", flexShrink: 0, flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-surface)", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-white)", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">
               {section.ctaText} <ArrowRight className="h-4 w-4" />
             </a>
           )}

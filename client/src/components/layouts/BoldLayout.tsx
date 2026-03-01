@@ -47,11 +47,44 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, aboutImageUr
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <BoldHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <BoldAbout section={section} cs={cs} businessCategory={businessCategory} />}
+          {section.type === "gallery" && <BoldGallery section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <BoldServices section={section} cs={cs} />}
+          {section.type === "menu" && <BoldMenu section={section} cs={cs} />}
+          {section.type === "pricelist" && <BoldPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <BoldTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <BoldFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <BoldContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+            <div style={{ position: "relative" }}>
+              <BoldContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+              {contactFormLocked && (
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.78)",
+                  backdropFilter: "blur(3px)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.75rem",
+                  zIndex: 20,
+                }}>
+                  <div style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    backgroundColor: "rgba(59,130,246,0.2)",
+                    border: "1px solid rgba(59,130,246,0.5)",
+                    borderRadius: "9999px",
+                    padding: "0.5rem 1.25rem",
+                  }}>
+                    <span style={{ fontSize: "0.85rem", color: "#93c5fd", fontWeight: 700 }}>🔒 Kontaktformular</span>
+                    <span style={{ fontSize: "0.8rem", color: "#60a5fa", backgroundColor: "rgba(59,130,246,0.25)", padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>+4,90 €/Monat</span>
+                  </div>
+                  <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.65)", margin: 0 }}>Im nächsten Schritt aktivierbar</p>
+                </div>
+              )}
+            </div>
           )}
           {section.type === "cta" && <BoldCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -86,50 +119,64 @@ function BoldNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: Web
 
 function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
-    <section style={{ position: "relative", minHeight: "90vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
+    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden", backgroundColor: "#000" }}>
       {/* Background image with dark overlay */}
-      <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(105deg, rgba(0,0,0,0.92) 50%, rgba(0,0,0,0.5) 100%)" }} />
-      {/* Diagonal accent */}
-      <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "40%", background: `linear-gradient(105deg, transparent 0%, ${cs.primary}15 100%)` }} />
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20 w-full">
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.75rem", backgroundColor: cs.primary, padding: "0.4rem 1rem", marginBottom: "2rem" }}>
-          <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#fff" }} />
-          <span style={{ fontFamily: BODY, fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#fff", fontWeight: 600 }}>Ihr Fachbetrieb</span>
-        </div>
-        <h1 style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 7vw, 6rem)", fontWeight: 700, lineHeight: 0.95, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem" }} className="hero-animate-headline">
-          {section.headline?.split(" ").map((word, i) => (
-            <span key={i} style={{ display: "block", color: i === 1 ? cs.primary : "#fff" }}>{word}</span>
-          ))}
-        </h1>
-        {section.subheadline && <p style={{ fontFamily: BODY, fontSize: "1.1rem", color: "rgba(255,255,255,0.75)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "2.5rem" }}>{section.subheadline}</p>}
-        <div className="flex flex-wrap gap-4">
-          {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }} className="btn-premium transition-opacity">
-              {section.ctaText}
-            </a>
-          )}
-          {showActivateButton && (
-            <button onClick={onActivate} style={{ border: `2px solid ${cs.primary}`, color: cs.primary, padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", backgroundColor: "transparent" }} className="hover:bg-opacity-10 transition-opacity">
-              Jetzt aktivieren
-            </button>
-          )}
-        </div>
-        {websiteData.googleRating && websiteData.googleReviewCount ? (
-          <div style={{ marginTop: "2rem" }}>
-            <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="light" starColor={cs.primary} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.7 }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #000 30%, transparent 100%)" }} />
+      
+      {/* Large Decorative Text background */}
+      <div style={{ position: "absolute", top: "50%", right: "-5%", transform: "translateY(-50%) rotate(-90deg)", fontSize: "15vw", fontWeight: 900, color: "rgba(255,255,255,0.03)", textTransform: "uppercase", whiteSpace: "nowrap", zIndex: 0, pointerEvents: "none" }}>
+        EXCELLENCE
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-24 w-full">
+        <div className="max-w-4xl">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", backgroundColor: cs.primary, padding: "0.6rem 1.5rem", marginBottom: "3rem" }} className="hero-animate-badge">
+            <div style={{ width: "8px", height: "8px", backgroundColor: "#fff" }} />
+            <span style={{ fontFamily: BODY, fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#fff", fontWeight: 800 }}>Mastering the Craft</span>
           </div>
-        ) : null}
-        {/* Trust bar */}
-        <div className="flex flex-wrap gap-8 mt-8">
-          {[{ icon: Shield, text: "Geprüfter Fachbetrieb" }, { icon: Award, text: "Über 15 Jahre Erfahrung" }, { icon: CheckCircle, text: "Kostenlose Beratung" }].map(({ icon: Icon, text }, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Icon className="h-5 w-5" style={{ color: cs.primary }} />
-              <span style={{ fontFamily: BODY, fontSize: "0.85rem", color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{text}</span>
-            </div>
-          ))}
+
+          <h1 style={{ 
+            fontFamily: HEADING, 
+            fontSize: "clamp(4rem, 10vw, 8.5rem)", 
+            fontWeight: 700, 
+            lineHeight: 0.85, 
+            color: "#fff", 
+            textTransform: "uppercase", 
+            letterSpacing: "-0.02em", 
+            marginBottom: "3rem" 
+          }} className="hero-animate-headline">
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ display: "block", color: i === 1 ? cs.primary : "#fff" }}>{word}</span>
+            ))}
+          </h1>
+
+          <div style={{ display: "flex", gap: "3rem", marginBottom: "4rem" }} className="hero-animate-sub">
+            <div style={{ width: "4px", backgroundColor: cs.primary }} />
+            <p style={{ fontFamily: BODY, fontSize: "1.3rem", color: "rgba(255,255,255,0.8)", maxWidth: "550px", lineHeight: 1.6, fontWeight: 500 }}>{section.subheadline}</p>
+          </div>
+
+          <div className="flex flex-wrap gap-6 hero-animate-cta">
+            {section.ctaText && (
+              <a href={section.ctaLink || "#kontakt"} 
+                style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1.5rem 4rem", fontFamily: HEADING, fontSize: "1.3rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", transition: "all 0.4s ease" }} 
+                className="hover:scale-105 hover:bg-white shadow-2xl">
+                {section.ctaText}
+              </a>
+            )}
+            {showActivateButton && (
+              <button onClick={onActivate} 
+                style={{ border: `2px solid rgba(255,255,255,0.3)`, color: "#fff", padding: "1.5rem 4rem", fontFamily: HEADING, fontSize: "1.3rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", backgroundColor: "transparent" }} 
+                className="hover:bg-white hover:text-black transition-all">
+                Aktivieren
+              </button>
+            )}
+          </div>
         </div>
       </div>
+      
+      {/* Bottom accent line */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "12px", backgroundColor: cs.primary }} />
     </section>
   );
 }
@@ -137,22 +184,39 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate, w
 function BoldAbout({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const stats = getIndustryStats(businessCategory || "");
   return (
-    <section style={{ backgroundColor: "#111", padding: "5rem 0" }}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
-            <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
-            <span style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Über uns</span>
+    <section style={{ backgroundColor: "#0a0a0a", padding: "12rem 0", position: "relative", overflow: "hidden" }}>
+      {/* Background large number */}
+      <div style={{ position: "absolute", bottom: "-5%", left: "5%", fontSize: "20rem", fontWeight: 900, color: "rgba(255,255,255,0.02)", lineHeight: 1 }}>01</div>
+      
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-24 items-center relative z-10">
+        <div className="lg:col-span-7">
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div style={{ width: "4rem", height: "4px", backgroundColor: cs.primary }} />
+            <span style={{ fontFamily: BODY, fontSize: "0.9rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Stärke & Verlässlichkeit</span>
           </div>
-          <h2 data-reveal data-delay="0" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "1.5rem", lineHeight: 1.05 }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontFamily: BODY, fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.65)", marginBottom: "1rem" }}>{section.subheadline}</p>}
-          {section.content && <p style={{ fontFamily: BODY, fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.55)" }}>{section.content}</p>}
+          
+          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem", lineHeight: 0.95 }}>{section.headline}</h2>
+          
+          <div className="space-y-8">
+            <p style={{ fontFamily: BODY, fontSize: "1.2rem", lineHeight: 1.7, color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>{section.subheadline}</p>
+            <p style={{ fontFamily: BODY, fontSize: "1.05rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)" }}>{section.content}</p>
+          </div>
+          
+          <div className="flex flex-wrap gap-10 mt-12 pt-12 border-t border-white/10">
+            {["Meisterbetrieb", "Termintreu", "Festpreisgarantie"].map((item, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5" style={{ color: cs.primary }} />
+                <span style={{ fontFamily: HEADING, fontSize: "1.1rem", color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          {stats.map(({ n, label }, i) => (
-            <div key={i} style={{ backgroundColor: i === 1 ? cs.primary : "#1a1a1a", padding: "2rem 1.5rem", textAlign: "center" }}>
-              <p style={{ fontFamily: HEADING, fontSize: "2.5rem", fontWeight: 700, color: i === 1 ? "#fff" : cs.primary, lineHeight: 1 }}>{n}</p>
-              <p style={{ fontFamily: BODY, fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: i === 1 ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.5)", marginTop: "0.5rem" }}>{label}</p>
+        
+        <div className="lg:col-span-5 grid grid-cols-2 gap-6">
+          {stats.slice(0, 4).map(({ n, label }, i) => (
+            <div key={i} style={{ backgroundColor: i === 0 ? cs.primary : "rgba(255,255,255,0.03)", padding: "3rem 2rem", textAlign: "center", border: i === 0 ? "none" : "1px solid rgba(255,255,255,0.05)" }}>
+              <p style={{ fontFamily: HEADING, fontSize: "3.5rem", fontWeight: 700, color: i === 0 ? "#fff" : cs.primary, lineHeight: 1 }}>{n}</p>
+              <p style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: i === 0 ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.45)", marginTop: "0.5rem", fontWeight: 700 }}>{label}</p>
             </div>
           ))}
         </div>
@@ -164,19 +228,53 @@ function BoldAbout({ section, cs, businessCategory }: { section: WebsiteSection;
 function BoldServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section data-section="services" style={{ backgroundColor: cs.background, padding: "5rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#000", padding: "12rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center gap-6 mb-24">
+          <div style={{ width: "5rem", height: "12px", backgroundColor: cs.primary }} />
+          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>
+            Unsere <span style={{ color: cs.primary }}>Kernkompetenzen</span>
+          </h2>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {items.map((item, i) => (
+            <div key={i} className="group relative overflow-hidden" style={{ backgroundColor: "#0d0d0d", padding: "4rem 3rem", border: "1px solid rgba(255,255,255,0.05)", transition: "all 0.4s ease" }}>
+              <div style={{ position: "absolute", top: 0, left: 0, width: "4px", height: "100%", backgroundColor: cs.primary, transform: "scaleY(0)", transition: "transform 0.4s ease" }} className="group-hover:scale-y-100" />
+              
+              <div style={{ position: "absolute", top: "1.5rem", right: "2rem", fontFamily: HEADING, fontSize: "5rem", fontWeight: 900, color: "rgba(255,255,255,0.02)", lineHeight: 1 }}>{String(i + 1).padStart(2, "0")}</div>
+              
+              <div style={{ width: "4rem", height: "4rem", backgroundColor: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2.5rem", transition: "all 0.3s ease" }} className="group-hover:bg-white">
+                <Wrench className="h-7 w-7 group-hover:text-black transition-colors" style={{ color: cs.primary }} />
+              </div>
+              
+              <h3 style={{ fontFamily: HEADING, fontSize: "1.8rem", fontWeight: 600, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.25rem" }}>{item.title}</h3>
+              <p style={{ fontFamily: BODY, fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{item.description}</p>
+              
+              <div style={{ marginTop: "3rem", display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.9rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.15em" }} className="opacity-0 group-hover:opacity-100 transition-all group-hover:gap-4">
+                Details ansehen <ArrowRight className="h-5 w-5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BoldGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  return (
+    <section data-section="gallery" style={{ backgroundColor: "#111", padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-12">
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
-          <h2 data-reveal data-delay="100" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: cs.text, textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: HEADING, fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 lg:gap-4">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.surface, padding: "2rem", borderLeft: `4px solid ${cs.primary}`, position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", top: "1rem", right: "1rem", fontFamily: HEADING, fontSize: "3rem", fontWeight: 700, color: `${cs.primary}15`, lineHeight: 1 }}>{String(i + 1).padStart(2, "0")}</div>
-              <Wrench className="h-6 w-6 mb-3" style={{ color: cs.primary }} />
-              <h3 style={{ fontFamily: HEADING, fontSize: "1.2rem", fontWeight: 600, color: cs.text, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>{item.title}</h3>
-              <p style={{ fontFamily: BODY, fontSize: "0.9rem", lineHeight: 1.6, color: cs.textLight }}>{item.description}</p>
+            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", border: `1px solid ${cs.primary}20` }}>
+              <img src={`https://images.unsplash.com/photo-${1510000000000 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(10%) contrast(110%)" }} />
             </div>
           ))}
         </div>
@@ -229,6 +327,109 @@ function BoldFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) 
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function BoldMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: "#0d0d0d", padding: "6rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "3rem" }}>
+          <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary }} />
+          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.2rem, 5vw, 4rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="grid md:grid-cols-2 gap-12">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="space-y-6">
+                <h3 style={{ fontFamily: HEADING, fontSize: "1.5rem", fontWeight: 700, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em", borderBottom: `2px solid ${cs.primary}`, display: "inline-block", paddingBottom: "0.25rem", marginBottom: "1rem" }}>{cat}</h3>
+                <div className="space-y-6">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i} className="group">
+                      <div className="flex justify-between items-baseline gap-4 mb-1">
+                        <h4 style={{ fontFamily: HEADING, fontSize: "1.1rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                        <div className="flex-1 border-b border-dotted border-white/20 mx-2" />
+                        <span style={{ fontFamily: HEADING, fontSize: "1.1rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                      </div>
+                      {item.description && (
+                        <p style={{ fontFamily: BODY, fontSize: "0.85rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>{item.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
+            {items.map((item, i) => (
+              <div key={i} className="group">
+                <div className="flex justify-between items-baseline gap-4 mb-1">
+                  <h4 style={{ fontFamily: HEADING, fontSize: "1.1rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                  <div className="flex-1 border-b border-dotted border-white/20 mx-2" />
+                  <span style={{ fontFamily: HEADING, fontSize: "1.1rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                </div>
+                {item.description && (
+                  <p style={{ fontFamily: BODY, fontSize: "0.85rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>{item.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function BoldPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.75rem", backgroundColor: cs.primary, padding: "0.4rem 1rem", marginBottom: "1.5rem" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#fff" }} />
+            <span style={{ fontFamily: BODY, fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#fff", fontWeight: 600 }}>Unsere Preise</span>
+          </div>
+          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 700, color: cs.text, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 1 }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="space-y-12">
+            {categories.map((cat, idx) => (
+              <div key={idx} style={{ backgroundColor: cs.surface, padding: "2.5rem", borderLeft: `6px solid ${cs.primary}` }}>
+                <h3 style={{ fontFamily: HEADING, fontSize: "1.6rem", fontWeight: 700, color: cs.text, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2rem" }}>{cat}</h3>
+                <div className="grid gap-4">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i} className="flex justify-between items-center py-3 border-b border-slate-700/10">
+                      <span style={{ fontFamily: HEADING, fontSize: "1.1rem", fontWeight: 600, color: cs.text, textTransform: "uppercase" }}>{item.title}</span>
+                      <span style={{ fontFamily: HEADING, fontSize: "1.2rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ backgroundColor: cs.surface, padding: "3rem", borderTop: `6px solid ${cs.primary}` }}>
+            <div className="grid gap-2">
+              {items.map((item, i) => (
+                <div key={i} className="flex justify-between items-center py-4 border-b border-slate-700/10 last:border-0">
+                  <span style={{ fontFamily: HEADING, fontSize: "1.1rem", fontWeight: 600, color: cs.text, textTransform: "uppercase" }}>{item.title}</span>
+                  <span style={{ fontFamily: HEADING, fontSize: "1.2rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -291,7 +492,7 @@ function BoldCTA({ section, cs, showActivateButton, onActivate }: { section: Web
           {section.content && <p style={{ fontFamily: BODY, fontSize: "1rem", color: "var(--site-nav-text-muted, rgba(0,0,0,0.7))", marginTop: "0.5rem" }}>{section.content}</p>}
         </div>
         <div className="flex flex-wrap gap-4 flex-shrink-0">
-          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: cs.primary, padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
+          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-white)", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
           {showActivateButton && <button onClick={onActivate} style={{ border: "2px solid #fff", color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
         </div>
       </div>

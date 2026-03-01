@@ -45,7 +45,10 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, aboutImag
         <div key={i}>
           {section.type === "hero" && <VibrantHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <VibrantAbout section={section} cs={darkCs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
+          {section.type === "gallery" && <VibrantGallery section={section} cs={darkCs} />}
           {(section.type === "services" || section.type === "features") && <VibrantServices section={section} cs={darkCs} />}
+          {section.type === "menu" && <VibrantMenu section={section} cs={darkCs} />}
+          {section.type === "pricelist" && <VibrantPricelist section={section} cs={darkCs} />}
           {section.type === "testimonials" && <VibrantTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <VibrantFAQ section={section} cs={darkCs} />}
                     {section.type === "contact" && (
@@ -116,51 +119,70 @@ function VibrantNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: 
 
 function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
-    <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0 }}>
-        <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.3) 100%)" }} />
+    <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden", backgroundColor: "#000" }}>
+      {/* Dynamic Background with Glow and Grid */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6, objectPosition: "center 20%" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #000 20%, transparent 100%)" }} />
+        <div className="grid-pattern absolute inset-0" style={{ opacity: 0.2 }} />
+        <div className="tech-glow absolute" style={{ top: "20%", right: "-10%", width: "50vw", height: "50vw", background: cs.primary, opacity: 0.15 }} />
       </div>
-      <div className="relative max-w-7xl mx-auto px-6 w-full py-20">
-        <div style={{ maxWidth: "700px" }}>
-          <div style={{ display: "inline-block", backgroundColor: cs.primary, padding: "0.3rem 0.9rem", marginBottom: "1.5rem" }}>
-            <span style={{ fontFamily: DISPLAY, fontSize: "0.85rem", letterSpacing: "0.15em", color: "#000", textTransform: "uppercase" }}>Deine Transformation beginnt jetzt</span>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full py-24">
+        <div style={{ maxWidth: "900px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", backgroundColor: cs.primary, padding: "0.5rem 1.5rem", marginBottom: "3rem" }} className="hero-animate-badge">
+            <Zap className="h-5 w-5 text-black" />
+            <span style={{ fontFamily: DISPLAY, fontSize: "1rem", letterSpacing: "0.2em", color: "#000", textTransform: "uppercase" }}>Limitless Performance</span>
           </div>
-          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(4rem, 10vw, 9rem)", lineHeight: 0.85, letterSpacing: "0.02em", color: "#fff", textTransform: "uppercase", marginBottom: "1.5rem" }} className="hero-animate-headline">
-            {section.headline}
+
+          <h1 style={{ 
+            fontFamily: DISPLAY, 
+            fontSize: "clamp(5rem, 15vw, 12rem)", 
+            lineHeight: 0.8, 
+            letterSpacing: "-0.02em", 
+            color: "#fff", 
+            textTransform: "uppercase", 
+            marginBottom: "3rem" 
+          }} className="hero-animate-headline">
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ display: "block", color: i === 1 ? cs.primary : "#fff", transform: i === 1 ? "translateX(2rem)" : "none" }}>{word}</span>
+            ))}
           </h1>
-          {section.subheadline && (
-            <p style={{ fontSize: "1.15rem", lineHeight: 1.6, color: "rgba(255,255,255,0.7)", marginBottom: "0.75rem", maxWidth: "500px" }}>{section.subheadline}</p>
-          )}
-          {section.content && (
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem", maxWidth: "500px" }}>{section.content}</p>
-          )}
-          {websiteData.googleRating && websiteData.googleReviewCount ? (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="light" starColor={cs.primary} />
+
+          <div style={{ display: "flex", gap: "3rem", marginBottom: "4rem" }} className="hero-animate-sub">
+            <div style={{ width: "6px", backgroundColor: cs.primary }} />
+            <div className="max-w-xl">
+              {section.subheadline && <p style={{ fontSize: "1.4rem", lineHeight: 1.4, color: "rgba(255,255,255,0.9)", marginBottom: "1rem", fontWeight: 700, textTransform: "uppercase" }}>{section.subheadline}</p>}
+              {section.content && <p style={{ fontSize: "1.1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{section.content}</p>}
             </div>
-          ) : null}
-          <div className="flex flex-wrap gap-4">
+          </div>
+
+          <div className="flex flex-wrap gap-6 hero-animate-cta">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1.1rem 3rem", fontSize: "0.9rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
-                {section.ctaText} <ArrowRight className="h-4 w-4" />
+              <a href={section.ctaLink || "#kontakt"} 
+                style={{ backgroundColor: cs.primary, color: "#000", padding: "1.5rem 4rem", fontSize: "1.2rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 900, transition: "all 0.4s ease" }} 
+                className="hover:bg-white shadow-[0_0_50px_rgba(var(--site-primary-rgb),0.3)]">
+                {section.ctaText}
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `2px solid rgba(255,255,255,0.3)`, color: "#fff", padding: "1.1rem 3rem", fontSize: "0.9rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, backgroundColor: "transparent" }} className="hover:border-white transition-colors">
-                Website aktivieren
+              <button onClick={onActivate} 
+                style={{ border: `2px solid rgba(255,255,255,0.2)`, color: "#fff", padding: "1.5rem 4rem", fontSize: "1.2rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, backgroundColor: "transparent" }} 
+                className="hover:bg-white hover:text-black transition-all">
+                Aktivieren
               </button>
             )}
           </div>
         </div>
       </div>
-      {/* Stats bar */}
-      <div style={{ position: "relative", backgroundColor: cs.primary, padding: "1.5rem 0" }}>
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-4 gap-4">
-          {[["500+", "Mitglieder"], ["15+", "Trainer"], ["50+", "Kurse/Woche"], ["98%", "Zufriedenheit"]].map(([num, label]) => (
-            <div key={label} style={{ textAlign: "center" }}>
-              <p style={{ fontFamily: DISPLAY, fontSize: "2rem", color: "#000", lineHeight: 1 }}>{num}</p>
-              <p style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(0,0,0,0.6)", marginTop: "0.2rem" }}>{label}</p>
+      
+      {/* Floating horizontal stats */}
+      <div style={{ backgroundColor: "rgba(255,255,255,0.03)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[["500+", "Athleten"], ["15+", "Experten"], ["50+", "Classes"], ["24/7", "Zugang"]].map(([num, label]) => (
+            <div key={label} className="text-center md:text-left">
+              <p style={{ fontFamily: DISPLAY, fontSize: "3rem", color: cs.primary, lineHeight: 1 }}>{num}</p>
+              <p style={{ fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 700 }}>{label}</p>
             </div>
           ))}
         </div>
@@ -171,27 +193,40 @@ function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
 
 function VibrantAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Über uns</span>
-          <h2 data-reveal data-delay="0" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "1.5rem" }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.6)", marginBottom: "1rem" }}>{section.subheadline}</p>}
-          {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)", marginBottom: "2rem" }}>{section.content}</p>}
-          <div className="grid grid-cols-2 gap-4">
-            {[["Modernste Geräte", Zap], ["Persönliches Coaching", Target], ["Flexible Zeiten", Clock], ["Community", TrendingUp]].map(([label, Icon]: any) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem", backgroundColor: cs.background }}>
-                <Icon className="h-5 w-5" style={{ color: cs.primary }} />
-                <span style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{label}</span>
+    <section style={{ backgroundColor: "#0d0d0d", padding: "12rem 0", position: "relative", overflow: "hidden" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-24 items-center">
+        <div className="lg:col-span-7">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1.5rem", marginBottom: "2.5rem" }}>
+            <div style={{ width: "4rem", height: "4px", backgroundColor: cs.primary }} />
+            <span style={{ fontFamily: BODY, fontSize: "0.9rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Unsere Vision</span>
+          </div>
+          
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3.5rem", lineHeight: 0.9 }}>{section.headline}</h2>
+          
+          <div className="space-y-8">
+            <p style={{ fontSize: "1.3rem", lineHeight: 1.6, color: "rgba(255,255,255,0.9)", fontWeight: 600, textTransform: "uppercase" }}>{section.subheadline}</p>
+            <p style={{ fontSize: "1.1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)" }}>{section.content}</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-6 mt-16">
+            {[["High-End Equipment", Zap], ["Pro Coaching", Target], ["Community Power", TrendingUp], ["Result Focused", Dumbbell]].map(([label, Icon]: any) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.5rem", backgroundColor: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }} className="group hover:border-primary/30 transition-colors">
+                <Icon className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+                <span style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.7)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ position: "relative" }}>
-          <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover" }} />
-          <div style={{ position: "absolute", top: "2rem", left: "-2rem", backgroundColor: cs.primary, padding: "1.5rem 2rem" }}>
-            <p style={{ fontFamily: DISPLAY, fontSize: "2.5rem", color: "#000", lineHeight: 1 }}>5★</p>
-            <p style={{ fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(0,0,0,0.7)", marginTop: "0.25rem" }}>Bewertung</p>
+        
+        <div className="lg:col-span-5 relative">
+          <div style={{ position: "absolute", top: "-5%", right: "-5%", width: "100%", height: "100%", border: `1px solid ${cs.primary}40`, zIndex: 0 }} />
+          <div className="premium-shadow-lg relative z-10 overflow-hidden">
+            <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover", filter: "grayscale(30%)" }} />
+          </div>
+          {/* Transformation Badge */}
+          <div style={{ position: "absolute", bottom: "2rem", left: "-2rem", backgroundColor: cs.primary, padding: "2rem", zIndex: 30, textAlign: "center", minWidth: "160px" }}>
+            <p style={{ fontFamily: DISPLAY, fontSize: "3rem", color: "#000", lineHeight: 1 }}>98%</p>
+            <p style={{ fontSize: "0.7rem", color: "rgba(0,0,0,0.7)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>Success Rate</p>
           </div>
         </div>
       </div>
@@ -201,25 +236,49 @@ function VibrantAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
 
 function VibrantServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
-  const icons = [Dumbbell, Zap, Target, TrendingUp, Clock, Star];
   return (
-    <section data-section="services" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#000", padding: "12rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center gap-6 mb-24">
+          <div style={{ width: "5rem", height: "12px", backgroundColor: cs.primary }} />
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 7rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>
+            Deine <span style={{ color: cs.primary }}>Programme</span>
+          </h2>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10 border border-white/10 overflow-hidden">
+          {items.map((item, i) => (
+            <div key={i} className="group transition-all duration-500 hover:bg-primary/[0.02]" style={{ backgroundColor: "#000", padding: "5rem 3rem" }}>
+              <Dumbbell className="h-12 w-12 text-primary mb-8 group-hover:scale-110 group-hover:rotate-12 transition-transform" />
+              <h3 style={{ fontFamily: DISPLAY, fontSize: "2.5rem", fontWeight: 600, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem" }}>{item.title}</h3>
+              <p style={{ fontSize: "1.1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.45)", marginBottom: "3.5rem" }}>{item.description}</p>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", fontSize: "0.9rem", fontWeight: 900, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.2em" }} className="opacity-0 group-hover:opacity-100 group-hover:gap-6 transition-all">
+                Jetzt starten <ArrowRight className="h-5 w-5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function VibrantGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  return (
+    <section data-section="gallery" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Programme</span>
+          <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Impressionen</span>
           <h2 data-reveal data-delay="100" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item, i) => {
-            const Icon = icons[i % icons.length];
-            return (
-              <div key={i} style={{ backgroundColor: cs.surface, padding: "2rem", borderTop: `3px solid ${i === 0 ? cs.primary : "transparent"}`, transition: "border-color 0.2s, transform 0.2s" }} className="group hover:-translate-y-1" onMouseEnter={e => (e.currentTarget.style.borderTopColor = cs.primary)} onMouseLeave={e => (e.currentTarget.style.borderTopColor = i === 0 ? cs.primary : "transparent")}>
-                <Icon className="h-8 w-8 mb-4" style={{ color: cs.primary }} />
-                <h3 style={{ fontFamily: DISPLAY, fontSize: "1.5rem", letterSpacing: "0.05em", color: cs.text, textTransform: "uppercase", marginBottom: "0.75rem" }}>{item.title}</h3>
-                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)" }}>{item.description}</p>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {items.map((item, i) => (
+            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", position: "relative" }} className="group">
+              <img src={`https://images.unsplash.com/photo-${1534438327276 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} className="group-hover:scale-110 transition-transform duration-700" />
+              <div style={{ position: "absolute", inset: 0, backgroundColor: `${cs.primary}30`, opacity: 0 }} className="group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -299,6 +358,111 @@ function VibrantCTA({ section, cs, showActivateButton, onActivate }: { section: 
             </button>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function VibrantMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: "#0d0d0d", padding: "6rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+          <div style={{ display: "inline-block", backgroundColor: cs.primary, padding: "0.3rem 0.9rem", marginBottom: "1.5rem" }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: "0.85rem", letterSpacing: "0.15em", color: "#000", textTransform: "uppercase" }}>Unsere Auswahl</span>
+          </div>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.02em", color: "#fff", textTransform: "uppercase", lineHeight: 0.9 }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="grid lg:grid-cols-2 gap-x-16 gap-y-16">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="space-y-8">
+                <h3 style={{ fontFamily: DISPLAY, fontSize: "2rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em", borderBottom: `4px solid ${cs.primary}`, display: "inline-block", paddingBottom: "0.5rem" }}>{cat}</h3>
+                <div className="space-y-8">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-baseline gap-4 mb-2">
+                        <h4 style={{ fontFamily: DISPLAY, fontSize: "1.3rem", fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                        <div className="flex-1 border-b-2 border-white/10 mx-2" />
+                        <span style={{ fontFamily: DISPLAY, fontSize: "1.3rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
+                      </div>
+                      {item.description && (
+                        <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>{item.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-2 gap-x-16 gap-y-12">
+            {items.map((item, i) => (
+              <div key={i}>
+                <div className="flex justify-between items-baseline gap-4 mb-2">
+                  <h4 style={{ fontFamily: DISPLAY, fontSize: "1.3rem", fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                  <div className="flex-1 border-b-2 border-white/10 mx-2" />
+                  <span style={{ fontFamily: DISPLAY, fontSize: "1.3rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
+                </div>
+                {item.description && (
+                  <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>{item.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function VibrantPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+          <div style={{ display: "inline-block", backgroundColor: cs.primary, padding: "0.3rem 0.9rem", marginBottom: "1.5rem" }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: "0.85rem", letterSpacing: "0.15em", color: "#000", textTransform: "uppercase" }}>Tarife</span>
+          </div>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.02em", color: cs.text, textTransform: "uppercase", lineHeight: 0.9 }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="space-y-12">
+            {categories.map((cat, idx) => (
+              <div key={idx} style={{ backgroundColor: cs.surface, padding: "3rem", position: "relative" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "4px", backgroundColor: cs.primary }} />
+                <h3 style={{ fontFamily: DISPLAY, fontSize: "1.8rem", fontWeight: 800, color: cs.text, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2rem" }}>{cat}</h3>
+                <div className="grid gap-4">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i} className="flex justify-between items-center py-4 border-b border-black/5 last:border-0">
+                      <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", color: cs.text, textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</span>
+                      <span style={{ fontFamily: DISPLAY, fontSize: "1.4rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ backgroundColor: cs.surface, padding: "4rem", borderTop: `6px solid ${cs.primary}`, maxWidth: "800px", margin: "0 auto" }}>
+            <div className="space-y-6">
+              {items.map((item, i) => (
+                <div key={i} className="flex justify-between items-center py-5 border-b border-black/5 last:border-0">
+                  <span style={{ fontFamily: DISPLAY, fontSize: "1.25rem", color: cs.text, textTransform: "uppercase", fontWeight: 800 }}>{item.title}</span>
+                  <span style={{ fontFamily: DISPLAY, fontSize: "1.6rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

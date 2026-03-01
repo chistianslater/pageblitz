@@ -1806,14 +1806,13 @@ Kontext: ${input.context}`,
           });
         }
         
-        // If brandColor or brandSecondaryColor changed, immediately update colorScheme in generated_websites
+        // If colorScheme changed, immediately update colorScheme in generated_websites
         // so the Preview page shows the same colors as the Onboarding Chat live preview.
-        if (safeData.brandColor || safeData.brandSecondaryColor) {
+        if (safeData.colorScheme) {
           const existingCs = (website.colorScheme as any) || {};
           const updatedCs = {
             ...existingCs,
-            ...(safeData.brandColor ? { primary: safeData.brandColor, accent: safeData.brandColor } : {}),
-            ...(safeData.brandSecondaryColor ? { secondary: safeData.brandSecondaryColor } : {}),
+            ...safeData.colorScheme,
           };
           await updateWebsite(input.websiteId, { colorScheme: updatedCs });
         }
@@ -1891,8 +1890,7 @@ Kontext: ${input.context}`,
         const existingColorScheme = (website.colorScheme as any) || {};
         const patchedColorScheme = {
           ...existingColorScheme,
-          ...(onboarding.brandColor ? { primary: onboarding.brandColor, accent: onboarding.brandColor } : {}),
-          ...(onboarding.brandSecondaryColor ? { secondary: onboarding.brandSecondaryColor } : {}),
+          ...(onboarding.colorScheme || {}),
         };
 
         // Save patched data and legal pages

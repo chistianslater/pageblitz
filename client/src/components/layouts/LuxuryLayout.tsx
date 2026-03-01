@@ -56,7 +56,10 @@ export default function LuxuryLayout({ websiteData, cs, heroImageUrl, aboutImage
         <div key={i}>
           {section.type === "hero" && <LuxuryHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <LuxuryAbout section={section} cs={darkCs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "gallery" && <LuxuryGallery section={section} cs={darkCs} />}
           {(section.type === "services" || section.type === "features") && <LuxuryServices section={section} cs={darkCs} />}
+          {section.type === "menu" && <LuxuryMenu section={section} cs={darkCs} />}
+          {section.type === "pricelist" && <LuxuryPricelist section={section} cs={darkCs} />}
           {section.type === "testimonials" && <LuxuryTestimonials section={section} cs={darkCs} />}
           {section.type === "faq" && <LuxuryFAQ section={section} cs={darkCs} />}
                     {section.type === "contact" && (
@@ -125,45 +128,75 @@ function LuxuryNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
 
 function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
-    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
-      {/* Full-bleed background image */}
-      <div style={{ position: "absolute", inset: 0 }}>
-        <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 100%)" }} />
+    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: "#000" }}>
+      {/* Background Image with Parallax-like overlay */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} />
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle, transparent 20%, #000 100%)" }} />
       </div>
-      {/* Content at bottom */}
-      <div className="relative max-w-7xl mx-auto px-6 w-full pb-20 pt-32">
-        <div className="max-w-3xl">
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
-            <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
-            <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Premium Service</span>
+      
+      {/* Centered Content Frame */}
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+        <div style={{ 
+          border: `1px solid ${cs.primary}30`, 
+          padding: "5rem 3rem", 
+          position: "relative",
+          backdropFilter: "blur(4px)",
+          backgroundColor: "rgba(0,0,0,0.2)"
+        }}>
+          {/* Corner accents */}
+          <div style={{ position: "absolute", top: "-1px", left: "-1px", width: "30px", height: "30px", borderTop: `2px solid ${cs.primary}`, borderLeft: `2px solid ${cs.primary}` }} />
+          <div style={{ position: "absolute", top: "-1px", right: "-1px", width: "30px", height: "30px", borderTop: `2px solid ${cs.primary}`, borderRight: `2px solid ${cs.primary}` }} />
+          <div style={{ position: "absolute", bottom: "-1px", left: "-1px", width: "30px", height: "30px", borderBottom: `2px solid ${cs.primary}`, borderLeft: `2px solid ${cs.primary}` }} />
+          <div style={{ position: "absolute", bottom: "-1px", right: "-1px", width: "30px", height: "30px", borderBottom: `2px solid ${cs.primary}`, borderRight: `2px solid ${cs.primary}` }} />
+
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1.5rem", marginBottom: "3rem" }}>
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
+            <span style={{ fontSize: "0.8rem", letterSpacing: "0.5em", textTransform: "uppercase", color: cs.primary, fontWeight: 500 }}>Excellence Defined</span>
+            <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
-          <h1 style={{ fontFamily: DISPLAY, fontSize: "clamp(3.5rem, 8vw, 7rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: "#fff", marginBottom: "1.5rem", textTransform: "uppercase" }} className="hero-animate-headline">
+
+          <h1 style={{ 
+            fontFamily: DISPLAY, 
+            fontSize: "clamp(4rem, 10vw, 8rem)", 
+            lineHeight: 0.85, 
+            letterSpacing: "0.05em", 
+            color: "#fff", 
+            marginBottom: "2.5rem", 
+            textTransform: "uppercase",
+            fontWeight: 400
+          }} className="hero-animate-headline">
             {section.headline}
           </h1>
+
           {section.subheadline && (
-            <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "rgba(255,255,255,0.7)", marginBottom: "0.75rem", maxWidth: "500px" }}>{section.subheadline}</p>
+            <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: "rgba(255,255,255,0.8)", marginBottom: "3.5rem", maxWidth: "600px", mx: "auto", fontWeight: 300, fontStyle: "italic", margin: "0 auto 3.5rem auto" }}>
+              {section.subheadline}
+            </p>
           )}
-          {section.content && (
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)", marginBottom: "2.5rem", maxWidth: "500px" }}>{section.content}</p>
-          )}
-          {websiteData.googleRating && websiteData.googleReviewCount ? (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <GoogleRatingBadge rating={websiteData.googleRating} reviewCount={websiteData.googleReviewCount} variant="light" starColor={cs.primary} />
-            </div>
-          ) : null}
-          <div className="flex flex-wrap gap-4">
+
+          <div className="flex flex-wrap gap-6 justify-center">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="btn-premium transition-opacity">
-                {section.ctaText} <ArrowRight className="h-4 w-4" />
+              <a href={section.ctaLink || "#kontakt"} 
+                style={{ backgroundColor: cs.primary, color: "#000", padding: "1.25rem 3.5rem", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 800, transition: "all 0.4s ease" }} 
+                className="hover:bg-white hover:tracking-[0.3em] shadow-xl">
+                {section.ctaText}
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `1px solid rgba(255,255,255,0.3)`, color: "#fff", padding: "1rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, backgroundColor: "transparent" }} className="hover:border-white transition-colors">
-                Website aktivieren
+              <button onClick={onActivate} 
+                style={{ border: `1px solid rgba(255,255,255,0.4)`, color: "#fff", padding: "1.25rem 3.5rem", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600, backgroundColor: "transparent" }} 
+                className="hover:border-white hover:bg-white/10 transition-all">
+                Aktivieren
               </button>
             )}
           </div>
+        </div>
+        
+        {/* Scroll indicator */}
+        <div style={{ marginTop: "4rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }} className="animate-bounce opacity-40">
+          <span style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#fff" }}>Entdecken</span>
+          <ChevronDown className="h-5 w-5 text-white" />
         </div>
       </div>
     </section>
@@ -173,31 +206,47 @@ function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
 function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
   const industryStats = getIndustryStats(businessCategory || "");
   return (
-    <section style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
+    <section style={{ backgroundColor: "#050505", padding: "12rem 0", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-6">
-        {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-px mb-20" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
-          {industryStats.map(({ n: num, label }) => (
-            <div key={label} style={{ backgroundColor: cs.surface, padding: "2rem", textAlign: "center" }}>
-              <p style={{ fontFamily: DISPLAY, fontSize: "3rem", letterSpacing: "0.05em", color: cs.primary, lineHeight: 1 }}>{num}</p>
-              <p style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "0.5rem" }}>{label}</p>
+        <div className="grid lg:grid-cols-2 gap-24 items-center">
+          <div className="relative order-2 lg:order-1">
+            <div style={{ 
+              position: "absolute", 
+              top: "10%", 
+              left: "-10%", 
+              width: "100%", 
+              height: "100%", 
+              border: `1px solid ${cs.primary}15`, 
+              zIndex: 0 
+            }} />
+            <div className="premium-shadow-lg" style={{ position: "relative", zIndex: 1 }}>
+              <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover", filter: "grayscale(20%) contrast(110%)" }} />
             </div>
-          ))}
-        </div>
-        <div className="grid lg:grid-cols-2 gap-20 items-center">
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
-              <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
-              <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Über uns</span>
-            </div>
-            <h2 data-reveal data-delay="0" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, marginBottom: "1.5rem", textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
-            {section.subheadline && <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "rgba(255,255,255,0.6)", marginBottom: "1rem" }}>{section.subheadline}</p>}
-            {section.content && <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.5)" }}>{section.content}</p>}
           </div>
-          <div style={{ position: "relative" }}>
-            <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover" }} />
-            <div style={{ position: "absolute", bottom: "1.5rem", right: "1.5rem", backgroundColor: cs.primary, padding: "1rem 1.5rem" }}>
-              <p style={{ fontFamily: DISPLAY, fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#000", fontWeight: 700 }}>Premium Qualität</p>
+          
+          <div className="order-1 lg:order-2">
+            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "2rem" }}>
+              <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Heritage & Quality</span>
+            </div>
+            <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 5vw, 5rem)", letterSpacing: "0.02em", color: "#fff", marginBottom: "2.5rem", textTransform: "uppercase", lineHeight: 0.9 }}>
+              {section.headline}
+            </h2>
+            <div style={{ width: "60px", height: "1px", backgroundColor: cs.primary, marginBottom: "2.5rem" }} />
+            
+            <p style={{ fontSize: "1.15rem", lineHeight: 1.8, color: "rgba(255,255,255,0.7)", marginBottom: "2rem", fontWeight: 300 }}>
+              {section.subheadline}
+            </p>
+            <p style={{ fontSize: "1rem", lineHeight: 1.9, color: "rgba(255,255,255,0.45)", marginBottom: "3.5rem" }}>
+              {section.content}
+            </p>
+            
+            <div className="grid grid-cols-2 gap-12 border-t border-white/10 pt-10">
+              {industryStats.slice(0, 2).map(({ n: num, label }) => (
+                <div key={label}>
+                  <p style={{ fontFamily: DISPLAY, fontSize: "3rem", color: cs.primary, marginBottom: "0.5rem", lineHeight: 1 }}>{num}</p>
+                  <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>{label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -209,25 +258,69 @@ function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section:
 function LuxuryServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section data-section="services" style={{ backgroundColor: cs.background, padding: "7rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: "#000", padding: "12rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-end justify-between mb-16">
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
-              <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
-              <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Leistungen</span>
-            </div>
-            <h2 data-reveal data-delay="100" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
-          </div>
+        <div className="text-center mb-24">
+          <span style={{ fontSize: "0.8rem", letterSpacing: "0.5em", textTransform: "uppercase", color: cs.primary, fontWeight: 500, display: "block", marginBottom: "1.5rem" }}>Our Collection</span>
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.05em", color: "#fff", textTransform: "uppercase", lineHeight: 0.85 }}>
+            {section.headline}
+          </h2>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.background, padding: "2.5rem 2rem", borderTop: `2px solid transparent`, transition: "border-color 0.2s" }} className="group hover:border-t-2" onMouseEnter={e => (e.currentTarget.style.borderTopColor = cs.primary)} onMouseLeave={e => (e.currentTarget.style.borderTopColor = "transparent")}>
-              <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}20`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.5rem" }}>
-                <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", color: cs.primary }}>{String(i + 1).padStart(2, "0")}</span>
+            <div key={i} 
+              className="group"
+              style={{ 
+                backgroundColor: "#080808", 
+                padding: "4rem 3rem", 
+                border: "1px solid rgba(255,255,255,0.05)",
+                transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+                position: "relative"
+              }}
+            >
+              <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "2px", backgroundColor: cs.primary, transform: "scaleX(0)", transformOrigin: "left", transition: "transform 0.5s ease" }} className="group-hover:scale-x-100" />
+              
+              <div style={{ fontSize: "0.7rem", letterSpacing: "0.3em", color: "rgba(255,255,255,0.2)", marginBottom: "2.5rem" }}>ITEM — {String(i + 1).padStart(2, "0")}</div>
+              
+              <h3 style={{ fontFamily: DISPLAY, fontSize: "1.8rem", letterSpacing: "0.1em", color: "#fff", marginBottom: "1.5rem", textTransform: "uppercase" }}>{item.title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "rgba(255,255,255,0.4)", marginBottom: "3rem" }}>{item.description}</p>
+              
+              <div style={{ 
+                display: "inline-flex", 
+                alignItems: "center", 
+                gap: "1rem", 
+                fontSize: "0.75rem", 
+                letterSpacing: "0.2em", 
+                color: cs.primary, 
+                textTransform: "uppercase",
+                fontWeight: 700,
+                borderBottom: `1px solid ${cs.primary}40`,
+                paddingBottom: "0.5rem"
+              }} className="group-hover:gap-6 transition-all">
+                Verwalten <ArrowRight className="h-4 w-4" />
               </div>
-              <h3 style={{ fontFamily: DISPLAY, fontSize: "1.4rem", letterSpacing: "0.05em", color: cs.text, marginBottom: "0.75rem", textTransform: "uppercase" }}>{item.title}</h3>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "rgba(255,255,255,0.5)" }}>{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LuxuryGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  return (
+    <section data-section="gallery" style={{ backgroundColor: cs.background, padding: "8rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "4rem" }}>
+          <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
+          <h2 data-reveal data-delay="100" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.text, textTransform: "uppercase", lineHeight: 0.95 }}>{section.headline}</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {items.map((item, i) => (
+            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", position: "relative" }} className="group">
+              <img src={`https://images.unsplash.com/photo-${1503376780353 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.8)" }} className="group-hover:scale-110 group-hover:brightness-100 transition-all duration-700" />
             </div>
           ))}
         </div>
@@ -313,6 +406,112 @@ function LuxuryCTA({ section, cs, showActivateButton, onActivate }: { section: W
             </button>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function LuxuryMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.background, padding: "8rem 0" }}>
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "6rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div style={{ width: "4rem", height: "1px", backgroundColor: cs.primary }} />
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Haute Cuisine</span>
+            <div style={{ width: "4rem", height: "1px", backgroundColor: cs.primary }} />
+          </div>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 7vw, 5.5rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: "#fff", textTransform: "uppercase" }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="grid lg:grid-cols-2 gap-x-24 gap-y-20">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="space-y-10">
+                <h3 style={{ fontFamily: DISPLAY, fontSize: "2.2rem", fontWeight: 400, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.15em", textAlign: "center", borderBottom: `1px solid rgba(255,255,255,0.1)`, paddingBottom: "1.5rem" }}>{cat}</h3>
+                <div className="space-y-10">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-baseline gap-6 mb-3">
+                        <h4 style={{ fontFamily: DISPLAY, fontSize: "1.3rem", color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                        <div className="flex-1 border-b border-white/10" />
+                        <span style={{ fontFamily: DISPLAY, fontSize: "1.3rem", color: cs.primary }}>{item.price}</span>
+                      </div>
+                      {item.description && (
+                        <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>{item.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-2 gap-x-24 gap-y-16">
+            {items.map((item, i) => (
+              <div key={i}>
+                <div className="flex justify-between items-baseline gap-6 mb-3">
+                  <h4 style={{ fontFamily: DISPLAY, fontSize: "1.3rem", color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</h4>
+                  <div className="flex-1 border-b border-white/10" />
+                  <span style={{ fontFamily: DISPLAY, fontSize: "1.3rem", color: cs.primary }}>{item.price}</span>
+                </div>
+                {item.description && (
+                  <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>{item.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function LuxuryPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
+
+  return (
+    <section style={{ backgroundColor: cs.surface, padding: "8rem 0" }}>
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div style={{ textAlign: "center", marginBottom: "6rem" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "1.5rem", marginBottom: "2rem" }}>
+            <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary }} />
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Elegante Services</span>
+            <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary }} />
+          </div>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 7vw, 5.5rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: "#fff", textTransform: "uppercase" }}>{section.headline}</h2>
+        </div>
+
+        {categories.length > 0 ? (
+          <div className="space-y-20">
+            {categories.map((cat, idx) => (
+              <div key={idx}>
+                <h3 style={{ fontFamily: DISPLAY, fontSize: "2rem", fontWeight: 400, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.15em", textAlign: "center", marginBottom: "3rem" }}>{cat}</h3>
+                <div className="grid gap-6">
+                  {items.filter(item => item.category === cat).map((item, i) => (
+                    <div key={i} className="flex justify-between items-center py-5 border-b border-white/5 hover:bg-white/[0.02] px-6 transition-colors">
+                      <span style={{ fontFamily: DISPLAY, fontSize: "1.2rem", color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</span>
+                      <span style={{ fontFamily: DISPLAY, fontSize: "1.4rem", color: cs.primary }}>{item.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 max-w-3xl mx-auto">
+            {items.map((item, i) => (
+              <div key={i} className="flex justify-between items-center py-6 border-b border-white/5 hover:bg-white/[0.02] px-8 transition-colors">
+                <span style={{ fontFamily: DISPLAY, fontSize: "1.25rem", color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>{item.title}</span>
+                <span style={{ fontFamily: DISPLAY, fontSize: "1.5rem", color: cs.primary }}>{item.price}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

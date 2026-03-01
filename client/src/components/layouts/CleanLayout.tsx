@@ -47,13 +47,44 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, aboutImageU
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
           {section.type === "about" && <CleanAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
+          {section.type === "gallery" && <CleanGallery section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <CleanServices section={section} cs={cs} />}
           {section.type === "menu" && <CleanMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <CleanPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <CleanTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <CleanFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <CleanContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+            <div style={{ position: "relative" }}>
+              <CleanContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+              {contactFormLocked && (
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.78)",
+                  backdropFilter: "blur(3px)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.75rem",
+                  zIndex: 20,
+                }}>
+                  <div style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    backgroundColor: "rgba(59,130,246,0.2)",
+                    border: "1px solid rgba(59,130,246,0.5)",
+                    borderRadius: "9999px",
+                    padding: "0.5rem 1.25rem",
+                  }}>
+                    <span style={{ fontSize: "0.85rem", color: "#93c5fd", fontWeight: 700 }}>🔒 Kontaktformular</span>
+                    <span style={{ fontSize: "0.8rem", color: "#60a5fa", backgroundColor: "rgba(59,130,246,0.25)", padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>+4,90 €/Monat</span>
+                  </div>
+                  <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.65)", margin: 0 }}>Im nächsten Schritt aktivierbar</p>
+                </div>
+              )}
+            </div>
           )}
           {section.type === "cta" && <CleanCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -100,49 +131,76 @@ function CleanNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
 function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessCategory?: string | null }) {
   const stats4 = getIndustryStats(businessCategory || "", 4);
   return (
-    <section style={{ backgroundColor: "#fff", padding: "4rem 0 0" }}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
-        <div className="py-8">
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: `${cs.primary}12`, borderRadius: "2rem", padding: "0.4rem 1rem", marginBottom: "1.5rem" }}>
-            <CheckCircle className="h-3.5 w-3.5" style={{ color: "var(--site-primary-on-surface)" }} />
-            <span style={{ fontFamily: SANS, fontSize: "0.75rem", color: "var(--site-primary-on-surface)", fontWeight: 600 }}>Zertifizierter Fachbetrieb</span>
+    <section style={{ backgroundColor: "#fff", position: "relative", overflow: "hidden" }} className="pt-24 pb-0">
+      {/* Subtle Background Lines */}
+      <div style={{ position: "absolute", top: 0, left: "10%", width: "1px", height: "100%", backgroundColor: "rgba(0,0,0,0.03)", zIndex: 0 }} />
+      <div style={{ position: "absolute", top: 0, left: "30%", width: "1px", height: "100%", backgroundColor: "rgba(0,0,0,0.03)", zIndex: 0 }} />
+      
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-16 items-center relative z-10">
+        <div className="lg:col-span-7 py-20 pr-12">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.75rem", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", padding: "0.5rem 1.25rem", borderRadius: "2px", marginBottom: "2.5rem" }} className="hero-animate-badge">
+            <Shield className="h-4 w-4" style={{ color: cs.primary }} />
+            <span style={{ fontFamily: SANS, fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#64748b", fontWeight: 700 }}>Clinical Excellence</span>
           </div>
-          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(2.2rem, 4.5vw, 3.8rem)", fontWeight: 400, color: cs.text, lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: "1.25rem" }} className="hero-animate-headline">{section.headline}</h1>
-          {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1.05rem", lineHeight: 1.7, color: cs.textLight, marginBottom: "2rem" }}>{section.subheadline}</p>}
-          <div className="flex flex-wrap gap-3 mb-8">
+          
+          <h1 style={{ 
+            fontFamily: SERIF, 
+            fontSize: "clamp(3rem, 6vw, 5.5rem)", 
+            fontWeight: 400, 
+            color: "#0f172a", 
+            lineHeight: 1.05, 
+            letterSpacing: "-0.02em", 
+            marginBottom: "2.5rem" 
+          }} className="hero-animate-headline">
+            {section.headline}
+          </h1>
+          
+          <div style={{ display: "flex", gap: "2rem", marginBottom: "3rem" }} className="hero-animate-sub">
+            <div style={{ width: "4px", backgroundColor: cs.primary, borderRadius: "2px" }} />
+            <div className="max-w-md">
+              {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1.15rem", lineHeight: 1.7, color: "#475569", marginBottom: "1rem", fontWeight: 500 }}>{section.subheadline}</p>}
+              {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.8, color: "#64748b" }}>{section.content}</p>}
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-5 hero-animate-cta">
             {section.ctaText && (
-              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600 }} className="btn-premium transition-opacity">
+              <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#0f172a", color: "#fff", padding: "1.25rem 3.5rem", fontSize: "0.9rem", fontWeight: 700, borderRadius: "0px", transition: "all 0.3s ease" }} className="hover:bg-black shadow-xl">
                 {section.ctaText}
               </a>
             )}
             {showActivateButton && (
-              <button onClick={onActivate} style={{ border: `1.5px solid ${cs.primary}`, color: "var(--site-primary-on-surface)", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">
-                Jetzt aktivieren
+              <button onClick={onActivate} style={{ border: `1.5px solid #0f172a`, color: "#0f172a", padding: "1.25rem 3.5rem", fontSize: "0.9rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:bg-slate-50 transition-all">
+                Website aktivieren
               </button>
             )}
           </div>
-          {/* Trust badges */}
-          <div className="flex flex-wrap gap-6">
-            {[{ icon: Shield, text: "Datenschutz" }, { icon: Award, text: "Zertifiziert" }, { icon: Users, text: "1000+ Patienten" }].map(({ icon: Icon, text }, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Icon className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} />
-                <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: cs.textLight, fontWeight: 500 }}>{text}</span>
-              </div>
-            ))}
+        </div>
+
+        <div className="lg:col-span-5 relative py-12 lg:py-0">
+          <div style={{ position: "absolute", top: "10%", right: "-10%", bottom: "10%", left: "10%", backgroundColor: "#f8fafc", zIndex: 0 }} />
+          <div className="premium-shadow-lg" style={{ position: "relative", zIndex: 1, overflow: "hidden" }}>
+            <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} className="hover:scale-105 transition-transform duration-700" />
+          </div>
+          
+          {/* Precise floating trust info */}
+          <div className="glass-card premium-shadow" style={{ position: "absolute", bottom: "15%", left: "-15%", padding: "2.5rem", zIndex: 30, borderLeft: `4px solid ${cs.primary}`, maxWidth: "260px" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Award className="h-5 w-5" style={{ color: cs.primary }} />
+              <span style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 800, color: "#0f172a" }}>Zertifizierte Qualität</span>
+            </div>
+            <p style={{ fontSize: "0.85rem", color: "#64748b", lineHeight: 1.5, fontWeight: 500 }}>Höchste Standards in Beratung und Ausführung seit über 15 Jahren.</p>
           </div>
         </div>
-        <div style={{ position: "relative" }}>
-          <div style={{ position: "absolute", inset: 0, backgroundColor: `${cs.primary}08`, borderRadius: "1.5rem", transform: "rotate(2deg)" }} />
-          <img src={heroImageUrl} alt="" style={{ position: "relative", width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: "1.5rem" }} />
-        </div>
       </div>
-      {/* Stats bar */}
-      <div style={{ backgroundColor: cs.primary, marginTop: "4rem" }}>
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+
+      {/* Stats bar - Integrated better */}
+      <div style={{ backgroundColor: "#0f172a", marginTop: "6rem" }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-12">
           {stats4.map(({ n, label: l }, i) => (
             <div key={i} className="text-center">
-              <p style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: "#fff", lineHeight: 1 }}>{n}</p>
-              <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.75)", marginTop: "0.25rem" }}>{l}</p>
+              <p style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 400, color: cs.primary, lineHeight: 1, marginBottom: "0.5rem" }}>{n}</p>
+              <p style={{ fontFamily: SANS, fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", fontWeight: 700 }}>{l}</p>
             </div>
           ))}
         </div>
@@ -153,24 +211,36 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
 
 function CleanAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "1rem" }}>Über uns</p>
-          <h2 data-reveal data-delay="0" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text, marginBottom: "1.5rem", lineHeight: 1.2 }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "1rem" }}>{section.subheadline}</p>}
-          {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight }}>{section.content}</p>}
-          <div className="mt-6 space-y-3">
-            {["Persönliche Betreuung", "Modernste Ausstattung", "Flexible Terminvergabe"].map((item, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <CheckCircle className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} />
-                <span style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight }}>{item}</span>
+    <section style={{ backgroundColor: "#fff", padding: "12rem 0", position: "relative" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-24 items-center">
+        <div className="lg:col-span-5 relative order-2 lg:order-1">
+          <div style={{ position: "absolute", top: "-5%", left: "-5%", width: "100%", height: "100%", border: "1px solid #e2e8f0", zIndex: 0 }} />
+          <div className="premium-shadow-lg relative z-10 overflow-hidden">
+            <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover" }} />
+          </div>
+        </div>
+        
+        <div className="lg:col-span-7 order-1 lg:order-2">
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Wer wir sind</span>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 400, color: "#0f172a", marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
+          
+          <div className="space-y-8">
+            {section.subheadline && (
+              <p style={{ fontFamily: SANS, fontSize: "1.2rem", lineHeight: 1.7, color: "#334155", fontWeight: 500 }}>{section.subheadline}</p>
+            )}
+            {section.content && (
+              <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.9, color: "#64748b" }}>{section.content}</p>
+            )}
+          </div>
+          
+          <div className="grid sm:grid-cols-2 gap-8 mt-12 pt-10 border-t border-slate-100">
+            {["Moderne Präzision", "Persönliche Werte", "Zertifizierte Sicherheit", "Transparente Planung"].map((item, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div style={{ width: "2rem", height: "2px", backgroundColor: cs.primary }} />
+                <span style={{ fontFamily: SANS, fontSize: "0.9rem", color: "#0f172a", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{item}</span>
               </div>
             ))}
           </div>
-        </div>
-        <div style={{ backgroundColor: "#fff", borderRadius: "1.5rem", overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.08)" }}>
-          <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover" }} />
         </div>
       </div>
     </section>
@@ -180,21 +250,26 @@ function CleanAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
 function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section data-section="services" style={{ backgroundColor: "#fff", padding: "5rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "0.75rem" }}>Leistungen</p>
-          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text }}>{section.headline}</h2>
-          {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.textLight, marginTop: "0.75rem" }}>{section.subheadline}</p>}
+    <section data-section="services" style={{ backgroundColor: "#f8fafc", padding: "12rem 0" }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
+          <div className="max-w-2xl">
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Unsere Fachbereiche</span>
+            <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 400, color: "#0f172a", lineHeight: 1.1 }}>{section.headline}</h2>
+          </div>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.surface, borderRadius: "1rem", padding: "2rem", border: "1px solid var(--site-primary-on-surface-subtle)" }} className="hover:shadow-md transition-shadow card-premium">
-              <div style={{ width: "3rem", height: "3rem", borderRadius: "0.75rem", backgroundColor: "var(--site-primary-on-surface-subtle)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
-                <Heart className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+            <div key={i} className="group premium-shadow transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: "#fff", padding: "4rem 3rem", borderTop: i < 3 ? `4px solid ${cs.primary}` : "none" }}>
+              <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2.5rem", transition: "all 0.3s ease" }} className="group-hover:bg-slate-900 group-hover:rotate-12">
+                <Heart className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
-              <h3 style={{ fontFamily: SANS, fontSize: "1rem", fontWeight: 700, color: cs.text, marginBottom: "0.5rem" }}>{item.title}</h3>
-              <p style={{ fontFamily: SANS, fontSize: "0.875rem", lineHeight: 1.6, color: cs.textLight }}>{item.description}</p>
+              <h3 style={{ fontFamily: SANS, fontSize: "1.25rem", fontWeight: 800, color: "#0f172a", marginBottom: "1rem", letterSpacing: "-0.01em" }}>{item.title}</h3>
+              <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.7, color: "#64748b", marginBottom: "2rem" }}>{item.description}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-40 group-hover:opacity-100 transition-all">
+                Details <ArrowRight className="h-4 w-4" />
+              </div>
             </div>
           ))}
         </div>
@@ -281,6 +356,28 @@ function CleanPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSch
   );
 }
 
+function CleanGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  return (
+    <section data-section="gallery" style={{ backgroundColor: "#fff", padding: "5rem 0" }}>
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "0.75rem" }}>Galerie</p>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text }}>{section.headline}</h2>
+          {section.subheadline && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.textLight, marginTop: "0.75rem" }}>{section.subheadline}</p>}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
+          {items.map((item, i) => (
+            <div key={i} style={{ borderRadius: "1rem", overflow: "hidden", aspectRatio: "1/1", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+              <img src={`https://images.unsplash.com/photo-${1500000000000 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CleanTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
@@ -337,9 +434,9 @@ function CleanContact({ section, cs, phone, address, email, hours }: { section: 
           <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "1rem" }}>Kontakt</p>
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text, marginBottom: "2rem" }}>{section.headline}</h2>
           <div className="space-y-4">
-            {phone && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Phone className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 500 }}>{phone}</a></div>}
-            {address && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "start", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: "var(--site-primary-on-surface)" }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
-            {email && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Mail className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
+            {phone && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Phone className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-white)" }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 500 }}>{phone}</a></div>}
+            {address && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "start", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: "var(--site-primary-on-white)" }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
+            {email && <div style={{ backgroundColor: "#fff", borderRadius: "0.75rem", padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}><Mail className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-white)" }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
           </div>
         </div>
         <div style={{ backgroundColor: "#fff", borderRadius: "1.5rem", padding: "2.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
@@ -372,7 +469,7 @@ function CleanContact({ section, cs, phone, address, email, hours }: { section: 
           
           <div style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: "1px solid #f1f5f9" }}>
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+              <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-white)" }} />
               <h3 style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 700, color: cs.text }}>Öffnungszeiten</h3>
             </div>
             <div className="space-y-2">
@@ -400,7 +497,7 @@ function CleanCTA({ section, cs, showActivateButton, onActivate }: { section: We
         <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: "var(--site-nav-text)", marginBottom: "1rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: "var(--site-nav-text-muted, rgba(0,0,0,0.7))", marginBottom: "2rem" }}>{section.content}</p>}
         <div className="flex flex-wrap justify-center gap-4">
-          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-surface)", padding: "0.85rem 2.5rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
+          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-white)", padding: "0.85rem 2.5rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
           {showActivateButton && <button onClick={onActivate} style={{ border: "1.5px solid rgba(255,255,255,0.6)", color: "#fff", padding: "0.85rem 2.5rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
         </div>
       </div>
