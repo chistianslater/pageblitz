@@ -9,7 +9,7 @@ import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
-import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
+import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors } from "@shared/layoutConfig";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -318,7 +318,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalEmail: "",
     legalPhone: "",
     legalVatId: "",
-    colorScheme: makeColorScheme({
+    colorScheme: withOnColors({
       primary: "#3B82F6",
       secondary: "#1E3A8A",
       accent: "#60A5FA",
@@ -377,7 +377,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const cs = siteData.website.colorScheme as ColorScheme;
       setData((prev) => ({
         ...prev,
-        colorScheme: makeColorScheme({
+        colorScheme: withOnColors({
           primary: cs.primary || prev.colorScheme.primary,
           secondary: cs.secondary || prev.colorScheme.secondary,
           accent: cs.accent || prev.colorScheme.accent,
@@ -2433,7 +2433,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <p className="text-slate-400 text-xs font-medium">Bilder für die Galerie auswählen (max. 12):</p>
                   
                   <MultiPhotoSelector
-                    websiteId={websiteId || ""}
+                    websiteId={String(websiteId || "")}
                     selectedPhotos={data.addOnGalleryData.images}
                     onUpdate={(urls) => {
                       setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, images: urls } }));

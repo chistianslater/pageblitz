@@ -438,7 +438,7 @@ function ElegantPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
   );
 }
 
-function ElegantContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[] }) {
+function ElegantContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16">
