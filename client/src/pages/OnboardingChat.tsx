@@ -2053,44 +2053,46 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <p className="text-slate-400 text-xs">W\u00e4hle eine Schriftart f\u00fcr deine \u00dcberschriften – die Vorschau rechts \u00e4ndert sich sofort:</p>
                 <div className="space-y-2">
                   <div>
-                    <p className="text-slate-300 text-xs font-semibold mb-2">Serifenschriften (klassisch, elegant):</p>
+                    <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenschriften (klassisch, edel)</p>
                     {[
-                      { font: "Georgia", label: "Georgia – Zeitlos & Elegant" },
-                      { font: "Garamond", label: "Garamond – Traditionell & Fein" },
-                      { font: "Playfair Display", label: "Playfair Display – Luxuriös & Modern" },
+                      { font: "Fraunces", label: "Fraunces \u2013 Markant & Hochwertig" },
+                      { font: "Cormorant Garamond", label: "Cormorant \u2013 Zeitlos & Edel" },
+                      { font: "Libre Baskerville", label: "Baskerville \u2013 Traditionell & Sicher" },
                     ].map((opt) => (
                       <button
                         key={opt.font}
                         onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                        className={`w-full p-3 rounded-lg border-2 transition-all text-left mb-2 ${
+                        className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                           data.headlineFont === opt.font
-                            ? "border-blue-500 bg-blue-500/10"
-                            : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                            ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                            : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                         }`}
                       >
-                        <p className="text-white text-base" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
+                        <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
                           {opt.label}
                         </p>
                       </button>
                     ))}
                   </div>
-                  <div>
-                    <p className="text-slate-300 text-xs font-semibold mb-2 mt-3">Serifenlose (modern, clean):</p>
+                  <div className="mt-6">
+                    <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenlose (modern, progressiv)</p>
                     {[
-                      { font: "Inter", label: "Inter – Sauber & Minimal" },
-                      { font: "Poppins", label: "Poppins – Freundlich & Dynamisch" },
-                      { font: "Montserrat", label: "Montserrat – Stark & Geometrisch" },
+                      { font: "Instrument Sans", label: "Instrument \u2013 Pr\u00e4zise & Modern" },
+                      { font: "Plus Jakarta Sans", label: "Jakarta \u2013 Progressiv & Frisch" },
+                      { font: "Outfit", label: "Outfit \u2013 Clean & Geometrisch" },
+                      { font: "Bricolage Grotesque", label: "Bricolage \u2013 Einzigartig & K\u00fchn" },
+                      { font: "Space Grotesque", label: "Space \u2013 Direkt & Stark" },
                     ].map((opt) => (
                       <button
                         key={opt.font}
                         onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                        className={`w-full p-3 rounded-lg border-2 transition-all text-left mb-2 ${
+                        className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                           data.headlineFont === opt.font
-                            ? "border-blue-500 bg-blue-500/10"
-                            : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                            ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                            : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                         }`}
                       >
-                        <p className="text-white text-base" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
+                        <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
                           {opt.label}
                         </p>
                       </button>
