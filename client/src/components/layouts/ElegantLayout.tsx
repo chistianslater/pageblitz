@@ -245,7 +245,9 @@ function ElegantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
         <div className="text-center max-w-3xl mx-auto mb-24">
           <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1.5rem" }}>Exquisite Leistungen</span>
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 400, color: "#1a1a1a", lineHeight: 1.1 }}>
-            Erschaffen für Ihr <span style={{ fontStyle: "italic" }}>Wohlbefinden</span>
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ fontStyle: i === section.headline.split(" ").length - 1 ? "italic" : "normal" }}>{word} </span>
+            )) || "Erschaffen für Ihr Wohlbefinden"}
           </h2>
         </div>
         

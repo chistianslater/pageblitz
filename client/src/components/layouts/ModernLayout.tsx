@@ -6,7 +6,7 @@
  * Structure: Asymmetric 60/40 hero, horizontal scrolling services, large testimonial quote
  */
 import { useState, useRef } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, ArrowRight, ArrowUpRight, Zap } from "lucide-react";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";

@@ -261,7 +261,11 @@ function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
           <div className="max-w-2xl">
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Expertise & Leistungen</span>
-            <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: "#0f172a", lineHeight: 1.1 }}>Ganzheitliche Ansätze für <span style={{ color: cs.primary }}>Ihre Sicherheit</span>.</h2>
+            <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: "#0f172a", lineHeight: 1.1 }}>
+              {section.headline?.split(" ").map((word, i) => (
+                <span key={i} style={{ color: i === section.headline.split(" ").length - 1 ? cs.primary : "inherit" }}>{word} </span>
+              )) || "Ganzheitliche Ansätze für Ihre Sicherheit."}
+            </h2>
           </div>
         </div>
         

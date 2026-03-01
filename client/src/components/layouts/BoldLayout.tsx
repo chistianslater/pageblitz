@@ -242,7 +242,9 @@ function BoldServices({ section, cs }: { section: WebsiteSection; cs: ColorSchem
         <div className="flex items-center gap-6 mb-24">
           <div style={{ width: "5rem", height: "12px", backgroundColor: cs.primary }} />
           <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>
-            Unsere <span style={{ color: cs.primary }}>Kernkompetenzen</span>
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ color: i === 1 ? cs.primary : "inherit" }}>{word} </span>
+            )) || "Unsere Kernkompetenzen"}
           </h2>
         </div>
         
