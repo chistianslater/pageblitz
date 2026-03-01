@@ -17,7 +17,7 @@
  */
 import { useEffect } from "react";
 import type { WebsiteData, ColorScheme, DesignTokens } from "@shared/types";
-import { getSafeHeadingColor, getContrastColor, isLightColor, getLuminance } from "@shared/colorContrast";
+import { getSafeHeadingColor, getContrastColor, isLightColor, getLuminance, hexToRgb } from "@shared/colorContrast";
 import ElegantLayout from "./layouts/ElegantLayout";
 import BoldLayout from "./layouts/BoldLayout";
 import WarmLayout from "./layouts/WarmLayout";
@@ -287,6 +287,35 @@ export default function WebsiteRenderer({
   // Safe primary on surface (for headings in surface-colored sections)
   const safePrimaryOnSurface = getSafeHeadingColor(surfaceColor, rawCs.primary);
 
+  // ─── Derivation of a "Deep" version of the secondary color ───────────────────
+  // This is used for icons/accents in sections that use the secondary color as bg.
+  // It creates a high-end monochromatic look.
+  const deepSecondary = (() => {
+    const isLight = isLightColor(surfaceColor);
+    const rgb = hexToRgb(surfaceColor);
+    if (!rgb) return rawCs.primary;
+    
+    // If background is light, we need a very dark version for icons
+    // If background is dark, we need a very light version
+    const factor = isLight ? 0.35 : 1.6; 
+    const clamp = (v: number) => Math.max(0, Math.min(255, Math.floor(v * factor)));
+    const toHex = (v: number) => v.toString(16).padStart(2, "0");
+    return `#${toHex(clamp(rgb.r))}${toHex(clamp(rgb.g))}${toHex(clamp(rgb.b))}`;
+  })();
+
+  // Use the primary color as the default icon color, 
+  // but if the primary doesn't contrast well enough, 
+  // use the deep secondary instead of just falling back to black/white.
+  const accentOnSurface = (() => {
+    const primaryOnSurface = getSafeHeadingColor(surfaceColor, rawCs.primary);
+    // If primaryOnSurface is a generic fallback (black/white), try deepSecondary
+    if (primaryOnSurface === "#1a1a1a" || primaryOnSurface === "#f5f5f5" || primaryOnSurface === "#000000" || primaryOnSurface === "#ffffff") {
+      const secondaryOnSurface = getSafeHeadingColor(surfaceColor, deepSecondary);
+      return secondaryOnSurface;
+    }
+    return primaryOnSurface;
+  })();
+
   const cs: ColorScheme = {
     ...rawCs,
     text: safeText,
@@ -396,7 +425,12 @@ export default function WebsiteRenderer({
   const navBgIsLight = isLightColor(cs.primary);
   // Muted text on primary background (for subtitles in CTA sections)
   const navTextMuted = navBgIsLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.75)";
-  tokenStyle += `; --site-heading-on-bg: ${headingOnBg}; --site-heading-on-surface: ${headingOnSurface}; --site-nav-text: ${navTextColor}; --site-nav-text-muted: ${navTextMuted}; --site-nav-bg-is-light: ${navBgIsLight ? "1" : "0"}; --site-primary-on-bg: ${safePrimaryOnBg}; --site-primary-on-surface: ${safePrimaryOnSurface};`;
+  
+  // Create a subtle version of the accent color (for icon backgrounds etc.)
+  const accentOnSurfaceSubtle = `${accentOnSurface}15`;
+  
+  // Use the accentOnSurface for icons and small labels on surface backgrounds
+  tokenStyle += `; --site-heading-on-bg: ${headingOnBg}; --site-heading-on-surface: ${headingOnSurface}; --site-nav-text: ${navTextColor}; --site-nav-text-muted: ${navTextMuted}; --site-nav-bg-is-light: ${navBgIsLight ? "1" : "0"}; --site-primary-on-bg: ${safePrimaryOnBg}; --site-primary-on-surface: ${accentOnSurface}; --site-primary-on-surface-subtle: ${accentOnSurfaceSubtle};`;
 
   // Real-time headline font override (from onboarding chat selection)
   if (headlineFontOverride) {

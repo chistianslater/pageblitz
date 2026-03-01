@@ -47,6 +47,8 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, aboutImageU
           {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
           {section.type === "about" && <CleanAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <CleanServices section={section} cs={cs} />}
+          {section.type === "menu" && <CleanMenu section={section} cs={cs} />}
+          {section.type === "pricelist" && <CleanPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <CleanTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <CleanFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
@@ -186,12 +188,90 @@ function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.surface, borderRadius: "1rem", padding: "2rem", border: `1px solid ${cs.primary}15` }} className="hover:shadow-md transition-shadow card-premium">
-              <div style={{ width: "3rem", height: "3rem", borderRadius: "0.75rem", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
+            <div key={i} style={{ backgroundColor: cs.surface, borderRadius: "1rem", padding: "2rem", border: "1px solid var(--site-primary-on-surface-subtle)" }} className="hover:shadow-md transition-shadow card-premium">
+              <div style={{ width: "3rem", height: "3rem", borderRadius: "0.75rem", backgroundColor: "var(--site-primary-on-surface-subtle)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem" }}>
                 <Heart className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
               </div>
               <h3 style={{ fontFamily: SANS, fontSize: "1rem", fontWeight: 700, color: cs.text, marginBottom: "0.5rem" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "0.875rem", lineHeight: 1.6, color: cs.textLight }}>{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CleanMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  // Group items by category
+  const categories: Record<string, any[]> = {};
+  items.forEach(item => {
+    const cat = (item as any).category || "Allgemein";
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(item);
+  });
+
+  return (
+    <section data-section="menu" style={{ backgroundColor: "#fff", padding: "5rem 0" }}>
+      <div className="max-w-4xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "0.75rem" }}>Speisekarte</p>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text }}>{section.headline}</h2>
+        </div>
+        <div className="space-y-12">
+          {Object.entries(categories).map(([catName, catItems], idx) => (
+            <div key={idx}>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", color: cs.primary, marginBottom: "2rem", borderBottom: `1px solid ${cs.primary}20`, pb: "0.5rem" }}>{catName}</h3>
+              <div className="grid gap-6">
+                {catItems.map((item, i) => (
+                  <div key={i} className="flex justify-between items-start gap-4">
+                    <div className="flex-1">
+                      <h4 style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 600, color: cs.text }}>{item.title}</h4>
+                      {item.description && <p style={{ fontFamily: SANS, fontSize: "0.85rem", color: cs.textLight, marginTop: "0.25rem" }}>{item.description}</p>}
+                    </div>
+                    <span style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CleanPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  // Group items by category
+  const categories: Record<string, any[]> = {};
+  items.forEach(item => {
+    const cat = (item as any).category || "Preise";
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(item);
+  });
+
+  return (
+    <section data-section="pricelist" style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
+      <div className="max-w-3xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <p style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, marginBottom: "0.75rem" }}>Preise</p>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, color: cs.text }}>{section.headline}</h2>
+        </div>
+        <div className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+          {Object.entries(categories).map(([catName, catItems], idx) => (
+            <div key={idx}>
+              <h3 style={{ fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: cs.textLight, marginBottom: "1.25rem" }}>{catName}</h3>
+              <div className="space-y-4">
+                {catItems.map((item, i) => (
+                  <div key={i} className="flex justify-between items-center gap-4 border-b border-slate-50 pb-3">
+                    <span style={{ fontFamily: SANS, fontSize: "1rem", color: cs.text }}>{item.title}</span>
+                    <div className="flex-1 border-b border-dotted border-slate-200 h-4" />
+                    <span style={{ fontFamily: SANS, fontSize: "1rem", fontWeight: 700, color: cs.primary }}>{item.price}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -212,7 +292,7 @@ function CleanTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
               <div className="flex gap-1 mb-3">{Array.from({ length: 5 }).map((_, j) => <Star key={j} className="h-4 w-4 fill-current" style={{ color: "#f59e0b" }} />)}</div>
               <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.7, color: cs.textLight, marginBottom: "1.25rem" }}>{item.description || item.title}</p>
               <div className="flex items-center gap-3">
-                <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: "var(--site-primary-on-surface-subtle)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span style={{ fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }}>{(item.author || item.title || "K").charAt(0)}</span>
                 </div>
                 <p style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 600, color: cs.text }}>{item.author || item.title}</p>

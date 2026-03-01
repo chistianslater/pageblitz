@@ -9,7 +9,7 @@ export * from "./_core/errors";
 // ── Website Generation Types ───────────────────────────
 
 export interface WebsiteSection {
-  type: "hero" | "about" | "services" | "testimonials" | "gallery" | "contact" | "cta" | "features" | "faq" | "team";
+  type: "hero" | "about" | "services" | "testimonials" | "gallery" | "contact" | "cta" | "features" | "faq" | "team" | "menu" | "pricelist";
   headline?: string;
   subheadline?: string;
   content?: string;

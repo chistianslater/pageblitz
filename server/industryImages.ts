@@ -122,6 +122,19 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80&auto=format&fit=crop",
     ],
   },
+  // ── Beauty & Wellness ──────────────────────────────
+  beauty: {
+    keywords: ["beauty", "kosmetik", "nails", "spa", "wellness", "massage", "make-up", "hautpflege", "nagelstudio", "wimpern"],
+    hero: [
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
   // ── Medizin & Gesundheit ───────────────────────────
   medizin: {
     keywords: ["arzt", "zahnarzt", "praxis", "medizin", "gesundheit", "klinik", "physiotherapie", "therapie", "apotheke", "doctor", "dental", "medical"],
@@ -136,8 +149,25 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     keywords: ["immobilien", "makler", "real estate", "wohnung", "haus", "miete", "kauf", "property"],
     hero: [
       "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Bäckerei ───────────────────────────────────────
+  baeckerei: {
+    keywords: ["bäckerei", "bakery", "konditorei", "pastry", "kuchen", "brot", "brötchen"],
+    hero: [
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=800&q=80&auto=format&fit=crop",
     ],
   },
   // ── Rechtsanwalt & Beratung ────────────────────────
@@ -168,11 +198,28 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   },
   // ── Auto & KFZ ─────────────────────────────────────
   auto: {
-    keywords: ["auto", "kfz", "werkstatt", "autowerkstatt", "reifenservice", "car", "vehicle", "garage"],
+    keywords: ["auto", "kfz", "werkstatt", "autowerkstatt", "reifenservice", "car", "vehicle", "garage", "reparatur"],
     hero: [
-      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1625047509168-a7026f36de04?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Fotografie ─────────────────────────────────────
+  fotografie: {
+    keywords: ["fotograf", "photography", "fotostudio", "hochzeitsfotograf", "portrait", "shooting"],
+    hero: [
+      "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1500051638674-ff996a0ec29e?w=800&q=80&auto=format&fit=crop",
     ],
   },
   // ── Blumen & Garten ────────────────────────────────

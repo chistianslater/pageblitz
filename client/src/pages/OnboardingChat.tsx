@@ -17,6 +17,29 @@ interface SubPage {
   description: string;
 }
 
+interface MenuItem {
+  name: string;
+  description: string;
+  price: string;
+}
+
+interface MenuCategory {
+  id: string;
+  name: string;
+  items: MenuItem[];
+}
+
+interface PriceListItem {
+  name: string;
+  price: string;
+}
+
+interface PriceListCategory {
+  id: string;
+  name: string;
+  items: PriceListItem[];
+}
+
 interface OnboardingData {
   businessCategory: string;
   businessName: string;
@@ -41,7 +64,9 @@ interface OnboardingData {
   addOnContactForm: boolean;
   addOnGallery: boolean;
   addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
+  addOnMenuData: { categories: MenuCategory[] };
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
+  addOnPricelistData: { categories: PriceListCategory[] };
   subPages: SubPage[];
   email: string; // for FOMO reminder
   topServicesSkipped?: boolean;
@@ -69,6 +94,8 @@ type ChatStep =
   | "brandLogo"
   | "headlineFont"
   | "addons"
+  | "editMenu"
+  | "editPricelist"
   | "subpages"
   | "email"
   | "hideSections"
@@ -108,6 +135,8 @@ const STEP_ORDER: ChatStep[] = [
   "legalPhone",
   "legalVat",
   "addons",
+  "editMenu",
+  "editPricelist",
   "subpages",
   "email",
   "hideSections",
@@ -137,6 +166,8 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   legalPhone: "footer",
   legalVat: "footer",
   addons: null,
+  editMenu: "menu",
+  editPricelist: "pricelist",
   subpages: null,
   email: null,
   hideSections: null,
@@ -192,6 +223,34 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [chatHidden, setChatHidden] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingServices, setIsGeneratingServices] = useState(false);
+  const [serviceSuggestions, setServiceSuggestions] = useState<{ title: string; description: string }[]>([]);
+
+  // ── Exit intent ──────────────────────────────────────────────────────────
+  const [showExitIntent, setShowExitIntent] = useState(false);
+
+  useEffect(() => {
+    // Standard beforeunload alert (browser default)
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (currentStep !== "checkout" && currentStep !== "preview") {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    // Exit intent (mouse leaves window upwards)
+    const handleMouseOut = (e: MouseEvent) => {
+      if (e.clientY <= 0 && !showExitIntent && currentStep !== "checkout" && currentStep !== "preview") {
+        setShowExitIntent(true);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("mouseout", handleMouseOut);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("mouseout", handleMouseOut);
+    };
+  }, [currentStep, showExitIntent]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -257,7 +316,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     addOnContactForm: true,
     addOnGallery: false,
     addOnMenu: false,
+    addOnMenuData: { categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
     addOnPricelist: false,
+    addOnPricelistData: { categories: [{ id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] }] },
     subPages: [],
     email: "",
   });
@@ -511,6 +572,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Perfekt! Jetzt wählen wir noch die **Schriftart für deine Überschriften**. Das gibt deiner Website einen ganz eigenen Charakter!\n\nMöchtest du eine **elegante Serifenschrift** (klassisch, zeitlos) oder eine **moderne Serifenlose** (clean, aktuell)?`;
         case "addons":
           return `⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern? Du kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
+        case "editMenu":
+          return `Du hast die **Speisekarte** aktiviert! 📖\n\nHier kannst du schon mal ein paar Gerichte eintragen. Keine Sorge, du kannst das später jederzeit vervollständigen oder jetzt einfach überspringen.`;
+        case "editPricelist":
+          return `Du hast die **Preisliste** aktiviert! 🏷️\n\nHier kannst du deine wichtigsten Leistungen und Preise eintragen. Du kannst das auch später machen oder jetzt ein paar Beispiele hinzufügen.`;
         case "subpages":
           return `Brauchst du zusätzliche Unterseiten? Zum Beispiel "Über uns", "Projekte", "Referenzen" oder "Team".\n\nJede Unterseite kostet +9,90 €/Monat. Du kannst sie unten hinzufügen oder überspringen.`;
         case "email":
@@ -583,7 +648,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!validFields.includes(field as ValidField)) return;
     setIsGenerating(true);
     try {
-      const context = `Unternehmensname: ${data.businessName || business?.name || ""}, Branche: ${business?.category || "Handwerk"}, Adresse: ${business?.address || ""}, Beschreibung: ${data.description || ""}`;
+      const context = `Unternehmensname: ${data.businessName || business?.name || ""}, Branche: ${data.businessCategory || business?.category || "Handwerk"}, Adresse: ${business?.address || ""}, Beschreibung: ${data.description || ""}`;
       const result = await generateTextMutation.mutateAsync({
         websiteId,
         field: field as ValidField,
@@ -604,11 +669,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!websiteId || isGeneratingServices) return;
     setIsGeneratingServices(true);
     try {
-      const context = `Unternehmensname: ${data.businessName || business?.name || ""}, Branche: ${business?.category || "Handwerk"}, Adresse: ${business?.address || ""}`;
+      const context = `Unternehmensname: ${data.businessName || business?.name || ""}, Branche: ${data.businessCategory || business?.category || "Handwerk"}, Adresse: ${business?.address || ""}`;
       const result = await suggestServicesMutation.mutateAsync({ websiteId, context });
       if (result.services && result.services.length > 0) {
-        setData((p) => ({ ...p, topServices: result.services.map((s: { title: string; description: string }) => ({ title: s.title, description: s.description })) }));
-        toast.success(`${result.services.length} Leistungen vorgeschlagen! Du kannst sie noch anpassen.`);
+        const suggested = result.services.map((s: { title: string; description: string }) => ({ 
+          title: s.title, 
+          description: s.description 
+        }));
+        setServiceSuggestions(suggested);
+        
+        // If current services are empty, pre-fill them for convenience
+        if (data.topServices.length === 0 || (data.topServices.length === 1 && !data.topServices[0].title)) {
+          setData((p) => ({ ...p, topServices: suggested.slice(0, 3) }));
+          toast.success("Vorschläge generiert und eingefügt! Du kannst sie noch anpassen.");
+        } else {
+          toast.success("Neue Vorschläge generiert! Du kannst sie unten auswählen.");
+        }
       }
     } catch {
       toast.error("KI-Vorschläge konnten nicht geladen werden");
@@ -778,11 +854,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "brandColor":
         case "brandSecondaryColor":
         case "brandLogo":
+        case "heroPhoto":
+        case "aboutPhoto":
         case "services":
         case "addons":
+        case "editMenu":
+        case "editPricelist":
         case "subpages":
           // These are handled by the interactive UI below
-          break;
+          return;
         case "hideSections":
           // handled by interactive UI
           break;
@@ -872,6 +952,39 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       return section;
     }).filter(Boolean) as typeof patched.sections;
 
+    // Add Menu section if active
+    if (data.addOnMenu) {
+      const filledCategories = data.addOnMenuData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
+      if (filledCategories.length > 0) {
+        patched.sections.push({
+          type: "menu",
+          headline: "Unsere Speisekarte",
+          items: filledCategories.flatMap(c => c.items.filter(i => i.name.trim()).map(i => ({
+            title: i.name,
+            description: i.description,
+            price: i.price,
+            category: c.name
+          }))) as any
+        });
+      }
+    }
+
+    // Add Pricelist section if active
+    if (data.addOnPricelist) {
+      const filledCategories = data.addOnPricelistData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
+      if (filledCategories.length > 0) {
+        patched.sections.push({
+          type: "pricelist",
+          headline: "Unsere Preise",
+          items: filledCategories.flatMap(c => c.items.filter(i => i.name.trim()).map(i => ({
+            title: i.name,
+            price: i.price,
+            category: c.name
+          }))) as any
+        });
+      }
+    }
+
     // Patch brandColor into colorScheme override (stored in patched.colorScheme if present)
     if (data.brandColor && data.brandColor.match(/^#[0-9A-Fa-f]{6}$/)) {
       (patched as any)._brandColorOverride = data.brandColor;
@@ -897,6 +1010,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.brandColor,
     data.brandSecondaryColor,
     data.brandLogo,
+    data.addOnMenu,
+    data.addOnMenuData,
+    data.addOnPricelist,
+    data.addOnPricelistData,
     hiddenSections,
   ]);
 
@@ -1195,7 +1312,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       ) : (
                         <Sparkles className="w-3.5 h-3.5" />
                       )}
-                      {isGeneratingServices ? "Generiere..." : "✨ KI-Vorschläge generieren"}
+                      {isGeneratingServices ? "Generiere..." : serviceSuggestions.length > 0 ? "✨ Vorschläge erneuern" : "✨ KI-Vorschläge generieren"}
                     </button>
                     <div className="absolute bottom-full left-0 mb-2 w-52 pointer-events-none opacity-0 group-hover/svc-ai:opacity-100 transition-opacity duration-200 z-20">
                       <div className="bg-violet-900/95 border border-violet-500/50 text-violet-100 text-xs px-3 py-2 rounded-lg shadow-lg leading-snug">
@@ -1205,6 +1322,69 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </div>
                   </div>
                 </div>
+
+                {/* KI-Vorschläge anzeigen */}
+                {serviceSuggestions.length > 0 && (
+                  <div className="bg-violet-900/20 border border-violet-500/30 rounded-xl p-3 mb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-violet-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3" /> KI-Vorschläge
+                      </p>
+                      <button 
+                        onClick={() => {
+                          const currentValid = data.topServices.filter(s => s.title.trim());
+                          const toAdd = serviceSuggestions.filter(s => !currentValid.some(ts => ts.title === s.title)).slice(0, 4 - currentValid.length);
+                          if (toAdd.length === 0 && currentValid.length >= 4) {
+                            toast.error("Du hast bereits 4 Leistungen ausgewählt.");
+                            return;
+                          }
+                          setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
+                          toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
+                        }}
+                        className="text-[10px] text-violet-400 hover:text-violet-200 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
+                      >
+                        Alle übernehmen
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {serviceSuggestions.map((s, idx) => {
+                        const currentValid = data.topServices.filter(ts => ts.title.trim());
+                        const isAlreadyAdded = currentValid.some(ts => ts.title === s.title);
+                        return (
+                          <button
+                            key={idx}
+                            disabled={isAlreadyAdded || currentValid.length >= 4}
+                            onClick={() => {
+                              setData(p => ({ ...p, topServices: [...currentValid, s] }));
+                              toast.success(`"${s.title}" hinzugefügt!`);
+                            }}
+                            className={`text-left p-2 rounded-lg border transition-all group ${
+                              isAlreadyAdded 
+                                ? "bg-emerald-500/10 border-emerald-500/30 opacity-70 cursor-default" 
+                                : currentValid.length >= 4
+                                  ? "bg-slate-800/40 border-slate-700/30 opacity-50 cursor-not-allowed"
+                                  : "bg-slate-800/60 border-slate-700/50 hover:bg-violet-600/20 hover:border-violet-500/40"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                              <span className={`text-xs font-semibold truncate ${isAlreadyAdded ? 'text-emerald-400' : 'text-slate-200 group-hover:text-violet-200'}`}>
+                                {s.title}
+                              </span>
+                              {isAlreadyAdded ? (
+                                <Check className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                              ) : (
+                                <Plus className="w-3 h-3 text-slate-500 group-hover:text-violet-400 flex-shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-500 line-clamp-1 leading-tight group-hover:text-slate-400">
+                              {s.description}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {data.topServices.map((svc, i) => (
                   <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2">
@@ -1754,13 +1934,275 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     if (data.addOnMenu) selected.push("Speisekarte");
                     if (data.addOnPricelist) selected.push("Preisliste");
                     addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
-                    await trySaveStep(STEP_ORDER.indexOf("addons"), { addOnContactForm: data.addOnContactForm, addOnGallery: data.addOnGallery });
-                    await advanceToStep("subpages");
+                    await trySaveStep(STEP_ORDER.indexOf("addons"), { 
+                      addOnContactForm: data.addOnContactForm, 
+                      addOnGallery: data.addOnGallery,
+                      addOnMenu: data.addOnMenu,
+                      addOnPricelist: data.addOnPricelist
+                    });
+                    
+                    if (data.addOnMenu) {
+                      await advanceToStep("editMenu");
+                    } else if (data.addOnPricelist) {
+                      await advanceToStep("editPricelist");
+                    } else {
+                      await advanceToStep("subpages");
+                    }
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "editMenu" && (
+              <div className="ml-9 space-y-4">
+                {data.addOnMenuData.categories.map((cat, catIdx) => (
+                  <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-blue-500 pb-1"
+                        value={cat.name}
+                        onChange={(e) => {
+                          const updated = { ...data.addOnMenuData };
+                          updated.categories[catIdx].name = e.target.value;
+                          setData(p => ({ ...p, addOnMenuData: updated }));
+                        }}
+                        placeholder="Kategorie (z.B. Hauptgerichte)"
+                      />
+                      <button 
+                        onClick={() => {
+                          const updated = { ...data.addOnMenuData };
+                          updated.categories = updated.categories.filter((_, i) => i !== catIdx);
+                          setData(p => ({ ...p, addOnMenuData: updated }));
+                        }}
+                        className="text-slate-500 hover:text-red-400 p-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {cat.items.map((item, itemIdx) => (
+                        <div key={itemIdx} className="bg-slate-700/40 rounded-xl p-3 space-y-2">
+                          <div className="flex gap-2">
+                            <input
+                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                              value={item.name}
+                              onChange={(e) => {
+                                const updated = { ...data.addOnMenuData };
+                                updated.categories[catIdx].items[itemIdx].name = e.target.value;
+                                setData(p => ({ ...p, addOnMenuData: updated }));
+                              }}
+                              placeholder="Name des Gerichts"
+                            />
+                            <input
+                              className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 font-mono text-right"
+                              value={item.price}
+                              onChange={(e) => {
+                                const updated = { ...data.addOnMenuData };
+                                updated.categories[catIdx].items[itemIdx].price = e.target.value;
+                                setData(p => ({ ...p, addOnMenuData: updated }));
+                              }}
+                              placeholder="12,50"
+                            />
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <input
+                              className="flex-1 bg-slate-600/30 text-white text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                              value={item.description}
+                              onChange={(e) => {
+                                const updated = { ...data.addOnMenuData };
+                                updated.categories[catIdx].items[itemIdx].description = e.target.value;
+                                setData(p => ({ ...p, addOnMenuData: updated }));
+                              }}
+                              placeholder="Beschreibung (Zutaten, etc.)"
+                            />
+                            <button 
+                              onClick={() => {
+                                const updated = { ...data.addOnMenuData };
+                                updated.categories[catIdx].items = updated.categories[catIdx].items.filter((_, i) => i !== itemIdx);
+                                setData(p => ({ ...p, addOnMenuData: updated }));
+                              }}
+                              className="text-slate-500 hover:text-red-400 p-1"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => {
+                          const updated = { ...data.addOnMenuData };
+                          updated.categories[catIdx].items.push({ name: "", description: "", price: "" });
+                          setData(p => ({ ...p, addOnMenuData: updated }));
+                        }}
+                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Gericht hinzufügen
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="flex flex-col gap-3 pt-2">
+                  <button 
+                    onClick={() => {
+                      setData(p => ({ 
+                        ...p, 
+                        addOnMenuData: { 
+                          categories: [...p.addOnMenuData.categories, { id: genId(), name: "", items: [{ name: "", description: "", price: "" }] }] 
+                        } 
+                      }));
+                    }}
+                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2 rounded-xl border border-slate-600 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Weitere Kategorie hinzufügen
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        addUserMessage("Speisekarte später ausfüllen");
+                        if (data.addOnPricelist) await advanceToStep("editPricelist");
+                        else await advanceToStep("subpages");
+                      }}
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                      Mache ich später
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const filledCategories = data.addOnMenuData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
+                        addUserMessage(`Speisekarte gespeichert (${filledCategories.length} Kategorien) ✓`);
+                        await trySaveStep(STEP_ORDER.indexOf("editMenu"), { addOnMenuData: { categories: filledCategories } });
+                        if (data.addOnPricelist) await advanceToStep("editPricelist");
+                        else await advanceToStep("subpages");
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
+                    >
+                      Speichern & weiter <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "editPricelist" && (
+              <div className="ml-9 space-y-4">
+                {data.addOnPricelistData.categories.map((cat, catIdx) => (
+                  <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-blue-500 pb-1"
+                        value={cat.name}
+                        onChange={(e) => {
+                          const updated = { ...data.addOnPricelistData };
+                          updated.categories[catIdx].name = e.target.value;
+                          setData(p => ({ ...p, addOnPricelistData: updated }));
+                        }}
+                        placeholder="Kategorie (z.B. Haarschnitte)"
+                      />
+                      <button 
+                        onClick={() => {
+                          const updated = { ...data.addOnPricelistData };
+                          updated.categories = updated.categories.filter((_, i) => i !== catIdx);
+                          setData(p => ({ ...p, addOnPricelistData: updated }));
+                        }}
+                        className="text-slate-500 hover:text-red-400 p-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {cat.items.map((item, itemIdx) => (
+                        <div key={itemIdx} className="flex gap-2 items-center">
+                          <input
+                            className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                            value={item.name}
+                            onChange={(e) => {
+                              const updated = { ...data.addOnPricelistData };
+                              updated.categories[catIdx].items[itemIdx].name = e.target.value;
+                              setData(p => ({ ...p, addOnPricelistData: updated }));
+                            }}
+                            placeholder="Leistung"
+                          />
+                          <input
+                            className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 font-mono text-right"
+                            value={item.price}
+                            onChange={(e) => {
+                              const updated = { ...data.addOnPricelistData };
+                              updated.categories[catIdx].items[itemIdx].price = e.target.value;
+                              setData(p => ({ ...p, addOnPricelistData: updated }));
+                            }}
+                            placeholder="ab 25,-"
+                          />
+                          <button 
+                            onClick={() => {
+                              const updated = { ...data.addOnPricelistData };
+                              updated.categories[catIdx].items = updated.categories[catIdx].items.filter((_, i) => i !== itemIdx);
+                              setData(p => ({ ...p, addOnPricelistData: updated }));
+                            }}
+                            className="text-slate-500 hover:text-red-400 p-1"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => {
+                          const updated = { ...data.addOnPricelistData };
+                          updated.categories[catIdx].items.push({ name: "", price: "" });
+                          setData(p => ({ ...p, addOnPricelistData: updated }));
+                        }}
+                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="flex flex-col gap-3 pt-2">
+                  <button 
+                    onClick={() => {
+                      setData(p => ({ 
+                        ...p, 
+                        addOnPricelistData: { 
+                          categories: [...p.addOnPricelistData.categories, { id: genId(), name: "", items: [{ name: "", price: "" }] }] 
+                        } 
+                      }));
+                    }}
+                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2 rounded-xl border border-slate-600 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Weitere Kategorie hinzufügen
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        addUserMessage("Preisliste später ausfüllen");
+                        await advanceToStep("subpages");
+                      }}
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                      Mache ich später
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const filledCategories = data.addOnPricelistData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
+                        addUserMessage(`Preisliste gespeichert (${filledCategories.length} Kategorien) ✓`);
+                        await trySaveStep(STEP_ORDER.indexOf("editPricelist"), { addOnPricelistData: { categories: filledCategories } });
+                        await advanceToStep("subpages");
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
+                    >
+                      Speichern & weiter <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1803,7 +2245,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={() => setData((p) => ({ ...p, subPages: [...p.subPages, { id: genId(), name: "", description: "" }] }))}
                     className="flex items-center gap-2 text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-4 py-2 rounded-xl transition-all font-medium"
                   >
-                    <Plus className="w-4 h-4" /> Unterseite hinzuf\u00fcgen <span className="text-blue-400 text-xs">(+9,90 \u20ac/Mo)</span>
+                    <Plus className="w-4 h-4" /> Unterseite hinzufügen <span className="text-blue-400 text-xs">(+9,90 €/Mo)</span>
                   </button>
                   <button
                     disabled={isTyping}
@@ -2289,170 +2731,73 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           )}
         </div>
       </div>
+
+      {/* Exit intent modal */}
+      {showExitIntent && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-gradient-to-br from-blue-600 to-violet-700 p-8 text-center relative overflow-hidden">
+              {/* Decorative background circle */}
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+              <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
+              
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
+                  <Clock className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Warte kurz! ⚡</h2>
+                <p className="text-blue-100 text-sm font-medium leading-relaxed">
+                  Deine Website ist nur noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
+                </p>
+              </div>
+            </div>
+            
+            <div className="p-8 space-y-6">
+              <div className="space-y-4">
+                <p className="text-slate-300 text-sm leading-relaxed text-center">
+                  Hinterlasse deine E-Mail-Adresse, damit wir deinen Bearbeitungsstand speichern können und du später weitermachen kannst.
+                </p>
+                
+                <div className="space-y-3">
+                  <input
+                    type="email"
+                    placeholder="deine@email.de"
+                    value={data.email}
+                    onChange={(e) => setData(p => ({ ...p, email: e.target.value }))}
+                    className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!data.email || !data.email.includes("@")) {
+                        toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
+                        return;
+                      }
+                      await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
+                      toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
+                      setShowExitIntent(false);
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                  >
+                    Fortschritt speichern & weiter
+                  </button>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setShowExitIntent(false)}
+                className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
+              >
+                Doch nicht schließen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ── HeroPhotoStep ─────────────────────────────────────────────────────────────
-
-const INDUSTRY_KEYWORDS: Record<string, string> = {
-  "Restaurant": "restaurant interior food",
-  "Bar / Tapas": "bar cocktails night",
-  "Café / Bistro": "cafe coffee cozy",
-  "Bäckerei": "bakery bread pastry",
-  "Friseur": "hair salon barber",
-  "Beauty / Kosmetik": "beauty salon cosmetics",
-  "Bauunternehmen": "construction building",
-  "Handwerk": "craftsman workshop tools",
-  "Fitness-Studio": "gym fitness workout",
-  "Arzt / Zahnarzt": "modern medical clinic",
-  "Rechtsanwalt": "law office professional",
-  "Immobilien": "modern real estate house",
-  "IT / Software": "modern tech office",
-  "Fotografie": "photography studio camera",
-  "Autowerkstatt": "auto repair garage",
-  "Hotel / Pension": "hotel lobby elegant",
-};
-
-// Curated Unsplash photo IDs per industry (free, no API key needed)
-const INDUSTRY_PHOTOS: Record<string, { id: string; url: string; thumb: string; alt: string }[]> = {
-  default: [
-    { id: "1", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70", alt: "Modernes Büro" },
-    { id: "2", url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=70", alt: "Helles Büro" },
-    { id: "3", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&q=70", alt: "Gebäude" },
-    { id: "4", url: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=70", alt: "Team Meeting" },
-    { id: "5", url: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&q=70", alt: "Teamarbeit" },
-    { id: "6", url: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&q=70", alt: "Professionell" },
-  ],
-  "Restaurant": [
-    { id: "r1", url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=70", alt: "Restaurant Innenraum" },
-    { id: "r2", url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70", alt: "Elegantes Dinner" },
-    { id: "r3", url: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&q=70", alt: "Restaurant Tische" },
-    { id: "r4", url: "https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=400&q=70", alt: "Gericht" },
-    { id: "r5", url: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&q=70", alt: "Restaurant Ambiente" },
-    { id: "r6", url: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&q=70", alt: "Speisen" },
-  ],
-  "Café / Bistro": [
-    { id: "c1", url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&q=70", alt: "Café Innenraum" },
-    { id: "c2", url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=400&q=70", alt: "Kaffee" },
-    { id: "c3", url: "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=400&q=70", alt: "Café Tische" },
-    { id: "c4", url: "https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=400&q=70", alt: "Latte Art" },
-    { id: "c5", url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&q=70", alt: "Kaffeetasse" },
-    { id: "c6", url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=70", alt: "Café Atmosphäre" },
-  ],
-  "Friseur": [
-    { id: "f1", url: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&q=70", alt: "Friseursalon" },
-    { id: "f2", url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&q=70", alt: "Haarstyling" },
-    { id: "f3", url: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=70", alt: "Salon Spiegel" },
-    { id: "f4", url: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=70", alt: "Haarschnitt" },
-    { id: "f5", url: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400&q=70", alt: "Barber" },
-    { id: "f6", url: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400&q=70", alt: "Friseursalon modern" },
-  ],
-  "Handwerk": [
-    { id: "h1", url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=70", alt: "Handwerker" },
-    { id: "h2", url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=70", alt: "Werkzeuge" },
-    { id: "h3", url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70", alt: "Werkstatt" },
-    { id: "h4", url: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=70", alt: "Holzarbeit" },
-    { id: "h5", url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=400&q=70", alt: "Baustelle" },
-    { id: "h6", url: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&q=70", alt: "Handwerker Arbeit" },
-  ],
-  "Bauunternehmen": [
-    { id: "b1", url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=70", alt: "Baustelle" },
-    { id: "b2", url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=400&q=70", alt: "Bau" },
-    { id: "b3", url: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=400&q=70", alt: "Bauarbeiter" },
-    { id: "b4", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&q=70", alt: "Architektur" },
-    { id: "b5", url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=70", alt: "Gebäude" },
-    { id: "b6", url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70", alt: "Werkstatt" },
-  ],
-  "Beauty / Kosmetik": [
-    { id: "bk1", url: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&q=70", alt: "Beauty Salon" },
-    { id: "bk2", url: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&q=70", alt: "Kosmetik" },
-    { id: "bk3", url: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400&q=70", alt: "Nails" },
-    { id: "bk4", url: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&q=70", alt: "Spa" },
-    { id: "bk5", url: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=70", alt: "Make-up" },
-    { id: "bk6", url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&q=70", alt: "Styling" },
-  ],
-  "Fitness-Studio": [
-    { id: "fi1", url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=70", alt: "Fitnessstudio" },
-    { id: "fi2", url: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=70", alt: "Training" },
-    { id: "fi3", url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=70", alt: "Gym" },
-    { id: "fi4", url: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400&q=70", alt: "Geräte" },
-    { id: "fi5", url: "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=400&q=70", alt: "Workout" },
-    { id: "fi6", url: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&q=70", alt: "Fitness" },
-  ],
-  "Arzt / Zahnarzt": [
-    { id: "az1", url: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&q=70", alt: "Arztpraxis" },
-    { id: "az2", url: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&q=70", alt: "Zahnarzt" },
-    { id: "az3", url: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&q=70", alt: "Praxis" },
-    { id: "az4", url: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&q=70", alt: "Medizin" },
-    { id: "az5", url: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=70", alt: "Arzt" },
-    { id: "az6", url: "https://images.unsplash.com/photo-1551076805-e1869033e561?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1551076805-e1869033e561?w=400&q=70", alt: "Klinik" },
-  ],
-  "Rechtsanwalt": [
-    { id: "ra1", url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&q=70", alt: "Anwaltskanzlei" },
-    { id: "ra2", url: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=400&q=70", alt: "Bücher" },
-    { id: "ra3", url: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?w=400&q=70", alt: "Recht" },
-    { id: "ra4", url: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&q=70", alt: "Vertrag" },
-    { id: "ra5", url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=70", alt: "Anwalt" },
-    { id: "ra6", url: "https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=400&q=70", alt: "Kanzlei" },
-  ],
-  "Immobilien": [
-    { id: "im1", url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=70", alt: "Haus" },
-    { id: "im2", url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=70", alt: "Villa" },
-    { id: "im3", url: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=70", alt: "Wohnhaus" },
-    { id: "im4", url: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&q=70", alt: "Küche" },
-    { id: "im5", url: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400&q=70", alt: "Wohnzimmer" },
-    { id: "im6", url: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&q=70", alt: "Immobilien" },
-  ],
-  "IT / Software": [
-    { id: "it1", url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=70", alt: "Coding" },
-    { id: "it2", url: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=70", alt: "Programmieren" },
-    { id: "it3", url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=70", alt: "Technik" },
-    { id: "it4", url: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&q=70", alt: "Büro" },
-    { id: "it5", url: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&q=70", alt: "Laptop" },
-    { id: "it6", url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=70", alt: "Code" },
-  ],
-  "Fotografie": [
-    { id: "fo1", url: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&q=70", alt: "Kamera" },
-    { id: "fo2", url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=70", alt: "Fotostudio" },
-    { id: "fo3", url: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=400&q=70", alt: "Fotografie" },
-    { id: "fo4", url: "https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=400&q=70", alt: "Portrait" },
-    { id: "fo5", url: "https://images.unsplash.com/photo-1500051638674-ff996a0ec29e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1500051638674-ff996a0ec29e?w=400&q=70", alt: "Shooting" },
-    { id: "fo6", url: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=400&q=70", alt: "Foto" },
-  ],
-  "Autowerkstatt": [
-    { id: "aw1", url: "https://images.unsplash.com/photo-1625047509168-a7026f36de04?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1625047509168-a7026f36de04?w=400&q=70", alt: "Werkstatt" },
-    { id: "aw2", url: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400&q=70", alt: "Auto" },
-    { id: "aw3", url: "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=400&q=70", alt: "Reparatur" },
-    { id: "aw4", url: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&q=70", alt: "KFZ" },
-    { id: "aw5", url: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400&q=70", alt: "Fahrzeug" },
-    { id: "aw6", url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=70", alt: "Garage" },
-  ],
-  "Hotel / Pension": [
-    { id: "ho1", url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=70", alt: "Hotel" },
-    { id: "ho2", url: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=400&q=70", alt: "Hotelzimmer" },
-    { id: "ho3", url: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=70", alt: "Lobby" },
-    { id: "ho4", url: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=70", alt: "Zimmer" },
-    { id: "ho5", url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=70", alt: "Pool" },
-    { id: "ho6", url: "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=400&q=70", alt: "Pension" },
-  ],
-  "Bäckerei": [
-    { id: "bae1", url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=70", alt: "Bäckerei" },
-    { id: "bae2", url: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&q=70", alt: "Brot" },
-    { id: "bae3", url: "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?w=400&q=70", alt: "Brötchen" },
-    { id: "bae4", url: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=400&q=70", alt: "Kuchen" },
-    { id: "bae5", url: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=400&q=70", alt: "Croissant" },
-    { id: "bae6", url: "https://images.unsplash.com/photo-1549931319-a545dcf3bc7c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1549931319-a545dcf3bc7c?w=400&q=70", alt: "Backwaren" },
-  ],
-  "Bar / Tapas": [
-    { id: "bar1", url: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&q=70", alt: "Bar" },
-    { id: "bar2", url: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&q=70", alt: "Cocktails" },
-    { id: "bar3", url: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400&q=70", alt: "Barkeeper" },
-    { id: "bar4", url: "https://images.unsplash.com/photo-1543007631-283050bb3e8c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1543007631-283050bb3e8c?w=400&q=70", alt: "Tapas" },
-    { id: "bar5", url: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=70", alt: "Drinks" },
-    { id: "bar6", url: "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=400&q=70", alt: "Bar Ambiente" },
-  ],
-};
 
 interface HeroPhotoStepProps {
   businessCategory: string;
@@ -2467,7 +2812,16 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
   const [isUploading, setIsUploading] = useState(false);
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
 
-  const photos = INDUSTRY_PHOTOS[businessCategory] || INDUSTRY_PHOTOS["default"];
+  const { data: suggestionsData, isLoading: isLoadingSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
+    { category: businessCategory },
+    { enabled: !!businessCategory }
+  );
+
+  const photos = suggestionsData?.suggestions || [
+    { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70", alt: "Modernes Büro" },
+    { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=70", alt: "Helles Büro" },
+    { url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&q=70", alt: "Gebäude" },
+  ];
 
   return (
     <div className="ml-9 space-y-3">
@@ -2475,9 +2829,14 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
 
       {/* Photo grid */}
       <div className="grid grid-cols-3 gap-2">
-        {photos.map((photo) => (
+        {isLoadingSuggestions ? (
+          <div className="col-span-3 py-12 flex flex-col items-center justify-center gap-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+            <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+            <p className="text-slate-400 text-xs">Passende Fotos werden geladen…</p>
+          </div>
+        ) : photos.map((photo, idx) => (
           <button
-            key={photo.id}
+            key={photo.url + idx}
             onClick={() => onSelect(heroPhotoUrl === photo.url ? "" : photo.url)}
             className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
               heroPhotoUrl === photo.url
@@ -2487,7 +2846,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
             title={photo.alt}
           >
             <img
-              src={photo.thumb}
+              src={photo.thumb || photo.url}
               alt={photo.alt}
               className="w-full h-full object-cover"
               loading="lazy"

@@ -44,6 +44,8 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
           {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} />}
+          {section.type === "menu" && <ModernMenu section={section} cs={cs} />}
+          {section.type === "pricelist" && <ModernPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <ModernTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <ModernFAQ section={section} cs={cs} />}
                     {section.type === "contact" && (
@@ -200,6 +202,81 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
               <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#666" }}>{item.description}</p>
               <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }} className="opacity-0 group-hover:opacity-100 transition-opacity">
                 Mehr <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ModernMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories: Record<string, any[]> = {};
+  items.forEach(item => {
+    const cat = (item as any).category || "Allgemein";
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(item);
+  });
+
+  return (
+    <section data-section="menu" style={{ backgroundColor: "#0a0a0a", color: "#fff", padding: "7rem 0" }}>
+      <div className="max-w-5xl mx-auto px-8">
+        <div className="mb-16">
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1rem" }}>Speisekarte</span>
+          <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#fff" }}>{section.headline}</h2>
+        </div>
+        <div className="grid md:grid-cols-2 gap-x-16 gap-y-12">
+          {Object.entries(categories).map(([catName, catItems], idx) => (
+            <div key={idx}>
+              <h3 style={{ fontSize: "1.25rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff", marginBottom: "2rem", borderLeft: `4px solid ${cs.primary}`, paddingLeft: "1rem" }}>{catName}</h3>
+              <div className="space-y-8">
+                {catItems.map((item, i) => (
+                  <div key={i} className="group">
+                    <div className="flex justify-between items-baseline gap-4 mb-1">
+                      <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fff" }}>{item.title}</h4>
+                      <span style={{ fontSize: "1rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
+                    </div>
+                    {item.description && <p style={{ fontSize: "0.85rem", lineHeight: 1.6, color: "rgba(255,255,255,0.5)" }}>{item.description}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ModernPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+  const items = section.items || [];
+  const categories: Record<string, any[]> = {};
+  items.forEach(item => {
+    const cat = (item as any).category || "Preise";
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(item);
+  });
+
+  return (
+    <section data-section="pricelist" style={{ backgroundColor: "#f8f8f8", padding: "7rem 0" }}>
+      <div className="max-w-4xl mx-auto px-8">
+        <div className="mb-16 text-center">
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "1rem" }}>Preise</span>
+          <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a" }}>{section.headline}</h2>
+        </div>
+        <div className="space-y-16">
+          {Object.entries(categories).map(([catName, catItems], idx) => (
+            <div key={idx}>
+              <h3 style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#999", marginBottom: "2rem", textAlign: "center" }}>{catName}</h3>
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                {catItems.map((item, i) => (
+                  <div key={i} className={`flex justify-between items-center px-8 py-5 ${i !== catItems.length - 1 ? 'border-bottom: 1px solid #f5f5f5' : ''}`}>
+                    <span style={{ fontSize: "1rem", fontWeight: 600, color: "#0a0a0a" }}>{item.title}</span>
+                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                  </div>
+                ))}
               </div>
             </div>
           ))}

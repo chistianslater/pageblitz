@@ -1676,7 +1676,7 @@ Kontext: ${input.context}`,
         const response = await invokeLLM({
           messages: [
             { role: "system", content: "Du bist ein Experte für lokale Unternehmenswebsites in Deutschland. Antworte immer mit validem JSON." },
-            { role: "user", content: `Schlage 3 typische Leistungen für dieses Unternehmen vor. Gib nur ein JSON-Array zurück, kein Markdown, keine Erklärung.\n\nFormat: [{\"title\": \"Leistungsname\", \"description\": \"Kurze Beschreibung (max 10 Wörter)\"}]\n\nKontext: ${input.context}` },
+            { role: "user", content: `Schlage 6 verschiedene, typische Leistungen für dieses Unternehmen vor. Achte auf eine gute Mischung aus Standard-Dienstleistungen und spezielleren Angeboten. Gib nur ein JSON-Array zurück, kein Markdown, keine Erklärung.\n\nFormat: [{\"title\": \"Leistungsname\", \"description\": \"Kurze Beschreibung (max 12 Wörter)\"}]\n\nKontext: ${input.context}` },
           ],
           response_format: {
             type: "json_schema",
@@ -1849,6 +1849,8 @@ Kontext: ${input.context}`,
           description: onboarding.description,
           usp: onboarding.usp,
           topServices,
+          addOnMenuData: (onboarding as any).addOnMenuData,
+          addOnPricelistData: (onboarding as any).addOnPricelistData,
           logoUrl: onboarding.logoUrl,
           photoUrls: onboarding.photoUrls,
         });

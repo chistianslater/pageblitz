@@ -131,6 +131,10 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   // Add-ons
   addOnContactForm: boolean("addOnContactForm").default(false),
   addOnGallery: boolean("addOnGallery").default(false),
+  addOnMenu: boolean("addOnMenu").default(false),
+  addOnMenuData: json("addOnMenuData"), // { categories: [{ name, items: [{ name, price, description }] }] }
+  addOnPricelist: boolean("addOnPricelist").default(false),
+  addOnPricelistData: json("addOnPricelistData"), // { categories: [{ name, items: [{ name, price }] }] }
   addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
   completedAt: bigint("completedAt", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),

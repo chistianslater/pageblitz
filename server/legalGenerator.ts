@@ -175,6 +175,8 @@ export function patchWebsiteData(
     description?: string | null;
     usp?: string | null;
     topServices?: any;
+    addOnMenuData?: any;
+    addOnPricelistData?: any;
     logoUrl?: string | null;
     photoUrls?: any;
   }
@@ -223,6 +225,41 @@ export function patchWebsiteData(
         title: typeof s === "string" ? s : s.title || s,
         description: typeof s === "object" ? s.description || "" : "",
       }));
+    }
+  }
+
+  // Patch menu & pricelist
+  if (onboarding.addOnMenuData?.categories) {
+    patched.addOnMenuData = onboarding.addOnMenuData;
+    const filledCategories = (onboarding.addOnMenuData.categories || []).filter((c: any) => (c.name || "").trim() || (c.items || []).some((i: any) => (i.name || "").trim()));
+    if (filledCategories.length > 0) {
+      if (!patched.sections) patched.sections = [];
+      patched.sections.push({
+        type: "menu",
+        headline: "Unsere Speisekarte",
+        items: filledCategories.flatMap((c: any) => (c.items || []).filter((i: any) => (i.name || "").trim()).map((i: any) => ({
+          title: i.name,
+          description: i.description,
+          price: i.price,
+          category: c.name
+        })))
+      });
+    }
+  }
+  if (onboarding.addOnPricelistData?.categories) {
+    patched.addOnPricelistData = onboarding.addOnPricelistData;
+    const filledCategories = (onboarding.addOnPricelistData.categories || []).filter((c: any) => (c.name || "").trim() || (c.items || []).some((i: any) => (i.name || "").trim()));
+    if (filledCategories.length > 0) {
+      if (!patched.sections) patched.sections = [];
+      patched.sections.push({
+        type: "pricelist",
+        headline: "Unsere Preise",
+        items: filledCategories.flatMap((c: any) => (c.items || []).filter((i: any) => (i.name || "").trim()).map((i: any) => ({
+          title: i.name,
+          price: i.price,
+          category: c.name
+        })))
+      });
     }
   }
 
