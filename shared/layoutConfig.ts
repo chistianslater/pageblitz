@@ -13,6 +13,7 @@
 
 import { type ColorScheme } from "./types";
 import { getContrastColor } from "./colorContrast";
+export type { ColorScheme };
 
 /**
  * Calculates 'on' contrast colors for a color scheme.

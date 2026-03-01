@@ -203,3 +203,16 @@ export const INDUSTRY_COLORS: Record<string, any[]> = {
     { primary: "#10b981", secondary: "#065f46", accent: "#f59e0b", background: "#ffffff", surface: "#f0fdf4", text: "#064e3b", textLight: "#374151", gradient: "linear-gradient(135deg, #10b981 0%, #065f46 100%)" },
   ],
 };
+
+/**
+ * Get gallery images for a given industry category.
+ * Re-exported here so the frontend can use it without importing from server/.
+ */
+export function getGalleryImages(category: string, _businessName: string = ""): string[] {
+  const key = Object.keys(INDUSTRY_IMAGES).find((k) => {
+    const kws = (INDUSTRY_IMAGES[k] as IndustryImageSet).keywords;
+    return kws.some((kw: string) => category.toLowerCase().includes(kw));
+  }) || "default";
+  const imageSet = INDUSTRY_IMAGES[key] as IndustryImageSet;
+  return imageSet?.gallery || imageSet?.hero?.slice(0, 2) || [];
+}

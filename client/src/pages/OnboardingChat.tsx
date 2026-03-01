@@ -227,6 +227,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const business = siteData?.business;
 
   // ── Dynamic step order based on layout and websiteData ──────────────────
+  // These mirror data.addOn* but are declared before `data` to avoid
+  // "used before declaration" TypeScript errors in the useMemo below.
+  const [_addOnMenu, _setAddOnMenu] = useState(false);
+  const [_addOnPricelist, _setAddOnPricelist] = useState(false);
+  const [_addOnGallery, _setAddOnGallery] = useState(false);
   const dynamicStepOrder = useMemo(() => {
     const layout = (siteData?.website as any)?.layoutStyle as string | undefined;
     const websiteDataRaw = siteData?.website?.websiteData as any;
@@ -236,12 +241,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     return STEP_ORDER.filter((step) => {
       if (step === "aboutPhoto") return hasAbout && layoutHasAboutImage;
-      if (step === "editMenu") return data.addOnMenu;
-      if (step === "editPricelist") return data.addOnPricelist;
-      if (step === "editGallery") return data.addOnGallery;
+      if (step === "editMenu") return _addOnMenu;
+      if (step === "editPricelist") return _addOnPricelist;
+      if (step === "editGallery") return _addOnGallery;
       return true;
     });
-  }, [siteData?.website, data.addOnMenu, data.addOnPricelist, data.addOnGallery]);
+  }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
