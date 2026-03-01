@@ -2303,8 +2303,7 @@ Kontext: ${input.context}`,
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
-        // Already has content – skip re-generation
-        if (website.websiteData) return { success: true, alreadyGenerated: true };
+        // Guard removed: always re-generate to pick up latest images and color schemes
 
         const business = await getBusinessById(website.businessId);
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
