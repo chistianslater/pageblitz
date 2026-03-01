@@ -128,58 +128,58 @@ function makeColorScheme(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "on
 const COLOR_SCHEMES: { id: string; label: string; description: string; colors: ColorScheme }[] = [
   {
     id: "trust",
-    label: "Vertrauen & Professionalität",
-    description: "Seriöses Blau und Grau – ideal für Beratung, Recht und Handwerk.",
+    label: "Professional Trust",
+    description: "Tiefes Mitternachtsblau und Schiefer – seriös, kompetent und zeitlos.",
     colors: makeColorScheme({
-      primary: "#2563EB",
-      secondary: "#1E3A8A",
-      accent: "#60A5FA",
-      background: "#F8FAFC",
-      surface: "#FFFFFF",
-      text: "#0F172A",
-      textLight: "#475569"
+      primary: "#1e3a8a",
+      secondary: "#0f172a",
+      accent: "#f59e0b",
+      background: "#ffffff",
+      surface: "#f8fafc",
+      text: "#0f172a",
+      textLight: "#64748b"
     })
   },
   {
     id: "warm",
-    label: "Wärme & Geborgenheit",
-    description: "Warme Gold- und Erdtöne – perfekt für Gastronomie und Wellness.",
+    label: "Heritage Warmth",
+    description: "Edles Terracotta und Sandtöne – ideal für exzellente Gastronomie.",
     colors: makeColorScheme({
-      primary: "#D97706",
-      secondary: "#78350F",
-      accent: "#FCD34D",
-      background: "#FFFBEB",
-      surface: "#FFFFFF",
-      text: "#451A03",
-      textLight: "#92400E"
+      primary: "#9a3412",
+      secondary: "#431407",
+      accent: "#b3966a",
+      background: "#fffcfb",
+      surface: "#fef2f2",
+      text: "#1e1b1b",
+      textLight: "#71717a"
+    })
+  },
+  {
+    id: "elegant",
+    label: "Pure Elegance",
+    description: "Champagner und weiches Anthrazit – für Luxus und Ästhetik.",
+    colors: makeColorScheme({
+      primary: "#bfa37e",
+      secondary: "#1a1a1a",
+      accent: "#f2f2f2",
+      background: "#ffffff",
+      surface: "#faf9f6",
+      text: "#0f172a",
+      textLight: "#64748b"
     })
   },
   {
     id: "modern",
-    label: "Modern & Klar",
-    description: "Klassisches Schwarz/Weiß mit blauem Akzent – für moderne Brands.",
+    label: "Contemporary Dark",
+    description: "Scharfes Graphit und klares Weiß – puristisch und fokussiert.",
     colors: makeColorScheme({
-      primary: "#111827",
-      secondary: "#374151",
-      accent: "#3B82F6",
-      background: "#FFFFFF",
-      surface: "#F3F4F6",
-      text: "#111827",
-      textLight: "#6B7280"
-    })
-  },
-  {
-    id: "vibrant",
-    label: "Energie & Aktivität",
-    description: "Dynamisches Orange und Rot – ideal für Fitness und Sport.",
-    colors: makeColorScheme({
-      primary: "#EA580C",
-      secondary: "#9A3412",
-      accent: "#F97316",
-      background: "#FFF7ED",
-      surface: "#FFFFFF",
-      text: "#431407",
-      textLight: "#9A3412"
+      primary: "#bef264",
+      secondary: "#0a0a0a",
+      accent: "#ffffff",
+      background: "#050505",
+      surface: "#121212",
+      text: "#ffffff",
+      textLight: "rgba(255,255,255,0.6)"
     })
   }
 ];
