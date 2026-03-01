@@ -28,12 +28,12 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Search, label: "GMB-Suche", path: "/search" },
-  { icon: Globe, label: "Websites", path: "/websites" },
-  { icon: Mail, label: "Outreach", path: "/outreach" },
-  { icon: BarChart3, label: "Statistiken", path: "/stats" },
-  { icon: Layers, label: "Templates", path: "/templates" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
+  { icon: Search, label: "GMB-Suche", path: "/admin/search" },
+  { icon: Globe, label: "Websites", path: "/admin/websites" },
+  { icon: Mail, label: "Outreach", path: "/admin/outreach" },
+  { icon: BarChart3, label: "Statistiken", path: "/admin/stats" },
+  { icon: Layers, label: "Templates", path: "/admin/templates" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

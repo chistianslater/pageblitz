@@ -75,19 +75,19 @@ export default function Home() {
             <QuickAction
               title="Unternehmen suchen"
               description="Finde Unternehmen ohne Website über Google Maps"
-              href="/search"
+              href="/admin/search"
               icon={<Building2 className="h-5 w-5" />}
             />
             <QuickAction
               title="Websites verwalten"
               description="Übersicht aller generierten Websites"
-              href="/websites"
+              href="/admin/websites"
               icon={<Globe className="h-5 w-5" />}
             />
             <QuickAction
               title="Outreach starten"
               description="Kontaktiere potenzielle Kunden per E-Mail"
-              href="/outreach"
+              href="/admin/outreach"
               icon={<Mail className="h-5 w-5" />}
             />
           </div>

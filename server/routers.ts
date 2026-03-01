@@ -1646,7 +1646,7 @@ Antworte NUR mit validem JSON:
             },
           ],
           success_url: `${ctx.req.headers.origin}/websites/${website.id}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${ctx.req.headers.origin}/websites/${website.id}`,
+          cancel_url: `${ctx.req.headers.origin}/admin/websites`,
           metadata: {
             websiteId: website.id.toString(),
             userId: ctx.user?.id.toString() || "anonymous",

@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardLayout from "./components/DashboardLayout";
+import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import SearchPage from "./pages/SearchPage";
 import WebsitesPage from "./pages/WebsitesPage";
@@ -23,12 +24,12 @@ function AdminRouter() {
   return (
     <DashboardLayout>
       <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/search" component={SearchPage} />
-        <Route path="/websites" component={WebsitesPage} />
-        <Route path="/outreach" component={OutreachPage} />
-        <Route path="/stats" component={StatsPage} />
-        <Route path="/templates" component={TemplatesPage} />
+        <Route path="/admin" component={Home} />
+        <Route path="/admin/search" component={SearchPage} />
+        <Route path="/admin/websites" component={WebsitesPage} />
+        <Route path="/admin/outreach" component={OutreachPage} />
+        <Route path="/admin/stats" component={StatsPage} />
+        <Route path="/admin/templates" component={TemplatesPage} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -38,6 +39,7 @@ function AdminRouter() {
 function Router() {
   return (
     <Switch>
+      <Route path="/" component={LandingPage} />
       <Route path="/start" component={StartPage} />
       <Route path="/preview/:token" component={PreviewPage} />
       <Route path="/site/:slug" component={SitePage} />
@@ -46,9 +48,10 @@ function Router() {
       <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
       <Route path="/my-website" component={CustomerDashboard} />
-      <Route>
+      <Route path="/admin/:rest*">
         <AdminRouter />
       </Route>
+      <Route component={NotFound} />
     </Switch>
   );
 }
