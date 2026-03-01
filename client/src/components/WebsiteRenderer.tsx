@@ -300,13 +300,30 @@ export default function WebsiteRenderer({
   // Determine which fonts to load via Google Fonts
   const fontsToLoad = tokens
     ? [tokens.headlineFont, tokens.bodyFont].filter(Boolean) as string[]
-    : []; // Layout fonts are system/generic fallbacks, no Google Fonts needed for defaults
+    : [];
+  
+  if (headlineFontOverride) {
+    fontsToLoad.push(headlineFontOverride);
+  }
 
   // Inject logoFont as CSS variable for real-time logo preview during onboarding
   // Accepts both the direct prop and the legacy _logoFont/_brandLogoFont from websiteData
   const effectiveLogoFont = logoFont
     || (websiteData as any)?._logoFont as string | undefined
     || (websiteData as any)?._brandLogoFont as string | undefined;
+  
+  if (effectiveLogoFont && !fontsToLoad.includes(effectiveLogoFont)) {
+    fontsToLoad.push(effectiveLogoFont);
+  }
+
+  // Also load default layout fonts if they are not system fonts
+  if (!tokens) {
+    const defaultHeadline = fontDefaults.headline.split(',')[0].replace(/'/g, '').trim();
+    const defaultBody = fontDefaults.body.split(',')[0].replace(/'/g, '').trim();
+    const genericFonts = ['serif', 'sans-serif', 'monospace', 'system-ui', 'cursive', 'fantasy', 'Georgia', 'Impact', 'Arial', 'Helvetica', 'Times New Roman'];
+    if (!genericFonts.includes(defaultHeadline) && !fontsToLoad.includes(defaultHeadline)) fontsToLoad.push(defaultHeadline);
+    if (!genericFonts.includes(defaultBody) && !fontsToLoad.includes(defaultBody)) fontsToLoad.push(defaultBody);
+  }
   // Logo image URL (uploaded custom logo)
   const effectiveLogoUrl = (websiteData as any)?._brandLogoUrl as string | undefined
     || (websiteData as any)?._logoUrl as string | undefined;

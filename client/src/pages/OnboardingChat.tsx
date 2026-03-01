@@ -252,8 +252,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     brandSecondaryColor: "#F1F5F9",
     heroPhotoUrl: "",
     aboutPhotoUrl: "",
-    brandLogo: "font:Inter",
-    headlineFont: "Georgia",
+    brandLogo: "",
+    headlineFont: "",
     addOnContactForm: true,
     addOnGallery: false,
     addOnMenu: false,
@@ -302,6 +302,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }));
     }
   }, [siteData?.website?.colorScheme, initialized]);
+
+  // ── Pre-fill from existing websiteData ─────────────────────────────────
+  useEffect(() => {
+    if (siteData?.website?.websiteData && !initialized) {
+      const wd = siteData.website.websiteData as WebsiteData;
+      setData((prev) => ({
+        ...prev,
+        businessName: wd.businessName || prev.businessName,
+        tagline: wd.tagline || prev.tagline,
+        description: wd.description || prev.description,
+        ...(wd.designTokens?.headlineFont ? { headlineFont: wd.designTokens.headlineFont } : {}),
+        // If there's an AI-suggested logo font in designTokens, use it as default
+        ...(wd.designTokens?.headlineFont && !prev.brandLogo ? { brandLogo: `font:${wd.designTokens.headlineFont}` } : {}),
+      }));
+    }
+  }, [siteData?.website?.websiteData, initialized]);
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
