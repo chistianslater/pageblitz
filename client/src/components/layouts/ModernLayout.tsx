@@ -247,7 +247,7 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
               {section.subheadline && (
                 <div className="flex gap-6">
                   <div style={{ width: "2px", height: "auto", backgroundColor: cs.primary }} />
-                  <p style={{ fontSize: "1.2rem", lineHeight: 1.6, color: "#333", fontWeight: 500 }}>{section.subheadline}</p>
+                  <p style={{ fontSize: "1.2rem", lineHeight: 1.6, color: cs.text, fontWeight: 500 }}>{section.subheadline}</p>
                 </div>
               )}
               {section.content && (
@@ -562,11 +562,11 @@ function ModernFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs:
   return (
     <footer data-section="footer" style={{ backgroundColor: "#0a0a0a", padding: "2.5rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <span style={{ fontSize: "1rem", fontWeight: 900, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.3)" }}>{websiteData.businessName}</span>
-        <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.2)" }}>{websiteData.footer?.text}</p>
+        <span style={{ fontSize: "1rem", fontWeight: 900, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.8)" }}>{websiteData.businessName}</span>
+        <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>{websiteData.footer?.text}</p>
         <div style={{ display: "flex", gap: "1.5rem" }}>
           {["Impressum", "Datenschutz"].map(l => (
-            <a key={l} href={slug ? `/site/${slug}/${l.toLowerCase()}` : "#"} style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }} className="hover:text-white transition-colors">{l}</a>
+            <a key={l} href={slug ? `/site/${slug}/${l.toLowerCase()}` : "#"} style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)" }} className="hover:text-white transition-colors">{l}</a>
           ))}
         </div>
       </div>

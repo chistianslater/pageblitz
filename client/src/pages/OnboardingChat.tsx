@@ -833,6 +833,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!websiteId) return;
     try {
       await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: stepData });
+      refetchSiteData();
     } catch (e) {
       console.warn("[Onboarding] saveStep failed (non-blocking):", e);
     }

@@ -515,8 +515,12 @@ function CleanFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorS
           </div>
           <span style={{ fontFamily: SANS, fontSize: "0.95rem", fontWeight: 600, color: "#fff" }}>{websiteData.businessName}</span>
         </div>
-        <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: "rgba(255,255,255,0.35)" }}>{websiteData.footer?.text}</p>
-        <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }}>Erstellt mit <span style={{ color: "var(--site-primary-on-surface)" }}>Pageblitz</span></p>
+        <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: "rgba(255,255,255,0.7)" }}>{websiteData.footer?.text}</p>
+        <div style={{ display: "flex", gap: "1.5rem" }}>
+          {["Impressum", "Datenschutz"].map(l => (
+            <span key={l} style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.6)" }}>{l}</span>
+          ))}
+        </div>
       </div>
     </footer>
   );

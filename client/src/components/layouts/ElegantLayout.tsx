@@ -138,7 +138,7 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
             fontSize: "clamp(3.5rem, 6vw, 5.5rem)", 
             fontWeight: 400, 
             lineHeight: 1.05, 
-            color: "#1a1a1a", 
+            color: cs.text, 
             marginBottom: "2.5rem", 
             letterSpacing: "-0.01em" 
           }} className="hero-animate-headline">
@@ -164,14 +164,14 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           <div className="flex flex-wrap gap-5 hero-animate-cta">
             {section.ctaText && (
               <a href={section.ctaLink || "#kontakt"} 
-                style={{ backgroundColor: "#1a1a1a", color: "#fff", padding: "1.25rem 3.5rem", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600, fontFamily: SANS, transition: "all 0.4s ease" }} 
+                style={{ backgroundColor: cs.text, color: "#fff", padding: "1.25rem 3.5rem", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600, fontFamily: SANS, transition: "all 0.4s ease" }} 
                 className="hover:tracking-[0.3em] shadow-xl">
                 {section.ctaText}
               </a>
             )}
             {showActivateButton && (
               <button onClick={onActivate} 
-                style={{ border: `1px solid #1a1a1a`, color: "#1a1a1a", padding: "1.25rem 3.5rem", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600, fontFamily: SANS, backgroundColor: "transparent" }} 
+                style={{ border: `1px solid #1a1a1a`, color: cs.text, padding: "1.25rem 3.5rem", fontSize: "0.85rem", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600, fontFamily: SANS, backgroundColor: "transparent" }} 
                 className="hover:bg-black hover:text-white transition-all">
                 Aktivieren
               </button>
@@ -187,7 +187,7 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
           {/* Floating accent badge */}
           <div className="glass-card premium-shadow" style={{ position: "absolute", top: "15%", left: "-15%", padding: "2.5rem", zIndex: 30, borderRadius: "50%", width: "180px", height: "180px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
             <Sparkles className="h-6 w-6 mb-2" style={{ color: cs.primary }} />
-            <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#1a1a1a", fontWeight: 800 }}>Premium</span>
+            <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.text, fontWeight: 800 }}>Premium</span>
             <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Quality</span>
           </div>
         </div>
@@ -214,7 +214,7 @@ function ElegantAbout({ section, cs, heroImageUrl, businessCategory }: { section
               <span style={{ fontSize: "0.8rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Unsere Philosophie</span>
             </div>
             
-            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4.5rem)", fontWeight: 400, color: "#1a1a1a", marginBottom: "2.5rem", lineHeight: 1.1, fontStyle: "italic" }}>
+            <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4.5rem)", fontWeight: 400, color: cs.text, marginBottom: "2.5rem", lineHeight: 1.1, fontStyle: "italic" }}>
               {section.headline}
             </h2>
             
@@ -225,7 +225,7 @@ function ElegantAbout({ section, cs, heroImageUrl, businessCategory }: { section
             <div className="grid sm:grid-cols-2 gap-12 mt-12 border-t border-slate-100 pt-10">
               {stats.slice(0, 2).map((stat, i) => (
                 <div key={i}>
-                  <p style={{ fontFamily: SERIF, fontSize: "2.5rem", color: "#1a1a1a", fontStyle: "italic", lineHeight: 1, marginBottom: "0.5rem" }}>{stat.n}</p>
+                  <p style={{ fontFamily: SERIF, fontSize: "2.5rem", color: cs.text, fontStyle: "italic", lineHeight: 1, marginBottom: "0.5rem" }}>{stat.n}</p>
                   <p style={{ fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#888", fontWeight: 600 }}>{stat.label}</p>
                 </div>
               ))}
@@ -244,7 +244,7 @@ function ElegantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-24">
           <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1.5rem" }}>Exquisite Leistungen</span>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 400, color: "#1a1a1a", lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 400, color: cs.text, lineHeight: 1.1 }}>
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ fontStyle: i === (section.headline?.split(" ").length ?? 0) - 1 ? "italic" : "normal" }}>{word} </span>
             )) || "Erschaffen für Ihr Wohlbefinden"}
@@ -274,7 +274,7 @@ function ElegantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
                 <Sparkles className="h-6 w-6 transition-colors" style={{ color: cs.primary }} />
               </div>
               
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 400, color: "#1a1a1a", marginBottom: "1.25rem", fontStyle: "italic" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 400, color: cs.text, marginBottom: "1.25rem", fontStyle: "italic" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: "#666", fontWeight: 300, marginBottom: "2rem" }}>{item.description}</p>
               
               <div style={{ width: "20px", height: "1px", backgroundColor: cs.primary, margin: "0 auto" }} />
@@ -539,7 +539,7 @@ function ElegantCTA({ section, cs, showActivateButton, onActivate }: { section: 
 
 function ElegantFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer data-section="footer" style={{ backgroundColor: cs.text, padding: "3rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#111111", padding: "3rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
           <p style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 600, color: "#fff", letterSpacing: "0.05em" }}>{websiteData.businessName}</p>

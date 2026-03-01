@@ -38,8 +38,20 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageU
   logoUrl,
 }: Props) {
   useScrollReveal();
+  const isDarkSurface = (cs.surface || "").match(/^#(?:[0-9a-f]{3}){1,2}$/i) && 
+    (() => {
+      const hex = cs.surface.replace("#", "");
+      const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
+      const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
+      const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
+      return (r * 0.299 + g * 0.587 + b * 0.114) < 128;
+    })();
+
+  const surfaceText = isDarkSurface ? "#ffffff" : cs.text;
+  const surfaceTextMuted = isDarkSurface ? "rgba(255,255,255,0.7)" : "#666";
+
   return (
-    <div style={{ fontFamily: ROUND, backgroundColor: "#fafaf8", color: "#1a1a1a" }}>
+    <div style={{ fontFamily: ROUND, backgroundColor: "#fafaf8", color: cs.text }}>
       <FreshNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
@@ -49,11 +61,11 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageU
           {(section.type === "services" || section.type === "features") && <FreshServices section={section} cs={cs} />}
           {section.type === "menu" && <FreshMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <FreshPricelist section={section} cs={cs} />}
-          {section.type === "testimonials" && <FreshTestimonials section={section} cs={cs} />}
-          {section.type === "faq" && <FreshFAQ section={section} cs={cs} />}
+          {section.type === "testimonials" && <FreshTestimonials section={section} cs={cs} isDark={isDarkSurface} />}
+          {section.type === "faq" && <FreshFAQ section={section} cs={cs} isDark={isDarkSurface} />}
                     {section.type === "contact" && (
             <div style={{ position: "relative" }}>
-              <FreshContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+              <FreshContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isDark={isDarkSurface} />
               {contactFormLocked && (
                 <div style={{
                   position: "absolute",
@@ -97,7 +109,7 @@ function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
     <nav data-section="header" style={{ backgroundColor: "#fafaf8", borderBottom: "1px solid #e8e8e4", fontFamily: ROUND }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: "#1a1a1a" }}>{websiteData.businessName}</span>}
+          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: cs.text }}>{websiteData.businessName}</span>}
           {websiteData.tagline && <span style={{ fontSize: "0.65rem", color: "var(--site-primary-on-surface)", letterSpacing: "0.1em", fontWeight: 600 }}>{websiteData.tagline.slice(0, 35)}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">
@@ -136,7 +148,7 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
               fontFamily: SERIF, 
               fontSize: "clamp(3.5rem, 7vw, 6rem)", 
               fontWeight: 700, 
-              color: "#1a1a1a", 
+              color: cs.text, 
               lineHeight: 1.05, 
               letterSpacing: "-0.02em", 
               marginBottom: "2.5rem" 
@@ -158,14 +170,14 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
             <div className="flex flex-wrap gap-6 hero-animate-cta">
               {section.ctaText && (
                 <a href={section.ctaLink || "#kontakt"} 
-                  style={{ backgroundColor: "#1a1a1a", color: "#fff", padding: "1.25rem 3.5rem", fontSize: "0.9rem", borderRadius: "100px", fontWeight: 800, transition: "all 0.4s ease" }} 
+                  style={{ backgroundColor: cs.text, color: "#fff", padding: "1.25rem 3.5rem", fontSize: "0.9rem", borderRadius: "100px", fontWeight: 800, transition: "all 0.4s ease" }} 
                   className="hover:scale-105 shadow-xl">
                   {section.ctaText}
                 </a>
               )}
               {showActivateButton && (
                 <button onClick={onActivate} 
-                  style={{ border: `2px solid #1a1a1a`, color: "#1a1a1a", padding: "1.25rem 3.5rem", fontSize: "0.9rem", borderRadius: "100px", fontWeight: 700, backgroundColor: "transparent" }} 
+                  style={{ border: `2px solid ${cs.text}`, color: cs.text, padding: "1.25rem 3.5rem", fontSize: "0.9rem", borderRadius: "100px", fontWeight: 700, backgroundColor: "transparent" }} 
                   className="hover:bg-black hover:text-white transition-all">
                   Website aktivieren
                 </button>
@@ -209,7 +221,7 @@ function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
             <div style={{ width: "3rem", height: "1px", backgroundColor: `${cs.primary}40` }} />
           </div>
           
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: "#1a1a1a", marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: cs.text, marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
           
           <p style={{ fontSize: "1.15rem", lineHeight: 1.8, color: "#444", marginBottom: "2.5rem", fontWeight: 500 }}>{section.subheadline}</p>
           <p style={{ fontSize: "1rem", lineHeight: 1.9, color: "#777", marginBottom: "3.5rem" }}>{section.content}</p>
@@ -220,7 +232,7 @@ function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
                 <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon className="h-6 w-6" style={{ color: cs.primary }} />
                 </div>
-                <span style={{ fontSize: "0.9rem", color: "#1a1a1a", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</span>
+                <span style={{ fontSize: "0.9rem", color: cs.text, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</span>
               </div>
             ))}
           </div>
@@ -237,7 +249,7 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-24">
           <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>{section.subheadline || "Unser Angebot"}</span>
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.1 }}>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.text, lineHeight: 1.1 }}>
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: i === 2 ? "block" : "inline", fontStyle: i === 2 ? "italic" : "normal", color: i === 2 ? cs.primary : "inherit" }}>
                 {word}{" "}
@@ -262,7 +274,7 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
               }} className="group-hover:bg-slate-900 group-hover:rotate-6">
                 <Coffee className="h-7 w-7 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "1.25rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.text, marginBottom: "1.25rem" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2rem" }}>{item.description}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-0 group-hover:opacity-100 transition-all">
                 Details <ArrowRight className="h-4 w-4" />
@@ -282,7 +294,7 @@ function FreshGallery({ section, cs }: { section: WebsiteSection; cs: ColorSchem
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Inspirationen</span>
-          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
+          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: cs.text }}>{section.headline}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
           {items.map((item, i) => (
@@ -296,29 +308,32 @@ function FreshGallery({ section, cs }: { section: WebsiteSection; cs: ColorSchem
   );
 }
 
-function FreshTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function FreshTestimonials({ section, cs, isDark }: { section: WebsiteSection; cs: ColorScheme; isDark?: boolean }) {
   const items = section.items || [];
+  const textColor = isDark ? "#ffffff" : cs.text;
+  const subColor = isDark ? "rgba(255,255,255,0.7)" : "var(--site-primary-on-surface)";
+
   return (
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Was unsere Gäste sagen</span>
-          <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: subColor, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Was unsere Gäste sagen</span>
+          <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: textColor }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: "#fff", padding: "2rem", borderRadius: "1rem", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div key={i} style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#fff", padding: "2rem", borderRadius: "1rem", boxShadow: isDark ? "none" : "0 2px 12px rgba(0,0,0,0.06)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
               <div style={{ display: "flex", gap: "0.2rem", marginBottom: "1rem" }}>
                 {Array.from({ length: item.rating || 5 }).map((_, j) => (
                   <Star key={j} className="h-4 w-4" style={{ fill: "#f59e0b", color: "#f59e0b" }} />
                 ))}
               </div>
-              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: "#444", marginBottom: "1.25rem", fontStyle: "italic" }}>{item.description || item.title}</p>
+              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.9)" : "#444", marginBottom: "1.25rem", fontStyle: "italic" }}>{item.description || item.title}</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}20`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: "var(--site-primary-on-surface)" }}>{(item.author || "K")[0]}</span>
+                <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: isDark ? "rgba(255,255,255,0.1)" : `${cs.primary}20`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: isDark ? "#fff" : "var(--site-primary-on-surface)" }}>{(item.author || "K")[0]}</span>
                 </div>
-                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#1a1a1a" }}>{item.author || "Gast"}</span>
+                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: textColor }}>{item.author || "Gast"}</span>
               </div>
             </div>
           ))}
@@ -328,27 +343,30 @@ function FreshTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
   );
 }
 
-function FreshFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function FreshFAQ({ section, cs, isDark }: { section: WebsiteSection; cs: ColorScheme; isDark?: boolean }) {
   const [open, setOpen] = useState<number | null>(null);
   const items = section.items || [];
+  const textColor = isDark ? "#ffffff" : cs.text;
+  const subColor = isDark ? "rgba(255,255,255,0.7)" : "var(--site-primary-on-surface)";
+
   return (
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-3xl mx-auto px-6">
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
-          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a" }}>{section.headline}</h2>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: subColor, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: textColor }}>{section.headline}</h2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: "#fff", borderRadius: "0.75rem", border: "1px solid #e8e8e4", overflow: "hidden" }}>
+            <div key={i} style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: "0.75rem", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", overflow: "hidden" }}>
               <button onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}>
-                <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#1a1a1a" }}>{item.question || item.title}</span>
-                <div style={{ width: "1.75rem", height: "1.75rem", backgroundColor: open === i ? cs.primary : "#f5f5f0", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background-color 0.2s" }}>
-                  {open === i ? <ChevronUp className="h-4 w-4" style={{ color: "#fff" }} /> : <ChevronDown className="h-4 w-4" style={{ color: "#666" }} />}
+                <span style={{ fontSize: "0.95rem", fontWeight: 700, color: textColor }}>{item.question || item.title}</span>
+                <div style={{ width: "1.75rem", height: "1.75rem", backgroundColor: open === i ? cs.primary : (isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0"), borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background-color 0.2s" }}>
+                  {open === i ? <ChevronUp className="h-4 w-4" style={{ color: "#fff" }} /> : <ChevronDown className="h-4 w-4" style={{ color: isDark ? "#fff" : "#666" }} />}
                 </div>
               </button>
               {open === i && (
-                <div style={{ padding: "0 1.5rem 1.25rem", fontSize: "0.9rem", lineHeight: 1.7, color: "#666" }}>
+                <div style={{ padding: "0 1.5rem 1.25rem", fontSize: "0.9rem", lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.7)" : "#666" }}>
                   {item.answer || item.description}
                 </div>
               )}
@@ -362,7 +380,7 @@ function FreshFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
 
 function FreshCTA({ section, cs, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; showActivateButton?: boolean; onActivate?: () => void }) {
   return (
-    <section style={{ backgroundColor: "#1a1a1a", padding: "5rem 0" }}>
+    <section style={{ backgroundColor: cs.text, padding: "5rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
         <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", marginBottom: "1.25rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.6)", marginBottom: "2.5rem" }}>{section.content}</p>}
@@ -395,19 +413,19 @@ function FreshMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
             <Coffee className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} />
             <span style={{ fontSize: "0.8rem", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>Frisch & Hausgemacht</span>
           </div>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.15 }}>{section.headline}</h2>
+          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.text, lineHeight: 1.15 }}>{section.headline}</h2>
         </div>
 
         {categories.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-16">
             {categories.map((cat, idx) => (
               <div key={idx} className="bg-white p-8 rounded-2xl border border-[#e8e8e4] shadow-sm">
-                <h3 style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "2rem", borderBottom: `2px solid ${cs.primary}30`, display: "inline-block", paddingBottom: "0.5rem" }}>{cat}</h3>
+                <h3 style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: cs.text, marginBottom: "2rem", borderBottom: `2px solid ${cs.primary}30`, display: "inline-block", paddingBottom: "0.5rem" }}>{cat}</h3>
                 <div className="space-y-6">
                   {items.filter(item => item.category === cat).map((item, i) => (
                     <div key={i}>
                       <div className="flex justify-between items-baseline gap-4 mb-1">
-                        <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#1a1a1a" }}>{item.title}</h4>
+                        <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.text }}>{item.title}</h4>
                         <div className="flex-1 border-b border-dotted border-[#e8e8e4] mx-2" />
                         <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
                       </div>
@@ -425,7 +443,7 @@ function FreshMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
             {items.map((item, i) => (
               <div key={i}>
                 <div className="flex justify-between items-baseline gap-4 mb-1">
-                  <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#1a1a1a" }}>{item.title}</h4>
+                  <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.text }}>{item.title}</h4>
                   <div className="flex-1 border-b border-dotted border-[#e8e8e4] mx-2" />
                   <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
                 </div>
@@ -452,18 +470,18 @@ function FreshPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSch
           <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, padding: "0.4rem 1.25rem", borderRadius: "2rem", marginBottom: "1.5rem" }}>
             <span style={{ fontSize: "0.8rem", color: "var(--site-nav-text)", fontWeight: 700 }}>Angebot & Preise</span>
           </div>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.15 }}>{section.headline}</h2>
+          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.text, lineHeight: 1.15 }}>{section.headline}</h2>
         </div>
 
         {categories.length > 0 ? (
           <div className="space-y-12">
             {categories.map((cat, idx) => (
               <div key={idx}>
-                <h3 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "2rem", textAlign: "center" }}>{cat}</h3>
+                <h3 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 700, color: cs.text, marginBottom: "2rem", textAlign: "center" }}>{cat}</h3>
                 <div className="bg-white rounded-2xl border border-[#e8e8e4] overflow-hidden shadow-sm">
                   {items.filter(item => item.category === cat).map((item, i) => (
                     <div key={i} className="flex justify-between items-center px-6 py-4 border-b border-[#e8e8e4] last:border-0 hover:bg-[#fafaf8] transition-colors">
-                      <span style={{ fontSize: "1rem", color: "#1a1a1a", fontWeight: 600 }}>{item.title}</span>
+                      <span style={{ fontSize: "1rem", color: cs.text, fontWeight: 600 }}>{item.title}</span>
                       <span style={{ fontSize: "1.1rem", color: "var(--site-primary-on-surface)", fontWeight: 800 }}>{item.price}</span>
                     </div>
                   ))}
@@ -475,7 +493,7 @@ function FreshPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSch
           <div className="bg-white rounded-2xl border border-[#e8e8e4] overflow-hidden shadow-sm">
             {items.map((item, i) => (
               <div key={i} className="flex justify-between items-center px-8 py-5 border-b border-[#e8e8e4] last:border-0 hover:bg-[#fafaf8] transition-colors">
-                <span style={{ fontSize: "1.1rem", color: "#1a1a1a", fontWeight: 700 }}>{item.title}</span>
+                <span style={{ fontSize: "1.1rem", color: cs.text, fontWeight: 700 }}>{item.title}</span>
                 <span style={{ fontSize: "1.2rem", color: "var(--site-primary-on-surface)", fontWeight: 800 }}>{item.price}</span>
               </div>
             ))}
@@ -486,23 +504,28 @@ function FreshPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSch
   );
 }
 
-function FreshContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
+function FreshContact({ section, cs, phone, address, email, hours, isDark }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isDark?: boolean }) {
+  const textColor = isDark ? "#ffffff" : cs.text;
+  const subColor = isDark ? "rgba(255,255,255,0.7)" : "var(--site-primary-on-surface)";
+  const mutedColor = isDark ? "rgba(255,255,255,0.6)" : "#666";
+  const iconBg = isDark ? "rgba(255,255,255,0.1)" : "var(--site-primary-on-surface-subtle)";
+
   return (
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
         <div>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
-          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: "#1a1a1a", marginBottom: "2rem" }}>{section.headline}</h2>
-          {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2rem" }}>{section.content}</p>}
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: subColor, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
+          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: textColor, marginBottom: "2rem" }}>{section.headline}</h2>
+          {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: mutedColor, marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: "var(--site-primary-on-surface-subtle)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><a href={`tel:${phone}`} style={{ color: "#1a1a1a", fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
-            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: "var(--site-primary-on-surface-subtle)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><span style={{ color: "#666", fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
-            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: "var(--site-primary-on-surface-subtle)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><a href={`mailto:${email}`} style={{ color: "#1a1a1a", fontSize: "1rem" }}>{email}</a></div>}
-            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: "var(--site-primary-on-surface-subtle)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><div style={{ marginTop: "0.5rem" }}>{hours.map((h, i) => <p key={i} style={{ color: "#666", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
+            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><a href={`tel:${phone}`} style={{ color: textColor, fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
+            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><span style={{ color: mutedColor, fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
+            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><a href={`mailto:${email}`} style={{ color: textColor, fontSize: "1rem" }}>{email}</a></div>}
+            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><div style={{ marginTop: "0.5rem" }}>{hours.map((h, i) => <p key={i} style={{ color: mutedColor, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: "#fff", padding: "2.5rem", borderRadius: "1rem", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
-          <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "1.5rem" }}>Schreiben Sie uns</h3>
+        <div style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#fff", padding: "2.5rem", borderRadius: "1rem", boxShadow: isDark ? "none" : "0 4px 20px rgba(0,0,0,0.08)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
+          <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: textColor, marginBottom: "1.5rem" }}>Schreiben Sie uns</h3>
           <form 
             style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
             onSubmit={(e) => {
@@ -511,10 +534,10 @@ function FreshContact({ section, cs, phone, address, email, hours }: { section: 
               (e.target as HTMLFormElement).reset();
             }}
           >
-            <input type="text" placeholder="Ihr Name" style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-            <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", resize: "none", borderRadius: "0.5rem" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+            <input type="text" placeholder="Ihr Name" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
+            <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
+            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", resize: "none", borderRadius: "0.5rem" }} />
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
               {section.ctaText || "Nachricht senden"}
             </button>
           </form>
@@ -526,13 +549,13 @@ function FreshContact({ section, cs, phone, address, email, hours }: { section: 
 
 function FreshFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
   return (
-    <footer data-section="footer" style={{ backgroundColor: "#1a1a1a", padding: "2.5rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#111111", padding: "2.5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <span style={{ fontFamily: SERIF, fontSize: "1.2rem", fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{websiteData.businessName}</span>
-        <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.3)" }}>{websiteData.footer?.text}</p>
+        <span style={{ fontFamily: SERIF, fontSize: "1.2rem", fontWeight: 700, color: "rgba(255,255,255,0.8)" }}>{websiteData.businessName}</span>
+        <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>{websiteData.footer?.text}</p>
         <div style={{ display: "flex", gap: "1.5rem" }}>
           {["Impressum", "Datenschutz"].map(l => (
-            <a key={l} href={slug ? `/site/${slug}/${l.toLowerCase()}` : "#"} style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }} className="hover:text-white transition-colors">{l}</a>
+            <a key={l} href={slug ? `/site/${slug}/${l.toLowerCase()}` : "#"} style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)" }} className="hover:text-white transition-colors">{l}</a>
           ))}
         </div>
       </div>

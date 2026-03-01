@@ -1806,6 +1806,20 @@ Kontext: ${input.context}`,
           });
         }
         
+        // If businessCategory changed, potentially update industry, heroImageUrl and colorScheme
+        if (safeData.businessCategory) {
+          const newCategory = safeData.businessCategory;
+          const industryContext = buildIndustryContext(newCategory, website.business?.name || "");
+          const heroImageUrl = getHeroImageUrl(newCategory, website.business?.name || "");
+          const colorScheme = getIndustryColorScheme(newCategory, website.business?.name || "");
+          
+          await updateWebsite(input.websiteId, { 
+            industry: newCategory, 
+            heroImageUrl, 
+            colorScheme 
+          });
+        }
+
         // If colorScheme changed, immediately update colorScheme in generated_websites
         // so the Preview page shows the same colors as the Onboarding Chat live preview.
         if (safeData.colorScheme) {
