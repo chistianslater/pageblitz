@@ -720,10 +720,11 @@ Return ONLY the key (one word, lowercase).`;
     const response = await invokeLLM({
       messages: [{ role: "user", content: prompt }],
       max_tokens: 10,
-      temperature: 0,
     });
 
-    const key = response.choices[0]?.message?.content?.trim().toLowerCase().replace(/[^a-z]/g, "") || "default";
+    const rawContent = response.choices[0]?.message?.content;
+    const contentStr = typeof rawContent === "string" ? rawContent : "";
+    const key = contentStr.trim().toLowerCase().replace(/[^a-z]/g, "") || "default";
     const validKeys = ["friseur", "restaurant", "pizza", "bar", "cafe", "hotel", "bauunternehmen", "handwerk", "fitness", "beauty", "medizin", "immobilien", "baeckerei", "beratung", "reinigung", "auto", "fotografie", "garten", "tech", "default"];
     return validKeys.includes(key) ? key : "default";
   } catch (error) {
