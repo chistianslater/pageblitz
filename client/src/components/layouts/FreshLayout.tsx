@@ -51,7 +51,7 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageU
   const surfaceTextMuted = isDarkSurface ? "rgba(255,255,255,0.7)" : "#666";
 
   return (
-    <div style={{ fontFamily: ROUND, backgroundColor: "#fafaf8", color: cs.text }}>
+    <div style={{ fontFamily: SANS, backgroundColor: "#fafaf8", color: cs.text }}>
       <FreshNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
@@ -106,7 +106,7 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageU
 
 function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav data-section="header" style={{ backgroundColor: "#fafaf8", borderBottom: "1px solid #e8e8e4", fontFamily: ROUND }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: "#fafaf8", borderBottom: "1px solid #e8e8e4", fontFamily: SANS }} className="sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
           {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: cs.text }}>{websiteData.businessName}</span>}
