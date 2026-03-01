@@ -578,3 +578,7 @@
 ## Farb-Quellen-Fix (Feb 28 2026)
 - [x] Diagnose: Preview-Route vs. Onboarding-Chat laden colorScheme aus unterschiedlichen Quellen
 - [x] Fix: saveStep aktualisiert colorScheme in generated_websites sofort wenn brandColor/brandSecondaryColor gespeichert wird
+
+## Onboarding-Chat Farb-Init-Fix (Mar 01 2026)
+- [ ] liveWebsiteData: colorScheme aus DB als Initialwert statt blauem Default
+- [ ] Sekundärfarben-Schritt: nur 3 Harmonievorschläge + Color Picker, keine Extra-Farbpaletten-Leiste

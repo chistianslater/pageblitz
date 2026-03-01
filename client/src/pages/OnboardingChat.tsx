@@ -291,6 +291,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [generationPhase, setGenerationPhase] = useState("");
 
 
+  // ── Pre-fill colors from existing colorScheme ───────────────────────────
+  useEffect(() => {
+    if (siteData?.website?.colorScheme && !initialized) {
+      const cs = siteData.website.colorScheme as any;
+      setData((prev) => ({
+        ...prev,
+        ...(cs.primary && /^#[0-9A-Fa-f]{6}$/.test(cs.primary) ? { brandColor: cs.primary } : {}),
+        ...(cs.secondary && /^#[0-9A-Fa-f]{6}$/.test(cs.secondary) ? { brandSecondaryColor: cs.secondary } : {}),
+      }));
+    }
+  }, [siteData?.website?.colorScheme, initialized]);
+
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
     if (business && !initialized) {
@@ -1450,35 +1462,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </div>
                   );
                 })()}
-                <p className="text-slate-400 text-xs">Oder wähle eine andere Farbe:</p>
-                <div className="grid grid-cols-6 gap-2">
-                  {[
-                    { label: "Hellgrau", hex: "#F1F5F9" },
-                    { label: "Warmweiß", hex: "#FFFBEB" },
-                    { label: "Hellblau", hex: "#EFF6FF" },
-                    { label: "Hellgrün", hex: "#F0FDF4" },
-                    { label: "Hellrot", hex: "#FFF1F2" },
-                    { label: "Helllila", hex: "#F5F3FF" },
-                    { label: "Dunkelgrau", hex: "#1E293B" },
-                    { label: "Dunkelblau", hex: "#0F172A" },
-                    { label: "Dunkelgrün", hex: "#052E16" },
-                    { label: "Dunkelrot", hex: "#450A0A" },
-                    { label: "Dunkelbraun", hex: "#1C0A00" },
-                    { label: "Schwarz", hex: "#111827" },
-                  ].map((color) => (
-                    <button
-                      key={color.hex}
-                      title={color.label}
-                      onClick={() => setData((p) => ({ ...p, brandSecondaryColor: color.hex }))}
-                      className={`w-full aspect-square rounded-lg border-2 transition-all ${
-                        data.brandSecondaryColor === color.hex
-                          ? "border-white scale-110 shadow-lg"
-                          : "border-transparent hover:border-slate-400"
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                    />
-                  ))}
-                </div>
+
                 <div className="flex gap-2 items-center">
                   <div
                     className="w-8 h-8 rounded-lg border border-slate-500 flex-shrink-0"
