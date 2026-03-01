@@ -226,7 +226,7 @@ function WarmAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs:
 function WarmServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   const items = section.items || [];
   return (
-    <section data-section="services" style={{ backgroundColor: "#fff", padding: "12rem 0" }}>
+    <section data-section="services" style={{ backgroundColor: cs.background, padding: "12rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-24">
           <div className="flex items-center justify-center gap-4 mb-4">
@@ -234,7 +234,7 @@ function WarmServices({ section, cs }: { section: WebsiteSection; cs: ColorSchem
             <Utensils className="h-5 w-5" style={{ color: cs.primary }} />
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.text, lineHeight: 1.1 }}>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.onBackground, lineHeight: 1.1 }}>
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: i === 2 ? "block" : "inline", fontStyle: i === 2 ? "italic" : "normal", color: i === 2 ? cs.primary : "inherit" }}>
                 {word}{" "}

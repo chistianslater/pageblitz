@@ -189,7 +189,7 @@ function NaturalHero({ section, cs, heroImageUrl, showActivateButton, onActivate
 
 function NaturalAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: "#fff", padding: "12rem 0", position: "relative", overflow: "hidden" }}>
+    <section style={{ backgroundColor: cs.background, padding: "12rem 0", position: "relative", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-24 items-center">
         <div className="lg:col-span-5 relative order-2 lg:order-1">
           <div style={{ position: "absolute", inset: "-1rem", border: `1px solid ${cs.primary}20`, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%", zIndex: 0 }} />
@@ -204,10 +204,10 @@ function NaturalAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
             <div style={{ width: "4rem", height: "1px", backgroundColor: `${cs.primary}40` }} />
           </div>
           
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: "#2a2018", marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: cs.onBackground, marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
           
-          <p style={{ fontSize: "1.15rem", lineHeight: 1.8, color: "#5a4a3a", marginBottom: "2rem", fontWeight: 500 }}>{section.subheadline}</p>
-          <p style={{ fontSize: "1.05rem", lineHeight: 1.9, color: "#7a6a5a", marginBottom: "3.5rem" }}>{section.content}</p>
+          <p style={{ fontSize: "1.15rem", lineHeight: 1.8, color: cs.onBackground, marginBottom: "2rem", fontWeight: 500, opacity: 0.9 }}>{section.subheadline}</p>
+          <p style={{ fontSize: "1.05rem", lineHeight: 1.9, color: cs.onBackground, marginBottom: "3.5rem", opacity: 0.7 }}>{section.content}</p>
           
           <div className="grid grid-cols-2 gap-10 pt-10 border-t border-slate-100">
             {[{ icon: Leaf, label: "Nachhaltig" }, { icon: Droplets, label: "Reinheit" }].map(({ icon: Icon, label }, i) => (
@@ -215,7 +215,7 @@ function NaturalAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
                 <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon className="h-6 w-6" style={{ color: cs.primary }} />
                 </div>
-                <span style={{ fontSize: "0.95rem", color: "#2a2018", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</span>
+                <span style={{ fontSize: "0.95rem", color: cs.onBackground, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</span>
               </div>
             ))}
           </div>

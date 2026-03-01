@@ -206,7 +206,7 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
 
 function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
-    <section style={{ backgroundColor: "#fff", padding: "12rem 0", position: "relative", overflow: "hidden" }}>
+    <section style={{ backgroundColor: cs.background, padding: "12rem 0", position: "relative", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-24 items-center">
         <div className="lg:col-span-5 relative order-2 lg:order-1">
           <div style={{ position: "absolute", inset: "-1rem", border: `1px solid ${cs.primary}20`, borderRadius: "2rem", zIndex: 0 }} />
@@ -221,10 +221,10 @@ function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
             <div style={{ width: "3rem", height: "1px", backgroundColor: `${cs.primary}40` }} />
           </div>
           
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: cs.text, marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: cs.onBackground, marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
           
-          <p style={{ fontSize: "1.15rem", lineHeight: 1.8, color: "#444", marginBottom: "2.5rem", fontWeight: 500 }}>{section.subheadline}</p>
-          <p style={{ fontSize: "1rem", lineHeight: 1.9, color: "#777", marginBottom: "3.5rem" }}>{section.content}</p>
+          <p style={{ fontSize: "1.15rem", lineHeight: 1.8, color: cs.onBackground, marginBottom: "2.5rem", fontWeight: 500, opacity: 0.9 }}>{section.subheadline}</p>
+          <p style={{ fontSize: "1rem", lineHeight: 1.9, color: cs.onBackground, marginBottom: "3.5rem", opacity: 0.7 }}>{section.content}</p>
           
           <div className="grid grid-cols-2 gap-10">
             {[{ icon: Heart, label: "Mit Liebe" }, { icon: Leaf, label: "Nachhaltig" }].map(({ icon: Icon, label }, i) => (

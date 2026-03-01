@@ -38,7 +38,7 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
 }: Props) {
   useScrollReveal();
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: "#ffffff", color: "#0a0a0a" }}>
+    <div style={{ fontFamily: BODY, backgroundColor: cs.background, color: cs.onBackground }}>
       <ModernNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
@@ -93,9 +93,9 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
 
 function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
   return (
-    <nav data-section="header" style={{ backgroundColor: "#fff", borderBottom: "1px solid #f0f0f0", fontFamily: BODY }} className="sticky top-0 z-50">
+    <nav data-section="header" style={{ backgroundColor: cs.background, borderBottom: `1px solid ${cs.onBackground}10`, fontFamily: BODY }} className="sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
-        {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontSize: "1.1rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#0a0a0a", fontFamily: LOGO_FONT }}>{websiteData.businessName}</span>}
+        {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontSize: "1.1rem", fontWeight: 800, letterSpacing: "-0.02em", color: cs.onBackground, fontFamily: LOGO_FONT }}>{websiteData.businessName}</span>}
         <div className="hidden md:flex items-center gap-10">
           {["Leistungen", "Über uns", "Kontakt"].map(label => (
             <a key={label} href={`#${label.toLowerCase()}`} style={{ fontSize: "0.85rem", color: "#666", fontWeight: 500 }} className="hover:text-black transition-colors">{label}</a>

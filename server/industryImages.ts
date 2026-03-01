@@ -347,9 +347,9 @@ export interface ColorScheme {
  * Calculates the best contrast color (black or white) for a given background hex color.
  */
 export function getContrastColor(hexColor: string): string {
-  if (!hexColor || typeof hexColor !== "string") return "#000000";
+  if (!hexColor || typeof hexColor !== "string") return "#ffffff";
   const hex = hexColor.replace("#", "");
-  if (hex.length !== 3 && hex.length !== 6) return "#000000";
+  if (hex.length !== 3 && hex.length !== 6) return "#ffffff";
   
   const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
   const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
@@ -357,158 +357,103 @@ export function getContrastColor(hexColor: string): string {
   
   // YIQ formula for perceived brightness
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "#000000" : "#ffffff";
+  
+  // High-End State of the Art: Instead of pure black/white, use very dark/light shades
+  // for better aesthetics and readability. 
+  // Lower threshold (145 instead of 128) makes it switch to white earlier,
+  // preventing dark text on medium-dark backgrounds.
+  return yiq >= 145 ? "#0f172a" : "#f8fafc";
 }
 
 const INDUSTRY_COLORS: Record<string, Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">[]> = {
   friseur: [
-    // 1. Classic Black & Gold (Luxus)
-    { primary: "#c9a96e", secondary: "#8b6914", accent: "#1a1a2e", background: "#faf9f7", surface: "#f2ede6", text: "#2c2416", textLight: "#8b7355", gradient: "linear-gradient(135deg, #c9a96e 0%, #8b6914 100%)" },
-    // 2. Deep Rose (Modern Feminine)
-    { primary: "#c2185b", secondary: "#880e4f", accent: "#fce4ec", background: "#fff8fb", surface: "#fce4ec", text: "#2c0a1a", textLight: "#8b4a6a", gradient: "linear-gradient(135deg, #c2185b 0%, #880e4f 100%)" },
-    // 3. Sage Green (Natural/Organic)
-    { primary: "#5a7a5a", secondary: "#3d5a3d", accent: "#c9a96e", background: "#f8faf5", surface: "#e8f0e8", text: "#1a2a1a", textLight: "#6a8a6a", gradient: "linear-gradient(135deg, #5a7a5a 0%, #c9a96e 100%)" },
-    // 4. Midnight Navy (Sophisticated)
-    { primary: "#1a1a2e", secondary: "#16213e", accent: "#e94560", background: "#ffffff", surface: "#f8f5f2", text: "#1a1a2e", textLight: "#6b6b7b", gradient: "linear-gradient(135deg, #1a1a2e 0%, #e94560 100%)" },
-    // 5. Warm Terracotta
-    { primary: "#b5451b", secondary: "#8b3214", accent: "#f5c842", background: "#fdf8f5", surface: "#f5e8e0", text: "#2c1a10", textLight: "#8b6a5a", gradient: "linear-gradient(135deg, #b5451b 0%, #f5c842 100%)" },
-    // 6. Lavender & Cream
-    { primary: "#7c5cbf", secondary: "#5a3d9a", accent: "#f5c842", background: "#faf8ff", surface: "#f0eafa", text: "#1e1040", textLight: "#7a6a9a", gradient: "linear-gradient(135deg, #7c5cbf 0%, #5a3d9a 100%)" },
+    // 1. Classic Black & Gold (Luxus) - Sophisticated & High-End
+    { primary: "#bfa37e", secondary: "#1a1a1a", accent: "#f2f2f2", background: "#ffffff", surface: "#faf9f6", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #bfa37e 0%, #1a1a1a 100%)" },
+    // 2. Muted Rose (Modern Feminine)
+    { primary: "#a67c8e", secondary: "#4a3b42", accent: "#fdf2f8", background: "#fffbfc", surface: "#fceef5", text: "#2d2428", textLight: "#8b737d", gradient: "linear-gradient(135deg, #a67c8e 0%, #4a3b42 100%)" },
+    // 3. Sage Green & Sand (Natural/Organic)
+    { primary: "#7d8c7d", secondary: "#4a5d4a", accent: "#d4b996", background: "#f9faf8", surface: "#edf0ed", text: "#1e291e", textLight: "#647464", gradient: "linear-gradient(135deg, #7d8c7d 0%, #d4b996 100%)" },
   ],
   restaurant: [
     // 1. Fine Dining (Navy & Gold)
-    { primary: "#1a2a3a", secondary: "#c5a059", accent: "#e5e5e5", background: "#ffffff", surface: "#fcfaf5", text: "#1a1a1a", textLight: "#666666", gradient: "linear-gradient(135deg, #1a2a3a 0%, #c5a059 100%)" },
-    // 2. Warm Bistro (Bordeaux & Wood)
-    { primary: "#641e16", secondary: "#a04000", accent: "#d4ac0d", background: "#fef9f7", surface: "#fdedec", text: "#2c1a10", textLight: "#7b5e57", gradient: "linear-gradient(135deg, #641e16 0%, #a04000 100%)" },
-    // 3. Contemporary (Sage & Charcoal)
-    { primary: "#4a5d4e", secondary: "#2c3e50", accent: "#8e44ad", background: "#ffffff", surface: "#f4f7f5", text: "#1a1a1a", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #4a5d4e 0%, #2c3e50 100%)" },
-    // 4. Midnight Lounge (Orange & Dark)
-    { primary: "#e67e22", secondary: "#1a1a1a", accent: "#f1c40f", background: "#0d0d0d", surface: "#1a1a1a", text: "#ffffff", textLight: "rgba(255,255,255,0.6)", gradient: "linear-gradient(135deg, #e67e22 0%, #1a1a1a 100%)" },
+    { primary: "#1e293b", secondary: "#b3966a", accent: "#f8fafc", background: "#ffffff", surface: "#f1f5f9", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #1e293b 0%, #b3966a 100%)" },
+    // 2. Warm Bistro (Terracotta & Slate)
+    { primary: "#9a3412", secondary: "#334155", accent: "#fbbf24", background: "#fffcfb", surface: "#fef2f2", text: "#1e1b1b", textLight: "#71717a", gradient: "linear-gradient(135deg, #9a3412 0%, #334155 100%)" },
+    // 3. Contemporary (Charcoal & Olive)
+    { primary: "#3f4234", secondary: "#1c1c1c", accent: "#a67c8e", background: "#ffffff", surface: "#f5f5f4", text: "#1c1917", textLight: "#78716c", gradient: "linear-gradient(135deg, #3f4234 0%, #1c1c1c 100%)" },
   ],
   pizza: [
-    // 1. Italian Heritage (Classic Red & Cream)
-    { primary: "#a93226", secondary: "#2d5a27", accent: "#d68910", background: "#fdfaf4", surface: "#f7f1e3", text: "#2c1810", textLight: "#7d6b5e", gradient: "linear-gradient(135deg, #a93226 0%, #2d5a27 100%)" },
-    // 2. Stone Oven (Terracotta & Charcoal)
-    { primary: "#b03a2e", secondary: "#5d4037", accent: "#e67e22", background: "#1a1a1a", surface: "#262626", text: "#f5ede0", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #b03a2e 0%, #5d4037 100%)" },
-    // 3. Modern Pizzeria (Slate & Tomato)
-    { primary: "#c0392b", secondary: "#34495e", accent: "#f1c40f", background: "#ffffff", surface: "#f8f9fa", text: "#1a1a2e", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #c0392b 0%, #34495e 100%)" },
-    // 4. Fresh Basil (Basil Green)
-    { primary: "#2d5a27", secondary: "#a93226", accent: "#f39c12", background: "#fdfdfb", surface: "#f4f7f4", text: "#1a2e1a", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #2d5a27 0%, #a93226 100%)" },
+    // 1. Modern Italian (Tomato & Basil) - Muted, not loud
+    { primary: "#991b1b", secondary: "#166534", accent: "#f59e0b", background: "#fffcf5", surface: "#fef9c3", text: "#450a0a", textLight: "#7f1d1d", gradient: "linear-gradient(135deg, #991b1b 0%, #166534 100%)" },
+    // 2. Rustic Stone (Deep Coal & Wood)
+    { primary: "#7c2d12", secondary: "#1a1a1a", accent: "#d97706", background: "#fafaf9", surface: "#f5f5f4", text: "#1c1917", textLight: "#78716c", gradient: "linear-gradient(135deg, #7c2d12 0%, #1a1a1a 100%)" },
   ],
   handwerk: [
-    // 1. Industrial Orange
-    { primary: "#e67e22", secondary: "#ca6f1e", accent: "#2c3e50", background: "#ffffff", surface: "#fdf8f3", text: "#2c2416", textLight: "#7d6b5e", gradient: "linear-gradient(135deg, #e67e22 0%, #2c3e50 100%)" },
-    // 2. Steel Blue (Elektriker/Sanitär)
-    { primary: "#1565c0", secondary: "#0d47a1", accent: "#ffa726", background: "#f8fbff", surface: "#e3f2fd", text: "#0a1a3a", textLight: "#5a7aaa", gradient: "linear-gradient(135deg, #1565c0 0%, #ffa726 100%)" },
-    // 3. Forest Green (Garten/Landschaft)
-    { primary: "#2e7d32", secondary: "#1b5e20", accent: "#ff8f00", background: "#f8faf8", surface: "#e8f5e9", text: "#0a2a0a", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #2e7d32 0%, #ff8f00 100%)" },
-    // 4. Dark Charcoal (Premium Handwerk)
-    { primary: "#37474f", secondary: "#263238", accent: "#e67e22", background: "#f5f6fa", surface: "#eceff1", text: "#1a2a2e", textLight: "#7a8a8e", gradient: "linear-gradient(135deg, #37474f 0%, #e67e22 100%)" },
-    // 5. Red & Black (Dachdecker/Bau)
-    { primary: "#c62828", secondary: "#8b0000", accent: "#f5f5f5", background: "#ffffff", surface: "#fafafa", text: "#1a0a0a", textLight: "#8a6a6a", gradient: "linear-gradient(135deg, #c62828 0%, #8b0000 100%)" },
-    // 6. Yellow & Black (Warnfarben/Sicherheit)
-    { primary: "#f9a825", secondary: "#e65100", accent: "#212121", background: "#fffdf5", surface: "#fff8e1", text: "#1a1200", textLight: "#8a7a40", gradient: "linear-gradient(135deg, #f9a825 0%, #e65100 100%)" },
+    // 1. Industrial Slate & Gold
+    { primary: "#334155", secondary: "#b45309", accent: "#f8fafc", background: "#ffffff", surface: "#f1f5f9", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #334155 0%, #b45309 100%)" },
+    // 2. Forest Green & Earth (Natural)
+    { primary: "#166534", secondary: "#451a03", accent: "#f59e0b", background: "#fcfdfc", surface: "#f0fdf4", text: "#064e3b", textLight: "#374151", gradient: "linear-gradient(135deg, #166534 0%, #f59e0b 100%)" },
+    // 3. Deep Sea Blue (Professional)
+    { primary: "#1e3a8a", secondary: "#1e40af", accent: "#fbbf24", background: "#ffffff", surface: "#eff6ff", text: "#1e3a8a", textLight: "#60a5fa", gradient: "linear-gradient(135deg, #1e3a8a 0%, #fbbf24 100%)" },
   ],
   fitness: [
-    // 1. Power Red
-    { primary: "#e74c3c", secondary: "#c0392b", accent: "#f39c12", background: "#ffffff", surface: "#fdf8f8", text: "#1a0a0a", textLight: "#7d5a5a", gradient: "linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)" },
-    // 2. Electric Teal (Modern Gym)
-    { primary: "#00bcd4", secondary: "#00838f", accent: "#ff5722", background: "#f0fffe", surface: "#e0f7fa", text: "#002a2e", textLight: "#5a8a8e", gradient: "linear-gradient(135deg, #00bcd4 0%, #ff5722 100%)" },
-    // 3. Midnight Black (Premium)
-    { primary: "#ff6f00", secondary: "#e65100", accent: "#ffffff", background: "#0a0a0a", surface: "#1a1a1a", text: "#ffffff", textLight: "#aaaaaa", gradient: "linear-gradient(135deg, #ff6f00 0%, #e65100 100%)" },
-    // 4. Lime Green (CrossFit/Functional)
-    { primary: "#7cb342", secondary: "#558b2f", accent: "#212121", background: "#f8fff5", surface: "#f1f8e9", text: "#1a2a0a", textLight: "#6a8a5a", gradient: "linear-gradient(135deg, #7cb342 0%, #558b2f 100%)" },
-    // 5. Purple (Yoga/Wellness)
-    { primary: "#7b1fa2", secondary: "#4a148c", accent: "#f5c842", background: "#faf5ff", surface: "#f3e5f5", text: "#1a0a2e", textLight: "#7a5a8a", gradient: "linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%)" },
-    // 6. Navy & Gold (Personal Training)
-    { primary: "#1a237e", secondary: "#0d1757", accent: "#ffd600", background: "#f8f9ff", surface: "#e8eaf6", text: "#0a0e2e", textLight: "#5a6aaa", gradient: "linear-gradient(135deg, #1a237e 0%, #ffd600 100%)" },
+    // 1. High-Performance Black & Neon Green (Sophisticated Neon)
+    { primary: "#bef264", secondary: "#0a0a0a", accent: "#ffffff", background: "#050505", surface: "#121212", text: "#ffffff", textLight: "rgba(255,255,255,0.6)", gradient: "linear-gradient(135deg, #bef264 0%, #0a0a0a 100%)" },
+    // 2. Electric Blue & Graphite
+    { primary: "#38bdf8", secondary: "#1e293b", accent: "#ffffff", background: "#0f172a", surface: "#1e293b", text: "#f8fafc", textLight: "#94a3b8", gradient: "linear-gradient(135deg, #38bdf8 0%, #1e293b 100%)" },
   ],
   medizin: [
-    // 1. Trust Blue
-    { primary: "#1565c0", secondary: "#0d47a1", accent: "#27ae60", background: "#f8fbff", surface: "#e3f2fd", text: "#0a1a3a", textLight: "#5a7aaa", gradient: "linear-gradient(135deg, #1565c0 0%, #27ae60 100%)" },
-    // 2. Healing Teal
-    { primary: "#00695c", secondary: "#004d40", accent: "#1565c0", background: "#f8fffd", surface: "#e0f2f1", text: "#002a24", textLight: "#5a8a80", gradient: "linear-gradient(135deg, #00695c 0%, #1565c0 100%)" },
-    // 3. Soft Purple (Psychologie/Therapie)
-    { primary: "#6a1b9a", secondary: "#4a148c", accent: "#26c6da", background: "#faf5ff", surface: "#f3e5f5", text: "#1a0a2e", textLight: "#7a5a8a", gradient: "linear-gradient(135deg, #6a1b9a 0%, #26c6da 100%)" },
-    // 4. Clean White & Navy
-    { primary: "#1a237e", secondary: "#0d1757", accent: "#00bcd4", background: "#ffffff", surface: "#f5f7ff", text: "#0a0e2e", textLight: "#5a6aaa", gradient: "linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)" },
-    // 5. Warm Green (Naturheilkunde)
-    { primary: "#388e3c", secondary: "#1b5e20", accent: "#ffa726", background: "#f8faf8", surface: "#e8f5e9", text: "#0a2a0a", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #388e3c 0%, #ffa726 100%)" },
+    // 1. Clinical Clean (Light Blue & White)
+    { primary: "#0ea5e9", secondary: "#0369a1", accent: "#10b981", background: "#ffffff", surface: "#f0f9ff", text: "#0c4a6e", textLight: "#075985", gradient: "linear-gradient(135deg, #0ea5e9 0%, #10b981 100%)" },
+    // 2. Holistic Green (Soft Sage)
+    { primary: "#10b981", secondary: "#065f46", accent: "#3b82f6", background: "#fcfdfd", surface: "#f0fdfa", text: "#064e3b", textLight: "#0f766e", gradient: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)" },
   ],
   immobilien: [
-    // 1. Prestige Dark
-    { primary: "#2c3e50", secondary: "#1a252f", accent: "#c9a96e", background: "#ffffff", surface: "#f5f6fa", text: "#1a1a2e", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #2c3e50 0%, #c9a96e 100%)" },
-    // 2. Modern Purple
-    { primary: "#8e44ad", secondary: "#6c3483", accent: "#f39c12", background: "#fdf8ff", surface: "#f5eafb", text: "#1a0a2e", textLight: "#7d5a8a", gradient: "linear-gradient(135deg, #8e44ad 0%, #f39c12 100%)" },
-    // 3. Warm Terracotta
-    { primary: "#b5451b", secondary: "#8b3214", accent: "#2c3e50", background: "#fdf8f5", surface: "#f5e8e0", text: "#2c1a10", textLight: "#8b6a5a", gradient: "linear-gradient(135deg, #b5451b 0%, #2c3e50 100%)" },
-    // 4. Emerald (Luxus)
-    { primary: "#1b5e20", secondary: "#0a3a0a", accent: "#c9a96e", background: "#f8faf8", surface: "#e8f5e9", text: "#0a2a0a", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #1b5e20 0%, #c9a96e 100%)" },
+    // 1. Prestige Navy
+    { primary: "#0f172a", secondary: "#334155", accent: "#b3966a", background: "#ffffff", surface: "#f8fafc", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #0f172a 0%, #b3966a 100%)" },
+    // 2. Modern Terracotta
+    { primary: "#9a3412", secondary: "#431407", accent: "#1e293b", background: "#fffcfb", surface: "#fef2f2", text: "#431407", textLight: "#71717a", gradient: "linear-gradient(135deg, #9a3412 0%, #1e293b 100%)" },
   ],
   beratung: [
-    // 1. Navy & Gold
-    { primary: "#1a3a5c", secondary: "#0f2744", accent: "#c9a96e", background: "#f8faff", surface: "#eef2f8", text: "#0f1e2e", textLight: "#5d7a8a", gradient: "linear-gradient(135deg, #1a3a5c 0%, #c9a96e 100%)" },
-    // 2. Charcoal & Teal
-    { primary: "#00838f", secondary: "#005662", accent: "#37474f", background: "#f8ffff", surface: "#e0f7fa", text: "#002a2e", textLight: "#5a8a8e", gradient: "linear-gradient(135deg, #00838f 0%, #37474f 100%)" },
-    // 3. Deep Burgundy
-    { primary: "#6a1b2a", secondary: "#4a0a1a", accent: "#c9a96e", background: "#fdf8fa", surface: "#f5e8ec", text: "#2a0a10", textLight: "#8a5a6a", gradient: "linear-gradient(135deg, #6a1b2a 0%, #c9a96e 100%)" },
+    // 1. Professional Deep Teal
+    { primary: "#0d9488", secondary: "#0f172a", accent: "#f59e0b", background: "#ffffff", surface: "#f0fdfa", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #0d9488 0%, #0f172a 100%)" },
+    // 2. Global Trust Blue
+    { primary: "#1e40af", secondary: "#1e1b4b", accent: "#f59e0b", background: "#ffffff", surface: "#eff6ff", text: "#1e1b4b", textLight: "#64748b", gradient: "linear-gradient(135deg, #1e40af 0%, #1e1b4b 100%)" },
   ],
   auto: [
-    // 1. Charcoal & Red
-    { primary: "#2c3e50", secondary: "#1a252f", accent: "#e74c3c", background: "#f5f6fa", surface: "#ecf0f1", text: "#1a1a2e", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #2c3e50 0%, #e74c3c 100%)" },
-    // 2. Racing Red
-    { primary: "#c62828", secondary: "#8b0000", accent: "#212121", background: "#ffffff", surface: "#fafafa", text: "#1a0a0a", textLight: "#8a6a6a", gradient: "linear-gradient(135deg, #c62828 0%, #212121 100%)" },
-    // 3. Electric Blue
-    { primary: "#1565c0", secondary: "#0d47a1", accent: "#ffa726", background: "#f8fbff", surface: "#e3f2fd", text: "#0a1a3a", textLight: "#5a7aaa", gradient: "linear-gradient(135deg, #1565c0 0%, #ffa726 100%)" },
+    // 1. Racing Charcoal
+    { primary: "#18181b", secondary: "#dc2626", accent: "#ffffff", background: "#ffffff", surface: "#f4f4f5", text: "#18181b", textLight: "#71717a", gradient: "linear-gradient(135deg, #18181b 0%, #dc2626 100%)" },
+    // 2. High-Tech Silver & Blue
+    { primary: "#3b82f6", secondary: "#0f172a", accent: "#ffffff", background: "#ffffff", surface: "#f8fafc", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #3b82f6 0%, #0f172a 100%)" },
   ],
   bar: [
-    // 1. Dark Burgundy & Brass (Weinbar/Tapas) – warm, dunkel, edel
-    { primary: "#8b1a2e", secondary: "#5a0f1e", accent: "#c9a96e", background: "#1a0f0a", surface: "#2a1a12", text: "#f5e8d8", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #8b1a2e 0%, #c9a96e 100%)" },
-    // 2. Midnight Black & Copper (Cocktailbar/Lounge)
-    { primary: "#b87333", secondary: "#8b5a1a", accent: "#e8c87a", background: "#0a0a0a", surface: "#1a1410", text: "#f0e8d8", textLight: "#b87333", gradient: "linear-gradient(135deg, #b87333 0%, #0a0a0a 100%)" },
-    // 3. Deep Slate & Amber (Pub/Kneipe)
-    { primary: "#d97706", secondary: "#b45309", accent: "#fbbf24", background: "#1c1a14", surface: "#2a2618", text: "#f5f0e0", textLight: "#d97706", gradient: "linear-gradient(135deg, #d97706 0%, #1c1a14 100%)" },
-    // 4. Terracotta & Dark (Tapas/Spanisch)
-    { primary: "#c0392b", secondary: "#8b1a10", accent: "#f39c12", background: "#1a0f0a", surface: "#2a1a10", text: "#f5e8d8", textLight: "#e07b3c", gradient: "linear-gradient(135deg, #c0392b 0%, #f39c12 100%)" },
+    // 1. Speakeasy (Deep Gold & Black)
+    { primary: "#a16207", secondary: "#0a0a0a", accent: "#fef3c7", background: "#050505", surface: "#121212", text: "#f8fafc", textLight: "#a1a1aa", gradient: "linear-gradient(135deg, #a16207 0%, #0a0a0a 100%)" },
+    // 2. Velvet Lounge (Deep Plum & Brass)
+    { primary: "#4c1d95", secondary: "#0a0a0a", accent: "#b3966a", background: "#050505", surface: "#0f0f17", text: "#f8fafc", textLight: "#94a3b8", gradient: "linear-gradient(135deg, #4c1d95 0%, #b3966a 100%)" },
   ],
   cafe: [
-    // 1. Espresso & Cream (Klassisches Café)
-    { primary: "#5d3a1a", secondary: "#3e2010", accent: "#d4a843", background: "#fdf8f0", surface: "#f5ece0", text: "#2a1a0a", textLight: "#8a6a4a", gradient: "linear-gradient(135deg, #5d3a1a 0%, #d4a843 100%)" },
-    // 2. Dusty Rose & Mocha (Modernes Café/Brunch)
-    { primary: "#a0522d", secondary: "#7a3a1a", accent: "#e8c4a0", background: "#fdf5f0", surface: "#f5e8dc", text: "#2a1a10", textLight: "#8a6a5a", gradient: "linear-gradient(135deg, #a0522d 0%, #e8c4a0 100%)" },
-    // 3. Forest & Cream (Bio-Café)
-    { primary: "#4a7c59", secondary: "#2d5a3a", accent: "#d4a843", background: "#f8faf5", surface: "#e8f0e8", text: "#1a2a1a", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #4a7c59 0%, #d4a843 100%)" },
-    // 4. Warm Slate & Caramel (Bäckerei)
-    { primary: "#c8860a", secondary: "#9a6208", accent: "#5d3a1a", background: "#fffbf5", surface: "#fff3e0", text: "#2a1a00", textLight: "#8a6a30", gradient: "linear-gradient(135deg, #c8860a 0%, #5d3a1a 100%)" },
+    // 1. Modern Brew (Espresso & Cream)
+    { primary: "#451a03", secondary: "#78350f", accent: "#fef3c7", background: "#fffcf5", surface: "#fef9e7", text: "#451a03", textLight: "#92400e", gradient: "linear-gradient(135deg, #451a03 0%, #fef3c7 100%)" },
+    // 2. Urban Matcha (Soft Green & Slate)
+    { primary: "#166534", secondary: "#334155", accent: "#dcfce7", background: "#ffffff", surface: "#f0fdf4", text: "#064e3b", textLight: "#475569", gradient: "linear-gradient(135deg, #166534 0%, #334155 100%)" },
   ],
   hotel: [
-    // 1. Midnight Navy & Gold (Luxushotel)
-    { primary: "#1a3a5c", secondary: "#0f2744", accent: "#c9a96e", background: "#0f1e2e", surface: "#1a2e44", text: "#f5ede0", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #1a3a5c 0%, #c9a96e 100%)" },
-    // 2. Champagne & Ivory (Boutique Hotel)
-    { primary: "#c9a96e", secondary: "#8b6914", accent: "#1a3a5c", background: "#fdfaf5", surface: "#f5ede0", text: "#2a1e10", textLight: "#8a7050", gradient: "linear-gradient(135deg, #c9a96e 0%, #1a3a5c 100%)" },
-    // 3. Forest & Linen (Landhotel/Pension)
-    { primary: "#3d6b4f", secondary: "#2a4d38", accent: "#d4a843", background: "#faf8f3", surface: "#eef0e8", text: "#1a2a1a", textLight: "#6a8a6a", gradient: "linear-gradient(135deg, #3d6b4f 0%, #d4a843 100%)" },
-    // 4. Warm Terracotta & Cream (Mediterranes Hotel)
-    { primary: "#b5451b", secondary: "#8b3214", accent: "#c9a96e", background: "#fdf8f5", surface: "#f5e8e0", text: "#2c1a10", textLight: "#8b6a5a", gradient: "linear-gradient(135deg, #b5451b 0%, #c9a96e 100%)" },
+    // 1. Luxury Suite (Gold & Midnight)
+    { primary: "#b3966a", secondary: "#0f172a", accent: "#f8fafc", background: "#ffffff", surface: "#f9fafb", text: "#0f172a", textLight: "#6b7280", gradient: "linear-gradient(135deg, #b3966a 0%, #0f172a 100%)" },
+    // 2. Modern Resort (Teal & Sand)
+    { primary: "#0d9488", secondary: "#7c2d12", accent: "#f1f5f9", background: "#ffffff", surface: "#f0fdfa", text: "#115e59", textLight: "#4b5563", gradient: "linear-gradient(135deg, #0d9488 0%, #7c2d12 100%)" },
   ],
   bauunternehmen: [
-    // 1. Industrial Anthracite & Orange (Bauunternehmen)
-    { primary: "#e67e22", secondary: "#ca6f1e", accent: "#37474f", background: "#f5f5f5", surface: "#eeeeee", text: "#1a1a1a", textLight: "#666666", gradient: "linear-gradient(135deg, #e67e22 0%, #37474f 100%)" },
-    // 2. Dark Charcoal & Safety Yellow (Hochbau)
-    { primary: "#f9a825", secondary: "#f57f17", accent: "#263238", background: "#1c1c1c", surface: "#2a2a2a", text: "#f5f5f5", textLight: "#aaaaaa", gradient: "linear-gradient(135deg, #f9a825 0%, #263238 100%)" },
-    // 3. Steel Blue & Orange (Tiefbau/Infrastruktur)
-    { primary: "#1565c0", secondary: "#0d47a1", accent: "#e67e22", background: "#f8fbff", surface: "#e3f2fd", text: "#0a1a3a", textLight: "#5a7aaa", gradient: "linear-gradient(135deg, #1565c0 0%, #e67e22 100%)" },
-    // 4. Concrete Grey & Red (Rohbau/Abbruch)
-    { primary: "#c62828", secondary: "#8b0000", accent: "#455a64", background: "#f5f5f5", surface: "#eceff1", text: "#1a1a1a", textLight: "#7a8a8e", gradient: "linear-gradient(135deg, #c62828 0%, #455a64 100%)" },
+    // 1. Modern Construct (Slate & Orange)
+    { primary: "#f97316", secondary: "#1e293b", accent: "#ffffff", background: "#ffffff", surface: "#f8fafc", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #f97316 0%, #1e293b 100%)" },
+    // 2. Heavy Industry (Anthracite & Yellow)
+    { primary: "#eab308", secondary: "#18181b", accent: "#ffffff", background: "#0a0a0a", surface: "#18181b", text: "#ffffff", textLight: "rgba(255,255,255,0.6)", gradient: "linear-gradient(135deg, #eab308 0%, #18181b 100%)" },
   ],
   default: [
-    { primary: "#3b82f6", secondary: "#1d4ed8", accent: "#f59e0b", background: "#ffffff", surface: "#f8fafc", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" },
-    { primary: "#7c3aed", secondary: "#5b21b6", accent: "#f59e0b", background: "#faf8ff", surface: "#f3f0ff", text: "#1e1b4b", textLight: "#6d6a8a", gradient: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)" },
-    { primary: "#059669", secondary: "#047857", accent: "#f59e0b", background: "#f8fffc", surface: "#ecfdf5", text: "#0a2a1e", textLight: "#5a7a6a", gradient: "linear-gradient(135deg, #059669 0%, #047857 100%)" },
-    { primary: "#dc2626", secondary: "#991b1b", accent: "#f59e0b", background: "#ffffff", surface: "#fef2f2", text: "#1a0a0a", textLight: "#8a6a6a", gradient: "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)" },
-    { primary: "#0891b2", secondary: "#0e7490", accent: "#f59e0b", background: "#f8ffff", surface: "#ecfeff", text: "#0a2a2e", textLight: "#5a8a8e", gradient: "linear-gradient(135deg, #0891b2 0%, #0e7490 100%)" },
-    { primary: "#d97706", secondary: "#b45309", accent: "#1e3a5f", background: "#fffbf5", surface: "#fef3c7", text: "#2a1a00", textLight: "#8a7040", gradient: "linear-gradient(135deg, #d97706 0%, #b45309 100%)" },
-    { primary: "#be185d", secondary: "#9d174d", accent: "#f59e0b", background: "#fff8fb", surface: "#fce7f3", text: "#2a0a1a", textLight: "#8a5a7a", gradient: "linear-gradient(135deg, #be185d 0%, #9d174d 100%)" },
+    { primary: "#2563eb", secondary: "#1e3a8a", accent: "#f59e0b", background: "#ffffff", surface: "#f8fafc", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)" },
+    { primary: "#7c3aed", secondary: "#4c1d95", accent: "#f59e0b", background: "#ffffff", surface: "#f5f3ff", text: "#1e1b4b", textLight: "#6d6a8a", gradient: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)" },
+    { primary: "#10b981", secondary: "#065f46", accent: "#f59e0b", background: "#ffffff", surface: "#f0fdf4", text: "#064e3b", textLight: "#374151", gradient: "linear-gradient(135deg, #10b981 0%, #065f46 100%)" },
   ],
 };
 
