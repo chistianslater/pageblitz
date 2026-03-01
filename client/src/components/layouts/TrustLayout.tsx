@@ -13,9 +13,9 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
-const SERIF = "var(--site-font-headline, 'Libre Baskerville', Georgia, serif)";
-const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Libre Baskerville', Georgia, serif))";
-const SANS = "var(--site-font-body, 'Source Sans Pro', 'Helvetica Neue', sans-serif)";
+const SERIF = "var(--site-font-headline, 'Instrument Sans', sans-serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Instrument Sans', sans-serif))";
+const SANS = "var(--site-font-body, 'Plus Jakarta Sans', 'Inter', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;

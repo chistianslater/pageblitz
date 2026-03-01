@@ -13,9 +13,9 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
-const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
-const LOGO_FONT = "var(--logo-font, 'Bebas Neue', 'Impact', sans-serif)";
-const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
+const DISPLAY = "'Fraunces', 'Impact', sans-serif";
+const LOGO_FONT = "var(--logo-font, 'Fraunces', 'Impact', sans-serif)";
+const BODY = "var(--site-font-body, 'Outfit', 'Inter', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;

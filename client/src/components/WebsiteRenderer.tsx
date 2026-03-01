@@ -149,18 +149,18 @@ const FALLBACK_IMAGES: Record<string, string> = {
 
 // ── Layout-specific font defaults (used when no designTokens present) ────────
 const LAYOUT_FONT_DEFAULTS: Record<string, { headline: string; body: string }> = {
-  elegant:  { headline: "'Cormorant Garamond', Georgia, serif",       body: "'Lato', 'Inter', sans-serif" },
-  bold:     { headline: "'Oswald', 'Barlow Condensed', Impact, sans-serif", body: "'Barlow', 'Inter', sans-serif" },
-  warm:     { headline: "'Lora', Georgia, serif",                      body: "'Nunito', 'Inter', sans-serif" },
-  clean:    { headline: "'Inter', system-ui, sans-serif",              body: "'Inter', system-ui, sans-serif" },
-  dynamic:  { headline: "'Rajdhani', 'Barlow Condensed', sans-serif",  body: "'Barlow', 'Inter', sans-serif" },
-  luxury:   { headline: "'Playfair Display', Georgia, serif",          body: "'Raleway', 'Inter', sans-serif" },
-  craft:    { headline: "'Bebas Neue', 'Impact', sans-serif",          body: "'Barlow', 'Inter', sans-serif" },
-  fresh:    { headline: "'Poppins', 'Inter', sans-serif",              body: "'Poppins', 'Inter', sans-serif" },
-  trust:    { headline: "'Montserrat', 'Inter', sans-serif",           body: "'Source Sans 3', 'Inter', sans-serif" },
-  modern:   { headline: "'Space Grotesk', 'Inter', sans-serif",        body: "'Inter', system-ui, sans-serif" },
-  vibrant:  { headline: "'Barlow Condensed', 'Impact', sans-serif",    body: "'Barlow', 'Inter', sans-serif" },
-  natural:  { headline: "'Playfair Display', Georgia, serif",          body: "'Nunito', 'Inter', sans-serif" },
+  elegant:  { headline: "'Fraunces', serif", body: "'Outfit', sans-serif" },
+  bold:     { headline: "'Space Grotesque', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
+  warm:     { headline: "'Fraunces', serif", body: "'Instrument Sans', sans-serif" },
+  clean:    { headline: "'Instrument Sans', sans-serif", body: "'Inter', sans-serif" },
+  dynamic:  { headline: "'Syne', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
+  luxury:   { headline: "'Fraunces', serif", body: "'Outfit', sans-serif" },
+  craft:    { headline: "'Bricolage Grotesque', sans-serif", body: "'Instrument Sans', sans-serif" },
+  fresh:    { headline: "'Plus Jakarta Sans', sans-serif", body: "'Instrument Sans', sans-serif" },
+  trust:    { headline: "'Instrument Sans', sans-serif", body: "'Inter', sans-serif" },
+  modern:   { headline: "'Plus Jakarta Sans', sans-serif", body: "'Inter', sans-serif" },
+  vibrant:  { headline: "'Bricolage Grotesque', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
+  natural:  { headline: "'Fraunces', serif", body: "'Instrument Sans', sans-serif" },
 };
 
 // ── CSS Custom Property maps ──────────────────────────────────────────────────

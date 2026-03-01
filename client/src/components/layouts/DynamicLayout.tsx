@@ -12,9 +12,9 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
-const HEADING = "var(--site-font-headline, 'Bebas Neue', 'Oswald', Impact, sans-serif)";
-const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Bebas Neue', 'Oswald', Impact, sans-serif))";
-const BODY = "var(--site-font-body, 'Rajdhani', 'Barlow', 'Inter', sans-serif)";
+const HEADING = "var(--site-font-headline, 'Syne', Impact, sans-serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Syne', Impact, sans-serif))";
+const BODY = "var(--site-font-body, 'Plus Jakarta Sans', 'Inter', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;

@@ -13,7 +13,7 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
-const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Inter', 'Helvetica Neue', sans-serif))";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Plus Jakarta Sans', 'Inter', sans-serif))";
 
 interface Props {
   websiteData: WebsiteData;

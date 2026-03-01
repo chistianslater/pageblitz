@@ -12,9 +12,9 @@ import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { getIndustryStats } from "@/lib/industryStats";
 
-const SERIF = "var(--site-font-headline, 'Cormorant Garamond', Georgia, serif)";
-const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Cormorant Garamond', Georgia, serif))";
-const SANS = "var(--site-font-body, 'Jost', 'Inter', sans-serif)";
+const SERIF = "var(--site-font-headline, 'Fraunces', Georgia, serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Fraunces', Georgia, serif))";
+const SANS = "var(--site-font-body, 'Outfit', 'Inter', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;

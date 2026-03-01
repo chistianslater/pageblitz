@@ -12,9 +12,9 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
-const DISPLAY = "'Bebas Neue', 'Impact', sans-serif";
-const LOGO_FONT = "var(--logo-font, 'Bebas Neue', 'Impact', sans-serif)";
-const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
+const DISPLAY = "'Bricolage Grotesque', 'Inter', sans-serif";
+const LOGO_FONT = "var(--logo-font, 'Bricolage Grotesque', 'Inter', sans-serif)";
+const BODY = "var(--site-font-body, 'Plus Jakarta Sans', 'Inter', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;

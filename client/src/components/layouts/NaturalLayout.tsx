@@ -12,9 +12,9 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 
-const SERIF = "var(--site-font-headline, 'Playfair Display', Georgia, serif)";
-const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Playfair Display', Georgia, serif))";
-const ROUND = "'Nunito', 'Segoe UI', sans-serif";
+const SERIF = "var(--site-font-headline, 'Fraunces', Georgia, serif)";
+const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Fraunces', Georgia, serif))";
+const ROUND = "'Instrument Sans', 'Segoe UI', sans-serif";
 
 interface Props {
   websiteData: WebsiteData;
