@@ -40,22 +40,31 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, aboutImag
   businessCategory,
 }: Props) {
   useScrollReveal();
+
+  const darkCs = {
+    ...cs,
+    background: "#0a0a0a",
+    surface: "#141414",
+    text: "#ffffff",
+    textLight: "rgba(255,255,255,0.65)",
+  };
+
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: "#0a0a0a", color: "#fff" }}>
-      <DynamicNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
+    <div style={{ fontFamily: BODY, backgroundColor: darkCs.background, color: darkCs.text }}>
+      <DynamicNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <DynamicHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <DynamicAbout section={section} cs={cs} businessCategory={businessCategory} />}
-          {section.type === "gallery" && <DynamicGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <DynamicServices section={section} cs={cs} />}
-          {section.type === "menu" && <DynamicMenu section={section} cs={cs} />}
-          {section.type === "pricelist" && <DynamicPricelist section={section} cs={cs} />}
-          {section.type === "testimonials" && <DynamicTestimonials section={section} cs={cs} />}
-          {section.type === "faq" && <DynamicFAQ section={section} cs={cs} />}
+          {section.type === "hero" && <DynamicHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
+          {section.type === "about" && <DynamicAbout section={section} cs={darkCs} businessCategory={businessCategory} />}
+          {section.type === "gallery" && <DynamicGallery section={section} cs={darkCs} />}
+          {(section.type === "services" || section.type === "features") && <DynamicServices section={section} cs={darkCs} />}
+          {section.type === "menu" && <DynamicMenu section={section} cs={darkCs} />}
+          {section.type === "pricelist" && <DynamicPricelist section={section} cs={darkCs} />}
+          {section.type === "testimonials" && <DynamicTestimonials section={section} cs={darkCs} />}
+          {section.type === "faq" && <DynamicFAQ section={section} cs={darkCs} />}
           {section.type === "contact" && (
             <div style={{ position: "relative" }}>
-              <DynamicContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+              <DynamicContact section={section} cs={darkCs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
               {contactFormLocked && (
                 <div style={{
                   position: "absolute",
@@ -86,10 +95,10 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, aboutImag
               )}
             </div>
           )}
-          {section.type === "cta" && <DynamicCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "cta" && <DynamicCTA section={section} cs={darkCs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
       ))}
-      <DynamicFooter websiteData={websiteData} cs={cs} />
+      <DynamicFooter websiteData={websiteData} cs={darkCs} />
     </div>
   );
 }

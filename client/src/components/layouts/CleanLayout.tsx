@@ -140,7 +140,7 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
         <div className="lg:col-span-7 py-20 pr-12">
           <div style={{ display: "inline-flex", alignItems: "center", gap: "0.75rem", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", padding: "0.5rem 1.25rem", borderRadius: "2px", marginBottom: "2.5rem" }} className="hero-animate-badge">
             <Shield className="h-4 w-4" style={{ color: cs.primary }} />
-            <span style={{ fontFamily: SANS, fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#64748b", fontWeight: 700 }}>Clinical Excellence</span>
+            <span style={{ fontFamily: SANS, fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#64748b", fontWeight: 700 }}>{websiteData.tagline?.split(" ")[0] || "Excellence"} & Trust</span>
           </div>
           
           <h1 style={{ 

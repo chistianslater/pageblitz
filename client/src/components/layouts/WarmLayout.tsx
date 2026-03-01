@@ -234,7 +234,13 @@ function WarmServices({ section, cs }: { section: WebsiteSection; cs: ColorSchem
             <Utensils className="h-5 w-5" style={{ color: cs.primary }} />
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.text, lineHeight: 1.1 }}>Handwerk, das man <span style={{ fontStyle: "italic", color: cs.primary }}>schmeckt</span>.</h2>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.text, lineHeight: 1.1 }}>
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ display: i === 2 ? "block" : "inline", fontStyle: i === 2 ? "italic" : "normal", color: i === 2 ? cs.primary : "inherit" }}>
+                {word}{" "}
+              </span>
+            )) || "Handwerk, das man schmeckt."}
+          </h2>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">

@@ -15,7 +15,7 @@ import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Libre Baskerville', Georgia, serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Libre Baskerville', Georgia, serif))";
-const BODY = "var(--site-font-body, 'Source Sans Pro', 'Helvetica Neue', sans-serif)";
+const SANS = "var(--site-font-body, 'Source Sans Pro', 'Helvetica Neue', sans-serif)";
 
 interface Props {
   websiteData: WebsiteData;
@@ -42,7 +42,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, aboutImageU
 }: Props) {
   useScrollReveal();
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: "#ffffff", color: "#1a2332" }}>
+    <div style={{ fontFamily: SANS, backgroundColor: "#ffffff", color: "#1a2332" }}>
       <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>

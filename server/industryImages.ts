@@ -28,7 +28,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   },
   // ── Restaurant & Food ──────────────────────────────
   restaurant: {
-    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "pizza", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food"],
+    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch"],
     hero: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop",
@@ -40,6 +40,22 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Pizzeria & Italian ──────────────────────────────
+  pizza: {
+    keywords: ["pizza", "pizzeria", "italienisch", "italian", "pasta", "trattoria", "osteria", "pizzaservice"],
+    hero: [
+      "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1574129624162-fa167303c403?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1593504049359-74330189a345?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1574071318508-1cdbad80ad50?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=800&q=80&auto=format&fit=crop",
     ],
   },
   // ── Bar & Tapas ────────────────────────────────────
@@ -348,6 +364,16 @@ const INDUSTRY_COLORS: Record<string, ColorScheme[]> = {
     { primary: "#e65100", secondary: "#bf360c", accent: "#ffd54f", background: "#fffbf5", surface: "#fff3e0", text: "#2c1a00", textLight: "#8b6a40", gradient: "linear-gradient(135deg, #e65100 0%, #ffd54f 100%)" },
     // 6. Slate & Copper
     { primary: "#b87333", secondary: "#8b5a1a", accent: "#37474f", background: "#faf8f5", surface: "#f0ebe0", text: "#2a1e10", textLight: "#8a7060", gradient: "linear-gradient(135deg, #b87333 0%, #37474f 100%)" },
+  ],
+  pizza: [
+    // 1. Italian Heritage (Red, White, Green)
+    { primary: "#c0392b", secondary: "#27ae60", accent: "#f39c12", background: "#fffef8", surface: "#fdf6e3", text: "#2c1810", textLight: "#7d6b5e", gradient: "linear-gradient(135deg, #c0392b 0%, #27ae60 100%)" },
+    // 2. Warm Oven (Amber & Dark)
+    { primary: "#d35400", secondary: "#e67e22", accent: "#2c3e50", background: "#1a1410", surface: "#2a2018", text: "#f5ede0", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #d35400 0%, #e67e22 100%)" },
+    // 3. Modern Trattoria (Slate & Gold)
+    { primary: "#2c3e50", secondary: "#c9a96e", accent: "#e74c3c", background: "#ffffff", surface: "#f8f9fa", text: "#1a1a2e", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #2c3e50 0%, #c9a96e 100%)" },
+    // 4. Tomato & Basil (Fresh)
+    { primary: "#e74c3c", secondary: "#2ecc71", accent: "#f1c40f", background: "#fdfdfb", surface: "#f4f7f4", text: "#2c1a10", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #e74c3c 0%, #2ecc71 100%)" },
   ],
   handwerk: [
     // 1. Industrial Orange

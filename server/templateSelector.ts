@@ -86,6 +86,7 @@ const INDUSTRY_TO_CATEGORY: Record<string, string[]> = {
   catering: ["Restaurant & Food"],
   lieferservice: ["Restaurant & Food", "Local Services"],
   pizza: ["Restaurant & Food"],
+  pizzeria: ["Restaurant & Food", "Local Services"],
   sushi: ["Restaurant & Food"],
   imbiss: ["Restaurant & Food", "Local Services"],
   bar: ["Restaurant & Food", "Events & Entertainment"],

@@ -1721,7 +1721,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       onClick={async () => {
                         addUserMessage(`Branche: ${data.businessCategory} ✓`);
                         await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
-                        await advanceToStep("brandColor");
+                        await advanceToStep("colorScheme");
                       }}
                       className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
                     >
@@ -2829,7 +2829,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             <div ref={messagesEndRef} />
           </div>
           {/* Input area – sticky at bottom */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "brandColor", "brandLogo", "businessCategory"].includes(currentStep) && (
+          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (

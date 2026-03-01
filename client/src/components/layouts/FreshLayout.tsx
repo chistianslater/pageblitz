@@ -129,7 +129,7 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
               <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Sun className="h-5 w-5" style={{ color: cs.primary }} />
               </div>
-              <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Made with Love</span>
+              <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>{websiteData.tagline?.split(" ")[0] || "Fresh"} & Local</span>
             </div>
 
             <h1 style={{ 
@@ -236,8 +236,14 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
     <section data-section="services" style={{ backgroundColor: "#fafaf8", padding: "12rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-24">
-          <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Unser Angebot</span>
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.1 }}>Handwerk trifft <span style={{ fontStyle: "italic", color: cs.primary }}>Inspiration</span>.</h2>
+          <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>{section.subheadline || "Unser Angebot"}</span>
+          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.1 }}>
+            {section.headline?.split(" ").map((word, i) => (
+              <span key={i} style={{ display: i === 2 ? "block" : "inline", fontStyle: i === 2 ? "italic" : "normal", color: i === 2 ? cs.primary : "inherit" }}>
+                {word}{" "}
+              </span>
+            )) || "Handwerk trifft Inspiration."}
+          </h2>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">

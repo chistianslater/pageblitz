@@ -40,22 +40,31 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, aboutImageUr
   businessCategory,
 }: Props) {
   useScrollReveal();
+
+  const darkCs = {
+    ...cs,
+    background: "#0a0a0a",
+    surface: "#141414",
+    text: "#ffffff",
+    textLight: "rgba(255,255,255,0.65)",
+  };
+
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: cs.background, color: cs.text }}>
-      <BoldNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
+    <div style={{ fontFamily: BODY, backgroundColor: darkCs.background, color: darkCs.text }}>
+      <BoldNav websiteData={websiteData} cs={darkCs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <BoldHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <BoldAbout section={section} cs={cs} businessCategory={businessCategory} />}
-          {section.type === "gallery" && <BoldGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <BoldServices section={section} cs={cs} />}
-          {section.type === "menu" && <BoldMenu section={section} cs={cs} />}
-          {section.type === "pricelist" && <BoldPricelist section={section} cs={cs} />}
-          {section.type === "testimonials" && <BoldTestimonials section={section} cs={cs} />}
-          {section.type === "faq" && <BoldFAQ section={section} cs={cs} />}
+          {section.type === "hero" && <BoldHero section={section} cs={darkCs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
+          {section.type === "about" && <BoldAbout section={section} cs={darkCs} businessCategory={businessCategory} />}
+          {section.type === "gallery" && <BoldGallery section={section} cs={darkCs} />}
+          {(section.type === "services" || section.type === "features") && <BoldServices section={section} cs={darkCs} />}
+          {section.type === "menu" && <BoldMenu section={section} cs={darkCs} />}
+          {section.type === "pricelist" && <BoldPricelist section={section} cs={darkCs} />}
+          {section.type === "testimonials" && <BoldTestimonials section={section} cs={darkCs} />}
+          {section.type === "faq" && <BoldFAQ section={section} cs={darkCs} />}
           {section.type === "contact" && (
             <div style={{ position: "relative" }}>
-              <BoldContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
+              <BoldContact section={section} cs={darkCs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
               {contactFormLocked && (
                 <div style={{
                   position: "absolute",
@@ -86,10 +95,10 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, aboutImageUr
               )}
             </div>
           )}
-          {section.type === "cta" && <BoldCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
+          {section.type === "cta" && <BoldCTA section={section} cs={darkCs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
       ))}
-      <BoldFooter websiteData={websiteData} cs={cs} />
+      <BoldFooter websiteData={websiteData} cs={darkCs} />
     </div>
   );
 }
