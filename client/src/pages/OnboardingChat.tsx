@@ -266,7 +266,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [, navigate] = useLocation();
 
   // ── Website data ────────────────────────────────────────────────────────
-  const { data: siteData, isLoading: siteLoading } = trpc.website.get.useQuery(
+  const { data: siteData, isLoading: siteLoading, refetch: refetchSiteData } = trpc.website.get.useQuery(
     { token: previewToken, id: websiteIdProp },
     { enabled: !!(previewToken || websiteIdProp) }
   );

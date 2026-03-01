@@ -38,14 +38,14 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageU
   logoUrl,
 }: Props) {
   useScrollReveal();
-  const isDarkSurface = (cs.surface || "").match(/^#(?:[0-9a-f]{3}){1,2}$/i) && 
+  const isDarkSurface = !!((cs.surface || "").match(/^#(?:[0-9a-f]{3}){1,2}$/i) && 
     (() => {
       const hex = cs.surface.replace("#", "");
       const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
       const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
       const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
       return (r * 0.299 + g * 0.587 + b * 0.114) < 128;
-    })();
+    })());
 
   const surfaceText = isDarkSurface ? "#ffffff" : cs.text;
   const surfaceTextMuted = isDarkSurface ? "rgba(255,255,255,0.7)" : "#666";

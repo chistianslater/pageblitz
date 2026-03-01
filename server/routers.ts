@@ -1809,9 +1809,11 @@ Kontext: ${input.context}`,
         // If businessCategory changed, potentially update industry, heroImageUrl and colorScheme
         if (safeData.businessCategory) {
           const newCategory = safeData.businessCategory;
-          const industryContext = buildIndustryContext(newCategory, website.business?.name || "");
-          const heroImageUrl = getHeroImageUrl(newCategory, website.business?.name || "");
-          const colorScheme = getIndustryColorScheme(newCategory, website.business?.name || "");
+          const biz = website.businessId ? await getBusinessById(website.businessId) : undefined;
+          const bizName = biz?.name || "";
+          const industryContext = buildIndustryContext(newCategory, bizName);
+          const heroImageUrl = getHeroImageUrl(newCategory, bizName);
+          const colorScheme = getIndustryColorScheme(newCategory, bizName);
           
           await updateWebsite(input.websiteId, { 
             industry: newCategory, 
