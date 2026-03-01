@@ -319,8 +319,8 @@ function LuxuryGallery({ section, cs }: { section: WebsiteSection; cs: ColorSche
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
           {items.map((item, i) => (
-            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", position: "relative" }} className="group">
-              <img src={`https://images.unsplash.com/photo-${1503376780353 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.8)" }} className="group-hover:scale-110 group-hover:brightness-100 transition-all duration-700" />
+            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", position: "relative", backgroundColor: cs.surface }} className="group">
+              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1503376780353 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.8)" }} className="group-hover:scale-110 group-hover:brightness-100 transition-all duration-700" />
             </div>
           ))}
         </div>

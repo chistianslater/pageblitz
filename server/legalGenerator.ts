@@ -284,6 +284,15 @@ export function patchWebsiteData(
     });
   }
 
+  // Patch gallery section
+  if (onboarding.photoUrls && Array.isArray(onboarding.photoUrls) && onboarding.photoUrls.length > 0) {
+    const gallerySection = patched.sections?.find((s: any) => s.type === "gallery");
+    if (gallerySection) {
+      gallerySection.items = onboarding.photoUrls.map((url: string) => ({ imageUrl: url }));
+      gallerySection.images = onboarding.photoUrls; // Fallback
+    }
+  }
+
   // Replace remaining Unsplash URLs with uploaded photos
   const photos = Array.isArray(onboarding.photoUrls) ? onboarding.photoUrls : [];
   if (photos.length > 0) {

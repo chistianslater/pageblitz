@@ -382,8 +382,8 @@ function WarmGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ borderRadius: "2rem", overflow: "hidden", aspectRatio: "1/1", boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}>
-              <img src={`https://images.unsplash.com/photo-${1414235077428 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div key={i} style={{ borderRadius: "2rem", overflow: "hidden", aspectRatio: "1/1", boxShadow: "0 8px 30px rgba(0,0,0,0.06)", backgroundColor: cs.surface }}>
+              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1414235077428 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           ))}
         </div>

@@ -299,8 +299,8 @@ function TrustGallery({ section, cs }: { section: WebsiteSection; cs: ColorSchem
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ aspectRatio: "4/3", overflow: "hidden", border: "1px solid #e8edf3", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
-              <img src={`https://images.unsplash.com/photo-${1576091160399 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div key={i} style={{ aspectRatio: "4/3", overflow: "hidden", border: "1px solid #e8edf3", boxShadow: "0 4px 12px rgba(0,0,0,0.03)", backgroundColor: cs.surface }}>
+              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1576091160399 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           ))}
         </div>

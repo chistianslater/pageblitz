@@ -22,7 +22,7 @@ import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import { notifyOwner } from "./_core/notification";
 import { TRPCError } from "@trpc/server";
-import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutStyle, getLayoutPool, getIndustryImages } from "./industryImages";
+import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutStyle, getLayoutPool, getIndustryImages, getContrastColor } from "./industryImages";
 import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
@@ -1071,7 +1071,9 @@ export const appRouter = router({
         if (effectiveGalleryImages.length > 0 && websiteData.sections) {
           const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
           if (gallerySection) {
-            gallerySection.images = effectiveGalleryImages;
+            // Fix: Use 'items' with 'imageUrl' instead of just 'images' to match Layout components
+            gallerySection.items = effectiveGalleryImages.map(url => ({ imageUrl: url }));
+            gallerySection.images = effectiveGalleryImages; // Keep for backward compatibility if any old layout uses it
           }
         }
 
@@ -1238,7 +1240,10 @@ export const appRouter = router({
         // Inject gallery images
         if (galleryImages.length > 0 && websiteData.sections) {
           const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
-          if (gallerySection) gallerySection.images = galleryImages;
+          if (gallerySection) {
+            gallerySection.items = galleryImages.map(url => ({ imageUrl: url }));
+            gallerySection.images = galleryImages;
+          }
         }
 
         // Inject real Google rating data
@@ -1871,7 +1876,8 @@ Kontext: ${input.context}`,
                // Inject new gallery images
                const gallerySection = data.sections?.find((s: any) => s.type === "gallery");
                if (gallerySection && galleryImages.length > 0) {
-                 gallerySection.images = galleryImages;
+                 gallerySection.items = galleryImages.map(url => ({ imageUrl: url }));
+                 gallerySection.images = galleryImages; // Keep for backward compatibility
                }
 
                // Replace any remaining Unsplash URLs in the entire blob with the new hero image as a placeholder
@@ -1909,6 +1915,15 @@ Kontext: ${input.context}`,
             ...existingCs,
             ...safeData.colorScheme,
           };
+          
+          // CRITICAL: Always re-calculate ALL contrast colors if any base color was provided
+          // to ensure text remains readable and prevent TypeScript sync errors
+          if (updatedCs.primary) updatedCs.onPrimary = getContrastColor(updatedCs.primary);
+          if (updatedCs.secondary) updatedCs.onSecondary = getContrastColor(updatedCs.secondary);
+          if (updatedCs.accent) updatedCs.onAccent = getContrastColor(updatedCs.accent);
+          if (updatedCs.surface) updatedCs.onSurface = getContrastColor(updatedCs.surface);
+          if (updatedCs.background) updatedCs.onBackground = getContrastColor(updatedCs.background);
+          
           await updateWebsite(input.websiteId, { colorScheme: updatedCs });
         }
         
@@ -1987,6 +2002,13 @@ Kontext: ${input.context}`,
           ...existingColorScheme,
           ...(onboarding.colorScheme || {}),
         };
+        
+        // Re-calculate ALL contrast colors to ensure readability and prevent sync errors
+        if (patchedColorScheme.primary) patchedColorScheme.onPrimary = getContrastColor(patchedColorScheme.primary);
+        if (patchedColorScheme.secondary) patchedColorScheme.onSecondary = getContrastColor(patchedColorScheme.secondary);
+        if (patchedColorScheme.accent) patchedColorScheme.onAccent = getContrastColor(patchedColorScheme.accent);
+        if (patchedColorScheme.surface) patchedColorScheme.onSurface = getContrastColor(patchedColorScheme.surface);
+        if (patchedColorScheme.background) patchedColorScheme.onBackground = getContrastColor(patchedColorScheme.background);
 
         // Save patched data and legal pages
         const websiteUpdateData: any = {
@@ -2341,7 +2363,10 @@ Kontext: ${input.context}`,
         const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
         if (effectiveGalleryImages.length > 0 && websiteData.sections) {
           const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
-          if (gallerySection) gallerySection.images = effectiveGalleryImages;
+          if (gallerySection) {
+            gallerySection.items = effectiveGalleryImages.map(url => ({ imageUrl: url }));
+            gallerySection.images = effectiveGalleryImages;
+          }
         }
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;

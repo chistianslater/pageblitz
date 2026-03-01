@@ -331,8 +331,8 @@ function DynamicGallery({ section, cs }: { section: WebsiteSection; cs: ColorSch
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 lg:gap-4">
           {items.map((item, i) => (
-            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", border: `1px solid ${cs.primary}40`, position: "relative" }} className="group">
-              <img src={`https://images.unsplash.com/photo-${1534438327276 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} className="group-hover:scale-105 transition-transform duration-500" />
+            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", border: `1px solid ${cs.primary}40`, position: "relative", backgroundColor: cs.surface }} className="group">
+              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1534438327276 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} className="group-hover:scale-105 transition-transform duration-500" />
               <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to top, ${cs.primary}40, transparent)`, opacity: 0 }} className="group-hover:opacity-100 transition-opacity duration-300" />
             </div>
           ))}

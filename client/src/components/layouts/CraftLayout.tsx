@@ -302,8 +302,8 @@ function CraftGallery({ section, cs }: { section: WebsiteSection; cs: ColorSchem
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {items.map((item, i) => (
-            <div key={i} style={{ aspectRatio: "4/3", overflow: "hidden", border: `1px solid ${cs.primary}20` }}>
-              <img src={`https://images.unsplash.com/photo-${1504307651254 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.9)" }} />
+            <div key={i} style={{ aspectRatio: "4/3", overflow: "hidden", border: `1px solid ${cs.primary}20`, backgroundColor: cs.surface }}>
+              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1504307651254 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.9)" }} />
             </div>
           ))}
         </div>

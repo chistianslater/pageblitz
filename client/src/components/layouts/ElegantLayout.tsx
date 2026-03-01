@@ -297,8 +297,8 @@ function ElegantGallery({ section, cs }: { section: WebsiteSection; cs: ColorSch
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-8">
           {items.map((item, i) => (
-            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", border: `1px solid ${cs.primary}15` }}>
-              <img src={`https://images.unsplash.com/photo-${1560066984138 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div key={i} style={{ aspectRatio: "1/1", overflow: "hidden", border: `1px solid ${cs.primary}15`, backgroundColor: cs.surface }}>
+              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1560066984138 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           ))}
         </div>
