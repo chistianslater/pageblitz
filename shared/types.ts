@@ -23,6 +23,7 @@ export interface WebsiteSection {
     answer?: string;
     price?: string | number;
     category?: string;
+    imageUrl?: string;
   }>;
   ctaText?: string;
   ctaLink?: string;
