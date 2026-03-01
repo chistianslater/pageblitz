@@ -28,7 +28,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   },
   // ── Restaurant & Food ──────────────────────────────
   restaurant: {
-    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch"],
+    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch", "taverne", "ristorante", "trattoria", "italienisch", "italien", "pizzeria", "pizza"],
     hero: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop",
@@ -44,7 +44,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   },
   // ── Pizzeria & Italian ──────────────────────────────
   pizza: {
-    keywords: ["pizza", "pizzeria", "italienisch", "italian", "pasta", "trattoria", "osteria", "pizzaservice"],
+    keywords: ["pizza", "pizzeria", "pizze", "napoli", "italienisch", "italien", "italian", "pasta", "trattoria", "osteria", "pizzaservice", "ristorante", "italy", "teig", "ofen"],
     hero: [
       "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1574129624162-fa167303c403?w=1400&q=85&auto=format&fit=crop",
@@ -274,12 +274,13 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
 
 /**
  * Find the best matching image set for a given industry/category string.
+ * Also checks business name for keywords.
  */
-export function getIndustryImages(category: string): IndustryImageSet {
-  const lower = (category || "").toLowerCase();
+export function getIndustryImages(category: string, businessName: string = ""): IndustryImageSet {
+  const combined = `${category} ${businessName}`.toLowerCase();
 
   for (const [, imageSet] of Object.entries(INDUSTRY_IMAGES)) {
-    if (imageSet.keywords.some(kw => lower.includes(kw))) {
+    if (imageSet.keywords.some(kw => combined.includes(kw))) {
       return imageSet;
     }
   }
@@ -291,13 +292,13 @@ export function getIndustryImages(category: string): IndustryImageSet {
  * Get a random hero image URL for a given industry.
  * Uses a seed based on business name for consistency (same business → same image).
  */
-export function getHeroImageUrl(category: string, seed: string = ""): string {
-  const imageSet = getIndustryImages(category);
+export function getHeroImageUrl(category: string, businessName: string = ""): string {
+  const imageSet = getIndustryImages(category, businessName);
   const heroes = imageSet.hero;
-  // Use a simple hash of the seed to pick a consistent image
+  // Use a simple hash of the businessName to pick a consistent image
   let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+  for (let i = 0; i < businessName.length; i++) {
+    hash = ((hash << 5) - hash) + businessName.charCodeAt(i);
     hash |= 0;
   }
   const idx = Math.abs(hash) % heroes.length;
@@ -307,8 +308,8 @@ export function getHeroImageUrl(category: string, seed: string = ""): string {
 /**
  * Get gallery images for a given industry.
  */
-export function getGalleryImages(category: string): string[] {
-  const imageSet = getIndustryImages(category);
+export function getGalleryImages(category: string, businessName: string = ""): string {
+  const imageSet = getIndustryImages(category, businessName);
   return imageSet.gallery || imageSet.hero.slice(0, 2);
 }
 
@@ -486,13 +487,13 @@ const INDUSTRY_COLORS: Record<string, ColorScheme[]> = {
 /**
  * Get a color scheme for a given industry, with variety based on a seed.
  */
-export function getIndustryColorScheme(category: string, seed: string = ""): ColorScheme {
-  const lower = (category || "").toLowerCase();
+export function getIndustryColorScheme(category: string, businessName: string = ""): ColorScheme {
+  const combined = `${category} ${businessName}`.toLowerCase();
   let schemes: ColorScheme[] | undefined;
   for (const [key, colors] of Object.entries(INDUSTRY_COLORS)) {
     if (key === "default") continue;
     const imageSet = INDUSTRY_IMAGES[key];
-    if (imageSet?.keywords.some(kw => lower.includes(kw))) {
+    if (imageSet?.keywords.some(kw => combined.includes(kw))) {
       schemes = colors;
       break;
     }
@@ -501,6 +502,7 @@ export function getIndustryColorScheme(category: string, seed: string = ""): Col
   // Use a stronger hash that mixes multiple characters for better distribution
   // This ensures two similar business names get different colors
   let h1 = 0x9e3779b9, h2 = 0x6c62272e;
+  const seed = businessName || category || "default";
   for (let i = 0; i < seed.length; i++) {
     const c = seed.charCodeAt(i);
     h1 = Math.imul(h1 ^ c, 0x9e3779b9);
@@ -516,13 +518,13 @@ export function getIndustryColorScheme(category: string, seed: string = ""): Col
  * Get a layout style for a given industry.
  * Different industries get different visual layouts.
  */
-export function getLayoutStyle(category: string, seed: string = ""): string {
-  const lower = (category || "").toLowerCase();
+export function getLayoutStyle(category: string, businessName: string = ""): string {
+  const combined = `${category} ${businessName}`.toLowerCase();
 
   /**
    * Industry → Layout Pool mapping.
    * Each industry maps to 2-4 structurally different layouts.
-   * The seed (business name) deterministically picks one from the pool,
+   * The businessName (seed) deterministically picks one from the pool,
    * ensuring maximum variance within the same industry.
    */
   const POOLS: Array<{ test: (s: string) => boolean; pool: string[] }> = [
@@ -590,22 +592,16 @@ export function getLayoutStyle(category: string, seed: string = ""): string {
 
   // Find matching pool
   let pool: string[] = ["clean", "modern", "trust", "fresh"];
-  let industryKey = "general";
-  const INDUSTRY_KEYS = [
-    "beauty", "food", "construction", "automotive", "fitness",
-    "medical", "legal", "nature", "cleaning", "tech", "education", "hospitality"
-  ];
   for (let i = 0; i < POOLS.length; i++) {
-    if (POOLS[i].test(lower)) {
+    if (POOLS[i].test(combined)) {
       pool = POOLS[i].pool;
-      industryKey = INDUSTRY_KEYS[i] || "general";
       break;
     }
   }
 
-  // Deterministic hash of seed → pick from pool (legacy fallback)
+  // Deterministic hash of businessName → pick from pool
   let hash = 0;
-  const s = seed || category || "default";
+  const s = businessName || category || "default";
   for (let i = 0; i < s.length; i++) {
     hash = Math.imul(31, hash) + s.charCodeAt(i) | 0;
   }
@@ -614,10 +610,9 @@ export function getLayoutStyle(category: string, seed: string = ""): string {
 
 /**
  * Returns the layout pool and industry key for a category.
- * Use this with getNextLayoutForIndustry() for round-robin assignment.
  */
-export function getLayoutPool(category: string): { pool: string[]; industryKey: string } {
-  const lower = (category || "").toLowerCase();
+export function getLayoutPool(category: string, businessName: string = ""): { pool: string[]; industryKey: string } {
+  const combined = `${category} ${businessName}`.toLowerCase();
   const POOLS_SIMPLE = [
     { test: (s: string) => /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading|esthetician|eyebrow|eyelash|skincare|skin care|facial|pedicure|manicure|hairdresser|hairstylist/.test(s), pool: ["elegant", "fresh", "luxury"], key: "beauty" },
     { test: (s: string) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|coffee.?shop|coffee house|diner|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|fast.?food|takeout|takeaway|deli|sandwich|brunch|breakfast|lunch|dinner/.test(s), pool: ["warm", "fresh", "modern"], key: "food" },
@@ -633,7 +628,7 @@ export function getLayoutPool(category: string): { pool: string[]; industryKey: 
     { test: (s: string) => /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour|resort|motel|bed.?and.?breakfast|b&b|vacation|rental|venue|banquet|conference|catering.?event|entertainment|nightclub|bar|lounge|brewery|winery|distillery/.test(s), pool: ["luxury", "warm", "elegant"], key: "hospitality" },
   ];
   for (const entry of POOLS_SIMPLE) {
-    if (entry.test(lower)) return { pool: entry.pool, industryKey: entry.key };
+    if (entry.test(combined)) return { pool: entry.pool, industryKey: entry.key };
   }
   return { pool: ["clean", "modern", "trust", "fresh"], industryKey: "general" };
 }

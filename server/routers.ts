@@ -317,11 +317,11 @@ Vibe: Vertrauenswürdig, modern, professionell. Wie ein SaaS-Produkt.`
 };
 
 // ── Industry-specific prompt enrichment ───────────────
-function buildIndustryContext(category: string): string {
-  const lower = (category || "").toLowerCase();
+function buildIndustryContext(category: string, businessName: string = ""): string {
+  const combined = `${category} ${businessName}`.toLowerCase();
 
   // Hair & Beauty → Pool: elegant, fresh, luxury
-  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/.test(lower)) {
+  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/.test(combined)) {
     return `LAYOUT-POOL: BEAUTY (elegant / fresh / luxury)
 Schreibstil: Poetisch, sinnlich, einladend. Kurze, elegante Sätze. Emotionen ansprechen.
 Sprache: Warm, persönlich, luxuriös ohne arrogant zu sein.
@@ -332,7 +332,7 @@ VERBOTEN: "Ihr Wohlbefinden liegt uns am Herzen", "Wir freuen uns auf Ihren Besu
   }
 
   // Bar, Tapas, Cocktail, Pub → Pool: dark, vibrant, nightlife
-  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|nachtleben|aperitivo/.test(lower)) {
+  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|nachtleben|aperitivo/.test(combined)) {
     return `LAYOUT-POOL: BAR (dark / vibrant / nightlife)
 Schreibstil: Stimmungsvoll, verführerisch, atmosphärisch. Kurze, knackige Sätze. Nacht-Feeling.
 Sprache: Lässig, einladend, cool. Erlebnisse und Atmosphäre betonen.
@@ -343,7 +343,7 @@ VERBOTEN: "Wir bieten eine große Auswahl", generische Gastro-Phrasen.`;
   }
 
   // Restaurant, Café, Food → Pool: warm, fresh, modern
-  if (/restaurant|gastro|cafe|café|bistro|pizza|küche|bäckerei|catering|food|sushi|burger|gastronomie|bakery/.test(lower)) {
+  if (/restaurant|gastro|cafe|café|bistro|pizza|küche|bäckerei|catering|food|sushi|burger|gastronomie|bakery/.test(combined)) {
     return `LAYOUT-POOL: GASTRONOMIE (warm / fresh / modern)
 Schreibstil: Sensorisch, appetitanregend, gemütlich. Beschreibe Aromen, Texturen, Atmosphäre.
 Sprache: Herzlich, einladend, leidenschaftlich für Essen.
@@ -354,7 +354,7 @@ VERBOTEN: "Wir bieten eine große Auswahl", "für jeden Geschmack etwas dabei", 
   }
 
   // Bauunternehmen → Pool: bold, industrial, modern
-  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau|umbau|anbau/.test(lower)) {
+  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau|umbau|anbau/.test(combined)) {
     return `LAYOUT-POOL: BAUUNTERNEHMEN (bold / industrial / modern)
 Schreibstil: Kraftvoll, kompetent, zuverlässig. Zahlen, Projekte, Referenzen betonen.
 Sprache: Professionell, direkt, vertrauensweckend. Großprojekte und Expertise hervorheben.
@@ -365,7 +365,7 @@ VERBOTEN: "Qualität steht bei uns an erster Stelle", "Ihr Partner für...", wei
   }
 
   // Construction, Trades → Pool: bold, craft, modern
-  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|contractor|roofing|construction|tischler|schreiner|zimmermann|fliesenleger|renovation|installation/.test(lower)) {
+  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|contractor|roofing|construction|tischler|schreiner|zimmermann|fliesenleger|renovation|installation/.test(combined)) {
     return `LAYOUT-POOL: HANDWERK (bold / craft / modern)
 Schreibstil: Direkt, kraftvoll, selbstbewusst. Kurze, prägnante Aussagen. Zahlen und Fakten.
 Sprache: Kompetent, vertrauenswürdig. Keine Schnickschnack.
@@ -376,7 +376,7 @@ VERBOTEN: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Ste
   }
 
   // Automotive → Pool: luxury, bold, craft
-  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice/.test(lower)) {
+  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice/.test(combined)) {
     return `LAYOUT-POOL: AUTOMOTIVE (luxury / bold / craft)
 Schreibstil: Technisch-präzise, leidenschaftlich, premium. Zahlen und Spezifikationen.
 Sprache: Kennerschaft, Qualitätsbewusstsein, Leidenschaft fürs Fahrzeug.
@@ -386,7 +386,7 @@ Services: Konkrete Leistungen mit technischen Details und Zeitangaben.`;
   }
 
   // Fitness & Sport → Pool: vibrant, dynamic, modern
-  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing/.test(lower)) {
+  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing/.test(combined)) {
     return `LAYOUT-POOL: FITNESS (vibrant / dynamic / modern)
 Schreibstil: Motivierend, energetisch, herausfordernd. Imperativ-Sätze. Transformation betonen.
 Sprache: Stark, inspirierend, community-orientiert. Ergebnisse in den Vordergrund.
@@ -397,7 +397,7 @@ VERBOTEN: "Für jeden das Richtige", "Spaß am Sport", generische Fitness-Phrase
   }
 
   // Medical & Health → Pool: trust, clean, modern
-  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|hospital|chiropractor|heilpraktiker/.test(lower)) {
+  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|hospital|chiropractor|heilpraktiker/.test(combined)) {
     return `LAYOUT-POOL: MEDIZIN (trust / clean / modern)
 Schreibstil: Professionell, beruhigend, klar. Präzise Aussagen. Vertrauen aufbauen.
 Sprache: Kompetent, empathisch, sachlich. Fachbegriffe erklären.
@@ -408,7 +408,7 @@ VERBOTEN: "Ihr Vertrauen ist unser Kapital", "Wir nehmen uns Zeit für Sie", gen
   }
 
   // Legal, Finance, Consulting → Pool: trust, clean, modern
-  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien|makler/.test(lower)) {
+  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien|makler/.test(combined)) {
     return `LAYOUT-POOL: BERATUNG (trust / clean / modern)
 Schreibstil: Sachlich, präzise, kompetent. Vertrauen durch Expertise.
 Sprache: Professionell, direkt, vertrauenswürdig. Keine Emotionen, aber Empathie.
@@ -418,7 +418,7 @@ Services: Konkrete Leistungsbereiche mit Spezialisierungen.`;
   }
 
   // Organic, Eco, Garden → Pool: natural, fresh, warm
-  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/.test(lower)) {
+  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/.test(combined)) {
     return `LAYOUT-POOL: NATUR (natural / fresh / warm)
 Schreibstil: Warm, authentisch, nachhaltig. Sensorische Beschreibungen. Erdverbundenheit.
 Sprache: Ehrlich, leidenschaftlich, umweltbewusst. Regionale Herkunft betonen.
@@ -428,7 +428,7 @@ Services: Konkrete Produkte/Leistungen mit Herkunftsangaben.`;
   }
 
   // Tech, Agency, Digital → Pool: modern, vibrant, dynamic
-  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/.test(lower)) {
+  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/.test(combined)) {
     return `LAYOUT-POOL: DIGITAL (modern / vibrant / dynamic)
 Schreibstil: Präzise, innovativ, zukunftsorientiert. Ergebnisse und ROI betonen.
 Sprache: Kompetent, modern, lösungsorientiert. Technische Begriffe erklären.
@@ -438,7 +438,7 @@ Services: Konkrete Leistungen mit messbaren Ergebnissen.`;
   }
 
   // Hotel, Tourism, Events → Pool: luxury, elegant, warm
-  if (/hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel/.test(lower)) {
+  if (/hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel/.test(combined)) {
     return `LAYOUT-POOL: HOSPITALITY (luxury / elegant / warm)
 Schreibstil: Einladend, atmosphärisch, erlebnisreich. Emotionen und Erinnerungen wecken.
 Sprache: Gastfreundlich, warm, exklusiv. Erlebnisse beschreiben.
@@ -686,19 +686,19 @@ Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Z
 /** Maps a GMB category string to the industry key used in template_uploads table */
 function mapCategoryToIndustryKey(category: string): string {
   const lower = (category || "").toLowerCase();
-  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|lash|brow|make.?up/.test(lower)) return "beauty";
-  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|aperitivo/.test(lower)) return "restaurant";
-  if (/café|cafe|bistro|kaffee|coffee|coffeeshop|bäckerei|bakery|konditorei|patisserie|brunch/.test(lower)) return "restaurant";
-  if (/restaurant|gastro|gastronomie|pizza|küche|bäckerei|catering|food|sushi|burger|bakery/.test(lower)) return "restaurant";
-  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|personal.?trainer|physiotherap|boxing/.test(lower)) return "fitness";
-  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|motorrad|reifenservice/.test(lower)) return "automotive";
-  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|chiropractor/.test(lower)) return "medical";
-  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien/.test(lower)) return "legal";
-  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau/.test(lower)) return "trades";
-  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|roofing|construction|tischler|schreiner/.test(lower)) return "trades";
-  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|startup/.test(lower)) return "tech";
-  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|naturopath/.test(lower)) return "other";
-  if (/hotel|pension|hostel|tourism|tourismus|event|veranstaltung|hochzeit|wedding|reise/.test(lower)) return "hospitality";
+  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|lash|brow|make.?up/.test(combined)) return "beauty";
+  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|aperitivo/.test(combined)) return "restaurant";
+  if (/café|cafe|bistro|kaffee|coffee|coffeeshop|bäckerei|bakery|konditorei|patisserie|brunch/.test(combined)) return "restaurant";
+  if (/restaurant|gastro|gastronomie|pizza|küche|bäckerei|catering|food|sushi|burger|bakery/.test(combined)) return "restaurant";
+  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|personal.?trainer|physiotherap|boxing/.test(combined)) return "fitness";
+  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|motorrad|reifenservice/.test(combined)) return "automotive";
+  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|chiropractor/.test(combined)) return "medical";
+  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien/.test(combined)) return "legal";
+  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau/.test(combined)) return "trades";
+  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|roofing|construction|tischler|schreiner/.test(combined)) return "trades";
+  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|startup/.test(combined)) return "tech";
+  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|naturopath/.test(combined)) return "other";
+  if (/hotel|pension|hostel|tourism|tourismus|event|veranstaltung|hochzeit|wedding|reise/.test(combined)) return "hospitality";
   return "other";
 }
 
@@ -951,15 +951,15 @@ export const appRouter = router({
         if (existing) throw new TRPCError({ code: "CONFLICT", message: "Website already generated for this business" });
 
         const category = business.category || "Dienstleistung";
-        const industryContext = buildIndustryContext(category);
+        const industryContext = buildIndustryContext(category, business.name);
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
         const colorScheme = getIndustryColorScheme(category, business.name);
         // Round-robin layout assignment: guarantees consecutive same-industry
         // websites always get a different layout from the pool.
-        const { pool: layoutPool, industryKey } = getLayoutPool(category);
+        const { pool: layoutPool, industryKey } = getLayoutPool(category, business.name);
         const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
         const heroImageUrl = getHeroImageUrl(category, business.name);
-        const galleryImages = getGalleryImages(category);
+        const galleryImages = getGalleryImages(category, business.name);
         // Fetch GMB photos from Google Places API (prefer real business photos over Unsplash)
         const gmbPhotos = business.placeId ? await getGmbPhotos(business.placeId, 7) : [];
         // Select matching templatess from the library for visual reference
@@ -1134,10 +1134,10 @@ export const appRouter = router({
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
         const colorScheme = getIndustryColorScheme(category, seed);
         // Round-robin: guarantees a different layout than the previous generation
-        const { pool: layoutPoolRegen, industryKey: industryKeyRegen } = getLayoutPool(category);
+        const { pool: layoutPoolRegen, industryKey: industryKeyRegen } = getLayoutPool(category, business.name);
         const layoutStyle = await getNextLayoutForIndustry(industryKeyRegen, layoutPoolRegen);
         const heroImageUrl = getHeroImageUrl(category, seed);
-        const galleryImages = getGalleryImages(category);
+        const galleryImages = getGalleryImages(category, business.name);
 
         // Pick different templates than last time by shuffling
         const matchingTemplates = selectTemplatesForIndustry(category, seed, 3);
@@ -2193,13 +2193,13 @@ Kontext: ${input.context}`,
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
 
         const category = business.category || "Dienstleistung";
-        const industryContext = buildIndustryContext(category);
+        const industryContext = buildIndustryContext(category, business.name);
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
         const colorScheme = getIndustryColorScheme(category, business.name);
-        const { pool: layoutPool, industryKey } = getLayoutPool(category);
+        const { pool: layoutPool, industryKey } = getLayoutPool(category, business.name);
         const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
         const heroImageUrl = getHeroImageUrl(category, business.name);
-        const galleryImages = getGalleryImages(category);
+        const galleryImages = getGalleryImages(category, business.name);
         const gmbPhotos = business.placeId && !business.placeId.startsWith("self-") ? await getGmbPhotos(business.placeId, 7) : [];
         const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
         const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
