@@ -1085,11 +1085,12 @@ export const appRouter = router({
 
         // Inject real Google reviews into testimonials section if available
         const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
-        if (realReviews && realReviews.length >= 3 && websiteData.sections) {
+        let injectedRealReviews = false;
+        if (realReviews && realReviews.length > 0 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
           if (testimonialsSection) {
             const rawTopReviews = realReviews
-              .filter((r) => r.text && r.text.length >= 50)
+              .filter((r) => r.text && r.text.length >= 20)
               .sort((a, b) => b.rating - a.rating)
               .slice(0, 5)
               .map((r) => ({
@@ -1100,11 +1101,17 @@ export const appRouter = router({
                 isRealReview: true,
               }));
             
-            if (rawTopReviews.length >= 2) {
+            if (rawTopReviews.length >= 1) {
               testimonialsSection.items = rawTopReviews;
               testimonialsSection.isRealReviews = true;
+              injectedRealReviews = true;
             }
           }
+        }
+
+        // Remove testimonials if they are not real reviews (AI hallucinations)
+        if (!injectedRealReviews && websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
         // Sanitize designTokens: ensure enum values are valid
@@ -1248,11 +1255,12 @@ export const appRouter = router({
 
         // Inject real Google reviews into testimonials section if available
         const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
-        if (realReviews && realReviews.length >= 3 && websiteData.sections) {
+        let injectedRealReviews = false;
+        if (realReviews && realReviews.length > 0 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
           if (testimonialsSection) {
             const rawTopReviews = realReviews
-              .filter((r) => r.text && r.text.length >= 50)
+              .filter((r) => r.text && r.text.length >= 20)
               .sort((a, b) => b.rating - a.rating)
               .slice(0, 5)
               .map((r) => ({
@@ -1263,11 +1271,17 @@ export const appRouter = router({
                 isRealReview: true,
               }));
             
-            if (rawTopReviews.length >= 2) {
+            if (rawTopReviews.length >= 1) {
               testimonialsSection.items = rawTopReviews;
               testimonialsSection.isRealReviews = true;
+              injectedRealReviews = true;
             }
           }
+        }
+
+        // Remove testimonials if they are not real reviews (AI hallucinations)
+        if (!injectedRealReviews && websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
         // Sanitize designTokens: ensure enum values are valid
@@ -2361,11 +2375,12 @@ Kontext: ${input.context}`,
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
         const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
-        if (realReviews && realReviews.length >= 3 && websiteData.sections) {
+        let injectedRealReviewsSS = false;
+        if (realReviews && realReviews.length > 0 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
           if (testimonialsSection) {
             const rawTopReviews = realReviews
-              .filter((r) => r.text && r.text.length >= 50)
+              .filter((r) => r.text && r.text.length >= 20)
               .sort((a, b) => b.rating - a.rating)
               .slice(0, 5)
               .map((r) => ({
@@ -2376,11 +2391,17 @@ Kontext: ${input.context}`,
                 isRealReview: true,
               }));
             
-            if (rawTopReviews.length >= 2) {
+            if (rawTopReviews.length >= 1) {
               testimonialsSection.items = rawTopReviews;
               testimonialsSection.isRealReviews = true;
+              injectedRealReviewsSS = true;
             }
           }
+        }
+
+        // Remove testimonials if they are not real reviews (AI hallucinations)
+        if (!injectedRealReviewsSS && websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
         if (websiteData.designTokens) {

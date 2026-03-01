@@ -208,7 +208,7 @@ function ModernAbout({ section, cs, heroImageUrl, businessCategory }: { section:
               zIndex: 0 
             }} />
             <div className="premium-shadow-lg" style={{ position: "relative", zIndex: 1 }}>
-              <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} />
+              <img src={aboutImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} />
             </div>
             {/* Big background number */}
             <div style={{ 

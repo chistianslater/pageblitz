@@ -10,6 +10,7 @@ import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
 import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif } from "@shared/layoutConfig";
+import { getGalleryImages } from "@shared/industryImages";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -211,6 +212,8 @@ interface Props {
   websiteId?: number;
 }
 
+const LAYOUTS_WITHOUT_ABOUT_IMAGE = ["trust", "dynamic", "bold"];
+
 export default function OnboardingChat({ previewToken, websiteId: websiteIdProp }: Props) {
   const [, navigate] = useLocation();
 
@@ -222,6 +225,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
   const business = siteData?.business;
+
+  // ── Dynamic step order based on layout and websiteData ──────────────────
+  const dynamicStepOrder = useMemo(() => {
+    const layout = (siteData?.website as any)?.layoutStyle as string | undefined;
+    const websiteDataRaw = siteData?.website?.websiteData as any;
+    const sections = websiteDataRaw?.sections || [];
+    const hasAbout = sections.some((s: any) => s.type === "about");
+    const layoutHasAboutImage = !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
+
+    return STEP_ORDER.filter((step) => {
+      if (step === "aboutPhoto") return hasAbout && layoutHasAboutImage;
+      if (step === "editMenu") return data.addOnMenu;
+      if (step === "editPricelist") return data.addOnPricelist;
+      if (step === "editGallery") return data.addOnGallery;
+      return true;
+    });
+  }, [siteData?.website, data.addOnMenu, data.addOnPricelist, data.addOnGallery]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -613,10 +633,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Wir sind fast fertig! 🎉 Hier siehst du alle Bereiche, die wir für dich vorbereitet haben. Standardmäßig sind alle aktiv (**grüner Haken**).\n\nFalls du einen Bereich zum Start doch lieber ausblenden möchtest, klicke ihn einfach an. Keine Sorge – du kannst alles später jederzeit im Dashboard wieder ändern!`;
         case "colorScheme":
           return `🎨 **Gestalte den Look deiner Website!**\n\nWähle ein Farbschema, das zu deinem Unternehmen passt. Alle Schemen wurden nach farbpsychologischen Aspekten optimiert.\n\n*💡 Keine Angst: Du kannst jede einzelne Farbe später in deinem Dashboard noch feiner anpassen!*`;
-        case "heroPhoto":
-          return `Schön! Jetzt wählen wir ein **Hauptbild** für deine Website. Du kannst ein eigenes Foto hochladen oder aus unseren Vorschlägen wählen – passend zu deiner Branche.`;
-        case "aboutPhoto":
-          return `Super! Jetzt wählen wir noch ein **zweites Bild** für den "Über uns"-Bereich deiner Website. Dieses Bild erscheint im Abschnitt, der dein Unternehmen vorstellt.`;
+        case "heroPhoto": {
+          const total = dynamicStepOrder.filter((s) => s === "heroPhoto" || s === "aboutPhoto").length;
+          const intro = total > 1 
+            ? `Schön! Wir gehen jetzt nacheinander die **${total} wichtigsten Bilder** deiner Website durch. Starten wir mit dem **Hauptbild**!` 
+            : `Schön! Jetzt wählen wir das **Hauptbild** für deine Website.`;
+          return `${intro} Du kannst ein eigenes Foto hochladen oder aus unseren Vorschlägen wählen – passend zu deiner Branche.`;
+        }
+        case "aboutPhoto": {
+          const total = dynamicStepOrder.filter((s) => s === "heroPhoto" || s === "aboutPhoto").length;
+          return `Super! Jetzt wählen wir noch ein **zweites Bild** (2/${total}) für den "Über uns"-Bereich deiner Website. Dieses Bild erscheint im Abschnitt, der dein Unternehmen vorstellt.`;
+        }
         case "brandLogo":
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "headlineFont":
@@ -780,6 +807,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     [addBotMessage, getStepPrompt, SECTION_DIVIDERS]
   );
 
+  const goToNextStep = useCallback(async () => {
+    const idx = dynamicStepOrder.indexOf(currentStep);
+    const next = dynamicStepOrder[idx + 1];
+    if (next) {
+      await advanceToStep(next);
+    }
+  }, [currentStep, dynamicStepOrder, advanceToStep]);
+
   // Helper to save step data without blocking chat advancement
   const trySaveStep = async (stepIdx: number, stepData: Record<string, unknown>) => {
     if (!websiteId) return;
@@ -799,8 +834,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     setInputValue("");
 
-    const stepIdx = STEP_ORDER.indexOf(currentStep);
-    const nextStep = STEP_ORDER[stepIdx + 1] as ChatStep;
+    const stepIdx = dynamicStepOrder.indexOf(currentStep);
+    const nextStep = dynamicStepOrder[stepIdx + 1] as ChatStep;
 
     try {
       switch (currentStep) {
@@ -1047,23 +1082,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Add or update Gallery section if active
     if (data.addOnGallery && !hiddenSections.has("gallery")) {
-      const cat = data.businessCategory.toLowerCase();
-      // Use selected images if available, otherwise fall back to industry-themed placeholders
-      const galleryItems = data.addOnGalleryData.images.length > 0
-        ? data.addOnGalleryData.images.map((img, i) => ({ title: `Projekt ${i + 1}`, imageUrl: img }))
-        : Array.from({ length: 6 }).map((_, i) => {
-          let keyword = "business";
-          if (/friseur|hair|beauty/.test(cat)) keyword = "haircut";
-          else if (/restaurant|essen|food|pizza/.test(cat)) keyword = "food";
-          else if (/handwerk|bau|dach/.test(cat)) keyword = "craft";
-          else if (/fitness|sport|gym/.test(cat)) keyword = "fitness";
-          else if (/auto|kfz/.test(cat)) keyword = "car";
-          
-          return { 
-            title: `Projekt ${i + 1}`,
-            imageUrl: `https://images.unsplash.com/photo-${1500000000000 + i * 100000}?w=800&q=80&fit=crop&auto=format&auto=enhance&q=60&sig=${i}&${keyword}`
-          };
-        });
+      // Use selected images if available, otherwise fall back to industry-themed curated images
+      const fallbackImages = getGalleryImages(data.businessCategory, data.businessName);
+      const galleryImages = data.addOnGalleryData.images.length > 0
+        ? data.addOnGalleryData.images
+        : fallbackImages;
+
+      const galleryItems = galleryImages.map((img, i) => ({ 
+        title: `Projekt ${i + 1}`, 
+        imageUrl: img 
+      }));
 
       const existingGalleryIdx = patched.sections.findIndex(s => s.type === "gallery");
       const gallerySection = {
@@ -1640,7 +1668,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           addUserMessage("Keine Leistungen anzeigen");
                           setData((p) => ({ ...p, topServices: [], topServicesSkipped: true }));
                           await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: [] });
-                          await advanceToStep("targetAudience");
+                          await goToNextStep();
                         }}
                         className="flex-1 text-xs bg-slate-600 hover:bg-slate-500 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
                       >
@@ -1676,7 +1704,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       }
                       addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
                       await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
-                      await advanceToStep("targetAudience");
+                      await goToNextStep();
                     }}
                     className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -1697,7 +1725,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       onClick={async () => {
                         addUserMessage(`Branche: ${data.businessCategory} ✓`);
                         await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
-                        await advanceToStep("colorScheme");
+                        await goToNextStep();
                       }}
                       className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
                     >
@@ -1872,7 +1900,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     if (isTyping) return;
                     addUserMessage(`Farbschema ausgewählt ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("colorScheme"), { colorScheme: data.colorScheme });
-                    await advanceToStep("heroPhoto");
+                    await goToNextStep();
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
                 >
@@ -1892,7 +1920,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   const label = url ? "Hauptbild ausgewählt ✓" : "Bestehendes Hauptbild behalten ✓";
                   addUserMessage(label);
                   await trySaveStep(STEP_ORDER.indexOf("heroPhoto"), { heroPhotoUrl: url });
-                  await advanceToStep("aboutPhoto");
+                  await goToNextStep();
                 }}
               />
             )}
@@ -1908,7 +1936,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   const label = url ? "Über-uns-Bild ausgewählt ✓" : "Bestehendes Bild behalten ✓";
                   addUserMessage(label);
                   await trySaveStep(STEP_ORDER.indexOf("aboutPhoto"), { aboutPhotoUrl: url });
-                  await advanceToStep("brandLogo");
+                  await goToNextStep();
                 }}
               />
             )}
@@ -1996,7 +2024,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
                     addUserMessage(`Logo gewählt: ${label} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
-                    await advanceToStep("headlineFont");
+                    await goToNextStep();
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -2062,7 +2090,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     const fontLabel = data.headlineFont;
                     addUserMessage(`Schriftart gewählt: ${fontLabel} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
-                    await advanceToStep("businessName");
+                    await goToNextStep();
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -2129,15 +2157,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       addOnPricelist: data.addOnPricelist
                     });
                     
-                    if (data.addOnMenu) {
-                      await advanceToStep("editMenu");
-                    } else if (data.addOnPricelist) {
-                      await advanceToStep("editPricelist");
-                    } else if (data.addOnGallery) {
-                      await advanceToStep("editGallery");
-                    } else {
-                      await advanceToStep("subpages");
-                    }
+                    await goToNextStep();
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -2267,9 +2287,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       onClick={async () => {
                         addUserMessage("Speisekarte später ausfüllen");
-                        if (data.addOnPricelist) await advanceToStep("editPricelist");
-                        else if (data.addOnGallery) await advanceToStep("editGallery");
-                        else await advanceToStep("subpages");
+                        await goToNextStep();
                       }}
                       className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
                     >
@@ -2280,9 +2298,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         const filledCategories = data.addOnMenuData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
                         addUserMessage(`Speisekarte gespeichert (${filledCategories.length} Kategorien) ✓`);
                         await trySaveStep(STEP_ORDER.indexOf("editMenu"), { addOnMenuData: { categories: filledCategories } });
-                        if (data.addOnPricelist) await advanceToStep("editPricelist");
-                        else if (data.addOnGallery) await advanceToStep("editGallery");
-                        else await advanceToStep("subpages");
+                        await goToNextStep();
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
                     >
@@ -2400,8 +2416,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       onClick={async () => {
                         addUserMessage("Preisliste später ausfüllen");
-                        if (data.addOnGallery) await advanceToStep("editGallery");
-                        else await advanceToStep("subpages");
+                        await goToNextStep();
                       }}
                       className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
                     >
@@ -2412,8 +2427,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         const filledCategories = data.addOnPricelistData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
                         addUserMessage(`Preisliste gespeichert (${filledCategories.length} Kategorien) ✓`);
                         await trySaveStep(STEP_ORDER.indexOf("editPricelist"), { addOnPricelistData: { categories: filledCategories } });
-                        if (data.addOnGallery) await advanceToStep("editGallery");
-                        else await advanceToStep("subpages");
+                        await goToNextStep();
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
                     >
@@ -2460,7 +2474,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         galleryHeadline: data.addOnGalleryData.headline,
                         galleryImages: data.addOnGalleryData.images 
                       });
-                      await advanceToStep("subpages");
+                      await goToNextStep();
                     }}
                     className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors font-medium"
                   >
@@ -2542,7 +2556,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         const validPages = data.subPages.filter((p) => p.name.trim());
                         addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
                         await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: validPages.map((p) => p.name) });
-                        await advanceToStep("email");
+                        await goToNextStep();
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
                     >
@@ -2992,8 +3006,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </button>
             {/* Progress bar */}
             {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
-              const totalSteps = STEP_ORDER.filter((s) => s !== "welcome").length;
-              const currentIdx = STEP_ORDER.indexOf(currentStep);
+              const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
+              const currentIdx = dynamicStepOrder.indexOf(currentStep);
               const progress = Math.round((currentIdx / totalSteps) * 100);
               return (
                 <div className="flex flex-1 items-center gap-3">

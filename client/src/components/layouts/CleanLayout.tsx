@@ -333,7 +333,7 @@ function CleanGallery({ section, cs }: { section: WebsiteSection; cs: ColorSchem
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
           {items.map((item, i) => (
             <div key={i} style={{ borderRadius: "1rem", overflow: "hidden", aspectRatio: "1/1", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}05` }}>
-              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1500000000000 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={item.imageUrl || "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80&fit=crop"} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           ))}
         </div>
