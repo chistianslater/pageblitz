@@ -1848,11 +1848,56 @@ Kontext: ${input.context}`,
           const industryContext = buildIndustryContext(newCategory, bizName);
           const heroImageUrl = getHeroImageUrl(newCategory, bizName, industryKey);
           const colorScheme = getIndustryColorScheme(newCategory, bizName, industryKey);
+          const galleryImages = getGalleryImages(newCategory, bizName, industryKey);
           
+          // Also patch the websiteData JSON blob if it exists to replace stale images/colors
+          let updatedWebsiteData = website.websiteData;
+          if (updatedWebsiteData) {
+             try {
+               // Deep clone
+               const data = JSON.parse(JSON.stringify(updatedWebsiteData));
+               // Update top-level fields
+               data.heroImageUrl = heroImageUrl;
+               if (data.hero) data.hero.imageUrl = heroImageUrl;
+               
+               // Update colors in designTokens if they exist
+               if (data.designTokens) {
+                 data.designTokens.accentColor = colorScheme.accent;
+                 data.designTokens.backgroundColor = colorScheme.background;
+                 data.designTokens.cardBackground = colorScheme.surface;
+                 data.designTokens.textColor = colorScheme.text;
+               }
+
+               // Inject new gallery images
+               const gallerySection = data.sections?.find((s: any) => s.type === "gallery");
+               if (gallerySection && galleryImages.length > 0) {
+                 gallerySection.images = galleryImages;
+               }
+
+               // Replace any remaining Unsplash URLs in the entire blob with the new hero image as a placeholder
+               // (or a random one from the new industry set)
+               const industryImages = getIndustryImages(newCategory, bizName, industryKey);
+               const allIndustryHeroes = industryImages.hero;
+               
+               const patchedStr = JSON.stringify(data).replace(
+                 /https:\/\/images\.unsplash\.com\/[^"]+/g,
+                 (match) => {
+                   // If it's a known industry image, keep it? No, replace all to be sure.
+                   const idx = Math.floor(Math.random() * allIndustryHeroes.length);
+                   return allIndustryHeroes[idx] || match;
+                 }
+               );
+               updatedWebsiteData = JSON.parse(patchedStr);
+             } catch (e) {
+               console.error("Error patching websiteData in saveStep:", e);
+             }
+          }
+
           await updateWebsite(input.websiteId, { 
             industry: newCategory, 
             heroImageUrl, 
-            colorScheme 
+            colorScheme,
+            websiteData: updatedWebsiteData
           });
         }
 

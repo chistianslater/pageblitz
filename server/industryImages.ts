@@ -336,9 +336,31 @@ export interface ColorScheme {
   text: string;
   textLight: string;
   gradient: string;
+  onPrimary: string;
+  onSecondary: string;
+  onAccent: string;
+  onSurface: string;
+  onBackground: string;
 }
 
-const INDUSTRY_COLORS: Record<string, ColorScheme[]> = {
+/**
+ * Calculates the best contrast color (black or white) for a given background hex color.
+ */
+export function getContrastColor(hexColor: string): string {
+  if (!hexColor || typeof hexColor !== "string") return "#000000";
+  const hex = hexColor.replace("#", "");
+  if (hex.length !== 3 && hex.length !== 6) return "#000000";
+  
+  const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
+  const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
+  const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
+  
+  // YIQ formula for perceived brightness
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "#000000" : "#ffffff";
+}
+
+const INDUSTRY_COLORS: Record<string, Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">[]> = {
   friseur: [
     // 1. Classic Black & Gold (Luxus)
     { primary: "#c9a96e", secondary: "#8b6914", accent: "#1a1a2e", background: "#faf9f7", surface: "#f2ede6", text: "#2c2416", textLight: "#8b7355", gradient: "linear-gradient(135deg, #c9a96e 0%, #8b6914 100%)" },
@@ -354,28 +376,24 @@ const INDUSTRY_COLORS: Record<string, ColorScheme[]> = {
     { primary: "#7c5cbf", secondary: "#5a3d9a", accent: "#f5c842", background: "#faf8ff", surface: "#f0eafa", text: "#1e1040", textLight: "#7a6a9a", gradient: "linear-gradient(135deg, #7c5cbf 0%, #5a3d9a 100%)" },
   ],
   restaurant: [
-    // 1. Classic Italian Red
-    { primary: "#c0392b", secondary: "#922b21", accent: "#f39c12", background: "#fffef8", surface: "#fdf6e3", text: "#2c1810", textLight: "#7d6b5e", gradient: "linear-gradient(135deg, #c0392b 0%, #f39c12 100%)" },
-    // 2. Forest Green (Farm-to-Table)
-    { primary: "#2d6a4f", secondary: "#1b4332", accent: "#d4a017", background: "#f8faf8", surface: "#e8f5e9", text: "#1b2e1b", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #2d6a4f 0%, #d4a017 100%)" },
-    // 3. Dark & Moody (Fine Dining)
-    { primary: "#c9a96e", secondary: "#8b6914", accent: "#e94560", background: "#1a1410", surface: "#2a2018", text: "#f5ede0", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #c9a96e 0%, #8b6914 100%)" },
-    // 4. Mediterranean Blue
-    { primary: "#1565c0", secondary: "#0d47a1", accent: "#ffa726", background: "#f8fbff", surface: "#e3f2fd", text: "#0a1a3a", textLight: "#5a7aaa", gradient: "linear-gradient(135deg, #1565c0 0%, #ffa726 100%)" },
-    // 5. Warm Amber (Café/Bistro)
-    { primary: "#e65100", secondary: "#bf360c", accent: "#ffd54f", background: "#fffbf5", surface: "#fff3e0", text: "#2c1a00", textLight: "#8b6a40", gradient: "linear-gradient(135deg, #e65100 0%, #ffd54f 100%)" },
-    // 6. Slate & Copper
-    { primary: "#b87333", secondary: "#8b5a1a", accent: "#37474f", background: "#faf8f5", surface: "#f0ebe0", text: "#2a1e10", textLight: "#8a7060", gradient: "linear-gradient(135deg, #b87333 0%, #37474f 100%)" },
+    // 1. Fine Dining (Navy & Gold)
+    { primary: "#1a2a3a", secondary: "#c5a059", accent: "#e5e5e5", background: "#ffffff", surface: "#fcfaf5", text: "#1a1a1a", textLight: "#666666", gradient: "linear-gradient(135deg, #1a2a3a 0%, #c5a059 100%)" },
+    // 2. Warm Bistro (Bordeaux & Wood)
+    { primary: "#641e16", secondary: "#a04000", accent: "#d4ac0d", background: "#fef9f7", surface: "#fdedec", text: "#2c1a10", textLight: "#7b5e57", gradient: "linear-gradient(135deg, #641e16 0%, #a04000 100%)" },
+    // 3. Contemporary (Sage & Charcoal)
+    { primary: "#4a5d4e", secondary: "#2c3e50", accent: "#8e44ad", background: "#ffffff", surface: "#f4f7f5", text: "#1a1a1a", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #4a5d4e 0%, #2c3e50 100%)" },
+    // 4. Midnight Lounge (Orange & Dark)
+    { primary: "#e67e22", secondary: "#1a1a1a", accent: "#f1c40f", background: "#0d0d0d", surface: "#1a1a1a", text: "#ffffff", textLight: "rgba(255,255,255,0.6)", gradient: "linear-gradient(135deg, #e67e22 0%, #1a1a1a 100%)" },
   ],
   pizza: [
-    // 1. Italian Heritage (Red, White, Green)
-    { primary: "#c0392b", secondary: "#27ae60", accent: "#f39c12", background: "#fffef8", surface: "#fdf6e3", text: "#2c1810", textLight: "#7d6b5e", gradient: "linear-gradient(135deg, #c0392b 0%, #27ae60 100%)" },
-    // 2. Warm Oven (Amber & Dark)
-    { primary: "#d35400", secondary: "#e67e22", accent: "#2c3e50", background: "#1a1410", surface: "#2a2018", text: "#f5ede0", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #d35400 0%, #e67e22 100%)" },
-    // 3. Modern Trattoria (Slate & Gold)
-    { primary: "#2c3e50", secondary: "#c9a96e", accent: "#e74c3c", background: "#ffffff", surface: "#f8f9fa", text: "#1a1a2e", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #2c3e50 0%, #c9a96e 100%)" },
-    // 4. Tomato & Basil (Fresh)
-    { primary: "#e74c3c", secondary: "#2ecc71", accent: "#f1c40f", background: "#fdfdfb", surface: "#f4f7f4", text: "#2c1a10", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #e74c3c 0%, #2ecc71 100%)" },
+    // 1. Italian Heritage (Classic Red & Cream)
+    { primary: "#a93226", secondary: "#2d5a27", accent: "#d68910", background: "#fdfaf4", surface: "#f7f1e3", text: "#2c1810", textLight: "#7d6b5e", gradient: "linear-gradient(135deg, #a93226 0%, #2d5a27 100%)" },
+    // 2. Stone Oven (Terracotta & Charcoal)
+    { primary: "#b03a2e", secondary: "#5d4037", accent: "#e67e22", background: "#1a1a1a", surface: "#262626", text: "#f5ede0", textLight: "#c9a96e", gradient: "linear-gradient(135deg, #b03a2e 0%, #5d4037 100%)" },
+    // 3. Modern Pizzeria (Slate & Tomato)
+    { primary: "#c0392b", secondary: "#34495e", accent: "#f1c40f", background: "#ffffff", surface: "#f8f9fa", text: "#1a1a2e", textLight: "#7f8c8d", gradient: "linear-gradient(135deg, #c0392b 0%, #34495e 100%)" },
+    // 4. Fresh Basil (Basil Green)
+    { primary: "#2d5a27", secondary: "#a93226", accent: "#f39c12", background: "#fdfdfb", surface: "#f4f7f4", text: "#1a2e1a", textLight: "#5a7a5a", gradient: "linear-gradient(135deg, #2d5a27 0%, #a93226 100%)" },
   ],
   handwerk: [
     // 1. Industrial Orange
@@ -527,7 +545,17 @@ export function getIndustryColorScheme(category: string, businessName: string = 
     h2 = (h2 << 7) | (h2 >>> 25);
   }
   const hash = Math.abs(h1 ^ h2);
-  return schemes[hash % schemes.length];
+  const scheme = schemes[hash % schemes.length];
+
+  // Dynamically calculate "on" contrast colors
+  return {
+    ...scheme,
+    onPrimary: getContrastColor(scheme.primary),
+    onSecondary: getContrastColor(scheme.secondary),
+    onAccent: getContrastColor(scheme.accent),
+    onSurface: getContrastColor(scheme.surface),
+    onBackground: getContrastColor(scheme.background),
+  };
 }
 
 /**

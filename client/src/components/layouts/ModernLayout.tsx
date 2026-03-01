@@ -103,7 +103,7 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
         </div>
         {businessPhone && (
           <a href={`tel:${businessPhone}`} style={{ fontSize: "0.85rem", color: "#0a0a0a", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }} className="hover:opacity-60 transition-opacity">
-            <Phone className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /> {businessPhone}
+            <Phone className="h-4 w-4" style={{ color: cs.primary }} /> {businessPhone}
           </a>
         )}
       </div>
@@ -132,7 +132,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
         {/* Left - Text (overlaps slightly) */}
         <div className="lg:col-span-7 py-20 lg:pr-12 relative z-20">
           <div style={{ display: "inline-flex", alignItems: "center", gap: "0.75rem", marginBottom: "2.5rem" }}>
-            <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 800, backgroundColor: `${cs.primary}10`, padding: "0.5rem 1rem", borderRadius: "2px" }}>
+            <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, backgroundColor: `${cs.primary}10`, padding: "0.5rem 1rem", borderRadius: "2px" }}>
               Premium Experience
             </span>
           </div>
@@ -240,7 +240,7 @@ function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; c
           </div>
           
           <div className="lg:col-span-6">
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Über unser Team</span>
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>Über unser Team</span>
             <h2 data-reveal style={{ fontSize: "clamp(2.5rem, 4vw, 4rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "2.5rem", lineHeight: 1 }}>{section.headline}</h2>
             
             <div className="space-y-8">
@@ -279,7 +279,7 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
       <div className="max-w-7xl mx-auto px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
           <div className="max-w-2xl">
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 800, display: "block", marginBottom: "1rem" }}>Was wir bieten</span>
+            <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1rem" }}>Was wir bieten</span>
             <h2 data-reveal style={{ fontSize: "clamp(2.5rem, 4.5vw, 4.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1 }}>{section.headline}</h2>
           </div>
           <div style={{ paddingBottom: "0.5rem" }}>
@@ -381,7 +381,7 @@ function ModernPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSc
     <section data-section="pricelist" style={{ backgroundColor: "#f8f8f8", padding: "7rem 0" }}>
       <div className="max-w-4xl mx-auto px-8">
         <div className="mb-16 text-center">
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "1rem" }}>Preise</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1rem" }}>Preise</span>
           <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a" }}>{section.headline}</h2>
         </div>
         <div className="space-y-16">
@@ -392,7 +392,7 @@ function ModernPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSc
                 {catItems.map((item, i) => (
                   <div key={i} className={`flex justify-between items-center px-8 py-5 ${i !== catItems.length - 1 ? 'border-bottom: 1px solid #f5f5f5' : ''}`}>
                     <span style={{ fontSize: "1rem", fontWeight: 600, color: "#0a0a0a" }}>{item.title}</span>
-                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                    <span style={{ fontSize: "1rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
                   </div>
                 ))}
               </div>
@@ -410,7 +410,7 @@ function ModernGallery({ section, cs }: { section: WebsiteSection; cs: ColorSche
     <section data-section="gallery" style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
         <div className="mb-16">
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Galerie</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Galerie</span>
           <h2 data-reveal data-delay="100" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", lineHeight: 1.05 }}>{section.headline}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
@@ -432,7 +432,7 @@ function ModernTestimonials({ section, cs }: { section: WebsiteSection; cs: Colo
   return (
     <section data-section="testimonials" style={{ backgroundColor: "#0a0a0a", padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8">
-        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "3rem" }}>Was Kunden sagen</span>
+        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "3rem" }}>Was Kunden sagen</span>
         {featured && (
           <div style={{ marginBottom: "4rem" }}>
             <p style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", fontWeight: 700, lineHeight: 1.3, color: "#fff", letterSpacing: "-0.02em", maxWidth: "800px", marginBottom: "2rem" }}>
@@ -440,12 +440,12 @@ function ModernTestimonials({ section, cs }: { section: WebsiteSection; cs: Colo
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
               <div style={{ width: "3rem", height: "3rem", backgroundColor: cs.primary, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: "1.2rem", fontWeight: 900, color: "#fff" }}>{(featured.author || "K")[0]}</span>
+                <span style={{ fontSize: "1.2rem", fontWeight: 900, color: cs.onPrimary }}>{(featured.author || "K")[0]}</span>
               </div>
               <div>
                 <p style={{ fontSize: "0.9rem", fontWeight: 700, color: "#fff" }}>{featured.author || "Kunde"}</p>
                 <div style={{ display: "flex", gap: "2px", marginTop: "2px" }}>
-                  {Array.from({ length: featured.rating || 5 }).map((_, j) => <Star key={j} className="h-3.5 w-3.5" style={{ fill: cs.primary, color: "var(--site-primary-on-surface)" }} />)}
+                  {Array.from({ length: featured.rating || 5 }).map((_, j) => <Star key={j} className="h-3.5 w-3.5" style={{ fill: cs.primary, color: cs.primary }} />)}
                 </div>
               </div>
             </div>
@@ -472,7 +472,7 @@ function ModernFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
   return (
     <section style={{ backgroundColor: "#fff", padding: "7rem 0" }}>
       <div className="max-w-4xl mx-auto px-8">
-        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>FAQ</span>
+        <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>FAQ</span>
         <h2 data-reveal data-delay="200" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "3rem", lineHeight: 1.05 }}>{section.headline}</h2>
         <div>
           {items.map((item, i) => (
@@ -501,17 +501,17 @@ function ModernCTA({ section, cs, showActivateButton, onActivate }: { section: W
     <section style={{ backgroundColor: cs.primary, padding: "6rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
         <div>
-          <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#fff", lineHeight: 1.05 }}>{section.headline}</h2>
-          {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", marginTop: "0.75rem" }}>{section.content}</p>}
+          <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.03em", color: cs.onPrimary, lineHeight: 1.05 }}>{section.headline}</h2>
+          {section.content && <p style={{ fontSize: "1.1rem", color: cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", marginTop: "0.75rem" }}>{section.content}</p>}
         </div>
         <div style={{ display: "flex", gap: "1rem", flexShrink: 0, flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-white)", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.onPrimary, color: cs.primary, padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 800, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">
               {section.ctaText} <ArrowRight className="h-4 w-4" />
             </a>
           )}
           {showActivateButton && (
-            <button onClick={onActivate} style={{ border: "2px solid rgba(255,255,255,0.4)", color: "#fff", padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:border-white transition-colors">
+            <button onClick={onActivate} style={{ border: `2px solid ${cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)"}`, color: cs.onPrimary, padding: "1rem 2.5rem", fontSize: "0.9rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:border-white transition-colors">
               Website aktivieren
             </button>
           )}
@@ -526,14 +526,14 @@ function ModernContact({ section, cs, phone, address, email, hours }: { section:
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-8 grid lg:grid-cols-2 gap-20">
         <div>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
+          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
           <h2 data-reveal data-delay="300" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a", marginBottom: "2rem", lineHeight: 1.05 }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "#666", marginBottom: "2.5rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`tel:${phone}`} style={{ color: "#0a0a0a", fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}
-            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: "var(--site-primary-on-surface)" }} /><span style={{ color: "#555", fontSize: "0.95rem" }}>{address}</span></div>}
-            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`mailto:${email}`} style={{ color: "#0a0a0a", fontSize: "1rem" }}>{email}</a></div>}
-            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: "var(--site-primary-on-surface)" }} /><div>{hours.map((h, i) => <p key={i} style={{ color: "#555", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
+            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: "#0a0a0a", fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}
+            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><span style={{ color: "#555", fontSize: "0.95rem" }}>{address}</span></div>}
+            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ color: "#0a0a0a", fontSize: "1rem" }}>{email}</a></div>}
+            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><div>{hours.map((h, i) => <p key={i} style={{ color: "#555", fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
         <div style={{ backgroundColor: "#fff", padding: "3rem" }}>

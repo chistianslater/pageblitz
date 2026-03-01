@@ -102,7 +102,7 @@ function ElegantNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: 
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
         <div className="flex flex-col">
           {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.5rem", fontWeight: 600, letterSpacing: "0.05em", color: cs.text }}>{websiteData.businessName}</span>}
-          {websiteData.tagline && <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 500 }}>{websiteData.tagline.split(" ").slice(0, 4).join(" ")}</span>}
+          {websiteData.tagline && <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 500 }}>{websiteData.tagline.split(" ").slice(0, 4).join(" ")}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Leistungen", "Über uns", "Kontakt"].map(label => (
@@ -110,7 +110,7 @@ function ElegantNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: 
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ fontSize: "0.8rem", color: "var(--site-primary-on-surface)", letterSpacing: "0.05em", fontWeight: 500 }} className="hidden sm:flex items-center gap-2 hover:opacity-70 transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ fontSize: "0.8rem", color: cs.primary, letterSpacing: "0.05em", fontWeight: 500 }} className="hidden sm:flex items-center gap-2 hover:opacity-70 transition-opacity">
             <Phone className="h-3.5 w-3.5" /> {businessPhone}
           </a>
         )}
@@ -292,7 +292,7 @@ function ElegantGallery({ section, cs }: { section: WebsiteSection; cs: ColorSch
     <section data-section="gallery" style={{ backgroundColor: cs.background, padding: "7rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
-          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>Galerie</p>
+          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>Galerie</p>
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 400, color: cs.text, fontStyle: "italic" }}>{section.headline}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-8">
@@ -313,7 +313,7 @@ function ElegantTestimonials({ section, cs }: { section: WebsiteSection; cs: Col
     <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
-          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>Stimmen unserer Kunden</p>
+          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>Stimmen unserer Kunden</p>
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 400, color: cs.text, fontStyle: "italic" }}>{section.headline}</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -323,11 +323,11 @@ function ElegantTestimonials({ section, cs }: { section: WebsiteSection; cs: Col
               <p style={{ fontFamily: SERIF, fontSize: "1rem", lineHeight: 1.8, color: cs.text, fontStyle: "italic", marginBottom: "1.5rem" }}>{item.description || item.title}</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: SERIF, fontSize: "1rem", color: "var(--site-primary-on-surface)" }}>{(item.author || item.title || "K").charAt(0)}</span>
+                  <span style={{ fontFamily: SERIF, fontSize: "1rem", color: cs.primary }}>{(item.author || item.title || "K").charAt(0)}</span>
                 </div>
                 <div>
                   <p style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 600, color: cs.text }}>{item.author || item.title}</p>
-                  <div className="flex gap-0.5 mt-0.5">{Array.from({ length: 5 }).map((_, j) => <Star key={j} className="h-3 w-3 fill-current" style={{ color: "var(--site-primary-on-surface)" }} />)}</div>
+                  <div className="flex gap-0.5 mt-0.5">{Array.from({ length: 5 }).map((_, j) => <Star key={j} className="h-3 w-3 fill-current" style={{ color: cs.primary }} />)}</div>
                 </div>
               </div>
             </div>
@@ -345,7 +345,7 @@ function ElegantFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
       <div className="max-w-3xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
-          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>FAQ</p>
+          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>FAQ</p>
           <h2 style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 400, color: cs.text, fontStyle: "italic" }}>{section.headline}</h2>
         </div>
         <div className="space-y-0">
@@ -353,7 +353,7 @@ function ElegantFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
             <div key={i} style={{ borderBottom: `1px solid ${cs.primary}20` }}>
               <button onClick={() => setOpen(open === i ? null : i)} className="w-full text-left py-5 flex items-center justify-between" style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 500 }}>
                 {item.question || item.title}
-                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} />}
+                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} />}
               </button>
               {open === i && <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.8, color: cs.textLight, paddingBottom: "1.25rem", fontWeight: 300 }}>{item.answer || item.description}</p>}
             </div>
@@ -373,7 +373,7 @@ function ElegantMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div style={{ textAlign: "center", marginBottom: "5rem" }}>
           <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary, margin: "0 auto 2rem" }} />
-          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontFamily: SANS, fontWeight: 500, marginBottom: "1.5rem" }}>
+          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1.5rem" }}>
             Exquisite Auswahl
           </p>
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: cs.text, fontStyle: "italic", lineHeight: 1 }}>{section.headline}</h2>
@@ -390,7 +390,7 @@ function ElegantMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme
                       <div className="flex justify-between items-baseline gap-4 mb-2">
                         <h4 style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 500, color: cs.text, letterSpacing: "0.02em" }}>{item.title}</h4>
                         <div className="flex-1 border-b border-slate-200 mx-2" />
-                        <span style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 600, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                        <span style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 600, color: cs.primary }}>{item.price}</span>
                       </div>
                       {item.description && (
                         <p style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight, lineHeight: 1.6, fontWeight: 300 }}>{item.description}</p>
@@ -408,7 +408,7 @@ function ElegantMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme
                 <div className="flex justify-between items-baseline gap-4 mb-2">
                   <h4 style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 500, color: cs.text, letterSpacing: "0.02em" }}>{item.title}</h4>
                   <div className="flex-1 border-b border-slate-200 mx-2" />
-                  <span style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 600, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                  <span style={{ fontFamily: SANS, fontSize: "1.05rem", fontWeight: 600, color: cs.primary }}>{item.price}</span>
                 </div>
                 {item.description && (
                   <p style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight, lineHeight: 1.6, fontWeight: 300 }}>{item.description}</p>
@@ -443,7 +443,7 @@ function ElegantPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
                   {items.filter(item => item.category === cat).map((item, i) => (
                     <div key={i} className="flex justify-between items-center py-4 border-b border-slate-200">
                       <span style={{ fontFamily: SANS, fontSize: "1rem", fontWeight: 400, color: cs.text, letterSpacing: "0.05em", textTransform: "uppercase" }}>{item.title}</span>
-                      <span style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 600, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                      <span style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 600, color: cs.primary }}>{item.price}</span>
                     </div>
                   ))}
                 </div>
@@ -456,7 +456,7 @@ function ElegantPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
               {items.map((item, i) => (
                 <div key={i} className="flex justify-between items-center py-4 border-b border-slate-100 last:border-0">
                   <span style={{ fontFamily: SANS, fontSize: "1rem", fontWeight: 400, color: cs.text, letterSpacing: "0.05em", textTransform: "uppercase" }}>{item.title}</span>
-                  <span style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 600, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                  <span style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 600, color: cs.primary }}>{item.price}</span>
                 </div>
               ))}
             </div>
@@ -472,13 +472,13 @@ function ElegantContact({ section, cs, phone, address, email, hours }: { section
     <section id="kontakt" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16">
         <div>
-          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>Kontakt</p>
+          <p style={{ fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontFamily: SANS, fontWeight: 500, marginBottom: "1rem" }}>Kontakt</p>
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 400, color: cs.text, marginBottom: "2rem", fontStyle: "italic" }}>{section.headline}</h2>
           {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "2.5rem", fontWeight: 300 }}>{section.content}</p>}
           <div className="space-y-4">
-            {phone && <div className="flex items-center gap-3"><Phone className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{phone}</a></div>}
-            {address && <div className="flex items-start gap-3"><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: "var(--site-primary-on-surface)" }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
-            {email && <div className="flex items-center gap-3"><Mail className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
+            {phone && <div className="flex items-center gap-3"><Phone className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{phone}</a></div>}
+            {address && <div className="flex items-start gap-3"><MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: cs.primary }} /><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
+            {email && <div className="flex items-center gap-3"><Mail className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
           </div>
         </div>
         <div style={{ backgroundColor: cs.surface, padding: "3rem" }}>
@@ -499,7 +499,7 @@ function ElegantContact({ section, cs, phone, address, email, hours }: { section
             <div style={{ borderBottom: `1px solid ${cs.primary}30`, paddingBottom: "0.5rem" }}>
               <textarea placeholder="IHRE NACHRICHT" rows={4} style={{ width: "100%", backgroundColor: "transparent", border: "none", color: cs.text, fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", outline: "none", resize: "none" }} />
             </div>
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem", fontFamily: SANS, fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.2em", border: "none", cursor: "pointer", textTransform: "uppercase", marginTop: "1rem" }} className="hover:opacity-90 transition-opacity">
+            <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontFamily: SANS, fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.2em", border: "none", cursor: "pointer", textTransform: "uppercase", marginTop: "1rem" }} className="hover:opacity-90 transition-opacity">
               {section.ctaText || "Senden"}
             </button>
           </form>
@@ -526,11 +526,11 @@ function ElegantCTA({ section, cs, showActivateButton, onActivate }: { section: 
   return (
     <section style={{ backgroundColor: cs.primary, padding: "5rem 0" }}>
       <div className="max-w-3xl mx-auto px-6 text-center">
-        <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 400, color: "var(--site-nav-text)", fontStyle: "italic", marginBottom: "1.5rem" }}>{section.headline}</h2>
-        {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: "var(--site-nav-text-muted, rgba(0,0,0,0.7))", marginBottom: "2.5rem", fontWeight: 300 }}>{section.content}</p>}
+        <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 400, color: cs.onPrimary, fontStyle: "italic", marginBottom: "1.5rem" }}>{section.headline}</h2>
+        {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", marginBottom: "2.5rem", fontWeight: 300 }}>{section.content}</p>}
         <div className="flex flex-wrap justify-center gap-4">
-          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-white)", padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, fontFamily: SANS }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
-          {showActivateButton && <button onClick={onActivate} style={{ border: "1px solid rgba(255,255,255,0.6)", color: "#fff", padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
+          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.onPrimary, color: cs.primary, padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, fontFamily: SANS }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
+          {showActivateButton && <button onClick={onActivate} style={{ border: `1px solid ${cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)"}`, color: cs.onPrimary, padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
         </div>
       </div>
     </section>
@@ -546,7 +546,7 @@ function ElegantFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: Colo
           <p style={{ fontFamily: SANS, fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: `${cs.primary}`, marginTop: "0.25rem" }}>{websiteData.tagline?.split(" ").slice(0, 4).join(" ")}</p>
         </div>
         <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: "rgba(255,255,255,0.4)" }}>{websiteData.footer?.text}</p>
-        <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Erstellt mit <span style={{ color: "var(--site-primary-on-surface)" }}>Pageblitz</span></p>
+        <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Erstellt mit <span style={{ color: cs.primary }}>Pageblitz</span></p>
       </div>
     </footer>
   );

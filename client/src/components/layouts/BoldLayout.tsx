@@ -117,7 +117,7 @@ function BoldNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: Web
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.6rem 1.5rem", fontFamily: HEADING, fontSize: "0.9rem", fontWeight: 600, letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.6rem 1.5rem", fontFamily: HEADING, fontSize: "0.9rem", fontWeight: 600, letterSpacing: "0.08em" }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-4 w-4" /> {businessPhone}
           </a>
         )}
@@ -499,12 +499,12 @@ function BoldCTA({ section, cs, showActivateButton, onActivate }: { section: Web
     <section style={{ backgroundColor: cs.primary, padding: "4rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "var(--site-nav-text)", textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
-          {section.content && <p style={{ fontFamily: BODY, fontSize: "1rem", color: "var(--site-nav-text-muted, rgba(0,0,0,0.7))", marginTop: "0.5rem" }}>{section.content}</p>}
+          <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.onPrimary, textTransform: "uppercase", letterSpacing: "0.02em" }}>{section.headline}</h2>
+          {section.content && <p style={{ fontFamily: BODY, fontSize: "1rem", color: cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", marginTop: "0.5rem" }}>{section.content}</p>}
         </div>
         <div className="flex flex-wrap gap-4 flex-shrink-0">
-          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: "#fff", color: "var(--site-primary-on-white)", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
-          {showActivateButton && <button onClick={onActivate} style={{ border: "2px solid #fff", color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
+          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.onPrimary, color: cs.primary, padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
+          {showActivateButton && <button onClick={onActivate} style={{ border: `2px solid ${cs.onPrimary}`, color: cs.onPrimary, padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
         </div>
       </div>
     </section>

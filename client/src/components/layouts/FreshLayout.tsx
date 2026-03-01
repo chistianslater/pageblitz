@@ -110,7 +110,7 @@ function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
           {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: cs.text }}>{websiteData.businessName}</span>}
-          {websiteData.tagline && <span style={{ fontSize: "0.65rem", color: "var(--site-primary-on-surface)", letterSpacing: "0.1em", fontWeight: 600 }}>{websiteData.tagline.slice(0, 35)}</span>}
+          {websiteData.tagline && <span style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.1em", fontWeight: 600 }}>{websiteData.tagline.slice(0, 35)}</span>}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Angebot", "Über uns", "Kontakt"].map(label => (
@@ -118,7 +118,7 @@ function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="btn-premium transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="btn-premium transition-opacity">
             <Phone className="h-3.5 w-3.5" /> Reservieren
           </a>
         )}
@@ -310,8 +310,8 @@ function FreshGallery({ section, cs }: { section: WebsiteSection; cs: ColorSchem
 
 function FreshTestimonials({ section, cs, isDark }: { section: WebsiteSection; cs: ColorScheme; isDark?: boolean }) {
   const items = section.items || [];
-  const textColor = isDark ? "#ffffff" : cs.text;
-  const subColor = isDark ? "rgba(255,255,255,0.7)" : "var(--site-primary-on-surface)";
+  const textColor = cs.onSurface;
+  const subColor = cs.primary;
 
   return (
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
@@ -322,16 +322,16 @@ function FreshTestimonials({ section, cs, isDark }: { section: WebsiteSection; c
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#fff", padding: "2rem", borderRadius: "1rem", boxShadow: isDark ? "none" : "0 2px 12px rgba(0,0,0,0.06)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
+            <div key={i} style={{ backgroundColor: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.05)" : "#fff", padding: "2rem", borderRadius: "1rem", boxShadow: cs.onSurface === "#ffffff" ? "none" : "0 2px 12px rgba(0,0,0,0.06)", border: cs.onSurface === "#ffffff" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
               <div style={{ display: "flex", gap: "0.2rem", marginBottom: "1rem" }}>
                 {Array.from({ length: item.rating || 5 }).map((_, j) => (
                   <Star key={j} className="h-4 w-4" style={{ fill: "#f59e0b", color: "#f59e0b" }} />
                 ))}
               </div>
-              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.9)" : "#444", marginBottom: "1.25rem", fontStyle: "italic" }}>{item.description || item.title}</p>
+              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.9)" : "#444", marginBottom: "1.25rem", fontStyle: "italic" }}>{item.description || item.title}</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: isDark ? "rgba(255,255,255,0.1)" : `${cs.primary}20`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: isDark ? "#fff" : "var(--site-primary-on-surface)" }}>{(item.author || "K")[0]}</span>
+                <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.1)" : `${cs.primary}20`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: cs.onSurface === "#ffffff" ? "#fff" : cs.primary }}>{(item.author || "K")[0]}</span>
                 </div>
                 <span style={{ fontSize: "0.85rem", fontWeight: 700, color: textColor }}>{item.author || "Gast"}</span>
               </div>
@@ -346,8 +346,8 @@ function FreshTestimonials({ section, cs, isDark }: { section: WebsiteSection; c
 function FreshFAQ({ section, cs, isDark }: { section: WebsiteSection; cs: ColorScheme; isDark?: boolean }) {
   const [open, setOpen] = useState<number | null>(null);
   const items = section.items || [];
-  const textColor = isDark ? "#ffffff" : cs.text;
-  const subColor = isDark ? "rgba(255,255,255,0.7)" : "var(--site-primary-on-surface)";
+  const textColor = cs.onSurface;
+  const subColor = cs.primary;
 
   return (
     <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
@@ -358,15 +358,15 @@ function FreshFAQ({ section, cs, isDark }: { section: WebsiteSection; cs: ColorS
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: "0.75rem", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", overflow: "hidden" }}>
+            <div key={i} style={{ backgroundColor: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: "0.75rem", border: cs.onSurface === "#ffffff" ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", overflow: "hidden" }}>
               <button onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}>
                 <span style={{ fontSize: "0.95rem", fontWeight: 700, color: textColor }}>{item.question || item.title}</span>
-                <div style={{ width: "1.75rem", height: "1.75rem", backgroundColor: open === i ? cs.primary : (isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0"), borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background-color 0.2s" }}>
-                  {open === i ? <ChevronUp className="h-4 w-4" style={{ color: "#fff" }} /> : <ChevronDown className="h-4 w-4" style={{ color: isDark ? "#fff" : "#666" }} />}
+                <div style={{ width: "1.75rem", height: "1.75rem", backgroundColor: open === i ? cs.primary : (cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.1)" : "#f5f5f0"), borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background-color 0.2s" }}>
+                  {open === i ? <ChevronUp className="h-4 w-4" style={{ color: cs.onPrimary }} /> : <ChevronDown className="h-4 w-4" style={{ color: cs.onSurface === "#ffffff" ? "#fff" : "#666" }} />}
                 </div>
               </button>
               {open === i && (
-                <div style={{ padding: "0 1.5rem 1.25rem", fontSize: "0.9rem", lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.7)" : "#666" }}>
+                <div style={{ padding: "0 1.5rem 1.25rem", fontSize: "0.9rem", lineHeight: 1.7, color: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.7)" : "#666" }}>
                   {item.answer || item.description}
                 </div>
               )}
@@ -382,16 +382,16 @@ function FreshCTA({ section, cs, showActivateButton, onActivate }: { section: We
   return (
     <section style={{ backgroundColor: cs.text, padding: "5rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: "#fff", marginBottom: "1.25rem" }}>{section.headline}</h2>
-        {section.content && <p style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.6)", marginBottom: "2.5rem" }}>{section.content}</p>}
+        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: cs.onBackground, marginBottom: "1.25rem" }}>{section.headline}</h2>
+        {section.content && <p style={{ fontSize: "1.1rem", color: cs.onBackground === "#ffffff" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginBottom: "2.5rem" }}>{section.content}</p>}
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
+            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="btn-premium transition-opacity">
               {section.ctaText}
             </a>
           )}
           {showActivateButton && (
-            <button onClick={onActivate} style={{ border: "2px solid rgba(255,255,255,0.3)", color: "#fff", padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:border-white transition-colors">
+            <button onClick={onActivate} style={{ border: `2px solid ${cs.onBackground === "#ffffff" ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"}`, color: cs.onBackground, padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:border-white transition-colors">
               Website aktivieren
             </button>
           )}
@@ -505,10 +505,10 @@ function FreshPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSch
 }
 
 function FreshContact({ section, cs, phone, address, email, hours, isDark }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isDark?: boolean }) {
-  const textColor = isDark ? "#ffffff" : cs.text;
-  const subColor = isDark ? "rgba(255,255,255,0.7)" : "var(--site-primary-on-surface)";
-  const mutedColor = isDark ? "rgba(255,255,255,0.6)" : "#666";
-  const iconBg = isDark ? "rgba(255,255,255,0.1)" : "var(--site-primary-on-surface-subtle)";
+  const textColor = cs.onSurface;
+  const subColor = cs.primary;
+  const mutedColor = cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.6)" : "#666";
+  const iconBg = cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.1)" : `${cs.primary}15`;
 
   return (
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
@@ -518,13 +518,13 @@ function FreshContact({ section, cs, phone, address, email, hours, isDark }: { s
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: textColor, marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: mutedColor, marginBottom: "2rem" }}>{section.content}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><a href={`tel:${phone}`} style={{ color: textColor, fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
-            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><span style={{ color: mutedColor, fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
-            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><a href={`mailto:${email}`} style={{ color: textColor, fontSize: "1rem" }}>{email}</a></div>}
-            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: isDark ? "#fff" : "var(--site-primary-on-surface)" }} /></div><div style={{ marginTop: "0.5rem" }}>{hours.map((h, i) => <p key={i} style={{ color: mutedColor, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
+            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ color: textColor, fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
+            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: cs.primary }} /></div><span style={{ color: mutedColor, fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
+            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`mailto:${email}`} style={{ color: textColor, fontSize: "1rem" }}>{email}</a></div>}
+            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: iconBg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: cs.primary }} /></div><div style={{ marginTop: "0.5rem" }}>{hours.map((h, i) => <p key={i} style={{ color: mutedColor, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#fff", padding: "2.5rem", borderRadius: "1rem", boxShadow: isDark ? "none" : "0 4px 20px rgba(0,0,0,0.08)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
+        <div style={{ backgroundColor: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.05)" : "#fff", padding: "2.5rem", borderRadius: "1rem", boxShadow: cs.onSurface === "#ffffff" ? "none" : "0 4px 20px rgba(0,0,0,0.08)", border: cs.onSurface === "#ffffff" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
           <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: textColor, marginBottom: "1.5rem" }}>Schreiben Sie uns</h3>
           <form 
             style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
@@ -534,10 +534,10 @@ function FreshContact({ section, cs, phone, address, email, hours, isDark }: { s
               (e.target as HTMLFormElement).reset();
             }}
           >
-            <input type="text" placeholder="Ihr Name" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-            <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", resize: "none", borderRadius: "0.5rem" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "#fff", padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+            <input type="text" placeholder="Ihr Name" style={{ backgroundColor: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: cs.onSurface === "#ffffff" ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
+            <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: cs.onSurface === "#ffffff" ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
+            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: cs.onSurface === "#ffffff" ? "rgba(255,255,255,0.1)" : "#f5f5f0", border: cs.onSurface === "#ffffff" ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e8e8e4", padding: "0.85rem 1rem", color: textColor, fontSize: "0.9rem", outline: "none", resize: "none", borderRadius: "0.5rem" }} />
+            <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
               {section.ctaText || "Nachricht senden"}
             </button>
           </form>

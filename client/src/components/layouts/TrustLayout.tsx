@@ -103,19 +103,19 @@ function TrustNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
         <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-6">
             {businessPhone && (
-              <a href={`tel:${businessPhone}`} style={{ color: "#fff", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <a href={`tel:${businessPhone}`} style={{ color: cs.onPrimary, fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                 <Phone className="h-3 w-3" /> {businessPhone}
               </a>
             )}
           </div>
-          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.75rem" }}>Ihr Vertrauen – unser Auftrag</span>
+          <span style={{ color: cs.onPrimary, opacity: 0.85, fontSize: "0.75rem" }}>Ihr Vertrauen – unser Auftrag</span>
         </div>
       </div>
       {/* Main nav */}
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div>
           {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: "#1a2332", letterSpacing: "-0.02em" }}>{websiteData.businessName}</span>}
-          {websiteData.tagline && <p style={{ fontSize: "0.65rem", color: "var(--site-primary-on-surface)", letterSpacing: "0.05em", textTransform: "uppercase", marginTop: "1px" }}>{websiteData.tagline.slice(0, 50)}</p>}
+          {websiteData.tagline && <p style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: "1px" }}>{websiteData.tagline.slice(0, 50)}</p>}
         </div>
         <div className="hidden md:flex items-center gap-8">
           {["Leistungen", "Über uns", "FAQ", "Kontakt"].map(label => (
@@ -321,13 +321,13 @@ function TrustTestimonials({ section, cs }: { section: WebsiteSection; cs: Color
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
             <div key={i} style={{ backgroundColor: "rgba(255,255,255,0.05)", padding: "2rem", borderLeft: `3px solid ${cs.primary}` }}>
-              <Quote className="h-6 w-6 mb-4" style={{ color: "var(--site-primary-on-surface)", opacity: 0.6 }} />
+              <Quote className="h-6 w-6 mb-4" style={{ color: cs.primary, opacity: 0.6 }} />
               <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.95rem", lineHeight: 1.7, marginBottom: "1.5rem", fontStyle: "italic" }}>"{item.description}"</p>
               <div className="flex items-center justify-between">
                 <span style={{ fontFamily: SERIF, fontWeight: 700, color: "#fff", fontSize: "0.9rem" }}>{item.author}</span>
                 <div className="flex gap-0.5">
                   {Array.from({ length: item.rating || 5 }).map((_, j) => (
-                    <Star key={j} className="h-3.5 w-3.5 fill-current" style={{ color: "var(--site-primary-on-surface)" }} />
+                    <Star key={j} className="h-3.5 w-3.5 fill-current" style={{ color: cs.primary }} />
                   ))}
                 </div>
               </div>
@@ -355,7 +355,7 @@ function TrustFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
               <button onClick={() => setOpen(open === i ? null : i)}
                 style={{ width: "100%", padding: "1.5rem 0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
                 <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: "#1a2332", paddingRight: "2rem" }}>{item.question}</span>
-                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "#9aa5b4" }} />}
+                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "#9aa5b4" }} />}
               </button>
               {open === i && (
                 <div style={{ paddingBottom: "1.5rem" }}>

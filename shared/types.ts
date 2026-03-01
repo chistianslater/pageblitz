@@ -93,6 +93,11 @@ export interface ColorScheme {
   text: string;
   textLight: string;
   gradient?: string;
+  onPrimary: string;
+  onSecondary: string;
+  onAccent: string;
+  onSurface: string;
+  onBackground: string;
 }
 
 export interface BusinessSearchResult {

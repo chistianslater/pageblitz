@@ -97,7 +97,7 @@ function WarmNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: Web
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
         <div className="text-center">
           <div className="flex items-center gap-2">
-            <Utensils className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+            <Utensils className="h-5 w-5" style={{ color: cs.primary }} />
             {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: cs.text }}>{websiteData.businessName}</span>}
           </div>
           {websiteData.tagline && <p style={{ fontFamily: SANS, fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.textLight }}>{websiteData.tagline.split(" ").slice(0, 5).join(" ")}</p>}
@@ -108,7 +108,7 @@ function WarmNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: Web
           ))}
         </div>
         {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.6rem 1.25rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700 }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
+          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.6rem 1.25rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700 }} className="hidden sm:flex items-center gap-2 btn-premium transition-opacity">
             <Phone className="h-3.5 w-3.5" /> Reservieren
           </a>
         )}
@@ -160,7 +160,7 @@ function WarmHero({ section, cs, heroImageUrl, showActivateButton, onActivate, w
           <div className="flex flex-wrap gap-6 hero-animate-cta">
             {section.ctaText && (
               <a href={section.ctaLink || "#kontakt"} 
-                style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1.25rem 3.5rem", borderRadius: "100px", fontFamily: SANS, fontSize: "1rem", fontWeight: 800, transition: "all 0.4s ease" }} 
+                style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1.25rem 3.5rem", borderRadius: "100px", fontFamily: SANS, fontSize: "1rem", fontWeight: 800, transition: "all 0.4s ease" }} 
                 className="hover:scale-105 shadow-2xl shadow-primary/30">
                 {section.ctaText}
               </a>
@@ -270,7 +270,7 @@ function WarmMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <div className="flex items-center justify-center gap-3 mb-3">
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
-            <Coffee className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+            <Coffee className="h-5 w-5" style={{ color: cs.primary }} />
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.text, lineHeight: 1.15 }}>{section.headline}</h2>
@@ -287,7 +287,7 @@ function WarmMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
                       <div className="flex justify-between items-baseline gap-4 mb-1">
                         <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.text }}>{item.title}</h4>
                         <div className="flex-1 border-b border-dotted border-[#e8e0d0] mx-2" />
-                        <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                        <span style={{ fontSize: "1.05rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
                       </div>
                       {item.description && (
                         <p style={{ fontSize: "0.9rem", color: cs.textLight, lineHeight: 1.6 }}>{item.description}</p>
@@ -305,7 +305,7 @@ function WarmMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme })
                 <div className="flex justify-between items-baseline gap-4 mb-1">
                   <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.text }}>{item.title}</h4>
                   <div className="flex-1 border-b border-dotted border-[#e8e0d0] mx-2" />
-                  <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--site-primary-on-surface)" }}>{item.price}</span>
+                  <span style={{ fontSize: "1.05rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
                 </div>
                 {item.description && (
                   <p style={{ fontSize: "0.9rem", color: cs.textLight, lineHeight: 1.6 }}>{item.description}</p>
@@ -343,7 +343,7 @@ function WarmPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSche
                   {items.filter(item => item.category === cat).map((item, i) => (
                     <div key={i} className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
                       <span style={{ fontSize: "1rem", color: cs.text, fontWeight: 500 }}>{item.title}</span>
-                      <span style={{ fontSize: "1.1rem", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>{item.price}</span>
+                      <span style={{ fontSize: "1.1rem", color: cs.primary, fontWeight: 700 }}>{item.price}</span>
                     </div>
                   ))}
                 </div>
@@ -356,7 +356,7 @@ function WarmPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSche
               {items.map((item, i) => (
                 <div key={i} className="flex justify-between items-center py-4 border-b border-slate-100 last:border-0">
                   <span style={{ fontSize: "1.1rem", color: cs.text, fontWeight: 500 }}>{item.title}</span>
-                  <span style={{ fontSize: "1.2rem", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>{item.price}</span>
+                  <span style={{ fontSize: "1.2rem", color: cs.primary, fontWeight: 700 }}>{item.price}</span>
                 </div>
               ))}
             </div>
@@ -375,7 +375,7 @@ function WarmGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-3">
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
-            <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--site-primary-on-surface)", fontWeight: 700 }}>Galerie</span>
+            <span style={{ fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Galerie</span>
             <div style={{ width: "2rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
           <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700, color: cs.text }}>{section.headline}</h2>
@@ -397,13 +397,13 @@ function WarmTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorS
   return (
     <section style={{ backgroundColor: cs.primary, padding: "5rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
-        <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: "var(--site-nav-text)", textAlign: "center", marginBottom: "3rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.onPrimary, textAlign: "center", marginBottom: "3rem" }}>{section.headline}</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: "rgba(255,255,255,0.12)", borderRadius: "1rem", padding: "2rem", backdropFilter: "blur(4px)" }}>
+            <div key={i} style={{ backgroundColor: cs.onPrimary === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.05)", borderRadius: "1rem", padding: "2rem", backdropFilter: "blur(4px)" }}>
               <div className="flex gap-1 mb-3">{Array.from({ length: 5 }).map((_, j) => <Star key={j} className="h-4 w-4 fill-current text-yellow-300" />)}</div>
-              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: "rgba(255,255,255,0.9)", fontStyle: "italic", marginBottom: "1rem" }}>{item.description || item.title}</p>
-              <p style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>— {item.author || item.title}</p>
+              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: cs.onPrimary, fontStyle: "italic", marginBottom: "1rem", opacity: 0.9 }}>{item.description || item.title}</p>
+              <p style={{ fontFamily: SANS, fontSize: "0.85rem", fontWeight: 700, color: cs.onPrimary, opacity: 0.7 }}>— {item.author || item.title}</p>
             </div>
           ))}
         </div>
@@ -424,7 +424,7 @@ function WarmFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) 
             <div key={i} style={{ backgroundColor: cs.background, borderRadius: "0.75rem", overflow: "hidden" }}>
               <button onClick={() => setOpen(open === i ? null : i)} className="w-full text-left px-6 py-4 flex items-center justify-between" style={{ fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700, color: cs.text }}>
                 {item.question || item.title}
-                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "var(--site-primary-on-surface)" }} />}
+                {open === i ? <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /> : <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} />}
               </button>
               {open === i && <p style={{ fontFamily: SANS, fontSize: "0.9rem", lineHeight: 1.7, color: cs.textLight, padding: "0 1.5rem 1.5rem" }}>{item.answer || item.description}</p>}
             </div>
@@ -443,9 +443,9 @@ function WarmContact({ section, cs, phone, address, email, hours }: { section: W
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.textLight, marginBottom: "2rem" }}>{section.content}</p>}
           <div className="space-y-4">
-            {phone && <div className="flex items-center gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: "var(--site-primary-on-surface-subtle)", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 600 }}>{phone}</a></div>}
-            {address && <div className="flex items-start gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: "var(--site-primary-on-surface-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
-            {email && <div className="flex items-center gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: "var(--site-primary-on-surface-subtle)", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: "var(--site-primary-on-surface)" }} /></div><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
+            {phone && <div className="flex items-center gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text, fontWeight: 600 }}>{phone}</a></div>}
+            {address && <div className="flex items-start gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: cs.primary }} /></div><span style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{address}</span></div>}
+            {email && <div className="flex items-center gap-3"><div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "50%", backgroundColor: `${cs.primary}15`, display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
           </div>
         </div>
         <div style={{ backgroundColor: cs.surface, borderRadius: "1.5rem", padding: "2.5rem" }}>
@@ -457,17 +457,17 @@ function WarmContact({ section, cs, phone, address, email, hours }: { section: W
               (e.target as HTMLFormElement).reset();
             }}
           >
-            <input type="text" placeholder="Ihr Name" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.primary}20`, backgroundColor: "rgba(255,255,255,0.5)", fontSize: "0.95rem", outline: "none" }} />
-            <input type="email" placeholder="Ihre E-Mail-Adresse" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.primary}20`, backgroundColor: "rgba(255,255,255,0.5)", fontSize: "0.95rem", outline: "none" }} />
-            <textarea placeholder="Ihre Nachricht an uns..." rows={4} style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "1.25rem", border: `1px solid ${cs.primary}20`, backgroundColor: "rgba(255,255,255,0.5)", fontSize: "0.95rem", outline: "none", resize: "none" }} />
-            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem", borderRadius: "2rem", fontSize: "1rem", fontWeight: 700, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
+            <input type="text" placeholder="Ihr Name" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.primary}20`, backgroundColor: cs.background, color: cs.text, fontSize: "0.95rem", outline: "none" }} />
+            <input type="email" placeholder="Ihre E-Mail-Adresse" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.primary}20`, backgroundColor: cs.background, color: cs.text, fontSize: "0.95rem", outline: "none" }} />
+            <textarea placeholder="Ihre Nachricht an uns..." rows={4} style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "1.25rem", border: `1px solid ${cs.primary}20`, backgroundColor: cs.background, color: cs.text, fontSize: "0.95rem", outline: "none", resize: "none" }} />
+            <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.9rem", borderRadius: "2rem", fontSize: "1rem", fontWeight: 700, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
               {section.ctaText || "Jetzt anfragen"}
             </button>
           </form>
 
           <div style={{ marginTop: "2.5rem", paddingTop: "2rem", borderTop: `1px solid ${cs.primary}15` }}>
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+              <Clock className="h-5 w-5" style={{ color: cs.primary }} />
               <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: cs.text }}>Öffnungszeiten</h3>
             </div>
             <div className="space-y-2">
@@ -486,12 +486,12 @@ function WarmCTA({ section, cs, showActivateButton, onActivate }: { section: Web
   return (
     <section style={{ backgroundColor: cs.surface, padding: "5rem 0" }}>
       <div className="max-w-3xl mx-auto px-6 text-center">
-        <Utensils className="h-8 w-8 mx-auto mb-4" style={{ color: "var(--site-primary-on-surface)" }} />
+        <Utensils className="h-8 w-8 mx-auto mb-4" style={{ color: cs.primary }} />
         <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 700, color: cs.text, marginBottom: "1rem" }}>{section.headline}</h2>
         {section.content && <p style={{ fontFamily: SANS, fontSize: "1rem", color: cs.textLight, marginBottom: "2rem" }}>{section.content}</p>}
         <div className="flex flex-wrap justify-center gap-4">
-          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
-          {showActivateButton && <button onClick={onActivate} style={{ border: `2px solid ${cs.primary}`, color: "var(--site-primary-on-surface)", padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
+          {section.ctaText && <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">{section.ctaText}</a>}
+          {showActivateButton && <button onClick={onActivate} style={{ border: `2px solid ${cs.primary}`, color: cs.primary, padding: "0.9rem 2.5rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.95rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:opacity-70 transition-opacity">Jetzt aktivieren</button>}
         </div>
       </div>
     </section>
@@ -500,14 +500,14 @@ function WarmCTA({ section, cs, showActivateButton, onActivate }: { section: Web
 
 function WarmFooter({ websiteData, cs }: { websiteData: WebsiteData; cs: ColorScheme }) {
   return (
-    <footer data-section="footer" style={{ backgroundColor: "#2d1a0e", padding: "3rem 0" }}>
+    <footer data-section="footer" style={{ backgroundColor: "#111111", padding: "3rem 0" }}>
       <div className="max-w-6xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Utensils className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+          <Utensils className="h-5 w-5" style={{ color: cs.primary }} />
           <span style={{ fontFamily: SERIF, fontSize: "1.2rem", fontWeight: 700, color: "#fff" }}>{websiteData.businessName}</span>
         </div>
         <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: "rgba(255,255,255,0.4)" }}>{websiteData.footer?.text}</p>
-        <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Erstellt mit <span style={{ color: "var(--site-primary-on-surface)" }}>Pageblitz</span></p>
+        <p style={{ fontFamily: SANS, fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Erstellt mit <span style={{ color: cs.primary }}>Pageblitz</span></p>
       </div>
     </footer>
   );
