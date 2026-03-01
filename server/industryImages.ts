@@ -308,7 +308,7 @@ export function getHeroImageUrl(category: string, businessName: string = ""): st
 /**
  * Get gallery images for a given industry.
  */
-export function getGalleryImages(category: string, businessName: string = ""): string {
+export function getGalleryImages(category: string, businessName: string = ""): string[] {
   const imageSet = getIndustryImages(category, businessName);
   return imageSet.gallery || imageSet.hero.slice(0, 2);
 }

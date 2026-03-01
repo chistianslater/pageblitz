@@ -686,19 +686,19 @@ Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Z
 /** Maps a GMB category string to the industry key used in template_uploads table */
 function mapCategoryToIndustryKey(category: string): string {
   const lower = (category || "").toLowerCase();
-  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|lash|brow|make.?up/.test(combined)) return "beauty";
-  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|aperitivo/.test(combined)) return "restaurant";
-  if (/café|cafe|bistro|kaffee|coffee|coffeeshop|bäckerei|bakery|konditorei|patisserie|brunch/.test(combined)) return "restaurant";
-  if (/restaurant|gastro|gastronomie|pizza|küche|bäckerei|catering|food|sushi|burger|bakery/.test(combined)) return "restaurant";
-  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|personal.?trainer|physiotherap|boxing/.test(combined)) return "fitness";
-  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|motorrad|reifenservice/.test(combined)) return "automotive";
-  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|chiropractor/.test(combined)) return "medical";
-  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien/.test(combined)) return "legal";
-  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau/.test(combined)) return "trades";
-  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|roofing|construction|tischler|schreiner/.test(combined)) return "trades";
-  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|startup/.test(combined)) return "tech";
-  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|naturopath/.test(combined)) return "other";
-  if (/hotel|pension|hostel|tourism|tourismus|event|veranstaltung|hochzeit|wedding|reise/.test(combined)) return "hospitality";
+  if (/friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|lash|brow|make.?up/.test(lower)) return "beauty";
+  if (/\bbar\b|tapas|cocktail|lounge|pub|kneipe|weinbar|brauerei|brewery|nightlife|aperitivo/.test(lower)) return "restaurant";
+  if (/café|cafe|bistro|kaffee|coffee|coffeeshop|bäckerei|bakery|konditorei|patisserie|brunch/.test(lower)) return "restaurant";
+  if (/restaurant|gastro|gastronomie|pizza|küche|bäckerei|catering|food|sushi|burger|bakery/.test(lower)) return "restaurant";
+  if (/fitness|gym|sport|yoga|training|crossfit|pilates|kampfsport|personal.?trainer|physiotherap|boxing/.test(lower)) return "fitness";
+  if (/auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|motorrad|reifenservice/.test(lower)) return "automotive";
+  if (/arzt|zahnarzt|praxis|medizin|therapie|doctor|dental|clinic|health|apotheke|klinik|chiropractor/.test(lower)) return "medical";
+  if (/rechtsanwalt|anwalt|kanzlei|steuerberater|beratung|consulting|law|legal|finanz|versicherung|immobilien/.test(lower)) return "legal";
+  if (/bauunternehmen|baufirma|hochbau|tiefbau|rohbau|bauträger|generalunternehmer|schlüsselfertig|neubau/.test(lower)) return "trades";
+  if (/handwerk|elektriker|klempner|maler|bau|sanitär|dachdecker|roofing|construction|tischler|schreiner/.test(lower)) return "trades";
+  if (/tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|startup/.test(lower)) return "tech";
+  if (/bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|naturopath/.test(lower)) return "other";
+  if (/hotel|pension|hostel|tourism|tourismus|event|veranstaltung|hochzeit|wedding|reise/.test(lower)) return "hospitality";
   return "other";
 }
 
