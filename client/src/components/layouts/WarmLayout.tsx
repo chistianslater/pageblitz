@@ -5,7 +5,7 @@
  * Structure: Full-bleed food photo hero, card-style menu sections, warm earthy palette
  */
 import { useState, useRef } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Utensils, Coffee, Leaf } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Utensils, Coffee, Leaf, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";

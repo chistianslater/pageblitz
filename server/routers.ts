@@ -1851,7 +1851,7 @@ Kontext: ${input.context}`,
           topServices,
           addOnMenuData: (onboarding as any).addOnMenuData,
           addOnPricelistData: (onboarding as any).addOnPricelistData,
-          addOnContactForm: onboarding.addOnContactForm,
+          addOnContactForm: onboarding.addOnContactForm ?? undefined,
           logoUrl: onboarding.logoUrl,
           photoUrls: onboarding.photoUrls,
         });

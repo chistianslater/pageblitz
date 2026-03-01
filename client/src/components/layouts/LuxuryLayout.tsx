@@ -170,7 +170,7 @@ function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
           </h1>
 
           {section.subheadline && (
-            <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: "rgba(255,255,255,0.8)", marginBottom: "3.5rem", maxWidth: "600px", mx: "auto", fontWeight: 300, fontStyle: "italic", margin: "0 auto 3.5rem auto" }}>
+            <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: "rgba(255,255,255,0.8)", marginBottom: "3.5rem", maxWidth: "600px", fontWeight: 300, fontStyle: "italic", margin: "0 auto 3.5rem auto" }}>
               {section.subheadline}
             </p>
           )}

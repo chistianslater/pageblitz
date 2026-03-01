@@ -5,7 +5,7 @@
  * Structure: Full-bleed dark hero, large numbers, diagonal accents, high contrast
  */
 import { useState, useRef } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Wrench, Shield, Award, Hammer, Truck } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Wrench, Shield, Award, Hammer, Truck, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";

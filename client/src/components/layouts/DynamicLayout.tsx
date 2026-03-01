@@ -5,7 +5,7 @@
  * Structure: Diagonal cuts, full-bleed action photo, bold stats, vibrant accent colors
  */
 import { useState, useRef } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, Flame, Activity, Award } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, Flame, Activity, Award, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
@@ -183,7 +183,7 @@ function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate
         </h1>
 
         {section.subheadline && (
-          <p style={{ fontFamily: BODY, fontSize: "1.25rem", color: "rgba(255,255,255,0.6)", maxWidth: "600px", mx: "auto", lineHeight: 1.6, marginBottom: "3.5rem", fontWeight: 500, margin: "0 auto 3.5rem auto" }} className="hero-animate-sub">
+          <p style={{ fontFamily: BODY, fontSize: "1.25rem", color: "rgba(255,255,255,0.6)", maxWidth: "600px", lineHeight: 1.6, fontWeight: 500, margin: "0 auto 3.5rem auto" }} className="hero-animate-sub">
             {section.subheadline}
           </p>
         )}

@@ -21,6 +21,8 @@ export interface WebsiteSection {
     author?: string;
     question?: string;
     answer?: string;
+    price?: string | number;
+    category?: string;
   }>;
   ctaText?: string;
   ctaLink?: string;

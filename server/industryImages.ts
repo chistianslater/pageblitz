@@ -215,15 +215,6 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=1400&q=85&auto=format&fit=crop",
     ],
   },
-  // ── Fotografie ─────────────────────────────────────
-  fotografie: {
-    keywords: ["fotograf", "photography", "fotostudio", "hochzeitsfotograf", "portrait"],
-    hero: [
-      "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=1400&q=85&auto=format&fit=crop",
-    ],
-  },
   // ── Auto & KFZ ─────────────────────────────────────
   auto: {
     keywords: ["auto", "kfz", "werkstatt", "autowerkstatt", "reifenservice", "car", "vehicle", "garage", "reparatur"],

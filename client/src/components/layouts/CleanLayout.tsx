@@ -5,7 +5,7 @@
  * Structure: Asymmetric hero with trust badges, icon-driven service grid, testimonial strip
  */
 import { useState, useRef } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Heart, Stethoscope, Users, Lock } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Heart, Stethoscope, Users, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
@@ -298,7 +298,7 @@ function CleanMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }
         <div className="space-y-12">
           {Object.entries(categories).map(([catName, catItems], idx) => (
             <div key={idx}>
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", color: cs.primary, marginBottom: "2rem", borderBottom: `1px solid ${cs.primary}20`, pb: "0.5rem" }}>{catName}</h3>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", color: cs.primary, marginBottom: "2rem", borderBottom: `1px solid ${cs.primary}20`, paddingBottom: "0.5rem" }}>{catName}</h3>
               <div className="grid gap-6">
                 {catItems.map((item, i) => (
                   <div key={i} className="flex justify-between items-start gap-4">

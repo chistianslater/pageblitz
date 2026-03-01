@@ -87,6 +87,8 @@ type ChatStep =
   | "legalPhone"
   | "legalVat"
   | "colorScheme"
+  | "brandColor"
+  | "brandSecondaryColor"
   | "heroPhoto"
   | "aboutPhoto"
   | "brandLogo"
@@ -204,6 +206,8 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   welcome: null,
   businessCategory: "hero",
   colorScheme: "hero",
+  brandColor: "hero",
+  brandSecondaryColor: "hero",
   heroPhoto: "hero",
   aboutPhoto: "about",
   brandLogo: "header",
