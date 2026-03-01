@@ -662,8 +662,8 @@ PFLICHT-AUSGABE (exaktes JSON-Format)
     "text": "© ${year} ${business.name}. Alle Rechte vorbehalten."
   },
   "designTokens": {
-    "headlineFont": "[PFLICHT: Exakter Google Font Name für Überschriften. Regeln: luxury/elegant=Playfair Display oder Cormorant Garamond; bold/craft=Oswald oder Barlow Condensed; fresh/natural=Poppins oder Nunito; trust/clean=Montserrat oder Inter; modern=Space Grotesk oder DM Sans; vibrant/dynamic=Barlow Condensed oder Rajdhani; warm=Lora oder Fraunces]",
-    "bodyFont": "[PFLICHT: Exakter Google Font Name für Fließtext. WICHTIG: bodyFont MUSS IMMER eine serifenlose Schrift sein! Erlaubt: Inter, Nunito, Source Sans 3, Lato, DM Sans, Outfit, Open Sans, Barlow, Raleway, Poppins. VERBOTEN als bodyFont: Lora, Playfair Display, Merriweather, Georgia, Cormorant, Fraunces, DM Serif, Crimson Text (diese nur für headlineFont!). Handwerk/Bau/Auto/Fitness: immer Barlow oder Inter. Beauty/Wellness: Nunito oder Lato. Restaurant: Nunito oder Open Sans.]",
+    "headlineFont": "[PFLICHT: Exakter Google Font Name für Überschriften. Neue Font-Auswahl: luxury/elegant/warm/natural=Fraunces; bold=Space Grotesque; craft/vibrant=Bricolage Grotesque; dynamic=Syne; fresh/modern=Plus Jakarta Sans; trust/clean=Instrument Sans]",
+    "bodyFont": "[PFLICHT: Exakter Google Font Name für Fließtext. WICHTIG: bodyFont MUSS IMMER eine serifenlose Schrift sein! Erlaubt: Inter, Instrument Sans, Plus Jakarta Sans, Outfit, Nunito, DM Sans, Open Sans, Raleway. VERBOTEN als bodyFont: Lora, Playfair Display, Merriweather, Georgia, Cormorant, Fraunces, DM Serif, Crimson Text, Fraunces (diese nur für headlineFont!). Empfehlung: elegant/luxury/warm/natural=Outfit; bold/dynamic/vibrant=Plus Jakarta Sans; craft=Instrument Sans; fresh=Instrument Sans; trust/clean/modern=Inter.]",
     "headlineFontWeight": "[700 oder 800 oder 900 je nach Archetyp-Energie]",
     "headlineLetterSpacing": "[z.B. -0.04em für elegant/luxury, 0.08em für craft/bold, -0.02em für modern]",
     "bodyLineHeight": "[z.B. 1.6 für kompakt, 1.8 für luftig, 1.75 für standard]",
@@ -1119,12 +1119,14 @@ export const appRouter = router({
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
           // Ensure font names are plain strings (no brackets)
-          if (dt.headlineFont && dt.headlineFont.includes("[")) dt.headlineFont = "Playfair Display";
-          if (dt.bodyFont && dt.bodyFont.includes("[")) dt.bodyFont = "Inter";
+          const LAYOUT_HEADLINE_FONTS: Record<string, string> = { elegant: "Fraunces", luxury: "Fraunces", warm: "Fraunces", natural: "Fraunces", bold: "Space Grotesque", craft: "Bricolage Grotesque", vibrant: "Bricolage Grotesque", dynamic: "Syne", fresh: "Plus Jakarta Sans", modern: "Plus Jakarta Sans", trust: "Instrument Sans", clean: "Instrument Sans" };
+          const LAYOUT_BODY_FONTS: Record<string, string> = { elegant: "Outfit", luxury: "Outfit", warm: "Instrument Sans", natural: "Instrument Sans", bold: "Plus Jakarta Sans", craft: "Instrument Sans", vibrant: "Plus Jakarta Sans", dynamic: "Plus Jakarta Sans", fresh: "Instrument Sans", modern: "Inter", trust: "Inter", clean: "Inter" };
+          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = LAYOUT_HEADLINE_FONTS[layoutStyle] || "Fraunces";
+          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = LAYOUT_BODY_FONTS[layoutStyle] || "Inter";
           // CRITICAL: bodyFont must NEVER be a serif font - serifs are for headlines only
           const FORBIDDEN_BODY_FONTS = ["lora", "playfair", "merriweather", "georgia", "cormorant", "fraunces", "dm serif", "crimson", "garamond", "times", "palatino", "baskerville", "didot"];
           if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) {
-            dt.bodyFont = "Inter"; // Safe sans-serif fallback
+            dt.bodyFont = LAYOUT_BODY_FONTS[layoutStyle] || "Inter"; // Layout-specific fallback
           }
           // Ensure accent color is a valid hex/rgb
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
@@ -1287,12 +1289,14 @@ export const appRouter = router({
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
-          if (dt.headlineFont && dt.headlineFont.includes("[")) dt.headlineFont = "Playfair Display";
-          if (dt.bodyFont && dt.bodyFont.includes("[")) dt.bodyFont = "Inter";
+          const LAYOUT_HEADLINE_FONTS_REGEN: Record<string, string> = { elegant: "Fraunces", luxury: "Fraunces", warm: "Fraunces", natural: "Fraunces", bold: "Space Grotesque", craft: "Bricolage Grotesque", vibrant: "Bricolage Grotesque", dynamic: "Syne", fresh: "Plus Jakarta Sans", modern: "Plus Jakarta Sans", trust: "Instrument Sans", clean: "Instrument Sans" };
+          const LAYOUT_BODY_FONTS_REGEN: Record<string, string> = { elegant: "Outfit", luxury: "Outfit", warm: "Instrument Sans", natural: "Instrument Sans", bold: "Plus Jakarta Sans", craft: "Instrument Sans", vibrant: "Plus Jakarta Sans", dynamic: "Plus Jakarta Sans", fresh: "Instrument Sans", modern: "Inter", trust: "Inter", clean: "Inter" };
+          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = LAYOUT_HEADLINE_FONTS_REGEN[layoutStyle] || "Fraunces";
+          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = LAYOUT_BODY_FONTS_REGEN[layoutStyle] || "Inter";
           // CRITICAL: bodyFont must NEVER be a serif font
           const FORBIDDEN_BODY_FONTS_REGEN = ["lora", "playfair", "merriweather", "georgia", "cormorant", "fraunces", "dm serif", "crimson", "garamond", "times", "palatino", "baskerville", "didot"];
           if (dt.bodyFont && FORBIDDEN_BODY_FONTS_REGEN.some(f => dt.bodyFont!.toLowerCase().includes(f))) {
-            dt.bodyFont = "Inter";
+            dt.bodyFont = LAYOUT_BODY_FONTS_REGEN[layoutStyle] || "Inter";
           }
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
@@ -2386,10 +2390,12 @@ Kontext: ${input.context}`,
           if (!["tight","normal","spacious","ultra"].includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
           if (!["filled","outline","ghost","pill"].includes(dt.buttonStyle)) dt.buttonStyle = "filled";
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
-          if (dt.headlineFont && dt.headlineFont.includes("[")) dt.headlineFont = "Playfair Display";
-          if (dt.bodyFont && dt.bodyFont.includes("[")) dt.bodyFont = "Inter";
+          const LAYOUT_HEADLINE_FONTS_SS: Record<string, string> = { elegant: "Fraunces", luxury: "Fraunces", warm: "Fraunces", natural: "Fraunces", bold: "Space Grotesque", craft: "Bricolage Grotesque", vibrant: "Bricolage Grotesque", dynamic: "Syne", fresh: "Plus Jakarta Sans", modern: "Plus Jakarta Sans", trust: "Instrument Sans", clean: "Instrument Sans" };
+          const LAYOUT_BODY_FONTS_SS: Record<string, string> = { elegant: "Outfit", luxury: "Outfit", warm: "Instrument Sans", natural: "Instrument Sans", bold: "Plus Jakarta Sans", craft: "Instrument Sans", vibrant: "Plus Jakarta Sans", dynamic: "Plus Jakarta Sans", fresh: "Instrument Sans", modern: "Inter", trust: "Inter", clean: "Inter" };
+          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = LAYOUT_HEADLINE_FONTS_SS[layoutStyle] || "Fraunces";
+          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = LAYOUT_BODY_FONTS_SS[layoutStyle] || "Inter";
           const FORBIDDEN_BODY_FONTS = ["lora","playfair","merriweather","georgia","cormorant","fraunces","dm serif","crimson","garamond","times","palatino","baskerville","didot"];
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = "Inter";
+          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = LAYOUT_BODY_FONTS_SS[layoutStyle] || "Inter";
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
           if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
