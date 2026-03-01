@@ -702,6 +702,36 @@ function mapCategoryToIndustryKey(category: string): string {
   return "other";
 }
 
+/**
+ * Classifies a business into one of our predefined industry keys using AI.
+ * This ensures better image/color matching than simple keyword string matching.
+ */
+async function classifyIndustry(category: string, businessName: string): Promise<string> {
+  const prompt = `Classify this business into exactly ONE of the following industry keys.
+Keys: friseur, restaurant, pizza, bar, cafe, hotel, bauunternehmen, handwerk, fitness, beauty, medizin, immobilien, baeckerei, beratung, reinigung, auto, fotografie, garten, tech.
+If you are uncertain or the business doesn't fit any specifically, return "default".
+
+Business Category: ${category}
+Business Name: ${businessName}
+
+Return ONLY the key (one word, lowercase).`;
+
+  try {
+    const response = await invokeLLM({
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 10,
+      temperature: 0,
+    });
+
+    const key = response.choices[0]?.message?.content?.trim().toLowerCase().replace(/[^a-z]/g, "") || "default";
+    const validKeys = ["friseur", "restaurant", "pizza", "bar", "cafe", "hotel", "bauunternehmen", "handwerk", "fitness", "beauty", "medizin", "immobilien", "baeckerei", "beratung", "reinigung", "auto", "fotografie", "garten", "tech", "default"];
+    return validKeys.includes(key) ? key : "default";
+  } catch (error) {
+    console.error("Industry classification failed:", error);
+    return "default";
+  }
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -951,15 +981,16 @@ export const appRouter = router({
         if (existing) throw new TRPCError({ code: "CONFLICT", message: "Website already generated for this business" });
 
         const category = business.category || "Dienstleistung";
+        const industryKey = await classifyIndustry(category, business.name);
         const industryContext = buildIndustryContext(category, business.name);
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
-        const colorScheme = getIndustryColorScheme(category, business.name);
+        const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
         // Round-robin layout assignment: guarantees consecutive same-industry
         // websites always get a different layout from the pool.
-        const { pool: layoutPool, industryKey } = getLayoutPool(category, business.name);
+        const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
         const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
-        const heroImageUrl = getHeroImageUrl(category, business.name);
-        const galleryImages = getGalleryImages(category, business.name);
+        const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
+        const galleryImages = getGalleryImages(category, business.name, industryKey);
         // Fetch GMB photos from Google Places API (prefer real business photos over Unsplash)
         const gmbPhotos = business.placeId ? await getGmbPhotos(business.placeId, 7) : [];
         // Select matching templatess from the library for visual reference
@@ -1128,16 +1159,17 @@ export const appRouter = router({
 
         // Full re-generation: same pipeline as generate, but updates existing record
         const category = business.category || "Dienstleistung";
+        const industryKeyRegen = await classifyIndustry(category, business.name);
         // Use a different seed so layout/colors vary from the previous version
         const seed = business.name + Date.now().toString();
-        const industryContext = buildIndustryContext(category);
+        const industryContext = buildIndustryContext(category, business.name);
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
-        const colorScheme = getIndustryColorScheme(category, seed);
+        const colorScheme = getIndustryColorScheme(category, seed, industryKeyRegen);
         // Round-robin: guarantees a different layout than the previous generation
-        const { pool: layoutPoolRegen, industryKey: industryKeyRegen } = getLayoutPool(category, business.name);
+        const { pool: layoutPoolRegen } = getLayoutPool(category, business.name, industryKeyRegen);
         const layoutStyle = await getNextLayoutForIndustry(industryKeyRegen, layoutPoolRegen);
-        const heroImageUrl = getHeroImageUrl(category, seed);
-        const galleryImages = getGalleryImages(category, business.name);
+        const heroImageUrl = getHeroImageUrl(category, seed, industryKeyRegen);
+        const galleryImages = getGalleryImages(category, business.name, industryKeyRegen);
 
         // Pick different templates than last time by shuffling
         const matchingTemplates = selectTemplatesForIndustry(category, seed, 3);
@@ -1811,9 +1843,10 @@ Kontext: ${input.context}`,
           const newCategory = safeData.businessCategory;
           const biz = website.businessId ? await getBusinessById(website.businessId) : undefined;
           const bizName = biz?.name || "";
+          const industryKey = await classifyIndustry(newCategory, bizName);
           const industryContext = buildIndustryContext(newCategory, bizName);
-          const heroImageUrl = getHeroImageUrl(newCategory, bizName);
-          const colorScheme = getIndustryColorScheme(newCategory, bizName);
+          const heroImageUrl = getHeroImageUrl(newCategory, bizName, industryKey);
+          const colorScheme = getIndustryColorScheme(newCategory, bizName, industryKey);
           
           await updateWebsite(input.websiteId, { 
             industry: newCategory, 
@@ -2209,13 +2242,14 @@ Kontext: ${input.context}`,
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
 
         const category = business.category || "Dienstleistung";
+        const industryKey = await classifyIndustry(category, business.name);
         const industryContext = buildIndustryContext(category, business.name);
         const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
-        const colorScheme = getIndustryColorScheme(category, business.name);
-        const { pool: layoutPool, industryKey } = getLayoutPool(category, business.name);
+        const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
+        const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
         const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
-        const heroImageUrl = getHeroImageUrl(category, business.name);
-        const galleryImages = getGalleryImages(category, business.name);
+        const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
+        const galleryImages = getGalleryImages(category, business.name, industryKey);
         const gmbPhotos = business.placeId && !business.placeId.startsWith("self-") ? await getGmbPhotos(business.placeId, 7) : [];
         const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
         const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);

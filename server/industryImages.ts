@@ -260,23 +260,33 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1400&q=85&auto=format&fit=crop",
     ],
   },
-  // ── Default / Generic ──────────────────────────────
+  // ── Default / Neutral Fallback ─────────────────────
   default: {
     keywords: [],
     hero: [
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1557683316-973673baf926?w=1400&q=80&auto=format&fit=crop", // Minimalist Gradient Blue/Purple
+      "https://images.unsplash.com/photo-1554147090-e1221a04a025?w=1400&q=80&auto=format&fit=crop", // Abstract Soft White Texture
+      "https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=1400&q=80&auto=format&fit=crop", // Soft Studio Light
+      "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=1400&q=80&auto=format&fit=crop", // Minimalist Architecture Detail
+      "https://images.unsplash.com/photo-1518655061766-48c238e0ff2e?w=1400&q=80&auto=format&fit=crop", // Clean Minimal Surface
     ],
+    gallery: [
+      "https://images.unsplash.com/photo-1557683311-eac922347aa1?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=800&q=80&auto=format&fit=crop",
+    ]
   },
 };
 
 /**
  * Find the best matching image set for a given industry/category string.
  * Also checks business name for keywords.
+ * If industryKey is provided, it uses that directly.
  */
-export function getIndustryImages(category: string, businessName: string = ""): IndustryImageSet {
+export function getIndustryImages(category: string, businessName: string = "", industryKey?: string): IndustryImageSet {
+  if (industryKey && INDUSTRY_IMAGES[industryKey]) {
+    return INDUSTRY_IMAGES[industryKey];
+  }
+
   const combined = `${category} ${businessName}`.toLowerCase();
 
   for (const [, imageSet] of Object.entries(INDUSTRY_IMAGES)) {
@@ -292,8 +302,8 @@ export function getIndustryImages(category: string, businessName: string = ""): 
  * Get a random hero image URL for a given industry.
  * Uses a seed based on business name for consistency (same business → same image).
  */
-export function getHeroImageUrl(category: string, businessName: string = ""): string {
-  const imageSet = getIndustryImages(category, businessName);
+export function getHeroImageUrl(category: string, businessName: string = "", industryKey?: string): string {
+  const imageSet = getIndustryImages(category, businessName, industryKey);
   const heroes = imageSet.hero;
   // Use a simple hash of the businessName to pick a consistent image
   let hash = 0;
@@ -308,8 +318,8 @@ export function getHeroImageUrl(category: string, businessName: string = ""): st
 /**
  * Get gallery images for a given industry.
  */
-export function getGalleryImages(category: string, businessName: string = ""): string[] {
-  const imageSet = getIndustryImages(category, businessName);
+export function getGalleryImages(category: string, businessName: string = "", industryKey?: string): string[] {
+  const imageSet = getIndustryImages(category, businessName, industryKey);
   return imageSet.gallery || imageSet.hero.slice(0, 2);
 }
 
@@ -487,15 +497,21 @@ const INDUSTRY_COLORS: Record<string, ColorScheme[]> = {
 /**
  * Get a color scheme for a given industry, with variety based on a seed.
  */
-export function getIndustryColorScheme(category: string, businessName: string = ""): ColorScheme {
+export function getIndustryColorScheme(category: string, businessName: string = "", industryKey?: string): ColorScheme {
   const combined = `${category} ${businessName}`.toLowerCase();
   let schemes: ColorScheme[] | undefined;
-  for (const [key, colors] of Object.entries(INDUSTRY_COLORS)) {
-    if (key === "default") continue;
-    const imageSet = INDUSTRY_IMAGES[key];
-    if (imageSet?.keywords.some(kw => combined.includes(kw))) {
-      schemes = colors;
-      break;
+
+  // Use explicit industryKey if provided
+  if (industryKey && INDUSTRY_COLORS[industryKey]) {
+    schemes = INDUSTRY_COLORS[industryKey];
+  } else {
+    for (const [key, colors] of Object.entries(INDUSTRY_COLORS)) {
+      if (key === "default") continue;
+      const imageSet = INDUSTRY_IMAGES[key];
+      if (imageSet?.keywords.some(kw => combined.includes(kw))) {
+        schemes = colors;
+        break;
+      }
     }
   }
   if (!schemes) schemes = INDUSTRY_COLORS.default;
@@ -518,8 +534,31 @@ export function getIndustryColorScheme(category: string, businessName: string = 
  * Get a layout style for a given industry.
  * Different industries get different visual layouts.
  */
-export function getLayoutStyle(category: string, businessName: string = ""): string {
+export function getLayoutStyle(category: string, businessName: string = "", industryKey?: string): string {
   const combined = `${category} ${businessName}`.toLowerCase();
+
+  // Mapping of industryKey to pool
+  const KEY_TO_POOL: Record<string, string[]> = {
+    friseur: ["elegant", "fresh", "luxury"],
+    restaurant: ["warm", "fresh", "modern"],
+    pizza: ["warm", "fresh", "modern"],
+    bar: ["luxury", "warm", "elegant"],
+    cafe: ["warm", "fresh", "modern"],
+    hotel: ["luxury", "warm", "elegant"],
+    bauunternehmen: ["bold", "trust", "modern"],
+    handwerk: ["bold", "trust", "modern"],
+    fitness: ["vibrant", "dynamic", "fresh"],
+    beauty: ["elegant", "fresh", "luxury"],
+    medizin: ["trust", "clean", "natural"],
+    immobilien: ["trust", "luxury", "modern"],
+    baeckerei: ["warm", "fresh", "modern"],
+    beratung: ["trust", "luxury", "modern"],
+    reinigung: ["bold", "trust", "clean"],
+    auto: ["luxury", "craft", "clean"],
+    fotografie: ["modern", "dynamic", "vibrant"],
+    garten: ["natural", "warm", "fresh"],
+    tech: ["modern", "dynamic", "vibrant"],
+  };
 
   /**
    * Industry → Layout Pool mapping.
@@ -592,10 +631,15 @@ export function getLayoutStyle(category: string, businessName: string = ""): str
 
   // Find matching pool
   let pool: string[] = ["clean", "modern", "trust", "fresh"];
-  for (let i = 0; i < POOLS.length; i++) {
-    if (POOLS[i].test(combined)) {
-      pool = POOLS[i].pool;
-      break;
+  
+  if (industryKey && KEY_TO_POOL[industryKey]) {
+    pool = KEY_TO_POOL[industryKey];
+  } else {
+    for (let i = 0; i < POOLS.length; i++) {
+      if (POOLS[i].test(combined)) {
+        pool = POOLS[i].pool;
+        break;
+      }
     }
   }
 
@@ -611,7 +655,34 @@ export function getLayoutStyle(category: string, businessName: string = ""): str
 /**
  * Returns the layout pool and industry key for a category.
  */
-export function getLayoutPool(category: string, businessName: string = ""): { pool: string[]; industryKey: string } {
+export function getLayoutPool(category: string, businessName: string = "", explicitIndustryKey?: string): { pool: string[]; industryKey: string } {
+  if (explicitIndustryKey) {
+    const KEY_TO_POOL: Record<string, string[]> = {
+      friseur: ["elegant", "fresh", "luxury"],
+      restaurant: ["warm", "fresh", "modern"],
+      pizza: ["warm", "fresh", "modern"],
+      bar: ["luxury", "warm", "elegant"],
+      cafe: ["warm", "fresh", "modern"],
+      hotel: ["luxury", "warm", "elegant"],
+      bauunternehmen: ["bold", "trust", "modern"],
+      handwerk: ["bold", "trust", "modern"],
+      fitness: ["vibrant", "dynamic", "fresh"],
+      beauty: ["elegant", "fresh", "luxury"],
+      medizin: ["trust", "clean", "natural"],
+      immobilien: ["trust", "luxury", "modern"],
+      baeckerei: ["warm", "fresh", "modern"],
+      beratung: ["trust", "luxury", "modern"],
+      reinigung: ["bold", "trust", "clean"],
+      auto: ["luxury", "craft", "clean"],
+      fotografie: ["modern", "dynamic", "vibrant"],
+      garten: ["natural", "warm", "fresh"],
+      tech: ["modern", "dynamic", "vibrant"],
+    };
+    if (KEY_TO_POOL[explicitIndustryKey]) {
+      return { pool: KEY_TO_POOL[explicitIndustryKey], industryKey: explicitIndustryKey };
+    }
+  }
+
   const combined = `${category} ${businessName}`.toLowerCase();
   const POOLS_SIMPLE = [
     { test: (s: string) => /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading|esthetician|eyebrow|eyelash|skincare|skin care|facial|pedicure|manicure|hairdresser|hairstylist/.test(s), pool: ["elegant", "fresh", "luxury"], key: "beauty" },
