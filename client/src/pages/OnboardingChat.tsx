@@ -8,6 +8,7 @@ import MacbookMockup from "@/components/MacbookMockup";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory } from "@shared/gmbCategories";
+import { getContrastColor } from "@shared/colorContrast";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -114,12 +115,22 @@ interface ChatMessage {
 
 const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+function makeColorScheme(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">): ColorScheme {
+  return {
+    ...cs,
+    onPrimary: getContrastColor(cs.primary),
+    onSecondary: getContrastColor(cs.secondary),
+    onAccent: getContrastColor(cs.accent),
+    onSurface: getContrastColor(cs.surface),
+    onBackground: getContrastColor(cs.background),
+  };
+}
 const COLOR_SCHEMES: { id: string; label: string; description: string; colors: ColorScheme }[] = [
   {
     id: "trust",
     label: "Vertrauen & Professionalität",
     description: "Seriöses Blau und Grau – ideal für Beratung, Recht und Handwerk.",
-    colors: {
+    colors: makeColorScheme({
       primary: "#2563EB",
       secondary: "#1E3A8A",
       accent: "#60A5FA",
@@ -127,13 +138,13 @@ const COLOR_SCHEMES: { id: string; label: string; description: string; colors: C
       surface: "#FFFFFF",
       text: "#0F172A",
       textLight: "#475569"
-    }
+    })
   },
   {
     id: "warm",
     label: "Wärme & Geborgenheit",
     description: "Warme Gold- und Erdtöne – perfekt für Gastronomie und Wellness.",
-    colors: {
+    colors: makeColorScheme({
       primary: "#D97706",
       secondary: "#78350F",
       accent: "#FCD34D",
@@ -141,13 +152,13 @@ const COLOR_SCHEMES: { id: string; label: string; description: string; colors: C
       surface: "#FFFFFF",
       text: "#451A03",
       textLight: "#92400E"
-    }
+    })
   },
   {
     id: "modern",
     label: "Modern & Klar",
     description: "Klassisches Schwarz/Weiß mit blauem Akzent – für moderne Brands.",
-    colors: {
+    colors: makeColorScheme({
       primary: "#111827",
       secondary: "#374151",
       accent: "#3B82F6",
@@ -155,13 +166,13 @@ const COLOR_SCHEMES: { id: string; label: string; description: string; colors: C
       surface: "#F3F4F6",
       text: "#111827",
       textLight: "#6B7280"
-    }
+    })
   },
   {
     id: "vibrant",
     label: "Energie & Aktivität",
     description: "Dynamisches Orange und Rot – ideal für Fitness und Sport.",
-    colors: {
+    colors: makeColorScheme({
       primary: "#EA580C",
       secondary: "#9A3412",
       accent: "#F97316",
@@ -169,7 +180,7 @@ const COLOR_SCHEMES: { id: string; label: string; description: string; colors: C
       surface: "#FFFFFF",
       text: "#431407",
       textLight: "#9A3412"
-    }
+    })
   }
 ];
 
@@ -369,7 +380,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalEmail: "",
     legalPhone: "",
     legalVatId: "",
-    colorScheme: {
+    colorScheme: makeColorScheme({
       primary: "#3B82F6",
       secondary: "#1E3A8A",
       accent: "#60A5FA",
@@ -377,7 +388,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       surface: "#FFFFFF",
       text: "#0F172A",
       textLight: "#475569"
-    },
+    }),
     heroPhotoUrl: "",
     aboutPhotoUrl: "",
     brandLogo: "",
@@ -427,7 +438,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const cs = siteData.website.colorScheme as ColorScheme;
       setData((prev) => ({
         ...prev,
-        colorScheme: {
+        colorScheme: makeColorScheme({
           primary: cs.primary || prev.colorScheme.primary,
           secondary: cs.secondary || prev.colorScheme.secondary,
           accent: cs.accent || prev.colorScheme.accent,
@@ -436,7 +447,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           text: cs.text || prev.colorScheme.text,
           textLight: cs.textLight || prev.colorScheme.textLight,
           gradient: cs.gradient || prev.colorScheme.gradient,
-        }
+        })
       }));
     }
   }, [siteData?.website?.colorScheme, initialized]);

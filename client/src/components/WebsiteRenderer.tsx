@@ -107,19 +107,29 @@ function pickLayout(websiteData: WebsiteData, layoutStyleOverride?: string | nul
 }
 
 // ── Default Color Schemes per Layout ─────────────────────────────────────────
+function withOnColors(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">): ColorScheme {
+  return {
+    ...cs,
+    onPrimary: getContrastColor(cs.primary),
+    onSecondary: getContrastColor(cs.secondary),
+    onAccent: getContrastColor(cs.accent),
+    onSurface: getContrastColor(cs.surface),
+    onBackground: getContrastColor(cs.background),
+  };
+}
 const DEFAULT_COLOR_SCHEMES: Record<string, ColorScheme> = {
-  elegant:  { primary: "#b8860b", secondary: "#f5f0e8", accent: "#d4a843", background: "#fefcf8", surface: "#f5f0e8", text: "#1a1208", textLight: "#6b5c3e" },
-  bold:     { primary: "#e85d04", secondary: "#1a1a1a", accent: "#ff6b1a", background: "#f5f5f5", surface: "#ebebeb", text: "#1a1a1a", textLight: "#555" },
-  warm:     { primary: "#c45c26", secondary: "#fdf6ee", accent: "#e07b3c", background: "#fffaf5", surface: "#fdf6ee", text: "#2d1a0e", textLight: "#7a5c42" },
-  clean:    { primary: "#2563eb", secondary: "#eff6ff", accent: "#3b82f6", background: "#f8fafc", surface: "#fff", text: "#0f172a", textLight: "#64748b" },
-  dynamic:  { primary: "#22c55e", secondary: "#0a0a0a", accent: "#16a34a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" },
-  luxury:   { primary: "#c9a84c", secondary: "#0a0a0a", accent: "#e8c87a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" },
-  craft:    { primary: "#f97316", secondary: "#1a1a1a", accent: "#fb923c", background: "#111", surface: "#1a1a1a", text: "#fff", textLight: "rgba(255,255,255,0.6)" },
-  fresh:    { primary: "#0ea5e9", secondary: "#fafaf8", accent: "#38bdf8", background: "#fafaf8", surface: "#fff", text: "#1a1a1a", textLight: "#666" },
-  trust:    { primary: "#1d4ed8", secondary: "#f8fafc", accent: "#3b82f6", background: "#fff", surface: "#f8fafc", text: "#1a2332", textLight: "#5a6a7e" },
-  modern:   { primary: "#0a0a0a", secondary: "#f8f8f8", accent: "#e11d48", background: "#fff", surface: "#f8f8f8", text: "#0a0a0a", textLight: "#666" },
-  vibrant:  { primary: "#f59e0b", secondary: "#0d0d0d", accent: "#fbbf24", background: "#0d0d0d", surface: "#161616", text: "#fff", textLight: "rgba(255,255,255,0.6)" },
-  natural:  { primary: "#65a30d", secondary: "#f0ece4", accent: "#84cc16", background: "#faf8f4", surface: "#f0ece4", text: "#2a2018", textLight: "#7a6a5a" },
+  elegant:  withOnColors({ primary: "#b8860b", secondary: "#f5f0e8", accent: "#d4a843", background: "#fefcf8", surface: "#f5f0e8", text: "#1a1208", textLight: "#6b5c3e" }),
+  bold:     withOnColors({ primary: "#e85d04", secondary: "#1a1a1a", accent: "#ff6b1a", background: "#f5f5f5", surface: "#ebebeb", text: "#1a1a1a", textLight: "#555" }),
+  warm:     withOnColors({ primary: "#c45c26", secondary: "#fdf6ee", accent: "#e07b3c", background: "#fffaf5", surface: "#fdf6ee", text: "#2d1a0e", textLight: "#7a5c42" }),
+  clean:    withOnColors({ primary: "#2563eb", secondary: "#eff6ff", accent: "#3b82f6", background: "#f8fafc", surface: "#fff", text: "#0f172a", textLight: "#64748b" }),
+  dynamic:  withOnColors({ primary: "#22c55e", secondary: "#0a0a0a", accent: "#16a34a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  luxury:   withOnColors({ primary: "#c9a84c", secondary: "#0a0a0a", accent: "#e8c87a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  craft:    withOnColors({ primary: "#f97316", secondary: "#1a1a1a", accent: "#fb923c", background: "#111", surface: "#1a1a1a", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  fresh:    withOnColors({ primary: "#0ea5e9", secondary: "#fafaf8", accent: "#38bdf8", background: "#fafaf8", surface: "#fff", text: "#1a1a1a", textLight: "#666" }),
+  trust:    withOnColors({ primary: "#1d4ed8", secondary: "#f8fafc", accent: "#3b82f6", background: "#fff", surface: "#f8fafc", text: "#1a2332", textLight: "#5a6a7e" }),
+  modern:   withOnColors({ primary: "#0a0a0a", secondary: "#f8f8f8", accent: "#e11d48", background: "#fff", surface: "#f8f8f8", text: "#0a0a0a", textLight: "#666" }),
+  vibrant:  withOnColors({ primary: "#f59e0b", secondary: "#0d0d0d", accent: "#fbbf24", background: "#0d0d0d", surface: "#161616", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  natural:  withOnColors({ primary: "#65a30d", secondary: "#f0ece4", accent: "#84cc16", background: "#faf8f4", surface: "#f0ece4", text: "#2a2018", textLight: "#7a6a5a" }),
 };
 
 const FALLBACK_IMAGES: Record<string, string> = {

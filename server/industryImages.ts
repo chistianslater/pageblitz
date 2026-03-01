@@ -517,22 +517,23 @@ const INDUSTRY_COLORS: Record<string, Omit<ColorScheme, "onPrimary" | "onSeconda
  */
 export function getIndustryColorScheme(category: string, businessName: string = "", industryKey?: string): ColorScheme {
   const combined = `${category} ${businessName}`.toLowerCase();
-  let schemes: ColorScheme[] | undefined;
+  type PartialScheme = Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">;
+  let schemes: PartialScheme[] | undefined;
 
   // Use explicit industryKey if provided
   if (industryKey && INDUSTRY_COLORS[industryKey]) {
-    schemes = INDUSTRY_COLORS[industryKey];
+    schemes = INDUSTRY_COLORS[industryKey] as PartialScheme[];
   } else {
     for (const [key, colors] of Object.entries(INDUSTRY_COLORS)) {
       if (key === "default") continue;
       const imageSet = INDUSTRY_IMAGES[key];
       if (imageSet?.keywords.some(kw => combined.includes(kw))) {
-        schemes = colors;
+        schemes = colors as PartialScheme[];
         break;
       }
     }
   }
-  if (!schemes) schemes = INDUSTRY_COLORS.default;
+  if (!schemes) schemes = INDUSTRY_COLORS.default as PartialScheme[];
   // Use a stronger hash that mixes multiple characters for better distribution
   // This ensures two similar business names get different colors
   let h1 = 0x9e3779b9, h2 = 0x6c62272e;
@@ -545,7 +546,7 @@ export function getIndustryColorScheme(category: string, businessName: string = 
     h2 = (h2 << 7) | (h2 >>> 25);
   }
   const hash = Math.abs(h1 ^ h2);
-  const scheme = schemes[hash % schemes.length];
+  const scheme = (schemes as PartialScheme[])[hash % schemes.length];
 
   // Dynamically calculate "on" contrast colors
   return {
