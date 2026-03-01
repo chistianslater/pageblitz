@@ -9,7 +9,7 @@ import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
-import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors } from "@shared/layoutConfig";
+import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif } from "@shared/layoutConfig";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -2008,43 +2008,52 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div className="ml-9 space-y-3">
                 <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau rechts ändert sich sofort:</p>
                 <div className="space-y-2">
-                  <div>
-                    <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenschriften (klassisch, edel)</p>
-                    {FONT_OPTIONS.serif.map((opt) => (
-                      <button
-                        key={opt.font}
-                        onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                        className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
-                          data.headlineFont === opt.font
-                            ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
-                            : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
-                        }`}
-                      >
-                        <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
-                          {opt.label}
-                        </p>
-                      </button>
-                    ))}
+                  {(() => {
+                    const hideSerifs = prefersSansSerif(data.businessCategory);
+                    return (
+                      <>
+                        {!hideSerifs && (
+                          <div>
+                            <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenschriften (klassisch, edel)</p>
+                            {FONT_OPTIONS.serif.map((opt) => (
+                              <button
+                                key={opt.font}
+                                onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
+                                className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                                  data.headlineFont === opt.font
+                                    ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                    : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                                }`}
+                              >
+                                <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
+                                  {opt.label}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className={!hideSerifs ? "mt-6" : ""}>
+                          <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenlose (modern, progressiv)</p>
+                          {FONT_OPTIONS.sans.map((opt) => (
+                            <button
+                              key={opt.font}
+                              onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
+                              className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                                data.headlineFont === opt.font
+                                  ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                    : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                                }`}
+                              >
+                                <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
+                                  {opt.label}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
-                  <div className="mt-6">
-                    <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenlose (modern, progressiv)</p>
-                    {FONT_OPTIONS.sans.map((opt) => (
-                      <button
-                        key={opt.font}
-                        onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                        className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
-                          data.headlineFont === opt.font
-                            ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
-                            : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
-                        }`}
-                      >
-                        <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
-                          {opt.label}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <button
                   disabled={isTyping}

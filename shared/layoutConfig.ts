@@ -105,6 +105,28 @@ export const FORBIDDEN_BODY_FONTS: string[] = Array.from(new Set([
 ]));
 
 /**
+ * Industry categories that should avoid serif fonts.
+ * "tech" = Tech, Digital, Agency
+ * "craft" = Handwerk, Bau
+ * "auto" = Automotive
+ * "fitness" = Sport, Fitness
+ * "medical" = Medical, Health
+ * "clean" = Reinigung, Service
+ */
+export const SANS_ONLY_INDUSTRIES = [
+  "tech", "construction", "automotive", "fitness", "medical", "cleaning", "education", "legal", "nature", "fastfood"
+];
+
+/**
+ * Checks if a given industry category should avoid serif fonts.
+ */
+export function prefersSansSerif(category: string): boolean {
+  const s = category.toLowerCase();
+  const sansRegex = /tech|software|digital|agency|it|web|app|computer|marketing|seo|branding|startup|handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|construction|auto|kfz|car|garage|mechanic|werkstatt|tuning|fahrzeug|fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|reinigung|cleaning|facility|gebäude|hausmeister|security|arzt|zahnarzt|medizin|doctor|dental|medical|health|clinic|pharmacy|apotheke|schule|school|bildung|education|coaching/i;
+  return sansRegex.test(s);
+}
+
+/**
  * Global Font Options for user selection in Onboarding.
  */
 export const FONT_OPTIONS = {
