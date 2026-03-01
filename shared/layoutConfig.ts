@@ -11,6 +11,23 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import { type ColorScheme } from "./types";
+import { getContrastColor } from "./colorContrast";
+
+/**
+ * Calculates 'on' contrast colors for a color scheme.
+ */
+export function withOnColors(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">): ColorScheme {
+  return {
+    ...cs,
+    onPrimary: getContrastColor(cs.primary),
+    onSecondary: getContrastColor(cs.secondary),
+    onAccent: getContrastColor(cs.accent),
+    onSurface: getContrastColor(cs.surface),
+    onBackground: getContrastColor(cs.background),
+  };
+}
+
 export interface LayoutFontConfig {
   /** Exact Google Font name for headlines (no quotes, no fallbacks) */
   headlineFont: string;
@@ -117,26 +134,12 @@ export const LOGO_FONT_OPTIONS = [
 /**
  * Predefined Color Schemes for Onboarding.
  */
-import { type ColorScheme } from "./types";
-import { getContrastColor } from "./colorContrast";
-
-function makeColorScheme(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">): ColorScheme {
-  return {
-    ...cs,
-    onPrimary: getContrastColor(cs.primary),
-    onSecondary: getContrastColor(cs.secondary),
-    onAccent: getContrastColor(cs.accent),
-    onSurface: getContrastColor(cs.surface),
-    onBackground: getContrastColor(cs.background),
-  };
-}
-
 export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description: string; colors: ColorScheme }[] = [
   {
     id: "trust",
     label: "Professional Trust",
     description: "Tiefes Mitternachtsblau und Schiefer – seriös, kompetent und zeitlos.",
-    colors: makeColorScheme({
+    colors: withOnColors({
       primary: "#1e3a8a",
       secondary: "#0f172a",
       accent: "#f59e0b",
@@ -150,7 +153,7 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
     id: "warm",
     label: "Heritage Warmth",
     description: "Edles Terracotta und Sandtöne – ideal für exzellente Gastronomie.",
-    colors: makeColorScheme({
+    colors: withOnColors({
       primary: "#9a3412",
       secondary: "#431407",
       accent: "#b3966a",
@@ -164,7 +167,7 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
     id: "elegant",
     label: "Pure Elegance",
     description: "Champagner und weiches Anthrazit – für Luxus und Ästhetik.",
-    colors: makeColorScheme({
+    colors: withOnColors({
       primary: "#bfa37e",
       secondary: "#1a1a1a",
       accent: "#f2f2f2",
@@ -178,7 +181,7 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
     id: "modern",
     label: "Contemporary Dark",
     description: "Scharfes Graphit und klares Weiß – puristisch und fokussiert.",
-    colors: makeColorScheme({
+    colors: withOnColors({
       primary: "#bef264",
       secondary: "#0a0a0a",
       accent: "#ffffff",
@@ -194,18 +197,18 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
  * Default Color Schemes per Layout Style.
  */
 export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
-  elegant:  makeColorScheme({ primary: "#b8860b", secondary: "#f5f0e8", accent: "#d4a843", background: "#fefcf8", surface: "#f5f0e8", text: "#1a1208", textLight: "#6b5c3e" }),
-  bold:     makeColorScheme({ primary: "#e85d04", secondary: "#1a1a1a", accent: "#ff6b1a", background: "#f5f5f5", surface: "#ebebeb", text: "#1a1a1a", textLight: "#555" }),
-  warm:     makeColorScheme({ primary: "#c45c26", secondary: "#fdf6ee", accent: "#e07b3c", background: "#fffaf5", surface: "#fdf6ee", text: "#2d1a0e", textLight: "#7a5c42" }),
-  clean:    makeColorScheme({ primary: "#2563eb", secondary: "#eff6ff", accent: "#3b82f6", background: "#f8fafc", surface: "#fff", text: "#0f172a", textLight: "#64748b" }),
-  dynamic:  makeColorScheme({ primary: "#22c55e", secondary: "#0a0a0a", accent: "#16a34a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  luxury:   makeColorScheme({ primary: "#c9a84c", secondary: "#0a0a0a", accent: "#e8c87a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  craft:    makeColorScheme({ primary: "#f97316", secondary: "#1a1a1a", accent: "#fb923c", background: "#111", surface: "#1a1a1a", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  fresh:    makeColorScheme({ primary: "#0ea5e9", secondary: "#fafaf8", accent: "#38bdf8", background: "#fafaf8", surface: "#fff", text: "#1a1a1a", textLight: "#666" }),
-  trust:    makeColorScheme({ primary: "#1d4ed8", secondary: "#f8fafc", accent: "#3b82f6", background: "#fff", surface: "#f8fafc", text: "#1a2332", textLight: "#5a6a7e" }),
-  modern:   makeColorScheme({ primary: "#0a0a0a", secondary: "#f8f8f8", accent: "#e11d48", background: "#fff", surface: "#f8f8f8", text: "#0a0a0a", textLight: "#666" }),
-  vibrant:  makeColorScheme({ primary: "#f59e0b", secondary: "#0d0d0d", accent: "#fbbf24", background: "#0d0d0d", surface: "#161616", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  natural:  makeColorScheme({ primary: "#65a30d", secondary: "#f0ece4", accent: "#84cc16", background: "#faf8f4", surface: "#f0ece4", text: "#2a2018", textLight: "#7a6a5a" }),
+  elegant:  withOnColors({ primary: "#b8860b", secondary: "#f5f0e8", accent: "#d4a843", background: "#fefcf8", surface: "#f5f0e8", text: "#1a1208", textLight: "#6b5c3e" }),
+  bold:     withOnColors({ primary: "#e85d04", secondary: "#1a1a1a", accent: "#ff6b1a", background: "#f5f5f5", surface: "#ebebeb", text: "#1a1a1a", textLight: "#555" }),
+  warm:     withOnColors({ primary: "#c45c26", secondary: "#fdf6ee", accent: "#e07b3c", background: "#fffaf5", surface: "#fdf6ee", text: "#2d1a0e", textLight: "#7a5c42" }),
+  clean:    withOnColors({ primary: "#2563eb", secondary: "#eff6ff", accent: "#3b82f6", background: "#f8fafc", surface: "#fff", text: "#0f172a", textLight: "#64748b" }),
+  dynamic:  withOnColors({ primary: "#22c55e", secondary: "#0a0a0a", accent: "#16a34a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  luxury:   withOnColors({ primary: "#c9a84c", secondary: "#0a0a0a", accent: "#e8c87a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  craft:    withOnColors({ primary: "#f97316", secondary: "#1a1a1a", accent: "#fb923c", background: "#111", surface: "#1a1a1a", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  fresh:    withOnColors({ primary: "#0ea5e9", secondary: "#fafaf8", accent: "#38bdf8", background: "#fafaf8", surface: "#fff", text: "#1a1a1a", textLight: "#666" }),
+  trust:    withOnColors({ primary: "#1d4ed8", secondary: "#f8fafc", accent: "#3b82f6", background: "#fff", surface: "#f8fafc", text: "#1a2332", textLight: "#5a6a7e" }),
+  modern:   withOnColors({ primary: "#0a0a0a", secondary: "#f8f8f8", accent: "#e11d48", background: "#fff", surface: "#f8f8f8", text: "#0a0a0a", textLight: "#666" }),
+  vibrant:  withOnColors({ primary: "#f59e0b", secondary: "#0d0d0d", accent: "#fbbf24", background: "#0d0d0d", surface: "#161616", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
+  natural:  withOnColors({ primary: "#65a30d", secondary: "#f0ece4", accent: "#84cc16", background: "#faf8f4", surface: "#f0ece4", text: "#2a2018", textLight: "#7a6a5a" }),
 };
 
 /**

@@ -18,7 +18,7 @@
 import { useEffect } from "react";
 import type { WebsiteData, ColorScheme, DesignTokens } from "@shared/types";
 import { getSafeHeadingColor, getContrastColor, isLightColor, getLuminance, hexToRgb } from "@shared/colorContrast";
-import { LAYOUT_FONTS, LAYOUT_FONTS_DEFAULT, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FALLBACK_IMAGES } from "@shared/layoutConfig";
+import { LAYOUT_FONTS, LAYOUT_FONTS_DEFAULT, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FALLBACK_IMAGES, withOnColors } from "@shared/layoutConfig";
 import ElegantLayout from "./layouts/ElegantLayout";
 import BoldLayout from "./layouts/BoldLayout";
 import WarmLayout from "./layouts/WarmLayout";
