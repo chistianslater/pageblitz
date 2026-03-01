@@ -28,7 +28,7 @@ const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   },
   // ── Restaurant & Food ──────────────────────────────
   restaurant: {
-    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch", "taverne", "ristorante", "trattoria", "italienisch", "italien", "pizzeria", "pizza", "genuss", "aroma", "lecker", "speisen", "küchenchef", "koch", "tafel", "buffet", "catering", "bistro", "café"],
+    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch", "taverne", "ristorante", "trattoria", "italienisch", "italien", "pizzeria", "pizza", "genuss", "aroma", "lecker", "speisen", "küchenchef", "koch", "tafel", "buffet", "catering", "bistro", "café", "delivery", "lieferservice", "speiselokal", "gasthof", "bewirtung", "essen auf rädern", "mahlzeit", "meal"],
     hero: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop",
@@ -535,7 +535,7 @@ export function getLayoutStyle(category: string, businessName: string = ""): str
     },
     // Restaurant, Café, Food (DE + EN)
     {
-      test: (s) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|coffee.?shop|coffee house|diner|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|fast.?food|takeout|takeaway|deli|sandwich|brunch|breakfast|lunch|dinner/.test(s),
+      test: (s) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|coffee.?shop|coffee house|diner|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|fast.?food|takeout|takeaway|deli|sandwich|brunch|breakfast|lunch|dinner|delivery|lieferservice|mahlzeit/.test(s),
       pool: ["warm", "fresh", "modern"],
     },
     // Construction, Trades (DE + EN)
@@ -615,7 +615,7 @@ export function getLayoutPool(category: string, businessName: string = ""): { po
   const combined = `${category} ${businessName}`.toLowerCase();
   const POOLS_SIMPLE = [
     { test: (s: string) => /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading|esthetician|eyebrow|eyelash|skincare|skin care|facial|pedicure|manicure|hairdresser|hairstylist/.test(s), pool: ["elegant", "fresh", "luxury"], key: "beauty" },
-    { test: (s: string) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|coffee.?shop|coffee house|diner|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|fast.?food|takeout|takeaway|deli|sandwich|brunch|breakfast|lunch|dinner/.test(s), pool: ["warm", "fresh", "modern"], key: "food" },
+    { test: (s: string) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|coffee.?shop|coffee house|diner|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|fast.?food|takeout|takeaway|deli|sandwich|brunch|breakfast|lunch|dinner|delivery|lieferservice|mahlzeit/.test(s), pool: ["warm", "fresh", "modern"], key: "food" },
     { test: (s: string) => /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|plumbing|carpenter|carpentry|painter|painting|construction|renovation|installation|tischler|fliesenleger|electrician|electrical|hvac|heating|cooling|air.?condition|masonry|concrete|drywall|flooring|tile|insulation|waterproof|window|door|fence|deck|patio|siding|gutter|handyman|remodel/.test(s), pool: ["bold", "trust", "modern"], key: "construction" },
     { test: (s: string) => /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire|auto.?repair|auto.?body|auto.?service|car.?wash|car.?dealer|dealership|transmission|oil.?change|brake|exhaust|collision|towing|used.?car|new.?car/.test(s), pool: ["luxury", "craft", "clean"], key: "automotive" },
     { test: (s: string) => /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance|athletic|athletics|swimming|pool|tennis|golf|cycling|running|triathlon|weightlifting|zumba|barre|bootcamp|spin|hiit|stretch|flexibility|wellness.?center/.test(s), pool: ["vibrant", "dynamic", "fresh"], key: "fitness" },

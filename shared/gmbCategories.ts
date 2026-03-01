@@ -41,6 +41,8 @@ const GMB_CATEGORY_MAP: Record<string, string> = {
   "Brewery": "Brauerei",
   "Catering service": "Catering",
   "Food delivery": "Lieferservice",
+  "Meal delivery": "Lieferservice",
+  "Meal takeaway": "Abholservice",
   "Bistro": "Bistro",
   "Tapas bar": "Tapas-Bar",
   "Cafeteria": "Kantine",
