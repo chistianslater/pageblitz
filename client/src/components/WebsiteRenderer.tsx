@@ -18,6 +18,7 @@
 import { useEffect } from "react";
 import type { WebsiteData, ColorScheme, DesignTokens } from "@shared/types";
 import { getSafeHeadingColor, getContrastColor, isLightColor, getLuminance, hexToRgb } from "@shared/colorContrast";
+import { LAYOUT_FONTS, LAYOUT_FONTS_DEFAULT } from "@shared/layoutConfig";
 import ElegantLayout from "./layouts/ElegantLayout";
 import BoldLayout from "./layouts/BoldLayout";
 import WarmLayout from "./layouts/WarmLayout";
@@ -147,21 +148,11 @@ const FALLBACK_IMAGES: Record<string, string> = {
   natural: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=85&fit=crop",
 };
 
-// ── Layout-specific font defaults (used when no designTokens present) ────────
-const LAYOUT_FONT_DEFAULTS: Record<string, { headline: string; body: string }> = {
-  elegant:  { headline: "'Fraunces', serif", body: "'Outfit', sans-serif" },
-  bold:     { headline: "'Space Grotesque', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
-  warm:     { headline: "'Fraunces', serif", body: "'Instrument Sans', sans-serif" },
-  clean:    { headline: "'Instrument Sans', sans-serif", body: "'Inter', sans-serif" },
-  dynamic:  { headline: "'Syne', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
-  luxury:   { headline: "'Fraunces', serif", body: "'Outfit', sans-serif" },
-  craft:    { headline: "'Bricolage Grotesque', sans-serif", body: "'Instrument Sans', sans-serif" },
-  fresh:    { headline: "'Plus Jakarta Sans', sans-serif", body: "'Instrument Sans', sans-serif" },
-  trust:    { headline: "'Instrument Sans', sans-serif", body: "'Inter', sans-serif" },
-  modern:   { headline: "'Plus Jakarta Sans', sans-serif", body: "'Inter', sans-serif" },
-  vibrant:  { headline: "'Bricolage Grotesque', sans-serif", body: "'Plus Jakarta Sans', sans-serif" },
-  natural:  { headline: "'Fraunces', serif", body: "'Instrument Sans', sans-serif" },
-};
+// ── Layout-specific font defaults – sourced from shared/layoutConfig (single source of truth) ────────
+const LAYOUT_FONT_DEFAULTS: Record<string, { headline: string; body: string }> = Object.fromEntries(
+  Object.entries(LAYOUT_FONTS).map(([k, v]) => [k, { headline: v.headlineCss, body: v.bodyCss }])
+);
+LAYOUT_FONT_DEFAULTS._default = { headline: LAYOUT_FONTS_DEFAULT.headlineCss, body: LAYOUT_FONTS_DEFAULT.bodyCss };
 
 // ── CSS Custom Property maps ──────────────────────────────────────────────────
 const RADIUS_MAP: Record<string, string> = {

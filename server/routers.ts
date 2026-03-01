@@ -28,6 +28,7 @@ import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateIma
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
+import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
@@ -91,8 +92,8 @@ const DESIGN_ARCHETYPES: Record<string, {
     designTwin: "Aesop meets Acne Studios",
     aesthetic: "Elegant, reduziert, luxuriös. Großzügiger Weißraum, klassische Serifen, hochwertige Bilder.",
     colors: { primary: "#1A1A1A", background: "#FDFBF7", accent: "#D4AF37", text: "#1A1A1A" },
-    typography: { headers: "Playfair Display, serif", body: "Lato, sans-serif" },
-    patterns: ["editorial-grid", "full-bleed-images", "generous-whitespace"],
+    typography: { headers: "Fraunces, serif", body: "Outfit, sans-serif" },
+    patterns: ["asymmetric-grid", "full-bleed-images", "editorial-layout"],
     microInteractions: ["subtle scale on hover (1.02)", "smooth opacity transitions", "parallax at 0.3x"],
     promptInstruction: `Design Style: Luxury Minimalist (Aesop / Acne Studios Vibe).
 STRIKTE CSS-REGELN:
@@ -110,7 +111,7 @@ Vibe: Teuer, zeitlos, sophisticated. Weniger ist mehr.`
     designTwin: "Calm meets Headspace",
     aesthetic: "Einladend, freundlich, zugänglich. Warme Pastelle, abgerundete Formen, authentische Fotografie.",
     colors: { primary: "#E07B53", background: "#FDF8F4", accent: "#F4A261", text: "#2D3436" },
-    typography: { headers: "Nunito, sans-serif", body: "Open Sans, sans-serif" },
+    typography: { headers: "Plus Jakarta Sans, sans-serif", body: "Instrument Sans, sans-serif" },
     patterns: ["card-grid", "testimonial-slider", "feature-sections"],
     microInteractions: ["gentle scale on hover", "soft shadow transitions", "smooth color shifts"],
     promptInstruction: `Design Style: Warm Connector (Calm / Headspace Vibe).
@@ -129,7 +130,7 @@ Vibe: Menschlich, fürsorglich, zugänglich. Wie ein freundlicher Nachbar.`
     designTwin: "Dogstudio.co meets Exoape.com",
     aesthetic: "Filmisch, emotional, atmosphärisch. Video-first, sanfte Animationen, dunkle Atmosphäre.",
     colors: { primary: "#0F141A", background: "#0F141A", accent: "#C9A84C", text: "#E8E2DA" },
-    typography: { headers: "Playfair Display, serif", body: "Inter, sans-serif" },
+    typography: { headers: "Fraunces, serif", body: "Outfit, sans-serif" },
     patterns: ["video-hero", "parallax-sections", "cinematic-scroll"],
     microInteractions: ["smooth fade-in on scroll", "letter-by-letter animation", "parallax depth layers"],
     promptInstruction: `Design Style: Immersive Storyteller (Dogstudio / Exoape Vibe).
@@ -148,7 +149,7 @@ Vibe: Filmisch, mysteriös, emotional. Wie ein Kinotrailer.`
     designTwin: "Baseborn.studio meets Tore Bentsen",
     aesthetic: "Kraftvoll, direkt, starke Kontraste. Große Typografie, asymmetrische Layouts, schwarzer Hintergrund.",
     colors: { primary: "#FF4500", background: "#0A0A0A", accent: "#FF4500", text: "#FFFFFF" },
-    typography: { headers: "Space Grotesk, sans-serif", body: "Inter, sans-serif" },
+    typography: { headers: "Space Grotesque, sans-serif", body: "Plus Jakarta Sans, sans-serif" },
     patterns: ["asymmetric-split", "full-screen-sections", "broken-grid"],
     microInteractions: ["text distortion on hover", "rotate/skew on scroll", "marquee ticker"],
     promptInstruction: `Design Style: Bold Experimentalist (Baseborn / Brutalist Vibe).
@@ -167,7 +168,7 @@ Vibe: Roh, selbstbewusst, rebellisch. Wie ein Schlag ins Gesicht (positiv).`
     designTwin: "Mailchimp meets Innocent Drinks",
     aesthetic: "Authentisch, handwerklich, nostalgisch. Texturierte Hintergründe, Vintage-Typografie, Wärme.",
     colors: { primary: "#8B4513", background: "#FFF8DC", accent: "#CD5C5C", text: "#3E2723" },
-    typography: { headers: "Abril Fatface, serif", body: "Lato, sans-serif" },
+    typography: { headers: "Bricolage Grotesque, sans-serif", body: "Instrument Sans, sans-serif" },
     patterns: ["classic-layout", "vintage-cards", "decorative-borders"],
     microInteractions: ["subtle hover", "paper texture overlay", "gentle fade-in"],
     promptInstruction: `Design Style: Retro Revivalist (Mailchimp / Handmade Vibe).
@@ -186,7 +187,7 @@ Vibe: Nostalgisch, handwerklich, authentisch. Wie ein Familienbetrieb seit 1952.
     designTwin: "Linear.app meets Vercel",
     aesthetic: "Minimalistisch, technisch, fokussiert. Dunkle Hintergründe, klare Hierarchie, Bento-Grid.",
     colors: { primary: "#6366F1", background: "#0A0A0A", accent: "#6366F1", text: "#E8E8E8" },
-    typography: { headers: "Inter, sans-serif", body: "Inter, sans-serif" },
+    typography: { headers: "Plus Jakarta Sans, sans-serif", body: "Inter, sans-serif" },
     patterns: ["bento-grid", "asymmetric-grid", "full-screen-sections"],
     microInteractions: ["glow on hover", "underline animation", "subtle border glow"],
     promptInstruction: `Design Style: Digital Purist (Linear / Vercel Vibe).
@@ -205,7 +206,7 @@ Vibe: Präzision, Ingenieurskunst, High-Tech. Wie ein Produkt von einem Top-Star
     designTwin: "McKinsey meets Goldman Sachs",
     aesthetic: "Seriös, strukturiert, vertrauenswürdig. Navy-Farben, klare Grids, Business-Fotografie.",
     colors: { primary: "#1E3A5F", background: "#FFFFFF", accent: "#38B2AC", text: "#1A202C" },
-    typography: { headers: "Montserrat, sans-serif", body: "Source Sans Pro, sans-serif" },
+    typography: { headers: "Instrument Sans, sans-serif", body: "Inter, sans-serif" },
     patterns: ["structured-grid", "stats-sections", "team-grid"],
     microInteractions: ["subtle hover states", "smooth transitions", "professional feedback"],
     promptInstruction: `Design Style: Corporate Professional (McKinsey / Goldman Sachs Vibe).
@@ -224,7 +225,7 @@ Vibe: Vertrauenswürdig, etabliert, seriös. Wie ein Marktführer.`
     designTwin: "Critical Mass meets Monks.com",
     aesthetic: "Dynamisch, magazinähnlich, informationsdicht. Starke Typografie, Parallax, Bewegung.",
     colors: { primary: "#FF4500", background: "#0D0D0D", accent: "#FFD700", text: "#FFFFFF" },
-    typography: { headers: "Oswald, sans-serif", body: "Open Sans, sans-serif" },
+    typography: { headers: "Bricolage Grotesque, sans-serif", body: "Plus Jakarta Sans, sans-serif" },
     patterns: ["bento-grid", "magazine-layout", "card-masonry"],
     microInteractions: ["counter animation", "parallax on scroll", "bounce effect on hover"],
     promptInstruction: `Design Style: Energetic Communicator (Critical Mass / Monks Vibe).
@@ -243,7 +244,7 @@ Vibe: Laut, selbstbewusst, buzz-worthy. Wie eine Werbeagentur.`
     designTwin: "Patagonia meets Oatly",
     aesthetic: "Naturverbunden, nachhaltig, erdige Farben, organische Formen, Naturbilder.",
     colors: { primary: "#4A7C59", background: "#F5F0E8", accent: "#8B6914", text: "#2C3E2D" },
-    typography: { headers: "Lato, sans-serif", body: "Lato, sans-serif" },
+    typography: { headers: "Fraunces, serif", body: "Instrument Sans, sans-serif" },
     patterns: ["organic-grid", "full-bleed-images", "feature-sections"],
     microInteractions: ["gentle hover", "smooth scroll", "organic fade-in"],
     promptInstruction: `Design Style: Eco-Conscious (Patagonia / Oatly Vibe).
@@ -262,7 +263,7 @@ Vibe: Nachhaltig, clean, natürlich. Wie ein Bio-Unternehmen mit Stil.`
     designTwin: "Duolingo meets Figma",
     aesthetic: "Verspielt, bunt, gamifiziert. Lebhafte Farben, abgerundete Elemente, spielerische Animationen.",
     colors: { primary: "#6366F1", background: "#FAFAFA", accent: "#EC4899", text: "#1F2937" },
-    typography: { headers: "Poppins, sans-serif", body: "Nunito, sans-serif" },
+    typography: { headers: "Syne, sans-serif", body: "Plus Jakarta Sans, sans-serif" },
     patterns: ["card-carousel", "feature-grid", "hero-illustration"],
     microInteractions: ["bounce animations", "playful hover effects", "progress indicators"],
     promptInstruction: `Design Style: Playful Innovator (Duolingo / Figma Vibe).
@@ -281,7 +282,7 @@ Vibe: Spaßig, engagierend, erfrischend. Wie eine App die man gerne benutzt.`
     designTwin: "Noma meets The French Laundry",
     aesthetic: "Sensorisch, appetitanregend, gemütlich. Warme Erdtöne, Foodfoto-Atmosphäre.",
     colors: { primary: "#C0392B", background: "#FDF6EC", accent: "#E67E22", text: "#2C1810" },
-    typography: { headers: "Playfair Display, serif", body: "Lato, sans-serif" },
+    typography: { headers: "Fraunces, serif", body: "Instrument Sans, sans-serif" },
     patterns: ["editorial-grid", "full-bleed-images", "card-grid"],
     microInteractions: ["elegant hover", "smooth transitions", "fade-in"],
     promptInstruction: `Design Style: Warm Gastro Connector (Noma / Fine Dining Vibe).
@@ -300,7 +301,7 @@ Vibe: Appetitanregend, gemütlich, premium. Wie ein Restaurant das man sofort be
     designTwin: "Stripe meets Notion",
     aesthetic: "Klar, professionell, vertrauenswürdig. Viel Weißraum, strukturierte Navigation, Blau-Akzente.",
     colors: { primary: "#2563EB", background: "#FFFFFF", accent: "#0EA5E9", text: "#1E293B" },
-    typography: { headers: "Montserrat, sans-serif", body: "Inter, sans-serif" },
+    typography: { headers: "Instrument Sans, sans-serif", body: "Inter, sans-serif" },
     patterns: ["structured-grid", "hero-split", "stats-sections"],
     microInteractions: ["professional hover", "smooth scroll", "accordion"],
     promptInstruction: `Design Style: Clean Corporate (Stripe / Notion Vibe).
@@ -662,8 +663,8 @@ PFLICHT-AUSGABE (exaktes JSON-Format)
     "text": "© ${year} ${business.name}. Alle Rechte vorbehalten."
   },
   "designTokens": {
-    "headlineFont": "[PFLICHT: Exakter Google Font Name für Überschriften. Neue Font-Auswahl: luxury/elegant/warm/natural=Fraunces; bold=Space Grotesque; craft/vibrant=Bricolage Grotesque; dynamic=Syne; fresh/modern=Plus Jakarta Sans; trust/clean=Instrument Sans]",
-    "bodyFont": "[PFLICHT: Exakter Google Font Name für Fließtext. WICHTIG: bodyFont MUSS IMMER eine serifenlose Schrift sein! Erlaubt: Inter, Instrument Sans, Plus Jakarta Sans, Outfit, Nunito, DM Sans, Open Sans, Raleway. VERBOTEN als bodyFont: Lora, Playfair Display, Merriweather, Georgia, Cormorant, Fraunces, DM Serif, Crimson Text, Fraunces (diese nur für headlineFont!). Empfehlung: elegant/luxury/warm/natural=Outfit; bold/dynamic/vibrant=Plus Jakarta Sans; craft=Instrument Sans; fresh=Instrument Sans; trust/clean/modern=Inter.]",
+    "headlineFont": "${getLLMFontPrompt().headlineFont}",
+    "bodyFont": "${getLLMFontPrompt().bodyFont}",
     "headlineFontWeight": "[700 oder 800 oder 900 je nach Archetyp-Energie]",
     "headlineLetterSpacing": "[z.B. -0.04em für elegant/luxury, 0.08em für craft/bold, -0.02em für modern]",
     "bodyLineHeight": "[z.B. 1.6 für kompakt, 1.8 für luftig, 1.75 für standard]",
@@ -1119,15 +1120,10 @@ export const appRouter = router({
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
           // Ensure font names are plain strings (no brackets)
-          const LAYOUT_HEADLINE_FONTS: Record<string, string> = { elegant: "Fraunces", luxury: "Fraunces", warm: "Fraunces", natural: "Fraunces", bold: "Space Grotesque", craft: "Bricolage Grotesque", vibrant: "Bricolage Grotesque", dynamic: "Syne", fresh: "Plus Jakarta Sans", modern: "Plus Jakarta Sans", trust: "Instrument Sans", clean: "Instrument Sans" };
-          const LAYOUT_BODY_FONTS: Record<string, string> = { elegant: "Outfit", luxury: "Outfit", warm: "Instrument Sans", natural: "Instrument Sans", bold: "Plus Jakarta Sans", craft: "Instrument Sans", vibrant: "Plus Jakarta Sans", dynamic: "Plus Jakarta Sans", fresh: "Instrument Sans", modern: "Inter", trust: "Inter", clean: "Inter" };
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = LAYOUT_HEADLINE_FONTS[layoutStyle] || "Fraunces";
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = LAYOUT_BODY_FONTS[layoutStyle] || "Inter";
-          // CRITICAL: bodyFont must NEVER be a serif font - serifs are for headlines only
-          const FORBIDDEN_BODY_FONTS = ["lora", "playfair", "merriweather", "georgia", "cormorant", "fraunces", "dm serif", "crimson", "garamond", "times", "palatino", "baskerville", "didot"];
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) {
-            dt.bodyFont = LAYOUT_BODY_FONTS[layoutStyle] || "Inter"; // Layout-specific fallback
-          }
+          { const lf = getLayoutFonts(layoutStyle);
+          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lf.headlineFont;
+          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lf.bodyFont;
+          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lf.bodyFont; }
           // Ensure accent color is a valid hex/rgb
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
@@ -1289,15 +1285,10 @@ export const appRouter = router({
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
-          const LAYOUT_HEADLINE_FONTS_REGEN: Record<string, string> = { elegant: "Fraunces", luxury: "Fraunces", warm: "Fraunces", natural: "Fraunces", bold: "Space Grotesque", craft: "Bricolage Grotesque", vibrant: "Bricolage Grotesque", dynamic: "Syne", fresh: "Plus Jakarta Sans", modern: "Plus Jakarta Sans", trust: "Instrument Sans", clean: "Instrument Sans" };
-          const LAYOUT_BODY_FONTS_REGEN: Record<string, string> = { elegant: "Outfit", luxury: "Outfit", warm: "Instrument Sans", natural: "Instrument Sans", bold: "Plus Jakarta Sans", craft: "Instrument Sans", vibrant: "Plus Jakarta Sans", dynamic: "Plus Jakarta Sans", fresh: "Instrument Sans", modern: "Inter", trust: "Inter", clean: "Inter" };
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = LAYOUT_HEADLINE_FONTS_REGEN[layoutStyle] || "Fraunces";
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = LAYOUT_BODY_FONTS_REGEN[layoutStyle] || "Inter";
-          // CRITICAL: bodyFont must NEVER be a serif font
-          const FORBIDDEN_BODY_FONTS_REGEN = ["lora", "playfair", "merriweather", "georgia", "cormorant", "fraunces", "dm serif", "crimson", "garamond", "times", "palatino", "baskerville", "didot"];
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS_REGEN.some(f => dt.bodyFont!.toLowerCase().includes(f))) {
-            dt.bodyFont = LAYOUT_BODY_FONTS_REGEN[layoutStyle] || "Inter";
-          }
+          { const lfR = getLayoutFonts(layoutStyle);
+          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfR.headlineFont;
+          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfR.bodyFont;
+          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfR.bodyFont; }
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
           if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
@@ -2390,12 +2381,10 @@ Kontext: ${input.context}`,
           if (!["tight","normal","spacious","ultra"].includes(dt.sectionSpacing)) dt.sectionSpacing = "normal";
           if (!["filled","outline","ghost","pill"].includes(dt.buttonStyle)) dt.buttonStyle = "filled";
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
-          const LAYOUT_HEADLINE_FONTS_SS: Record<string, string> = { elegant: "Fraunces", luxury: "Fraunces", warm: "Fraunces", natural: "Fraunces", bold: "Space Grotesque", craft: "Bricolage Grotesque", vibrant: "Bricolage Grotesque", dynamic: "Syne", fresh: "Plus Jakarta Sans", modern: "Plus Jakarta Sans", trust: "Instrument Sans", clean: "Instrument Sans" };
-          const LAYOUT_BODY_FONTS_SS: Record<string, string> = { elegant: "Outfit", luxury: "Outfit", warm: "Instrument Sans", natural: "Instrument Sans", bold: "Plus Jakarta Sans", craft: "Instrument Sans", vibrant: "Plus Jakarta Sans", dynamic: "Plus Jakarta Sans", fresh: "Instrument Sans", modern: "Inter", trust: "Inter", clean: "Inter" };
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = LAYOUT_HEADLINE_FONTS_SS[layoutStyle] || "Fraunces";
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = LAYOUT_BODY_FONTS_SS[layoutStyle] || "Inter";
-          const FORBIDDEN_BODY_FONTS = ["lora","playfair","merriweather","georgia","cormorant","fraunces","dm serif","crimson","garamond","times","palatino","baskerville","didot"];
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = LAYOUT_BODY_FONTS_SS[layoutStyle] || "Inter";
+          { const lfSS = getLayoutFonts(layoutStyle);
+          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfSS.headlineFont;
+          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfSS.bodyFont;
+          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfSS.bodyFont; }
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
           if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
