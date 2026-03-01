@@ -574,3 +574,7 @@
 - [x] Alle Layouts: Headline-Farbe dynamisch (primary auf hellem Hintergrund → dunkel)
 - [x] Alle Layouts: Logo/Navbar-Textfarbe dynamisch je nach Hintergrundfarbe
 - [x] WebsiteRenderer: --site-heading-color und --site-nav-text als CSS-Variablen injizieren
+
+## Farb-Quellen-Fix (Feb 28 2026)
+- [x] Diagnose: Preview-Route vs. Onboarding-Chat laden colorScheme aus unterschiedlichen Quellen
+- [x] Fix: saveStep aktualisiert colorScheme in generated_websites sofort wenn brandColor/brandSecondaryColor gespeichert wird

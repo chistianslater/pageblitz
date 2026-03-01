@@ -1806,6 +1806,18 @@ Kontext: ${input.context}`,
           });
         }
         
+        // If brandColor or brandSecondaryColor changed, immediately update colorScheme in generated_websites
+        // so the Preview page shows the same colors as the Onboarding Chat live preview.
+        if (safeData.brandColor || safeData.brandSecondaryColor) {
+          const existingCs = (website.colorScheme as any) || {};
+          const updatedCs = {
+            ...existingCs,
+            ...(safeData.brandColor ? { primary: safeData.brandColor, accent: safeData.brandColor } : {}),
+            ...(safeData.brandSecondaryColor ? { secondary: safeData.brandSecondaryColor } : {}),
+          };
+          await updateWebsite(input.websiteId, { colorScheme: updatedCs });
+        }
+        
         return { success: true, step: input.step };
       }),
     
