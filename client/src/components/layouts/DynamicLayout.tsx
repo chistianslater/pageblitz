@@ -6,6 +6,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, Flame, Activity, Award } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -238,6 +239,22 @@ function DynamicContact({ section, cs, phone, address, email, hours }: { section
           </div>
         </div>
         <div style={{ backgroundColor: "#111", padding: "2.5rem", borderTop: `4px solid ${cs.primary}` }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "2.5rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
+            <input type="text" placeholder="NAME" style={{ width: "100%", backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "1rem", color: "#fff", fontFamily: HEADING, fontSize: "0.9rem", letterSpacing: "0.05em", outline: "none" }} />
+            <input type="email" placeholder="E-MAIL" style={{ width: "100%", backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "1rem", color: "#fff", fontFamily: HEADING, fontSize: "0.9rem", letterSpacing: "0.05em", outline: "none" }} />
+            <textarea placeholder="WIE KÖNNEN WIR DIR HELFEN?" rows={4} style={{ width: "100%", backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "1rem", color: "#fff", fontFamily: HEADING, fontSize: "0.9rem", letterSpacing: "0.05em", outline: "none", resize: "none" }} />
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "#fff", padding: "1.1rem", fontFamily: HEADING, fontSize: "1rem", fontWeight: 700, letterSpacing: "0.1em", border: "none", cursor: "pointer", textTransform: "uppercase" }} className="hover:opacity-90 transition-opacity">
+              {section.ctaText || "Jetzt anfragen"}
+            </button>
+          </form>
+
           <div className="flex items-center gap-2 mb-4">
             <Clock className="h-5 w-5" style={{ color: cs.primary }} />
             <h3 style={{ fontFamily: HEADING, fontSize: "1.5rem", color: "#fff", letterSpacing: "0.05em" }}>Trainingszeiten</h3>
@@ -250,11 +267,6 @@ function DynamicContact({ section, cs, phone, address, email, hours }: { section
               </div>
             ))}
           </div>
-          {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "#fff", padding: "1rem 2.5rem", fontFamily: HEADING, fontSize: "1.1rem", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "2rem" }} className="btn-premium transition-opacity">
-              <Zap className="h-4 w-4" /> Jetzt starten
-            </a>
-          )}
         </div>
       </div>
     </section>

@@ -6,7 +6,8 @@
  * Structure: Centered hero with decorative elements, blue feature block, mosaic gallery, card services
  */
 import { useState, useRef } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Heart, Coffee, Leaf, Sun } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Heart, Coffee, Leaf, Sun, Zap, Check, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -318,12 +319,19 @@ function FreshContact({ section, cs, phone, address, email, hours }: { section: 
         </div>
         <div style={{ backgroundColor: "#fff", padding: "2.5rem", borderRadius: "1rem", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
           <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "1.5rem" }}>Schreiben Sie uns</h3>
-          <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
             <input type="text" placeholder="Ihr Name" style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
             <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", resize: "vertical", borderRadius: "0.5rem" }} />
+            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: "#f5f5f0", border: "1px solid #e8e8e4", padding: "0.85rem 1rem", color: "#1a1a1a", fontSize: "0.9rem", outline: "none", resize: "none", borderRadius: "0.5rem" }} />
             <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
-              Nachricht senden
+              {section.ctaText || "Nachricht senden"}
             </button>
           </form>
         </div>

@@ -7,6 +7,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Dumbbell, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -320,11 +321,18 @@ function VibrantContact({ section, cs, phone, address, email, hours }: { section
         </div>
         <div style={{ backgroundColor: cs.background, padding: "2.5rem" }}>
           <h3 style={{ fontFamily: DISPLAY, fontSize: "1.5rem", letterSpacing: "0.05em", color: cs.text, textTransform: "uppercase", marginBottom: "1.5rem" }}>Probetraining buchen</h3>
-          <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
             <input type="text" placeholder="Dein Name" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
             <input type="email" placeholder="Deine E-Mail" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
             <input type="tel" placeholder="Telefon" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
-            <textarea placeholder="Dein Ziel" rows={3} style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none", resize: "vertical" }} />
+            <textarea placeholder="Dein Ziel" rows={3} style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.9rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none", resize: "none" }} />
             <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800, border: "none", cursor: "pointer" }} className="btn-premium transition-opacity">
               Jetzt starten
             </button>

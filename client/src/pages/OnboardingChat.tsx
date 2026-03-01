@@ -64,9 +64,9 @@ interface OnboardingData {
   addOnContactForm: boolean;
   addOnGallery: boolean;
   addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
-  addOnMenuData: { categories: MenuCategory[] };
+  addOnMenuData: { headline?: string; categories: MenuCategory[] };
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
-  addOnPricelistData: { categories: PriceListCategory[] };
+  addOnPricelistData: { headline?: string; categories: PriceListCategory[] };
   subPages: SubPage[];
   email: string; // for FOMO reminder
   topServicesSkipped?: boolean;
@@ -224,6 +224,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingServices, setIsGeneratingServices] = useState(false);
   const [serviceSuggestions, setServiceSuggestions] = useState<{ title: string; description: string }[]>([]);
+  const [initialServices, setInitialServices] = useState<{ title: string; description: string }[]>([]);
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
@@ -259,6 +260,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [quickReplySelected, setQuickReplySelected] = useState(false);
   const [inPlaceEditId, setInPlaceEditId] = useState<string | null>(null);
   const [inPlaceEditValue, setInPlaceEditValue] = useState("");
+  const [previewScrollTop, setPreviewScrollTop] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -272,17 +274,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const element = previewInnerRef.current.querySelector(`[data-section="${sectionId}"]`);
     if (!element) return;
 
+    const el = previewInnerRef.current;
     const elementTop = (element as HTMLElement).offsetTop;
     const viewportHeight = 1280 * 0.62;
-    const targetScroll = Math.max(0, elementTop - viewportHeight / 3);
+    
+    // Calculate max scroll and cap targetScroll to avoid white space at bottom
+    const maxScroll = Math.max(0, el.scrollHeight - viewportHeight);
+    const targetScroll = Math.max(0, Math.min(elementTop - viewportHeight / 3, maxScroll));
 
-    const computedStyle = previewInnerRef.current.style.transform;
-    const scaleMatch = computedStyle.match(/scale\(([^)]+)\)/);
-    const scale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
-
-    const el = previewInnerRef.current;
+    // Animate via transition
     el.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-    el.style.transform = `scale(${scale}) translateY(-${targetScroll}px)`;
+    setPreviewScrollTop(targetScroll);
 
     const timer = setTimeout(() => {
       el.style.transition = "";
@@ -316,9 +318,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     addOnContactForm: true,
     addOnGallery: false,
     addOnMenu: false,
-    addOnMenuData: { categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
+    addOnMenuData: { headline: "Unsere Speisekarte", categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
     addOnPricelist: false,
-    addOnPricelistData: { categories: [{ id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] }] },
+    addOnPricelistData: { headline: "Unsere Preise", categories: [{ id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] }] },
     subPages: [],
     email: "",
   });
@@ -377,6 +379,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         // If there's an AI-suggested logo font in designTokens, use it as default
         ...(wd.designTokens?.headlineFont && !prev.brandLogo ? { brandLogo: `font:${wd.designTokens.headlineFont}` } : {}),
       }));
+
+      const svcSection = wd.sections?.find((s) => s.type === "services");
+      if (svcSection?.items) {
+        const svcs = svcSection.items.map((i) => ({ title: i.title || "", description: i.description || "" }));
+        setInitialServices(svcs);
+        setData((prev) => {
+          if (prev.topServices.length === 0) {
+            return { ...prev, topServices: svcs };
+          }
+          return prev;
+        });
+      }
     }
   }, [siteData?.website?.websiteData, initialized]);
 
@@ -542,8 +556,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Was macht **${data.businessName}** einzigartig? Was können Kunden bei euch bekommen, was sie woanders nicht finden?\n\nDein Alleinstellungsmerkmal (USP) – in einem Satz. Ich helfe dir gerne dabei! 🎯`;
         case "services":
           return `Welche sind eure Top-Leistungen? Nenn mir 2-4 Dinge, die ihr am häufigsten anbietet.\n\nIch habe unten Felder vorbereitet – füll sie aus oder lass mich Vorschläge machen! 🔧\n\n*✅ Du kannst Leistungen später jederzeit ergänzen oder ändern.*`;
-        case "targetAudience":
-          return `Für wen macht ihr das alles? Beschreib kurz eure idealen Kunden – wer ruft euch an, wer schreibt euch?\n\nBeispiel: *"Privathaushalte in Bocholt, die ein neues Dach brauchen"*`;
+        case "targetAudience": {
+          const cat = (data.businessCategory || "Dienstleistung").toLowerCase();
+          let example = "Privatkunden und kleine Unternehmen in der Region";
+          if (cat.includes("friseur") || cat.includes("hair") || cat.includes("beauty")) {
+            example = "Damen und Herren in Bocholt, die Wert auf einen modernen Haarschnitt legen";
+          } else if (cat.includes("restaurant") || cat.includes("essen") || cat.includes("food") || cat.includes("café")) {
+            example = "Feinschmecker und Familien, die gerne in gemütlicher Atmosphäre speisen";
+          } else if (cat.includes("bau") || cat.includes("handwerk") || cat.includes("dach")) {
+            example = "Privathaushalte in Bocholt, die ein neues Dach brauchen oder sanieren möchten";
+          } else if (cat.includes("arzt") || cat.includes("zahnarzt") || cat.includes("medizin")) {
+            example = "Patienten, die eine kompetente und einfühlsame zahnärztliche Betreuung suchen";
+          } else if (cat.includes("anwalt") || cat.includes("beratung") || cat.includes("recht")) {
+            example = "Unternehmen und Privatpersonen, die rechtliche Unterstützung im Arbeitsrecht benötigen";
+          }
+          return `Für wen macht ihr das alles? Beschreib kurz eure idealen Kunden – wer ruft euch an, wer schreibt euch?\n\nBeispiel: *"${example}"*`;
+        }
         case "legalOwner":
           return `📋 **Abschnitt 2: Rechtliche Pflichtangaben**\n\nFür ein vollständiges Impressum und eine korrekte Datenschutzerklärung brauche ich noch ein paar Angaben. Das dauert nur 2 Minuten!\n\nWer ist der **Inhaber oder Geschäftsführer**? (Vollständiger Name, z.B. „Max Mustermann")\n\n*🔒 Diese Angaben sind gesetzlich vorgeschrieben und werden nur im Impressum angezeigt.*`;
         case "legalStreet":
@@ -577,7 +605,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "editPricelist":
           return `Du hast die **Preisliste** aktiviert! 🏷️\n\nHier kannst du deine wichtigsten Leistungen und Preise eintragen. Du kannst das auch später machen oder jetzt ein paar Beispiele hinzufügen.`;
         case "subpages":
-          return `Brauchst du zusätzliche Unterseiten? Zum Beispiel "Über uns", "Projekte", "Referenzen" oder "Team".\n\nJede Unterseite kostet +9,90 €/Monat. Du kannst sie unten hinzufügen oder überspringen.`;
+          return `Brauchst du zusätzliche Unterseiten? Zum Beispiel *"Projekte"*, *"Referenzen"* oder *"Team"*.\n\nDu kannst sie hier vormerken und nach der Freischaltung in deinem **Kunden-Dashboard** ganz einfach mit Inhalten füllen. Jede individuelle Unterseite kostet +9,90 €/Monat.\n\n*⚖️ Wichtig: Die rechtlich notwendigen Seiten wie **Impressum** und **Datenschutz** sind bereits kostenlos enthalten und müssen hier nicht hinzugefügt werden.*`;
         case "email":
           return `Fast fertig! 🎊 An welche E-Mail-Adresse sollen wir deine Website-Infos und die Freischalt-Bestätigung schicken?`;
         case "preview":
@@ -949,6 +977,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           };
         }
       }
+      if (section.type === "cta") {
+        return {
+          ...section,
+          content: data.targetAudience || section.content,
+        };
+      }
       return section;
     }).filter(Boolean) as typeof patched.sections;
 
@@ -958,7 +992,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (filledCategories.length > 0) {
         patched.sections.push({
           type: "menu",
-          headline: "Unsere Speisekarte",
+          headline: data.addOnMenuData.headline || "Unsere Speisekarte",
           items: filledCategories.flatMap(c => c.items.filter(i => i.name.trim()).map(i => ({
             title: i.name,
             description: i.description,
@@ -975,7 +1009,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (filledCategories.length > 0) {
         patched.sections.push({
           type: "pricelist",
-          headline: "Unsere Preise",
+          headline: data.addOnPricelistData.headline || "Unsere Preise",
           items: filledCategories.flatMap(c => c.items.filter(i => i.name.trim()).map(i => ({
             title: i.name,
             price: i.price,
@@ -983,6 +1017,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }))) as any
         });
       }
+    }
+
+    // Ensure contact section exists if addon is active
+    if (data.addOnContactForm && !patched.sections.some(s => s.type === "contact")) {
+      patched.sections.push({
+        type: "contact",
+        headline: "Kontaktier uns",
+        content: "Hast du Fragen? Schreib uns einfach eine Nachricht.",
+        ctaText: "Nachricht senden"
+      });
     }
 
     // Patch brandColor into colorScheme override (stored in patched.colorScheme if present)
@@ -1298,132 +1342,221 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             {/* Interactive step UI */}
             {!isTyping && currentStep === "services" && (
-              <div className="ml-9 space-y-2">
-                {/* KI-Vorschlag-Button */}
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="relative group/svc-ai">
-                    <button
-                      onClick={generateServicesWithAI}
-                      disabled={isGeneratingServices || !websiteId}
-                      className="flex items-center gap-1.5 text-xs bg-violet-600/30 hover:bg-violet-600/50 border border-violet-500/60 text-violet-200 px-3 py-1.5 rounded-lg transition-all ai-glow-btn disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isGeneratingServices ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Sparkles className="w-3.5 h-3.5" />
-                      )}
-                      {isGeneratingServices ? "Generiere..." : serviceSuggestions.length > 0 ? "✨ Vorschläge erneuern" : "✨ KI-Vorschläge generieren"}
-                    </button>
-                    <div className="absolute bottom-full left-0 mb-2 w-52 pointer-events-none opacity-0 group-hover/svc-ai:opacity-100 transition-opacity duration-200 z-20">
-                      <div className="bg-violet-900/95 border border-violet-500/50 text-violet-100 text-xs px-3 py-2 rounded-lg shadow-lg leading-snug">
-                        Ich schlage dir typische Leistungen für deine Branche vor – du kannst sie danach noch anpassen!
-                        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-violet-900/95" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* KI-Vorschläge anzeigen */}
-                {serviceSuggestions.length > 0 && (
-                  <div className="bg-violet-900/20 border border-violet-500/30 rounded-xl p-3 mb-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-violet-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <Sparkles className="w-3 h-3" /> KI-Vorschläge
-                      </p>
-                      <button 
-                        onClick={() => {
-                          const currentValid = data.topServices.filter(s => s.title.trim());
-                          const toAdd = serviceSuggestions.filter(s => !currentValid.some(ts => ts.title === s.title)).slice(0, 4 - currentValid.length);
-                          if (toAdd.length === 0 && currentValid.length >= 4) {
-                            toast.error("Du hast bereits 4 Leistungen ausgewählt.");
-                            return;
-                          }
-                          setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
-                          toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
-                        }}
-                        className="text-[10px] text-violet-400 hover:text-violet-200 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
-                      >
-                        Alle übernehmen
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {serviceSuggestions.map((s, idx) => {
-                        const currentValid = data.topServices.filter(ts => ts.title.trim());
-                        const isAlreadyAdded = currentValid.some(ts => ts.title === s.title);
-                        return (
-                          <button
-                            key={idx}
-                            disabled={isAlreadyAdded || currentValid.length >= 4}
+              <div className="ml-9 space-y-3">
+                {/* Suggestions Section */}
+                {(serviceSuggestions.length > 0 || initialServices.length > 0) && (
+                  <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-4">
+                    {/* Initial Suggestions */}
+                    {initialServices.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <ImageIcon className="w-3 h-3" /> Vorschläge aus Entwurf
+                          </p>
+                          <button 
                             onClick={() => {
-                              setData(p => ({ ...p, topServices: [...currentValid, s] }));
-                              toast.success(`"${s.title}" hinzugefügt!`);
+                              const currentValid = data.topServices.filter(s => s.title.trim());
+                              const toAdd = initialServices.filter(s => !currentValid.some(ts => ts.title === s.title));
+                              setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
+                              toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
                             }}
-                            className={`text-left p-2 rounded-lg border transition-all group ${
-                              isAlreadyAdded 
-                                ? "bg-emerald-500/10 border-emerald-500/30 opacity-70 cursor-default" 
-                                : currentValid.length >= 4
-                                  ? "bg-slate-800/40 border-slate-700/30 opacity-50 cursor-not-allowed"
-                                  : "bg-slate-800/60 border-slate-700/50 hover:bg-violet-600/20 hover:border-violet-500/40"
-                            }`}
+                            className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
                           >
-                            <div className="flex items-center justify-between gap-1 mb-0.5">
-                              <span className={`text-xs font-semibold truncate ${isAlreadyAdded ? 'text-emerald-400' : 'text-slate-200 group-hover:text-violet-200'}`}>
-                                {s.title}
-                              </span>
-                              {isAlreadyAdded ? (
-                                <Check className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                              ) : (
-                                <Plus className="w-3 h-3 text-slate-500 group-hover:text-violet-400 flex-shrink-0" />
-                              )}
-                            </div>
-                            <p className="text-[10px] text-slate-500 line-clamp-1 leading-tight group-hover:text-slate-400">
-                              {s.description}
-                            </p>
+                            Alle übernehmen
                           </button>
-                        );
-                      })}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {initialServices.map((s, idx) => {
+                            const currentValid = data.topServices.filter(ts => ts.title.trim());
+                            const isAlreadyAdded = currentValid.some(ts => ts.title === s.title);
+                            return (
+                              <button
+                                key={`init-${idx}`}
+                                onClick={() => {
+                                  if (isAlreadyAdded) {
+                                    setData(p => ({ ...p, topServices: p.topServices.filter(ts => ts.title !== s.title) }));
+                                    toast.success(`"${s.title}" entfernt`);
+                                  } else {
+                                    setData(p => ({ ...p, topServices: [...currentValid, s] }));
+                                    toast.success(`"${s.title}" hinzugefügt!`);
+                                  }
+                                }}
+                                className={`text-left p-2 rounded-xl border transition-all group ${
+                                  isAlreadyAdded 
+                                    ? "bg-blue-500/10 border-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.1)]" 
+                                    : "bg-slate-700/40 border-slate-600/50 hover:border-slate-500"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-1 mb-0.5">
+                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-blue-300' : 'text-slate-300 group-hover:text-white'}`}>
+                                    {s.title}
+                                  </span>
+                                  {isAlreadyAdded ? (
+                                    <Check className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                                  ) : (
+                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-blue-400 flex-shrink-0" />
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* AI Suggestions */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-violet-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3" /> KI-Vorschläge
+                        </p>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={generateServicesWithAI}
+                            disabled={isGeneratingServices}
+                            className="text-[10px] text-violet-400 hover:text-violet-200 transition-colors uppercase font-bold tracking-wider"
+                          >
+                            {isGeneratingServices ? "Lädt..." : "Neu generieren"}
+                          </button>
+                          {serviceSuggestions.length > 0 && (
+                            <button 
+                              onClick={() => {
+                                const currentValid = data.topServices.filter(s => s.title.trim());
+                                const toAdd = serviceSuggestions.filter(s => !currentValid.some(ts => ts.title === s.title));
+                                setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
+                                toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
+                              }}
+                              className="text-[10px] text-violet-400 hover:text-violet-200 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
+                            >
+                              Alle übernehmen
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {serviceSuggestions.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          {serviceSuggestions.map((s, idx) => {
+                            const currentValid = data.topServices.filter(ts => ts.title.trim());
+                            const isAlreadyAdded = currentValid.some(ts => ts.title === s.title);
+                            return (
+                              <button
+                                key={`ai-${idx}`}
+                                onClick={() => {
+                                  if (isAlreadyAdded) {
+                                    setData(p => ({ ...p, topServices: p.topServices.filter(ts => ts.title !== s.title) }));
+                                    toast.success(`"${s.title}" entfernt`);
+                                  } else {
+                                    setData(p => ({ ...p, topServices: [...currentValid, s] }));
+                                    toast.success(`"${s.title}" hinzugefügt!`);
+                                  }
+                                }}
+                                className={`text-left p-2 rounded-xl border transition-all group ${
+                                  isAlreadyAdded 
+                                    ? "bg-violet-500/10 border-violet-500/40 shadow-[0_0_12px_rgba(139,92,246,0.1)]" 
+                                    : "bg-slate-700/40 border-slate-600/50 hover:border-violet-500/40"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-1 mb-0.5">
+                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-violet-300' : 'text-slate-300 group-hover:text-violet-200'}`}>
+                                    {s.title}
+                                  </span>
+                                  {isAlreadyAdded ? (
+                                    <Check className="w-3 h-3 text-violet-400 flex-shrink-0" />
+                                  ) : (
+                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-violet-400 flex-shrink-0" />
+                                  )}
+                                </div>
+                                <p className="text-[9px] text-slate-500 line-clamp-1 leading-tight group-hover:text-slate-400">
+                                  {s.description}
+                                </p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={generateServicesWithAI}
+                          disabled={isGeneratingServices}
+                          className="w-full py-3 rounded-xl border border-dashed border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/10 transition-colors flex flex-col items-center justify-center gap-1 group"
+                        >
+                          {isGeneratingServices ? (
+                            <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 text-violet-400 group-hover:scale-110 transition-transform" />
+                              <span className="text-[11px] text-violet-300 font-bold uppercase tracking-wider">KI-Vorschläge generieren</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {data.topServices.map((svc, i) => (
-                  <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder={`Leistung ${i + 1} (z.B. Dachreparatur)`}
-                        value={svc.title}
-                        onChange={(e) => {
-                          const updated = [...data.topServices];
-                          updated[i] = { ...updated[i], title: e.target.value };
-                          setData((p) => ({ ...p, topServices: updated }));
-                        }}
-                      />
-                      {data.topServices.length > 1 && (
-                        <button
-                          onClick={() => {
-                            const updated = data.topServices.filter((_, idx) => idx !== i);
-                            setData((p) => ({ ...p, topServices: updated }));
-                          }}
-                          className="flex-shrink-0 text-slate-400 hover:text-red-400 transition-colors p-1 rounded"
-                          title="Leistung entfernen"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      className="w-full bg-slate-600/50 text-white text-xs px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="Kurze Beschreibung (optional)"
-                      value={svc.description}
-                      onChange={(e) => {
-                        const updated = [...data.topServices];
-                        updated[i] = { ...updated[i], description: e.target.value };
-                        setData((p) => ({ ...p, topServices: updated }));
-                      }}
-                    />
+                {/* Manual List Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Deine Auswahl</p>
+                    <button 
+                      onClick={() => setData(p => ({ ...p, topServices: [] }))}
+                      className="text-[10px] text-slate-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
+                    >
+                      Alle leeren
+                    </button>
                   </div>
-                ))}
+                  
+                  {data.topServices.length === 0 ? (
+                    <div className="py-8 text-center bg-slate-800/20 border border-dashed border-slate-700 rounded-2xl">
+                      <p className="text-xs text-slate-500">Noch keine Leistungen hinzugefügt.</p>
+                      <button 
+                        onClick={() => setData(p => ({ ...p, topServices: [{ title: "", description: "" }] }))}
+                        className="text-xs text-blue-400 font-bold mt-2 hover:underline"
+                      >
+                        Erste Leistung anlegen
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {data.topServices.map((svc, i) => (
+                        <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2 border border-slate-600/30">
+                          <div className="flex items-center gap-2">
+                            <input
+                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder={`Name der Leistung (z.B. Haarschnitt)`}
+                              value={svc.title}
+                              onChange={(e) => {
+                                const updated = [...data.topServices];
+                                updated[i] = { ...updated[i], title: e.target.value };
+                                setData((p) => ({ ...p, topServices: updated }));
+                              }}
+                            />
+                            <button
+                              onClick={() => {
+                                const updated = data.topServices.filter((_, idx) => idx !== i);
+                                setData((p) => ({ ...p, topServices: updated }));
+                              }}
+                              className="flex-shrink-0 text-slate-400 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-slate-600/50"
+                              title="Leistung entfernen"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <input
+                            className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="Kurze Beschreibung (optional)"
+                            value={svc.description}
+                            onChange={(e) => {
+                              const updated = [...data.topServices];
+                              updated[i] = { ...updated[i], description: e.target.value };
+                              setData((p) => ({ ...p, topServices: updated }));
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Skip warning dialog */}
                 {showSkipServicesWarning && (
@@ -1456,14 +1589,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 )}
 
                 <div className="flex gap-2 flex-wrap">
-                  {data.topServices.length < 4 && (
-                    <button
-                      onClick={() => setData((p) => ({ ...p, topServices: [...p.topServices, { title: "", description: "" }] }))}
-                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setData((p) => ({ ...p, topServices: [...p.topServices, { title: "", description: "" }] }))}
+                    className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
+                  </button>
                   {!showSkipServicesWarning && (
                     <button
                       onClick={() => setShowSkipServicesWarning(true)}
@@ -1958,6 +2089,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             {!isTyping && currentStep === "editMenu" && (
               <div className="ml-9 space-y-4">
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
+                  <input
+                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                    value={data.addOnMenuData.headline}
+                    onChange={(e) => {
+                      setData(p => ({ ...p, addOnMenuData: { ...p.addOnMenuData, headline: e.target.value } }));
+                    }}
+                    placeholder="z.B. Unsere Speisekarte"
+                  />
+                </div>
+
                 {data.addOnMenuData.categories.map((cat, catIdx) => (
                   <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
@@ -2091,6 +2234,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             {!isTyping && currentStep === "editPricelist" && (
               <div className="ml-9 space-y-4">
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
+                  <input
+                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                    value={data.addOnPricelistData.headline}
+                    onChange={(e) => {
+                      setData(p => ({ ...p, addOnPricelistData: { ...p.addOnPricelistData, headline: e.target.value } }));
+                    }}
+                    placeholder="z.B. Unsere Preise"
+                  />
+                </div>
+
                 {data.addOnPricelistData.categories.map((cat, catIdx) => (
                   <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
@@ -2207,59 +2362,84 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             )}
 
             {!isTyping && currentStep === "subpages" && (
-              <div className="ml-9 space-y-2">
-                {data.subPages.map((page, i) => (
-                  <div key={page.id} className="bg-slate-700/60 rounded-xl p-3 flex gap-2 items-start">
-                    <div className="flex-1 space-y-1.5">
-                      <input
-                        className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="Seitenname (z.B. Über uns)"
-                        value={page.name}
-                        onChange={(e) => {
-                          const updated = [...data.subPages];
-                          updated[i] = { ...updated[i], name: e.target.value };
-                          setData((p) => ({ ...p, subPages: updated }));
-                        }}
-                      />
-                      <input
-                        className="w-full bg-slate-600/50 text-white text-xs px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="Was soll auf dieser Seite stehen? (optional)"
-                        value={page.description}
-                        onChange={(e) => {
-                          const updated = [...data.subPages];
-                          updated[i] = { ...updated[i], description: e.target.value };
-                          setData((p) => ({ ...p, subPages: updated }));
-                        }}
-                      />
+              <div className="ml-9 space-y-4">
+                {/* Info Card */}
+                <div className="bg-blue-600/10 border border-blue-500/30 rounded-2xl p-4 space-y-2">
+                  <div className="flex items-start gap-3">
+                    <Monitor className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-white text-xs font-bold leading-tight">Später bearbeitbar</p>
+                      <p className="text-slate-400 text-[11px] leading-relaxed">
+                        Hier markierst du deine Wunsch-Seiten. Den Inhalt (Texte, Bilder) kannst du nach der Freischaltung ganz entspannt im **Dashboard** pflegen.
+                      </p>
                     </div>
-                    <button
-                      onClick={() => setData((p) => ({ ...p, subPages: p.subPages.filter((_, j) => j !== i) }))}
-                      className="text-slate-500 hover:text-red-400 transition-colors mt-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
-                ))}
-                <div className="flex gap-2 items-center flex-wrap">
+                  <div className="pt-2 mt-2 border-t border-blue-500/20">
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                      <Check className="w-3 h-3 text-emerald-400" /> Impressum & Datenschutz (inklusive)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {data.subPages.map((page, i) => (
+                    <div key={page.id} className="bg-slate-700/60 rounded-xl p-3 flex gap-2 items-start group border border-slate-600/30 hover:border-slate-500/50 transition-colors">
+                      <div className="flex-1 space-y-1.5">
+                        <input
+                          className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                          placeholder="Seitenname (z.B. Über uns)"
+                          value={page.name}
+                          onChange={(e) => {
+                            const updated = [...data.subPages];
+                            updated[i] = { ...updated[i], name: e.target.value };
+                            setData((p) => ({ ...p, subPages: updated }));
+                          }}
+                        />
+                        <input
+                          className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                          placeholder="Notiz zum Inhalt (optional)"
+                          value={page.description}
+                          onChange={(e) => {
+                            const updated = [...data.subPages];
+                            updated[i] = { ...updated[i], description: e.target.value };
+                            setData((p) => ({ ...p, subPages: updated }));
+                          }}
+                        />
+                      </div>
+                      <button
+                        onClick={() => setData((p) => ({ ...p, subPages: p.subPages.filter((_, j) => j !== i) }))}
+                        className="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-slate-600/50 mt-1"
+                        title="Unterseite entfernen"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-col gap-3 pt-1">
                   <button
                     onClick={() => setData((p) => ({ ...p, subPages: [...p.subPages, { id: genId(), name: "", description: "" }] }))}
-                    className="flex items-center gap-2 text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-4 py-2 rounded-xl transition-all font-medium"
+                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl border border-slate-600 transition-colors"
                   >
-                    <Plus className="w-4 h-4" /> Unterseite hinzufügen <span className="text-blue-400 text-xs">(+9,90 €/Mo)</span>
+                    <Plus className="w-3.5 h-3.5" /> Neue Unterseite hinzufügen <span className="text-blue-400 font-bold">(+9,90 €)</span>
                   </button>
-                  <button
-                    disabled={isTyping}
-                    onClick={async () => {
-                      if (isTyping) return;
-                      const validPages = data.subPages.filter((p) => p.name.trim());
-                      addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
-                      await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: validPages.map((p) => p.name) });
-                      await advanceToStep("email");
-                    }}
-                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Weiter <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      disabled={isTyping}
+                      onClick={async () => {
+                        if (isTyping) return;
+                        const validPages = data.subPages.filter((p) => p.name.trim());
+                        addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
+                        await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: validPages.map((p) => p.name) });
+                        await advanceToStep("email");
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
+                    >
+                      {data.subPages.length > 0 ? "Speichern & weiter" : "Überspringen & weiter"} <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -2617,7 +2797,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         : currentStep === "usp"
                         ? "z.B. 'Wir sind der einzige Anbieter in der Region, der...' "
                         : currentStep === "targetAudience"
-                        ? "z.B. 'Privatkunden und kleine Unternehmen in der Region'"
+                        ? `z.B. "Damen und Herren in ${data.legalCity || 'Bocholt'}, die Wert auf..."`
                         : "Deine Antwort... (Shift+Enter für neue Zeile)"
                     }
                     className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none leading-relaxed"
@@ -2695,7 +2875,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             })()}
           </div>
           {liveWebsiteData && colorScheme ? (
-            <MacbookMockup label="Live-Vorschau deiner Website" innerRef={previewInnerRef}>
+            <MacbookMockup
+              label="Live-Vorschau deiner Website"
+              innerRef={previewInnerRef}
+              externalScrollTop={previewScrollTop}
+              onScrollChange={setPreviewScrollTop}
+            >
               <WebsiteRenderer
                 websiteData={liveWebsiteData}
                 colorScheme={{
@@ -2825,7 +3010,11 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
 
   return (
     <div className="ml-9 space-y-3">
-      <p className="text-slate-400 text-xs">{isAboutPhoto ? "Wähle ein Foto für den \"Über uns\"-Bereich deiner Website:" : "Wähle ein passendes Foto für den Hero-Bereich deiner Website:"}</p>
+      <p className="text-slate-400 text-xs">
+        {isAboutPhoto
+          ? 'Wähle ein Foto für den "Über uns"-Bereich deiner Website:'
+          : "Wähle ein passendes Foto für den Hero-Bereich deiner Website:"}
+      </p>
 
       {/* Photo grid */}
       <div className="grid grid-cols-3 gap-2">
@@ -2834,32 +3023,35 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
             <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
             <p className="text-slate-400 text-xs">Passende Fotos werden geladen…</p>
           </div>
-        ) : photos.map((photo, idx) => (
-          <button
-            key={photo.url + idx}
-            onClick={() => onSelect(heroPhotoUrl === photo.url ? "" : photo.url)}
-            className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-              heroPhotoUrl === photo.url
-                ? "border-blue-400 ring-2 ring-blue-400/40"
-                : "border-slate-600/40 hover:border-slate-400"
-            }`}
-            title={photo.alt}
-          >
-            <img
-              src={photo.thumb || photo.url}
-              alt={photo.alt}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-            {heroPhotoUrl === photo.url && (
-              <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                  <Check className="w-3.5 h-3.5 text-white" />
-                </div>
-              </div>
-            )}
-          </button>
-        ))}
+        ) : (
+          (photos as any[]).map((photo, idx) => {
+            const url = typeof photo === "string" ? photo : photo.url;
+            const thumb = typeof photo === "string" ? photo : photo.thumb || photo.url;
+            const alt = typeof photo === "string" ? businessCategory : photo.alt;
+
+            return (
+              <button
+                key={url + idx}
+                onClick={() => onSelect(heroPhotoUrl === url ? "" : url)}
+                className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
+                  heroPhotoUrl === url
+                    ? "border-blue-400 ring-2 ring-blue-400/40"
+                    : "border-slate-600/40 hover:border-slate-400"
+                }`}
+                title={alt}
+              >
+                <img src={thumb} alt={alt} className="w-full h-full object-cover" loading="lazy" />
+                {heroPhotoUrl === url && (
+                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  </div>
+                )}
+              </button>
+            );
+          })
+        )}
       </div>
 
       {/* Upload option */}

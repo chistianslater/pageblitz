@@ -6,6 +6,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Scissors, Heart, Sparkles, Instagram, Quote } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -262,6 +263,28 @@ function ElegantContact({ section, cs, phone, address, email, hours }: { section
           </div>
         </div>
         <div style={{ backgroundColor: cs.surface, padding: "3rem" }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "2.5rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
+            <div style={{ borderBottom: `1px solid ${cs.primary}30`, paddingBottom: "0.5rem" }}>
+              <input type="text" placeholder="IHR NAME" style={{ width: "100%", backgroundColor: "transparent", border: "none", color: cs.text, fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", outline: "none" }} />
+            </div>
+            <div style={{ borderBottom: `1px solid ${cs.primary}30`, paddingBottom: "0.5rem" }}>
+              <input type="email" placeholder="IHRE E-MAIL-ADRESSE" style={{ width: "100%", backgroundColor: "transparent", border: "none", color: cs.text, fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", outline: "none" }} />
+            </div>
+            <div style={{ borderBottom: `1px solid ${cs.primary}30`, paddingBottom: "0.5rem" }}>
+              <textarea placeholder="IHRE NACHRICHT" rows={4} style={{ width: "100%", backgroundColor: "transparent", border: "none", color: cs.text, fontFamily: SANS, fontSize: "0.8rem", letterSpacing: "0.15em", outline: "none", resize: "none" }} />
+            </div>
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem", fontFamily: SANS, fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.2em", border: "none", cursor: "pointer", textTransform: "uppercase", marginTop: "1rem" }} className="hover:opacity-90 transition-opacity">
+              {section.ctaText || "Senden"}
+            </button>
+          </form>
+
           <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 400, color: cs.text, marginBottom: "1.5rem", fontStyle: "italic" }}>Öffnungszeiten</h3>
           {hours.length > 0 ? (
             <div className="space-y-2">
@@ -273,12 +296,6 @@ function ElegantContact({ section, cs, phone, address, email, hours }: { section
                 <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight, fontWeight: 300 }}>{h}</p>
               ))}
             </div>
-          )}
-          <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary, margin: "2rem 0" }} />
-          {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-block", backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem 2.5rem", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, fontFamily: SANS }} className="hover:opacity-90 transition-opacity">
-              Jetzt anrufen
-            </a>
           )}
         </div>
       </div>

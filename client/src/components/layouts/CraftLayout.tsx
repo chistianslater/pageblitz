@@ -7,6 +7,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Zap, Shield, Award, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -351,13 +352,20 @@ function CraftContact({ section, cs, phone, address, email, hours }: { section: 
         </div>
         <div style={{ backgroundColor: cs.background, padding: "2.5rem" }}>
           <h3 style={{ fontFamily: DISPLAY, fontSize: "1.5rem", letterSpacing: "0.05em", color: cs.text, textTransform: "uppercase", marginBottom: "1.5rem" }}>Kostenlose Beratung</h3>
-          <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
             <div className="grid grid-cols-2 gap-4">
               <input type="text" placeholder="Vorname" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.85rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
               <input type="text" placeholder="Nachname" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.85rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
             </div>
             <input type="tel" placeholder="Telefonnummer" style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.85rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none" }} />
-            <textarea placeholder="Beschreiben Sie Ihr Anliegen" rows={4} style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.85rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none", resize: "vertical" }} />
+            <textarea placeholder="Beschreiben Sie Ihr Anliegen" rows={4} style={{ backgroundColor: cs.surface, border: "1px solid rgba(255,255,255,0.08)", padding: "0.85rem 1rem", color: cs.text, fontSize: "0.9rem", outline: "none", resize: "none" }} />
             <button type="submit" style={{ backgroundColor: cs.primary, color: "#000", padding: "1rem", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, border: "none", cursor: "pointer" }} className="btn-premium transition-opacity">
               Anfrage senden
             </button>

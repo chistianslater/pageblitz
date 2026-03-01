@@ -6,6 +6,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Heart, Stethoscope, Users, Lock } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -342,20 +343,49 @@ function CleanContact({ section, cs, phone, address, email, hours }: { section: 
           </div>
         </div>
         <div style={{ backgroundColor: "#fff", borderRadius: "1.5rem", padding: "2.5rem", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
-            <h3 style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 700, color: cs.text }}>Öffnungszeiten</h3>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.textLight }}>Name</label>
+                <input type="text" placeholder="Ihren Namen eingeben" style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: "1px solid #e2e8f0", fontSize: "0.9rem", outline: "none" }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.textLight }}>E-Mail</label>
+                <input type="email" placeholder="mail@beispiel.de" style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: "1px solid #e2e8f0", fontSize: "0.9rem", outline: "none" }} />
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: cs.textLight }}>Nachricht</label>
+              <textarea placeholder="Wie können wir Ihnen helfen?" rows={4} style={{ width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: "1px solid #e2e8f0", fontSize: "0.9rem", outline: "none", resize: "none" }} />
+            </div>
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.85rem", borderRadius: "0.5rem", fontSize: "0.95rem", fontWeight: 700, border: "none", cursor: "pointer", marginTop: "0.5rem" }} className="hover:opacity-90 transition-opacity">
+              {section.ctaText || "Nachricht senden"}
+            </button>
+          </form>
+          
+          <div style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: "1px solid #f1f5f9" }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+              <h3 style={{ fontFamily: SANS, fontSize: "1.1rem", fontWeight: 700, color: cs.text }}>Öffnungszeiten</h3>
+            </div>
+            <div className="space-y-2">
+              {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 18:00 Uhr", "Sa: 09:00 – 13:00 Uhr", "So: Geschlossen"]).map((h, i) => (
+                <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight }}>{h}</p>
+              ))}
+            </div>
+            {phone && (
+              <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, marginTop: "2rem" }} className="btn-premium transition-opacity">
+                <Phone className="h-4 w-4" /> Termin vereinbaren
+              </a>
+            )}
           </div>
-          <div className="space-y-2">
-            {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 18:00 Uhr", "Sa: 09:00 – 13:00 Uhr", "So: Geschlossen"]).map((h, i) => (
-              <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight }}>{h}</p>
-            ))}
-          </div>
-          {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.85rem 2rem", borderRadius: "0.5rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 600, marginTop: "2rem" }} className="btn-premium transition-opacity">
-              <Phone className="h-4 w-4" /> Termin vereinbaren
-            </a>
-          )}
         </div>
       </div>
     </section>

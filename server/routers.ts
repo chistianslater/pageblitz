@@ -1848,9 +1848,11 @@ Kontext: ${input.context}`,
           tagline: onboarding.tagline,
           description: onboarding.description,
           usp: onboarding.usp,
+          targetAudience: onboarding.targetAudience,
           topServices,
           addOnMenuData: (onboarding as any).addOnMenuData,
           addOnPricelistData: (onboarding as any).addOnPricelistData,
+          addOnContactForm: onboarding.addOnContactForm,
           logoUrl: onboarding.logoUrl,
           photoUrls: onboarding.photoUrls,
         });
@@ -1972,10 +1974,21 @@ Kontext: ${input.context}`,
       .query(async ({ input }) => {
         const { getIndustryImages } = await import('./industryImages');
         const imageSet = getIndustryImages(input.category);
-        const suggestions = [
+        const rawSuggestions = [
           ...imageSet.hero.slice(0, 4),
           ...(imageSet.gallery || []).slice(0, 2),
         ].slice(0, 6);
+
+        const suggestions = rawSuggestions.map((url) => {
+          // Unsplash URL transformation for thumbnails: w=400, q=70
+          const thumb = url.replace(/w=\d+/, "w=400").replace(/q=\d+/, "q=70");
+          return {
+            url,
+            thumb,
+            alt: input.category,
+          };
+        });
+
         return { suggestions };
       }),
   }),

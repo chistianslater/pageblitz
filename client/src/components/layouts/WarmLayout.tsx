@@ -6,6 +6,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Utensils, Coffee, Leaf } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -233,20 +234,33 @@ function WarmContact({ section, cs, phone, address, email, hours }: { section: W
           </div>
         </div>
         <div style={{ backgroundColor: cs.surface, borderRadius: "1.5rem", padding: "2.5rem" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
-            <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: cs.text }}>Öffnungszeiten</h3>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
+            <input type="text" placeholder="Ihr Name" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.primary}20`, backgroundColor: "rgba(255,255,255,0.5)", fontSize: "0.95rem", outline: "none" }} />
+            <input type="email" placeholder="Ihre E-Mail-Adresse" style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "2rem", border: `1px solid ${cs.primary}20`, backgroundColor: "rgba(255,255,255,0.5)", fontSize: "0.95rem", outline: "none" }} />
+            <textarea placeholder="Ihre Nachricht an uns..." rows={4} style={{ width: "100%", padding: "0.85rem 1.25rem", borderRadius: "1.25rem", border: `1px solid ${cs.primary}20`, backgroundColor: "rgba(255,255,255,0.5)", fontSize: "0.95rem", outline: "none", resize: "none" }} />
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem", borderRadius: "2rem", fontSize: "1rem", fontWeight: 700, border: "none", cursor: "pointer" }} className="hover:opacity-90 transition-opacity">
+              {section.ctaText || "Jetzt anfragen"}
+            </button>
+          </form>
+
+          <div style={{ marginTop: "2.5rem", paddingTop: "2rem", borderTop: `1px solid ${cs.primary}15` }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="h-5 w-5" style={{ color: "var(--site-primary-on-surface)" }} />
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: cs.text }}>Öffnungszeiten</h3>
+            </div>
+            <div className="space-y-2">
+              {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 22:00 Uhr", "Sa – So: 09:00 – 23:00 Uhr"]).map((h, i) => (
+                <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight }}>{h}</p>
+              ))}
+            </div>
           </div>
-          <div className="space-y-2">
-            {(hours.length > 0 ? hours : ["Mo – Fr: 08:00 – 22:00 Uhr", "Sa – So: 09:00 – 23:00 Uhr"]).map((h, i) => (
-              <p key={i} style={{ fontFamily: SANS, fontSize: "0.9rem", color: cs.textLight }}>{h}</p>
-            ))}
-          </div>
-          {phone && (
-            <a href={`tel:${phone}`} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem 2rem", borderRadius: "2rem", fontFamily: SANS, fontSize: "0.9rem", fontWeight: 700, marginTop: "2rem" }} className="btn-premium transition-opacity">
-              <Phone className="h-4 w-4" /> Tisch reservieren
-            </a>
-          )}
         </div>
       </div>
     </section>

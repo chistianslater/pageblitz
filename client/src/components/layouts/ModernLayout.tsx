@@ -7,6 +7,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, ArrowRight, ArrowUpRight } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -398,7 +399,14 @@ function ModernContact({ section, cs, phone, address, email, hours }: { section:
           </div>
         </div>
         <div style={{ backgroundColor: "#fff", padding: "3rem" }}>
-          <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
             <input type="text" placeholder="Name" style={{ backgroundColor: "#f8f8f8", border: "none", borderBottom: "2px solid #f0f0f0", padding: "0.85rem 0", color: "#0a0a0a", fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = "#f0f0f0")} />
             <input type="email" placeholder="E-Mail" style={{ backgroundColor: "#f8f8f8", border: "none", borderBottom: "2px solid #f0f0f0", padding: "0.85rem 0", color: "#0a0a0a", fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = "#f0f0f0")} />
             <textarea placeholder="Nachricht" rows={4} style={{ backgroundColor: "#f8f8f8", border: "none", borderBottom: "2px solid #f0f0f0", padding: "0.85rem 0", color: "#0a0a0a", fontSize: "0.95rem", outline: "none", resize: "vertical" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = "#f0f0f0")} />

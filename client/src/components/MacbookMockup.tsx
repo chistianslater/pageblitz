@@ -4,6 +4,8 @@ interface Props {
   children: ReactNode;
   label?: string;
   innerRef?: React.RefObject<HTMLDivElement | null>;
+  externalScrollTop?: number;
+  onScrollChange?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 /**
@@ -17,11 +19,21 @@ const DESKTOP_WIDTH = 1280;
 // Visible viewport height as a fraction of desktop width (≈ 16:10)
 const ASPECT_RATIO = 0.62;
 
-export default function MacbookMockup({ children, label, innerRef: propsInnerRef }: Props) {
+export default function MacbookMockup({ children, label, innerRef: propsInnerRef, externalScrollTop, onScrollChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [internalScrollTop, setInternalScrollTop] = useState(0);
+
+  // Sync internal state with external prop if provided
+  useEffect(() => {
+    if (externalScrollTop !== undefined) {
+      setInternalScrollTop(externalScrollTop);
+    }
+  }, [externalScrollTop]);
+
+  const scrollTop = externalScrollTop !== undefined ? externalScrollTop : internalScrollTop;
+  const setScrollTop = onScrollChange || setInternalScrollTop;
 
   // Measure container width and compute scale
   useEffect(() => {

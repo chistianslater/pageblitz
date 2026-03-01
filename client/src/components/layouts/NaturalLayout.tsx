@@ -7,6 +7,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Leaf, Sun, Flower, Droplets, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -315,10 +316,17 @@ function NaturalContact({ section, cs, phone, address, email, hours }: { section
         </div>
         <div style={{ backgroundColor: "#f0ece4", padding: "2.5rem", borderRadius: "1rem" }}>
           <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: "#2a2018", marginBottom: "1.5rem" }}>Nachricht senden</h3>
-          <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
             <input type="text" placeholder="Ihr Name" style={{ backgroundColor: "#fff", border: "1px solid #e8e0d0", padding: "0.85rem 1rem", color: "#2a2018", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
             <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: "#fff", border: "1px solid #e8e0d0", padding: "0.85rem 1rem", color: "#2a2018", fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: "#fff", border: "1px solid #e8e0d0", padding: "0.85rem 1rem", color: "#2a2018", fontSize: "0.9rem", outline: "none", resize: "vertical", borderRadius: "0.5rem" }} />
+            <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: "#fff", border: "1px solid #e8e0d0", padding: "0.85rem 1rem", color: "#2a2018", fontSize: "0.9rem", outline: "none", resize: "none", borderRadius: "0.5rem" }} />
             <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
               Senden
             </button>

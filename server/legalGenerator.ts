@@ -174,9 +174,11 @@ export function patchWebsiteData(
     tagline?: string | null;
     description?: string | null;
     usp?: string | null;
+    targetAudience?: string | null;
     topServices?: any;
     addOnMenuData?: any;
     addOnPricelistData?: any;
+    addOnContactForm?: boolean;
     logoUrl?: string | null;
     photoUrls?: any;
   }
@@ -212,6 +214,14 @@ export function patchWebsiteData(
     if (photos.length > 1) patched.about.imageUrl = photos[1];
   }
 
+  // Patch CTA section
+  if (onboarding.targetAudience) {
+    const ctaSection = patched.sections?.find((s: any) => s.type === "cta");
+    if (ctaSection) {
+      ctaSection.content = onboarding.targetAudience;
+    }
+  }
+
   // Patch services
   if (patched.services && onboarding.topServices) {
     const services = Array.isArray(onboarding.topServices)
@@ -236,7 +246,7 @@ export function patchWebsiteData(
       if (!patched.sections) patched.sections = [];
       patched.sections.push({
         type: "menu",
-        headline: "Unsere Speisekarte",
+        headline: onboarding.addOnMenuData.headline || "Unsere Speisekarte",
         items: filledCategories.flatMap((c: any) => (c.items || []).filter((i: any) => (i.name || "").trim()).map((i: any) => ({
           title: i.name,
           description: i.description,
@@ -253,7 +263,7 @@ export function patchWebsiteData(
       if (!patched.sections) patched.sections = [];
       patched.sections.push({
         type: "pricelist",
-        headline: "Unsere Preise",
+        headline: onboarding.addOnPricelistData.headline || "Unsere Preise",
         items: filledCategories.flatMap((c: any) => (c.items || []).filter((i: any) => (i.name || "").trim()).map((i: any) => ({
           title: i.name,
           price: i.price,
@@ -261,6 +271,17 @@ export function patchWebsiteData(
         })))
       });
     }
+  }
+
+  // Ensure contact section exists if addon is active
+  if (onboarding.addOnContactForm !== false && !patched.sections?.some((s: any) => s.type === "contact")) {
+    if (!patched.sections) patched.sections = [];
+    patched.sections.push({
+      type: "contact",
+      headline: "Kontakt",
+      content: "Wir freuen uns auf Ihre Nachricht.",
+      ctaText: "Jetzt Nachricht senden"
+    });
   }
 
   // Replace remaining Unsplash URLs with uploaded photos

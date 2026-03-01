@@ -7,6 +7,7 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, Users, ArrowRight, Quote } from "lucide-react";
+import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
@@ -377,7 +378,14 @@ function TrustContact({ section, cs, phone, address, email, hours }: { section: 
         </div>
         <div style={{ backgroundColor: "#fff", padding: "2.5rem", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
           <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 700, color: "#1a2332", marginBottom: "1.5rem" }}>Nachricht senden</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form 
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
             {[{ label: "Name", type: "text" }, { label: "E-Mail", type: "email" }, { label: "Telefon", type: "tel" }].map(f => (
               <div key={f.label}>
                 <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>{f.label}</label>
@@ -386,13 +394,13 @@ function TrustContact({ section, cs, phone, address, email, hours }: { section: 
             ))}
             <div>
               <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>Anliegen</label>
-              <textarea rows={4} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", resize: "vertical", backgroundColor: cs.surface }} />
+              <textarea rows={4} style={{ width: "100%", padding: "0.75rem", border: "1px solid #e8edf3", fontSize: "0.95rem", outline: "none", resize: "none", backgroundColor: cs.surface }} />
             </div>
-            <button style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem", fontWeight: 700, fontSize: "0.95rem", border: "none", cursor: "pointer", width: "100%" }}
+            <button type="submit" style={{ backgroundColor: cs.primary, color: "var(--site-nav-text)", padding: "0.9rem", fontWeight: 700, fontSize: "0.95rem", border: "none", cursor: "pointer", width: "100%" }}
               className="btn-premium transition-opacity">
               {section.ctaText || "Anfrage senden"}
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </section>
