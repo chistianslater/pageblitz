@@ -1,0 +1,9 @@
+{
+  "query": "\nALTER TABLE onboarding_responses\n  ADD COLUMN IF NOT EXISTS `colorScheme` json DEFAULT NULL,\n  ADD COLUMN IF NOT EXISTS `addOnMenu` tinyint(1) DEFAULT 0,\n  ADD COLUMN IF NOT EXISTS `addOnMenuData` json DEFAULT NULL,\n  ADD COLUMN IF NOT EXISTS `addOnPricelist` tinyint(1) DEFAULT 0,\n  ADD COLUMN IF NOT EXISTS `addOnPricelistData` json DEFAULT NULL;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute \nALTER TABLE onboarding_responses\n  ADD COLUMN IF NOT EXISTS `colorScheme` json DEFAULT NULL,\n  ADD COLUMN IF NOT EXISTS `addOnMenu` tinyint(1) DEFAULT 0,\n  ADD COLUMN IF NOT EXISTS `addOnMenuData` json DEFAULT NULL,\n  ADD COLUMN IF NOT EXISTS `addOnPricelist` tinyint(1) DEFAULT 0,\n  ADD COLUMN IF NOT EXISTS `addOnPricelistData` json DEFAULT NULL;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 882
+}
