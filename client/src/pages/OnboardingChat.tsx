@@ -27,7 +27,7 @@ interface WarpStar {
 
 const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: number }) => {
   const [warpStars, setWarpStars] = useState<WarpStar[]>([]);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Initialize warp stars
@@ -550,10 +550,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
-
+  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
   useEffect(() => {
     // Standard beforeunload alert (browser default)
-    // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert)
+    // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert))
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!isGeneratingInitialWebsite && currentStep !== "checkout" && currentStep !== "preview") {
         e.preventDefault();
@@ -681,7 +681,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
   const generateWebsiteMutation = trpc.selfService.generateWebsite.useMutation();
-  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
 
