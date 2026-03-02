@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2 } from "lucide-react";
+import { toast } from "sonner";
 
 // Detect whether a URL looks like a Google Maps / share link
 function isGoogleLink(url: string): boolean {
@@ -34,18 +35,25 @@ export default function StartPage() {
           category: (data as any).category ?? null,
         });
         setResolveError(null);
+        toast.success(`"${data.businessName}" gefunden!`);
       } else {
-        setResolveError("Link konnte nicht aufgelöst werden. Bitte versuche es erneut oder starte ohne GMB.");
+        setResolveError("Link konnte nicht aufgelöst werden. Du kannst trotzdem fortfahren.");
+        toast.error("Link konnte nicht aufgelöst werden");
       }
     },
-    onError: () => {
-      setResolveError("Fehler beim Abrufen der Daten. Bitte versuche es erneut.");
+    onError: (err) => {
+      setResolveError("Fehler beim Abrufen der Daten. Du kannst trotzdem fortfahren.");
+      toast.error("Fehler beim Abrufen der Daten: " + err.message);
     },
   });
 
   const startMutation = trpc.selfService.start.useMutation({
     onSuccess: (data) => {
+      toast.success("Website wird erstellt...");
       navigate(`/preview/${data.previewToken}/onboarding`);
+    },
+    onError: (err) => {
+      toast.error("Fehler beim Erstellen: " + err.message);
     },
   });
 
@@ -57,13 +65,17 @@ export default function StartPage() {
 
   const handleResolveAndStart = async () => {
     const url = gmbUrl.trim();
-    if (!url) return;
+    if (!url) {
+      toast.error("Bitte gib einen Link ein");
+      return;
+    }
 
     if (isGoogleLink(url)) {
       // Resolve the link first to get business data
       resolveMutation.mutate({ url });
     } else {
       // Not a Google link – start without prefill
+      toast.info("Link wird verarbeitet...");
       startMutation.mutate({ gmbUrl: url });
     }
   };
@@ -81,6 +93,7 @@ export default function StartPage() {
   };
 
   const handleManualStart = () => {
+    toast.info("Website wird erstellt...");
     startMutation.mutate({});
   };
 
@@ -218,9 +231,18 @@ export default function StartPage() {
 
               {/* Error */}
               {resolveError && (
-                <div className="p-3 rounded-lg bg-red-900/30 border border-red-700/50 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-red-400 text-sm">{resolveError}</p>
+                <div className="p-3 rounded-lg bg-amber-900/30 border border-amber-700/50 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-amber-400 text-sm">{resolveError}</p>
+                    <button
+                      onClick={() => startMutation.mutate({ gmbUrl: gmbUrl.trim() })}
+                      disabled={startMutation.isPending}
+                      className="text-amber-300 text-xs underline mt-2 hover:text-amber-200"
+                    >
+                      Trotzdem ohne Daten fortfahren →
+                    </button>
+                  </div>
                 </div>
               )}
 
