@@ -11,6 +11,217 @@ import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
 import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif } from "@shared/layoutConfig";
 import { getGalleryImages } from "@shared/industryImages";
+import { motion } from "framer-motion";
+
+// ── Epic Loading Screen Component ───────────────────────────────────────────
+
+const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: number }) => {
+  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; delay: number }>>([]);
+  
+  useEffect(() => {
+    // Generate random particles
+    const newParticles = Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 4 + 1,
+      delay: Math.random() * 5,
+    }));
+    setParticles(newParticles);
+  }, []);
+
+  const phaseEmojis: Record<string, string> = {
+    "Analysiere dein Unternehmen...": "🔍",
+    "Erstelle Texte...": "✍️",
+    "Generiere Design...": "🎨",
+    "Finalisiere deine Website...": "🚀",
+  };
+
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-[#0a0a0a]">
+      {/* Animated Gradient Orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            x: ["-20%", "0%", "-20%"],
+            y: ["-10%", "10%", "-10%"],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] bg-blue-500/20 rounded-full blur-[120px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.3, 1],
+            x: ["20%", "-10%", "20%"],
+            y: ["10%", "-10%", "10%"],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[100px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            x: ["10%", "-20%", "10%"],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[80px]"
+        />
+      </div>
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {particles.map((p) => (
+          <motion.div
+            key={p.id}
+            initial={{ opacity: 0, y: "100vh" }}
+            animate={{
+              opacity: [0, 1, 1, 0],
+              y: ["100vh", "-10vh"],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              delay: p.delay,
+              ease: "linear",
+            }}
+            className="absolute rounded-full bg-white"
+            style={{
+              left: `${p.x}%`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Grid Pattern Overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+          backgroundSize: '50px 50px',
+        }}
+      />
+
+      {/* Main Content */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6">
+        {/* Animated Logo Container */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative mb-8"
+        >
+          {/* Pulsing rings */}
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500 to-violet-600"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500 to-violet-600"
+          />
+          
+          {/* Main Logo */}
+          <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-blue-500/50">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            >
+              <Loader2 className="h-12 w-12 text-white" />
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Title with gradient text */}
+        <motion.h1
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-4xl md:text-5xl font-bold mb-4 text-center"
+        >
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
+            Deine Website wird
+          </span>
+          <br />
+          <span className="text-white">erstellt</span>
+        </motion.h1>
+
+        {/* Phase indicator with emoji */}
+        <motion.div
+          key={phase}
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="flex items-center gap-3 mb-8"
+        >
+          <span className="text-2xl">{phaseEmojis[phase] || "⚡"}</span>
+          <span className="text-slate-300 text-lg">{phase || "Initialisiere..."}</span>
+        </motion.div>
+
+        {/* Epic Progress Bar */}
+        <div className="w-full max-w-md relative">
+          {/* Progress bar background with glow */}
+          <div className="h-3 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50 shadow-inner">
+            <motion.div
+              className="h-full relative"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              {/* Gradient fill */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-violet-500 to-purple-500" />
+              {/* Shimmer effect */}
+              <motion.div
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+              />
+            </motion.div>
+          </div>
+          
+          {/* Progress glow */}
+          <motion.div
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-purple-500/20 rounded-full blur-lg -z-10"
+            style={{ width: `${progress}%`, margin: "0 auto", left: 0, right: 0 }}
+          />
+        </div>
+
+        {/* Progress percentage */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mt-6 flex items-center gap-2"
+        >
+          <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400 tabular-nums">
+            {Math.round(progress)}
+          </span>
+          <span className="text-2xl text-slate-500">%</span>
+        </motion.div>
+
+        {/* Tech specs floating badges */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 flex-wrap px-4">
+          {["KI-gestützt", "SEO-optimiert", "Mobile-ready", "Blitzschnell"].map((tag, i) => (
+            <motion.div
+              key={tag}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 + i * 0.1 }}
+              className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm backdrop-blur-sm"
+            >
+              {tag}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -1173,24 +1384,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Render ──────────────────────────────────────────────────────────────
 
   if (siteLoading || isGeneratingInitialWebsite) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="text-center text-white max-w-sm mx-auto px-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <Loader2 className="h-8 w-8 animate-spin text-white" />
-          </div>
-          <h2 className="text-xl font-bold mb-2">Deine Website wird erstellt</h2>
-          <p className="text-slate-400 text-sm mb-6">{generationPhase || "Bitte warte einen Moment..."}</p>
-          <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
-            <div
-              className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-1000"
-              style={{ width: `${generationProgress}%` }}
-            />
-          </div>
-          <p className="text-slate-500 text-xs mt-3">{Math.round(generationProgress)}% abgeschlossen</p>
-        </div>
-      </div>
-    );
+    return <EpicGenerationLoading phase={generationPhase} progress={generationProgress} />;
   }
 
   const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;
