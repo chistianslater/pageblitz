@@ -15,19 +15,61 @@ import { motion } from "framer-motion";
 
 // ── Epic Loading Screen Component ───────────────────────────────────────────
 
+// WarpStar Interface für 3D Hyperraum-Effekt
+interface WarpStar {
+  id: number;
+  x: number;
+  y: number;
+  z: number;
+  size: number;
+  speed: number;
+}
+
 const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: number }) => {
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; delay: number }>>([]);
-  
+  const [warpStars, setWarpStars] = useState<WarpStar[]>([]);
+  const animationRef = useRef<number>();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize warp stars
   useEffect(() => {
-    // Generate random particles
-    const newParticles = Array.from({ length: 50 }, (_, i) => ({
+    const stars: WarpStar[] = Array.from({ length: 200 }, (_, i) => ({
       id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 1,
-      delay: Math.random() * 5,
+      x: (Math.random() - 0.5) * 2000,
+      y: (Math.random() - 0.5) * 2000,
+      z: Math.random() * 2000,
+      size: Math.random() * 2 + 0.5,
+      speed: Math.random() * 15 + 10,
     }));
-    setParticles(newParticles);
+    setWarpStars(stars);
+  }, []);
+
+  // Animation loop for warp effect
+  useEffect(() => {
+    const animate = () => {
+      setWarpStars(prevStars =>
+        prevStars.map(star => {
+          let newZ = star.z - star.speed;
+          if (newZ <= 0) {
+            newZ = 2000;
+            return {
+              ...star,
+              z: newZ,
+              x: (Math.random() - 0.5) * 2000,
+              y: (Math.random() - 0.5) * 2000,
+            };
+          }
+          return { ...star, z: newZ };
+        })
+      );
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, []);
 
   const phaseEmojis: Record<string, string> = {
@@ -35,6 +77,11 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
     "Erstelle Texte...": "✍️",
     "Generiere Design...": "🎨",
     "Finalisiere deine Website...": "🚀",
+    "Optimiere Bilder...": "📸",
+    "Baue Struktur auf...": "🏗️",
+    "Füge Interaktivität hinzu...": "⚡",
+    "Lade Assets...": "📦",
+    "Bereite Live-Vorschau vor...": "👁️",
   };
 
   return (
@@ -69,30 +116,48 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
         />
       </div>
 
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {particles.map((p) => (
-          <motion.div
-            key={p.id}
-            initial={{ opacity: 0, y: "100vh" }}
-            animate={{
-              opacity: [0, 1, 1, 0],
-              y: ["100vh", "-10vh"],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              delay: p.delay,
-              ease: "linear",
-            }}
-            className="absolute rounded-full bg-white"
-            style={{
-              left: `${p.x}%`,
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-            }}
-          />
-        ))}
+      {/* Warp Speed / Hyperraum Effekt */}
+      <div
+        ref={containerRef}
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        style={{
+          perspective: "500px",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            transformStyle: "preserve-3d",
+            transform: "rotateX(0deg)",
+          }}
+        >
+          {warpStars.map((star) => {
+            const perspective = 500;
+            const scale = perspective / (perspective + star.z);
+            const x = star.x * scale + 50;
+            const y = star.y * scale + 50;
+            const opacity = Math.min(1, (2000 - star.z) / 1000) * scale;
+            const trailLength = Math.max(10, star.speed * scale * 3);
+
+            return (
+              <div
+                key={star.id}
+                className="absolute"
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  width: `${trailLength}px`,
+                  height: `${star.size * scale}px`,
+                  background: `linear-gradient(90deg, transparent, rgba(255,255,255,${opacity}))`,
+                  transform: `translate(-50%, -50%) rotate(${Math.atan2(y - 50, x - 50) * (180 / Math.PI)}deg)`,
+                  opacity,
+                  boxShadow: `0 0 ${4 * scale}px rgba(255,255,255,${opacity * 0.8})`,
+                }}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Grid Pattern Overlay */}
@@ -488,8 +553,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   useEffect(() => {
     // Standard beforeunload alert (browser default)
+    // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert)
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (currentStep !== "checkout" && currentStep !== "preview") {
+      if (!isGeneratingInitialWebsite && currentStep !== "checkout" && currentStep !== "preview") {
         e.preventDefault();
         e.returnValue = "";
       }
@@ -508,7 +574,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("mouseout", handleMouseOut);
     };
-  }, [currentStep, showExitIntent]);
+  }, [currentStep, showExitIntent, isGeneratingInitialWebsite]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -911,6 +977,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         "Analysiere dein Unternehmen...",
         "Erstelle Texte...",
         "Generiere Design...",
+        "Optimiere Bilder...",
+        "Baue Struktur auf...",
+        "Füge Interaktivität hinzu...",
+        "Lade Assets...",
+        "Bereite Live-Vorschau vor...",
         "Finalisiere deine Website...",
       ];
       let phaseIdx = 0;
@@ -919,15 +990,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const phaseInterval = setInterval(() => {
         phaseIdx = Math.min(phaseIdx + 1, phases.length - 1);
         setGenerationPhase(phases[phaseIdx]);
-        setGenerationProgress(Math.min(10 + phaseIdx * 22, 88));
-      }, 8000);
+        setGenerationProgress(Math.min(10 + phaseIdx * 10, 90));
+      }, 2000); // 2 Sekunden pro Phase
       generateWebsiteMutation.mutateAsync({ websiteId }).then(() => {
         clearInterval(phaseInterval);
         setGenerationProgress(100);
         setGenerationPhase("Website bereit!");
-        setTimeout(() => {
-          setIsGeneratingInitialWebsite(false);
-        }, 800);
+        // SOFORT setIsGeneratingInitialWebsite(false) vor dem Reload aufrufen
+        setIsGeneratingInitialWebsite(false);
         // Refetch site data
         window.location.reload();
       }).catch((err) => {
