@@ -219,19 +219,142 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
 /**
  * Default Color Schemes per Layout Style.
  */
+/**
+ * Refined, professional color schemes inspired by high-end design.
+ * Each palette uses the 60-30-10 rule for balanced composition.
+ */
 export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
-  elegant:  withOnColors({ primary: "#b8860b", secondary: "#f5f0e8", accent: "#d4a843", background: "#fefcf8", surface: "#f5f0e8", text: "#1a1208", textLight: "#6b5c3e" }),
-  bold:     withOnColors({ primary: "#e85d04", secondary: "#1a1a1a", accent: "#ff6b1a", background: "#f5f5f5", surface: "#ebebeb", text: "#1a1a1a", textLight: "#555" }),
-  warm:     withOnColors({ primary: "#c45c26", secondary: "#fdf6ee", accent: "#e07b3c", background: "#fffaf5", surface: "#fdf6ee", text: "#2d1a0e", textLight: "#7a5c42" }),
-  clean:    withOnColors({ primary: "#2563eb", secondary: "#eff6ff", accent: "#3b82f6", background: "#f8fafc", surface: "#fff", text: "#0f172a", textLight: "#64748b" }),
-  dynamic:  withOnColors({ primary: "#22c55e", secondary: "#0a0a0a", accent: "#16a34a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  luxury:   withOnColors({ primary: "#c9a84c", secondary: "#0a0a0a", accent: "#e8c87a", background: "#0a0a0a", surface: "#111", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  craft:    withOnColors({ primary: "#f97316", secondary: "#1a1a1a", accent: "#fb923c", background: "#111", surface: "#1a1a1a", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  fresh:    withOnColors({ primary: "#0ea5e9", secondary: "#fafaf8", accent: "#38bdf8", background: "#fafaf8", surface: "#fff", text: "#1a1a1a", textLight: "#666" }),
-  trust:    withOnColors({ primary: "#1d4ed8", secondary: "#f8fafc", accent: "#3b82f6", background: "#fff", surface: "#f8fafc", text: "#1a2332", textLight: "#5a6a7e" }),
-  modern:   withOnColors({ primary: "#0a0a0a", secondary: "#f8f8f8", accent: "#e11d48", background: "#fff", surface: "#f8f8f8", text: "#0a0a0a", textLight: "#666" }),
-  vibrant:  withOnColors({ primary: "#f59e0b", secondary: "#0d0d0d", accent: "#fbbf24", background: "#0d0d0d", surface: "#161616", text: "#fff", textLight: "rgba(255,255,255,0.6)" }),
-  natural:  withOnColors({ primary: "#65a30d", secondary: "#f0ece4", accent: "#84cc16", background: "#faf8f4", surface: "#f0ece4", text: "#2a2018", textLight: "#7a6a5a" }),
+  // Warm neutral with soft terracotta - Sophisticated & Approachable
+  elegant:  withOnColors({ 
+    primary: "#9a8b7a",    // Warm taupe
+    secondary: "#f8f6f3",  // Cream white
+    accent: "#c4a882",     // Soft gold
+    background: "#fdfcfb",   // Warm white
+    surface: "#f5f3f0",      // Light cream
+    text: "#2d2a26",         // Dark charcoal
+    textLight: "#7a756e"     // Medium gray
+  }),
+  
+  // Deep navy with warm gold - Corporate & Trustworthy
+  bold:     withOnColors({ 
+    primary: "#1e3a5f",     // Deep navy
+    secondary: "#f5f5f5",    // Light gray
+    accent: "#c9a227",       // Antique gold
+    background: "#ffffff",     // Pure white
+    surface: "#f8f9fa",        // Off-white
+    text: "#1a1a1a",           // Near black
+    textLight: "#6b7280"       // Cool gray
+  }),
+  
+  // Sage green with cream - Natural & Calming
+  warm:     withOnColors({ 
+    primary: "#5c6b5c",      // Sage green
+    secondary: "#f5f3f0",    // Warm cream
+    accent: "#8b9a7d",       // Moss green
+    background: "#faf9f7",     // Ivory
+    surface: "#f0ede8",        // Light beige
+    text: "#2c2c2a",           // Soft black
+    textLight: "#6b6b69"       // Warm gray
+  }),
+  
+  // Clean slate with dusty rose - Modern & Fresh
+  clean:    withOnColors({ 
+    primary: "#475569",      // Slate gray
+    secondary: "#f1f5f9",    // Slate 100
+    accent: "#be7c7c",       // Dusty rose
+    background: "#ffffff",     // Pure white
+    surface: "#f8fafc",        // Slate 50
+    text: "#0f172a",           // Slate 900
+    textLight: "#64748b"       // Slate 500
+  }),
+  
+  // Charcoal with soft teal - Tech & Sophisticated
+  dynamic:  withOnColors({ 
+    primary: "#2d3748",      // Charcoal
+    secondary: "#1a202c",      // Deep charcoal
+    accent: "#5a8a8a",       // Muted teal
+    background: "#1a202c",     // Dark background
+    surface: "#2d3748",          // Slightly lighter
+    text: "#f7fafc",             // Off-white
+    textLight: "rgba(247,250,252,0.6)"
+  }),
+  
+  // Deep forest with copper - Premium & Refined
+  luxury:   withOnColors({ 
+    primary: "#1c1917",      // Rich black
+    secondary: "#292524",    // Warm black
+    accent: "#b87333",       // Copper
+    background: "#1c1917",     // Dark background
+    surface: "#292524",          // Warm dark
+    text: "#fafaf9",             // Stone 50
+    textLight: "rgba(250,250,249,0.6)"
+  }),
+  
+  // Warm stone with rust accent - Artisan & Crafted
+  craft:    withOnColors({ 
+    primary: "#78716c",      // Stone 500
+    secondary: "#292524",    // Stone 900
+    accent: "#a0522d",       // Sienna/rust
+    background: "#1c1917",     // Dark stone
+    surface: "#292524",          // Warm dark
+    text: "#fafaf9",             // Stone 50
+    textLight: "rgba(250,250,249,0.6)"
+  }),
+  
+  // Soft blue-gray with peach - Friendly & Light
+  fresh:    withOnColors({ 
+    primary: "#64748b",      // Blue-gray
+    secondary: "#f8fafc",    // Light blue-gray
+    accent: "#d4a574",       // Soft peach
+    background: "#ffffff",     // Pure white
+    surface: "#f8fafc",          // Very light
+    text: "#334155",             // Slate 700
+    textLight: "#64748b"         // Slate 500
+  }),
+  
+  // Classic blue with warm gray - Professional & Reliable
+  trust:    withOnColors({ 
+    primary: "#334155",      // Slate 700
+    secondary: "#f1f5f9",    // Slate 100
+    accent: "#6366f1",       // Indigo
+    background: "#ffffff",     // Pure white
+    surface: "#f8fafc",          // Slate 50
+    text: "#0f172a",             // Slate 900
+    textLight: "#64748b"         // Slate 500
+  }),
+  
+  // Pure monochrome with subtle accent - Minimal & Sharp
+  modern:   withOnColors({ 
+    primary: "#171717",      // Neutral 900
+    secondary: "#f5f5f5",    // Neutral 100
+    accent: "#525252",       // Neutral 600
+    background: "#ffffff",     // Pure white
+    surface: "#fafafa",          // Neutral 50
+    text: "#171717",             // Neutral 900
+    textLight: "#737373"         // Neutral 500
+  }),
+  
+  // Deep purple with soft gold - Creative & Bold
+  vibrant:  withOnColors({ 
+    primary: "#4c1d95",      // Deep purple
+    secondary: "#1e1b4b",    // Darker purple
+    accent: "#c4b5a0",       // Soft gold
+    background: "#0f0a1a",     // Very dark purple
+    surface: "#1e1b4b",          // Dark purple
+    text: "#fafafa",             // Neutral 50
+    textLight: "rgba(250,250,250,0.6)"
+  }),
+  
+  // Olive with warm sand - Organic & Earthy
+  natural:  withOnColors({ 
+    primary: "#57534e",      // Warm gray
+    secondary: "#f5f5f4",    // Stone 100
+    accent: "#a8a29e",       // Stone 400
+    background: "#fafaf9",     // Stone 50
+    surface: "#f5f5f4",          // Stone 100
+    text: "#292524",             // Stone 800
+    textLight: "#78716c"         // Stone 500
+  }),
 };
 
 /**
