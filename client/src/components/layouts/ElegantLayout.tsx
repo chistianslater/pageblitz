@@ -11,7 +11,6 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { isLightColor } from "@shared/colorContrast";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
-import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Fraunces', Georgia, serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Fraunces', Georgia, serif))";
@@ -47,7 +46,7 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, aboutImag
         {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <ElegantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <ElegantGallery section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <ElegantServices section={section} cs={cs} />}
           {section.type === "menu" && <ElegantMenu section={section} cs={cs} />}
@@ -99,20 +98,18 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 grid lg:grid-cols-2 gap-24 items-center relative z-10 w-full">
         {/* Left: Text Content */}
         <div className="order-2 lg:order-1 max-w-xl">
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2.5rem" }} className="hero-animate-badge">
-            <span style={{ fontSize: "0.75rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Est. 2024</span>
-            <div style={{ width: "4rem", height: "1px", backgroundColor: `${cs.primary}40` }} />
-          </div>
 
           <h1 style={{ 
             fontFamily: SERIF, 
-            fontSize: "clamp(3.5rem, 6vw, 5.5rem)", 
+            fontSize: "clamp(2.5rem, 4.5vw, 3.5rem)", 
             fontWeight: 400, 
-            lineHeight: 1.05, 
+            lineHeight: 1.1, 
             color: cs.onBackground, 
-            marginBottom: "2.5rem", 
-            letterSpacing: "-0.01em" 
-          }} className="hero-animate-headline">
+            marginBottom: "2rem", 
+            letterSpacing: "-0.01em",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
+          }} className="hero-animate-headline max-w-full">
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: i === 2 ? "block" : "inline", fontStyle: i === 2 ? "italic" : "normal" }}>
                 {word}{" "}
@@ -154,12 +151,6 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
         <div className="order-1 lg:order-2 relative hero-animate-image">
           <div className="arch-mask premium-shadow-lg" style={{ position: "relative", zIndex: 1, width: "100%", aspectRatio: "3/4" }}>
             <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} className="hover:scale-110 transition-transform duration-1000" />
-          </div>
-          {/* Floating accent badge */}
-          <div className="glass-card premium-shadow" style={{ position: "absolute", top: "15%", left: "-15%", padding: "2.5rem", zIndex: 30, borderRadius: "50%", width: "180px", height: "180px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-            <Sparkles className="h-6 w-6 mb-2" style={{ color: cs.primary }} />
-            <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.onSurface, fontWeight: 800 }}>Premium</span>
-            <span style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.onSurface, opacity: 0.6 }}>Quality</span>
           </div>
         </div>
       </div>
@@ -208,7 +199,7 @@ function ElegantAbout({ section, cs, heroImageUrl, businessCategory }: { section
   );
 }
 
-function ElegantServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function ElegantServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.surface, padding: "10rem 0" }}>
@@ -221,33 +212,37 @@ function ElegantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
             )) || "Erschaffen für Ihr Wohlbefinden"}
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
           {items.map((item, i) => (
-            <div key={i} 
+            <div key={i}
               className="group text-center"
-              style={{ 
-                backgroundColor: "transparent", 
+              style={{
+                backgroundColor: "transparent",
                 padding: "2rem",
                 transition: "all 0.5s ease"
               }}
             >
-              <div style={{ 
-                width: "4.5rem", 
-                height: "6rem", 
-                margin: "0 auto 2.5rem", 
+              <div style={{
+                width: "4.5rem",
+                height: "6rem",
+                margin: "0 auto 2.5rem",
                 border: `1px solid ${cs.onSurface}15`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 transition: "all 0.5s ease"
               }} className="arch-mask group-hover:border-primary">
-                <Sparkles className="h-6 w-6 transition-colors" style={{ color: cs.primary }} />
+                <IndustryIcon
+                  iconName={item.icon || getServiceIcon(businessCategory || "", i)}
+                  className="h-6 w-6 transition-colors"
+                  style={{ color: cs.primary }}
+                />
               </div>
-              
+
               <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 400, color: cs.onSurface, marginBottom: "1.25rem", fontStyle: "italic", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.onSurface, opacity: 0.7, fontWeight: 300, marginBottom: "2rem" }}>{item.description}</p>
-              
+
               <div style={{ width: "20px", height: "1px", backgroundColor: cs.primary, margin: "0 auto" }} />
             </div>
           ))}
@@ -452,8 +447,42 @@ function ElegantContact({ section, cs, phone, address, email, hours, isLocked }:
             {email && <div className="flex items-center gap-3"><Mail className="h-4 w-4 flex-shrink-0" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ fontFamily: SANS, fontSize: "0.95rem", color: cs.text }}>{email}</a></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.surface, padding: "3rem" }}>
-          <form 
+        <div style={{ backgroundColor: cs.surface, padding: "3rem", position: "relative" }}>
+          {isLocked && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `${cs.background}CC`,
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 20,
+              padding: "2rem",
+              textAlign: "center"
+            }}>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: `${cs.primary}20`,
+                border: `1px solid ${cs.primary}50`,
+                borderRadius: "9999px",
+                padding: "0.5rem 1.25rem",
+              }}>
+                <span style={{ fontSize: "0.75rem", color: cs.primary, fontWeight: 600 }}>Kontaktformular</span>
+              </div>
+              <p style={{ fontFamily: SERIF, fontSize: "1.1rem", color: cs.text, fontStyle: "italic" }}>
+                Im Premium-Paket verfügbar
+              </p>
+              <p style={{ fontSize: "0.8rem", color: cs.textLight, maxWidth: "240px" }}>
+                Aktiviere das Kontaktformular für 4,90 €/Monat zusätzlich
+              </p>
+            </div>
+          )}
+          <form
             style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "2.5rem" }}
             onSubmit={(e) => {
               e.preventDefault();

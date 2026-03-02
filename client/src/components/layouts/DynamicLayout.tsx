@@ -6,10 +6,10 @@
  */
 import { useState } from "react";
 import { Phone, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, Flame, Activity, Award, ArrowRight, MapPin } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
-import { getIndustryStats } from "@/lib/industryStats";
 
 const HEADING = "var(--site-font-headline, 'Syne', Impact, sans-serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Syne', Impact, sans-serif))";
@@ -46,45 +46,15 @@ export default function DynamicLayout({ websiteData, cs, heroImageUrl, aboutImag
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <DynamicHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <DynamicAbout section={section} cs={cs} businessCategory={businessCategory} />}
+          {section.type === "about" && <DynamicAbout section={section} cs={cs} />}
           {section.type === "gallery" && <DynamicGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <DynamicServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <DynamicServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <DynamicMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <DynamicPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <DynamicTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <DynamicFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <DynamicContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <DynamicContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <DynamicCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -141,13 +111,15 @@ function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate
 
         <h1 style={{ 
           fontFamily: HEADING, 
-          fontSize: "clamp(4.5rem, 12vw, 10rem)", 
+          fontSize: "clamp(3rem, 6vw, 5rem)", 
           fontWeight: 400, 
           lineHeight: 0.8, 
           letterSpacing: "0.02em", 
           color: cs.background, 
           marginBottom: "2.5rem", 
-          textTransform: "uppercase" 
+          textTransform: "uppercase",
+          overflowWrap: "break-word",
+          wordBreak: "break-word"
         }} className="hero-animate-headline">
           {section.headline?.split(" ").slice(0, 1).join(" ")}
           <br />
@@ -189,11 +161,7 @@ function DynamicHero({ section, cs, heroImageUrl, showActivateButton, onActivate
   );
 }
 
-function DynamicAbout({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
-  const icons = [Target, Award, TrendingUp, Flame];
-  const stats = getIndustryStats(businessCategory || "");
-  const stats4 = stats.length >= 4 ? stats : [...stats, ...stats].slice(0, 4);
-  
+function DynamicAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0", position: "relative" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-24 items-center relative z-10">
@@ -202,7 +170,7 @@ function DynamicAbout({ section, cs, businessCategory }: { section: WebsiteSecti
             <Activity className="h-6 w-6" style={{ color: cs.primary }} />
             <span style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Vision & Expertise</span>
           </div>
-          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 400, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9, marginBottom: "2.5rem" }}>
+          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9, marginBottom: "2.5rem", overflowWrap: "break-word", wordBreak: "break-word" }}>
             {section.headline}
           </h2>
           <div style={{ width: "80px", height: "4px", backgroundColor: cs.primary, marginBottom: "2.5rem" }} />
@@ -214,35 +182,12 @@ function DynamicAbout({ section, cs, businessCategory }: { section: WebsiteSecti
             {section.content}
           </p>
         </div>
-        
-        <div className="grid grid-cols-2 gap-6 relative">
-          <div style={{ position: "absolute", top: "20%", left: "20%", right: "20%", bottom: "20%", background: cs.primary, opacity: 0.05, filter: "blur(60px)", zIndex: 0 }} />
-          
-          {stats4.map(({ n, label: l }, i) => { 
-            const Icon = icons[i % icons.length]; 
-            return (
-              <div key={i} 
-                className="group relative z-10"
-                style={{ 
-                  backgroundColor: i === 0 ? cs.primary : cs.surface, 
-                  padding: "3.5rem 2.5rem", 
-                  border: i === 0 ? "none" : `1px solid ${cs.onSurface}10`,
-                  transition: "all 0.4s ease"
-                }}
-              >
-                <Icon className="h-8 w-8 mb-4 opacity-40 transition-transform group-hover:scale-110" style={{ color: i === 0 ? cs.onPrimary : cs.primary }} />
-                <p style={{ fontFamily: HEADING, fontSize: "3rem", color: i === 0 ? cs.onPrimary : cs.primary, lineHeight: 1, marginBottom: "0.5rem" }}>{n}</p>
-                <p style={{ fontFamily: BODY, fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: i === 0 ? cs.onPrimary : cs.onSurface, opacity: 0.7, fontWeight: 700 }}>{l}</p>
-              </div>
-            ); 
-          })}
-        </div>
       </div>
     </section>
   );
 }
 
-function DynamicServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function DynamicServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.background, padding: "10rem 0" }}>
@@ -250,43 +195,43 @@ function DynamicServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
           <div className="max-w-2xl">
             <span style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "1.5rem" }}>Leistungsübersicht</span>
-            <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 400, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.85 }}>
+            <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.85, overflowWrap: "break-word", wordBreak: "break-word" }}>
               Was wir für Sie <span style={{ color: cs.primary }}>bewegen</span>
             </h2>
           </div>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item, i) => (
-            <div key={i} 
+            <div key={i}
               className="group relative overflow-hidden"
-              style={{ 
-                backgroundColor: cs.surface, 
-                padding: "4rem 3rem", 
+              style={{
+                backgroundColor: cs.surface,
+                padding: "4rem 3rem",
                 border: `1px solid ${cs.onSurface}10`,
                 transition: "all 0.5s ease"
               }}
             >
               <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${cs.primary}10 0%, transparent 100%)`, opacity: 0, transition: "opacity 0.5s ease" }} className="group-hover:opacity-100" />
-              
+
               <div style={{ position: "absolute", top: "1rem", right: "2rem", fontFamily: HEADING, fontSize: "5rem", color: cs.onSurface, opacity: 0.05, lineHeight: 1, pointerEvents: "none" }}>{String(i + 1).padStart(2, "0")}</div>
-              
-              <div style={{ 
-                width: "4rem", 
-                height: "4rem", 
-                backgroundColor: `${cs.primary}15`, 
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "center", 
+
+              <div style={{
+                width: "4rem",
+                height: "4rem",
+                backgroundColor: `${cs.primary}15`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: "2.5rem",
                 borderRadius: "2px"
               }} className="group-hover:scale-110 transition-transform">
-                <Zap className="h-6 w-6" style={{ color: cs.primary }} />
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-6 w-6" style={{ color: cs.primary }} />
               </div>
-              
+
               <h3 style={{ fontFamily: HEADING, fontSize: "1.8rem", fontWeight: 400, color: cs.onSurface, marginBottom: "1.25rem", position: "relative", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: BODY, fontSize: "0.95rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.6, fontWeight: 500, position: "relative" }}>{item.description}</p>
-              
+
               <div style={{ marginTop: "2.5rem", display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.8rem", fontWeight: 700, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.15em", opacity: 0.5 }} className="group-hover:opacity-100 group-hover:gap-4 transition-all">
                 Details <ArrowRight className="h-4 w-4" />
               </div>
@@ -430,7 +375,7 @@ function DynamicPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
             <Activity className="h-4 w-4" style={{ color: cs.primary }} />
             <span style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.primary, fontWeight: 700 }}>Tarife & Optionen</span>
           </div>
-          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 7vw, 5rem)", fontWeight: 400, color: cs.onSurface, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>{section.headline}</h2>
+          <h2 style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: cs.onSurface, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
         </div>
 
         {categories.length > 0 ? (
@@ -466,21 +411,22 @@ function DynamicPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
   );
 }
 
-function DynamicContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[] }) {
+function DynamicContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.background, padding: "5rem 0" }}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
+      <div className={`max-w-7xl mx-auto px-6 lg:px-8 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-12`}>
         <div>
           <h2 data-reveal data-delay="300" style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 400, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "2rem", lineHeight: 0.95 }}>{section.headline}</h2>
-          <div className="space-y-4">
+          <div className="space-y-4" style={{ display: "flex", flexDirection: "column", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
             {phone && <div className="flex items-center gap-3"><div style={{ width: "3rem", height: "3rem", backgroundColor: cs.primary, display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-5 w-5" style={{ color: cs.onPrimary }} /></div><a href={`tel:${phone}`} style={{ fontFamily: BODY, fontSize: "1.1rem", color: cs.onBackground, fontWeight: 600 }}>{phone}</a></div>}
             {address && <div className="flex items-start gap-3"><div style={{ width: "3rem", height: "3rem", backgroundColor: cs.surface, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${cs.onSurface}10` }}><MapPin className="h-5 w-5" style={{ color: cs.primary }} /></div><span style={{ fontFamily: BODY, fontSize: "1rem", color: cs.onBackground, opacity: 0.7, fontWeight: 500 }}>{address}</span></div>}
             {email && <div className="flex items-center gap-3"><div style={{ width: "3rem", height: "3rem", backgroundColor: cs.surface, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${cs.onSurface}10` }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /></div><a href={`mailto:${email}`} style={{ fontFamily: BODY, fontSize: "1rem", color: cs.onBackground, opacity: 0.7, fontWeight: 500 }}>{email}</a></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.surface, padding: "2.5rem", borderTop: `4px solid ${cs.primary}`, borderLeft: `1px solid ${cs.onSurface}05`, borderRight: `1px solid ${cs.onSurface}05`, borderBottom: `1px solid ${cs.onSurface}05` }}>
+        {isLocked !== false && (
+        <div style={{ backgroundColor: cs.surface, padding: "2.5rem", borderTop: `4px solid ${cs.primary}`, borderLeft: `1px solid ${cs.onSurface}05`, borderRight: `1px solid ${cs.onSurface}05`, borderBottom: `1px solid ${cs.onSurface}05`, position: "relative" }}>
           <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "2.5rem" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "2.5rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
@@ -495,6 +441,36 @@ function DynamicContact({ section, cs, phone, address, email, hours }: { section
             </button>
           </form>
 
+          {isLocked && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `${cs.background}CC`,
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 20,
+              padding: "2rem",
+              textAlign: "center"
+            }}>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: `${cs.primary}20`,
+                border: `1px solid ${cs.primary}50`,
+                borderRadius: "9999px",
+                padding: "0.5rem 1.25rem",
+              }}>
+                <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+              </div>
+              <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+            </div>
+          )}
+
           <div className="flex items-center gap-2 mb-4">
             <Clock className="h-5 w-5" style={{ color: cs.primary }} />
             <h3 style={{ fontFamily: HEADING, fontSize: "1.5rem", color: cs.onSurface, letterSpacing: "0.05em" }}>Trainingszeiten</h3>
@@ -508,6 +484,7 @@ function DynamicContact({ section, cs, phone, address, email, hours }: { section
             ))}
           </div>
         </div>
+        )}
       </div>
     </section>
   );

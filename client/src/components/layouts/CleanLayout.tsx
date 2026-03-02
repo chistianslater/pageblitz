@@ -5,11 +5,11 @@
  * Structure: Asymmetric hero with trust badges, icon-driven service grid, testimonial strip
  */
 import { useState } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Shield, Award, Heart, ArrowRight } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Shield, Award, ArrowRight } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
-import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'DM Serif Display', Georgia, serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'DM Serif Display', Georgia, serif))";
@@ -44,10 +44,10 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, aboutImageU
       <CleanNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
-          {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
+          {section.type === "hero" && <CleanHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <CleanAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <CleanGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <CleanServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <CleanServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <CleanMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <CleanPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <CleanTestimonials section={section} cs={cs} />}
@@ -97,8 +97,7 @@ function CleanNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
   );
 }
 
-function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessCategory?: string | null }) {
-  const stats4 = getIndustryStats(businessCategory || "", 4);
+function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   return (
     <section style={{ backgroundColor: cs.background, position: "relative", overflow: "hidden" }} className="pt-24 pb-0">
       <div style={{ position: "absolute", top: 0, left: "10%", width: "1px", height: "100%", backgroundColor: `${cs.onBackground}08`, zIndex: 0 }} />
@@ -113,12 +112,14 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
           
           <h1 style={{ 
             fontFamily: SERIF, 
-            fontSize: "clamp(3rem, 6vw, 5.5rem)", 
+            fontSize: "clamp(2.5rem, 5vw, 4rem)", 
             fontWeight: 400, 
             color: cs.onBackground, 
             lineHeight: 1.05, 
             letterSpacing: "-0.02em", 
-            marginBottom: "2.5rem" 
+            marginBottom: "2.5rem",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline}
           </h1>
@@ -151,24 +152,6 @@ function CleanHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
             <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} className="hover:scale-105 transition-transform duration-700" />
           </div>
           
-          <div className="premium-shadow" style={{ position: "absolute", bottom: "15%", left: "-15%", padding: "2.5rem", zIndex: 30, borderLeft: `4px solid ${cs.primary}`, maxWidth: "260px", backgroundColor: cs.surface }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Award className="h-5 w-5" style={{ color: cs.primary }} />
-              <span style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 800, color: cs.onSurface }}>Zertifizierte Qualität</span>
-            </div>
-            <p style={{ fontSize: "0.85rem", color: cs.onSurface, opacity: 0.7, lineHeight: 1.5, fontWeight: 500 }}>Höchste Standards in Beratung und Ausführung seit über 15 Jahren.</p>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ backgroundColor: cs.onBackground, marginTop: "6rem" }}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-12">
-          {stats4.map(({ n, label: l }, i) => (
-            <div key={i} className="text-center">
-              <p style={{ fontFamily: SERIF, fontSize: "2.5rem", fontWeight: 400, color: cs.primary, lineHeight: 1, marginBottom: "0.5rem" }}>{n}</p>
-              <p style={{ fontFamily: SANS, fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.background, opacity: 0.5, fontWeight: 700 }}>{l}</p>
-            </div>
-          ))}
         </div>
       </div>
     </section>
@@ -213,7 +196,7 @@ function CleanAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
   );
 }
 
-function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function CleanServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.surface, padding: "12rem 0" }}>
@@ -224,12 +207,12 @@ function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
             <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 400, color: cs.onSurface, lineHeight: 1.1 }}>{section.headline}</h2>
           </div>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: cs.background, padding: "4rem 3rem", borderTop: i < 3 ? `4px solid ${cs.primary}` : "none", borderLeft: `1px solid ${cs.onBackground}05`, borderRight: `1px solid ${cs.onBackground}05`, borderBottom: `1px solid ${cs.onBackground}05`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
               <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: cs.surface, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2.5rem", transition: "all 0.3s ease", border: `1px solid ${cs.onSurface}10` }} className="group-hover:bg-slate-900 group-hover:rotate-12">
-                <Heart className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
               <h3 style={{ fontFamily: SANS, fontSize: "1.25rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1rem", letterSpacing: "-0.01em", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.6, marginBottom: "2rem" }}>{item.description}</p>

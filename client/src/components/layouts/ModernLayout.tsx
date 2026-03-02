@@ -7,12 +7,11 @@
  */
 import { useState, useRef } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, ArrowRight, ArrowUpRight, Zap } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
-
-import { getIndustryStats } from "@/lib/industryStats";
 
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
 const HEADLINE = "var(--site-font-headline, 'Plus Jakarta Sans', sans-serif)";
@@ -48,9 +47,9 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <ModernGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <ModernMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <ModernPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <ModernTestimonials section={section} cs={cs} />}
@@ -87,12 +86,6 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
 }
 
 function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
-  // Find a testimonial for the trust badge
-  const testimonialSection = websiteData.sections.find(s => s.type === "testimonials");
-  const firstTestimonial = testimonialSection?.items?.[0];
-  const trustText = firstTestimonial?.description 
-    ? (firstTestimonial.description.length > 70 ? firstTestimonial.description.slice(0, 67) + "..." : firstTestimonial.description)
-    : "Hervorragende Qualität und erstklassiger Service.";
 
   return (
     <section style={{ backgroundColor: cs.background, minHeight: "95vh", display: "flex", position: "relative", overflow: "hidden" }}>
@@ -121,12 +114,14 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
           
           <h1 style={{ 
             fontFamily: HEADLINE,
-            fontSize: "clamp(3.5rem, 8vw, 6.5rem)", 
+            fontSize: "clamp(2.5rem, 5vw, 4rem)", 
             fontWeight: 900, 
             lineHeight: 0.9, 
             letterSpacing: "-0.04em", 
             color: cs.onBackground, 
-            marginBottom: "2rem" 
+            marginBottom: "2rem",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: i === 1 ? "block" : "inline", color: i === 1 ? cs.primary : "inherit" }}>
@@ -190,9 +185,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
   );
 }
 
-function ModernAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
-  const stats = getIndustryStats(businessCategory || "", 2);
-  
+function ModernAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-8">
@@ -239,15 +232,6 @@ function ModernAbout({ section, cs, heroImageUrl, businessCategory }: { section:
                 <p style={{ fontSize: "1rem", lineHeight: 1.9, color: cs.onBackground, opacity: 0.7 }}>{section.content}</p>
               )}
             </div>
-            
-            <div className="grid grid-cols-2 gap-8 mt-12">
-              {stats.map(({ n, label }, i) => (
-                <div key={i}>
-                  <p style={{ fontSize: "2.5rem", fontWeight: 900, color: cs.onBackground, marginBottom: "0.25rem" }}>{n}</p>
-                  <p style={{ fontSize: "0.75rem", color: cs.onBackground, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -255,7 +239,7 @@ function ModernAbout({ section, cs, heroImageUrl, businessCategory }: { section:
   );
 }
 
-function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function ModernServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0" }}>
@@ -271,36 +255,36 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
             </a>
           </div>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {items.map((item, i) => (
             <div key={i} className="group premium-shadow transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: cs.surface, padding: "3.5rem 2.5rem", position: "relative", overflow: "hidden" }}>
-              <div style={{ 
-                position: "absolute", 
-                top: "0", 
-                right: "0", 
-                width: "4rem", 
-                height: "4rem", 
-                backgroundColor: `${cs.primary}15`, 
-                clipPath: "polygon(100% 0, 0 0, 100% 100%)" 
+              <div style={{
+                position: "absolute",
+                top: "0",
+                right: "0",
+                width: "4rem",
+                height: "4rem",
+                backgroundColor: `${cs.primary}15`,
+                clipPath: "polygon(100% 0, 0 0, 100% 100%)"
               }} />
-              
-              <div style={{ 
-                width: "3.5rem", 
-                height: "3.5rem", 
-                backgroundColor: `${cs.primary}10`, 
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "center", 
+
+              <div style={{
+                width: "3.5rem",
+                height: "3.5rem",
+                backgroundColor: `${cs.primary}10`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: "2rem",
                 borderRadius: "0px"
               }} className="group-hover:bg-black transition-colors duration-300">
-                <Zap className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
-              
+
               <h3 style={{ fontFamily: HEADLINE, fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", color: cs.onSurface, marginBottom: "1rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2rem" }}>{item.description}</p>
-              
+
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.onSurface, textTransform: "uppercase", letterSpacing: "0.05em" }} className="opacity-40 group-hover:opacity-100 transition-opacity">
                 <span>Details</span> <ArrowRight className="h-4 w-4" />
               </div>

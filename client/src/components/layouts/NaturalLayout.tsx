@@ -7,6 +7,7 @@
  */
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Leaf, Sun, Flower, Droplets, ArrowRight } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
@@ -29,12 +30,14 @@ interface Props {
   slug?: string | null;
   contactFormLocked?: boolean;
   logoUrl?: string | null;
+  businessCategory?: string | null;
 }
 
 export default function NaturalLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -45,7 +48,7 @@ export default function NaturalLayout({ websiteData, cs, heroImageUrl, aboutImag
           {section.type === "hero" && <NaturalHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <NaturalAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <NaturalGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <NaturalServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <NaturalServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <NaturalMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <NaturalPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <NaturalTestimonials section={section} cs={cs} />}
@@ -99,12 +102,14 @@ function NaturalHero({ section, cs, heroImageUrl, showActivateButton, onActivate
 
           <h1 style={{ 
             fontFamily: SERIF, 
-            fontSize: "clamp(3.5rem, 6vw, 5.5rem)", 
+            fontSize: "clamp(2.5rem, 5vw, 4rem)", 
             fontWeight: 700, 
             lineHeight: 1.05, 
             color: cs.onBackground, 
             marginBottom: "2.5rem", 
-            letterSpacing: "-0.01em" 
+            letterSpacing: "-0.01em",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: i === 2 ? "block" : "inline", fontStyle: i === 2 ? "italic" : "normal", color: i === 2 ? cs.primary : "inherit" }}>
@@ -192,7 +197,7 @@ function NaturalAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
   );
 }
 
-function NaturalServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function NaturalServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.surface, padding: "12rem 0" }}>
@@ -211,11 +216,14 @@ function NaturalServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
             )) || "Im Einklang mit der Natur."}
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: cs.background, borderRadius: "2rem", padding: "4rem 3rem", position: "relative", overflow: "hidden", border: `1px solid ${cs.onBackground}10` }}>
               <div style={{ position: "absolute", top: 0, right: 0, width: "100%", height: "8px", backgroundColor: cs.primary, opacity: 0.1 }} />
+              <div style={{ marginBottom: "2rem" }}>
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-8 w-8" style={{ color: cs.primary }} />
+              </div>
               <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onBackground, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.7, marginBottom: "2rem" }}>{item.description}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-0 group-hover:opacity-100 transition-all">
@@ -436,22 +444,23 @@ function NaturalPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
 function NaturalContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
+      <div className={`max-w-6xl mx-auto px-6 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-16`}>
         <div>
           <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 700, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: cs.onBackground, marginBottom: "2rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.7, marginBottom: "2rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ color: cs.onBackground, fontSize: "1rem", fontWeight: 700 }}>{phone}</a></div>}
             {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: cs.primary }} /></div><span style={{ color: cs.onBackground, opacity: 0.7, fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
             {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`mailto:${email}`} style={{ color: cs.onBackground, fontSize: "1rem" }}>{email}</a></div>}
             {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: cs.primary }} /></div><div style={{ marginTop: "0.5rem" }}>{hours.map((h, i) => <p key={i} style={{ color: cs.onBackground, opacity: 0.7, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.surface, padding: "2.5rem", borderRadius: "1rem", border: `1px solid ${cs.onSurface}10` }}>
+        {isLocked !== false && (
+        <div style={{ backgroundColor: cs.surface, padding: "2.5rem", borderRadius: "1rem", border: `1px solid ${cs.onSurface}10`, position: "relative" }}>
           <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.5rem" }}>Nachricht senden</h3>
           <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
@@ -465,7 +474,38 @@ function NaturalContact({ section, cs, phone, address, email, hours, isLocked }:
               Senden
             </button>
           </form>
+
+          {isLocked && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `${cs.background}CC`,
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 20,
+              padding: "2rem",
+              textAlign: "center"
+            }}>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: `${cs.primary}20`,
+                border: `1px solid ${cs.primary}50`,
+                borderRadius: "9999px",
+                padding: "0.5rem 1.25rem",
+              }}>
+                <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+              </div>
+              <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+            </div>
+          )}
         </div>
+        )}
       </div>
     </section>
   );

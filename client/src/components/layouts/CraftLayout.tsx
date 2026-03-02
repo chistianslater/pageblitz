@@ -7,10 +7,10 @@
  */
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Zap, ArrowRight } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
-import { getIndustryStats } from "@/lib/industryStats";
 
 const DISPLAY = "var(--site-font-headline, 'Bricolage Grotesque', 'Impact', sans-serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Bricolage Grotesque', 'Impact', sans-serif))";
@@ -55,46 +55,16 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, aboutImageU
       <CraftNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <CraftHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} businessCategory={businessCategory} />}
+          {section.type === "hero" && <CraftHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
           {section.type === "about" && <CraftAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
           {section.type === "gallery" && <CraftGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <CraftServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <CraftServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <CraftMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <CraftPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <CraftTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <CraftFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <CraftContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <CraftContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <CraftCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -132,8 +102,7 @@ function CraftNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
   );
 }
 
-function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; businessCategory?: string | null }) {
-  const heroStats = getIndustryStats(businessCategory || "");
+function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void }) {
   return (
     <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: cs.onBackground }}>
       <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
@@ -159,13 +128,15 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
 
           <h1 style={{ 
             fontFamily: DISPLAY, 
-            fontSize: "clamp(3.5rem, 8vw, 7.5rem)", 
+            fontSize: "clamp(2.5rem, 5vw, 4.5rem)", 
             lineHeight: 0.9, 
             letterSpacing: "0.02em", 
             color: cs.background, 
             marginBottom: "2.5rem", 
             textTransform: "uppercase",
-            fontWeight: 700
+            fontWeight: 700,
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline}
           </h1>
@@ -192,17 +163,6 @@ function CraftHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
             )}
           </div>
         </div>
-        
-        <div style={{ marginTop: "-2rem", position: "relative", zIndex: 20 }}>
-          <div className="max-w-4xl mx-auto grid grid-cols-3 gap-px" style={{ backgroundColor: `${cs.onBackground}15` }}>
-            {heroStats.slice(0, 3).map(({ n, label }, i) => (
-              <div key={i} style={{ backgroundColor: cs.onBackground, padding: "2rem 1rem" }}>
-                <p style={{ fontFamily: DISPLAY, fontSize: "2.5rem", color: cs.primary, lineHeight: 1 }}>{n}</p>
-                <p style={{ fontSize: "0.7rem", color: cs.background, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "0.5rem", fontWeight: 700 }}>{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
@@ -226,7 +186,7 @@ function CraftAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
               <span style={{ fontSize: "0.9rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Ehrliches Handwerk</span>
             </div>
             
-            <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 5rem)", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem", lineHeight: 0.9 }}>{section.headline}</h2>
+            <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
             
             <div className="space-y-8">
               <p style={{ fontSize: "1.2rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.9, fontWeight: 500 }}>{section.subheadline}</p>
@@ -248,26 +208,30 @@ function CraftAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
   );
 }
 
-function CraftServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function CraftServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.surface, padding: "12rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-6 mb-24">
           <div style={{ width: "5rem", height: "12px", backgroundColor: cs.primary }} />
-          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 700, color: cs.onSurface, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.onSurface, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>
             Unsere <span style={{ color: cs.primary }}>Expertise</span>
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px border" style={{ backgroundColor: `${cs.onSurface}15`, borderColor: `${cs.onSurface}15` }}>
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500" style={{ backgroundColor: cs.background, padding: "5rem 3rem" }}>
-              <div style={{ fontSize: "0.7rem", letterSpacing: "0.3em", color: cs.onBackground, opacity: 0.3, marginBottom: "3rem" }}>SERVICE — {String(i + 1).padStart(2, "0")}</div>
-              
+              <div style={{ fontSize: "0.7rem", letterSpacing: "0.3em", color: cs.onBackground, opacity: 0.3, marginBottom: "2rem" }}>SERVICE — {String(i + 1).padStart(2, "0")}</div>
+
+              <div style={{ marginBottom: "2rem" }}>
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-8 w-8" style={{ color: cs.primary }} />
+              </div>
+
               <h3 style={{ fontFamily: DISPLAY, fontSize: "2rem", fontWeight: 600, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.8, color: cs.onBackground, opacity: 0.6, marginBottom: "3.5rem" }}>{item.description}</p>
-              
+
               <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.2em", borderBottom: `1px solid ${cs.primary}40`, paddingBottom: "0.5rem" }} className="opacity-0 group-hover:opacity-100 group-hover:gap-6 transition-all">
                 Details <ArrowRight className="h-4 w-4" />
               </div>
@@ -486,25 +450,26 @@ function CraftPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSch
   );
 }
 
-function CraftContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
+function CraftContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
+      <div className={`max-w-7xl mx-auto px-6 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-16`}>
         <div>
           <span style={{ fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "1rem" }}>Kontakt</span>
           <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "0.03em", color: cs.onSurface, textTransform: "uppercase", lineHeight: 1, marginBottom: "2.5rem" }}>{section.headline}</h2>
           {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.6, marginBottom: "2.5rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 1.25rem", backgroundColor: cs.background, border: `1px solid ${cs.onBackground}05` }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: cs.onBackground, fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
             {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", padding: "1rem 1.25rem", backgroundColor: cs.background, border: `1px solid ${cs.onBackground}05` }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><span style={{ color: cs.onBackground, opacity: 0.7, fontSize: "0.95rem" }}>{address}</span></div>}
             {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem 1.25rem", backgroundColor: cs.background, border: `1px solid ${cs.onBackground}05` }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ color: cs.onBackground, fontSize: "1rem" }}>{email}</a></div>}
             {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", padding: "1rem 1.25rem", backgroundColor: cs.background, border: `1px solid ${cs.onBackground}05` }}><Clock className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><div>{hours.map((h, i) => <p key={i} style={{ color: cs.onBackground, opacity: 0.7, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.background, padding: "2.5rem", border: `1px solid ${cs.onBackground}10` }}>
+        {isLocked !== false && (
+        <div style={{ backgroundColor: cs.background, padding: "2.5rem", border: `1px solid ${cs.onBackground}10`, position: "relative" }}>
           <h3 style={{ fontFamily: DISPLAY, fontSize: "1.5rem", letterSpacing: "0.05em", color: cs.onBackground, textTransform: "uppercase", marginBottom: "1.5rem" }}>Kostenlose Beratung</h3>
           <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
@@ -521,7 +486,38 @@ function CraftContact({ section, cs, phone, address, email, hours }: { section: 
               Anfrage senden
             </button>
           </form>
+
+          {isLocked && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `${cs.background}CC`,
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 20,
+              padding: "2rem",
+              textAlign: "center"
+            }}>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: `${cs.primary}20`,
+                border: `1px solid ${cs.primary}50`,
+                borderRadius: "9999px",
+                padding: "0.5rem 1.25rem",
+              }}>
+                <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+              </div>
+              <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+            </div>
+          )}
         </div>
+        )}
       </div>
     </section>
   );

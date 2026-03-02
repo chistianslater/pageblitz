@@ -7,6 +7,7 @@
  */
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Heart, Coffee, Leaf, Sun, Zap, ArrowRight } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
@@ -29,12 +30,14 @@ interface Props {
   slug?: string | null;
   contactFormLocked?: boolean;
   logoUrl?: string | null;
+  businessCategory?: string | null;
 }
 
 export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
+  businessCategory,
 }: Props) {
   useScrollReveal();
 
@@ -46,7 +49,7 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageU
           {section.type === "hero" && <FreshHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <FreshAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <FreshGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <FreshServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <FreshServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <FreshMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <FreshPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <FreshTestimonials section={section} cs={cs} />}
@@ -103,12 +106,14 @@ function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
 
             <h1 style={{ 
               fontFamily: SERIF, 
-              fontSize: "clamp(3.5rem, 7vw, 6rem)", 
+              fontSize: "clamp(2.5rem, 5vw, 4rem)", 
               fontWeight: 700, 
               color: cs.onBackground, 
               lineHeight: 1.05, 
               letterSpacing: "-0.02em", 
-              marginBottom: "2.5rem" 
+              marginBottom: "2.5rem",
+              overflowWrap: "break-word",
+              wordBreak: "break-word"
             }} className="hero-animate-headline">
               {section.headline?.split(" ").map((word, i) => (
                 <span key={i} style={{ display: i === 1 ? "block" : "inline", fontStyle: i === 1 ? "italic" : "normal", color: i === 1 ? cs.primary : "inherit" }}>
@@ -198,7 +203,7 @@ function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs
   );
 }
 
-function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function FreshServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.background, padding: "12rem 0" }}>
@@ -213,22 +218,22 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
             )) || "Handwerk trifft Inspiration."}
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:-translate-y-2 shadow-xl hover:shadow-2xl" style={{ backgroundColor: cs.surface, borderRadius: "2rem", padding: "4rem 3rem", position: "relative", border: `1px solid ${cs.onSurface}05` }}>
-              <div style={{ 
-                width: "4rem", 
-                height: "4rem", 
-                backgroundColor: `${cs.primary}10`, 
-                borderRadius: "1.25rem", 
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "center", 
+              <div style={{
+                width: "4rem",
+                height: "4rem",
+                backgroundColor: `${cs.primary}10`,
+                borderRadius: "1.25rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: "2.5rem",
-                transition: "all 0.3s ease" 
+                transition: "all 0.3s ease"
               }} className="group-hover:bg-slate-900 group-hover:rotate-6">
-                <Coffee className="h-7 w-7 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-7 w-7 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
               <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2rem" }}>{item.description}</p>

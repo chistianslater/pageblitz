@@ -7,10 +7,10 @@
  */
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, ArrowRight, Zap } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
-import { getIndustryStats } from "@/lib/industryStats";
 
 const DISPLAY = "var(--site-font-headline, 'Fraunces', 'Impact', sans-serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Fraunces', 'Impact', sans-serif))";
@@ -47,45 +47,15 @@ export default function LuxuryLayout({ websiteData, cs, heroImageUrl, aboutImage
       {websiteData.sections.map((section, i) => (
         <div key={i}>
           {section.type === "hero" && <LuxuryHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <LuxuryAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} businessCategory={businessCategory} />}
+          {section.type === "about" && <LuxuryAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <LuxuryGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <LuxuryServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <LuxuryServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <LuxuryMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <LuxuryPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <LuxuryTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <LuxuryFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <LuxuryContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <LuxuryContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <LuxuryCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -147,13 +117,15 @@ function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate 
 
           <h1 style={{ 
             fontFamily: DISPLAY, 
-            fontSize: "clamp(4rem, 10vw, 8rem)", 
+            fontSize: "clamp(3rem, 6vw, 5rem)", 
             lineHeight: 0.85, 
             letterSpacing: "0.05em", 
             color: cs.background, 
             marginBottom: "2.5rem", 
             textTransform: "uppercase",
-            fontWeight: 400
+            fontWeight: 400,
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline}
           </h1>
@@ -191,8 +163,7 @@ function LuxuryHero({ section, cs, heroImageUrl, showActivateButton, onActivate 
   );
 }
 
-function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
-  const industryStats = getIndustryStats(businessCategory || "");
+function LuxuryAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
   return (
     <section style={{ backgroundColor: cs.background, padding: "12rem 0", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-6">
@@ -216,7 +187,7 @@ function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section:
             <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "2rem" }}>
               <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Heritage & Quality</span>
             </div>
-            <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 5vw, 5rem)", letterSpacing: "0.02em", color: cs.onBackground, marginBottom: "2.5rem", textTransform: "uppercase", lineHeight: 0.9 }}>
+            <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4.5vw, 3.5rem)", letterSpacing: "0.02em", color: cs.onBackground, marginBottom: "2.5rem", textTransform: "uppercase", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>
               {section.headline}
             </h2>
             <div style={{ width: "60px", height: "1px", backgroundColor: cs.primary, marginBottom: "2.5rem" }} />
@@ -228,14 +199,6 @@ function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section:
               {section.content}
             </p>
             
-            <div className="grid grid-cols-2 gap-12 border-t pt-10" style={{ borderColor: `${cs.onBackground}15` }}>
-              {industryStats.slice(0, 2).map(({ n: num, label }) => (
-                <div key={label}>
-                  <p style={{ fontFamily: DISPLAY, fontSize: "3rem", color: cs.primary, marginBottom: "0.5rem", lineHeight: 1 }}>{num}</p>
-                  <p style={{ fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.onBackground, opacity: 0.4 }}>{label}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -243,44 +206,48 @@ function LuxuryAbout({ section, cs, heroImageUrl, businessCategory }: { section:
   );
 }
 
-function LuxuryServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function LuxuryServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.background, padding: "12rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-24">
           <span style={{ fontSize: "0.8rem", letterSpacing: "0.5em", textTransform: "uppercase", color: cs.primary, fontWeight: 500, display: "block", marginBottom: "1.5rem" }}>Our Collection</span>
-          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.05em", color: cs.onBackground, textTransform: "uppercase", lineHeight: 0.85 }}>
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "0.05em", color: cs.onBackground, textTransform: "uppercase", lineHeight: 0.85, overflowWrap: "break-word", wordBreak: "break-word" }}>
             {section.headline}
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
           {items.map((item, i) => (
-            <div key={i} 
+            <div key={i}
               className="group"
-              style={{ 
-                backgroundColor: cs.surface, 
-                padding: "4rem 3rem", 
+              style={{
+                backgroundColor: cs.surface,
+                padding: "4rem 3rem",
                 border: `1px solid ${cs.onSurface}10`,
                 transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
                 position: "relative"
               }}
             >
               <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "2px", backgroundColor: cs.primary, transform: "scaleX(0)", transformOrigin: "left", transition: "transform 0.5s ease" }} className="group-hover:scale-x-100" />
-              
+
               <div style={{ fontSize: "0.7rem", letterSpacing: "0.3em", color: cs.onSurface, opacity: 0.3, marginBottom: "2.5rem" }}>ITEM — {String(i + 1).padStart(2, "0")}</div>
-              
+
+              <div style={{ marginBottom: "2rem" }}>
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-8 w-8" style={{ color: cs.primary }} />
+              </div>
+
               <h3 style={{ fontFamily: DISPLAY, fontSize: "1.8rem", letterSpacing: "0.1em", color: cs.onSurface, marginBottom: "1.5rem", textTransform: "uppercase", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: cs.onSurface, opacity: 0.5, marginBottom: "3rem" }}>{item.description}</p>
-              
-              <div style={{ 
-                display: "inline-flex", 
-                alignItems: "center", 
-                gap: "1rem", 
-                fontSize: "0.75rem", 
-                letterSpacing: "0.2em", 
-                color: cs.primary, 
+
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "1rem",
+                fontSize: "0.75rem",
+                letterSpacing: "0.2em",
+                color: cs.primary,
                 textTransform: "uppercase",
                 fontWeight: 700,
                 borderBottom: `1px solid ${cs.primary}40`,
@@ -412,7 +379,7 @@ function LuxuryMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Haute Cuisine</span>
             <div style={{ width: "4rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 7vw, 5.5rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: cs.onBackground, textTransform: "uppercase" }}>{section.headline}</h2>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: cs.onBackground, textTransform: "uppercase", overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
         </div>
 
         {categories.length > 0 ? (
@@ -471,7 +438,7 @@ function LuxuryPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSc
             <span style={{ fontSize: "0.75rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 600 }}>Elegante Services</span>
             <div style={{ width: "3rem", height: "1px", backgroundColor: cs.primary }} />
           </div>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 7vw, 5.5rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: cs.onSurface, textTransform: "uppercase" }}>{section.headline}</h2>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", lineHeight: 0.9, letterSpacing: "0.02em", color: cs.onSurface, textTransform: "uppercase", overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
         </div>
 
         {categories.length > 0 ? (
@@ -505,11 +472,11 @@ function LuxuryPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSc
   );
 }
 
-function LuxuryContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[] }) {
+function LuxuryContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "7rem 0" }}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-20">
+        <div className={`grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-20`}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
               <div style={{ width: "3rem", height: "2px", backgroundColor: cs.primary }} />
@@ -517,17 +484,18 @@ function LuxuryContact({ section, cs, phone, address, email, hours }: { section:
             </div>
             <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 4vw, 4rem)", letterSpacing: "0.03em", color: cs.onSurface, textTransform: "uppercase", lineHeight: 0.95, marginBottom: "2.5rem" }}>{section.headline}</h2>
             {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.6, marginBottom: "2.5rem" }}>{section.content}</p>}
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
               {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Phone className="h-5 w-5" style={{ color: cs.primary }} /><a href={`tel:${phone}`} style={{ color: cs.onSurface, fontSize: "1rem" }}>{phone}</a></div>}
               {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><MapPin className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><span style={{ color: cs.onSurface, opacity: 0.7, fontSize: "0.95rem" }}>{address}</span></div>}
               {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><Mail className="h-5 w-5" style={{ color: cs.primary }} /><a href={`mailto:${email}`} style={{ color: cs.onSurface, fontSize: "1rem" }}>{email}</a></div>}
               {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><Clock className="h-5 w-5 mt-0.5" style={{ color: cs.primary }} /><div>{hours.map((h, i) => <p key={i} style={{ color: cs.onSurface, opacity: 0.7, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
             </div>
           </div>
-        <div style={{ backgroundColor: cs.background, padding: "3rem", border: `1px solid ${cs.onBackground}10` }}>
+        {isLocked !== false && (
+        <div style={{ backgroundColor: cs.background, padding: "3rem", border: `1px solid ${cs.onBackground}10`, position: "relative" }}>
           <h3 style={{ fontFamily: DISPLAY, fontSize: "1.5rem", letterSpacing: "0.05em", color: cs.onBackground, textTransform: "uppercase", marginBottom: "2rem" }}>Nachricht senden</h3>
           <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
@@ -541,7 +509,38 @@ function LuxuryContact({ section, cs, phone, address, email, hours }: { section:
               Senden
             </button>
           </form>
+
+          {isLocked && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `${cs.background}CC`,
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 20,
+              padding: "2rem",
+              textAlign: "center"
+            }}>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: `${cs.primary}20`,
+                border: `1px solid ${cs.primary}50`,
+                borderRadius: "9999px",
+                padding: "0.5rem 1.25rem",
+              }}>
+                <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+              </div>
+              <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+            </div>
+          )}
         </div>
+        )}
         </div>
       </div>
     </section>

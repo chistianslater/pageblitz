@@ -6,7 +6,8 @@
  * Structure: Full-screen dark hero with large text, horizontal stats, program cards, transformation CTA
  */
 import { useState } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Dumbbell, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
@@ -29,12 +30,14 @@ interface Props {
   slug?: string | null;
   contactFormLocked?: boolean;
   logoUrl?: string | null;
+  businessCategory?: string | null;
 }
 
 export default function VibrantLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
+  businessCategory,
 }: Props) {
   useScrollReveal();
 
@@ -46,7 +49,7 @@ export default function VibrantLayout({ websiteData, cs, heroImageUrl, aboutImag
           {section.type === "hero" && <VibrantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
           {section.type === "about" && <VibrantAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <VibrantGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <VibrantServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <VibrantServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <VibrantMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <VibrantPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <VibrantTestimonials section={section} cs={cs} />}
@@ -99,19 +102,17 @@ function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full py-24">
         <div style={{ maxWidth: "900px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", backgroundColor: cs.primary, padding: "0.5rem 1.5rem", marginBottom: "3rem" }} className="hero-animate-badge">
-            <Zap className="h-5 w-5" style={{ color: cs.onPrimary }} />
-            <span style={{ fontFamily: DISPLAY, fontSize: "1rem", letterSpacing: "0.2em", color: cs.onPrimary, textTransform: "uppercase", fontWeight: 800 }}>Limitless Performance</span>
-          </div>
 
           <h1 style={{ 
             fontFamily: DISPLAY, 
-            fontSize: "clamp(5rem, 15vw, 12rem)", 
+            fontSize: "clamp(3rem, 6vw, 5rem)", 
             lineHeight: 0.8, 
             letterSpacing: "-0.02em", 
             color: cs.background, 
             textTransform: "uppercase", 
-            marginBottom: "3rem" 
+            marginBottom: "3rem",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: "block", color: i === 1 ? cs.primary : cs.background, transform: i === 1 ? "translateX(2rem)" : "none" }}>{word}</span>
@@ -145,17 +146,6 @@ function VibrantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
         </div>
       </div>
       
-      {/* Floating horizontal stats */}
-      <div style={{ backgroundColor: `${cs.background}08`, backdropFilter: "blur(20px)", borderTop: `1px solid ${cs.background}1A` }}>
-        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[["500+", "Athleten"], ["15+", "Experten"], ["50+", "Classes"], ["24/7", "Zugang"]].map(([num, label]) => (
-            <div key={label} className="text-center md:text-left">
-              <p style={{ fontFamily: DISPLAY, fontSize: "3rem", color: cs.primary, lineHeight: 1 }}>{num}</p>
-              <p style={{ fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.onBackground, opacity: 0.5, fontWeight: 800 }}>{label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </section>
   );
 }
@@ -170,7 +160,7 @@ function VibrantAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
             <span style={{ fontFamily: BODY, fontSize: "0.9rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Unsere Vision</span>
           </div>
           
-          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3.5rem", lineHeight: 0.9 }}>{section.headline}</h2>
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3.5rem", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
           
           <div className="space-y-8">
             <p style={{ fontSize: "1.3rem", lineHeight: 1.6, color: cs.onBackground, opacity: 0.9, fontWeight: 800, textTransform: "uppercase" }}>{section.subheadline}</p>
@@ -203,22 +193,22 @@ function VibrantAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; 
   );
 }
 
-function VibrantServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function VibrantServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.onBackground, padding: "12rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-6 mb-24">
           <div style={{ width: "5rem", height: "12px", backgroundColor: cs.primary }} />
-          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 7rem)", fontWeight: 700, color: cs.background, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>
+          <h2 data-reveal style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.background, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>
             Deine <span style={{ color: cs.primary }}>Programme</span>
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px border" style={{ backgroundColor: `${cs.background}1A`, borderColor: `${cs.background}1A` }}>
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:opacity-90" style={{ backgroundColor: cs.onBackground, padding: "5rem 3rem" }}>
-              <Dumbbell className="h-12 w-12 text-primary mb-8 group-hover:scale-110 group-hover:rotate-12 transition-transform" />
+              <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-12 w-12 mb-8 group-hover:scale-110 group-hover:rotate-12 transition-transform" style={{ color: cs.primary }} />
               <h3 style={{ fontFamily: DISPLAY, fontSize: "2.5rem", fontWeight: 700, color: cs.background, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1.1rem", lineHeight: 1.7, color: cs.background, opacity: 0.5, marginBottom: "3.5rem" }}>{item.description}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", fontSize: "0.9rem", fontWeight: 900, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.2em" }} className="opacity-0 group-hover:opacity-100 group-hover:gap-6 transition-all">
@@ -313,7 +303,7 @@ function VibrantCTA({ section, cs, showActivateButton, onActivate }: { section: 
   return (
     <section style={{ backgroundColor: cs.primary, padding: "6rem 0" }}>
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.02em", color: cs.onPrimary, textTransform: "uppercase", lineHeight: 0.9, marginBottom: "1.5rem" }}>{section.headline}</h2>
+        <h2 data-reveal data-delay="300" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "0.02em", color: cs.onPrimary, textTransform: "uppercase", lineHeight: 0.9, marginBottom: "1.5rem", overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
         {section.content && <p style={{ fontSize: "1.1rem", color: cs.onPrimary, opacity: 0.8, marginBottom: "2.5rem" }}>{section.content}</p>}
         <div className="flex flex-wrap gap-4 justify-center">
           {section.ctaText && (
@@ -343,7 +333,7 @@ function VibrantMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme
           <div style={{ display: "inline-block", backgroundColor: cs.primary, padding: "0.3rem 0.9rem", marginBottom: "1.5rem" }}>
             <span style={{ fontFamily: DISPLAY, fontSize: "0.85rem", letterSpacing: "0.15em", color: cs.onPrimary, textTransform: "uppercase", fontWeight: 800 }}>Unsere Auswahl</span>
           </div>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.02em", color: cs.onBackground, textTransform: "uppercase", lineHeight: 0.9 }}>{section.headline}</h2>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "0.02em", color: cs.onBackground, textTransform: "uppercase", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
         </div>
 
         {categories.length > 0 ? (
@@ -400,7 +390,7 @@ function VibrantPricelist({ section, cs }: { section: WebsiteSection; cs: ColorS
           <div style={{ display: "inline-block", backgroundColor: cs.primary, padding: "0.3rem 0.9rem", marginBottom: "1.5rem" }}>
             <span style={{ fontFamily: DISPLAY, fontSize: "0.85rem", letterSpacing: "0.15em", color: cs.onPrimary, textTransform: "uppercase", fontWeight: 800 }}>Tarife</span>
           </div>
-          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(3rem, 6vw, 6rem)", letterSpacing: "0.02em", color: cs.onBackground, textTransform: "uppercase", lineHeight: 0.9 }}>{section.headline}</h2>
+          <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "0.02em", color: cs.onBackground, textTransform: "uppercase", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
         </div>
 
         {categories.length > 0 ? (

@@ -7,10 +7,10 @@
  */
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Shield, Award, ArrowRight, Quote } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
-import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Instrument Sans', sans-serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Instrument Sans', sans-serif))";
@@ -44,10 +44,10 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, aboutImageU
       <TrustNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} businessCategory={businessCategory} websiteData={websiteData} />}
+          {section.type === "hero" && <TrustHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <TrustAbout section={section} cs={cs} />}
           {section.type === "gallery" && <TrustGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <TrustServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <TrustServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <TrustMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <TrustPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <TrustTestimonials section={section} cs={cs} />}
@@ -98,9 +98,7 @@ function TrustNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: We
   );
 }
 
-function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, businessCategory, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; businessCategory?: string | null; websiteData: WebsiteData }) {
-  const heroStats = getIndustryStats(businessCategory || "");
-  
+function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
   // Find a testimonial for the trust badge
   const testimonialSection = websiteData.sections.find(s => s.type === "testimonials");
   const firstTestimonial = testimonialSection?.items?.[0];
@@ -122,12 +120,14 @@ function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
 
           <h1 style={{ 
             fontFamily: SERIF, 
-            fontSize: "clamp(3rem, 5vw, 4.5rem)", 
+            fontSize: "clamp(2.5rem, 4.5vw, 3.5rem)", 
             fontWeight: 800, 
             color: cs.onBackground, 
             lineHeight: 1.1, 
             letterSpacing: "-0.01em", 
-            marginBottom: "2.5rem" 
+            marginBottom: "2.5rem",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline}
           </h1>
@@ -152,15 +152,6 @@ function TrustHero({ section, cs, heroImageUrl, showActivateButton, onActivate, 
                 Aktivieren
               </button>
             )}
-          </div>
-          
-          <div style={{ display: "flex", gap: "3rem", marginTop: "4rem", paddingTop: "2.5rem", borderTop: `1px solid ${cs.onBackground}08` }} className="hero-animate-sub">
-            {heroStats.slice(0, 3).map(({ n, label }, i) => (
-              <div key={i}>
-                <div style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 800, color: cs.primary }}>{n}</div>
-                <div style={{ fontSize: "0.7rem", color: cs.onBackground, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginTop: "0.25rem" }}>{label}</div>
-              </div>
-            ))}
           </div>
         </div>
 
@@ -229,7 +220,7 @@ function TrustAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme 
   );
 }
 
-function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function TrustServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" id="leistungen" style={{ backgroundColor: cs.background, padding: "12rem 0" }}>
@@ -244,12 +235,12 @@ function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
             </h2>
           </div>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px border" style={{ backgroundColor: `${cs.onBackground}0D`, borderColor: `${cs.onBackground}0D` }}>
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:opacity-90" style={{ backgroundColor: cs.background, padding: "4rem 3rem" }}>
               <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: `${cs.onBackground}05`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2.5rem", transition: "all 0.3s ease" }} className="group-hover:bg-primary">
-                <Shield className="h-6 w-6 group-hover:text-on-primary transition-colors" style={{ color: cs.primary }} />
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-6 w-6 group-hover:text-on-primary transition-colors" style={{ color: cs.primary }} />
               </div>
               <h3 style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.6, marginBottom: "2.5rem" }}>{item.description}</p>
@@ -465,12 +456,12 @@ function TrustPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSch
 function TrustContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ padding: "5rem 0", backgroundColor: cs.surface }}>
-      <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
+      <div className={`max-w-6xl mx-auto px-6 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-16`}>
         <div>
           <div style={{ width: "3rem", height: "3px", backgroundColor: cs.primary, marginBottom: "1.5rem" }} />
           <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "2rem", fontWeight: 800, color: cs.onSurface, marginBottom: "1rem" }}>{section.headline}</h2>
           <p style={{ color: cs.onSurface, opacity: 0.7, fontSize: "1rem", lineHeight: 1.7, marginBottom: "2rem" }}>{section.content}</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
             {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
               <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}1A`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Phone className="h-4 w-4" style={{ color: cs.primary }} />
@@ -493,10 +484,11 @@ function TrustContact({ section, cs, phone, address, email, hours, isLocked }: {
             </div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.background, padding: "2.5rem", border: `1px solid ${cs.onBackground}0D`, boxShadow: `0 4px 24px ${cs.onBackground}08` }}>
+        {isLocked !== false && (
+        <div style={{ backgroundColor: cs.background, padding: "2.5rem", border: `1px solid ${cs.onBackground}0D`, boxShadow: `0 4px 24px ${cs.onBackground}08`, position: "relative" }}>
           <h3 style={{ fontFamily: SERIF, fontSize: "1.3rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1.5rem" }}>Nachricht senden</h3>
           <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
@@ -518,7 +510,38 @@ function TrustContact({ section, cs, phone, address, email, hours, isLocked }: {
               {section.ctaText || "Anfrage senden"}
             </button>
           </form>
+
+          {isLocked && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `${cs.background}CC`,
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 20,
+              padding: "2rem",
+              textAlign: "center"
+            }}>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: `${cs.primary}20`,
+                border: `1px solid ${cs.primary}50`,
+                borderRadius: "9999px",
+                padding: "0.5rem 1.25rem",
+              }}>
+                <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+              </div>
+              <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+            </div>
+          )}
         </div>
+        )}
       </div>
     </section>
   );

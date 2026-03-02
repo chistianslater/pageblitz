@@ -429,10 +429,34 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [, navigate] = useLocation();
 
   // ── Website data ────────────────────────────────────────────────────────
-  const { data: siteData, isLoading: siteLoading, refetch: refetchSiteData } = trpc.website.get.useQuery(
+  const { data: siteData, isLoading: siteLoading, error: siteError, refetch: refetchSiteData } = trpc.website.get.useQuery(
     { token: previewToken, id: websiteIdProp },
-    { enabled: !!(previewToken || websiteIdProp) }
+    { 
+      enabled: !!(previewToken || websiteIdProp),
+      retry: 2,
+      retryDelay: 1000,
+    }
   );
+
+  // Show error toast if website loading fails
+  useEffect(() => {
+    if (siteError) {
+      console.error("Website loading error:", siteError);
+      toast.error("Fehler beim Laden der Website: " + siteError.message);
+    }
+  }, [siteError]);
+
+  // Debug logging for loading state
+  useEffect(() => {
+    console.log("OnboardingChat state:", { 
+      previewToken, 
+      websiteIdProp, 
+      siteLoading, 
+      hasSiteData: !!siteData, 
+      websiteId: siteData?.website?.id,
+      isGeneratingInitialWebsite 
+    });
+  }, [previewToken, websiteIdProp, siteLoading, siteData, isGeneratingInitialWebsite]);
 
   const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
   const business = siteData?.business;
@@ -917,9 +941,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }, 800);
         // Refetch site data
         window.location.reload();
-      }).catch(() => {
+      }).catch((err) => {
         clearInterval(phaseInterval);
         setIsGeneratingInitialWebsite(false);
+        console.error("Website generation failed:", err);
+        toast.error("Fehler bei der Website-Erstellung: " + (err.message || "Unbekannter Fehler"));
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

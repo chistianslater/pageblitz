@@ -6,6 +6,7 @@
  */
 import { useState } from "react";
 import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Utensils, Coffee, Leaf, ArrowRight } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
@@ -28,12 +29,14 @@ interface Props {
   slug?: string | null;
   contactFormLocked?: boolean;
   logoUrl?: string | null;
+  businessCategory?: string | null;
 }
 
 export default function WarmLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
   slug,
   contactFormLocked = false,
   logoUrl,
+  businessCategory,
 }: Props) {
   useScrollReveal();
   return (
@@ -44,7 +47,7 @@ export default function WarmLayout({ websiteData, cs, heroImageUrl, aboutImageUr
           {section.type === "hero" && <WarmHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
           {section.type === "about" && <WarmAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
           {section.type === "gallery" && <WarmGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <WarmServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <WarmServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <WarmMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <WarmPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <WarmTestimonials section={section} cs={cs} />}
@@ -104,12 +107,14 @@ function WarmHero({ section, cs, heroImageUrl, showActivateButton, onActivate }:
 
           <h1 style={{ 
             fontFamily: SERIF, 
-            fontSize: "clamp(3.5rem, 8vw, 6.5rem)", 
+            fontSize: "clamp(2.5rem, 5vw, 4rem)", 
             fontWeight: 700, 
             color: cs.background, 
             lineHeight: 1, 
             letterSpacing: "-0.02em", 
-            marginBottom: "2.5rem" 
+            marginBottom: "2.5rem",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: i === 1 ? "block" : "inline", fontStyle: i === 1 ? "italic" : "normal", color: i === 1 ? cs.primary : "inherit" }}>
@@ -190,7 +195,7 @@ function WarmAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs:
   );
 }
 
-function WarmServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function WarmServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.background, padding: "12rem 0" }}>
@@ -209,11 +214,14 @@ function WarmServices({ section, cs }: { section: WebsiteSection; cs: ColorSchem
             )) || "Handwerk, das man schmeckt."}
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:-translate-y-2 shadow-xl hover:shadow-2xl" style={{ backgroundColor: cs.surface, borderRadius: "2rem", padding: "3.5rem 2.5rem", position: "relative", overflow: "hidden", border: `1px solid ${cs.onSurface}05` }}>
               <div style={{ position: "absolute", top: 0, right: 0, width: "100%", height: "8px", backgroundColor: cs.primary, opacity: 0.2 }} />
+              <div style={{ marginBottom: "2rem" }}>
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-8 w-8" style={{ color: cs.primary }} />
+              </div>
               <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, marginBottom: "2rem", opacity: 0.7 }}>{item.description}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-40 group-hover:opacity-100 transition-all">

@@ -5,11 +5,11 @@
  * Structure: Full-bleed dark hero, large numbers, diagonal accents, high contrast
  */
 import { useState } from "react";
-import { Phone, MapPin, Mail, Star, ChevronDown, ChevronUp, CheckCircle, Wrench, ArrowRight } from "lucide-react";
+import { Phone, MapPin, Mail, Star, ChevronDown, ChevronUp, CheckCircle, ArrowRight } from "lucide-react";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { useScrollReveal } from "@/hooks/useAnimations";
-import { getIndustryStats } from "@/lib/industryStats";
 
 const HEADING = "var(--site-font-headline, 'Space Grotesque', sans-serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Space Grotesque', sans-serif))";
@@ -45,45 +45,15 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, showActivate
       {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <BoldHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} />}
-          {section.type === "about" && <BoldAbout section={section} cs={cs} businessCategory={businessCategory} />}
+          {section.type === "about" && <BoldAbout section={section} cs={cs} />}
           {section.type === "gallery" && <BoldGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <BoldServices section={section} cs={cs} />}
+          {(section.type === "services" || section.type === "features") && <BoldServices section={section} cs={cs} businessCategory={businessCategory} />}
           {section.type === "menu" && <BoldMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <BoldPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <BoldTestimonials section={section} cs={cs} />}
           {section.type === "faq" && <BoldFAQ section={section} cs={cs} />}
           {section.type === "contact" && (
-            <div style={{ position: "relative" }}>
-              <BoldContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} />
-              {contactFormLocked && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `${cs.onBackground}CC`, // ~80% opacity
-                  backdropFilter: "blur(3px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  zIndex: 20,
-                }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    backgroundColor: `${cs.primary}20`,
-                    border: `1px solid ${cs.primary}50`,
-                    borderRadius: "9999px",
-                    padding: "0.5rem 1.25rem",
-                  }}>
-                    <span style={{ fontSize: "0.85rem", color: cs.background, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                    <span style={{ fontSize: "0.8rem", color: cs.background, backgroundColor: `${cs.primary}40`, padding: "0.15rem 0.6rem", borderRadius: "9999px" }}>Inaktiv</span>
-                  </div>
-                  <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.65, margin: 0 }}>Im nächsten Schritt aktivierbar</p>
-                </div>
-              )}
-            </div>
+            <BoldContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
           )}
           {section.type === "cta" && <BoldCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
         </div>
@@ -137,13 +107,15 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate }:
 
           <h1 style={{ 
             fontFamily: HEADING, 
-            fontSize: "clamp(4rem, 10vw, 8.5rem)", 
+            fontSize: "clamp(3rem, 6vw, 5rem)", 
             fontWeight: 700, 
             lineHeight: 0.85, 
             color: cs.background, 
             textTransform: "uppercase", 
             letterSpacing: "-0.02em", 
-            marginBottom: "3rem" 
+            marginBottom: "3rem",
+            overflowWrap: "break-word",
+            wordBreak: "break-word"
           }} className="hero-animate-headline">
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ display: "block", color: i === 1 ? cs.primary : cs.background }}>{word}</span>
@@ -180,8 +152,7 @@ function BoldHero({ section, cs, heroImageUrl, showActivateButton, onActivate }:
   );
 }
 
-function BoldAbout({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
-  const stats = getIndustryStats(businessCategory || "");
+function BoldAbout({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
   return (
     <section style={{ backgroundColor: cs.background, padding: "12rem 0", position: "relative", overflow: "hidden" }}>
       {/* Background large number */}
@@ -194,7 +165,7 @@ function BoldAbout({ section, cs, businessCategory }: { section: WebsiteSection;
             <span style={{ fontFamily: BODY, fontSize: "0.9rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Stärke & Verlässlichkeit</span>
           </div>
           
-          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 6vw, 5.5rem)", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem", lineHeight: 0.95 }}>{section.headline}</h2>
+          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "3rem", lineHeight: 0.95, overflowWrap: "break-word", wordBreak: "break-word" }}>{section.headline}</h2>
           
           <div className="space-y-8">
             <p style={{ fontFamily: BODY, fontSize: "1.2rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.9, fontWeight: 500 }}>{section.subheadline}</p>
@@ -210,48 +181,39 @@ function BoldAbout({ section, cs, businessCategory }: { section: WebsiteSection;
             ))}
           </div>
         </div>
-        
-        <div className="lg:col-span-5 grid grid-cols-2 gap-6">
-          {stats.slice(0, 4).map(({ n, label }, i) => (
-            <div key={i} style={{ backgroundColor: i === 0 ? cs.primary : `${cs.onBackground}05`, padding: "3rem 2rem", textAlign: "center", border: i === 0 ? "none" : `1px solid ${cs.onBackground}05` }}>
-              <p style={{ fontFamily: HEADING, fontSize: "3.5rem", fontWeight: 700, color: i === 0 ? cs.onPrimary : cs.primary, lineHeight: 1 }}>{n}</p>
-              <p style={{ fontFamily: BODY, fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", color: i === 0 ? cs.onPrimary : cs.onBackground, opacity: i === 0 ? 0.8 : 0.45, marginTop: "0.5rem", fontWeight: 700 }}>{label}</p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
 }
 
-function BoldServices({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
+function BoldServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
   const items = section.items || [];
   return (
     <section data-section="services" style={{ backgroundColor: cs.onBackground, padding: "12rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center gap-6 mb-24">
           <div style={{ width: "5rem", height: "12px", backgroundColor: cs.primary }} />
-          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 700, color: cs.background, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9 }}>
+          <h2 data-reveal style={{ fontFamily: HEADING, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.background, textTransform: "uppercase", letterSpacing: "0.02em", lineHeight: 0.9, overflowWrap: "break-word", wordBreak: "break-word" }}>
             {section.headline?.split(" ").map((word, i) => (
               <span key={i} style={{ color: i === 1 ? cs.primary : "inherit" }}>{word} </span>
             )) || "Unsere Kernkompetenzen"}
           </h2>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item, i) => (
             <div key={i} className="group relative overflow-hidden" style={{ backgroundColor: cs.background, padding: "4rem 3rem", border: `1px solid ${cs.onBackground}10`, transition: "all 0.4s ease" }}>
               <div style={{ position: "absolute", top: 0, left: 0, width: "4px", height: "100%", backgroundColor: cs.primary, transform: "scaleY(0)", transition: "transform 0.4s ease" }} className="group-hover:scale-y-100" />
-              
+
               <div style={{ position: "absolute", top: "1.5rem", right: "2rem", fontFamily: HEADING, fontSize: "5rem", fontWeight: 900, color: `${cs.onBackground}05`, lineHeight: 1 }}>{String(i + 1).padStart(2, "0")}</div>
-              
+
               <div style={{ width: "4rem", height: "4rem", backgroundColor: `${cs.onBackground}05`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2.5rem", transition: "all 0.3s ease" }} className="group-hover:bg-primary">
-                <Wrench className="h-7 w-7 group-hover:text-on-primary transition-colors" style={{ color: cs.primary }} />
+                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-7 w-7 group-hover:text-on-primary transition-colors" style={{ color: cs.primary }} />
               </div>
-              
+
               <h3 style={{ fontFamily: HEADING, fontSize: "1.8rem", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: BODY, fontSize: "1rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.6, fontWeight: 500 }}>{item.description}</p>
-              
+
               <div style={{ marginTop: "3rem", display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.9rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.15em" }} className="opacity-0 group-hover:opacity-100 transition-all group-hover:gap-4">
                 Details ansehen <ArrowRight className="h-5 w-5" />
               </div>
@@ -436,7 +398,7 @@ function BoldPricelist({ section, cs }: { section: WebsiteSection; cs: ColorSche
   );
 }
 
-function BoldContact({ section, cs, phone, address, email, hours }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[] }) {
+function BoldContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours: string[]; isLocked?: boolean }) {
   return (
     <section id="kontakt" style={{ backgroundColor: cs.onBackground, padding: "5rem 0" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
@@ -452,9 +414,9 @@ function BoldContact({ section, cs, phone, address, email, hours }: { section: W
             {email && <div className="flex items-center gap-3"><div style={{ backgroundColor: cs.primary, padding: "0.5rem" }}><Mail className="h-4 w-4" style={{ color: cs.onPrimary }} /></div><a href={`mailto:${email}`} style={{ fontFamily: BODY, fontSize: "1rem", color: cs.background, opacity: 0.8 }}>{email}</a></div>}
           </div>
         </div>
-        <div style={{ backgroundColor: cs.background, padding: "2.5rem", borderTop: `4px solid ${cs.primary}`, borderLeft: `1px solid ${cs.onBackground}10`, borderRight: `1px solid ${cs.onBackground}10`, borderBottom: `1px solid ${cs.onBackground}10` }}>
+        <div style={{ backgroundColor: cs.background, padding: "2.5rem", borderTop: `4px solid ${cs.primary}`, borderLeft: `1px solid ${cs.onBackground}10`, borderRight: `1px solid ${cs.onBackground}10`, borderBottom: `1px solid ${cs.onBackground}10`, position: "relative" }}>
           <form 
-            style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "2.5rem" }}
+            style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "2.5rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
@@ -468,6 +430,36 @@ function BoldContact({ section, cs, phone, address, email, hours }: { section: W
               {section.ctaText || "Anfrage senden"}
             </button>
           </form>
+
+          {isLocked && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: `${cs.background}CC`,
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 20,
+              padding: "2rem",
+              textAlign: "center"
+            }}>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                backgroundColor: `${cs.primary}20`,
+                border: `1px solid ${cs.primary}50`,
+                borderRadius: "9999px",
+                padding: "0.5rem 1.25rem",
+              }}>
+                <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
+              </div>
+              <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
+            </div>
+          )}
 
           <h3 style={{ fontFamily: HEADING, fontSize: "1.3rem", fontWeight: 800, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1.5rem" }}>Öffnungszeiten</h3>
           <div className="space-y-2">
