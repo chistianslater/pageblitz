@@ -30,15 +30,15 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
   const animationRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize warp stars
+  // Initialize warp stars - mehr Sterne, größer und heller
   useEffect(() => {
-    const stars: WarpStar[] = Array.from({ length: 200 }, (_, i) => ({
+    const stars: WarpStar[] = Array.from({ length: 400 }, (_, i) => ({
       id: i,
-      x: (Math.random() - 0.5) * 2000,
-      y: (Math.random() - 0.5) * 2000,
+      x: (Math.random() - 0.5) * 2500,
+      y: (Math.random() - 0.5) * 2500,
       z: Math.random() * 2000,
-      size: Math.random() * 2 + 0.5,
-      speed: Math.random() * 15 + 10,
+      size: Math.random() * 3 + 1.5, // Größere Sterne (1.5 - 4.5px)
+      speed: Math.random() * 20 + 15, // Schneller für mehr Dynamik
     }));
     setWarpStars(stars);
   }, []);
@@ -137,8 +137,11 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
             const scale = perspective / (perspective + star.z);
             const x = star.x * scale + 50;
             const y = star.y * scale + 50;
-            const opacity = Math.min(1, (2000 - star.z) / 1000) * scale;
-            const trailLength = Math.max(10, star.speed * scale * 3);
+            // Höhere Opazität für bessere Sichtbarkeit
+            const opacity = Math.min(1, (2000 - star.z) / 800) * scale + 0.3;
+            const trailLength = Math.max(15, star.speed * scale * 4);
+            // Zufällige Farbe: Blau, Cyan oder Weiß für mehr Varianz
+            const hue = Math.random() > 0.7 ? 200 : (Math.random() > 0.5 ? 180 : 220); // Blau/Cyan Töne
 
             return (
               <div
@@ -149,10 +152,14 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
                   top: `${y}%`,
                   width: `${trailLength}px`,
                   height: `${star.size * scale}px`,
-                  background: `linear-gradient(90deg, transparent, rgba(255,255,255,${opacity}))`,
+                  background: `linear-gradient(90deg, transparent, hsla(${hue}, 100%, 85%, ${opacity}))`,
                   transform: `translate(-50%, -50%) rotate(${Math.atan2(y - 50, x - 50) * (180 / Math.PI)}deg)`,
-                  opacity,
-                  boxShadow: `0 0 ${4 * scale}px rgba(255,255,255,${opacity * 0.8})`,
+                  opacity: Math.min(1, opacity),
+                  boxShadow: `
+                    0 0 ${6 * scale}px hsla(${hue}, 100%, 80%, ${opacity}),
+                    0 0 ${12 * scale}px hsla(${hue}, 100%, 70%, ${opacity * 0.5})
+                  `,
+                  borderRadius: '2px',
                 }}
               />
             );
