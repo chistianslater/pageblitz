@@ -46,7 +46,7 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, aboutImag
         {websiteData.sections.map((section, i) => (
         <div key={i} id={`section-${i}`}>
           {section.type === "hero" && <ElegantHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
+          {section.type === "about" && <ElegantAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} websiteData={websiteData} />}
           {section.type === "gallery" && <ElegantGallery section={section} cs={cs} />}
           {(section.type === "services" || section.type === "features") && <ElegantServices section={section} cs={cs} />}
           {section.type === "menu" && <ElegantMenu section={section} cs={cs} />}
@@ -159,7 +159,12 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
 }
 
 function ElegantAbout({ section, cs, heroImageUrl, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; websiteData: WebsiteData }) {
-  const stats = getRealStats(websiteData);
+  const stats = [
+    { n: websiteData?.googleRating ? `${websiteData.googleRating}★` : "5★", label: "Kundenbewertung" },
+    { n: websiteData?.googleReviewCount ? `${websiteData.googleReviewCount}+` : "100+", label: "Bewertungen" },
+    { n: "10+", label: "Jahre Erfahrung" },
+    { n: "100%", label: "Zufriedenheit" },
+  ];
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0", position: "relative", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">

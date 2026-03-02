@@ -90,8 +90,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
   const testimonialsSection = websiteData?.sections?.find((s: any) => s.type === "testimonials");
   const firstTestimonial = testimonialsSection?.items?.[0];
   const trustText = firstTestimonial?.description 
-    || firstTestimonial?.text 
-    || firstTestimonial?.content
+    || firstTestimonial?.title
     || "Top bewertet von unseren Kunden";
 
   return (
