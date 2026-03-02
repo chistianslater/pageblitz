@@ -214,7 +214,7 @@ function WarmServices({ section, cs }: { section: WebsiteSection; cs: ColorSchem
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:-translate-y-2 shadow-xl hover:shadow-2xl" style={{ backgroundColor: cs.surface, borderRadius: "2rem", padding: "3.5rem 2.5rem", position: "relative", overflow: "hidden", border: `1px solid ${cs.onSurface}05` }}>
               <div style={{ position: "absolute", top: 0, right: 0, width: "100%", height: "8px", backgroundColor: cs.primary, opacity: 0.2 }} />
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.25rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, marginBottom: "2rem", opacity: 0.7 }}>{item.description}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-40 group-hover:opacity-100 transition-all">
                 Entdecken <ArrowRight className="h-4 w-4" />

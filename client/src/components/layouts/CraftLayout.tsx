@@ -265,7 +265,7 @@ function CraftServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
             <div key={i} className="group transition-all duration-500" style={{ backgroundColor: cs.background, padding: "5rem 3rem" }}>
               <div style={{ fontSize: "0.7rem", letterSpacing: "0.3em", color: cs.onBackground, opacity: 0.3, marginBottom: "3rem" }}>SERVICE — {String(i + 1).padStart(2, "0")}</div>
               
-              <h3 style={{ fontFamily: DISPLAY, fontSize: "2rem", fontWeight: 600, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: DISPLAY, fontSize: "2rem", fontWeight: 600, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.8, color: cs.onBackground, opacity: 0.6, marginBottom: "3.5rem" }}>{item.description}</p>
               
               <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.2em", borderBottom: `1px solid ${cs.primary}40`, paddingBottom: "0.5rem" }} className="opacity-0 group-hover:opacity-100 group-hover:gap-6 transition-all">

@@ -298,7 +298,7 @@ function ModernServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
                 <Zap className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
               
-              <h3 style={{ fontFamily: HEADLINE, fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", color: cs.onSurface, marginBottom: "1rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: HEADLINE, fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", color: cs.onSurface, marginBottom: "1rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2rem" }}>{item.description}</p>
               
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.onSurface, textTransform: "uppercase", letterSpacing: "0.05em" }} className="opacity-40 group-hover:opacity-100 transition-opacity">

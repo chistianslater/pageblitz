@@ -249,7 +249,7 @@ function BoldServices({ section, cs }: { section: WebsiteSection; cs: ColorSchem
                 <Wrench className="h-7 w-7 group-hover:text-on-primary transition-colors" style={{ color: cs.primary }} />
               </div>
               
-              <h3 style={{ fontFamily: HEADING, fontSize: "1.8rem", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.25rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: HEADING, fontSize: "1.8rem", fontWeight: 700, color: cs.onBackground, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: BODY, fontSize: "1rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.6, fontWeight: 500 }}>{item.description}</p>
               
               <div style={{ marginTop: "3rem", display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.9rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.15em" }} className="opacity-0 group-hover:opacity-100 transition-all group-hover:gap-4">

@@ -219,7 +219,7 @@ function VibrantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
           {items.map((item, i) => (
             <div key={i} className="group transition-all duration-500 hover:opacity-90" style={{ backgroundColor: cs.onBackground, padding: "5rem 3rem" }}>
               <Dumbbell className="h-12 w-12 text-primary mb-8 group-hover:scale-110 group-hover:rotate-12 transition-transform" />
-              <h3 style={{ fontFamily: DISPLAY, fontSize: "2.5rem", fontWeight: 700, color: cs.background, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: DISPLAY, fontSize: "2.5rem", fontWeight: 700, color: cs.background, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "1.5rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1.1rem", lineHeight: 1.7, color: cs.background, opacity: 0.5, marginBottom: "3.5rem" }}>{item.description}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", fontSize: "0.9rem", fontWeight: 900, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.2em" }} className="opacity-0 group-hover:opacity-100 group-hover:gap-6 transition-all">
                 Jetzt starten <ArrowRight className="h-5 w-5" />

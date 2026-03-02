@@ -284,7 +284,7 @@ function DynamicServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
                 <Zap className="h-6 w-6" style={{ color: cs.primary }} />
               </div>
               
-              <h3 style={{ fontFamily: HEADING, fontSize: "1.8rem", fontWeight: 400, color: cs.onSurface, marginBottom: "1.25rem", position: "relative" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: HEADING, fontSize: "1.8rem", fontWeight: 400, color: cs.onSurface, marginBottom: "1.25rem", position: "relative", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: BODY, fontSize: "0.95rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.6, fontWeight: 500, position: "relative" }}>{item.description}</p>
               
               <div style={{ marginTop: "2.5rem", display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.8rem", fontWeight: 700, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.15em", opacity: 0.5 }} className="group-hover:opacity-100 group-hover:gap-4 transition-all">

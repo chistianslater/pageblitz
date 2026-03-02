@@ -271,7 +271,7 @@ function LuxuryServices({ section, cs }: { section: WebsiteSection; cs: ColorSch
               
               <div style={{ fontSize: "0.7rem", letterSpacing: "0.3em", color: cs.onSurface, opacity: 0.3, marginBottom: "2.5rem" }}>ITEM — {String(i + 1).padStart(2, "0")}</div>
               
-              <h3 style={{ fontFamily: DISPLAY, fontSize: "1.8rem", letterSpacing: "0.1em", color: cs.onSurface, marginBottom: "1.5rem", textTransform: "uppercase" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: DISPLAY, fontSize: "1.8rem", letterSpacing: "0.1em", color: cs.onSurface, marginBottom: "1.5rem", textTransform: "uppercase", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: cs.onSurface, opacity: 0.5, marginBottom: "3rem" }}>{item.description}</p>
               
               <div style={{ 

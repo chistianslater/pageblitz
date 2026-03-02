@@ -231,7 +231,7 @@ function CleanServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
               <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: cs.surface, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2.5rem", transition: "all 0.3s ease", border: `1px solid ${cs.onSurface}10` }} className="group-hover:bg-slate-900 group-hover:rotate-12">
                 <Heart className="h-6 w-6 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
-              <h3 style={{ fontFamily: SANS, fontSize: "1.25rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1rem", letterSpacing: "-0.01em" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: SANS, fontSize: "1.25rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1rem", letterSpacing: "-0.01em", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.6, marginBottom: "2rem" }}>{item.description}</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-40 group-hover:opacity-100 transition-all">
                 Details <ArrowRight className="h-4 w-4" />

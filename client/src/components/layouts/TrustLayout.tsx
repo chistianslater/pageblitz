@@ -251,7 +251,7 @@ function TrustServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
               <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: `${cs.onBackground}05`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2.5rem", transition: "all 0.3s ease" }} className="group-hover:bg-primary">
                 <Shield className="h-6 w-6 group-hover:text-on-primary transition-colors" style={{ color: cs.primary }} />
               </div>
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1.25rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.4rem", fontWeight: 800, color: cs.onBackground, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.6, marginBottom: "2.5rem" }}>{item.description}</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 900, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }}>
                 Erfahren Sie mehr <ArrowRight className="h-4 w-4" />

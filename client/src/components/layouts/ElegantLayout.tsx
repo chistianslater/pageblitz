@@ -245,7 +245,7 @@ function ElegantServices({ section, cs }: { section: WebsiteSection; cs: ColorSc
                 <Sparkles className="h-6 w-6 transition-colors" style={{ color: cs.primary }} />
               </div>
               
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 400, color: cs.onSurface, marginBottom: "1.25rem", fontStyle: "italic" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 400, color: cs.onSurface, marginBottom: "1.25rem", fontStyle: "italic", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontFamily: SANS, fontSize: "0.95rem", lineHeight: 1.8, color: cs.onSurface, opacity: 0.7, fontWeight: 300, marginBottom: "2rem" }}>{item.description}</p>
               
               <div style={{ width: "20px", height: "1px", backgroundColor: cs.primary, margin: "0 auto" }} />

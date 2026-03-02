@@ -230,7 +230,7 @@ function FreshServices({ section, cs }: { section: WebsiteSection; cs: ColorSche
               }} className="group-hover:bg-slate-900 group-hover:rotate-6">
                 <Coffee className="h-7 w-7 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
               </div>
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.25rem" }}>{item.title}</h3>
+              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
               <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2rem" }}>{item.description}</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-0 group-hover:opacity-100 transition-all">
                 Details <ArrowRight className="h-4 w-4" />
