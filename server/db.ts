@@ -363,10 +363,58 @@ export async function updateSubscriptionByWebsiteId(websiteId: number, data: Par
 }
 
 // ── Onboarding Responses ───────────────────────────────
-export async function createOnboarding(data: InsertOnboardingResponse): Promise<number> {
+export async function createOnboarding(data: Partial<InsertOnboardingResponse> & { websiteId: number; status: string; stepCurrent: number }): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const result = await db.insert(onboardingResponses).values(data);
+  
+  // Only insert the fields that are actually provided, let DB handle defaults
+  const insertData = {
+    websiteId: data.websiteId,
+    status: data.status,
+    stepCurrent: data.stepCurrent,
+    createdAt: data.createdAt ?? Date.now(),
+    updatedAt: data.updatedAt ?? Date.now(),
+    // Only include other fields if they are provided
+    ...(data.businessCategory && { businessCategory: data.businessCategory }),
+    ...(data.businessName && { businessName: data.businessName }),
+    ...(data.tagline && { tagline: data.tagline }),
+    ...(data.description && { description: data.description }),
+    ...(data.foundedYear && { foundedYear: data.foundedYear }),
+    ...(data.teamSize && { teamSize: data.teamSize }),
+    ...(data.usp && { usp: data.usp }),
+    ...(data.topServices && { topServices: data.topServices }),
+    ...(data.targetAudience && { targetAudience: data.targetAudience }),
+    ...(data.faqItems && { faqItems: data.faqItems }),
+    ...(data.logoUrl && { logoUrl: data.logoUrl }),
+    ...(data.heroPhotoUrl && { heroPhotoUrl: data.heroPhotoUrl }),
+    ...(data.aboutPhotoUrl && { aboutPhotoUrl: data.aboutPhotoUrl }),
+    ...(data.photoUrls && { photoUrls: data.photoUrls }),
+    ...(data.legalOwner && { legalOwner: data.legalOwner }),
+    ...(data.legalStreet && { legalStreet: data.legalStreet }),
+    ...(data.legalZip && { legalZip: data.legalZip }),
+    ...(data.legalCity && { legalCity: data.legalCity }),
+    ...(data.legalCountry && { legalCountry: data.legalCountry }),
+    ...(data.legalEmail && { legalEmail: data.legalEmail }),
+    ...(data.legalPhone && { legalPhone: data.legalPhone }),
+    ...(data.legalVatId && { legalVatId: data.legalVatId }),
+    ...(data.legalRegister && { legalRegister: data.legalRegister }),
+    ...(data.legalRegisterCourt && { legalRegisterCourt: data.legalRegisterCourt }),
+    ...(data.legalResponsible && { legalResponsible: data.legalResponsible }),
+    ...(data.brandColor && { brandColor: data.brandColor }),
+    ...(data.brandSecondaryColor && { brandSecondaryColor: data.brandSecondaryColor }),
+    ...(data.colorScheme && { colorScheme: data.colorScheme }),
+    ...(data.headlineFont && { headlineFont: data.headlineFont }),
+    ...(data.addOnContactForm !== undefined && { addOnContactForm: data.addOnContactForm }),
+    ...(data.addOnGallery !== undefined && { addOnGallery: data.addOnGallery }),
+    ...(data.addOnMenu !== undefined && { addOnMenu: data.addOnMenu }),
+    ...(data.addOnMenuData && { addOnMenuData: data.addOnMenuData }),
+    ...(data.addOnPricelist !== undefined && { addOnPricelist: data.addOnPricelist }),
+    ...(data.addOnPricelistData && { addOnPricelistData: data.addOnPricelistData }),
+    ...(data.addOnSubpages && { addOnSubpages: data.addOnSubpages }),
+    ...(data.completedAt && { completedAt: data.completedAt }),
+  };
+  
+  const result = await db.insert(onboardingResponses).values(insertData as any);
   return (result[0] as any).insertId as number;
 }
 
