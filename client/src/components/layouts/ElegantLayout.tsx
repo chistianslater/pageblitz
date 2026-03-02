@@ -12,8 +12,6 @@ import { isLightColor } from "@shared/colorContrast";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
 import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
-import { getIndustryStats } from "@/lib/industryStats";
-
 const SERIF = "var(--site-font-headline, 'Fraunces', Georgia, serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Fraunces', Georgia, serif))";
 const SANS = "var(--site-font-body, 'Outfit', 'Inter', sans-serif)";
@@ -160,8 +158,8 @@ function ElegantHero({ section, cs, heroImageUrl, showActivateButton, onActivate
   );
 }
 
-function ElegantAbout({ section, cs, heroImageUrl, businessCategory }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; businessCategory?: string | null }) {
-  const stats = getIndustryStats(businessCategory || "");
+function ElegantAbout({ section, cs, heroImageUrl, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; websiteData: WebsiteData }) {
+  const stats = getRealStats(websiteData);
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0", position: "relative", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">

@@ -86,6 +86,13 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
 }
 
 function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
+  // Dynamischer TrustText aus der ersten Testimonial-Section
+  const testimonialsSection = websiteData?.sections?.find((s: any) => s.type === "testimonials");
+  const firstTestimonial = testimonialsSection?.items?.[0];
+  const trustText = firstTestimonial?.description 
+    || firstTestimonial?.text 
+    || firstTestimonial?.content
+    || "Top bewertet von unseren Kunden";
 
   return (
     <section style={{ backgroundColor: cs.background, minHeight: "95vh", display: "flex", position: "relative", overflow: "hidden" }}>
@@ -176,7 +183,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             <div className="flex gap-1 mb-2">
               {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />)}
             </div>
-            <p style={{ fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.4 }}>"Top bewertet von unseren Kunden"</p>
+            <p style={{ fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.4 }}>"{trustText}"</p>
             <p style={{ fontSize: "0.7rem", opacity: 0.6, marginTop: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>Top Bewertung</p>
           </div>
         </div>
@@ -517,8 +524,8 @@ function ModernContact({ section, cs, phone, address, email, hours, isLocked }: 
               }}
             >
               <input type="text" placeholder="Name" style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
-              <input type="email" placeholder="E-Mail" style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
-              <textarea placeholder="Nachricht" rows={4} style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0", color: cs.onBackground, fontSize: "0.95rem", outline: "none", resize: "vertical" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
+              <input type="email" placeholder="E-Mail" style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0`, color: cs.onBackground, fontSize: "0.95rem", outline: "none" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
+              <textarea placeholder="Nachricht" rows={4} style={{ backgroundColor: "transparent", border: "none", borderBottom: `2px solid ${cs.onBackground}15`, padding: "0.85rem 0`, color: cs.onBackground, fontSize: "0.95rem", outline: "none", resize: "vertical" }} onFocus={e => (e.target.style.borderBottomColor = cs.primary)} onBlur={e => (e.target.style.borderBottomColor = `${cs.onBackground}15`)} />
               <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontSize: "0.9rem", fontWeight: 800, border: "none", cursor: "pointer", letterSpacing: "-0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }} className="hover:opacity-80 transition-opacity">
                 Senden <ArrowRight className="h-4 w-4" />
               </button>
