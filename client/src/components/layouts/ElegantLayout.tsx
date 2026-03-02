@@ -11,6 +11,8 @@ import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import { isLightColor } from "@shared/colorContrast";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
+import { getIndustryStats } from "@/lib/industryStats";
 
 const SERIF = "var(--site-font-headline, 'Fraunces', Georgia, serif)";
 const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Fraunces', Georgia, serif))";

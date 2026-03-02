@@ -38,7 +38,7 @@ import {
   HardHat,
   CheckCircle,
   Building,
-  Tree,
+  TreeDeciduous,
   Flower,
   Scale,
   Briefcase,
@@ -48,7 +48,6 @@ import {
   Lightbulb,
   Users,
   Car,
-  Tool,
   Camera,
   Image,
   Aperture,
@@ -97,7 +96,7 @@ const iconMap: Record<string, LucideIcon> = {
   HardHat,
   CheckCircle,
   Building,
-  Tree,
+  TreeDeciduous,
   Flower,
   Scale,
   Briefcase,
@@ -107,7 +106,6 @@ const iconMap: Record<string, LucideIcon> = {
   Lightbulb,
   Users,
   Car,
-  Tool,
   Camera,
   Image,
   Aperture,
@@ -176,7 +174,7 @@ export function getIndustryIcons(category: string): string[] {
   if (cat.includes("bau") || cat.includes("construction"))
     return ["HardHat", "Ruler", "Hammer", "Shield", "CheckCircle", "Building"];
   if (cat.includes("garten") || cat.includes("gärtner"))
-    return ["Leaf", "Sun", "Droplet", "Tree", "Flower", "Wind"];
+    return ["Leaf", "Sun", "Droplet", "TreeDeciduous", "Flower", "Wind"];
   if (cat.includes("reinigung") || cat.includes("cleaning"))
     return ["Droplet", "Sparkles", "Shield", "CheckCircle", "Sun", "Wind"];
 
@@ -192,7 +190,7 @@ export function getIndustryIcons(category: string): string[] {
   if (cat.includes("auto") || cat.includes("car") || cat.includes("fahrzeug"))
     return ["Car", "Wrench", "Shield", "CheckCircle", "Sparkles", "Star"];
   if (cat.includes("mechanik") || cat.includes("werkstatt"))
-    return ["Wrench", "Car", "Tool", "Shield", "CheckCircle", "Flame"];
+    return ["Wrench", "Car", "Wrench", "Shield", "CheckCircle", "Flame"];
 
   // Photography & Media
   if (cat.includes("foto") || cat.includes("photo"))

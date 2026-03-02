@@ -6,7 +6,7 @@
  * Structure: Full-screen dark hero with large text, horizontal stats, program cards, transformation CTA
  */
 import { useState } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
+import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Zap, Target, TrendingUp, ArrowRight, Dumbbell } from "lucide-react";
 import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
 import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";

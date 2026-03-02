@@ -446,17 +446,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [siteError]);
 
-  // Debug logging for loading state
-  useEffect(() => {
-    console.log("OnboardingChat state:", { 
-      previewToken, 
-      websiteIdProp, 
-      siteLoading, 
-      hasSiteData: !!siteData, 
-      websiteId: siteData?.website?.id,
-      isGeneratingInitialWebsite 
-    });
-  }, [previewToken, websiteIdProp, siteLoading, siteData, isGeneratingInitialWebsite]);
 
   const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
   const business = siteData?.business;

@@ -176,7 +176,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             <div className="flex gap-1 mb-2">
               {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />)}
             </div>
-            <p style={{ fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.4 }}>"{trustText}"</p>
+            <p style={{ fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.4 }}>"Top bewertet von unseren Kunden"</p>
             <p style={{ fontSize: "0.7rem", opacity: 0.6, marginTop: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>Top Bewertung</p>
           </div>
         </div>
