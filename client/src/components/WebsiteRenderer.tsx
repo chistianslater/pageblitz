@@ -31,6 +31,7 @@ import TrustLayout from "./layouts/TrustLayout";
 import ModernLayout from "./layouts/ModernLayout";
 import VibrantLayout from "./layouts/VibrantLayout";
 import NaturalLayout from "./layouts/NaturalLayout";
+import PremiumLayout from "./layouts/PremiumLayout";
 import SkeletonOverlay from "./SkeletonOverlay";
 
 interface WebsiteRendererProps {
