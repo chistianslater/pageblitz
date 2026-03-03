@@ -276,7 +276,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
   );
 }
 
-function ModernAbout({ section, cs, heroImageUrl, isLoading }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; isLoading?: boolean }) {
+function ModernAbout({ section, cs, heroImageUrl, isLoading, contentPhase }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; isLoading?: boolean; contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete' }) {
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-8">
@@ -330,7 +330,7 @@ function ModernAbout({ section, cs, heroImageUrl, isLoading }: { section: Websit
   );
 }
 
-function ModernServices({ section, cs, businessCategory, isLoading }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null; isLoading?: boolean }) {
+function ModernServices({ section, cs, businessCategory, isLoading, contentPhase }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null; isLoading?: boolean; contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete' }) {
   const items = section.items || [];
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0" }}>
