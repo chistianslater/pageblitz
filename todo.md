@@ -598,3 +598,10 @@
 - [x] Frontend: Leads-Tabelle mit E-Mail, Unternehmensname, Status, Datum, Aktionen
 - [x] Frontend: Status-Filter und Suche über der Tabelle
 - [x] Navigation: "Leads" im Admin-Sidebar ergänzen
+
+## Websites-Tab Umstrukturierung in 3 Tabs (Runde 21)
+- [x] Tab 1 "GMB-Backlog": Unternehmen ohne generierte Website (gescrapt, nicht generiert) – mit Badge "Kein Lead-Typ" / Lead-Typ-Anzeige und "Website generieren"-Button
+- [x] Tab 2 "Admin-generiert": Websites mit source=admin – Tabelle mit Status-Badge, Aktionen (Preview, Live, Kaufen, Aktivieren, Regenerieren, E-Mail, Löschen)
+- [x] Tab 3 "Extern-generiert": Websites mit source=external – Tabelle mit captureStatus-Badge, E-Mail des Leads, Aktionen (Preview, Status ändern, Löschen)
+- [x] Zähler-Badges auf jedem Tab-Header (Anzahl Einträge)
+- [x] Bulk-Delete bleibt in Tab 2 und Tab 3 erhalten
