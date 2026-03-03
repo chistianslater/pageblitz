@@ -3590,7 +3590,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               externalScrollTop={previewScrollTop}
               onScrollChange={setPreviewScrollTop}
             >
-              <WebsiteRenderer
+              <WebsiteRenderer isLoading={isGenerating}
                 websiteData={liveWebsiteData}
                 colorScheme={{
                     ...colorScheme,

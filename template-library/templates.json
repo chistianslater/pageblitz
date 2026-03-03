@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Local Business Pro",
+    "slug": "local-business-pro",
+    "categories": ["Local Services", "Business & Consulting"],
+    "tags": ["clean", "professional", "modern"],
+    "style_hints": "Clean and professional design with blue accent colors, modern sans-serif typography, clear call-to-action buttons, white background with subtle gradients",
+    "preview_url": null,
+    "local_image": null,
+    "cdn_url": null
+  },
+  {
+    "name": "Service Hero",
+    "slug": "service-hero",
+    "categories": ["Local Services"],
+    "tags": ["bold", "trustworthy", "friendly"],
+    "style_hints": "Bold hero section with warm orange/yellow colors, trustworthy imagery placeholders, friendly rounded typography, prominent contact buttons",
+    "preview_url": null,
+    "local_image": null,
+    "cdn_url": null
+  },
+  {
+    "name": "Modern Consultant",
+    "slug": "modern-consultant",
+    "categories": ["Business & Consulting", "Agencies & Corporate"],
+    "tags": ["minimal", "elegant", "sophisticated"],
+    "style_hints": "Minimalist design with elegant serif typography, sophisticated navy and gold color palette, professional imagery placeholders, generous whitespace",
+    "preview_url": null,
+    "local_image": null,
+    "cdn_url": null
+  },
+  {
+    "name": "Creative Studio",
+    "slug": "creative-studio",
+    "categories": ["Creative & Artistic"],
+    "tags": ["creative", "vibrant", "modern"],
+    "style_hints": "Creative layout with vibrant accent colors, modern geometric elements, portfolio-style sections, dynamic typography",
+    "preview_url": null,
+    "local_image": null,
+    "cdn_url": null
+  },
+  {
+    "name": "Health & Wellness",
+    "slug": "health-wellness",
+    "categories": ["Beauty & Wellness", "Local Services"],
+    "tags": ["calming", "natural", "clean"],
+    "style_hints": "Calming design with natural green tones, clean spacious layout, soothing imagery placeholders, elegant script accents",
+    "preview_url": null,
+    "local_image": null,
+    "cdn_url": null
+  }
+]
