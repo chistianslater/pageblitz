@@ -15,40 +15,17 @@ interface Props {
 }
 
 // Skeleton Loading Component
-function CleanSkeleton({ cs }: { cs: ColorScheme }) {
+const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
+  if (!isLoading) return <>{children}</>;
   return (
-    <div className="min-h-screen bg-white animate-pulse">
-      <section className="min-h-screen flex items-center pt-24 md:pt-32 px-4 md:px-6">
-        <div className="max-w-7xl mx-auto w-full border-x border-neutral-100">
-          <div className="grid lg:grid-cols-2">
-            <div className="py-12 md:py-20 pr-0 md:pr-12 border-b border-neutral-100">
-              <div className="h-3 w-32 bg-neutral-200 rounded mb-6 md:mb-8" />
-              <div className="space-y-2 mb-6 md:mb-12">
-                <div className="h-10 md:h-16 w-full bg-neutral-200 rounded" />
-                <div className="h-10 md:h-16 w-4/5 bg-neutral-200 rounded" />
-              </div>
-              <div className="h-16 w-full max-w-sm bg-neutral-200 rounded mb-6 md:mb-12" />
-              <div className="flex flex-wrap gap-4 md:gap-10">
-                <div className="h-6 w-24 bg-neutral-200 rounded" />
-                <div className="h-6 w-24 bg-neutral-200 rounded" />
-              </div>
-            </div>
-            <div className="py-12 md:py-20 pl-0 md:pl-12 border-b border-l-0 md:border-l border-neutral-100">
-              <div className="rounded-2xl md:rounded-3xl overflow-hidden aspect-square bg-neutral-200" />
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className={`bg-neutral-200 animate-pulse rounded-md ${className}`}>
+      <div className="opacity-0">{children}</div>
     </div>
   );
-}
+};
 
-export default function CleanLayout({ websiteData, cs, heroImageUrl, isLoading }: Props) {
+export default function CleanLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   const subheadline = websiteData.sections?.[0]?.subheadline || "Professionelle Beratung und Behandlung auf höchstem Niveau.";
-
-  if (isLoading) {
-    return <CleanSkeleton cs={cs} />;
-  }
 
   return (
     <div className="bg-white text-neutral-900">
@@ -57,34 +34,46 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, isLoading }
         <div className="max-w-7xl mx-auto px-4 md:px-6 w-full border-x border-neutral-100">
           <div className="grid lg:grid-cols-2">
             <div className="py-12 md:py-20 pr-0 md:pr-12 border-b border-neutral-100 flex flex-col justify-center">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-blue-600 mb-6 md:mb-8 block">
-                Medical Excellence
-              </span>
-              <h1 className="text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter leading-[0.85] mb-6 md:mb-12 uppercase">
-                Expert <br/> 
-                <span className="text-blue-600">Precision</span>
-              </h1>
-              <p className="text-base md:text-lg text-neutral-400 mb-8 md:mb-12 max-w-sm">
-                {subheadline}
-              </p>
+              <Skeleton isLoading={isLoading} className="w-32 h-3 mb-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-blue-600 mb-6 md:mb-8 block">
+                  Medical Excellence
+                </span>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
+                <h1 className="text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter leading-[0.85] mb-6 md:mb-12 uppercase">
+                  Expert <br/> 
+                  <span className="text-blue-600">Precision</span>
+                </h1>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full h-16 max-w-sm mb-8">
+                <p className="text-base md:text-lg text-neutral-400 mb-8 md:mb-12 max-w-sm">
+                  {subheadline}
+                </p>
+              </Skeleton>
               <div className="flex flex-wrap gap-6 md:gap-10">
-                <div className="flex items-center gap-2 md:gap-3 text-blue-600 font-bold uppercase text-xs tracking-widest">
-                  <Award size={18}/> Certified
-                </div>
-                <div className="flex items-center gap-2 md:gap-3 text-blue-600 font-bold uppercase text-xs tracking-widest">
-                  <Clock size={18}/> 24/7 Support
-                </div>
+                <Skeleton isLoading={isLoading} className="w-24 h-6">
+                  <div className="flex items-center gap-2 md:gap-3 text-blue-600 font-bold uppercase text-xs tracking-widest">
+                    <Award size={18}/> Certified
+                  </div>
+                </Skeleton>
+                <Skeleton isLoading={isLoading} className="w-24 h-6">
+                  <div className="flex items-center gap-2 md:gap-3 text-blue-600 font-bold uppercase text-xs tracking-widest">
+                    <Clock size={18}/> 24/7 Support
+                  </div>
+                </Skeleton>
               </div>
             </div>
             <div className="py-12 md:py-20 pl-0 md:pl-12 border-b border-l-0 md:border-l border-neutral-100 flex items-center">
-              <div className="rounded-2xl md:rounded-3xl overflow-hidden aspect-square shadow-2xl relative group w-full">
-                <img 
-                  src={heroImageUrl} 
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
-                  alt=""
-                />
-                <div className="absolute inset-0 bg-blue-600/10 mix-blend-overlay" />
-              </div>
+              <Skeleton isLoading={isLoading} className="w-full aspect-square rounded-2xl">
+                <div className="rounded-2xl md:rounded-3xl overflow-hidden aspect-square shadow-2xl relative group w-full">
+                  <img 
+                    src={heroImageUrl} 
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                    alt=""
+                  />
+                  <div className="absolute inset-0 bg-blue-600/10 mix-blend-overlay" />
+                </div>
+              </Skeleton>
             </div>
           </div>
         </div>

@@ -15,66 +15,49 @@ interface Props {
 }
 
 // Skeleton Loading Component
-function ElegantSkeleton({ cs }: { cs: ColorScheme }) {
+const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
+  if (!isLoading) return <>{children}</>;
   return (
-    <div className="min-h-screen bg-[#FFFDFB] animate-pulse">
-      {/* Header Skeleton */}
-      <header className="py-10 text-center">
-        <div className="h-4 w-48 bg-neutral-200 rounded mx-auto mb-4" />
-        <div className="h-10 w-64 bg-neutral-200 rounded mx-auto" />
-      </header>
-      
-      {/* Hero Skeleton */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="aspect-[3/4] bg-neutral-200 rounded-3xl" />
-          <div className="space-y-6">
-            <div className="h-4 w-24 bg-neutral-200 rounded" />
-            <div className="space-y-3">
-              <div className="h-12 w-full bg-neutral-200 rounded" />
-              <div className="h-12 w-3/4 bg-neutral-200 rounded" />
-            </div>
-            <div className="h-24 w-full max-w-md bg-neutral-200 rounded" />
-            <div className="h-14 w-40 bg-neutral-200 rounded-full" />
-          </div>
-        </div>
-      </section>
+    <div className={`bg-neutral-200 animate-pulse rounded-md ${className}`}>
+      <div className="opacity-0">{children}</div>
     </div>
   );
-}
+};
 
-export default function ElegantLayout({ websiteData, cs, heroImageUrl, isLoading }: Props) {
+export default function ElegantLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   const headline = websiteData.sections?.[0]?.headline || "Ihr Weg zu mehr Schönheit";
   const subheadline = websiteData.sections?.[0]?.subheadline || "Erleben Sie erstklassige Behandlungen in luxuriösem Ambiente.";
-
-  if (isLoading) {
-    return <ElegantSkeleton cs={cs} />;
-  }
 
   return (
     <div className="bg-[#FFFDFB] text-neutral-900">
       {/* Header */}
       <header className="py-6 md:py-10 text-center px-4">
-        <h2 className="uppercase tracking-[0.3em] md:tracking-[0.4em] text-[10px] font-bold opacity-40 mb-4">
-          Est. 2026 — Pure Luxury
-        </h2>
-        <span className="font-serif italic text-2xl md:text-4xl">{websiteData.businessName}</span>
+        <Skeleton isLoading={isLoading} className="w-48 h-4 mx-auto mb-4">
+          <h2 className="uppercase tracking-[0.3em] md:tracking-[0.4em] text-[10px] font-bold opacity-40 mb-4">
+            Est. 2026 — Pure Luxury
+          </h2>
+        </Skeleton>
+        <Skeleton isLoading={isLoading} className="w-64 h-10 mx-auto">
+          <span className="font-serif italic text-2xl md:text-4xl">{websiteData.businessName}</span>
+        </Skeleton>
       </header>
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-2 gap-12 md:gap-20 items-center min-h-[70vh] md:min-h-[80vh] pb-12 md:pb-0">
         <div className="relative order-2 lg:order-1">
-          <div 
-            className="overflow-hidden aspect-[3/4] shadow-2xl rounded-t-full"
-            style={{ borderRadius: '50% 50% 0 0 / 30% 30% 0 0' }}
-          >
-            <img 
-              src={heroImageUrl} 
-              className="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-1000" 
-              alt=""
-            />
-          </div>
-          <div className="absolute -bottom-6 md:-bottom-10 -right-4 md:-right-10 bg-white/80 backdrop-blur-md p-4 md:p-8 rounded-2xl shadow-xl animate-pulse">
+          <Skeleton isLoading={isLoading} className="w-full aspect-[3/4] rounded-t-full">
+            <div 
+              className="overflow-hidden aspect-[3/4] shadow-2xl rounded-t-full"
+              style={{ borderRadius: '50% 50% 0 0 / 30% 30% 0 0' }}
+            >
+              <img 
+                src={heroImageUrl} 
+                className="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-1000" 
+                alt=""
+              />
+            </div>
+          </Skeleton>
+          <div className="absolute -bottom-6 md:-bottom-10 -right-4 md:-right-10 bg-white/80 backdrop-blur-md p-4 md:p-8 rounded-2xl shadow-xl">
             <div className="flex gap-1 mb-2">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} size={14} fill="currentColor" className="text-yellow-500" />
@@ -84,18 +67,24 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, isLoading
           </div>
         </div>
         <div className="order-1 lg:order-2">
-          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-tight italic font-light mb-6 md:mb-8">
-            {headline}
-          </h1>
-          <p className="text-base md:text-lg text-neutral-500 font-light leading-relaxed mb-8 md:mb-12 max-w-md">
-            {subheadline}
-          </p>
-          <button 
-            style={{ backgroundColor: cs.primary }} 
-            className="px-8 md:px-12 py-4 md:py-5 rounded-full text-white text-xs font-bold uppercase tracking-[0.2em] hover:scale-105 transition-transform shadow-lg"
-          >
-            Termin buchen
-          </button>
+          <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
+            <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-tight italic font-light mb-6 md:mb-8">
+              {headline}
+            </h1>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-full h-20 mb-8">
+            <p className="text-base md:text-lg text-neutral-500 font-light leading-relaxed mb-8 md:mb-12 max-w-md">
+              {subheadline}
+            </p>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-40 h-14">
+            <button 
+              style={{ backgroundColor: cs.primary }} 
+              className="px-8 md:px-12 py-4 md:py-5 rounded-full text-white text-xs font-bold uppercase tracking-[0.2em] hover:scale-105 transition-transform shadow-lg"
+            >
+              Termin buchen
+            </button>
+          </Skeleton>
         </div>
       </section>
 

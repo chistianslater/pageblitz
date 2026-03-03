@@ -14,34 +14,16 @@ interface Props {
 }
 
 // Skeleton Loading Component
-function PremiumSkeleton({ cs }: { cs: ColorScheme }) {
+const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
+  if (!isLoading) return <>{children}</>;
   return (
-    <div className="min-h-screen bg-white animate-pulse">
-      <section className="min-h-screen grid lg:grid-cols-12">
-        <div className="lg:col-span-5 bg-neutral-800 p-8 md:p-12 lg:p-24 flex flex-col justify-center">
-          <div className="space-y-2 mb-6 md:mb-10">
-            <div className="h-8 md:h-12 w-full bg-white/10 rounded" />
-            <div className="h-8 md:h-12 w-4/5 bg-white/10 rounded" />
-            <div className="h-8 md:h-12 w-3/5 bg-white/10 rounded" />
-          </div>
-          <div className="h-16 w-full max-w-xs bg-white/10 rounded mb-8 md:mb-12" />
-          <div className="h-12 w-40 bg-white/10 rounded-full" />
-        </div>
-        <div className="lg:col-span-7 relative p-8 md:p-12 lg:p-24 flex items-center">
-          <div className="w-full max-w-2xl relative">
-            <div className="rounded-[2rem] md:rounded-[3rem] overflow-hidden aspect-video bg-neutral-200 shadow-2xl" />
-          </div>
-        </div>
-      </section>
+    <div className={`bg-neutral-200 animate-pulse rounded-md ${className}`}>
+      <div className="opacity-0">{children}</div>
     </div>
   );
-}
+};
 
-export default function PremiumLayout({ websiteData, cs, heroImageUrl, isLoading }: Props) {
-  if (isLoading) {
-    return <PremiumSkeleton cs={cs} />;
-  }
-
+export default function PremiumLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -55,20 +37,26 @@ export default function PremiumLayout({ websiteData, cs, heroImageUrl, isLoading
             }} 
           />
           <div className="relative z-10">
-            <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold leading-[0.9] mb-6 md:mb-10 tracking-tight">
-              Strategy <br/> 
-              Driven <br/> 
-              <span className="italic font-light" style={{ color: cs.primary }}>Results.</span>
-            </h1>
-            <p className="text-white/40 max-w-xs mb-8 md:mb-12 text-base md:text-lg font-light leading-relaxed">
-              {websiteData.tagline}
-            </p>
-            <button 
-              style={{ backgroundColor: cs.primary }} 
-              className="px-6 md:px-10 py-4 md:py-5 rounded-full text-white font-black uppercase text-xs tracking-widest shadow-2xl hover:scale-105 transition-transform"
-            >
-              Start Your Project
-            </button>
+            <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
+              <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold leading-[0.9] mb-6 md:mb-10 tracking-tight">
+                Strategy <br/> 
+                Driven <br/> 
+                <span className="italic font-light" style={{ color: cs.primary }}>Results.</span>
+              </h1>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-full h-16 max-w-xs mb-8">
+              <p className="text-white/40 max-w-xs mb-8 md:mb-12 text-base md:text-lg font-light leading-relaxed">
+                {websiteData.tagline}
+              </p>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-40 h-12">
+              <button 
+                style={{ backgroundColor: cs.primary }} 
+                className="px-6 md:px-10 py-4 md:py-5 rounded-full text-white font-black uppercase text-xs tracking-widest shadow-2xl hover:scale-105 transition-transform"
+              >
+                Start Your Project
+              </button>
+            </Skeleton>
           </div>
         </div>
         <div className="lg:col-span-7 relative p-6 md:p-12 lg:p-24 flex items-center min-h-[50vh] lg:min-h-screen">
@@ -76,9 +64,11 @@ export default function PremiumLayout({ websiteData, cs, heroImageUrl, isLoading
             <div className="absolute -top-10 md:-top-20 -right-10 md:-right-20 text-[12vw] md:text-[18vw] font-black text-neutral-50 pointer-events-none uppercase italic hidden sm:block">
               Impact
             </div>
-            <div className="relative z-10 rounded-[2rem] md:rounded-[3rem] overflow-hidden aspect-video shadow-[0_30px_60px_rgba(0,0,0,0.1)] md:shadow-[0_50px_100px_rgba(0,0,0,0.1)] transition-all duration-700 hover:scale-[1.02]">
-              <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
-            </div>
+            <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-[2rem]">
+              <div className="relative z-10 rounded-[2rem] md:rounded-[3rem] overflow-hidden aspect-video shadow-[0_30px_60px_rgba(0,0,0,0.1)] md:shadow-[0_50px_100px_rgba(0,0,0,0.1)] transition-all duration-700 hover:scale-[1.02]">
+                <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+              </div>
+            </Skeleton>
           </div>
         </div>
       </section>

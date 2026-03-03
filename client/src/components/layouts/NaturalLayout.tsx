@@ -15,39 +15,16 @@ interface Props {
 }
 
 // Skeleton Loading Component
-function NaturalSkeleton({ cs }: { cs: ColorScheme }) {
+const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
+  if (!isLoading) return <>{children}</>;
   return (
-    <div className="min-h-screen bg-[#fcfaf7] animate-pulse">
-      <section className="min-h-screen flex items-center px-4 md:px-6 py-16 md:py-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-20 items-center w-full">
-          <div>
-            <div className="h-12 w-12 bg-neutral-200 rounded mb-6 md:mb-8" />
-            <div className="space-y-2 mb-6 md:mb-8">
-              <div className="h-12 md:h-20 w-full bg-neutral-200 rounded" />
-              <div className="h-12 md:h-20 w-2/3 bg-neutral-200 rounded" />
-            </div>
-            <div className="h-16 w-full max-w-sm bg-neutral-200 rounded mb-8 md:mb-12" />
-            <div className="h-12 w-40 bg-neutral-200 rounded-full" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-4 pt-10 md:pt-20">
-              <div className="rounded-full overflow-hidden aspect-[2/3] bg-neutral-200" />
-            </div>
-            <div className="space-y-4">
-              <div className="rounded-full overflow-hidden aspect-[2/3] bg-neutral-200" />
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className={`bg-neutral-200 animate-pulse rounded-md ${className}`}>
+      <div className="opacity-0">{children}</div>
     </div>
   );
-}
+};
 
-export default function NaturalLayout({ websiteData, cs, heroImageUrl, isLoading }: Props) {
-  if (isLoading) {
-    return <NaturalSkeleton cs={cs} />;
-  }
-
+export default function NaturalLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   return (
     <div className="bg-[#fcfaf7] text-[#4a4a4a]">
       {/* Hero Section */}
@@ -55,30 +32,40 @@ export default function NaturalLayout({ websiteData, cs, heroImageUrl, isLoading
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-20 items-center w-full">
           <div>
             <Flower className="text-green-800 mb-6 md:mb-8" size={36} />
-            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-light leading-[0.8] mb-6 md:mb-8">
-              Rooted <br/> 
-              <span className="italic text-green-900 font-normal">in Nature</span>
-            </h1>
-            <p className="text-lg md:text-xl font-light leading-relaxed mb-8 md:mb-12 max-w-sm opacity-70 italic">
-              "{websiteData.tagline}"
-            </p>
-            <button 
-              style={{ backgroundColor: cs.primary }} 
-              className="px-6 md:px-10 py-4 md:py-5 rounded-full text-white font-bold shadow-xl shadow-green-900/20 hover:scale-105 transition-transform"
-            >
-              Explore Wellness
-            </button>
+            <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
+              <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-light leading-[0.8] mb-6 md:mb-8">
+                Rooted <br/> 
+                <span className="italic text-green-900 font-normal">in Nature</span>
+              </h1>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-full h-16 max-w-sm mb-8">
+              <p className="text-lg md:text-xl font-light leading-relaxed mb-8 md:mb-12 max-w-sm opacity-70 italic">
+                "{websiteData.tagline}"
+              </p>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-40 h-12">
+              <button 
+                style={{ backgroundColor: cs.primary }} 
+                className="px-6 md:px-10 py-4 md:py-5 rounded-full text-white font-bold shadow-xl shadow-green-900/20 hover:scale-105 transition-transform"
+              >
+                Explore Wellness
+              </button>
+            </Skeleton>
           </div>
           <div className="grid grid-cols-2 gap-3 md:gap-4">
             <div className="space-y-3 md:space-y-4 pt-10 md:pt-20">
-              <div className="rounded-full overflow-hidden aspect-[2/3] shadow-lg">
-                <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
-              </div>
+              <Skeleton isLoading={isLoading} className="w-full aspect-[2/3] rounded-full">
+                <div className="rounded-full overflow-hidden aspect-[2/3] shadow-lg">
+                  <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+                </div>
+              </Skeleton>
             </div>
             <div className="space-y-3 md:space-y-4">
-              <div className="rounded-full overflow-hidden aspect-[2/3] shadow-lg">
-                <img src={heroImageUrl} className="w-full h-full object-cover scale-125" alt="" />
-              </div>
+              <Skeleton isLoading={isLoading} className="w-full aspect-[2/3] rounded-full">
+                <div className="rounded-full overflow-hidden aspect-[2/3] shadow-lg">
+                  <img src={heroImageUrl} className="w-full h-full object-cover scale-125" alt="" />
+                </div>
+              </Skeleton>
             </div>
           </div>
         </div>

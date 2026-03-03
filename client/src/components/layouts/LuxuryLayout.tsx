@@ -15,58 +15,50 @@ interface Props {
 }
 
 // Skeleton Loading Component
-function LuxurySkeleton({ cs }: { cs: ColorScheme }) {
+const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
+  if (!isLoading) return <>{children}</>;
   return (
-    <div className="min-h-screen bg-black animate-pulse">
-      <section className="relative min-h-screen flex items-center justify-center">
-        <div className="absolute inset-0 bg-neutral-800" />
-        <div className="relative z-10 text-center px-6 max-w-4xl w-full">
-          <div className="flex justify-center mb-8">
-            <div className="h-5 w-5 bg-white/20 rounded mr-4" />
-            <div className="h-0.5 w-12 bg-white/20" />
-            <div className="h-5 w-5 bg-white/20 rounded ml-4" />
-          </div>
-          <div className="space-y-4">
-            <div className="h-16 md:h-24 w-3/4 bg-white/10 rounded mx-auto" />
-          </div>
-          <div className="mt-8 h-14 w-48 bg-white/10 rounded-full mx-auto" />
-        </div>
-      </section>
+    <div className={`bg-neutral-200 animate-pulse rounded-md ${className}`}>
+      <div className="opacity-0">{children}</div>
     </div>
   );
-}
+};
 
-export default function LuxuryLayout({ websiteData, cs, heroImageUrl, isLoading }: Props) {
-  if (isLoading) {
-    return <LuxurySkeleton cs={cs} />;
-  }
-
+export default function LuxuryLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   return (
     <div className="bg-black text-white selection:bg-yellow-500">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center text-center px-4 md:px-6">
-        <div className="absolute inset-0 z-0 opacity-40">
-          <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
-        </div>
+        <Skeleton isLoading={isLoading} className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 opacity-40">
+            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+          </div>
+        </Skeleton>
         <div className="relative z-10 max-w-4xl">
           <div className="flex justify-center items-center gap-3 md:gap-4 mb-6 md:mb-8">
             <div className="h-[1px] w-8 md:w-12 bg-white/30" />
             <Shield size={16} className="text-yellow-500 md:w-5 md:h-5" />
             <div className="h-[1px] w-8 md:w-12 bg-white/30" />
           </div>
-          <h1 className="font-serif italic text-[10vw] md:text-[8vw] leading-none mb-8 md:mb-12">
-            Beyond Perfection
-          </h1>
-          <p className="text-white/60 text-base md:text-lg mb-8 md:mb-12 max-w-md mx-auto">
-            {websiteData.tagline}
-          </p>
-          <button 
-            style={{ backgroundColor: cs.primary }} 
-            className="px-8 md:px-16 py-4 md:py-6 rounded-full text-black font-black uppercase text-xs tracking-[0.3em] hover:bg-white transition-all hover:scale-105"
-          >
-            Experience the Unrivaled
-          </button>
+          <Skeleton isLoading={isLoading} className="w-3/4 h-24 md:h-32 mx-auto mb-8">
+            <h1 className="font-serif italic text-[10vw] md:text-[8vw] leading-none mb-8 md:mb-12">
+              Beyond Perfection
+            </h1>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-1/2 h-16 mx-auto mb-8">
+            <p className="text-white/60 text-base md:text-lg mb-8 md:mb-12 max-w-md mx-auto">
+              {websiteData.tagline}
+            </p>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto">
+            <button 
+              style={{ backgroundColor: cs.primary }} 
+              className="px-8 md:px-16 py-4 md:py-6 rounded-full text-black font-black uppercase text-xs tracking-[0.3em] hover:bg-white transition-all hover:scale-105"
+            >
+              Experience the Unrivaled
+            </button>
+          </Skeleton>
         </div>
       </section>
 
