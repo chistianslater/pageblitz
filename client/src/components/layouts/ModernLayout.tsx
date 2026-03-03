@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
 import GoogleRatingBadge from "../GoogleRatingBadge";
 import { useScrollReveal, useNavbarScroll } from "@/hooks/useAnimations";
+import { HeadlineSkeleton, TextSkeleton } from "../TextSkeleton";
 
 const BODY = "var(--site-font-body, 'Inter', 'Helvetica Neue', sans-serif)";
 const HEADLINE = "var(--site-font-headline, 'Plus Jakarta Sans', sans-serif)";
@@ -32,6 +33,28 @@ interface Props {
   contactFormLocked?: boolean;
   logoUrl?: string | null;
   businessCategory?: string | null;
+  /** When true, shows skeleton placeholders for missing content */
+  isLoading?: boolean;
+}
+
+/**
+ * Check if text is generic/placeholder content
+ */
+function isGenericContent(text: string | undefined | null): boolean {
+  if (!text || text.trim() === "") return true;
+  const genericPatterns = [
+    /willkommen/i,
+    /lorem ipsum/i,
+    /placeholder/i,
+    /hier steht/i,
+    /beispiel/i,
+    /template/i,
+    /dein unternehmen/i,
+    /ihr unternehmen/i,
+    /unternehmensname/i,
+    /firma name/i,
+  ];
+  return genericPatterns.some(pattern => pattern.test(text));
 }
 
 export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
@@ -39,6 +62,7 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
   contactFormLocked = false,
   logoUrl,
   businessCategory,
+  isLoading = false,
 }: Props) {
   useScrollReveal();
   return (
@@ -46,10 +70,10 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
       <ModernNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
+          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} isLoading={isLoading} />}
+          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} isLoading={isLoading} />}
           {section.type === "gallery" && <ModernGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} businessCategory={businessCategory} />}
+          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} businessCategory={businessCategory} isLoading={isLoading} />}
           {section.type === "menu" && <ModernMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <ModernPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <ModernTestimonials section={section} cs={cs} />}
@@ -85,13 +109,18 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
   );
 }
 
-function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
+function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, isLoading }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; isLoading?: boolean }) {
   // Dynamischer TrustText aus der ersten Testimonial-Section
   const testimonialsSection = websiteData?.sections?.find((s: any) => s.type === "testimonials");
   const firstTestimonial = testimonialsSection?.items?.[0];
   const trustText = firstTestimonial?.description 
     || firstTestimonial?.title
     || "Top bewertet von unseren Kunden";
+
+  // Check if content is generic/loading
+  const showHeadlineSkeleton = isLoading || isGenericContent(section.headline);
+  const showSubheadlineSkeleton = isLoading || isGenericContent(section.subheadline);
+  const showContentSkeleton = isLoading || isGenericContent(section.content);
 
   return (
     <section style={{ backgroundColor: cs.background, minHeight: "95vh", display: "flex", position: "relative", overflow: "hidden" }}>
@@ -118,30 +147,47 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             </span>
           </div>
           
-          <h1 style={{ 
-            fontFamily: HEADLINE,
-            fontSize: "clamp(2.5rem, 5vw, 4rem)", 
-            fontWeight: 900, 
-            lineHeight: 0.9, 
-            letterSpacing: "-0.04em", 
-            color: cs.onBackground, 
-            marginBottom: "2rem",
-            overflowWrap: "break-word",
-            wordBreak: "break-word"
-          }} className="hero-animate-headline">
-            {section.headline?.split(" ").map((word, i) => (
-              <span key={i} style={{ display: i === 1 ? "block" : "inline", color: i === 1 ? cs.primary : "inherit" }}>
-                {word}{" "}
-              </span>
-            ))}
-          </h1>
+          {showHeadlineSkeleton ? (
+            <div style={{ marginBottom: "2rem" }}>
+              <HeadlineSkeleton lines={2} animated={true} />
+            </div>
+          ) : (
+            <h1 style={{ 
+              fontFamily: HEADLINE,
+              fontSize: "clamp(2.5rem, 5vw, 4rem)", 
+              fontWeight: 900, 
+              lineHeight: 0.9, 
+              letterSpacing: "-0.04em", 
+              color: cs.onBackground, 
+              marginBottom: "2rem",
+              overflowWrap: "break-word",
+              wordBreak: "break-word"
+            }} className="hero-animate-headline">
+              {section.headline?.split(" ").map((word, i) => (
+                <span key={i} style={{ display: i === 1 ? "block" : "inline", color: i === 1 ? cs.primary : "inherit" }}>
+                  {word}{" "}
+                </span>
+              ))}
+            </h1>
+          )}
           
-          <div style={{ width: "4rem", height: "4px", backgroundColor: cs.primary, marginBottom: "2rem" }} />
+          {!showHeadlineSkeleton && (
+            <div style={{ width: "4rem", height: "4px", backgroundColor: cs.primary, marginBottom: "2rem" }} />
+          )}
           
-          {section.subheadline && (
+          {showSubheadlineSkeleton ? (
+            <div style={{ marginBottom: "1rem", maxWidth: "520px" }}>
+              <TextSkeleton lines={1} height="1.25rem" lineWidths={["80%"]} animated={true} />
+            </div>
+          ) : section.subheadline && (
             <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: cs.onBackground, opacity: 0.8, marginBottom: "1rem", maxWidth: "520px", fontWeight: 500 }}>{section.subheadline}</p>
           )}
-          {section.content && (
+          
+          {showContentSkeleton ? (
+            <div style={{ marginBottom: "3rem", maxWidth: "480px" }}>
+              <TextSkeleton lines={2} height="1rem" lineWidths={["100%", "75%"]} animated={true} />
+            </div>
+          ) : section.content && (
             <p style={{ fontSize: "1rem", lineHeight: 1.8, color: cs.onBackground, opacity: 0.6, marginBottom: "3rem", maxWidth: "480px" }}>{section.content}</p>
           )}
           
