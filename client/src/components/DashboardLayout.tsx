@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, Search, Globe, Mail, BarChart3, LogOut, PanelLeft, Zap, Layers } from "lucide-react";
+import { LayoutDashboard, Search, Globe, Mail, BarChart3, LogOut, PanelLeft, Zap, Layers, TrendingUp } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -31,6 +31,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
   { icon: Search, label: "GMB-Suche", path: "/admin/search" },
   { icon: Globe, label: "Websites", path: "/admin/websites" },
+  { icon: TrendingUp, label: "Lead-Funnel", path: "/admin/leads" },
   { icon: Mail, label: "Outreach", path: "/admin/outreach" },
   { icon: BarChart3, label: "Statistiken", path: "/admin/stats" },
   { icon: Layers, label: "Templates", path: "/admin/templates" },

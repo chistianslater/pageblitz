@@ -166,6 +166,42 @@ export async function countWebsitesByStatus(status: string) {
   return result[0]?.count ?? 0;
 }
 
+// ── Lead Funnel ───────────────────────────────────────
+export async function getLeadFunnelStats() {
+  const db = await getDb();
+  if (!db) return { email_captured: 0, onboarding_started: 0, onboarding_completed: 0, converted: 0, abandoned: 0, total: 0 };
+  const statuses = ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"] as const;
+  const counts: Record<string, number> = {};
+  for (const status of statuses) {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites)
+      .where(and(eq(generatedWebsites.source, "external"), eq(generatedWebsites.captureStatus, status as any)));
+    counts[status] = result[0]?.count ?? 0;
+  }
+  const totalResult = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites)
+    .where(eq(generatedWebsites.source, "external"));
+  counts.total = totalResult[0]?.count ?? 0;
+  return counts as { email_captured: number; onboarding_started: number; onboarding_completed: number; converted: number; abandoned: number; total: number };
+}
+
+export async function listExternalLeads(limit = 100, offset = 0, captureStatus?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = captureStatus
+    ? and(eq(generatedWebsites.source, "external"), eq(generatedWebsites.captureStatus, captureStatus as any))
+    : eq(generatedWebsites.source, "external");
+  return db.select().from(generatedWebsites).where(conditions).orderBy(desc(generatedWebsites.createdAt)).limit(limit).offset(offset);
+}
+
+export async function countExternalLeads(captureStatus?: string) {
+  const db = await getDb();
+  if (!db) return 0;
+  const conditions = captureStatus
+    ? and(eq(generatedWebsites.source, "external"), eq(generatedWebsites.captureStatus, captureStatus as any))
+    : eq(generatedWebsites.source, "external");
+  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites).where(conditions);
+  return result[0]?.count ?? 0;
+}
+
 export async function updateWebsite(id: number, data: Partial<InsertGeneratedWebsite>) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");

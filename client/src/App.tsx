@@ -12,6 +12,7 @@ import WebsitesPage from "./pages/WebsitesPage";
 import OutreachPage from "./pages/OutreachPage";
 import StatsPage from "./pages/StatsPage";
 import TemplatesPage from "./pages/TemplatesPage";
+import LeadsPage from "./pages/LeadsPage";
 import PreviewPage from "./pages/PreviewPage";
 import SitePage from "./pages/SitePage";
 import OnboardingWizard from "./pages/OnboardingWizard";
@@ -30,6 +31,7 @@ function AdminRouter() {
         <Route path="/admin/outreach" component={OutreachPage} />
         <Route path="/admin/stats" component={StatsPage} />
         <Route path="/admin/templates" component={TemplatesPage} />
+        <Route path="/admin/leads" component={LeadsPage} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>

@@ -589,3 +589,12 @@
 - [x] Frontend: "Alle auswählen"-Checkbox im Tabellenkopf
 - [x] Frontend: Floating Toolbar mit Anzahl ausgewählter Einträge + Löschen-Button
 - [x] Frontend: Bestätigungs-Dialog vor dem Bulk-Delete
+
+## Lead-Funnel im Admin-Dashboard (Runde 20)
+- [x] Backend: getLeadFunnel tRPC-Prozedur (Counts pro captureStatus + Conversion-Rate)
+- [x] Backend: listLeads tRPC-Prozedur (externe Leads mit Filter nach Status)
+- [x] Backend: updateLeadStatus tRPC-Prozedur (manuell Status ändern)
+- [x] Frontend: LeadsPage mit Funnel-Metriken (Kanban-Karten: email_captured → onboarding_started → completed → converted)
+- [x] Frontend: Leads-Tabelle mit E-Mail, Unternehmensname, Status, Datum, Aktionen
+- [x] Frontend: Status-Filter und Suche über der Tabelle
+- [x] Navigation: "Leads" im Admin-Sidebar ergänzen

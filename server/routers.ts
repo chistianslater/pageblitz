@@ -15,6 +15,7 @@ import {
   createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
+  getLeadFunnelStats, listExternalLeads, countExternalLeads,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -2578,6 +2579,36 @@ Kontext: ${input.context}`,
         }
 
         return { success: true, emailId: result.id };
+      }),
+  }),
+
+  // ── Admin: Lead Funnel ──────────────────────────────────────
+  leads: router({
+    funnel: adminProcedure
+      .query(async () => {
+        return getLeadFunnelStats();
+      }),
+
+    list: adminProcedure
+      .input(z.object({
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+        captureStatus: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const leads = await listExternalLeads(input.limit ?? 100, input.offset ?? 0, input.captureStatus);
+        const total = await countExternalLeads(input.captureStatus);
+        return { leads, total };
+      }),
+
+    updateStatus: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        captureStatus: z.enum(["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]),
+      }))
+      .mutation(async ({ input }) => {
+        await updateWebsite(input.id, { captureStatus: input.captureStatus });
+        return { success: true };
       }),
   }),
 });
