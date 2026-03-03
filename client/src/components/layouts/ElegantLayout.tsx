@@ -190,7 +190,7 @@ function ElegantAbout({ section, cs, heroImageUrl, websiteData }: { section: Web
             </p>
             
             <div className="grid sm:grid-cols-2 gap-12 mt-12 border-t border-slate-100 pt-10">
-              {stats.slice(0, 2).map((stat, i) => (
+              {stats.slice(0, 2).map((stat: { n: string; label: string }, i: number) => (
                 <div key={i}>
                   <p style={{ fontFamily: SERIF, fontSize: "2.5rem", color: cs.onBackground, fontStyle: "italic", lineHeight: 1, marginBottom: "0.5rem" }}>{stat.n}</p>
                   <p style={{ fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: cs.onBackground, opacity: 0.5, fontWeight: 600 }}>{stat.label}</p>

@@ -570,7 +570,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Standard beforeunload alert (browser default)
     // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert))
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!isGeneratingInitialWebsite && currentStep !== "checkout" && currentStep !== "preview") {
+      // Only show alert after user has started entering data (after welcome/email step)
+      const earlySteps: ChatStep[] = ["welcome", "email", "businessCategory"];
+      const isEarlyStep = earlySteps.includes(currentStep);
+      if (!isGeneratingInitialWebsite && !isEarlyStep && currentStep !== "checkout" && currentStep !== "preview") {
         e.preventDefault();
         e.returnValue = "";
       }
@@ -3520,8 +3523,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 contactFormLocked={!data.addOnContactForm}
                 logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
                 headlineFontOverride={data.headlineFont || undefined}
-                // Show skeletons during generation OR when user hasn't provided category+name yet
-                isLoading={isGeneratingInitialContent || (!data.businessCategory?.trim() && !data.businessName?.trim())}
+                // Show skeletons:
+                // 1. While AI is generating initial content
+                // 2. Until user has entered at least businessName (the key personalisation point)
+                isLoading={isGeneratingInitialContent || !data.businessName?.trim()}
               />
             </MacbookMockup>
           ) : (

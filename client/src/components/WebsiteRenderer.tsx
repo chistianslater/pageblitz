@@ -31,6 +31,7 @@ import TrustLayout from "./layouts/TrustLayout";
 import ModernLayout from "./layouts/ModernLayout";
 import VibrantLayout from "./layouts/VibrantLayout";
 import NaturalLayout from "./layouts/NaturalLayout";
+import SkeletonOverlay from "./SkeletonOverlay";
 
 interface WebsiteRendererProps {
   websiteData: WebsiteData;
@@ -436,8 +437,7 @@ export default function WebsiteRenderer({
       }}
       style={{ display: "block", minHeight: "100vh", position: "relative" }}
     >
-      {layout}
-
+      {isLoading ? <SkeletonOverlay cs={cs} /> : layout}
     </div>
   );
 }

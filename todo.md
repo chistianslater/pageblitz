@@ -623,3 +623,8 @@
 - [x] Onboarding-Chat: E-Mail-Frage als allererste Frage wenn source=admin und customerEmail leer
 - [x] E-Mail im Backend speichern (updateWebsite + captureStatus=email_captured) nach Eingabe
 - [x] Wenn source=external und customerEmail bereits vorhanden: E-Mail-Frage überspringen
+
+## beforeunload-Fix und Skeleton-Loading (non-GMB)
+- [x] beforeunload-Alert entfernen (feuert sofort beim Chat-Start, nicht erst bei Generierung)
+- [x] Skeleton-Loading: Vorschau zeigt Skeletons bis businessName eingegeben → dann echte Inhalte erscheinen
+- [x] SkeletonOverlay in WebsiteRenderer integriert (alle 12 Layouts)
