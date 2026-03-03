@@ -689,6 +689,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
   const generateWebsiteMutation = trpc.selfService.generateWebsite.useMutation();
   const updateCaptureStatusMutation = trpc.selfService.updateCaptureStatus.useMutation();
+  const sendLeadEmailMutation = trpc.selfService.sendLeadEmail.useMutation();
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
 
@@ -1021,11 +1022,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
       
-      // Update captureStatus to onboarding_started for external leads
+      // Update captureStatus and send welcome email for external leads
       if (websiteId && siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
           websiteId,
           captureStatus: "onboarding_started",
+        });
+        
+        // Send welcome email (non-blocking)
+        sendLeadEmailMutation.mutate({
+          websiteId,
+          template: "onboardingStarted",
         });
       }
       
@@ -1295,11 +1302,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Complete onboarding first
       await completeMutation.mutateAsync({ websiteId });
       
-      // Update captureStatus to onboarding_completed for external leads
+      // Update captureStatus and send completion email for external leads
       if (siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
           websiteId,
           captureStatus: "onboarding_completed",
+        });
+        
+        // Send completion email with CTA to activate (non-blocking)
+        sendLeadEmailMutation.mutate({
+          websiteId,
+          template: "onboardingCompleted",
         });
       }
       

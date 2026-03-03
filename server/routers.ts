@@ -2494,6 +2494,77 @@ Kontext: ${input.context}`,
         await updateWebsite(input.websiteId, { captureStatus: input.captureStatus });
         return { success: true };
       }),
+
+    /**
+     * Send lead nurturing email automatically based on capture status
+     */
+    sendLeadEmail: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        template: z.enum(["onboardingStarted", "onboardingCompleted", "abandonedEmailCaptured", "abandonedOnboarding"]),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        if (!website.customerEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "No customer email found" });
+
+        const { sendLeadEmail: sendEmailFn } = await import("./_core/email");
+        
+        const business = await getBusinessById(website.businessId);
+        const businessName = business?.name || "Ihr Unternehmen";
+        const previewUrl = `${ENV.appId}/preview/${website.previewToken}/onboarding`;
+        const startUrl = `${ENV.appId}/start`;
+
+        const result = await sendEmailFn({
+          to: website.customerEmail,
+          template: input.template,
+          data: {
+            businessName,
+            previewUrl,
+            websiteId: website.id,
+            startUrl,
+          },
+        });
+
+        if (!result.success) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error || "Failed to send email" });
+        }
+
+        return { success: true, emailId: result.id };
+      }),
+
+    /**
+     * Test email configuration - sends a test email
+     */
+    testEmail: publicProcedure
+      .input(z.object({
+        to: z.string().email(),
+      }))
+      .mutation(async ({ input }) => {
+        const { sendEmail } = await import("./_core/email");
+        
+        const result = await sendEmail({
+          to: input.to,
+          subject: "Resend Test - Pageblitz",
+          html: `
+            <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a; text-align: center;">
+              <h1 style="font-size: 28px; font-weight: 700; color: #6366f1;">✅ Resend funktioniert!</h1>
+              <p style="font-size: 16px; line-height: 1.6; margin: 20px 0;">
+                Deine E-Mail-Konfiguration ist korrekt eingerichtet.
+              </p>
+              <p style="font-size: 14px; color: #64748b;">
+                Zeitpunkt: ${new Date().toLocaleString('de-DE')}
+              </p>
+            </div>
+          `,
+        });
+
+        if (!result.success) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error || "Failed to send test email" });
+        }
+
+        return { success: true, emailId: result.id };
+      }),
   }),
 });
 
