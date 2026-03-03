@@ -4,7 +4,7 @@
  * Feel: Strong, industrial, trustworthy, masculine
  * Structure: Full-bleed dark hero, large typography, industrial accents
  */
-import { Star, ChevronRight, Play, Shield, Zap, Flower, Award, Clock } from "lucide-react";
+import { Star, ChevronRight, Play, Shield, Zap, Flower, Award, Clock, MapPin, Phone, Mail } from "lucide-react";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 interface Props {
@@ -89,7 +89,7 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, isLoading = 
       </section>
 
       {/* Features Section */}
-      <section className="py-20 md:py-32 px-6">
+      <section className="py-20 md:py-32 px-6 border-b border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
@@ -106,6 +106,177 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, isLoading = 
           </div>
         </div>
       </section>
+
+      {/* Services Section */}
+      <section className="py-20 md:py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <Skeleton isLoading={isLoading} className="w-64 h-12 mx-auto mb-16">
+            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-center mb-16">
+              Unsere <span style={{ color: cs.primary }}>Leistungen</span>
+            </h2>
+          </Skeleton>
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+            {websiteData.topServices?.map((service, i) => (
+              <Skeleton key={i} isLoading={isLoading} className="h-64">
+                <div className="p-6 md:p-8 border border-white/10 hover:border-white/30 transition-colors group">
+                  <div className="w-12 h-12 mb-6 flex items-center justify-center" style={{ backgroundColor: cs.primary }}>
+                    <Zap size={24} className="text-white" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight mb-4">{service.title}</h3>
+                  <p className="text-white/50 text-sm md:text-base leading-relaxed">{service.description}</p>
+                </div>
+              </Skeleton>
+            )) || [
+              { title: "Industriemontage", description: "Professionelle Montage von Maschinen und Anlagen mit höchster Präzision." },
+              { title: "Schweißtechnik", description: "Zertifizierte Schweißarbeiten für alle Materialien und Anforderungen." },
+              { title: "Instandhaltung", description: "Wartung und Reparatur für maximale Betriebssicherheit und Langlebigkeit." }
+            ].map((service, i) => (
+              <Skeleton key={i} isLoading={isLoading} className="h-64">
+                <div className="p-6 md:p-8 border border-white/10 hover:border-white/30 transition-colors group">
+                  <div className="w-12 h-12 mb-6 flex items-center justify-center" style={{ backgroundColor: cs.primary }}>
+                    <Zap size={24} className="text-white" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight mb-4">{service.title}</h3>
+                  <p className="text-white/50 text-sm md:text-base leading-relaxed">{service.description}</p>
+                </div>
+              </Skeleton>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-20 md:py-32 px-6 bg-neutral-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
+            <Skeleton isLoading={isLoading} className="w-full aspect-[4/3]">
+              <div className="relative overflow-hidden">
+                <img src={heroImageUrl} className="w-full aspect-[4/3] object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="" />
+                <div className="absolute inset-0" style={{ backgroundColor: cs.primary, opacity: 0.1 }} />
+              </div>
+            </Skeleton>
+            <div>
+              <Skeleton isLoading={isLoading} className="w-48 h-3 mb-6">
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: cs.primary }}>Über uns</span>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-6">
+                  Präzision seit <span style={{ color: cs.primary }}>25 Jahren</span>
+                </h2>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
+                <p className="text-white/60 text-base md:text-lg leading-relaxed mb-8">
+                  Wir sind Ihr Partner für anspruchsvolle Industrieprojekte. Mit einem Team aus erfahrenen Fachkräften und modernster Technologie realisieren wir Ihre Vorhaben termingerecht und budgetkonform. Qualität steht bei uns an erster Stelle.
+                </p>
+              </Skeleton>
+              <div className="flex flex-wrap gap-4">
+                <Skeleton isLoading={isLoading} className="w-32 h-10">
+                  <button 
+                    style={{ backgroundColor: cs.primary }}
+                    className="px-6 py-3 font-bold uppercase text-xs tracking-widest hover:scale-105 transition-transform"
+                  >
+                    Mehr erfahren
+                  </button>
+                </Skeleton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 md:py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <Skeleton isLoading={isLoading} className="w-72 h-12 mx-auto mb-16">
+            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-center mb-16">
+              Kunden <span style={{ color: cs.primary }}>Stimmen</span>
+            </h2>
+          </Skeleton>
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+            {[
+              { name: "Michael Weber", company: "Weber Industries", text: "Exzellente Arbeit! Termingerecht, präzise und professionell. Unsere neue Produktionsanlage läuft einwandfrei." },
+              { name: "Sarah Müller", company: "Müller Bau AG", text: "Das Team hat unsere Erwartungen bei Großprojekten übertroffen. Absolute Empfehlung für Industriemontage." },
+              { name: "Thomas Schmidt", company: "Schmidt GmbH", text: "Zuverlässiger Partner für komplexe Schweißarbeiten. Qualität und Sicherheit stehen bei ihnen an erster Stelle." }
+            ].map((testimonial, i) => (
+              <Skeleton key={i} isLoading={isLoading} className="h-72">
+                <div className="p-6 md:p-8 border border-white/10 hover:border-white/30 transition-colors">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, j) => (
+                      <Star key={j} size={16} fill="currentColor" className="text-yellow-500" />
+                    ))}
+                  </div>
+                  <p className="text-white/70 text-sm md:text-base leading-relaxed mb-6 italic">"{testimonial.text}"</p>
+                  <div className="border-t border-white/10 pt-4">
+                    <p className="font-bold uppercase tracking-tight">{testimonial.name}</p>
+                    <p className="text-white/40 text-xs uppercase tracking-widest">{testimonial.company}</p>
+                  </div>
+                </div>
+              </Skeleton>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-16 md:py-24 px-6 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-12 md:gap-8 mb-16">
+            <div className="md:col-span-2">
+              <Skeleton isLoading={isLoading} className="w-48 h-8 mb-6">
+                <span className="font-black text-2xl uppercase tracking-tighter italic">{websiteData.businessName}</span>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full h-20 max-w-sm">
+                <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-sm">
+                  Ihr zuverlässiger Partner für industrielle Spitzenleistungen. Präzision, Qualität und Innovation seit 1999.
+                </p>
+              </Skeleton>
+            </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest mb-6 text-white/40">Kontakt</h3>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-white/60 text-sm">
+                  <MapPin size={16} style={{ color: cs.primary }} />
+                  Industriestraße 123, 12345 Berlin
+                </li>
+                <li className="flex items-center gap-3 text-white/60 text-sm">
+                  <Phone size={16} style={{ color: cs.primary }} />
+                  +49 30 123456789
+                </li>
+                <li className="flex items-center gap-3 text-white/60 text-sm">
+                  <Mail size={16} style={{ color: cs.primary }} />
+                  info@example.com
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest mb-6 text-white/40">Öffnungszeiten</h3>
+              <ul className="space-y-3 text-white/60 text-sm">
+                <li className="flex justify-between">
+                  <span>Mo - Fr</span>
+                  <span>08:00 - 18:00</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Sa</span>
+                  <span>Nach Vereinbarung</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>So</span>
+                  <span>Geschlossen</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-white/30 text-xs uppercase tracking-widest">
+              © 2026 {websiteData.businessName}. Alle Rechte vorbehalten.
+            </p>
+            <div className="flex gap-6">
+              <a href="#" className="text-white/30 text-xs uppercase tracking-widest hover:text-white/60 transition-colors">Impressum</a>
+              <a href="#" className="text-white/30 text-xs uppercase tracking-widest hover:text-white/60 transition-colors">Datenschutz</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
