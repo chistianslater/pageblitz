@@ -1064,7 +1064,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       generateWebsiteAsyncMutation.mutateAsync({ websiteId }).then(async (response) => {
         const jobId = response.jobId;
         
-        // Poll for status every 2 seconds
+        // Poll for status every 500ms (0.5 seconds) for smoother progress
         const pollInterval = setInterval(async () => {
           try {
             const status = await trpcContext.selfService.getGenerationStatus.fetch({ jobId });
