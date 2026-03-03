@@ -429,7 +429,7 @@ export default function WebsiteRenderer({
       case "modern":   return <ModernLayout {...sharedProps} />;
       case "vibrant":  return <VibrantLayout {...sharedProps} />;
       case "natural":  return <NaturalLayout {...sharedProps} />;
-      default:         return <CleanLayout {...sharedProps} />;
+      default:         return <PremiumLayout {...sharedProps} />;
     }
   })();
 
