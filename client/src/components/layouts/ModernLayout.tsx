@@ -33,10 +33,8 @@ interface Props {
   contactFormLocked?: boolean;
   logoUrl?: string | null;
   businessCategory?: string | null;
-  /** When true, shows skeleton placeholders for missing content */
+  /** When true, shows skeleton placeholders for ALL content - simple and clean */
   isLoading?: boolean;
-  /** Progressive content revelation phase: skeleton | colors | images | texts | complete */
-  contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete';
 }
 
 /**
@@ -92,7 +90,6 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
   logoUrl,
   businessCategory,
   isLoading = false,
-  contentPhase = 'complete',
 }: Props) {
   useScrollReveal();
   return (
@@ -100,10 +97,10 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
       <ModernNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} isLoading={isLoading} contentPhase={contentPhase} />}
-          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} isLoading={isLoading} contentPhase={contentPhase} />}
+          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} isLoading={isLoading} />}
+          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} isLoading={isLoading} />}
           {section.type === "gallery" && <ModernGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} businessCategory={businessCategory} isLoading={isLoading} contentPhase={contentPhase} />}
+          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} businessCategory={businessCategory} isLoading={isLoading} />}
           {section.type === "menu" && <ModernMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <ModernPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <ModernTestimonials section={section} cs={cs} />}
@@ -139,7 +136,7 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
   );
 }
 
-function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, isLoading, contentPhase }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; isLoading?: boolean; contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete' }) {
+function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, isLoading }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; isLoading?: boolean }) {
   // Dynamischer TrustText aus der ersten Testimonial-Section
   const testimonialsSection = websiteData?.sections?.find((s: any) => s.type === "testimonials");
   const firstTestimonial = testimonialsSection?.items?.[0];
@@ -147,20 +144,8 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
     || firstTestimonial?.title
     || "Top bewertet von unseren Kunden";
 
-  // Progressive revelation based on contentPhase
-  // skeleton: everything is skeleton
-  // colors: colors shown, images/texts skeleton
-  // images: colors+images shown, texts skeleton
-  // texts: everything shown but might be generic
-  // complete: everything shown
-  const phase = contentPhase || 'complete';
-
-  // IMPORTANT: During loading (isLoading=true), ALWAYS show skeletons
-  // Never show fallback/generic text during generation
-  const showImageSkeleton = phase === 'skeleton' || isLoading;
-  const showHeadlineSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.headline);
-  const showSubheadlineSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.subheadline);
-  const showContentSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.content);
+  // SIMPLE RULE: isLoading = show ALL skeletons
+  const showSkeleton = isLoading || false;
 
   return (
     <section style={{ backgroundColor: cs.background, minHeight: "95vh", display: "flex", position: "relative", overflow: "hidden" }}>
@@ -187,7 +172,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             </span>
           </div>
           
-          {showHeadlineSkeleton ? (
+          {showSkeleton ? (
             <div style={{ marginBottom: "2rem" }}>
               <HeadlineSkeleton lines={2} animated={true} />
             </div>
@@ -211,11 +196,11 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             </h1>
           )}
           
-          {!showHeadlineSkeleton && (
+          {!showSkeleton && (
             <div style={{ width: "4rem", height: "4px", backgroundColor: cs.primary, marginBottom: "2rem" }} />
           )}
           
-          {showSubheadlineSkeleton ? (
+          {showSkeleton ? (
             <div style={{ marginBottom: "1rem", maxWidth: "520px" }}>
               <TextSkeleton lines={1} height="1.25rem" lineWidths={["80%"]} animated={true} />
             </div>
@@ -223,7 +208,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
             <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: cs.onBackground, opacity: 0.8, marginBottom: "1rem", maxWidth: "520px", fontWeight: 500 }}>{section.subheadline}</p>
           )}
           
-          {showContentSkeleton ? (
+          {showSkeleton ? (
             <div style={{ marginBottom: "3rem", maxWidth: "480px" }}>
               <TextSkeleton lines={2} height="1rem" lineWidths={["100%", "75%"]} animated={true} />
             </div>
@@ -277,7 +262,7 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
   );
 }
 
-function ModernAbout({ section, cs, heroImageUrl, isLoading, contentPhase }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; isLoading?: boolean; contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete' }) {
+function ModernAbout({ section, cs, heroImageUrl, isLoading }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; isLoading?: boolean }) {
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0", overflow: "hidden" }}>
       <div className="max-w-7xl mx-auto px-8">
@@ -331,7 +316,7 @@ function ModernAbout({ section, cs, heroImageUrl, isLoading, contentPhase }: { s
   );
 }
 
-function ModernServices({ section, cs, businessCategory, isLoading, contentPhase }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null; isLoading?: boolean; contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete' }) {
+function ModernServices({ section, cs, businessCategory, isLoading }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null; isLoading?: boolean }) {
   const items = section.items || [];
   return (
     <section style={{ backgroundColor: cs.background, padding: "10rem 0" }}>
