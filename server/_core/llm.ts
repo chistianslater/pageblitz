@@ -290,7 +290,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   const isKimi = ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn");
 
   const payload: Record<string, unknown> = {
-    model: isKimi ? "kimi-k2.5" : "gemini-2.5-flash",
+    model: isKimi ? "kimi-k2-turbo-preview" : "gemini-2.5-flash",
     messages: messages.map(normalizeMessage),
   };
 
@@ -306,14 +306,10 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768;
+  // Reduzierte Token-Anzahl für schnellere Generation
+  payload.max_tokens = 4096;
   
-  // Kimi doesn't support thinking field, only add for non-Kimi APIs
-  if (!isKimi) {
-    payload.thinking = {
-      "budget_tokens": 128
-    };
-  }
+  // Thinking-Parameter entfernt für maximale Geschwindigkeit
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,

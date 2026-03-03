@@ -477,7 +477,7 @@ function buildPersonalityHint(name: string, rating: string | null, reviewCount: 
   return parts.join(" ");
 }
 
-/** Builds the full enhanced generation prompt with StoryBrand, archetype personality, animation strategy */
+/** Builds a simplified generation prompt for faster AI processing */
 function buildEnhancedPrompt(opts: {
   business: { name: string; address?: string | null; phone?: string | null; rating?: string | null; reviewCount?: number | null; openingHours?: string[] | null };
   category: string;
@@ -489,201 +489,66 @@ function buildEnhancedPrompt(opts: {
   hoursText: string;
   isRegenerate?: boolean;
 }): string {
-  const { business, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText, isRegenerate } = opts;
+  const { business, category, industryContext, layoutStyle, colorScheme, hoursText, isRegenerate } = opts;
   const archetype = DESIGN_ARCHETYPES[layoutStyle] || DESIGN_ARCHETYPES["modern"];
   const year = new Date().getFullYear();
 
-  return `Du bist ein PREISGEKRÖNTER Awwwards-Level Webdesigner, UX-Copywriter und Frontend-Entwickler.
-Deine Websites gewinnen regelmäßig "Site of the Day" auf Awwwards, FWA und CSS Design Awards.
+  // Vereinfachter Prompt für schnellere Generation (~500 Tokens statt ~2000)
+  return `Erstelle Website-Inhalte für ${business.name} (${category}).
 
-⚠️ SPRACHE: ALLE TEXTE MÜSSEN AUF DEUTSCH SEIN – Überschriften, Fließtexte, Testimonials, Buttons, FAQ, ALLES. Kein einziges englisches Wort außer Eigennamen und Markennamen. Testimonials von deutschen Kunden mit deutschen Namen.
+UNTERNEHMEN:
+- Name: ${business.name}
+- Branche: ${category}
+- Adresse: ${business.address || "Nicht angegeben"}
+- Bewertung: ${business.rating ? business.rating + "/5" : "Nicht verfügbar"}
+- Öffnungszeiten: ${hoursText}
 
-Dein Designprozess:
-1. ANALYSE VOR GENERIERUNG: Verstehe Zielgruppe, Pain Points und Unique Value Proposition
-2. DESIGN-TWIN IMITIEREN: Imitiere die visuelle DNA des Design-Twins – aber mit den Kundendaten
-3. STORYBRAND: Der KUNDE ist der HELD – das Unternehmen ist der GUIDE (wie Yoda für Luke)
-4. QUALITÄT: Einzigartige, spezifische Texte – NIEMALS generische Phrasen
-5. ANIMATION: Subtile, purposeful Animationen – jede Animation hat einen Grund
+STIL: ${archetype.name} - ${archetype.aesthetic.substring(0, 60)}
+FARBEN: 60% ${archetype.colors.background}, 30% ${colorScheme.primary}, 10% ${colorScheme.accent}
 
-═══════════════════════════════════════
-UNTERNEHMENSDATEN
-═══════════════════════════════════════
-Name: ${business.name}
-Branche/Kategorie: ${category}
-Adresse: ${business.address || "Nicht angegeben"}
-Telefon: ${business.phone || "Nicht angegeben"}
-Bewertung: ${business.rating ? business.rating + "/5 Sterne" : "Nicht verfügbar"}
-Anzahl Bewertungen: ${business.reviewCount || 0}
-Öffnungszeiten: ${hoursText}
+REGELN:
+1. ALLE TEXTE AUF DEUTSCH
+2. KEINE generischen Phrasen wie "Ihr Partner für..."
+3. Der KUNDE ist der Held, ${business.name} ist der Guide
+4. Authentische deutsche Kundennamen in Testimonials
+${isRegenerate ? "5. ANDERE Perspektive als zuvor wählen" : ""}
 
-═══════════════════════════════════════
-DESIGN-ARCHETYP: ${archetype.name.toUpperCase()}
-Design-Twin: ${archetype.designTwin}
-═══════════════════════════════════════
-Aesthetik: ${archetype.aesthetic}
-Typografie: Headlines in ${archetype.typography.headers} / Body in ${archetype.typography.body}
-Layout-Patterns: ${archetype.patterns.join(", ")}
-Micro-Interactions: ${archetype.microInteractions.join(", ")}
-
-${archetype.promptInstruction}
-
-FARB-HIERARCHIE (60-30-10 REGEL – STRIKT EINHALTEN):
-- 60% = Hintergrundfarbe: ${archetype.colors.background} (dominanter Hintergrund)
-- 30% = Primärfarbe: ${colorScheme.primary || archetype.colors.primary} (Hauptelemente, Texte, Strukturen)
-- 10% = Akzentfarbe: ${colorScheme.accent || archetype.colors.accent} (NUR für CTAs, Links, Highlights)
-❌ NIEMALS mehr als 3 Hauptfarben
-❌ NIEMALS bunte Section-Hintergründe
-✅ IMMER gleiche Akzentfarbe für alle CTAs
-
-═══════════════════════════════════════
-ANIMATIONS-STRATEGIE
-═══════════════════════════════════════
-Page-Load Sequenz:
-- Navbar: fade-in 0.3s ease-out
-- Hero-Headline: slide-up 0.6s ease-out, 0.1s delay
-- Hero-Subtext: fade-in 0.6s ease-out, 0.2s delay
-- CTA-Button: fade-in + scale 0.6s ease-out, 0.4s delay
-
-Scroll-Verhalten:
-- Intersection Observer: Elemente fade-in + translateY(30px → 0) beim Erscheinen
-- Card-Stagger: 80ms delay pro Card für orchestrierte Animationen
-- Navbar: backdrop-blur + shadow bei scroll (class 'scrolled' via JS)
-
-Interaktive Elemente:
-- Buttons: translateY(-2px) + box-shadow glow on hover, 0.2s ease-out
-- Cards: scale(1.02) + shadow enhanced on hover, 0.3s ease-out
-- Links: animated underline width 0→100%, 0.2s ease-out
-
-═══════════════════════════════════════
-BRANCHENKONTEXT & PERSÖNLICHKEIT
-═══════════════════════════════════════
-${industryContext}
-${getIndustryServicesSeed(category)}
-${personalityHint}
-${templateStyleDesc}
-
-═══════════════════════════════════════
-STORYBRAND-FRAMEWORK (PFLICHT)
-═══════════════════════════════════════
-Der KUNDE ist der HELD dieser Geschichte – ${business.name} ist der erfahrene GUIDE.
-- HELD: Dein Traumkunde hat ein konkretes Problem (Stress, Unsicherheit, Zeitdruck)
-- GUIDE: ${business.name} hat die Expertise und Empathie, um zu helfen
-- PLAN: Einfacher 3-Schritte-Prozess (z.B. Termin → Beratung → Ergebnis)
-- CTA: Klarer, einladender Aufruf zur Aktion
-- ERFOLG: Das Leben des Kunden verbessert sich konkret
-- MISSERFOLG (vermeiden): Was passiert, wenn der Kunde NICHT handelt?
-
-Hero-Headline-Formel: [Emotionaler Trigger] + [Konkretes Ergebnis] für [Zielgruppe]
-Beispiele für gute Headlines:
-- ✅ "Wo Schönheit beginnt" (Beauty, emotional)
-- ✅ "Gemacht für die Härte des Alltags" (Handwerk, direkt)
-- ✅ "Dein stärkeres Ich beginnt hier" (Fitness, motivierend)
-- ❌ "Willkommen bei ${business.name}" (generisch, verboten)
-- ❌ "Ihr Partner für..." (Klischee, verboten)
-
-═══════════════════════════════════════
-KREATIVE ANFORDERUNGEN${isRegenerate ? " (NEUE VERSION – ANDERE PERSPEKTIVE)" : ""}
-═══════════════════════════════════════
-1. EINZIGARTIGKEIT: Schreibe so, als würdest du dieses spezifische Unternehmen kennen.
-2. KEINE GENERIK: Verboten: "Wir sind Ihr Partner für...", "Qualität steht bei uns an erster Stelle", "Ihr Vertrauen ist unser Kapital", "Wir freuen uns auf Ihren Besuch".
-3. ARCHETYP-KONSISTENZ: Jeder Text muss die Persönlichkeit von "${archetype.name}" widerspiegeln.
-4. SPEZIFISCHE LEISTUNGEN: Realistische, branchenspezifische Leistungen – keine generischen "Service 1, Service 2".
-5. AUTHENTISCHE TESTIMONIALS AUF DEUTSCH: Glaubwürdige Kundenstimmen auf Deutsch mit konkreten Details (was wurde gemacht, welches Ergebnis, warum zufrieden). Autoren-Namen müssen deutsch klingen (z.B. "Maria Schneider", "Thomas Müller"). KEINE englischen Testimonials.
-6. LOKALER BEZUG: Nutze die Stadt/Region aus der Adresse konkret.
-7. CTA-TEXTE: Kreative, handlungsauslösende Buttons passend zum Archetyp.${isRegenerate ? "\n8. ANDERE PERSPEKTIVE: Wähle einen anderen Storytelling-Ansatz als zuvor – andere Texte, anderer Fokus, andere Struktur." : ""}
-
-═══════════════════════════════════════
-PFLICHT-AUSGABE (exaktes JSON-Format)
-═══════════════════════════════════════
+JSON-AUSGABE:
 {
   "businessName": "${business.name}",
-  "tagline": "Einzigartiger, einprägsamer Slogan im Stil von ${archetype.name} (max. 8 Wörter, keine Klischees)",
-  "description": "Kurze, packende Beschreibung (2 Sätze, konkret und spezifisch)",
-  "archetypePersonality": "${archetype.name}: ${archetype.aesthetic.substring(0, 80)}",
+  "tagline": "Kurzer Slogan max 8 Wörter",
+  "description": "2 Sätze über das Unternehmen",
   "sections": [
     {
       "type": "hero",
-      "headline": "Kraftvolle Hauptüberschrift im ${archetype.name}-Stil (max. 7 Wörter, mit emotionalem Trigger)",
-      "subheadline": "Konkrete Unterüberschrift mit USP (1-2 Sätze, StoryBrand: Held + Problem + Lösung)",
-      "content": "Kurzer Einleitungstext (max. 30 Wörter, spezifisch für diese Branche)",
-      "ctaText": "Kreativer CTA-Button-Text passend zum Archetyp",
-      "ctaLink": "#kontakt"
-    },
-    {
-      "type": "about",
-      "headline": "Kreative Überschrift für 'Über uns' (nicht 'Über uns'!)",
-      "content": "Authentischer Text über das Unternehmen als Guide (4-5 Sätze: Gründungsgeschichte, Expertise, lokale Verwurzelung, Leidenschaft)"
+      "headline": "Hauptüberschrift max 7 Wörter",
+      "subheadline": "USP in 1-2 Sätzen",
+      "ctaText": "Button-Text"
     },
     {
       "type": "services",
-      "headline": "Kreative Überschrift für Leistungen",
+      "headline": "Unsere Leistungen",
       "items": [
-        { "title": "Konkrete Leistung 1", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 2", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 3", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 4", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 5", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" },
-        { "title": "Konkrete Leistung 6", "description": "Spezifische Beschreibung mit Nutzen für den Kunden (2 Sätze)", "icon": "LucideIconName" }
-      ]
-    },
-    {
-      "type": "testimonials",
-      "headline": "Kreative Überschrift für Kundenstimmen",
-      "items": [
-        { "title": "Kurze Zusammenfassung des Ergebnisses", "description": "Detaillierte, glaubwürdige Bewertung: Was war das Problem? Was hat ${business.name} gemacht? Welches konkrete Ergebnis? (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 5 },
-        { "title": "Kurze Zusammenfassung des Ergebnisses", "description": "Detaillierte, glaubwürdige Bewertung: anderes Szenario, anderer Kunde (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 5 },
-        { "title": "Kurze Zusammenfassung des Ergebnisses", "description": "Detaillierte, glaubwürdige Bewertung: drittes Szenario (3-4 Sätze)", "author": "Realistischer Vorname + Nachname", "rating": 4 }
-      ]
-    },
-    {
-      "type": "about",
-      "headline": "Kreative Überschrift für 'Über uns' (NICHT 'Über uns'! Beispiel: 'Unsere Geschichte', 'Wer wir sind', 'Seit [Jahr] für Sie da')",
-      "content": "Authentischer Text über das Unternehmen (4-5 Sätze: Gründungsgeschichte oder Leidenschaft, Expertise, lokale Verwurzelung, Was uns besonders macht, Versprechen an den Kunden)",
-      "items": [
-        { "title": "Starke Zahl oder Aussage", "description": "Erklärung (z.B. '15+ Jahre Erfahrung', '500+ zufriedene Kunden', 'Familienunternehmen')" },
-        { "title": "Starke Zahl oder Aussage", "description": "Erklärung" },
-        { "title": "Starke Zahl oder Aussage", "description": "Erklärung" }
+        {"title": "Leistung 1", "description": "2 Sätze", "icon": "Wrench"},
+        {"title": "Leistung 2", "description": "2 Sätze", "icon": "Star"},
+        {"title": "Leistung 3", "description": "2 Sätze", "icon": "Heart"}
       ]
     },
     {
       "type": "cta",
-      "headline": "Starke CTA-Überschrift im ${archetype.name}-Stil (Dringlichkeit oder konkreten Nutzen betonen)",
-      "content": "Kurzer überzeugender Text (max. 20 Wörter, StoryBrand: Erfolg visualisieren)",
-      "ctaText": "Handlungsaufruf-Button",
-      "ctaLink": "#kontakt"
-    },
-    {
-      "type": "contact",
-      "headline": "Kontaktüberschrift",
-      "content": "Einladender Kontakttext (1-2 Sätze)",
-      "ctaText": "Nachricht senden"
+      "headline": "CTA-Überschrift",
+      "content": "Kurzer Text",
+      "ctaText": "Jetzt anfragen"
     }
   ],
-  "seoTitle": "${business.name} – [Branchenspezifisches Keyword] in [Stadt]",
-  "seoDescription": "Prägnante SEO-Beschreibung mit Keyword und lokalem Bezug (max. 155 Zeichen)",
-  "footer": {
-    "text": "© ${year} ${business.name}. Alle Rechte vorbehalten."
-  },
+  "seoTitle": "${business.name} - ${category}",
+  "footer": {"text": "© ${year} ${business.name}"},
   "designTokens": {
-    "headlineFont": "${getLLMFontPrompt().headlineFont}",
-    "bodyFont": "${getLLMFontPrompt().bodyFont}",
-    "headlineFontWeight": "[700 oder 800 oder 900 je nach Archetyp-Energie]",
-    "headlineLetterSpacing": "[z.B. -0.04em für elegant/luxury, 0.08em für craft/bold, -0.02em für modern]",
-    "bodyLineHeight": "[z.B. 1.6 für kompakt, 1.8 für luftig, 1.75 für standard]",
-    "borderRadius": "[none | sm | md | lg | full – passend zum Archetyp: luxury=none, craft=sm, fresh=lg, vibrant=full]",
-    "shadowStyle": "[none | flat | soft | dramatic | glow – luxury=none, trust=soft, craft=flat, vibrant=glow]",
-    "sectionSpacing": "[tight | normal | spacious | ultra – luxury=ultra, craft=normal, fresh=spacious]",
-    "sectionBackgrounds": ["[Hintergrund Sektion 1, z.B. #FFFFFF]", "[Hintergrund Sektion 2, z.B. #F8F4F0]", "[Hintergrund Sektion 3, z.B. #1A1A1A]"],
-    "accentColor": "[Akzentfarbe aus der 60-30-10 Regel, z.B. ${colorScheme.accent || archetype.colors.accent}]",
-    "textColor": "[Primäre Textfarbe, z.B. #1A1A1A oder #F0F0F0 bei dark mode]",
-    "backgroundColor": "[Haupt-Hintergrundfarbe, z.B. ${archetype.colors.background}]",
-    "cardBackground": "[Karten-Hintergrundfarbe, z.B. #FFFFFF oder rgba(255,255,255,0.05)]",
-    "buttonStyle": "[filled | outline | ghost | pill – luxury=outline, craft=filled, fresh=pill, vibrant=filled]",
+    "accentColor": "${colorScheme.accent}",
+    "backgroundColor": "${archetype.colors.background}",
     "archetype": "${archetype.name}"
   }
-}
-
-Verfügbare Lucide-Icons für Services: Scissors, Wrench, Heart, Star, Shield, Zap, Clock, MapPin, Phone, Mail, Users, Award, ThumbsUp, Briefcase, Home, Car, Utensils, Camera, Sparkles, Flame, Leaf, Sun, Moon, Coffee, Music, Book, Palette, Hammer, Truck, Package, CheckCircle, ArrowRight, ChevronRight, Globe, Wifi, Lock, Key, Smile, Baby, Dog, Flower, Trees, Dumbbell, Bike, Stethoscope, Pill, Microscope, Scale, Gavel, Calculator, PiggyBank, Building, Factory, Warehouse`;
+}`;
 }
 
 /** Maps a GMB category string to the industry key used in template_uploads table */
@@ -737,6 +602,47 @@ Return ONLY the key (one word, lowercase).`;
 }
 
 // ── Background Website Generation Worker ────────────────────────────────────
+
+/** Fallback-Template-Daten wenn KI fehlschlägt */
+function getFallbackWebsiteData(business: any, category: string, colorScheme: any, layoutStyle: string) {
+  const year = new Date().getFullYear();
+  return {
+    businessName: business.name,
+    tagline: "Professionelle Dienstleistungen in Ihrer Region",
+    description: `${business.name} bietet erstklassige ${category}-Dienstleistungen. Kontaktieren Sie uns für eine persönliche Beratung.`,
+    sections: [
+      {
+        type: "hero",
+        headline: `Willkommen bei ${business.name}`,
+        subheadline: `Ihr zuverlässiger Partner für ${category}`,
+        ctaText: "Jetzt kontaktieren"
+      },
+      {
+        type: "services",
+        headline: "Unsere Leistungen",
+        items: [
+          { title: "Beratung", description: "Individuelle Beratung für Ihre Bedürfnisse", icon: "Users" },
+          { title: "Service", description: "Professioneller Service mit Qualitätsgarantie", icon: "Star" },
+          { title: "Support", description: "Langfristige Betreuung und Support", icon: "Heart" }
+        ]
+      },
+      {
+        type: "cta",
+        headline: "Bereit für den nächsten Schritt?",
+        content: "Kontaktieren Sie uns für ein unverbindliches Gespräch.",
+        ctaText: "Termin vereinbaren"
+      }
+    ],
+    seoTitle: `${business.name} - ${category}`,
+    footer: { text: `© ${year} ${business.name}. Alle Rechte vorbehalten.` },
+    designTokens: {
+      accentColor: colorScheme.accent,
+      backgroundColor: colorScheme.background,
+      archetype: layoutStyle
+    }
+  };
+}
+
 /**
  * Runs website generation in the background.
  * Updates job progress and status in the database.
@@ -752,17 +658,21 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     const business = await getBusinessById(website.businessId);
     if (!business) throw new Error("Business not found");
 
-    // Progress: 10% - Starting generation
+    // Progress: 15% - Starting generation
     await updateGenerationJob(jobId, { progress: 15 });
 
     const category = business.category || "Dienstleistung";
-    const industryKey = await classifyIndustry(category, business.name);
     
-    // Progress: 20% - Industry classified
-    await updateGenerationJob(jobId, { progress: 20 });
+    // PARALLEL: Industry classification + context building
+    const [industryKey, industryContext, personalityHint] = await Promise.all([
+      classifyIndustry(category, business.name),
+      Promise.resolve(buildIndustryContext(category, business.name)),
+      Promise.resolve(buildPersonalityHint(business.name, business.rating, business.reviewCount || 0))
+    ]);
+    
+    // Progress: 25% - Industry classified
+    await updateGenerationJob(jobId, { progress: 25 });
 
-    const industryContext = buildIndustryContext(category, business.name);
-    const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
     const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
     const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
     const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
@@ -770,70 +680,107 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     // Progress: 30% - Layout selected
     await updateGenerationJob(jobId, { progress: 30 });
 
-    const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
-    const galleryImages = getGalleryImages(category, business.name, industryKey);
-    const gmbPhotos = business.placeId && !business.placeId.startsWith("self-") ? await getGmbPhotos(business.placeId, 7) : [];
+    // PARALLEL: Alle Bilder und Templates gleichzeitig laden
+    const [
+      heroImageUrl,
+      galleryImages,
+      gmbPhotos,
+      matchingTemplates
+    ] = await Promise.all([
+      Promise.resolve(getHeroImageUrl(category, business.name, industryKey)),
+      Promise.resolve(getGalleryImages(category, business.name, industryKey)),
+      business.placeId && !business.placeId.startsWith("self-") 
+        ? getGmbPhotos(business.placeId, 7) 
+        : Promise.resolve([]),
+      Promise.resolve(selectTemplatesForIndustry(category, business.name, 3))
+    ]);
     
-    // Progress: 40% - Images loaded
-    await updateGenerationJob(jobId, { progress: 40 });
-
-    const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
     const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
     const baseTemplateImageUrls = getTemplateImageUrls(matchingTemplates);
+    
+    // Templates aus DB parallel laden
     const uploadedTemplates = await listTemplateUploadsByPool(industryKey, layoutStyle);
     const uploadedImageUrls = uploadedTemplates.slice(0, 3).map((t: any) => t.imageUrl);
-    const templateImageUrls = [...uploadedImageUrls, ...baseTemplateImageUrls].slice(0, 5);
+    const templateImageUrls = [...uploadedImageUrls, ...baseTemplateImageUrls].slice(0, 3); // Reduziert auf 3 statt 5
+
+    // Progress: 45% - Images and templates loaded
+    await updateGenerationJob(jobId, { progress: 45 });
 
     let hoursText = "Nicht angegeben";
     if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
       hoursText = (business.openingHours as string[]).join(", ");
     }
 
-    const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText });
+    const prompt = buildEnhancedPrompt({ 
+      business: { ...business, openingHours: business.openingHours as string[] | null }, 
+      category, 
+      industryContext, 
+      personalityHint, 
+      layoutStyle, 
+      colorScheme, 
+      templateStyleDesc, 
+      hoursText 
+    });
 
     // Progress: 50% - Starting AI generation
     await updateGenerationJob(jobId, { progress: 50 });
 
-    // Start progress simulation during AI generation (updates every 3 seconds)
+    // Start progress simulation during AI generation (updates every 2 seconds - faster)
     let simulatedProgress = 50;
     const progressInterval = setInterval(async () => {
-      if (simulatedProgress < 68) {
-        simulatedProgress += 1;
+      if (simulatedProgress < 75) {
+        simulatedProgress += 2;
         await updateGenerationJob(jobId, { progress: simulatedProgress });
       }
-    }, 3000); // Every 3 seconds +1%
+    }, 2000); // Every 2 seconds +2%
 
-    const response = await invokeLLM({
-      messages: [
-        { role: "system", content: "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke." },
-        ...(templateImageUrls.length > 0 ? [{
-          role: "user" as const,
-          content: [
-            { type: "text" as const, text: `DESIGN-REFERENZEN: ${templateImageUrls.length} professionelle Website-Templates als Qualitätsreferenz.` },
-            ...templateImageUrls.map(url => ({ type: "image_url" as const, image_url: { url, detail: "low" as const } }))
-          ]
-        }] : []),
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
-    });
+    // AI-Generation mit Timeout und Fallback
+    let websiteData: any;
+    let useFallback = false;
+    
+    try {
+      const response = await Promise.race([
+        invokeLLM({
+          messages: [
+            { role: "system", content: "Du bist ein Webdesigner. Antworte AUSSCHLIESSLICH mit validem JSON." },
+            ...(templateImageUrls.length > 0 ? [{
+              role: "user" as const,
+              content: [
+                { type: "text" as const, text: `Design-Referenzen: ${templateImageUrls.length} Templates` },
+                ...templateImageUrls.map(url => ({ type: "image_url" as const, image_url: { url, detail: "low" as const } }))
+              ]
+            }] : []),
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        }),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error("KI-Timeout nach 60s")), 60000)
+        )
+      ]);
+
+      const content = (response as any).choices[0]?.message?.content;
+      if (!content || typeof content !== "string") {
+        throw new Error("KI-Generierung fehlgeschlagen");
+      }
+
+      try {
+        const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+        websiteData = JSON.parse(cleaned);
+      } catch {
+        throw new Error("KI hat kein valides JSON zurückgegeben");
+      }
+    } catch (aiError) {
+      console.warn(`[Generation Job ${jobId}] KI-Fehler, verwende Fallback:`, aiError);
+      websiteData = getFallbackWebsiteData(business, category, colorScheme, layoutStyle);
+      useFallback = true;
+    }
 
     // Stop progress simulation
     clearInterval(progressInterval);
 
-    // Progress: 70% - AI response received
-    await updateGenerationJob(jobId, { progress: 70 });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content || typeof content !== "string") throw new Error("KI-Generierung fehlgeschlagen");
-
-    let websiteData: any;
-    try {
-      const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
-      websiteData = JSON.parse(cleaned);
-    } catch {
-      throw new Error("KI hat kein valides JSON zurückgegeben");
-    }
+    // Progress: 80% - AI response received / Fallback applied
+    await updateGenerationJob(jobId, { progress: 80 });
 
     const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
     const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
@@ -877,8 +824,8 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
     }
 
-    // Progress: 85% - Processing website data
-    await updateGenerationJob(jobId, { progress: 85 });
+    // Progress: 90% - Processing website data
+    await updateGenerationJob(jobId, { progress: 90 });
 
     if (websiteData.designTokens) {
       const dt = websiteData.designTokens;
@@ -906,10 +853,10 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     await updateGenerationJob(jobId, { 
       status: "completed", 
       progress: 100, 
-      result: { success: true, alreadyGenerated: false } 
+      result: { success: true, alreadyGenerated: false, usedFallback: useFallback } 
     });
 
-    console.log(`[Generation Job ${jobId}] Completed successfully for website ${websiteId}`);
+    console.log(`[Generation Job ${jobId}] Completed successfully for website ${websiteId}${useFallback ? " (mit Fallback)" : ""}`);
   } catch (error: any) {
     console.error(`[Generation Job ${jobId}] Failed:`, error);
     await updateGenerationJob(jobId, { 
