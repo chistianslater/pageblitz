@@ -8,6 +8,7 @@ import {
   templateUploads, InsertTemplateUpload, TemplateUpload,
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
+  generationJobs, InsertGenerationJob, GenerationJob,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -500,4 +501,35 @@ export async function getWebsitesByUserId(userId: number) {
     .innerJoin(generatedWebsites, eq(subscriptions.websiteId, generatedWebsites.id))
     .where(eq(subscriptions.userId, userId));
   return rows;
+}
+
+// ── Generation Jobs ───────────────────────────────────
+export async function createGenerationJob(data: InsertGenerationJob): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(generationJobs).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getGenerationJobById(id: number): Promise<GenerationJob | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(generationJobs).where(eq(generationJobs.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getGenerationJobByWebsiteId(websiteId: number): Promise<GenerationJob | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(generationJobs)
+    .where(eq(generationJobs.websiteId, websiteId))
+    .orderBy(desc(generationJobs.createdAt))
+    .limit(1);
+  return result[0];
+}
+
+export async function updateGenerationJob(id: number, data: Partial<InsertGenerationJob>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(generationJobs).set(data).where(eq(generationJobs.id, id));
 }

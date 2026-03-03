@@ -16,6 +16,7 @@ import {
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
   getLeadFunnelStats, listExternalLeads, countExternalLeads,
+  createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -735,6 +736,176 @@ Return ONLY the key (one word, lowercase).`;
   }
 }
 
+// ── Background Website Generation Worker ────────────────────────────────────
+/**
+ * Runs website generation in the background.
+ * Updates job progress and status in the database.
+ */
+async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<void> {
+  try {
+    // Update job status to processing
+    await updateGenerationJob(jobId, { status: "processing", progress: 10 });
+
+    const website = await getWebsiteById(websiteId);
+    if (!website) throw new Error("Website not found");
+
+    const business = await getBusinessById(website.businessId);
+    if (!business) throw new Error("Business not found");
+
+    // Progress: 10% - Starting generation
+    await updateGenerationJob(jobId, { progress: 15 });
+
+    const category = business.category || "Dienstleistung";
+    const industryKey = await classifyIndustry(category, business.name);
+    
+    // Progress: 20% - Industry classified
+    await updateGenerationJob(jobId, { progress: 20 });
+
+    const industryContext = buildIndustryContext(category, business.name);
+    const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
+    const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
+    const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
+    const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
+    
+    // Progress: 30% - Layout selected
+    await updateGenerationJob(jobId, { progress: 30 });
+
+    const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
+    const galleryImages = getGalleryImages(category, business.name, industryKey);
+    const gmbPhotos = business.placeId && !business.placeId.startsWith("self-") ? await getGmbPhotos(business.placeId, 7) : [];
+    
+    // Progress: 40% - Images loaded
+    await updateGenerationJob(jobId, { progress: 40 });
+
+    const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
+    const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
+    const baseTemplateImageUrls = getTemplateImageUrls(matchingTemplates);
+    const uploadedTemplates = await listTemplateUploadsByPool(industryKey, layoutStyle);
+    const uploadedImageUrls = uploadedTemplates.slice(0, 3).map((t: any) => t.imageUrl);
+    const templateImageUrls = [...uploadedImageUrls, ...baseTemplateImageUrls].slice(0, 5);
+
+    let hoursText = "Nicht angegeben";
+    if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
+      hoursText = (business.openingHours as string[]).join(", ");
+    }
+
+    const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText });
+
+    // Progress: 50% - Starting AI generation
+    await updateGenerationJob(jobId, { progress: 50 });
+
+    const response = await invokeLLM({
+      messages: [
+        { role: "system", content: "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke." },
+        ...(templateImageUrls.length > 0 ? [{
+          role: "user" as const,
+          content: [
+            { type: "text" as const, text: `DESIGN-REFERENZEN: ${templateImageUrls.length} professionelle Website-Templates als Qualitätsreferenz.` },
+            ...templateImageUrls.map(url => ({ type: "image_url" as const, image_url: { url, detail: "low" as const } }))
+          ]
+        }] : []),
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    // Progress: 70% - AI response received
+    await updateGenerationJob(jobId, { progress: 70 });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content || typeof content !== "string") throw new Error("KI-Generierung fehlgeschlagen");
+
+    let websiteData: any;
+    try {
+      const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      websiteData = JSON.parse(cleaned);
+    } catch {
+      throw new Error("KI hat kein valides JSON zurückgegeben");
+    }
+
+    const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
+    const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
+    if (effectiveGalleryImages.length > 0 && websiteData.sections) {
+      const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
+      if (gallerySection) {
+        gallerySection.items = effectiveGalleryImages.map(url => ({ imageUrl: url }));
+        gallerySection.images = effectiveGalleryImages;
+      }
+    }
+    if (business.rating) websiteData.googleRating = parseFloat(business.rating);
+    if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
+
+    const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+    let injectedRealReviewsSS = false;
+    if (realReviews && realReviews.length > 0 && websiteData.sections) {
+      const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
+      if (testimonialsSection) {
+        const rawTopReviews = realReviews
+          .filter((r) => r.text && r.text.length >= 20)
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 5)
+          .map((r) => ({
+            title: r.text.slice(0, 60) + (r.text.length > 60 ? "…" : ""),
+            description: r.text,
+            author: r.author_name,
+            rating: r.rating,
+            isRealReview: true,
+          }));
+        
+        if (rawTopReviews.length >= 1) {
+          testimonialsSection.items = rawTopReviews;
+          testimonialsSection.isRealReviews = true;
+          injectedRealReviewsSS = true;
+        }
+      }
+    }
+
+    // Remove testimonials if they are not real reviews (AI hallucinations)
+    if (!injectedRealReviewsSS && websiteData.sections) {
+      websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
+    }
+
+    // Progress: 85% - Processing website data
+    await updateGenerationJob(jobId, { progress: 85 });
+
+    if (websiteData.designTokens) {
+      const dt = websiteData.designTokens;
+      if (!DESIGN_TOKEN_CONFIG.radius.includes(dt.borderRadius as any)) dt.borderRadius = "md";
+      if (!DESIGN_TOKEN_CONFIG.shadow.includes(dt.shadowStyle as any)) dt.shadowStyle = "soft";
+      if (!DESIGN_TOKEN_CONFIG.spacing.includes(dt.sectionSpacing as any)) dt.sectionSpacing = "normal";
+      if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any)) dt.buttonStyle = "filled";
+      if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
+      { const lfSS = getLayoutFonts(layoutStyle);
+      if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfSS.headlineFont;
+      if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfSS.bodyFont;
+      if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfSS.bodyFont; }
+      if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
+      if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
+      if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
+      if (!dt.cardBackground || dt.cardBackground.includes("[")) dt.cardBackground = colorScheme.surface;
+    }
+
+    // Progress: 95% - Saving to database
+    await updateGenerationJob(jobId, { progress: 95 });
+
+    await updateWebsite(websiteId, { websiteData, colorScheme, industry: category, heroImageUrl: finalHeroImageUrl, layoutStyle });
+
+    // Progress: 100% - Complete
+    await updateGenerationJob(jobId, { 
+      status: "completed", 
+      progress: 100, 
+      result: { success: true, alreadyGenerated: false } 
+    });
+
+    console.log(`[Generation Job ${jobId}] Completed successfully for website ${websiteId}`);
+  } catch (error: any) {
+    console.error(`[Generation Job ${jobId}] Failed:`, error);
+    await updateGenerationJob(jobId, { 
+      status: "failed", 
+      error: error.message || "Unknown error during generation" 
+    });
+  }
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -2332,127 +2503,49 @@ Kontext: ${input.context}`,
         return { resolved: false, businessName: null, placeId: null };
       }),
 
-    generateWebsite: publicProcedure
+    generateWebsiteAsync: publicProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
-        // Guard removed: always re-generate to pick up latest images and color schemes
 
-        const business = await getBusinessById(website.businessId);
-        if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
-
-        const category = business.category || "Dienstleistung";
-        const industryKey = await classifyIndustry(category, business.name);
-        const industryContext = buildIndustryContext(category, business.name);
-        const personalityHint = buildPersonalityHint(business.name, business.rating, business.reviewCount || 0);
-        const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
-        const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
-        const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
-        const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
-        const galleryImages = getGalleryImages(category, business.name, industryKey);
-        const gmbPhotos = business.placeId && !business.placeId.startsWith("self-") ? await getGmbPhotos(business.placeId, 7) : [];
-        const matchingTemplates = selectTemplatesForIndustry(category, business.name, 3);
-        const templateStyleDesc = getTemplateStyleDescription(matchingTemplates);
-        const baseTemplateImageUrls = getTemplateImageUrls(matchingTemplates);
-        const uploadedTemplates = await listTemplateUploadsByPool(industryKey, layoutStyle);
-        const uploadedImageUrls = uploadedTemplates.slice(0, 3).map((t: any) => t.imageUrl);
-        const templateImageUrls = [...uploadedImageUrls, ...baseTemplateImageUrls].slice(0, 5);
-
-        let hoursText = "Nicht angegeben";
-        if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
-          hoursText = (business.openingHours as string[]).join(", ");
+        // Check if there's already a pending/processing job for this website
+        const existingJob = await getGenerationJobByWebsiteId(input.websiteId);
+        if (existingJob && (existingJob.status === "pending" || existingJob.status === "processing")) {
+          return { jobId: existingJob.id, status: existingJob.status };
         }
 
-        const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText });
-
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke." },
-            ...(templateImageUrls.length > 0 ? [{
-              role: "user" as const,
-              content: [
-                { type: "text" as const, text: `DESIGN-REFERENZEN: ${templateImageUrls.length} professionelle Website-Templates als Qualitätsreferenz.` },
-                ...templateImageUrls.map(url => ({ type: "image_url" as const, image_url: { url, detail: "low" as const } }))
-              ]
-            }] : []),
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
+        // Create a new generation job
+        const jobId = await createGenerationJob({
+          websiteId: input.websiteId,
+          status: "pending",
+          progress: 0,
         });
 
-        const content = response.choices[0]?.message?.content;
-        if (!content || typeof content !== "string") throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Generierung fehlgeschlagen" });
+        // Start background generation (don't await - it runs in background)
+        runWebsiteGeneration(jobId, input.websiteId).catch((err) => {
+          console.error(`[Generation Job ${jobId}] Background generation failed:`, err);
+        });
 
-        let websiteData: any;
-        try {
-          const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
-          websiteData = JSON.parse(cleaned);
-        } catch {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI hat kein valides JSON zurückgegeben" });
-        }
+        return { jobId, status: "pending" };
+      }),
 
-        const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
-        const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
-        if (effectiveGalleryImages.length > 0 && websiteData.sections) {
-          const gallerySection = websiteData.sections.find((s: any) => s.type === "gallery");
-          if (gallerySection) {
-            gallerySection.items = effectiveGalleryImages.map(url => ({ imageUrl: url }));
-            gallerySection.images = effectiveGalleryImages;
-          }
-        }
-        if (business.rating) websiteData.googleRating = parseFloat(business.rating);
-        if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
+    getGenerationStatus: publicProcedure
+      .input(z.object({ jobId: z.number() }))
+      .query(async ({ input }) => {
+        const job = await getGenerationJobById(input.jobId);
+        if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Generation job not found" });
 
-        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
-        let injectedRealReviewsSS = false;
-        if (realReviews && realReviews.length > 0 && websiteData.sections) {
-          const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
-          if (testimonialsSection) {
-            const rawTopReviews = realReviews
-              .filter((r) => r.text && r.text.length >= 20)
-              .sort((a, b) => b.rating - a.rating)
-              .slice(0, 5)
-              .map((r) => ({
-                title: r.text.slice(0, 60) + (r.text.length > 60 ? "…" : ""),
-                description: r.text,
-                author: r.author_name,
-                rating: r.rating,
-                isRealReview: true,
-              }));
-            
-            if (rawTopReviews.length >= 1) {
-              testimonialsSection.items = rawTopReviews;
-              testimonialsSection.isRealReviews = true;
-              injectedRealReviewsSS = true;
-            }
-          }
-        }
-
-        // Remove testimonials if they are not real reviews (AI hallucinations)
-        if (!injectedRealReviewsSS && websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
-        }
-
-        if (websiteData.designTokens) {
-          const dt = websiteData.designTokens;
-          if (!DESIGN_TOKEN_CONFIG.radius.includes(dt.borderRadius as any)) dt.borderRadius = "md";
-          if (!DESIGN_TOKEN_CONFIG.shadow.includes(dt.shadowStyle as any)) dt.shadowStyle = "soft";
-          if (!DESIGN_TOKEN_CONFIG.spacing.includes(dt.sectionSpacing as any)) dt.sectionSpacing = "normal";
-          if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any)) dt.buttonStyle = "filled";
-          if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
-          { const lfSS = getLayoutFonts(layoutStyle);
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfSS.headlineFont;
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfSS.bodyFont;
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfSS.bodyFont; }
-          if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
-          if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
-          if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
-          if (!dt.cardBackground || dt.cardBackground.includes("[")) dt.cardBackground = colorScheme.surface;
-        }
-
-        await updateWebsite(input.websiteId, { websiteData, colorScheme, industry: category, heroImageUrl: finalHeroImageUrl, layoutStyle });
-        return { success: true, alreadyGenerated: false };
+        return {
+          jobId: job.id,
+          websiteId: job.websiteId,
+          status: job.status,
+          progress: job.progress,
+          result: job.result,
+          error: job.error,
+          createdAt: job.createdAt,
+          updatedAt: job.updatedAt,
+        };
       }),
 
     start: publicProcedure

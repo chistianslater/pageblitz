@@ -193,3 +193,18 @@ export const layoutCounters = mysqlTable("layout_counters", {
 });
 
 export type LayoutCounter = typeof layoutCounters.$inferSelect;
+export type InsertLayoutCounter = typeof layoutCounters.$inferInsert;
+
+export const generationJobs = mysqlTable("generation_jobs", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  status: mysqlEnum("status", ["pending", "processing", "completed", "failed"]).default("pending").notNull(),
+  progress: int("progress").default(0).notNull(), // 0-100
+  result: json("result"), // { success: boolean, alreadyGenerated: boolean }
+  error: text("error"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GenerationJob = typeof generationJobs.$inferSelect;
+export type InsertGenerationJob = typeof generationJobs.$inferInsert;

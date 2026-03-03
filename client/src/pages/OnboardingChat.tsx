@@ -702,7 +702,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const generateTextMutation = trpc.onboarding.generateText.useMutation();
   const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
-  const generateWebsiteMutation = trpc.selfService.generateWebsite.useMutation();
+  const generateWebsiteAsyncMutation = trpc.selfService.generateWebsiteAsync.useMutation();
+  const trpcContext = trpc.useContext();
   const updateCaptureStatusMutation = trpc.selfService.updateCaptureStatus.useMutation();
   const sendLeadEmailMutation = trpc.selfService.sendLeadEmail.useMutation();
   const saveCustomerEmailMutation = trpc.selfService.saveCustomerEmail.useMutation();
@@ -1058,31 +1059,62 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       let phaseIdx = 0;
       setGenerationPhase(phases[0]);
       setGenerationProgress(10);
-      const phaseInterval = setInterval(() => {
-        phaseIdx = Math.min(phaseIdx + 1, phases.length - 1);
-        setGenerationPhase(phases[phaseIdx]);
-        setGenerationProgress(Math.min(10 + phaseIdx * (isGmbFlow ? 10 : 18), 90));
-      }, phaseDuration);
-      generateWebsiteMutation.mutateAsync({ websiteId }).then(() => {
-        clearInterval(phaseInterval);
-        setGenerationProgress(100);
-        setGenerationPhase("Website bereit!");
-        // Wichtig: State zurücksetzen und localStorage clearen
+      
+      // Start async generation and poll for status
+      generateWebsiteAsyncMutation.mutateAsync({ websiteId }).then(async (response) => {
+        const jobId = response.jobId;
+        
+        // Poll for status every 2 seconds
+        const pollInterval = setInterval(async () => {
+          try {
+            const status = await trpcContext.selfService.getGenerationStatus.fetch({ jobId });
+            
+            // Update progress from server (0-100)
+            if (status.progress > 0) {
+              setGenerationProgress(status.progress);
+            }
+            
+            // Update phase text based on progress
+            const phaseIndex = Math.min(
+              Math.floor((status.progress / 100) * phases.length),
+              phases.length - 1
+            );
+            setGenerationPhase(phases[phaseIndex]);
+            
+            // Check if completed or failed
+            if (status.status === "completed") {
+              clearInterval(pollInterval);
+              setGenerationProgress(100);
+              setGenerationPhase("Website bereit!");
+              // Reset state and clear localStorage
+              setIsGeneratingInitialWebsite(false);
+              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+              // Refetch and then navigate
+              refetchSiteData().then(() => {
+                setTimeout(() => {
+                  window.location.href = window.location.href;
+                }, 300);
+              });
+            } else if (status.status === "failed") {
+              clearInterval(pollInterval);
+              setIsGeneratingInitialWebsite(false);
+              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+              console.error("Website generation failed:", status.error);
+              toast.error("Fehler bei der Website-Erstellung: " + (status.error || "Unbekannter Fehler"));
+            }
+          } catch (pollErr) {
+            console.error("Error polling generation status:", pollErr);
+            // Don't stop polling on transient errors
+          }
+        }, 2000); // Poll every 2 seconds
+        
+        // Store interval for cleanup
+        return () => clearInterval(pollInterval);
+      }).catch((err) => {
         setIsGeneratingInitialWebsite(false);
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-        // Refetch und dann Navigation ohne reload()
-        refetchSiteData().then(() => {
-          // Kurze Pause für den Refetch, dann Navigation
-          setTimeout(() => {
-            // Hard navigation zur gleichen URL vermeidet beforeunload
-            window.location.href = window.location.href;
-          }, 300);
-        });
-      }).catch((err) => {
-        clearInterval(phaseInterval);
-        setIsGeneratingInitialWebsite(false);
-        console.error("Website generation failed:", err);
-        toast.error("Fehler bei der Website-Erstellung: " + (err.message || "Unbekannter Fehler"));
+        console.error("Failed to start website generation:", err);
+        toast.error("Fehler beim Starten der Website-Erstellung: " + (err.message || "Unbekannter Fehler"));
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
