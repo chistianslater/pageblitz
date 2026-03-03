@@ -717,6 +717,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
     return false;
   });
+  
+  // Content revelation phases for progressive onboarding
+  // 'skeleton': Everything is skeleton (start)
+  // 'colors': Colors ready, everything else skeleton
+  // 'images': Colors + Images ready, text skeleton
+  // 'texts': Colors + Images + Text ready, services skeleton
+  // 'complete': Everything ready
+  const [contentPhase, setContentPhase] = useState<'skeleton' | 'colors' | 'images' | 'texts' | 'complete'>(() => {
+    // Check localStorage for persisted phase
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return (saved as any) || 'skeleton';
+    }
+    return 'skeleton';
+  });
 
 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
@@ -1111,27 +1126,65 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source]);
 
-  // ── Auto-generate initial content after businessCategory + businessName ─────────
+  // ── Progressive content revelation based on user input ─────────
+  
+  // Phase 1: When businessCategory is entered -> show colors
   useEffect(() => {
-    // Only auto-generate if:
-    // 1. We have both category and name
-    // 2. We have a websiteId
-    // 3. Content hasn't been generated yet (headline is empty/generic)
-    // 4. Not currently generating something else
-    // 5. Not for GMB flows (they already have more context and generate immediately)
+    const hasCategory = !!data.businessCategory?.trim();
+    if (hasCategory && contentPhase === 'skeleton') {
+      setContentPhase('colors');
+      localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'colors');
+      
+      // Auto-select color scheme based on category
+      const industryColors: Record<string, any> = {
+        'restaurant': { primary: '#c45c26', secondary: '#f4a261', accent: '#e76f51' },
+        'friseur': { primary: '#9a8b7a', secondary: '#f8f6f3', accent: '#c4a882' },
+        'bau': { primary: '#4a5568', secondary: '#bfa880', accent: '#e2e8f0' },
+        'handwerk': { primary: '#4a5568', secondary: '#bfa880', accent: '#e2e8f0' },
+        'fitness': { primary: '#2d3748', secondary: '#4a6b6b', accent: '#e2e8f0' },
+        'medizin': { primary: '#64748b', secondary: '#94a3b8', accent: '#e8ded4' },
+        'immobilien': { primary: '#1e3a5f', secondary: '#c9a227', accent: '#f5f3f0' },
+        'beratung': { primary: '#1e3a5f', secondary: '#9a8b7a', accent: '#e8ded4' },
+        'cafe': { primary: '#6b4e3d', secondary: '#d4a574', accent: '#f5e6d3' },
+        'hotel': { primary: '#c9a227', secondary: '#2d2d2d', accent: '#f5f3f0' },
+        'default': { primary: '#475569', secondary: '#bfa880', accent: '#e2e8f0' },
+      };
+      
+      const category = data.businessCategory?.toLowerCase() || '';
+      const matchedKey = Object.keys(industryColors).find(k => category.includes(k)) || 'default';
+      const colors = industryColors[matchedKey];
+      
+      setData(prev => ({
+        ...prev,
+        colorScheme: {
+          ...prev.colorScheme,
+          primary: colors.primary,
+          secondary: colors.secondary,
+          accent: colors.accent,
+        },
+      }));
+      
+      // After 500ms, reveal images
+      setTimeout(() => {
+        setContentPhase('images');
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'images');
+      }, 500);
+    }
+  }, [data.businessCategory, contentPhase, previewToken, websiteIdProp]);
+  
+  // Phase 2: When both category AND name are entered -> generate texts
+  useEffect(() => {
     const hasCategory = !!data.businessCategory?.trim();
     const hasName = !!data.businessName?.trim();
     const hasWebsiteId = !!websiteId;
     const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
-    const wd = siteData?.website?.websiteData as any;
-    const hasExistingContent = !!wd?.headline && 
-                             !wd.headline.includes("Willkommen") &&
-                             !wd.headline.includes("hier steht");
     
-    if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && !hasExistingContent && 
+    // Only proceed if we're at images phase (colors+images ready) and have name
+    if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && contentPhase === 'images' &&
         !isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
       
-      // Check if we already have enough info to generate
+      setContentPhase('texts');
+      localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'texts');
       setIsGeneratingInitialContent(true);
       localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
       
@@ -1146,33 +1199,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             ...prev,
             tagline: result.tagline || prev.tagline,
             description: result.description || prev.description,
-            // Also save generated services to local state
             topServices: result.services?.map((svc: any) => ({
               title: svc.title,
               description: svc.description,
             })) || prev.topServices,
           }));
           
-          // Show success message briefly
           toast.success("Website-Texte & Leistungen wurden generiert!", { duration: 2000 });
           
-          // IMPORTANT: Refetch site data to update the preview
-          // This ensures the generated content is displayed
+          // Mark as complete
+          setContentPhase('complete');
+          localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+          
+          // Refetch to update preview
           setTimeout(() => {
             refetchSiteData();
           }, 300);
         }
       }).catch((err) => {
         console.error("Initial content generation failed:", err);
-        // Silent fail - user can still proceed manually
       }).finally(() => {
         setIsGeneratingInitialContent(false);
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       });
     }
-  }, [data.businessCategory, data.businessName, websiteId, business?.placeId, 
-      (siteData?.website?.websiteData as any)?.headline, isGeneratingInitialContent,
-      generateInitialContentMutation.isPending]);
+  }, [data.businessCategory, data.businessName, websiteId, business?.placeId, contentPhase,
+      isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
 
   // ── AI text generation ──────────────────────────────────────────────────
   const generateWithAI = async (field: keyof OnboardingData) => {
@@ -3523,10 +3575,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 contactFormLocked={!data.addOnContactForm}
                 logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
                 headlineFontOverride={data.headlineFont || undefined}
-                // Show skeletons:
-                // 1. While AI is generating initial content
-                // 2. Until user has entered at least businessName (the key personalisation point)
-                isLoading={isGeneratingInitialContent || !data.businessName?.trim()}
+                // Progressive content revelation phase
+                contentPhase={contentPhase}
               />
             </MacbookMockup>
           ) : (

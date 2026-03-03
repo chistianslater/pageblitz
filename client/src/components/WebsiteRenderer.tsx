@@ -57,6 +57,8 @@ interface WebsiteRendererProps {
   businessCategory?: string | null;
   /** When true, shows skeleton placeholders for content that is being generated */
   isLoading?: boolean;
+  /** Progressive content revelation phase: skeleton | colors | images | texts | complete */
+  contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete';
 }
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
@@ -199,6 +201,7 @@ export default function WebsiteRenderer({
   headlineFontOverride,
   businessCategory,
   isLoading = false,
+  contentPhase = 'complete',
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
   const defaultCs = DEFAULT_COLOR_SCHEMES[effectiveLayout] || DEFAULT_COLOR_SCHEMES.clean;
@@ -371,6 +374,7 @@ export default function WebsiteRenderer({
     businessCategory,
     logoUrl: effectiveLogoUrl,
     isLoading,
+    contentPhase,
   };
 
   // Build CSS custom properties string – always set at least the font defaults

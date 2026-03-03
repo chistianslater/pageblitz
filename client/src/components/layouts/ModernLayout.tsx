@@ -35,6 +35,8 @@ interface Props {
   businessCategory?: string | null;
   /** When true, shows skeleton placeholders for missing content */
   isLoading?: boolean;
+  /** Progressive content revelation phase: skeleton | colors | images | texts | complete */
+  contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete';
 }
 
 /**
@@ -90,6 +92,7 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
   logoUrl,
   businessCategory,
   isLoading = false,
+  contentPhase = 'complete',
 }: Props) {
   useScrollReveal();
   return (
@@ -97,10 +100,10 @@ export default function ModernLayout({ websiteData, cs, heroImageUrl, aboutImage
       <ModernNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
       {websiteData.sections.map((section, i) => (
         <div key={i}>
-          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} isLoading={isLoading} />}
-          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} isLoading={isLoading} />}
+          {section.type === "hero" && <ModernHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} isLoading={isLoading} contentPhase={contentPhase} />}
+          {section.type === "about" && <ModernAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} isLoading={isLoading} contentPhase={contentPhase} />}
           {section.type === "gallery" && <ModernGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} businessCategory={businessCategory} isLoading={isLoading} />}
+          {(section.type === "services" || section.type === "features") && <ModernServices section={section} cs={cs} businessCategory={businessCategory} isLoading={isLoading} contentPhase={contentPhase} />}
           {section.type === "menu" && <ModernMenu section={section} cs={cs} />}
           {section.type === "pricelist" && <ModernPricelist section={section} cs={cs} />}
           {section.type === "testimonials" && <ModernTestimonials section={section} cs={cs} />}
@@ -136,7 +139,7 @@ function ModernNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: W
   );
 }
 
-function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, isLoading }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; isLoading?: boolean }) {
+function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData, isLoading, contentPhase }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData; isLoading?: boolean; contentPhase?: 'skeleton' | 'colors' | 'images' | 'texts' | 'complete' }) {
   // Dynamischer TrustText aus der ersten Testimonial-Section
   const testimonialsSection = websiteData?.sections?.find((s: any) => s.type === "testimonials");
   const firstTestimonial = testimonialsSection?.items?.[0];
@@ -144,10 +147,19 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
     || firstTestimonial?.title
     || "Top bewertet von unseren Kunden";
 
-  // Check if content is generic/loading
-  const showHeadlineSkeleton = isLoading || isGenericContent(section.headline);
-  const showSubheadlineSkeleton = isLoading || isGenericContent(section.subheadline);
-  const showContentSkeleton = isLoading || isGenericContent(section.content);
+  // Progressive revelation based on contentPhase
+  // skeleton: everything is skeleton
+  // colors: colors shown, images/texts skeleton
+  // images: colors+images shown, texts skeleton
+  // texts: everything shown but might be generic
+  // complete: everything shown
+  const phase = contentPhase || 'complete';
+  
+  // Determine what to show as skeleton based on phase
+  const showImageSkeleton = phase === 'skeleton';
+  const showHeadlineSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.headline);
+  const showSubheadlineSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.subheadline);
+  const showContentSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.content);
 
   return (
     <section style={{ backgroundColor: cs.background, minHeight: "95vh", display: "flex", position: "relative", overflow: "hidden" }}>
