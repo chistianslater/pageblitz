@@ -782,9 +782,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   useEffect(() => {
     if (!business && siteData?.website && !initialized) {
       // For non-GMB flows, pre-fill from website data if available
-      const website = siteData.website;
-      const businessData = website.business || {};
-      const websiteData = website.websiteData || {};
+      const businessData = (siteData.business || {}) as any;
+      const websiteData = (siteData.website.websiteData || {}) as any;
       
       setData((prev) => ({
         ...prev,
