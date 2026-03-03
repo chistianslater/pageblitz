@@ -2667,16 +2667,19 @@ Kontext: ${input.context}`,
 
         const { businessName, businessCategory } = input;
 
-        // Build context-aware prompt for initial content
-        const prompt = `Erstelle professionelle Website-Texte für ein Unternehmen.
+        // Build context-aware prompt for initial content + services
+        const prompt = `Erstelle professionelle Website-Texte und Leistungen für ein Unternehmen.
 
 Unternehmensname: ${businessName}
 Branche/Kategorie: ${businessCategory}
 
 Generiere folgende Inhalte im JSON-Format:
 1. "headline": Eine überzeugende Hauptüberschrift (max. 8 Wörter) für die Hero-Section
-2. "tagline": Ein knackiger Slogan/Untertitel (max. 12 Wörter)
+2. "tagline": Ein knackiger Slogan/Untertitel (max. 12 Wörter)  
 3. "description": Eine kurze Beschreibung (2-3 Sätze) für die Über-uns-Section
+4. "services": Ein Array mit 3-5 typischen Leistungen für diese Branche. Jede Leistung mit "title" (kurzer Titel, 2-4 Wörter) und "description" (1-2 Sätze Beschreibung)
+
+WICHTIG: Die Leistungen sollen typisch für die Branche "${businessCategory}" sein. Keine generischen Platzhalter wie "Service 1", "Service 2".
 
 Die Texte sollen:
 - Professionell und modern klingen
@@ -2688,7 +2691,11 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
 {
   "headline": "...",
   "tagline": "...",
-  "description": "..."
+  "description": "...",
+  "services": [
+    { "title": "...", "description": "..." },
+    { "title": "...", "description": "..." }
+  ]
 }`;
 
         const response = await invokeLLM({
@@ -2704,7 +2711,12 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "LLM hat keinen Inhalt zurückgegeben" });
         }
 
-        let generatedContent: { headline?: string; tagline?: string; description?: string };
+        let generatedContent: { 
+          headline?: string; 
+          tagline?: string; 
+          description?: string;
+          services?: Array<{ title: string; description: string }>;
+        };
         try {
           const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
           generatedContent = JSON.parse(cleaned);
@@ -2712,8 +2724,16 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "LLM hat kein valides JSON zurückgegeben" });
         }
 
-        // Update websiteData with generated content
+        // Update websiteData with generated content + services
         const currentWebsiteData = (website.websiteData || {}) as Record<string, any>;
+        
+        // Format services for the services/features section
+        const generatedServices = generatedContent.services?.slice(0, 5).map((svc: any) => ({
+          title: svc.title || "Leistung",
+          description: svc.description || "Professionelle Ausführung",
+          icon: null, // Icons can be auto-assigned by the layout
+        })) || [];
+        
         const updatedWebsiteData = {
           ...currentWebsiteData,
           businessName,
@@ -2735,6 +2755,13 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
                 content: generatedContent.description || section.content,
               };
             }
+            if ((section.type === "services" || section.type === "features") && generatedServices.length > 0) {
+              return {
+                ...section,
+                headline: section.headline || `Unsere Leistungen`,
+                items: generatedServices,
+              };
+            }
             return section;
           }) || [],
         };
@@ -2746,6 +2773,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
           headline: generatedContent.headline,
           tagline: generatedContent.tagline,
           description: generatedContent.description,
+          services: generatedServices,
         };
       }),
   }),

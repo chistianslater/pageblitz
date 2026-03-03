@@ -1128,15 +1128,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         businessCategory: data.businessCategory,
       }).then((result) => {
         if (result.success) {
-          // Update local data state with generated content
+          // Update local data state with generated content + services
           setData(prev => ({
             ...prev,
             tagline: result.tagline || prev.tagline,
             description: result.description || prev.description,
+            // Also save generated services to local state
+            topServices: result.services?.map((svc: any) => ({
+              title: svc.title,
+              description: svc.description,
+            })) || prev.topServices,
           }));
           
           // Show success message briefly
-          toast.success("Website-Texte wurden generiert!", { duration: 2000 });
+          toast.success("Website-Texte & Leistungen wurden generiert!", { duration: 2000 });
           
           // IMPORTANT: Refetch site data to update the preview
           // This ensures the generated content is displayed
