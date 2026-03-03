@@ -2564,6 +2564,38 @@ Kontext: ${input.context}`,
       }),
 
     /**
+     * Capture email address as first funnel step – creates a lightweight lead record
+     * with captureStatus=email_captured before the visitor chooses GMB or manual.
+     */
+    captureEmail: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        // Create a minimal placeholder business so we can attach a website record
+        const baseSlug = `lead-${nanoid(8)}`;
+        const businessId = await upsertBusiness({
+          name: "Lead (E-Mail erfasst)",
+          slug: baseSlug,
+          placeId: `email-${nanoid(8)}`,
+          category: "",
+          address: "",
+          phone: "",
+          email: input.email,
+        });
+        const previewToken = nanoid(32);
+        const websiteId = await createGeneratedWebsite({
+          businessId,
+          slug: `email-lead-${baseSlug}`,
+          status: "preview",
+          previewToken,
+          onboardingStatus: "pending",
+          source: "external",
+          customerEmail: input.email,
+          captureStatus: "email_captured",
+        });
+        return { websiteId, previewToken };
+      }),
+
+    /**
      * Test email configuration - sends a test email
      */
     testEmail: publicProcedure

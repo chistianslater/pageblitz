@@ -613,3 +613,8 @@
 - [ ] E-Mail-Eingabe-Modal als erster Schritt im externen Onboarding-Flow (vor GMB-URL-Eingabe)
 - [ ] E-Mail im Backend beim Website-Erstellen als customerEmail speichern (captureStatus = email_captured)
 - [ ] Validierung: gültige E-Mail-Adresse erforderlich, Weiter-Button erst aktiv wenn valide
+
+## E-Mail sofort beim Weiter-Klick im Funnel speichern (Runde 24)
+- [x] Backend: selfService.captureEmail Prozedur (erstellt Lead-Eintrag mit captureStatus=email_captured)
+- [x] Frontend: captureEmail beim Weiter-Klick aufrufen, leadId für spätere Verknüpfung merken
+- [x] Beim späteren start() die leadId übergeben, damit der Eintrag aktualisiert statt neu erstellt wird

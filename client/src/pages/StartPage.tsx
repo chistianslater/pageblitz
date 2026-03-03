@@ -32,7 +32,19 @@ export default function StartPage() {
     category: string | null;
   } | null>(null);
   const [resolveError, setResolveError] = useState<string | null>(null);
+  const [capturedLeadId, setCapturedLeadId] = useState<number | null>(null);
   const [, navigate] = useLocation();
+
+  const captureEmailMutation = trpc.selfService.captureEmail.useMutation({
+    onSuccess: (data) => {
+      setCapturedLeadId(data.websiteId);
+      setStep("choice");
+    },
+    onError: () => {
+      // Silently continue even if capture fails – don’t block the user
+      setStep("choice");
+    },
+  });
 
   const resolveMutation = trpc.selfService.resolveLink.useMutation({
     onSuccess: (data) => {
@@ -68,14 +80,16 @@ export default function StartPage() {
   });
 
   const isLoading = resolveMutation.isPending || startMutation.isPending;
+  const isCapturing = captureEmailMutation.isPending;
 
-  // ── Step 1: E-Mail ──────────────────────────────────
+   // ── Step 1: E-Mail ──────────────────────────────
   const handleEmailNext = () => {
     const email = customerEmail.trim();
     if (!email) { setEmailError("Bitte gib deine E-Mail-Adresse ein"); return; }
     if (!isValidEmail(email)) { setEmailError("Bitte gib eine gültige E-Mail-Adresse ein"); return; }
     setEmailError(null);
-    setStep("choice");
+    // Save email as first funnel step immediately
+    captureEmailMutation.mutate({ email });
   };
 
   // ── Step 2: Choice → Manual ─────────────────────────
@@ -192,13 +206,20 @@ export default function StartPage() {
 
               <Button
                 onClick={handleEmailNext}
-                disabled={!customerEmail.trim()}
+                disabled={!customerEmail.trim() || isCapturing}
                 className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-base"
               >
-                <div className="flex items-center gap-2">
-                  Weiter
-                  <ArrowRight className="w-4 h-4" />
-                </div>
+                {isCapturing ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Wird gespeichert…
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    Weiter
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                )}
               </Button>
             </div>
 
