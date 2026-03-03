@@ -209,10 +209,17 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
+const resolveApiUrl = () => {
+  if (ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0) {
+    // Handle Kimi/Moonshot API which already has /v1 in URL
+    const baseUrl = ENV.forgeApiUrl.replace(/\/$/, "");
+    if (baseUrl.includes("moonshot.cn")) {
+      return `${baseUrl}/chat/completions`;
+    }
+    return `${baseUrl}/v1/chat/completions`;
+  }
+  return "https://forge.manus.im/v1/chat/completions";
+};
 
 const assertApiKey = () => {
   if (!ENV.forgeApiKey) {
@@ -279,8 +286,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     response_format,
   } = params;
 
+  // Detect Kimi/Moonshot API
+  const isKimi = ENV.forgeApiUrl?.includes("moonshot.cn");
+
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: isKimi ? "kimi-k2.5" : "gemini-2.5-flash",
     messages: messages.map(normalizeMessage),
   };
 
@@ -296,9 +306,13 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
+  payload.max_tokens = 32768;
+  
+  // Kimi doesn't support thinking field, only add for non-Kimi APIs
+  if (!isKimi) {
+    payload.thinking = {
+      "budget_tokens": 128
+    };
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
