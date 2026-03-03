@@ -2526,6 +2526,25 @@ Kontext: ${input.context}`,
       }),
 
     /**
+     * Save customer email for admin-generated websites (called from Onboarding Chat step 1)
+     * Sets customerEmail + captureStatus=email_captured on the website record.
+     */
+    saveCustomerEmail: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        email: z.string().email(),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        await updateWebsite(input.websiteId, {
+          customerEmail: input.email,
+          captureStatus: "email_captured",
+        });
+        return { success: true };
+      }),
+
+    /**
      * Send lead nurturing email automatically based on capture status
      */
     sendLeadEmail: publicProcedure

@@ -618,3 +618,8 @@
 - [x] Backend: selfService.captureEmail Prozedur (erstellt Lead-Eintrag mit captureStatus=email_captured)
 - [x] Frontend: captureEmail beim Weiter-Klick aufrufen, leadId für spätere Verknüpfung merken
 - [x] Beim späteren start() die leadId übergeben, damit der Eintrag aktualisiert statt neu erstellt wird
+
+## E-Mail-Abfrage als erster Schritt im Onboarding-Chat (nur bei Admin-generierten Websites)
+- [x] Onboarding-Chat: E-Mail-Frage als allererste Frage wenn source=admin und customerEmail leer
+- [x] E-Mail im Backend speichern (updateWebsite + captureStatus=email_captured) nach Eingabe
+- [x] Wenn source=external und customerEmail bereits vorhanden: E-Mail-Frage überspringen

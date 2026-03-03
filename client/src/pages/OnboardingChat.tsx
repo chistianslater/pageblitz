@@ -690,6 +690,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const generateWebsiteMutation = trpc.selfService.generateWebsite.useMutation();
   const updateCaptureStatusMutation = trpc.selfService.updateCaptureStatus.useMutation();
   const sendLeadEmailMutation = trpc.selfService.sendLeadEmail.useMutation();
+  const saveCustomerEmailMutation = trpc.selfService.saveCustomerEmail.useMutation();
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
 
@@ -1037,8 +1038,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }
       
       const initChat = async () => {
-        setCurrentStep("businessCategory");
-        await addBotMessage(getStepPrompt("businessCategory"), 800);
+        const source = siteData?.website?.source;
+        const hasEmail = !!(siteData?.website as any)?.customerEmail;
+        // For admin-generated websites without a customer email yet,
+        // ask for the email as the very first step.
+        if (source === "admin" && !hasEmail) {
+          setCurrentStep("email");
+          await addBotMessage(
+            "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**.",
+            800
+          );
+        } else {
+          setCurrentStep("businessCategory");
+          await addBotMessage(getStepPrompt("businessCategory"), 800);
+        }
       };
       initChat();
     }
@@ -1253,10 +1266,35 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           await trySaveStep(stepIdx, { legalVatId: vatId });
           break;
         }
-        case "email":
+        case "email": {
+          // Basic email validation
+          if (!val.includes("@") || !val.includes(".")) {
+            toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
+            return;
+          }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
+          // For admin-generated websites: save as customerEmail in DB + set captureStatus
+          const isAdminSite = siteData?.website?.source === "admin";
+          const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
+          if (isAdminSite && !alreadyHasEmail && websiteId) {
+            saveCustomerEmailMutation.mutate(
+              { websiteId, email: val },
+              {
+                onSuccess: async () => {
+                  toast.success("E-Mail gespeichert! ✅");
+                  // Advance to businessCategory instead of the normal next step
+                  await advanceToStep("businessCategory");
+                },
+                onError: () => {
+                  toast.error("E-Mail konnte nicht gespeichert werden.");
+                },
+              }
+            );
+            return; // advanceToStep is called in onSuccess above
+          }
           break;
+        }
         case "businessCategory":
           if (val) {
             addUserMessage(val);
