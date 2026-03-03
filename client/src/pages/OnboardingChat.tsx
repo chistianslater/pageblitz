@@ -1072,9 +1072,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasName = !!data.businessName?.trim();
     const hasWebsiteId = !!websiteId;
     const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
-    const hasExistingContent = !!siteData?.website?.websiteData?.headline && 
-                             !siteData.website.websiteData.headline.includes("Willkommen") &&
-                             !siteData.website.websiteData.headline.includes("hier steht");
+    const wd = siteData?.website?.websiteData as any;
+    const hasExistingContent = !!wd?.headline && 
+                             !wd.headline.includes("Willkommen") &&
+                             !wd.headline.includes("hier steht");
     
     if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && !hasExistingContent && 
         !isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
@@ -1091,7 +1092,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           // Update local data state with generated content
           setData(prev => ({
             ...prev,
-            businessName: result.businessName || prev.businessName,
             tagline: result.tagline || prev.tagline,
             description: result.description || prev.description,
           }));
@@ -1114,7 +1114,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       });
     }
   }, [data.businessCategory, data.businessName, websiteId, business?.placeId, 
-      siteData?.website?.websiteData?.headline, isGeneratingInitialContent,
+      (siteData?.website?.websiteData as any)?.headline, isGeneratingInitialContent,
       generateInitialContentMutation.isPending]);
 
   // ── AI text generation ──────────────────────────────────────────────────
