@@ -213,7 +213,7 @@ const resolveApiUrl = () => {
   if (ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0) {
     // Handle Kimi/Moonshot API which already has /v1 in URL
     const baseUrl = ENV.forgeApiUrl.replace(/\/$/, "");
-    if (baseUrl.includes("moonshot.cn")) {
+    if (baseUrl.includes("moonshot.ai") || baseUrl.includes("moonshot.cn")) {
       return `${baseUrl}/chat/completions`;
     }
     return `${baseUrl}/v1/chat/completions`;
@@ -287,7 +287,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   // Detect Kimi/Moonshot API
-  const isKimi = ENV.forgeApiUrl?.includes("moonshot.cn");
+  const isKimi = ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn");
 
   const payload: Record<string, unknown> = {
     model: isKimi ? "kimi-k2.5" : "gemini-2.5-flash",
