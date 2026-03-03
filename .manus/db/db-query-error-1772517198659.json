@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE `generated_websites` ADD `source` enum('admin','external') DEFAULT 'admin' NOT NULL;\nALTER TABLE `generated_websites` ADD `customerEmail` varchar(320);\nALTER TABLE `generated_websites` ADD `captureStatus` enum('email_captured','onboarding_started','onboarding_completed','converted','abandoned') DEFAULT 'email_captured';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3Chfak3oyAuqdS1.3559b6fd90a8 --database apEw6nxjMUWAAnU5iycQLf --execute ALTER TABLE `generated_websites` ADD `source` enum('admin','external') DEFAULT 'admin' NOT NULL;\nALTER TABLE `generated_websites` ADD `customerEmail` varchar(320);\nALTER TABLE `generated_websites` ADD `captureStatus` enum('email_captured','onboarding_started','onboarding_completed','converted','abandoned') DEFAULT 'email_captured';",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1060 (42S21) at line 1: Duplicate column name 'source'"
+  ]
+}
