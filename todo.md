@@ -608,3 +608,8 @@
 
 ## Bulk-Delete in allen Website-Ansichten (Runde 22)
 - [x] GMB-Backlog-Tab: Checkboxen, "Alle auswählen" und Bulk-Delete für Unternehmen
+
+## E-Mail-Abfrage vor Onboarding-Start (Runde 23)
+- [ ] E-Mail-Eingabe-Modal als erster Schritt im externen Onboarding-Flow (vor GMB-URL-Eingabe)
+- [ ] E-Mail im Backend beim Website-Erstellen als customerEmail speichern (captureStatus = email_captured)
+- [ ] Validierung: gültige E-Mail-Adresse erforderlich, Weiter-Button erst aktiv wenn valide

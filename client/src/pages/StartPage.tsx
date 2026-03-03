@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2, Mail } from "lucide-react";
+import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 // Detect whether a URL looks like a Google Maps / share link
@@ -11,16 +11,19 @@ function isGoogleLink(url: string): boolean {
   return /share\.google\/|maps\.app\.goo\.gl\/|google\.com\/maps\/|maps\.google\.com\//.test(url);
 }
 
-// E-Mail-Validierungsfunktion
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// Step 1 → 2 → 3
+// "email" → "choice" → "gmb" | "manual"
+type Step = "email" | "choice" | "gmb";
+
 export default function StartPage() {
-  const [gmbUrl, setGmbUrl] = useState("");
+  const [step, setStep] = useState<Step>("email");
   const [customerEmail, setCustomerEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"choice" | "gmb" | "manual">("choice");
+  const [gmbUrl, setGmbUrl] = useState("");
   const [resolvedInfo, setResolvedInfo] = useState<{
     businessName: string | null;
     placeId: string | null;
@@ -50,7 +53,7 @@ export default function StartPage() {
     },
     onError: (err) => {
       setResolveError("Fehler beim Abrufen der Daten. Du kannst trotzdem fortfahren.");
-      toast.error("Fehler beim Abrufen der Daten: " + err.message);
+      toast.error("Fehler: " + err.message);
     },
   });
 
@@ -64,58 +67,36 @@ export default function StartPage() {
     },
   });
 
-  const handleUrlChange = (value: string) => {
-    setGmbUrl(value);
-    setResolvedInfo(null);
-    setResolveError(null);
-  };
+  const isLoading = resolveMutation.isPending || startMutation.isPending;
 
-  const validateEmail = (): boolean => {
+  // ── Step 1: E-Mail ──────────────────────────────────
+  const handleEmailNext = () => {
     const email = customerEmail.trim();
-    if (!email) {
-      setEmailError("Bitte gib deine E-Mail-Adresse ein");
-      return false;
-    }
-    if (!isValidEmail(email)) {
-      setEmailError("Bitte gib eine gültige E-Mail-Adresse ein");
-      return false;
-    }
+    if (!email) { setEmailError("Bitte gib deine E-Mail-Adresse ein"); return; }
+    if (!isValidEmail(email)) { setEmailError("Bitte gib eine gültige E-Mail-Adresse ein"); return; }
     setEmailError(null);
-    return true;
+    setStep("choice");
   };
 
-  const handleEmailChange = (value: string) => {
-    setCustomerEmail(value);
-    if (emailError && isValidEmail(value.trim())) {
-      setEmailError(null);
-    }
+  // ── Step 2: Choice → Manual ─────────────────────────
+  const handleManualStart = () => {
+    toast.info("Website wird erstellt...");
+    startMutation.mutate({ customerEmail: customerEmail.trim(), source: "external" });
   };
 
-  const handleResolveAndStart = async () => {
-    if (!validateEmail()) return;
-
+  // ── Step 3: GMB ─────────────────────────────────────
+  const handleResolveAndStart = () => {
     const url = gmbUrl.trim();
-    if (!url) {
-      toast.error("Bitte gib einen Link ein");
-      return;
-    }
-
+    if (!url) { toast.error("Bitte gib einen Link ein"); return; }
     if (isGoogleLink(url)) {
-      // Resolve the link first to get business data
       resolveMutation.mutate({ url });
     } else {
-      // Not a Google link – start without prefill
-      toast.info("Link wird verarbeitet...");
-      startMutation.mutate({
-        gmbUrl: url,
-        customerEmail: customerEmail.trim(),
-        source: "external",
-      });
+      startMutation.mutate({ gmbUrl: url, customerEmail: customerEmail.trim(), source: "external" });
     }
   };
 
   const handleStartWithResolved = () => {
-    if (!validateEmail() || !resolvedInfo) return;
+    if (!resolvedInfo) return;
     startMutation.mutate({
       gmbUrl: gmbUrl.trim(),
       businessName: resolvedInfo.businessName || undefined,
@@ -128,16 +109,13 @@ export default function StartPage() {
     });
   };
 
-  const handleManualStart = () => {
-    if (!validateEmail()) return;
-    toast.info("Website wird erstellt...");
-    startMutation.mutate({
-      customerEmail: customerEmail.trim(),
-      source: "external",
-    });
-  };
-
-  const isLoading = resolveMutation.isPending || startMutation.isPending;
+  // ── Step indicator ──────────────────────────────────
+  const steps = [
+    { id: "email", label: "E-Mail" },
+    { id: "choice", label: "Start" },
+    { id: "gmb", label: "Details" },
+  ];
+  const currentStepIndex = steps.findIndex(s => s.id === step);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center px-4">
@@ -152,42 +130,122 @@ export default function StartPage() {
         </p>
       </div>
 
+      {/* Step Indicator */}
+      <div className="flex items-center gap-2 mb-6">
+        {steps.slice(0, step === "gmb" ? 3 : 2).map((s, i) => (
+          <div key={s.id} className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+              i < currentStepIndex
+                ? "bg-emerald-500 text-white"
+                : i === currentStepIndex
+                ? "bg-indigo-500 text-white ring-2 ring-indigo-400/40"
+                : "bg-slate-700 text-slate-400"
+            }`}>
+              {i < currentStepIndex ? <CheckCircle className="w-4 h-4" /> : i + 1}
+            </div>
+            <span className={`text-xs ${i === currentStepIndex ? "text-white" : "text-slate-500"}`}>{s.label}</span>
+            {i < (step === "gmb" ? 2 : 1) && <div className="w-8 h-px bg-slate-700 mx-1" />}
+          </div>
+        ))}
+      </div>
+
       {/* Card */}
       <div className="w-full max-w-md bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
-        {mode === "choice" && (
+
+        {/* ── Step 1: E-Mail ── */}
+        {step === "email" && (
           <>
-            <h1 className="text-white text-2xl font-bold mb-2 text-center">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                <Mail className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div>
+                <h1 className="text-white text-xl font-bold leading-tight">Deine E-Mail-Adresse</h1>
+                <p className="text-slate-400 text-xs mt-0.5">Damit wir dir deine Website zusenden können</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => {
+                    setCustomerEmail(e.target.value);
+                    if (emailError && isValidEmail(e.target.value.trim())) setEmailError(null);
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleEmailNext()}
+                  placeholder="max@beispiel.de"
+                  autoFocus
+                  className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 text-base ${emailError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                />
+                {emailError ? (
+                  <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {emailError}
+                  </p>
+                ) : (
+                  <p className="text-slate-500 text-xs mt-1.5 flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Kein Spam – nur dein Website-Link und wichtige Updates.
+                  </p>
+                )}
+              </div>
+
+              <Button
+                onClick={handleEmailNext}
+                disabled={!customerEmail.trim()}
+                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-base"
+              >
+                <div className="flex items-center gap-2">
+                  Weiter
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </Button>
+            </div>
+
+            {/* Trust signals */}
+            <div className="mt-8 pt-6 border-t border-slate-700/50">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                {[
+                  { icon: "⚡", text: "In 5 Min. fertig" },
+                  { icon: "🎨", text: "Professionelles Design" },
+                  { icon: "📱", text: "Mobiloptimiert" },
+                ].map((item) => (
+                  <div key={item.text} className="flex flex-col items-center gap-1">
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-slate-400 text-xs">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── Step 2: Choice ── */}
+        {step === "choice" && (
+          <>
+            <button
+              onClick={() => setStep("email")}
+              className="text-slate-400 hover:text-white text-sm mb-5 flex items-center gap-1 transition-colors"
+            >
+              ← Zurück
+            </button>
+
+            <h1 className="text-white text-2xl font-bold mb-1 text-center">
               Wie möchtest du starten?
             </h1>
             <p className="text-slate-400 text-sm text-center mb-6">
-              Mit deinem Google My Business-Profil geht es am schnellsten – wir füllen alles automatisch aus.
+              Mit deinem Google My Business-Profil geht es am schnellsten.
             </p>
 
-            {/* Email Field - Required before starting */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Mail className="w-4 h-4 text-indigo-400" />
-                <span className="text-slate-300 text-sm font-medium">Deine E-Mail-Adresse *</span>
-              </div>
-              <Input
-                type="email"
-                value={customerEmail}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                placeholder="max@beispiel.de"
-                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 ${emailError ? 'border-red-500' : ''}`}
-                disabled={startMutation.isPending}
-              />
-              {emailError && (
-                <p className="text-red-400 text-xs mt-1">{emailError}</p>
-              )}
-              <p className="text-slate-500 text-xs mt-1">
-                Wir senden dir einen Link zur Website und Erinnerungen, falls du abbrechen möchtest.
-              </p>
+            {/* Confirmed email badge */}
+            <div className="flex items-center gap-2 mb-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-emerald-300 text-sm">{customerEmail}</span>
             </div>
 
             <div className="space-y-3">
               <button
-                onClick={() => setMode("gmb")}
+                onClick={() => setStep("gmb")}
                 className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 hover:border-indigo-500/60 transition-all text-left group"
               >
                 <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
@@ -219,33 +277,19 @@ export default function StartPage() {
                 )}
               </button>
             </div>
-
-            {/* Trust signals */}
-            <div className="mt-8 pt-6 border-t border-slate-700/50">
-              <div className="grid grid-cols-3 gap-3 text-center">
-                {[
-                  { icon: "⚡", text: "In 5 Min. fertig" },
-                  { icon: "🎨", text: "Professionelles Design" },
-                  { icon: "📱", text: "Mobiloptimiert" },
-                ].map((item) => (
-                  <div key={item.text} className="flex flex-col items-center gap-1">
-                    <span className="text-xl">{item.icon}</span>
-                    <span className="text-slate-400 text-xs">{item.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </>
         )}
 
-        {mode === "gmb" && (
+        {/* ── Step 3: GMB ── */}
+        {step === "gmb" && (
           <>
             <button
-              onClick={() => { setMode("choice"); setResolvedInfo(null); setResolveError(null); }}
-              className="text-slate-400 hover:text-white text-sm mb-6 flex items-center gap-1 transition-colors"
+              onClick={() => { setStep("choice"); setResolvedInfo(null); setResolveError(null); }}
+              className="text-slate-400 hover:text-white text-sm mb-5 flex items-center gap-1 transition-colors"
             >
               ← Zurück
             </button>
+
             <h1 className="text-white text-2xl font-bold mb-2">
               Google My Business Link
             </h1>
@@ -253,7 +297,6 @@ export default function StartPage() {
               Öffne Google Maps, suche dein Unternehmen und tippe auf <strong className="text-slate-300">„Teilen"</strong> – dann den Link hier einfügen.
             </p>
 
-            {/* How-to hint */}
             <div className="mb-5 p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-start gap-2">
               <Share2 className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
               <p className="text-indigo-300 text-xs leading-relaxed">
@@ -263,36 +306,15 @@ export default function StartPage() {
             </div>
 
             <div className="space-y-4">
-              {/* Email Field */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Mail className="w-4 h-4 text-indigo-400" />
-                  <span className="text-slate-300 text-sm font-medium">Deine E-Mail-Adresse</span>
-                </div>
-                <Input
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder="max@beispiel.de"
-                  className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 ${emailError ? 'border-red-500' : ''}`}
-                  onKeyDown={(e) => e.key === "Enter" && gmbUrl.trim() && !isLoading && handleResolveAndStart()}
-                  disabled={isLoading}
-                />
-                {emailError && (
-                  <p className="text-red-400 text-xs mt-1">{emailError}</p>
-                )}
-              </div>
-
-              <div>
-                <Input
-                  value={gmbUrl}
-                  onChange={(e) => handleUrlChange(e.target.value)}
-                  placeholder="https://share.google/…"
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
-                  onKeyDown={(e) => e.key === "Enter" && gmbUrl.trim() && !isLoading && handleResolveAndStart()}
-                  disabled={isLoading}
-                />
-              </div>
+              <Input
+                value={gmbUrl}
+                onChange={(e) => { setGmbUrl(e.target.value); setResolvedInfo(null); setResolveError(null); }}
+                placeholder="https://share.google/…"
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
+                onKeyDown={(e) => e.key === "Enter" && gmbUrl.trim() && !isLoading && handleResolveAndStart()}
+                disabled={isLoading}
+                autoFocus
+              />
 
               {/* Resolved info card */}
               {resolvedInfo && resolvedInfo.businessName && (
@@ -302,12 +324,8 @@ export default function StartPage() {
                     <span className="text-emerald-400 text-sm font-semibold">Unternehmen gefunden!</span>
                   </div>
                   <p className="text-white font-semibold text-base">{resolvedInfo.businessName}</p>
-                  {resolvedInfo.address && (
-                    <p className="text-slate-400 text-xs mt-1">{resolvedInfo.address}</p>
-                  )}
-                  {resolvedInfo.phone && (
-                    <p className="text-slate-400 text-xs">{resolvedInfo.phone}</p>
-                  )}
+                  {resolvedInfo.address && <p className="text-slate-400 text-xs mt-1">{resolvedInfo.address}</p>}
+                  {resolvedInfo.phone && <p className="text-slate-400 text-xs">{resolvedInfo.phone}</p>}
                 </div>
               )}
 
@@ -318,14 +336,7 @@ export default function StartPage() {
                   <div className="flex-1">
                     <p className="text-amber-400 text-sm">{resolveError}</p>
                     <button
-                      onClick={() => {
-                        if (!validateEmail()) return;
-                        startMutation.mutate({
-                          gmbUrl: gmbUrl.trim(),
-                          customerEmail: customerEmail.trim(),
-                          source: "external",
-                        });
-                      }}
+                      onClick={() => startMutation.mutate({ gmbUrl: gmbUrl.trim(), customerEmail: customerEmail.trim(), source: "external" })}
                       disabled={startMutation.isPending}
                       className="text-amber-300 text-xs underline mt-2 hover:text-amber-200"
                     >
@@ -343,15 +354,9 @@ export default function StartPage() {
                   className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl"
                 >
                   {startMutation.isPending ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Wird vorbereitet...
-                    </div>
+                    <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Wird vorbereitet...</div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Mit diesen Daten starten
-                    </div>
+                    <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" />Mit diesen Daten starten</div>
                   )}
                 </Button>
               ) : (
@@ -366,10 +371,7 @@ export default function StartPage() {
                       {resolveMutation.isPending ? "Daten werden abgerufen…" : "Wird vorbereitet…"}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Jetzt starten
-                    </div>
+                    <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" />Jetzt starten</div>
                   )}
                 </Button>
               )}
