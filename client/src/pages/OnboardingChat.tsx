@@ -3609,6 +3609,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 headlineFontOverride={data.headlineFont || undefined}
                 // Progressive content revelation phase
                 contentPhase={contentPhase}
+                // Skeleton loading state - true when initial content is being generated
+                isLoading={isGeneratingInitialContent || contentPhase === 'skeleton'}
               />
             </MacbookMockup>
           ) : (
