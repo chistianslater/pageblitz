@@ -2646,6 +2646,108 @@ Kontext: ${input.context}`,
 
         return { success: true, emailId: result.id };
       }),
+
+    /**
+     * Generate initial website content based on business category and name.
+     * Called automatically when user provides both category and name in onboarding.
+     * Returns generated headline, tagline, and description.
+     */
+    generateInitialContent: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        businessName: z.string(),
+        businessCategory: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+
+        const business = await getBusinessById(website.businessId);
+        if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
+
+        const { businessName, businessCategory } = input;
+
+        // Build context-aware prompt for initial content
+        const prompt = `Erstelle professionelle Website-Texte für ein Unternehmen.
+
+Unternehmensname: ${businessName}
+Branche/Kategorie: ${businessCategory}
+
+Generiere folgende Inhalte im JSON-Format:
+1. "headline": Eine überzeugende Hauptüberschrift (max. 8 Wörter) für die Hero-Section
+2. "tagline": Ein knackiger Slogan/Untertitel (max. 12 Wörter)
+3. "description": Eine kurze Beschreibung (2-3 Sätze) für die Über-uns-Section
+
+Die Texte sollen:
+- Professionell und modern klingen
+- Zur Branche passen (Fachbegriffe verwenden wo angemessen)
+- Kunden ansprechen und Vertrauen aufbauen
+- Konkret und spezifisch sein (nicht generisch)
+
+Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
+{
+  "headline": "...",
+  "tagline": "...",
+  "description": "..."
+}`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Du bist ein professioneller Werbetexter für deutsche Unternehmenswebsites. Antworte AUSSCHLIESSLICH mit validem JSON." },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== "string") {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "LLM hat keinen Inhalt zurückgegeben" });
+        }
+
+        let generatedContent: { headline?: string; tagline?: string; description?: string };
+        try {
+          const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+          generatedContent = JSON.parse(cleaned);
+        } catch {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "LLM hat kein valides JSON zurückgegeben" });
+        }
+
+        // Update websiteData with generated content
+        const currentWebsiteData = (website.websiteData || {}) as Record<string, any>;
+        const updatedWebsiteData = {
+          ...currentWebsiteData,
+          businessName,
+          headline: generatedContent.headline || currentWebsiteData.headline,
+          tagline: generatedContent.tagline || currentWebsiteData.tagline,
+          description: generatedContent.description || currentWebsiteData.description,
+          sections: currentWebsiteData.sections?.map((section: any) => {
+            if (section.type === "hero") {
+              return {
+                ...section,
+                headline: generatedContent.headline || section.headline,
+                subheadline: generatedContent.tagline || section.subheadline,
+              };
+            }
+            if (section.type === "about") {
+              return {
+                ...section,
+                headline: generatedContent.headline ? `Über ${businessName}` : section.headline,
+                content: generatedContent.description || section.content,
+              };
+            }
+            return section;
+          }) || [],
+        };
+
+        await updateWebsite(input.websiteId, { websiteData: updatedWebsiteData });
+
+        return {
+          success: true,
+          headline: generatedContent.headline,
+          tagline: generatedContent.tagline,
+          description: generatedContent.description,
+        };
+      }),
   }),
 
   // ── Admin: Lead Funnel ──────────────────────────────────────

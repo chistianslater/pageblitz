@@ -691,8 +691,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const updateCaptureStatusMutation = trpc.selfService.updateCaptureStatus.useMutation();
   const sendLeadEmailMutation = trpc.selfService.sendLeadEmail.useMutation();
   const saveCustomerEmailMutation = trpc.selfService.saveCustomerEmail.useMutation();
+  const generateInitialContentMutation = trpc.selfService.generateInitialContent.useMutation();
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
+  // Track if initial content is being generated for skeleton loading
+  const [isGeneratingInitialContent, setIsGeneratingInitialContent] = useState(false);
 
 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
@@ -1056,6 +1059,63 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       initChat();
     }
   }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source]);
+
+  // ── Auto-generate initial content after businessCategory + businessName ─────────
+  useEffect(() => {
+    // Only auto-generate if:
+    // 1. We have both category and name
+    // 2. We have a websiteId
+    // 3. Content hasn't been generated yet (headline is empty/generic)
+    // 4. Not currently generating something else
+    // 5. Not for GMB flows (they already have more context and generate immediately)
+    const hasCategory = !!data.businessCategory?.trim();
+    const hasName = !!data.businessName?.trim();
+    const hasWebsiteId = !!websiteId;
+    const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
+    const hasExistingContent = !!siteData?.website?.websiteData?.headline && 
+                             !siteData.website.websiteData.headline.includes("Willkommen") &&
+                             !siteData.website.websiteData.headline.includes("hier steht");
+    
+    if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && !hasExistingContent && 
+        !isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
+      
+      // Check if we already have enough info to generate
+      setIsGeneratingInitialContent(true);
+      
+      generateInitialContentMutation.mutateAsync({
+        websiteId,
+        businessName: data.businessName,
+        businessCategory: data.businessCategory,
+      }).then((result) => {
+        if (result.success) {
+          // Update local data state with generated content
+          setData(prev => ({
+            ...prev,
+            businessName: result.businessName || prev.businessName,
+            tagline: result.tagline || prev.tagline,
+            description: result.description || prev.description,
+          }));
+          
+          // Show success message briefly
+          toast.success("Website-Texte wurden generiert!", { duration: 2000 });
+          
+          // Refetch site data to update the preview
+          // We use a small timeout to ensure the DB update is complete
+          setTimeout(() => {
+            // The site data will refresh automatically via tRPC's caching
+            // But we can trigger a manual refetch if needed
+          }, 500);
+        }
+      }).catch((err) => {
+        console.error("Initial content generation failed:", err);
+        // Silent fail - user can still proceed manually
+      }).finally(() => {
+        setIsGeneratingInitialContent(false);
+      });
+    }
+  }, [data.businessCategory, data.businessName, websiteId, business?.placeId, 
+      siteData?.website?.websiteData?.headline, isGeneratingInitialContent,
+      generateInitialContentMutation.isPending]);
 
   // ── AI text generation ──────────────────────────────────────────────────
   const generateWithAI = async (field: keyof OnboardingData) => {
@@ -3406,6 +3466,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 contactFormLocked={!data.addOnContactForm}
                 logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
                 headlineFontOverride={data.headlineFont || undefined}
+                isLoading={isGeneratingInitialContent}
               />
             </MacbookMockup>
           ) : (

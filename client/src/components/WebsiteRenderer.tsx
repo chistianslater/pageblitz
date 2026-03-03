@@ -54,6 +54,8 @@ interface WebsiteRendererProps {
   headlineFontOverride?: string;
   /** Business category/industry for industry-specific stats and content */
   businessCategory?: string | null;
+  /** When true, shows skeleton placeholders for content that is being generated */
+  isLoading?: boolean;
 }
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
@@ -195,6 +197,7 @@ export default function WebsiteRenderer({
   logoFont,
   headlineFontOverride,
   businessCategory,
+  isLoading = false,
 }: WebsiteRendererProps) {
   const effectiveLayout = pickLayout(websiteData, layoutStyle);
   const defaultCs = DEFAULT_COLOR_SCHEMES[effectiveLayout] || DEFAULT_COLOR_SCHEMES.clean;
@@ -366,6 +369,7 @@ export default function WebsiteRenderer({
     contactFormLocked,
     businessCategory,
     logoUrl: effectiveLogoUrl,
+    isLoading,
   };
 
   // Build CSS custom properties string – always set at least the font defaults
