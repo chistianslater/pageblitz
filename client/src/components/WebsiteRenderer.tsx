@@ -1,5 +1,5 @@
 /**
- * WebsiteRenderer – Master dispatcher for 12 layout personalities
+ * WebsiteRenderer – Master dispatcher for 10 layout personalities
  *
  * Design Token Injection:
  * When websiteData.designTokens is present (AI-generated), those tokens are
@@ -21,18 +21,14 @@ import { getSafeHeadingColor, getContrastColor, isLightColor, getLuminance, hexT
 import { LAYOUT_FONTS, LAYOUT_FONTS_DEFAULT, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FALLBACK_IMAGES, withOnColors } from "@shared/layoutConfig";
 import ElegantLayout from "./layouts/ElegantLayout";
 import BoldLayout from "./layouts/BoldLayout";
-import WarmLayout from "./layouts/WarmLayout";
 import CleanLayout from "./layouts/CleanLayout";
-import DynamicLayout from "./layouts/DynamicLayout";
 import LuxuryLayout from "./layouts/LuxuryLayout";
 import CraftLayout from "./layouts/CraftLayout";
 import FreshLayout from "./layouts/FreshLayout";
 import TrustLayout from "./layouts/TrustLayout";
 import ModernLayout from "./layouts/ModernLayout";
-import VibrantLayout from "./layouts/VibrantLayout";
 import NaturalLayout from "./layouts/NaturalLayout";
 import PremiumLayout from "./layouts/PremiumLayout";
-import SkeletonOverlay from "./SkeletonOverlay";
 
 interface WebsiteRendererProps {
   websiteData: WebsiteData;
@@ -64,34 +60,34 @@ interface WebsiteRendererProps {
 
 // ── Industry → Layout Pool ────────────────────────────────────────────────────
 const INDUSTRY_POOLS: Array<{ keywords: RegExp; pool: string[] }> = [
-  // Beauty/Friseur: [0] dark luxury | [1] light elegant serif | [2] fresh/airy
-  { keywords: /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/i, pool: ["luxury", "elegant", "fresh"] },
-  // Restaurant/Food: [0] warm earthy | [1] fresh modern | [2] dark craft
-  { keywords: /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|confectionery/i, pool: ["warm", "fresh", "craft"] },
-  // Handwerk/Bau: [0] dark bold | [1] light trust/professional | [2] minimal modern
-  { keywords: /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|carpenter|painter|construction|renovation|installation|tischler|fliesenleger|bodenleger|trockenbauer/i, pool: ["bold", "trust", "modern"] },
-  // Auto/KFZ: [0] dark luxury | [1] dark craft | [2] light clean
-  { keywords: /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire/i, pool: ["luxury", "craft", "clean"] },
-  // Fitness/Sport: [0] dark vibrant | [1] dark dynamic | [2] light fresh
-  { keywords: /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance/i, pool: ["vibrant", "dynamic", "fresh"] },
-  // Medizin/Gesundheit: [0] light trust | [1] light clean | [2] warm natural
-  { keywords: /arzt|zahnarzt|medizin|doctor|dental|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker/i, pool: ["trust", "clean", "natural"] },
-  // Recht/Finanzen/Beratung: [0] light trust | [1] dark luxury | [2] minimal modern
-  { keywords: /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|tax|finanz|wirtschaft|unternehmensberatung|notariat|immobilien|makler|real.?estate/i, pool: ["trust", "luxury", "modern"] },
-  // Bio/Natur/Garten: [0] light natural | [1] warm earthy | [2] fresh airy
-  { keywords: /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/i, pool: ["natural", "warm", "fresh"] },
-  // Reinigung/Service/Security: [0] dark bold | [1] light trust | [2] minimal clean
+  // Beauty/Friseur: [0] elegant | [1] natural | [2] fresh
+  { keywords: /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading/i, pool: ["elegant", "natural", "fresh"] },
+  // Restaurant/Food: [0] fresh | [1] elegant | [2] modern
+  { keywords: /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|pizza|sushi|burger|gastronomie|bakery|patisserie|confectionery/i, pool: ["fresh", "elegant", "modern"] },
+  // Handwerk/Bau: [0] bold | [1] craft | [2] trust
+  { keywords: /handwerk|bau|elektriker|dachdecker|sanitär|maler|zimmermann|schreiner|klempner|heizung|contractor|roofing|plumber|carpenter|painter|construction|renovation|installation|tischler|fliesenleger|bodenleger|trockenbauer/i, pool: ["bold", "craft", "trust"] },
+  // Auto/KFZ: [0] luxury | [1] bold | [2] modern
+  { keywords: /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire/i, pool: ["luxury", "bold", "modern"] },
+  // Fitness/Sport: [0] bold | [1] modern | [2] natural
+  { keywords: /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance/i, pool: ["bold", "modern", "natural"] },
+  // Medizin/Gesundheit: [0] clean | [1] trust | [2] natural
+  { keywords: /arzt|zahnarzt|medizin|doctor|dental|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker/i, pool: ["clean", "trust", "natural"] },
+  // Recht/Finanzen/Beratung: [0] trust | [1] premium | [2] modern
+  { keywords: /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|tax|finanz|wirtschaft|unternehmensberatung|notariat|immobilien|makler|real.?estate/i, pool: ["trust", "premium", "modern"] },
+  // Bio/Natur/Garten: [0] natural | [1] fresh | [2] elegant
+  { keywords: /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable/i, pool: ["natural", "fresh", "elegant"] },
+  // Reinigung/Service/Security: [0] bold | [1] trust | [2] clean
   { keywords: /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving/i, pool: ["bold", "trust", "clean"] },
-  // Tech/Digital/Agency: [0] minimal modern | [1] dark dynamic | [2] vibrant
-  { keywords: /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/i, pool: ["modern", "dynamic", "vibrant"] },
-  // Bildung/Coaching: [0] light trust | [1] fresh airy | [2] warm natural
-  { keywords: /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung/i, pool: ["trust", "fresh", "natural"] },
-  // Hotel/Event/Reise: [0] dark luxury | [1] warm elegant | [2] light fresh
-  { keywords: /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour/i, pool: ["luxury", "warm", "elegant"] },
+  // Tech/Digital/Agency: [0] modern | [1] bold | [2] premium
+  { keywords: /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup/i, pool: ["modern", "bold", "premium"] },
+  // Bildung/Coaching: [0] trust | [1] clean | [2] natural
+  { keywords: /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung/i, pool: ["trust", "clean", "natural"] },
+  // Hotel/Event/Reise: [0] luxury | [1] elegant | [2] fresh
+  { keywords: /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour/i, pool: ["luxury", "elegant", "fresh"] },
 ];
 
-const ALL_LAYOUTS = ["elegant", "bold", "warm", "clean", "dynamic", "luxury", "craft", "fresh", "trust", "modern", "vibrant", "natural"];
-const DEFAULT_POOL = ["clean", "modern", "trust", "fresh"];
+const ALL_LAYOUTS = ["elegant", "bold", "clean", "luxury", "craft", "fresh", "trust", "modern", "natural", "premium"];
+const DEFAULT_POOL = ["modern", "clean", "trust", "elegant"];
 
 function hashString(s: string): number {
   let h = 0;
@@ -241,7 +237,7 @@ export default function WebsiteRenderer({
     const lighter = Math.max(lum, textLum);
     const darker = Math.min(lum, textLum);
     const ratio = (lighter + 0.05) / (darker + 0.05);
-    if (ratio >= 3.0) return rawCs.text; // sufficient contrast → keep
+    if (ratio >= 3.0) return rawCs.text;
     return isLightColor(bgColor) ? "#0f172a" : "#f8fafc";
   })();
 
@@ -264,27 +260,18 @@ export default function WebsiteRenderer({
   const safePrimaryOnWhite = getSafeHeadingColor("#ffffff", rawCs.primary);
 
   // ─── Derivation of a "Deep" version of the secondary color ───────────────────
-  // This is used for icons/accents in sections that use the secondary color as bg.
-  // It creates a high-end monochromatic look.
   const deepSecondary = (() => {
     const isLight = isLightColor(surfaceColor);
     const rgb = hexToRgb(surfaceColor);
     if (!rgb) return rawCs.primary;
-    
-    // If background is light, we need a very dark version for icons
-    // If background is dark, we need a very light version
     const factor = isLight ? 0.35 : 1.6; 
     const clamp = (v: number) => Math.max(0, Math.min(255, Math.floor(v * factor)));
     const toHex = (v: number) => v.toString(16).padStart(2, "0");
     return `#${toHex(clamp(rgb.r))}${toHex(clamp(rgb.g))}${toHex(clamp(rgb.b))}`;
   })();
 
-  // Use the primary color as the default icon color, 
-  // but if the primary doesn't contrast well enough, 
-  // use the deep secondary instead of just falling back to black/white.
   const accentOnSurface = (() => {
     const primaryOnSurface = getSafeHeadingColor(surfaceColor, rawCs.primary);
-    // If primaryOnSurface is a generic fallback (black/white), try deepSecondary
     if (primaryOnSurface === "#1a1a1a" || primaryOnSurface === "#f5f5f5" || primaryOnSurface === "#000000" || primaryOnSurface === "#ffffff") {
       const secondaryOnSurface = getSafeHeadingColor(surfaceColor, deepSecondary);
       return secondaryOnSurface;
@@ -312,7 +299,6 @@ export default function WebsiteRenderer({
   }
 
   // Inject logoFont as CSS variable for real-time logo preview during onboarding
-  // Accepts both the direct prop and the legacy _logoFont/_brandLogoFont from websiteData
   const effectiveLogoFont = logoFont
     || (websiteData as any)?._logoFont as string | undefined
     || (websiteData as any)?._brandLogoFont as string | undefined;
@@ -347,94 +333,65 @@ export default function WebsiteRenderer({
     const url = buildGoogleFontsUrl(fontsToLoad);
     if (!url) return;
     const id = "site-google-fonts";
-    document.getElementById(id)?.remove(); // Remove old to force refresh
+    document.getElementById(id)?.remove();
     const link = document.createElement("link");
     link.id = id;
     link.rel = "stylesheet";
     link.href = url;
     document.head.appendChild(link);
     return () => { document.getElementById(id)?.remove(); };
-  }, [fontsToLoad.join(",")]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fontsToLoad.join(",")]);
 
-  // Show all sections including AI-generated testimonials (they are always in German)
   const effectiveAboutImage = aboutImageUrl || effectiveHeroImage;
-
-  const sharedProps = {
-    websiteData,
-    cs,
-    heroImageUrl: effectiveHeroImage,
-    aboutImageUrl: effectiveAboutImage,
-    showActivateButton,
-    onActivate,
-    businessPhone,
-    businessAddress,
-    businessEmail,
-    openingHours,
-    slug,
-    contactFormLocked,
-    businessCategory,
-    logoUrl: effectiveLogoUrl,
-    isLoading,
-    contentPhase,
-  };
 
   // Build CSS custom properties string – always set at least the font defaults
   let tokenStyle = tokens
     ? buildTokenStyles(tokens, cs)
     : `--site-font-headline: ${fontDefaults.headline}; --site-font-body: ${fontDefaults.body};`;
 
-  // Always inject the surface color as --site-color-surface so layouts without designTokens
-  // can also pick it up. Also override --site-section-bg-2 with the user secondary.
   tokenStyle += `; --site-color-surface: ${cs.surface}; --site-section-bg-2: ${cs.surface};`;
   if (userSecondary) {
-    // Explicit user-chosen secondary: also override section-bg-2 for layouts that use it
     tokenStyle += `; --site-user-secondary: ${userSecondary};`;
   }
 
   // ─── Contrast-safe text colors ───────────────────────────────────────────────
-  // Ensure headings and nav/logo text are always readable against their backgrounds.
-  // --site-heading-on-bg: safe heading color on the main background
-  // --site-heading-on-surface: safe heading color on surface/section-bg-2
-  // --site-nav-text: safe nav/logo text color on the primary-colored navbar
   const headingOnBg = getSafeHeadingColor(cs.background || "#ffffff", cs.primary);
   const headingOnSurface = getSafeHeadingColor(cs.surface || "#f5f5f5", cs.primary);
   const navTextColor = getContrastColor(cs.primary);
-  // On very light primary (e.g. cream/white), the nav bg is often white → use dark text
   const navBgIsLight = isLightColor(cs.primary);
-  // Muted text on primary background (for subtitles in CTA sections)
   const navTextMuted = navBgIsLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.75)";
-  
-  // Create a subtle version of the accent color (for icon backgrounds etc.)
   const accentOnSurfaceSubtle = `${accentOnSurface}15`;
   
-  // Use the accentOnSurface for icons and small labels on surface backgrounds
   tokenStyle += `; --site-heading-on-bg: ${headingOnBg}; --site-heading-on-surface: ${headingOnSurface}; --site-nav-text: ${navTextColor}; --site-nav-text-muted: ${navTextMuted}; --site-nav-bg-is-light: ${navBgIsLight ? "1" : "0"}; --site-primary-on-bg: ${safePrimaryOnBg}; --site-primary-on-surface: ${accentOnSurface}; --site-primary-on-surface-subtle: ${accentOnSurfaceSubtle}; --site-primary-on-white: ${safePrimaryOnWhite};`;
 
-  // Real-time headline font override (from onboarding chat selection)
   if (headlineFontOverride) {
     tokenStyle += `; --site-font-headline: '${headlineFontOverride}', serif;`;
   }
 
+  // Simple layout props
+  const layoutProps = {
+    websiteData,
+    cs,
+    heroImageUrl: effectiveHeroImage,
+    isLoading,
+  };
+
   const layout = (() => {
     switch (effectiveLayout) {
-      case "elegant":  return <ElegantLayout {...sharedProps} />;
-      case "bold":     return <BoldLayout {...sharedProps} />;
-      case "warm":     return <WarmLayout {...sharedProps} />;
-      case "clean":    return <CleanLayout {...sharedProps} />;
-      case "dynamic":  return <DynamicLayout {...sharedProps} />;
-      case "luxury":   return <LuxuryLayout {...sharedProps} />;
-      case "craft":    return <CraftLayout {...sharedProps} />;
-      case "fresh":    return <FreshLayout {...sharedProps} />;
-      case "trust":    return <TrustLayout {...sharedProps} />;
-      case "modern":   return <ModernLayout {...sharedProps} />;
-      case "vibrant":  return <VibrantLayout {...sharedProps} />;
-      case "natural":  return <NaturalLayout {...sharedProps} />;
-      default:         return <PremiumLayout {...sharedProps} />;
+      case "elegant":  return <ElegantLayout {...layoutProps} />;
+      case "bold":     return <BoldLayout {...layoutProps} />;
+      case "clean":    return <CleanLayout {...layoutProps} />;
+      case "luxury":   return <LuxuryLayout {...layoutProps} />;
+      case "craft":    return <CraftLayout {...layoutProps} />;
+      case "fresh":    return <FreshLayout {...layoutProps} />;
+      case "trust":    return <TrustLayout {...layoutProps} />;
+      case "modern":   return <ModernLayout {...layoutProps} />;
+      case "natural":  return <NaturalLayout {...layoutProps} />;
+      case "premium":  return <PremiumLayout {...layoutProps} />;
+      default:         return <ModernLayout {...layoutProps} />;
     }
   })();
 
-  // Wrap with a real block div (NOT display:contents) so CSS custom properties
-  // are properly inherited by all child elements. The div itself is invisible.
   return (
     <div
       ref={(el) => {
@@ -442,7 +399,7 @@ export default function WebsiteRenderer({
       }}
       style={{ display: "block", minHeight: "100vh", position: "relative" }}
     >
-      {isLoading ? <SkeletonOverlay cs={cs} /> : layout}
+      {layout}
     </div>
   );
 }

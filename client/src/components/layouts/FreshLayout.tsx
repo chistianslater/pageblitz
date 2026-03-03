@@ -1,547 +1,92 @@
 /**
- * FRESH Layout – Café, Bakery, Organic Shop, Wellness, Florist
- * Inspired by: Brew & Bloom template (light bg, blue accents, illustrated icons, scattered elements)
- * Typography: Plus Jakarta Sans (headlines) + Instrument Sans (body)
- * Feel: Warm, artisanal, handcrafted, inviting, playful
- * Structure: Centered hero with decorative elements, blue feature block, mosaic gallery, card services
+ * FRESH Layout V2 – Gastronomy & Food
+ * Typography: Playfair Display (serif headlines) + Inter (body)
+ * Feel: Organic, appetizing, vibrant, handcrafted
+ * Structure: Centered hero, floating elements, warm colors
  */
-import { useState } from "react";
-import { Phone, MapPin, Clock, Mail, Star, ChevronDown, ChevronUp, Heart, Coffee, Leaf, Sun, Zap, ArrowRight } from "lucide-react";
-import { IndustryIcon, getServiceIcon } from "../IndustryIcon";
-import { toast } from "sonner";
-import type { WebsiteData, WebsiteSection, ColorScheme } from "@shared/types";
-import { useScrollReveal } from "@/hooks/useAnimations";
-
-const SERIF = "var(--site-font-headline, 'Plus Jakarta Sans', sans-serif)";
-const LOGO_FONT = "var(--logo-font, var(--site-font-headline, 'Plus Jakarta Sans', sans-serif))";
-const SANS = "var(--site-font-body, 'Instrument Sans', 'Inter', sans-serif)";
+import type { WebsiteData, ColorScheme } from "@shared/types";
 
 interface Props {
   websiteData: WebsiteData;
   cs: ColorScheme;
   heroImageUrl: string;
-  aboutImageUrl?: string;
-  showActivateButton?: boolean;
-  onActivate?: () => void;
-  businessPhone?: string | null;
-  businessAddress?: string | null;
-  businessEmail?: string | null;
-  openingHours?: string[];
-  slug?: string | null;
-  contactFormLocked?: boolean;
-  logoUrl?: string | null;
-  businessCategory?: string | null;
+  isLoading?: boolean;
 }
 
-export default function FreshLayout({ websiteData, cs, heroImageUrl, aboutImageUrl, showActivateButton, onActivate, businessPhone, businessAddress, businessEmail, openingHours = [],
-  slug,
-  contactFormLocked = false,
-  logoUrl,
-  businessCategory,
-}: Props) {
-  useScrollReveal();
-
+// Skeleton Loading Component
+function FreshSkeleton({ cs }: { cs: ColorScheme }) {
   return (
-    <div style={{ fontFamily: SANS, backgroundColor: cs.background, color: cs.onBackground }}>
-      <FreshNav websiteData={websiteData} cs={cs} businessPhone={businessPhone} logoUrl={logoUrl} />
-      {websiteData.sections.map((section, i) => (
-        <div key={i}>
-          {section.type === "hero" && <FreshHero section={section} cs={cs} heroImageUrl={heroImageUrl} showActivateButton={showActivateButton} onActivate={onActivate} websiteData={websiteData} />}
-          {section.type === "about" && <FreshAbout section={section} cs={cs} heroImageUrl={aboutImageUrl || heroImageUrl} />}
-          {section.type === "gallery" && <FreshGallery section={section} cs={cs} />}
-          {(section.type === "services" || section.type === "features") && <FreshServices section={section} cs={cs} businessCategory={businessCategory} />}
-          {section.type === "menu" && <FreshMenu section={section} cs={cs} />}
-          {section.type === "pricelist" && <FreshPricelist section={section} cs={cs} />}
-          {section.type === "testimonials" && <FreshTestimonials section={section} cs={cs} />}
-          {section.type === "faq" && <FreshFAQ section={section} cs={cs} />}
-          {section.type === "contact" && (
-            <FreshContact section={section} cs={cs} phone={businessPhone} address={businessAddress} email={businessEmail} hours={openingHours} isLocked={contactFormLocked} />
-          )}
-          {section.type === "cta" && <FreshCTA section={section} cs={cs} showActivateButton={showActivateButton} onActivate={onActivate} />}
+    <div className="min-h-screen bg-[#FAF9F6] animate-pulse">
+      <section className="pt-24 md:pt-32 pb-16 md:pb-20 text-center relative overflow-hidden px-4">
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <div className="h-6 w-40 bg-neutral-200 rounded-full mx-auto mb-6 md:mb-8" />
+          <div className="space-y-2 mb-10 md:mb-16">
+            <div className="h-10 md:h-16 w-full bg-neutral-200 rounded mx-auto" />
+            <div className="h-10 md:h-16 w-3/4 bg-neutral-200 rounded mx-auto" />
+          </div>
+          <div className="relative inline-block">
+            <div className="rounded-[2rem] md:rounded-[4rem] overflow-hidden aspect-video w-full max-w-3xl bg-neutral-200" />
+          </div>
         </div>
-      ))}
-      <FreshFooter websiteData={websiteData} cs={cs} slug={slug} />
+      </section>
     </div>
   );
 }
 
-function FreshNav({ websiteData, cs, businessPhone, logoUrl }: { websiteData: WebsiteData; cs: ColorScheme; businessPhone?: string | null; logoUrl?: string | null }) {
+export default function FreshLayout({ websiteData, cs, heroImageUrl, isLoading }: Props) {
+  if (isLoading) {
+    return <FreshSkeleton cs={cs} />;
+  }
+
   return (
-    <nav data-section="header" style={{ backgroundColor: cs.background, borderBottom: `1px solid ${cs.onBackground}10`, fontFamily: SANS }} className="sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-          {logoUrl ? (<img src={logoUrl} alt={websiteData.businessName} style={{ height: "2rem", width: "auto", maxWidth: "160px", objectFit: "contain" }} />) : <span style={{ fontFamily: LOGO_FONT, fontSize: "1.4rem", fontWeight: 700, color: cs.onBackground }}>{websiteData.businessName}</span>}
-          {websiteData.tagline && <span style={{ fontSize: "0.65rem", color: cs.primary, letterSpacing: "0.1em", fontWeight: 600 }}>{websiteData.tagline.slice(0, 35)}</span>}
+    <div className="bg-[#FAF9F6]">
+      {/* Hero Section */}
+      <section className="pt-24 md:pt-32 pb-16 md:pb-20 text-center relative overflow-hidden">
+        <div className="absolute top-10 md:top-20 left-1/2 -translate-x-1/2 text-[15vw] md:text-[20vw] font-black text-black/[0.02] select-none uppercase tracking-tighter pointer-events-none">
+          Handmade
         </div>
-        <div className="hidden md:flex items-center gap-8">
-          {["Angebot", "Über uns", "Kontakt"].map(label => (
-            <a key={label} href={`#${label.toLowerCase()}`} style={{ fontSize: "0.85rem", color: cs.onBackground, opacity: 0.7, fontWeight: 600 }} className="hover:text-primary transition-colors">{label}</a>
-          ))}
-        </div>
-        {businessPhone && (
-          <a href={`tel:${businessPhone}`} style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "0.55rem 1.25rem", fontSize: "0.8rem", borderRadius: "2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }} className="hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
-            <Phone className="h-3.5 w-3.5" /> Reservieren
-          </a>
-        )}
-      </div>
-    </nav>
-  );
-}
-
-function FreshHero({ section, cs, heroImageUrl, showActivateButton, onActivate, websiteData }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string; showActivateButton?: boolean; onActivate?: () => void; websiteData: WebsiteData }) {
-  return (
-    <section style={{ backgroundColor: cs.background, padding: "8rem 0 4rem", overflow: "hidden", position: "relative" }}>
-      <div style={{ position: "absolute", top: "-5%", left: "-5%", width: "30vw", height: "30vw", backgroundColor: `${cs.primary}08`, borderRadius: "50%", filter: "blur(60px)", zIndex: 0 }} />
-      <div style={{ position: "absolute", bottom: "10%", right: "5%", width: "20vw", height: "20vw", backgroundColor: `${cs.secondary || cs.primary}05`, borderRadius: "50%", filter: "blur(40px)", zIndex: 0 }} />
-      
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-16 items-center">
-          <div className="lg:col-span-7">
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.75rem", marginBottom: "2.5rem" }} className="hero-animate-badge">
-              <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}15`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Sun className="h-5 w-5" style={{ color: cs.primary }} />
-              </div>
-              <span style={{ fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>{websiteData.tagline?.split(" ")[0] || "Fresh"} & Local</span>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6">
+          <span className="inline-block px-3 md:px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest mb-6 md:mb-8">
+            Daily Fresh & Local
+          </span>
+          <h1 className="font-serif text-[8vw] md:text-[7vw] leading-none mb-10 md:mb-16 italic">
+            Authentic Flavors. <br/> Modern Spirit.
+          </h1>
+          <div className="relative inline-block group">
+            <div className="rounded-[2rem] md:rounded-[4rem] overflow-hidden shadow-2xl rotate-2 group-hover:rotate-0 transition-transform duration-700">
+              <img 
+                src={heroImageUrl} 
+                className="w-full max-w-3xl aspect-video object-cover scale-110 group-hover:scale-100 transition-transform duration-1000" 
+                alt=""
+              />
             </div>
-
-            <h1 style={{ 
-              fontFamily: SERIF, 
-              fontSize: "clamp(2.5rem, 5vw, 4rem)", 
-              fontWeight: 700, 
-              color: cs.onBackground, 
-              lineHeight: 1.05, 
-              letterSpacing: "-0.02em", 
-              marginBottom: "2.5rem",
-              overflowWrap: "break-word",
-              wordBreak: "break-word"
-            }} className="hero-animate-headline">
-              {section.headline?.split(" ").map((word, i) => (
-                <span key={i} style={{ display: i === 1 ? "block" : "inline", fontStyle: i === 1 ? "italic" : "normal", color: i === 1 ? cs.primary : "inherit" }}>
-                  {word}{" "}
-                </span>
-              ))}
-            </h1>
-
-            <div style={{ display: "flex", gap: "2rem", marginBottom: "3.5rem" }} className="hero-animate-sub">
-              <div className="max-w-md">
-                {section.subheadline && <p style={{ fontSize: "1.2rem", color: cs.onBackground, opacity: 0.8, lineHeight: 1.6, marginBottom: "1rem", fontWeight: 500 }}>{section.subheadline}</p>}
-                {section.content && <p style={{ fontSize: "1rem", color: cs.onBackground, opacity: 0.6, lineHeight: 1.8 }}>{section.content}</p>}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-6 hero-animate-cta">
-              {section.ctaText && (
-                <a href={section.ctaLink || "#kontakt"} 
-                  style={{ backgroundColor: cs.onBackground, color: cs.background, padding: "1.25rem 3.5rem", fontSize: "0.9rem", borderRadius: "100px", fontWeight: 800, transition: "all 0.4s ease" }} 
-                  className="hover:scale-105 shadow-xl">
-                  {section.ctaText}
-                </a>
-              )}
-              {showActivateButton && (
-                <button onClick={onActivate} 
-                  style={{ border: `2px solid ${cs.onBackground}30`, color: cs.onBackground, padding: "1.25rem 3.5rem", fontSize: "0.9rem", borderRadius: "100px", fontWeight: 700, backgroundColor: "transparent" }} 
-                  className="hover:opacity-70 transition-all">
-                  Website aktivieren
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 relative py-12 lg:py-0">
-            <div style={{ position: "absolute", top: "10%", right: "-10%", bottom: "10%", left: "10%", backgroundColor: cs.surface, borderRadius: "2rem", zIndex: 0 }} />
-            <div className="premium-shadow-lg relative z-10 overflow-hidden" style={{ borderRadius: "2rem", border: `1px solid ${cs.onSurface}10` }}>
-              <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} className="hover:scale-105 transition-transform duration-1000" />
-            </div>
-            
-            <div className="floating-element" style={{ position: "absolute", top: "-2rem", right: "2rem", zIndex: 20 }}>
-              <div style={{ width: "4rem", height: "4rem", backgroundColor: cs.primary, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transform: "rotate(15deg)", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
-                <Zap className="h-6 w-6" style={{ color: cs.onPrimary }} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshAbout({ section, cs, heroImageUrl }: { section: WebsiteSection; cs: ColorScheme; heroImageUrl: string }) {
-  return (
-    <section style={{ backgroundColor: cs.background, padding: "12rem 0", position: "relative", overflow: "hidden" }}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-24 items-center">
-        <div className="lg:col-span-5 relative order-2 lg:order-1">
-          <div style={{ position: "absolute", inset: "-1rem", border: `1px solid ${cs.primary}20`, borderRadius: "2rem", zIndex: 0 }} />
-          <div className="premium-shadow-lg relative z-10 overflow-hidden" style={{ borderRadius: "2rem", border: `1px solid ${cs.onBackground}10` }}>
-            <img src={heroImageUrl} alt="" style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover" }} />
-          </div>
-        </div>
-        
-        <div className="lg:col-span-7 order-1 lg:order-2">
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
-            <span style={{ fontSize: "0.8rem", letterSpacing: "0.3em", textTransform: "uppercase", color: cs.primary, fontWeight: 800 }}>Unsere Philosophie</span>
-            <div style={{ width: "3rem", height: "1px", backgroundColor: `${cs.primary}40` }} />
-          </div>
-          
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 4.5vw, 4rem)", fontWeight: 700, color: cs.onBackground, marginBottom: "2.5rem", lineHeight: 1.1 }}>{section.headline}</h2>
-          
-          <p style={{ fontSize: "1.15rem", lineHeight: 1.8, color: cs.onBackground, marginBottom: "2.5rem", fontWeight: 500, opacity: 0.9 }}>{section.subheadline}</p>
-          <p style={{ fontSize: "1rem", lineHeight: 1.9, color: cs.onBackground, marginBottom: "3.5rem", opacity: 0.7 }}>{section.content}</p>
-          
-          <div className="grid grid-cols-2 gap-10">
-            {[{ icon: Heart, label: "Mit Liebe" }, { icon: Leaf, label: "Nachhaltig" }].map(({ icon: Icon, label }, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <div style={{ width: "3.5rem", height: "3.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Icon className="h-6 w-6" style={{ color: cs.primary }} />
-                </div>
-                <span style={{ fontSize: "0.9rem", color: cs.onBackground, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshServices({ section, cs, businessCategory }: { section: WebsiteSection; cs: ColorScheme; businessCategory?: string | null }) {
-  const items = section.items || [];
-  return (
-    <section data-section="services" style={{ backgroundColor: cs.background, padding: "12rem 0" }}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-24">
-          <span style={{ fontSize: "0.8rem", letterSpacing: "0.4em", textTransform: "uppercase", color: cs.primary, fontWeight: 800, display: "block", marginBottom: "1.5rem" }}>{section.subheadline || "Unser Angebot"}</span>
-          <h2 data-reveal style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: 700, color: cs.onBackground, lineHeight: 1.1 }}>
-            {section.headline?.split(" ").map((word, i) => (
-              <span key={i} style={{ display: i === 2 ? "block" : "inline", fontStyle: i === 2 ? "italic" : "normal", color: i === 2 ? cs.primary : "inherit" }}>
-                {word}{" "}
+            <div className="absolute -bottom-6 md:-bottom-10 -left-4 md:-left-10 w-24 h-24 md:w-40 md:h-40 bg-orange-500 rounded-full flex items-center justify-center animate-spin-slow hidden sm:flex">
+              <span className="text-white font-bold uppercase text-[8px] md:text-[10px] tracking-widest text-center px-2 md:px-4">
+                See our Menu • Book a Table •
               </span>
-            )) || "Handwerk trifft Inspiration."}
-          </h2>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {items.map((item, i) => (
-            <div key={i} className="group transition-all duration-500 hover:-translate-y-2 shadow-xl hover:shadow-2xl" style={{ backgroundColor: cs.surface, borderRadius: "2rem", padding: "4rem 3rem", position: "relative", border: `1px solid ${cs.onSurface}05` }}>
-              <div style={{
-                width: "4rem",
-                height: "4rem",
-                backgroundColor: `${cs.primary}10`,
-                borderRadius: "1.25rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "2.5rem",
-                transition: "all 0.3s ease"
-              }} className="group-hover:bg-slate-900 group-hover:rotate-6">
-                <IndustryIcon iconName={item.icon || getServiceIcon(businessCategory || "", i)} className="h-7 w-7 group-hover:text-white transition-colors" style={{ color: cs.primary }} />
-              </div>
-              <h3 style={{ fontFamily: SERIF, fontSize: "1.6rem", fontWeight: 700, color: cs.onSurface, marginBottom: "1.25rem", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>{item.title}</h3>
-              <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2rem" }}>{item.description}</p>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", fontWeight: 800, color: cs.primary, textTransform: "uppercase", letterSpacing: "0.1em" }} className="opacity-0 group-hover:opacity-100 transition-all">
-                Details <ArrowRight className="h-4 w-4" />
-              </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshGallery({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
-  const items = section.items || [];
-  return (
-    <section data-section="gallery" style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6">
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Inspirationen</span>
-          <h2 data-reveal data-delay="100" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: cs.onBackground }}>{section.headline}</h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
-          {items.map((item, i) => (
-            <div key={i} style={{ borderRadius: "1rem", overflow: "hidden", aspectRatio: i % 2 === 0 ? "3/4" : "1/1", boxShadow: "0 4px 15px rgba(0,0,0,0.05)", backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}05` }}>
-              <img src={item.imageUrl || `https://images.unsplash.com/photo-${1495474472287 + i}?w=800&q=80&fit=crop`} alt={item.title || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshTestimonials({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
-  const items = section.items || [];
-
-  return (
-    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6">
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Was unsere Gäste sagen</span>
-          <h2 data-reveal data-delay="200" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: cs.onSurface }}>{section.headline}</h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.background, padding: "2rem", borderRadius: "1rem", border: `1px solid ${cs.onBackground}05`, boxShadow: "0 2px 12px rgba(0,0,0,0.03)" }}>
-              <div style={{ display: "flex", gap: "0.2rem", marginBottom: "1rem" }}>
-                {Array.from({ length: item.rating || 5 }).map((_, j) => (
-                  <Star key={j} className="h-4 w-4" style={{ fill: "#f59e0b", color: "#f59e0b" }} />
-                ))}
-              </div>
-              <p style={{ fontFamily: SERIF, fontSize: "0.95rem", lineHeight: 1.7, color: cs.onBackground, marginBottom: "1.25rem", fontStyle: "italic", opacity: 0.8 }}>{item.description || item.title}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: SERIF, fontSize: "1rem", fontWeight: 700, color: cs.primary }}>{(item.author || "K")[0]}</span>
-                </div>
-                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: cs.onBackground }}>{item.author || "Gast"}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshFAQ({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
-  const [open, setOpen] = useState<number | null>(null);
-  const items = section.items || [];
-
-  return (
-    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className="max-w-3xl mx-auto px-6">
-        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Häufige Fragen</span>
-          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: cs.onSurface }}>{section.headline}</h2>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          {items.map((item, i) => (
-            <div key={i} style={{ backgroundColor: cs.background, borderRadius: "0.75rem", border: `1px solid ${cs.onBackground}05`, overflow: "hidden" }}>
-              <button onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}>
-                <span style={{ fontSize: "0.95rem", fontWeight: 700, color: cs.onBackground }}>{item.question || item.title}</span>
-                <div style={{ width: "1.75rem", height: "1.75rem", backgroundColor: open === i ? cs.primary : `${cs.onBackground}05`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background-color 0.2s" }}>
-                  {open === i ? <ChevronUp className="h-4 w-4" style={{ color: cs.onPrimary }} /> : <ChevronDown className="h-4 w-4" style={{ color: cs.onBackground, opacity: 0.5 }} />}
-                </div>
-              </button>
-              {open === i && (
-                <div style={{ padding: "0 1.5rem 1.25rem", fontSize: "0.9rem", lineHeight: 1.7, color: cs.onBackground, opacity: 0.7 }}>
-                  {item.answer || item.description}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshCTA({ section, cs, showActivateButton, onActivate }: { section: WebsiteSection; cs: ColorScheme; showActivateButton?: boolean; onActivate?: () => void }) {
-  return (
-    <section style={{ backgroundColor: cs.onBackground, padding: "5rem 0" }}>
-      <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, color: cs.background, marginBottom: "1.25rem" }}>{section.headline}</h2>
-        {section.content && <p style={{ fontSize: "1.1rem", color: cs.background, opacity: 0.6, marginBottom: "2.5rem" }}>{section.content}</p>}
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-          {section.ctaText && (
-            <a href={section.ctaLink || "#kontakt"} style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700 }} className="hover:opacity-90 transition-opacity">
-              {section.ctaText}
-            </a>
-          )}
-          {showActivateButton && (
-            <button onClick={onActivate} style={{ border: `2px solid ${cs.background}30`, color: cs.background, padding: "1rem 3rem", fontSize: "0.9rem", borderRadius: "2rem", fontWeight: 700, backgroundColor: "transparent" }} className="hover:opacity-70 transition-colors">
-              Website aktivieren
-            </button>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshMenu({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
-  const items = section.items || [];
-  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
-
-  return (
-    <section style={{ backgroundColor: cs.background, padding: "6rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8">
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: `${cs.primary}15`, padding: "0.4rem 1.25rem", borderRadius: "2rem", marginBottom: "1.5rem" }}>
-            <Coffee className="h-4 w-4" style={{ color: cs.primary }} />
-            <span style={{ fontSize: "0.8rem", color: cs.primary, fontWeight: 700 }}>Frisch & Hausgemacht</span>
           </div>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.onBackground, lineHeight: 1.15 }}>{section.headline}</h2>
         </div>
+      </section>
 
-        {categories.length > 0 ? (
-          <div className="grid md:grid-cols-2 gap-x-12 gap-y-16">
-            {categories.map((cat, idx) => (
-              <div key={idx} style={{ backgroundColor: cs.surface, padding: "2rem", borderRadius: "2rem", border: `1px solid ${cs.onSurface}05`, boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
-                <h3 style={{ fontFamily: SERIF, fontSize: "1.8rem", fontWeight: 700, color: cs.onSurface, marginBottom: "2rem", borderBottom: `2px solid ${cs.primary}30`, display: "inline-block", paddingBottom: "0.5rem" }}>{cat}</h3>
-                <div className="space-y-6">
-                  {items.filter(item => item.category === cat).map((item, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between items-baseline gap-4 mb-1">
-                        <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.onSurface }}>{item.title}</h4>
-                        <div className="flex-1 border-b border-dotted mx-2" style={{ borderColor: `${cs.onSurface}20` }} />
-                        <span style={{ fontSize: "1.05rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
-                      </div>
-                      {item.description && (
-                        <p style={{ fontSize: "0.85rem", color: cs.onSurface, opacity: 0.6, lineHeight: 1.6 }}>{item.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
+      {/* Features */}
+      <section className="py-12 md:py-20 px-4 md:px-6 border-t border-neutral-200">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            {[
+              { num: "100%", label: "Regional" },
+              { num: "Bio", label: "Zutaten" },
+              { num: "Frisch", label: "Zubereitet" },
+              { num: "Daily", label: "Gebacken" },
+            ].map((stat, i) => (
+              <div key={i} className="text-center">
+                <p className="text-2xl md:text-4xl font-serif italic" style={{ color: cs.primary }}>{stat.num}</p>
+                <p className="text-xs uppercase tracking-widest text-neutral-400 mt-2">{stat.label}</p>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-x-12 gap-y-8" style={{ backgroundColor: cs.surface, padding: "2.5rem", borderRadius: "2rem", border: `1px solid ${cs.onSurface}05`, boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
-            {items.map((item, i) => (
-              <div key={i}>
-                <div className="flex justify-between items-baseline gap-4 mb-1">
-                  <h4 style={{ fontSize: "1.05rem", fontWeight: 700, color: cs.onSurface }}>{item.title}</h4>
-                  <div className="flex-1 border-b border-dotted mx-2" style={{ borderColor: `${cs.onSurface}20` }} />
-                  <span style={{ fontSize: "1.05rem", fontWeight: 800, color: cs.primary }}>{item.price}</span>
-                </div>
-                {item.description && (
-                  <p style={{ fontSize: "0.85rem", color: cs.onSurface, opacity: 0.6, lineHeight: 1.6 }}>{item.description}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function FreshPricelist({ section, cs }: { section: WebsiteSection; cs: ColorScheme }) {
-  const items = section.items || [];
-  const categories = Array.from(new Set(items.map(item => item.category))).filter(Boolean);
-
-  return (
-    <section style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className="max-w-4xl mx-auto px-6 lg:px-8">
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", backgroundColor: cs.primary, padding: "0.4rem 1.25rem", borderRadius: "2rem", marginBottom: "1.5rem" }}>
-            <span style={{ fontSize: "0.8rem", color: cs.onPrimary, fontWeight: 700 }}>Angebot & Preise</span>
-          </div>
-          <h2 style={{ fontFamily: SERIF, fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 700, color: cs.onSurface, lineHeight: 1.15 }}>{section.headline}</h2>
         </div>
-
-        {categories.length > 0 ? (
-          <div className="space-y-12">
-            {categories.map((cat, idx) => (
-              <div key={idx}>
-                <h3 style={{ fontFamily: SERIF, fontSize: "1.75rem", fontWeight: 700, color: cs.onSurface, marginBottom: "2rem", textAlign: "center" }}>{cat}</h3>
-                <div style={{ backgroundColor: cs.background, borderRadius: "2rem", border: `1px solid ${cs.onBackground}05`, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.03)" }}>
-                  {items.filter(item => item.category === cat).map((item, i) => (
-                    <div key={i} className="flex justify-between items-center px-6 py-4 border-b last:border-0 hover:opacity-70 transition-opacity" style={{ borderColor: `${cs.onBackground}05` }}>
-                      <span style={{ fontSize: "1rem", color: cs.onBackground, fontWeight: 600 }}>{item.title}</span>
-                      <span style={{ fontSize: "1.1rem", color: cs.primary, fontWeight: 800 }}>{item.price}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ backgroundColor: cs.background, borderRadius: "2rem", border: `1px solid ${cs.onBackground}05`, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.03)" }}>
-            {items.map((item, i) => (
-              <div key={i} className="flex justify-between items-center px-8 py-5 border-b last:border-0 hover:opacity-70 transition-opacity" style={{ borderColor: `${cs.onBackground}05` }}>
-                <span style={{ fontSize: "1.1rem", color: cs.onBackground, fontWeight: 700 }}>{item.title}</span>
-                <span style={{ fontSize: "1.2rem", color: cs.primary, fontWeight: 800 }}>{item.price}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function FreshContact({ section, cs, phone, address, email, hours, isLocked }: { section: WebsiteSection; cs: ColorScheme; phone?: string | null; address?: string | null; email?: string | null; hours?: string[]; isLocked?: boolean }) {
-  return (
-    <section id="kontakt" style={{ backgroundColor: cs.surface, padding: "6rem 0" }}>
-      <div className={`max-w-6xl mx-auto px-6 grid ${isLocked === false ? 'lg:grid-cols-1 max-w-3xl text-center' : 'lg:grid-cols-2'} gap-16`}>
-        <div>
-          <span style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: cs.primary, fontWeight: 600, display: "block", marginBottom: "0.75rem" }}>Kontakt</span>
-          <h2 data-reveal data-delay="300" style={{ fontFamily: SERIF, fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, color: cs.onSurface, marginBottom: "2rem" }}>{section.headline}</h2>
-          {section.content && <p style={{ fontSize: "1rem", lineHeight: 1.7, color: cs.onSurface, opacity: 0.7, marginBottom: "2rem" }}>{section.content}</p>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: isLocked === false ? 'center' : 'flex-start' }}>
-            {phone && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Phone className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`tel:${phone}`} style={{ color: cs.onSurface, fontSize: "1rem", fontWeight: 600 }}>{phone}</a></div>}
-            {address && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MapPin className="h-4 w-4" style={{ color: cs.primary }} /></div><span style={{ color: cs.onSurface, opacity: 0.7, fontSize: "0.95rem", marginTop: "0.5rem" }}>{address}</span></div>}
-            {email && <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><Mail className="h-4 w-4" style={{ color: cs.primary }} /></div><a href={`mailto:${email}`} style={{ color: cs.onSurface, fontSize: "1rem" }}>{email}</a></div>}
-            {hours && hours.length > 0 && <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}><div style={{ width: "2.5rem", height: "2.5rem", backgroundColor: `${cs.primary}10`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Clock className="h-4 w-4" style={{ color: cs.primary }} /></div><div style={{ marginTop: "0.5rem", textAlign: 'left' }}>{hours.map((h, i) => <p key={i} style={{ color: cs.onSurface, opacity: 0.7, fontSize: "0.9rem" }}>{h}</p>)}</div></div>}
-          </div>
-        </div>
-
-        {isLocked !== false && (
-          <div style={{ backgroundColor: cs.background, padding: "2.5rem", borderRadius: "1rem", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", border: `1px solid ${cs.onBackground}05`, position: "relative" }}>
-            <h3 style={{ fontFamily: SERIF, fontSize: "1.5rem", fontWeight: 700, color: cs.onBackground, marginBottom: "1.5rem" }}>Schreiben Sie uns</h3>
-            <form 
-              style={{ display: "flex", flexDirection: "column", gap: "1rem", opacity: isLocked ? 0.3 : 1, pointerEvents: isLocked ? 'none' : 'auto' }}
-              onSubmit={(e) => {
-                e.preventDefault();
-                toast.success("Vielen Dank! Ihre Nachricht wurde gesendet.");
-                (e.target as HTMLFormElement).reset();
-              }}
-            >
-              <input type="text" placeholder="Ihr Name" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}10`, padding: "0.85rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-              <input type="email" placeholder="Ihre E-Mail" style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}10`, padding: "0.85rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none", borderRadius: "0.5rem" }} />
-              <textarea placeholder="Ihre Nachricht" rows={4} style={{ backgroundColor: cs.surface, border: `1px solid ${cs.onSurface}10`, padding: "0.85rem 1rem", color: cs.onSurface, fontSize: "0.9rem", outline: "none", resize: "none", borderRadius: "0.5rem" }} />
-              <button type="submit" style={{ backgroundColor: cs.primary, color: cs.onPrimary, padding: "1rem", fontSize: "0.9rem", fontWeight: 700, border: "none", cursor: "pointer", borderRadius: "0.5rem" }} className="hover:opacity-90 transition-opacity">
-                {section.ctaText || "Nachricht senden"}
-              </button>
-            </form>
-
-            {isLocked && (
-              <div style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "0.75rem",
-                zIndex: 10,
-                padding: "2rem",
-                textAlign: "center"
-              }}>
-                <div style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  backgroundColor: `${cs.primary}20`,
-                  border: `1px solid ${cs.primary}50`,
-                  borderRadius: "9999px",
-                  padding: "0.5rem 1.25rem",
-                }}>
-                  <span style={{ fontSize: "0.85rem", color: cs.onBackground, fontWeight: 700 }}>🔒 Kontaktformular</span>
-                </div>
-                <p style={{ fontSize: "0.8rem", color: cs.onSurface, opacity: 0.6, margin: 0 }}>Zusatz-Feature: Im nächsten Schritt aktivierbar (+4,90 €/Monat)</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function FreshFooter({ websiteData, cs, slug }: { websiteData: WebsiteData; cs: ColorScheme; slug?: string | null }) {
-  return (
-    <footer data-section="footer" style={{ backgroundColor: cs.onBackground, padding: "3rem 0" }}>
-      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-        <span style={{ fontFamily: SERIF, fontSize: "1.2rem", fontWeight: 700, color: cs.background }}>{websiteData.businessName}</span>
-        <p style={{ fontSize: "0.8rem", color: cs.background, opacity: 0.5 }}>{websiteData.footer?.text}</p>
-        <div className="flex gap-8">
-          {["Impressum", "Datenschutz"].map(l => (
-            <a key={l} href={slug ? `/site/${slug}/${l.toLowerCase()}` : "#"} style={{ fontSize: "0.75rem", color: cs.background, opacity: 0.6 }} className="hover:opacity-100 transition-opacity">{l}</a>
-          ))}
-        </div>
-      </div>
-    </footer>
+      </section>
+    </div>
   );
 }
