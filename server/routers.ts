@@ -794,6 +794,15 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     // Progress: 50% - Starting AI generation
     await updateGenerationJob(jobId, { progress: 50 });
 
+    // Start progress simulation during AI generation (updates every 3 seconds)
+    let simulatedProgress = 50;
+    const progressInterval = setInterval(async () => {
+      if (simulatedProgress < 68) {
+        simulatedProgress += 1;
+        await updateGenerationJob(jobId, { progress: simulatedProgress });
+      }
+    }, 3000); // Every 3 seconds +1%
+
     const response = await invokeLLM({
       messages: [
         { role: "system", content: "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke." },
@@ -808,6 +817,9 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       ],
       response_format: { type: "json_object" },
     });
+
+    // Stop progress simulation
+    clearInterval(progressInterval);
 
     // Progress: 70% - AI response received
     await updateGenerationJob(jobId, { progress: 70 });
