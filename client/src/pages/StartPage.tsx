@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2 } from "lucide-react";
+import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 // Detect whether a URL looks like a Google Maps / share link
@@ -11,8 +11,15 @@ function isGoogleLink(url: string): boolean {
   return /share\.google\/|maps\.app\.goo\.gl\/|google\.com\/maps\/|maps\.google\.com\//.test(url);
 }
 
+// E-Mail-Validierungsfunktion
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export default function StartPage() {
   const [gmbUrl, setGmbUrl] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [mode, setMode] = useState<"choice" | "gmb" | "manual">("choice");
   const [resolvedInfo, setResolvedInfo] = useState<{
     businessName: string | null;
@@ -63,7 +70,30 @@ export default function StartPage() {
     setResolveError(null);
   };
 
+  const validateEmail = (): boolean => {
+    const email = customerEmail.trim();
+    if (!email) {
+      setEmailError("Bitte gib deine E-Mail-Adresse ein");
+      return false;
+    }
+    if (!isValidEmail(email)) {
+      setEmailError("Bitte gib eine gültige E-Mail-Adresse ein");
+      return false;
+    }
+    setEmailError(null);
+    return true;
+  };
+
+  const handleEmailChange = (value: string) => {
+    setCustomerEmail(value);
+    if (emailError && isValidEmail(value.trim())) {
+      setEmailError(null);
+    }
+  };
+
   const handleResolveAndStart = async () => {
+    if (!validateEmail()) return;
+
     const url = gmbUrl.trim();
     if (!url) {
       toast.error("Bitte gib einen Link ein");
@@ -76,12 +106,16 @@ export default function StartPage() {
     } else {
       // Not a Google link – start without prefill
       toast.info("Link wird verarbeitet...");
-      startMutation.mutate({ gmbUrl: url });
+      startMutation.mutate({
+        gmbUrl: url,
+        customerEmail: customerEmail.trim(),
+        source: "external",
+      });
     }
   };
 
   const handleStartWithResolved = () => {
-    if (!resolvedInfo) return;
+    if (!validateEmail() || !resolvedInfo) return;
     startMutation.mutate({
       gmbUrl: gmbUrl.trim(),
       businessName: resolvedInfo.businessName || undefined,
@@ -89,12 +123,18 @@ export default function StartPage() {
       address: resolvedInfo.address || undefined,
       phone: resolvedInfo.phone || undefined,
       category: resolvedInfo.category || undefined,
+      customerEmail: customerEmail.trim(),
+      source: "external",
     });
   };
 
   const handleManualStart = () => {
+    if (!validateEmail()) return;
     toast.info("Website wird erstellt...");
-    startMutation.mutate({});
+    startMutation.mutate({
+      customerEmail: customerEmail.trim(),
+      source: "external",
+    });
   };
 
   const isLoading = resolveMutation.isPending || startMutation.isPending;
@@ -119,9 +159,31 @@ export default function StartPage() {
             <h1 className="text-white text-2xl font-bold mb-2 text-center">
               Wie möchtest du starten?
             </h1>
-            <p className="text-slate-400 text-sm text-center mb-8">
+            <p className="text-slate-400 text-sm text-center mb-6">
               Mit deinem Google My Business-Profil geht es am schnellsten – wir füllen alles automatisch aus.
             </p>
+
+            {/* Email Field - Required before starting */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail className="w-4 h-4 text-indigo-400" />
+                <span className="text-slate-300 text-sm font-medium">Deine E-Mail-Adresse *</span>
+              </div>
+              <Input
+                type="email"
+                value={customerEmail}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                placeholder="max@beispiel.de"
+                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 ${emailError ? 'border-red-500' : ''}`}
+                disabled={startMutation.isPending}
+              />
+              {emailError && (
+                <p className="text-red-400 text-xs mt-1">{emailError}</p>
+              )}
+              <p className="text-slate-500 text-xs mt-1">
+                Wir senden dir einen Link zur Website und Erinnerungen, falls du abbrechen möchtest.
+              </p>
+            </div>
 
             <div className="space-y-3">
               <button
@@ -201,6 +263,26 @@ export default function StartPage() {
             </div>
 
             <div className="space-y-4">
+              {/* Email Field */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Mail className="w-4 h-4 text-indigo-400" />
+                  <span className="text-slate-300 text-sm font-medium">Deine E-Mail-Adresse</span>
+                </div>
+                <Input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="max@beispiel.de"
+                  className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 ${emailError ? 'border-red-500' : ''}`}
+                  onKeyDown={(e) => e.key === "Enter" && gmbUrl.trim() && !isLoading && handleResolveAndStart()}
+                  disabled={isLoading}
+                />
+                {emailError && (
+                  <p className="text-red-400 text-xs mt-1">{emailError}</p>
+                )}
+              </div>
+
               <div>
                 <Input
                   value={gmbUrl}
@@ -236,7 +318,14 @@ export default function StartPage() {
                   <div className="flex-1">
                     <p className="text-amber-400 text-sm">{resolveError}</p>
                     <button
-                      onClick={() => startMutation.mutate({ gmbUrl: gmbUrl.trim() })}
+                      onClick={() => {
+                        if (!validateEmail()) return;
+                        startMutation.mutate({
+                          gmbUrl: gmbUrl.trim(),
+                          customerEmail: customerEmail.trim(),
+                          source: "external",
+                        });
+                      }}
                       disabled={startMutation.isPending}
                       className="text-amber-300 text-xs underline mt-2 hover:text-amber-200"
                     >

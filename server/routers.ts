@@ -2433,8 +2433,15 @@ Kontext: ${input.context}`,
         address: z.string().optional(),
         phone: z.string().optional(),
         category: z.string().optional(),
+        customerEmail: z.string().email().optional(), // Email for external visitors (required for landing page)
+        source: z.enum(["admin", "external"]).optional().default("external"), // Source tracking
       }))
       .mutation(async ({ input }) => {
+        // Validate email for external sources
+        if (input.source === "external" && !input.customerEmail) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "E-Mail-Adresse ist erforderlich" });
+        }
+
         // Create a placeholder business
         const placeholderName = input.businessName || "Neues Unternehmen";
         const baseSlug = slugify(placeholderName);
@@ -2446,6 +2453,7 @@ Kontext: ${input.context}`,
           category: input.category || "",
           address: input.address || "",
           phone: input.phone || "",
+          email: input.customerEmail, // Also store in business for convenience
         });
         // Create a preview website
         const previewToken = nanoid(32);
@@ -2456,6 +2464,9 @@ Kontext: ${input.context}`,
           status: "preview",
           previewToken,
           onboardingStatus: "in_progress",
+          source: input.source,
+          customerEmail: input.customerEmail,
+          captureStatus: input.customerEmail ? "email_captured" : undefined,
         });
         // Create onboarding record
         await createOnboarding({
@@ -2466,6 +2477,22 @@ Kontext: ${input.context}`,
           updatedAt: Date.now(),
         });
         return { previewToken, websiteId };
+      }),
+
+    /**
+     * Update capture status for external leads (onboarding_started, onboarding_completed, etc.)
+     */
+    updateCaptureStatus: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        captureStatus: z.enum(["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        
+        await updateWebsite(input.websiteId, { captureStatus: input.captureStatus });
+        return { success: true };
       }),
   }),
 });

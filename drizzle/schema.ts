@@ -67,6 +67,12 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   onboardingStatus: mysqlEnum("onboardingStatus", ["pending", "in_progress", "completed"]).default("pending"),
   hasLegalPages: boolean("hasLegalPages").default(false),
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["none", "active", "canceled", "past_due"]).default("none"),
+  // Source tracking: admin = created by admin, external = created by landing page visitor
+  source: mysqlEnum("source", ["admin", "external"]).default("admin"),
+  // External visitor email capture for lead nurturing
+  customerEmail: varchar("customerEmail", { length: 320 }),
+  // Capture status for external leads: email_captured, onboarding_started, onboarding_completed, converted
+  captureStatus: mysqlEnum("captureStatus", ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]).default("email_captured"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

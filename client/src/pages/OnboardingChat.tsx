@@ -688,6 +688,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
   const generateWebsiteMutation = trpc.selfService.generateWebsite.useMutation();
+  const updateCaptureStatusMutation = trpc.selfService.updateCaptureStatus.useMutation();
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
 
@@ -1019,13 +1020,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   useEffect(() => {
     if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
+      
+      // Update captureStatus to onboarding_started for external leads
+      if (websiteId && siteData?.website?.source === "external") {
+        updateCaptureStatusMutation.mutate({
+          websiteId,
+          captureStatus: "onboarding_started",
+        });
+      }
+      
       const initChat = async () => {
         setCurrentStep("businessCategory");
         await addBotMessage(getStepPrompt("businessCategory"), 800);
       };
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source]);
 
   // ── AI text generation ──────────────────────────────────────────────────
   const generateWithAI = async (field: keyof OnboardingData) => {
@@ -1284,6 +1294,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     try {
       // Complete onboarding first
       await completeMutation.mutateAsync({ websiteId });
+      
+      // Update captureStatus to onboarding_completed for external leads
+      if (siteData?.website?.source === "external") {
+        updateCaptureStatusMutation.mutate({
+          websiteId,
+          captureStatus: "onboarding_completed",
+        });
+      }
+      
       // Then create checkout session
       const session = await checkoutMutation.mutateAsync({
         websiteId,
