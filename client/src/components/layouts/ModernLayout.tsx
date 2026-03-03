@@ -154,9 +154,10 @@ function ModernHero({ section, cs, heroImageUrl, showActivateButton, onActivate,
   // texts: everything shown but might be generic
   // complete: everything shown
   const phase = contentPhase || 'complete';
-  
-  // Determine what to show as skeleton based on phase
-  const showImageSkeleton = phase === 'skeleton';
+
+  // IMPORTANT: During loading (isLoading=true), ALWAYS show skeletons
+  // Never show fallback/generic text during generation
+  const showImageSkeleton = phase === 'skeleton' || isLoading;
   const showHeadlineSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.headline);
   const showSubheadlineSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.subheadline);
   const showContentSkeleton = phase === 'skeleton' || phase === 'colors' || phase === 'images' || isLoading || isGenericContent(section.content);
