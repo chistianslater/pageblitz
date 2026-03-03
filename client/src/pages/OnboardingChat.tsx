@@ -197,14 +197,43 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
             className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500 to-violet-600"
           />
           
-          {/* Main Logo */}
+          {/* KI-Symbol: 3 pulsierende Sterne */}
           <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-blue-500/50">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            >
-              <Loader2 className="h-12 w-12 text-white" />
-            </motion.div>
+            <div className="flex items-center gap-1">
+              {/* Stern 1 */}
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.3, 1],
+                  opacity: [0.7, 1, 0.7],
+                  rotate: [0, 5, 0]
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Sparkles className="h-8 w-8 text-white" />
+              </motion.div>
+              {/* Stern 2 (mittig, größer) */}
+              <motion.div
+                animate={{ 
+                  scale: [1.2, 1.5, 1.2],
+                  opacity: [1, 0.8, 1],
+                  rotate: [0, -5, 0]
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+              >
+                <Sparkles className="h-10 w-10 text-white" />
+              </motion.div>
+              {/* Stern 3 */}
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.3, 1],
+                  opacity: [0.7, 1, 0.7],
+                  rotate: [0, 5, 0]
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+              >
+                <Sparkles className="h-8 w-8 text-white" />
+              </motion.div>
+            </div>
           </div>
         </motion.div>
 
@@ -985,7 +1014,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasWebsiteData = !!(siteData?.website?.websiteData);
     if (!hasWebsiteData) {
       setIsGeneratingInitialWebsite(true);
-      const phases = [
+      // Für GMB-Flows: 9 Phasen, für non-GMB: nur 5 Phasen (schneller)
+      const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
+      const allPhases = [
         "Analysiere dein Unternehmen...",
         "Erstelle Texte...",
         "Generiere Design...",
@@ -996,22 +1027,30 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         "Bereite Live-Vorschau vor...",
         "Finalisiere deine Website...",
       ];
+      // Non-GMB: Nur erste 5 Phasen zeigen, dafür schneller durchlaufen
+      const phases = isGmbFlow ? allPhases : allPhases.slice(0, 5);
+      const phaseDuration = isGmbFlow ? 2000 : 1500; // Non-GMB: 1.5s pro Phase
+      
       let phaseIdx = 0;
       setGenerationPhase(phases[0]);
       setGenerationProgress(10);
       const phaseInterval = setInterval(() => {
         phaseIdx = Math.min(phaseIdx + 1, phases.length - 1);
         setGenerationPhase(phases[phaseIdx]);
-        setGenerationProgress(Math.min(10 + phaseIdx * 10, 90));
-      }, 2000); // 2 Sekunden pro Phase
+        setGenerationProgress(Math.min(10 + phaseIdx * (isGmbFlow ? 10 : 18), 90));
+      }, phaseDuration);
       generateWebsiteMutation.mutateAsync({ websiteId }).then(() => {
         clearInterval(phaseInterval);
         setGenerationProgress(100);
         setGenerationPhase("Website bereit!");
         // SOFORT setIsGeneratingInitialWebsite(false) vor dem Reload aufrufen
         setIsGeneratingInitialWebsite(false);
-        // Refetch site data
-        window.location.reload();
+        // Refetch site data to show generated content
+        refetchSiteData();
+        // Kurze Verzögerung für den Refetch
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       }).catch((err) => {
         clearInterval(phaseInterval);
         setIsGeneratingInitialWebsite(false);
@@ -1099,12 +1138,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           // Show success message briefly
           toast.success("Website-Texte wurden generiert!", { duration: 2000 });
           
-          // Refetch site data to update the preview
-          // We use a small timeout to ensure the DB update is complete
+          // IMPORTANT: Refetch site data to update the preview
+          // This ensures the generated content is displayed
           setTimeout(() => {
-            // The site data will refresh automatically via tRPC's caching
-            // But we can trigger a manual refetch if needed
-          }, 500);
+            refetchSiteData();
+          }, 300);
         }
       }).catch((err) => {
         console.error("Initial content generation failed:", err);
