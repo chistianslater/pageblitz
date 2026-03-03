@@ -233,12 +233,39 @@ export const INDUSTRY_COLORS: Record<string, any[]> = {
 /**
  * Get gallery images for a given industry category.
  * Re-exported here so the frontend can use it without importing from server/.
+ * Uses intelligent matching with priority for longer, more specific keywords.
  */
 export function getGalleryImages(category: string, _businessName: string = ""): string[] {
-  const key = Object.keys(INDUSTRY_IMAGES).find((k) => {
-    const kws = (INDUSTRY_IMAGES[k] as IndustryImageSet).keywords;
-    return kws.some((kw: string) => category.toLowerCase().includes(kw));
-  }) || "default";
-  const imageSet = INDUSTRY_IMAGES[key] as IndustryImageSet;
-  return imageSet?.gallery || imageSet?.hero?.slice(0, 2) || [];
+  const normalizedCategory = category.toLowerCase().trim();
+  
+  // Sortiere Keys nach Priorität: längere/spezifischere Keywords zuerst
+  const sortedKeys = Object.keys(INDUSTRY_IMAGES).sort((a, b) => {
+    const keywordsA = (INDUSTRY_IMAGES[a] as IndustryImageSet).keywords;
+    const keywordsB = (INDUSTRY_IMAGES[b] as IndustryImageSet).keywords;
+    // Durchschnittliche Keyword-Länge als Prioritätsmaßstab
+    const avgLenA = keywordsA.reduce((sum, kw) => sum + kw.length, 0) / keywordsA.length;
+    const avgLenB = keywordsB.reduce((sum, kw) => sum + kw.length, 0) / keywordsB.length;
+    return avgLenB - avgLenA; // Längere zuerst
+  });
+  
+  // 1. Versuche: Exaktes Match (category enthält Keyword komplett)
+  for (const key of sortedKeys) {
+    const kws = (INDUSTRY_IMAGES[key] as IndustryImageSet).keywords;
+    // Prüfe ob ein Keyword exakt oder als Wort enthalten ist
+    const hasMatch = kws.some((kw: string) => {
+      const normalizedKw = kw.toLowerCase();
+      // Exakter Match oder als ganzes Wort
+      return normalizedCategory === normalizedKw ||
+             normalizedCategory.includes(normalizedKw) ||
+             normalizedKw.includes(normalizedCategory);
+    });
+    if (hasMatch) {
+      const imageSet = INDUSTRY_IMAGES[key] as IndustryImageSet;
+      return imageSet?.gallery || imageSet?.hero?.slice(0, 2) || [];
+    }
+  }
+  
+  // Fallback zu default
+  const defaultSet = INDUSTRY_IMAGES.default as IndustryImageSet;
+  return defaultSet?.gallery || defaultSet?.hero?.slice(0, 2) || [];
 }

@@ -405,13 +405,13 @@ const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 const COLOR_SCHEMES = PREDEFINED_COLOR_SCHEMES;
 
 const STEP_ORDER: ChatStep[] = [
-  "businessCategory",
-  "colorScheme",
-  "heroPhoto",
+  "businessCategory",  // 1. Branche erfassen (für Bilder/Farben)
+  "businessName",    // 2. Unternehmensname erfassen (wichtig für Personalisierung!)
+  "colorScheme",     // 3. Farben
+  "heroPhoto",       // 4. Bilder
   "aboutPhoto",
   "brandLogo",
   "headlineFont",
-  "businessName",
   "tagline",
   "description",
   "usp",
