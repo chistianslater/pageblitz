@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw, Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle, Clock, TrendingDown, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -33,6 +34,9 @@ export default function WebsitesPage() {
   const { data: websiteData, isLoading: webLoading } = trpc.website.list.useQuery({ limit: 100, offset: 0 });
 
   const [generatingId, setGeneratingId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+
   const generateMutation = trpc.website.generate.useMutation({
     onSuccess: () => {
       toast.success("Website erfolgreich generiert!");
@@ -47,9 +51,44 @@ export default function WebsitesPage() {
     },
   });
 
+  const bulkDeleteMutation = trpc.website.bulkDelete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.deleted} Website(s) erfolgreich gelöscht.`);
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+      utils.website.list.invalidate();
+      utils.stats.dashboard.invalidate();
+    },
+    onError: (err) => {
+      toast.error("Bulk-Delete fehlgeschlagen: " + err.message);
+    },
+  });
+
   const businessesWithoutWebsite = businessData?.businesses?.filter(b => {
     return !websiteData?.websites?.some((w: any) => w.businessId === b.id);
   }) || [];
+
+  const allWebsites = websiteData?.websites || [];
+  const allIds = allWebsites.map((w: any) => w.id);
+  const allSelected = allIds.length > 0 && allIds.every((id: number) => selectedIds.has(id));
+  const someSelected = selectedIds.size > 0;
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allIds));
+    }
+  }
+
+  function toggleSelect(id: number) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -132,17 +171,80 @@ export default function WebsitesPage() {
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Globe className="h-5 w-5 text-primary" />
-            Generierte Websites ({websiteData?.total ?? 0})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Globe className="h-5 w-5 text-primary" />
+              Generierte Websites ({websiteData?.total ?? 0})
+            </CardTitle>
+            {someSelected && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {selectedIds.size} ausgewählt
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-slate-500/30 text-slate-400 hover:bg-slate-500/10"
+                  onClick={() => setSelectedIds(new Set())}
+                >
+                  Auswahl aufheben
+                </Button>
+                <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {selectedIds.size} löschen
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Trash2 className="h-5 w-5 text-red-400" />
+                        {selectedIds.size} Websites löschen
+                      </DialogTitle>
+                      <DialogDescription className="text-muted-foreground">
+                        Möchtest du <span className="font-medium text-foreground">{selectedIds.size} Website(s)</span> wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-red-300">
+                        Alle ausgewählten Websites, Onboarding-Daten und Abonnement-Informationen werden dauerhaft gelöscht.
+                      </p>
+                    </div>
+                    <DialogFooter className="gap-2">
+                      <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>
+                        Abbrechen
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => bulkDeleteMutation.mutate({ ids: Array.from(selectedIds) })}
+                        disabled={bulkDeleteMutation.isPending}
+                      >
+                        {bulkDeleteMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 mr-2" />
+                        )}
+                        {selectedIds.size} endgültig löschen
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {webLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : websiteData?.websites?.length === 0 ? (
+          ) : allWebsites.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Globe className="h-12 w-12 mx-auto mb-4 opacity-30" />
               <p>Noch keine Websites generiert.</p>
@@ -153,6 +255,14 @@ export default function WebsitesPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={toggleSelectAll}
+                        aria-label="Alle auswählen"
+                        className="border-muted-foreground/50"
+                      />
+                    </TableHead>
                     <TableHead>Unternehmen</TableHead>
                     <TableHead>Branche</TableHead>
                     <TableHead>Status</TableHead>
@@ -161,8 +271,19 @@ export default function WebsitesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {websiteData?.websites?.map((w: any) => (
-                    <TableRow key={w.id}>
+                  {allWebsites.map((w: any) => (
+                    <TableRow
+                      key={w.id}
+                      className={selectedIds.has(w.id) ? "bg-primary/5" : undefined}
+                    >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(w.id)}
+                          onCheckedChange={() => toggleSelect(w.id)}
+                          aria-label={`${w.business?.name || w.slug} auswählen`}
+                          className="border-muted-foreground/50"
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="font-medium">{w.business?.name || "Unbekannt"}</div>
                         <div className="text-xs text-muted-foreground">{w.slug}</div>
@@ -600,7 +721,6 @@ function TestSubscriptionButton({ website }: { website: any }) {
 
 function ActivateWebsiteButton({ website }: { website: any }) {
   const utils = trpc.useUtils();
-  const [loading, setLoading] = useState(false);
   const updateStatusMutation = trpc.website.updateStatus.useMutation({
     onSuccess: () => {
       utils.website.list.invalidate();

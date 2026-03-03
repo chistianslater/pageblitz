@@ -1370,6 +1370,20 @@ export const appRouter = router({
         await deleteWebsite(input.id);
         return { success: true };
       }),
+
+    bulkDelete: adminProcedure
+      .input(z.object({ ids: z.array(z.number()).min(1).max(100) }))
+      .mutation(async ({ input }) => {
+        let deleted = 0;
+        for (const id of input.ids) {
+          const website = await getWebsiteById(id);
+          if (website) {
+            await deleteWebsite(id);
+            deleted++;
+          }
+        }
+        return { success: true, deleted };
+      }),
   }),
 
   // ── Admin: Outreach ────────────────────────────────

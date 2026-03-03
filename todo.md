@@ -582,3 +582,10 @@
 ## Onboarding-Chat Farb-Init-Fix (Mar 01 2026)
 - [ ] liveWebsiteData: colorScheme aus DB als Initialwert statt blauem Default
 - [ ] Sekundärfarben-Schritt: nur 3 Harmonievorschläge + Color Picker, keine Extra-Farbpaletten-Leiste
+
+## Bulk-Delete für generierte Websites (Runde 19)
+- [x] Backend: bulkDeleteWebsites tRPC-Prozedur (Array von IDs, Admin-only)
+- [x] Frontend: Checkboxen in der Websites-Tabelle im Admin-Dashboard
+- [x] Frontend: "Alle auswählen"-Checkbox im Tabellenkopf
+- [x] Frontend: Floating Toolbar mit Anzahl ausgewählter Einträge + Löschen-Button
+- [x] Frontend: Bestätigungs-Dialog vor dem Bulk-Delete
