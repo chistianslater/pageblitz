@@ -588,8 +588,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("mouseout", handleMouseOut);
+      // Cleanup localStorage on unmount (checkout or preview step)
+      if (currentStep === "checkout" || currentStep === "preview") {
+        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+      }
     };
-  }, [currentStep, showExitIntent, isGeneratingInitialWebsite]);
+  }, [currentStep, showExitIntent, isGeneratingInitialWebsite, previewToken, websiteIdProp]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -703,9 +707,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
   // Track if initial content is being generated for skeleton loading
-  const [isGeneratingInitialContent, setIsGeneratingInitialContent] = useState(false);
-  // Show skeletons until user has provided meaningful content (category + name)
-  const [showSkeletons, setShowSkeletons] = useState(true);
+  const [isGeneratingInitialContent, setIsGeneratingInitialContent] = useState(() => {
+    // Check localStorage for generation in progress (persists across reloads)
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(`generating_${previewToken || websiteIdProp}`) === 'true';
+    }
+    return false;
+  });
 
 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
@@ -769,6 +777,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }));
     }
   }, [business, initialized]);
+
+  // ── Pre-fill from website/business data (for non-GMB flows) ───────────────
+  useEffect(() => {
+    if (!business && siteData?.website && !initialized) {
+      // For non-GMB flows, pre-fill from website data if available
+      const website = siteData.website;
+      const businessData = website.business || {};
+      const websiteData = website.websiteData || {};
+      
+      setData((prev) => ({
+        ...prev,
+        businessName: websiteData.businessName || businessData.name || prev.businessName,
+        businessCategory: websiteData.businessCategory || businessData.category || prev.businessCategory,
+      }));
+    }
+  }, [business, siteData?.website, initialized]);
 
   // ── Scroll to bottom ────────────────────────────────────────────────────
   useEffect(() => {
@@ -995,6 +1019,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasWebsiteData = !!(siteData?.website?.websiteData);
     if (!hasWebsiteData) {
       setIsGeneratingInitialWebsite(true);
+      // Mark generation in progress in localStorage (persists across reloads)
+      localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
       // Für GMB-Flows: 9 Phasen, für non-GMB: nur 5 Phasen (schneller)
       const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
       const allPhases = [
@@ -1024,14 +1050,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         clearInterval(phaseInterval);
         setGenerationProgress(100);
         setGenerationPhase("Website bereit!");
-        // SOFORT setIsGeneratingInitialWebsite(false) vor dem Reload aufrufen
+        // Wichtig: State zurücksetzen und localStorage clearen
         setIsGeneratingInitialWebsite(false);
-        // Refetch site data to show generated content
-        refetchSiteData();
-        // Kurze Verzögerung für den Refetch
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+        // Refetch und dann Navigation ohne reload()
+        refetchSiteData().then(() => {
+          // Kurze Pause für den Refetch, dann Navigation
+          setTimeout(() => {
+            // Hard navigation zur gleichen URL vermeidet beforeunload
+            window.location.href = window.location.href;
+          }, 300);
+        });
       }).catch((err) => {
         clearInterval(phaseInterval);
         setIsGeneratingInitialWebsite(false);
@@ -1046,10 +1075,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
       
-      // Start with skeleton loading state until user provides category + name
-      // This ensures the preview shows skeletons initially
-      setShowSkeletons(true);
-
       // Update captureStatus and send welcome email for external leads
       if (websiteId && siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
@@ -1106,6 +1131,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       
       // Check if we already have enough info to generate
       setIsGeneratingInitialContent(true);
+      localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
       
       generateInitialContentMutation.mutateAsync({
         websiteId,
@@ -1139,8 +1165,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         // Silent fail - user can still proceed manually
       }).finally(() => {
         setIsGeneratingInitialContent(false);
-        // Disable initial skeletons so layouts can decide based on content quality
-        setShowSkeletons(false);
+        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       });
     }
   }, [data.businessCategory, data.businessName, websiteId, business?.placeId, 
@@ -3496,7 +3521,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 contactFormLocked={!data.addOnContactForm}
                 logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
                 headlineFontOverride={data.headlineFont || undefined}
-                isLoading={showSkeletons || isGeneratingInitialContent}
+                // Show skeletons during generation OR when user hasn't provided category+name yet
+                isLoading={isGeneratingInitialContent || (!data.businessCategory?.trim() && !data.businessName?.trim())}
               />
             </MacbookMockup>
           ) : (
