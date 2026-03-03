@@ -968,6 +968,21 @@ export const appRouter = router({
         await deleteBusiness(input.id);
         return { success: true };
       }),
+
+    bulkDelete: adminProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        let deleted = 0;
+        for (const id of input.ids) {
+          try {
+            const website = await getWebsiteByBusinessId(id);
+            if (website) await deleteWebsite(website.id);
+            await deleteBusiness(id);
+            deleted++;
+          } catch (_) {}
+        }
+        return { deleted };
+      }),
   }),
 
   // ── Admin: Website Generation ──────────────────────

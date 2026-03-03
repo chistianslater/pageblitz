@@ -56,6 +56,20 @@ export default function WebsitesPage() {
   const { data: websiteData, isLoading: webLoading } = trpc.website.list.useQuery({ limit: 500, offset: 0 });
 
   const [generatingId, setGeneratingId] = useState<number | null>(null);
+  const [backlogSelectedIds, setBacklogSelectedIds] = useState<Set<number>>(new Set());
+  const [backlogBulkDeleteOpen, setBacklogBulkDeleteOpen] = useState(false);
+
+  const backlogBulkDeleteMutation = trpc.business.bulkDelete.useMutation({
+    onSuccess: (data: any) => {
+      toast.success(`${data.deleted} Unternehmen erfolgreich gelöscht.`);
+      setBacklogSelectedIds(new Set());
+      setBacklogBulkDeleteOpen(false);
+      utils.business.list.invalidate();
+      utils.website.list.invalidate();
+      utils.stats.dashboard.invalidate();
+    },
+    onError: (err: any) => toast.error("Bulk-Delete fehlgeschlagen: " + err.message),
+  });
 
   const generateMutation = trpc.website.generate.useMutation({
     onSuccess: () => {
@@ -125,13 +139,50 @@ export default function WebsitesPage() {
         <TabsContent value="backlog">
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Database className="h-5 w-5 text-primary" />
-                GMB-Backlog – noch nicht generiert ({businessesWithoutWebsite.length})
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Von Google My Business gescrapte Unternehmen, für die noch keine Website generiert wurde.
-              </p>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Database className="h-5 w-5 text-primary" />
+                    GMB-Backlog – noch nicht generiert ({businessesWithoutWebsite.length})
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Von Google My Business gescrapte Unternehmen, für die noch keine Website generiert wurde.
+                  </p>
+                </div>
+                {backlogSelectedIds.size > 0 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">{backlogSelectedIds.size} ausgewählt</span>
+                    <Button variant="outline" size="sm" onClick={() => setBacklogSelectedIds(new Set())}>Auswahl aufheben</Button>
+                    <Dialog open={backlogBulkDeleteOpen} onOpenChange={setBacklogBulkDeleteOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="gap-2">
+                          <Trash2 className="h-4 w-4" /> {backlogSelectedIds.size} löschen
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
+                            <Trash2 className="h-5 w-5 text-red-400" />
+                            {backlogSelectedIds.size} Unternehmen löschen
+                          </DialogTitle>
+                          <DialogDescription>Diese Aktion kann nicht rükgängig gemacht werden.</DialogDescription>
+                        </DialogHeader>
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                          <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+                          <p className="text-sm text-red-300">Alle ausgewählten Unternehmen und zugehörige Daten werden dauerhaft gelöscht.</p>
+                        </div>
+                        <DialogFooter className="gap-2">
+                          <Button variant="outline" onClick={() => setBacklogBulkDeleteOpen(false)}>Abbrechen</Button>
+                          <Button variant="destructive" onClick={() => backlogBulkDeleteMutation.mutate({ ids: Array.from(backlogSelectedIds) })} disabled={backlogBulkDeleteMutation.isPending}>
+                            {backlogBulkDeleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                            {backlogSelectedIds.size} endgültig löschen
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {businessesWithoutWebsite.length === 0 ? (
@@ -139,63 +190,88 @@ export default function WebsitesPage() {
                   <Database className="h-12 w-12 mx-auto mb-4 opacity-30" />
                   <p>Alle Unternehmen haben bereits eine Website.</p>
                 </div>
-              ) : (
-                <div className="rounded-lg border border-border overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/30">
-                        <TableHead>Unternehmen</TableHead>
-                        <TableHead>Branche</TableHead>
-                        <TableHead>Bewertung</TableHead>
-                        <TableHead>Lead-Typ</TableHead>
-                        <TableHead className="text-right">Aktion</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {businessesWithoutWebsite.map((b) => (
-                        <TableRow key={b.id}>
-                          <TableCell>
-                            <div className="font-medium">{b.name}</div>
-                            <div className="text-xs text-muted-foreground">{b.address}</div>
-                          </TableCell>
-                          <TableCell className="text-sm">{b.category || "–"}</TableCell>
-                          <TableCell>
-                            {b.rating ? (
-                              <div className="flex items-center gap-1">
-                                <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                                <span className="text-sm">{String(b.rating)}</span>
-                              </div>
-                            ) : "–"}
-                          </TableCell>
-                          <TableCell>
-                            <BusinessLeadTypeBadge hasWebsite={!!b.hasWebsite} leadType={b.leadType} website={b.website} />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setGeneratingId(b.id);
-                                  generateMutation.mutate({ businessId: b.id });
-                                }}
-                                disabled={generatingId !== null}
-                              >
-                                {generatingId === b.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                ) : (
-                                  <Wand2 className="h-4 w-4 mr-2" />
-                                )}
-                                Generieren
-                              </Button>
-                              <DeleteBusinessDialog business={b} />
-                            </div>
-                          </TableCell>
+              ) : (() => {
+                const allBacklogIds = businessesWithoutWebsite.map(b => b.id);
+                const allBacklogSelected = allBacklogIds.length > 0 && allBacklogIds.every(id => backlogSelectedIds.has(id));
+                return (
+                  <div className="rounded-lg border border-border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/30">
+                          <TableHead className="w-10">
+                            <Checkbox
+                              checked={allBacklogSelected}
+                              onCheckedChange={() => setBacklogSelectedIds(allBacklogSelected ? new Set() : new Set(allBacklogIds))}
+                              aria-label="Alle auswählen"
+                              className="border-muted-foreground/50"
+                            />
+                          </TableHead>
+                          <TableHead>Unternehmen</TableHead>
+                          <TableHead>Branche</TableHead>
+                          <TableHead>Bewertung</TableHead>
+                          <TableHead>Lead-Typ</TableHead>
+                          <TableHead className="text-right">Aktion</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                      </TableHeader>
+                      <TableBody>
+                        {businessesWithoutWebsite.map((b) => (
+                          <TableRow key={b.id} className={backlogSelectedIds.has(b.id) ? "bg-primary/5" : undefined}>
+                            <TableCell>
+                              <Checkbox
+                                checked={backlogSelectedIds.has(b.id)}
+                                onCheckedChange={() => {
+                                  setBacklogSelectedIds(prev => {
+                                    const next = new Set(prev);
+                                    next.has(b.id) ? next.delete(b.id) : next.add(b.id);
+                                    return next;
+                                  });
+                                }}
+                                className="border-muted-foreground/50"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium">{b.name}</div>
+                              <div className="text-xs text-muted-foreground">{b.address}</div>
+                            </TableCell>
+                            <TableCell className="text-sm">{b.category || "–"}</TableCell>
+                            <TableCell>
+                              {b.rating ? (
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                                  <span className="text-sm">{String(b.rating)}</span>
+                                </div>
+                              ) : "–"}
+                            </TableCell>
+                            <TableCell>
+                              <BusinessLeadTypeBadge hasWebsite={!!b.hasWebsite} leadType={b.leadType} website={b.website} />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setGeneratingId(b.id);
+                                    generateMutation.mutate({ businessId: b.id });
+                                  }}
+                                  disabled={generatingId !== null}
+                                >
+                                  {generatingId === b.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  ) : (
+                                    <Wand2 className="h-4 w-4 mr-2" />
+                                  )}
+                                  Generieren
+                                </Button>
+                                <DeleteBusinessDialog business={b} />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>

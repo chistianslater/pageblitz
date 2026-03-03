@@ -605,3 +605,6 @@
 - [x] Tab 3 "Extern-generiert": Websites mit source=external – Tabelle mit captureStatus-Badge, E-Mail des Leads, Aktionen (Preview, Status ändern, Löschen)
 - [x] Zähler-Badges auf jedem Tab-Header (Anzahl Einträge)
 - [x] Bulk-Delete bleibt in Tab 2 und Tab 3 erhalten
+
+## Bulk-Delete in allen Website-Ansichten (Runde 22)
+- [x] GMB-Backlog-Tab: Checkboxen, "Alle auswählen" und Bulk-Delete für Unternehmen
