@@ -39,9 +39,17 @@ interface Props {
 
 /**
  * Check if text is generic/placeholder content
+ * Shows skeleton for empty, placeholder, or auto-generated generic text
  */
 function isGenericContent(text: string | undefined | null): boolean {
   if (!text || text.trim() === "") return true;
+  
+  const normalized = text.toLowerCase().trim();
+  
+  // Empty or very short
+  if (normalized.length < 5) return true;
+  
+  // Generic patterns - these should show skeletons until real content is entered
   const genericPatterns = [
     /willkommen/i,
     /lorem ipsum/i,
@@ -53,7 +61,26 @@ function isGenericContent(text: string | undefined | null): boolean {
     /ihr unternehmen/i,
     /unternehmensname/i,
     /firma name/i,
+    /ihr partner/i,           // Auto-generated generic start
+    /für qualitativ/i,        // Auto-generated generic
+    /erleben sie/i,           // Auto-generated generic
+    /profitieren sie/i,       // Auto-generated generic
+    /entdecken sie/i,         // Auto-generated generic
+    /vertrauen sie/i,         // Auto-generated generic
+    /zuverl[aä]ssig/i,        // Generic promise words
+    /qualit[aä]t/i,           // Generic quality words
+    /professionell/i,         // Generic professional words
+    /kompetent/i,             // Generic competence words
+    /erfahrung seit/i,        // Generic experience
+    /meisterbetrieb/i,        // Generic master company
+    /lernen sie uns kennen/i, // Generic get to know us
+    /wir sind ihr/i,         // Generic we are your
+    /exzellente/i,            // Generic excellence
+    /herzlich willkommen/i,   // Generic welcome
+    /individuelle l/i,        // Generic individual
+    /maßgeschneiderte/i,      // Generic tailored
   ];
+  
   return genericPatterns.some(pattern => pattern.test(text));
 }
 

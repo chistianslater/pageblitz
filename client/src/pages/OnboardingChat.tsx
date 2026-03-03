@@ -197,43 +197,22 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
             className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500 to-violet-600"
           />
           
-          {/* KI-Symbol: 3 pulsierende Sterne */}
+          {/* KI-Symbol: Einzelner pulsierender Stern */}
           <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-blue-500/50">
-            <div className="flex items-center gap-1">
-              {/* Stern 1 */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.7, 1, 0.7],
-                  rotate: [0, 5, 0]
-                }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Sparkles className="h-8 w-8 text-white" />
-              </motion.div>
-              {/* Stern 2 (mittig, größer) */}
-              <motion.div
-                animate={{ 
-                  scale: [1.2, 1.5, 1.2],
-                  opacity: [1, 0.8, 1],
-                  rotate: [0, -5, 0]
-                }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-              >
-                <Sparkles className="h-10 w-10 text-white" />
-              </motion.div>
-              {/* Stern 3 */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.7, 1, 0.7],
-                  rotate: [0, 5, 0]
-                }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-              >
-                <Sparkles className="h-8 w-8 text-white" />
-              </motion.div>
-            </div>
+            <motion.div
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.8, 1, 0.8],
+                rotate: [0, 10, 0, -10, 0]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+            >
+              <Sparkles className="h-12 w-12 text-white" />
+            </motion.div>
           </div>
         </motion.div>
 
@@ -725,6 +704,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [generationPhase, setGenerationPhase] = useState("");
   // Track if initial content is being generated for skeleton loading
   const [isGeneratingInitialContent, setIsGeneratingInitialContent] = useState(false);
+  // Show skeletons until user has provided meaningful content (category + name)
+  const [showSkeletons, setShowSkeletons] = useState(true);
 
 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
@@ -1065,20 +1046,24 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
       
+      // Start with skeleton loading state until user provides category + name
+      // This ensures the preview shows skeletons initially
+      setShowSkeletons(true);
+
       // Update captureStatus and send welcome email for external leads
       if (websiteId && siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
           websiteId,
           captureStatus: "onboarding_started",
         });
-        
+
         // Send welcome email (non-blocking)
         sendLeadEmailMutation.mutate({
           websiteId,
           template: "onboardingStarted",
         });
       }
-      
+
       const initChat = async () => {
         const source = siteData?.website?.source;
         const hasEmail = !!(siteData?.website as any)?.customerEmail;
@@ -1154,6 +1139,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         // Silent fail - user can still proceed manually
       }).finally(() => {
         setIsGeneratingInitialContent(false);
+        // Disable initial skeletons so layouts can decide based on content quality
+        setShowSkeletons(false);
       });
     }
   }, [data.businessCategory, data.businessName, websiteId, business?.placeId, 
@@ -3509,7 +3496,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 contactFormLocked={!data.addOnContactForm}
                 logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
                 headlineFontOverride={data.headlineFont || undefined}
-                isLoading={isGeneratingInitialContent}
+                isLoading={showSkeletons || isGeneratingInitialContent}
               />
             </MacbookMockup>
           ) : (
