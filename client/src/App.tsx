@@ -54,6 +54,9 @@ function Router() {
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
       <Route path="/my-website" component={CustomerDashboard} />
       <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
+      <Route path="/admin">
+        <AdminRouter />
+      </Route>
       <Route path="/admin/:rest*">
         <AdminRouter />
       </Route>
