@@ -1828,8 +1828,54 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {/* In-place edit mode */}
                   {msg.role === "user" && inPlaceEditId === msg.id ? (
                     <div className="flex flex-col gap-2 max-w-[85%]">
-                      {/* Color picker for color steps */}
-                      {(msg.step === "brandColor" || msg.step === "brandSecondaryColor") ? (
+                      {/* Category picker */}
+                      {msg.step === "businessCategory" ? (
+                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-blue-500">
+                          <p className="text-slate-300 text-xs">Branche wählen:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { label: "Restaurant", icon: "🍽️" },
+                              { label: "Bar / Tapas", icon: "🍷" },
+                              { label: "Café / Bistro", icon: "☕" },
+                              { label: "Bäckerei", icon: "🥐" },
+                              { label: "Friseur", icon: "✂️" },
+                              { label: "Beauty / Kosmetik", icon: "💅" },
+                              { label: "Bauunternehmen", icon: "🏗️" },
+                              { label: "Handwerk", icon: "🔧" },
+                              { label: "Fitness-Studio", icon: "💪" },
+                              { label: "Arzt / Zahnarzt", icon: "🏥" },
+                              { label: "Rechtsanwalt", icon: "⚖️" },
+                              { label: "Immobilien", icon: "🏠" },
+                              { label: "IT / Software", icon: "💻" },
+                              { label: "Fotografie", icon: "📷" },
+                              { label: "Autowerkstatt", icon: "🚗" },
+                              { label: "Hotel / Pension", icon: "🏨" },
+                            ].map(({ label, icon }) => (
+                              <button
+                                key={label}
+                                onClick={() => {
+                                  setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: label } : m));
+                                  setData((p) => ({ ...p, businessCategory: label }));
+                                  setInPlaceEditId(null);
+                                }}
+                                className={`flex items-center gap-1.5 text-sm border px-3 py-2 rounded-xl transition-all ${
+                                  inPlaceEditValue === label
+                                    ? "bg-blue-600/40 border-blue-500/60 text-white"
+                                    : "bg-slate-600/60 hover:bg-blue-600/40 border-slate-500/50 hover:border-blue-500/60 text-slate-200 hover:text-white"
+                                }`}
+                              >
+                                <span>{icon}</span>
+                                <span>{label}</span>
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            onClick={() => setInPlaceEditId(null)}
+                            className="self-start px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
+                          >Abbrechen</button>
+                        </div>
+                      ) : /* Color picker for color steps */
+                      (msg.step === "brandColor" || msg.step === "brandSecondaryColor") ? (
                         <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-blue-500">
                           <p className="text-slate-300 text-xs">
                             {msg.step === "brandColor" ? "Hauptfarbe wählen:" : "Sekundärfarbe wählen:"}

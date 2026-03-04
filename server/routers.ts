@@ -618,6 +618,136 @@ Return ONLY the key (one word, lowercase).`;
 // ── Background Website Generation Worker ────────────────────────────────────
 
 /**
+ * Returns industry-specific 3-step process section.
+ * Always overrides LLM output for reliable, on-brand content.
+ */
+function buildProcessSection(category: string): { headline: string; items: Array<{ step: string; title: string; description: string }> } {
+  const cat = (category || '').toLowerCase();
+
+  if (cat.includes('restaurant') || cat.includes('gastro')) return {
+    headline: "So einfach geht's",
+    items: [
+      { step: "1", title: "Reservieren", description: "Tisch online, per Telefon oder App reservieren – auch kurzfristig möglich." },
+      { step: "2", title: "Ankommen", description: "Herzliche Begrüßung und persönlicher Service von Anfang an." },
+      { step: "3", title: "Genießen", description: "Frische Küche und aufmerksamer Service für einen unvergesslichen Abend." },
+    ],
+  };
+  if (cat.includes('café') || cat.includes('cafe') || cat.includes('bistro') || cat.includes('bäckerei') || cat.includes('bakery')) return {
+    headline: "Ihr Moment zum Durchatmen",
+    items: [
+      { step: "1", title: "Reinkommen", description: "Einfach vorbeikommen – Reservierung ist auf Wunsch auch möglich." },
+      { step: "2", title: "Auswählen", description: "Frische Backwaren, Spezialitäten und hochwertige Kaffeespezialitäten genießen." },
+      { step: "3", title: "Entspannen", description: "Genuss und Pause in gemütlicher Atmosphäre." },
+    ],
+  };
+  if (cat.includes('bar') || cat.includes('tapas') || cat.includes('lounge')) return {
+    headline: "Ihr Abend beginnt hier",
+    items: [
+      { step: "1", title: "Tisch reservieren", description: "Online oder telefonisch Ihren Platz für den Abend sichern." },
+      { step: "2", title: "Ankommen & bestellen", description: "Entspannte Atmosphäre, handgemachte Drinks und ein aufmerksames Team." },
+      { step: "3", title: "Unvergesslicher Abend", description: "Gute Gesellschaft, tolle Musik und ein Abend, der in Erinnerung bleibt." },
+    ],
+  };
+  if (cat.includes('friseur') || cat.includes('hair')) return {
+    headline: "Ihr Weg zum neuen Look",
+    items: [
+      { step: "1", title: "Termin buchen", description: "Einfach online oder telefonisch Ihren Wunschtermin auswählen." },
+      { step: "2", title: "Beratung & Styling", description: "Persönliche Stilberatung und professionelle Umsetzung Ihres Wunsch-Looks." },
+      { step: "3", title: "Strahlendes Ergebnis", description: "Sie verlassen den Salon mit einem frischen, gepflegten Erscheinungsbild." },
+    ],
+  };
+  if (cat.includes('beauty') || cat.includes('kosmetik') || cat.includes('nails') || cat.includes('massage') || cat.includes('spa') || cat.includes('wellness')) return {
+    headline: "Ihr Weg zur Auszeit",
+    items: [
+      { step: "1", title: "Termin buchen", description: "Online oder telefonisch schnell und unkompliziert reservieren." },
+      { step: "2", title: "Ankommen & Entspannen", description: "Wir empfangen Sie herzlich und kümmern uns um jedes Detail." },
+      { step: "3", title: "Verwöhnendes Ergebnis", description: "Sie gehen entspannt und gepflegt – genau so, wie Sie es verdienen." },
+    ],
+  };
+  if (cat.includes('bau') || cat.includes('handwerk') || cat.includes('renovier') || cat.includes('maler') || cat.includes('elektro') || cat.includes('sanitär') || cat.includes('heizung') || cat.includes('zimmerer') || cat.includes('schreiner') || cat.includes('tischler')) return {
+    headline: "Von der Anfrage zum fertigen Projekt",
+    items: [
+      { step: "1", title: "Kostenlose Anfrage", description: "Beschreiben Sie Ihr Projekt – wir melden uns innerhalb von 24 Stunden." },
+      { step: "2", title: "Kostenvoranschlag", description: "Transparenter Festpreis nach Besichtigung – keine versteckten Kosten." },
+      { step: "3", title: "Saubere Ausführung", description: "Pünktliche, professionelle Arbeit mit Qualitätsgarantie." },
+    ],
+  };
+  if (cat.includes('fitness') || cat.includes('sport') || cat.includes('gym') || cat.includes('personal') || cat.includes('yoga') || cat.includes('pilates')) return {
+    headline: "Ihr Weg zu Ihrem Ziel",
+    items: [
+      { step: "1", title: "Kostenloses Probetraining", description: "Lerne uns kennen – unverbindlich und ohne Mitgliedschaft." },
+      { step: "2", title: "Persönlicher Trainingsplan", description: "Individuell auf deine Ziele, deinen Körper und deine Zeit abgestimmt." },
+      { step: "3", title: "Sichtbare Ergebnisse", description: "Mit konsequentem Training und Unterstützung erreichst du deine Ziele." },
+    ],
+  };
+  if (cat.includes('arzt') || cat.includes('zahnarzt') || cat.includes('dental') || cat.includes('praxis') || cat.includes('therapeut') || cat.includes('physio') || cat.includes('med')) return {
+    headline: "Ihre Gesundheit in guten Händen",
+    items: [
+      { step: "1", title: "Termin vereinbaren", description: "Online oder telefonisch schnell und einfach einen Termin buchen." },
+      { step: "2", title: "Untersuchung & Beratung", description: "Sorgfältige Untersuchung und ausführliche Beratung in angenehmer Atmosphäre." },
+      { step: "3", title: "Behandlung & Nachsorge", description: "Professionelle Behandlung und persönliche Begleitung auf dem Weg zur Genesung." },
+    ],
+  };
+  if (cat.includes('anwalt') || cat.includes('rechts') || cat.includes('kanzlei') || cat.includes('notar')) return {
+    headline: "Ihr Recht in sicheren Händen",
+    items: [
+      { step: "1", title: "Erstgespräch anfragen", description: "Schildern Sie Ihr Anliegen – das erste Beratungsgespräch ist kostenfrei." },
+      { step: "2", title: "Fallanalyse", description: "Wir prüfen Ihre Situation und entwickeln die optimale Strategie." },
+      { step: "3", title: "Durchsetzung Ihrer Rechte", description: "Professionelle Vertretung und Begleitung bis zur erfolgreichen Lösung." },
+    ],
+  };
+  if (cat.includes('immobil') || cat.includes('makler')) return {
+    headline: "Ihr Weg zur Traumimmobilie",
+    items: [
+      { step: "1", title: "Kostenlose Beratung", description: "Wir besprechen Ihre Wünsche und Ihr Budget in einem persönlichen Gespräch." },
+      { step: "2", title: "Gezielte Suche", description: "Wir präsentieren passende Objekte aus unserem Netzwerk." },
+      { step: "3", title: "Erfolgreicher Abschluss", description: "Von der Besichtigung bis zur Schlüsselübergabe – wir begleiten jeden Schritt." },
+    ],
+  };
+  if (cat.includes('fotograf') || cat.includes('photo') || cat.includes('video') || cat.includes('film')) return {
+    headline: "Ihre Momente in besten Händen",
+    items: [
+      { step: "1", title: "Anfrage & Beratung", description: "Erzählen Sie uns von Ihrem Wunschprojekt – kostenlose Erstberatung." },
+      { step: "2", title: "Planung & Vorbereitung", description: "Gemeinsam planen wir Konzept, Locations und Ablauf für perfekte Ergebnisse." },
+      { step: "3", title: "Fotos & Erinnerungen", description: "Professionell bearbeitete Bilder – pünktlich geliefert in höchster Qualität." },
+    ],
+  };
+  if (cat.includes('auto') || cat.includes('kfz') || cat.includes('werkstatt') || cat.includes('fahrzeug')) return {
+    headline: "Ihr Fahrzeug in besten Händen",
+    items: [
+      { step: "1", title: "Termin buchen", description: "Online oder telefonisch schnell einen Termin vereinbaren." },
+      { step: "2", title: "Diagnose & Angebot", description: "Wir prüfen Ihr Fahrzeug und erstellen einen transparenten Kostenvoranschlag." },
+      { step: "3", title: "Abfahrbereit", description: "Professionelle Reparatur und Wartung – Ihr Fahrzeug wartet auf Sie." },
+    ],
+  };
+  if (cat.includes('hotel') || cat.includes('pension') || cat.includes('unterkunft') || cat.includes('ferienwohnung')) return {
+    headline: "Ihr perfekter Aufenthalt",
+    items: [
+      { step: "1", title: "Zimmer buchen", description: "Einfach online oder telefonisch Ihren Aufenthalt reservieren." },
+      { step: "2", title: "Ankommen & Wohlfühlen", description: "Herzlicher Empfang und komfortable Zimmer in entspannter Atmosphäre." },
+      { step: "3", title: "Unvergesslicher Aufenthalt", description: "Persönlicher Service und alle Annehmlichkeiten für Ihre Erholung." },
+    ],
+  };
+  if (cat.includes('it') || cat.includes('software') || cat.includes('digital') || cat.includes('web') || cat.includes('agentur')) return {
+    headline: "Von der Idee zur Lösung",
+    items: [
+      { step: "1", title: "Anfrage stellen", description: "Beschreiben Sie Ihr Projekt oder Problem – wir melden uns schnell." },
+      { step: "2", title: "Konzept & Angebot", description: "Wir analysieren Ihre Anforderungen und erstellen ein maßgeschneidertes Konzept." },
+      { step: "3", title: "Umsetzung & Support", description: "Professionelle Umsetzung und langfristiger Support für Ihren Erfolg." },
+    ],
+  };
+  // Universal fallback
+  return {
+    headline: "So einfach geht's",
+    items: [
+      { step: "1", title: "Kontakt aufnehmen", description: "Schreiben Sie uns oder rufen Sie an – wir antworten schnell und unkompliziert." },
+      { step: "2", title: "Persönliche Beratung", description: "Wir analysieren Ihre Situation und zeigen Ihnen die beste Lösung." },
+      { step: "3", title: "Professionelles Ergebnis", description: "Wir setzen Ihr Projekt um – zuverlässig, pünktlich und mit Qualitätsgarantie." },
+    ],
+  };
+}
+
+/**
  * Builds verified stats from real business data only.
  * Replaces any LLM-generated stats – every value is either from the DB or a safe universal claim.
  */
@@ -842,9 +972,12 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     // Progress: 80% - AI response received / Fallback applied
     await updateGenerationJob(jobId, { progress: 80 });
 
-    // ── Strip any LLM-generated stats (GoogleTrustBadge uses googleRating/googleReviewCount directly) ──
+    // ── Strip LLM stats + inject industry-specific process section ──────────
     if (websiteData.sections) {
-      websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
+      websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats' && s.type !== 'process');
+      const proc = buildProcessSection(category);
+      const servIdx = websiteData.sections.findIndex((s: any) => s.type === 'services');
+      websiteData.sections.splice(servIdx >= 0 ? servIdx + 1 : websiteData.sections.length, 0, { type: 'process', ...proc });
     }
 
     const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
@@ -1337,9 +1470,12 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
-        // Strip any LLM-generated stats (GoogleTrustBadge uses googleRating/googleReviewCount directly)
+        // Strip LLM stats + inject industry-specific process section
         if (websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats' && s.type !== 'process');
+          const proc = buildProcessSection(category);
+          const servIdx = websiteData.sections.findIndex((s: any) => s.type === 'services');
+          websiteData.sections.splice(servIdx >= 0 ? servIdx + 1 : websiteData.sections.length, 0, { type: 'process', ...proc });
         }
 
         // Inject real contact data from business record (overrides any AI-generated contact section)
@@ -1524,9 +1660,12 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
-        // Strip any LLM-generated stats (GoogleTrustBadge uses googleRating/googleReviewCount directly)
+        // Strip LLM stats + inject industry-specific process section
         if (websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats' && s.type !== 'process');
+          const proc = buildProcessSection(category);
+          const servIdx = websiteData.sections.findIndex((s: any) => s.type === 'services');
+          websiteData.sections.splice(servIdx >= 0 ? servIdx + 1 : websiteData.sections.length, 0, { type: 'process', ...proc });
         }
 
         // Inject real contact data from business record (overrides any AI-generated contact section)
