@@ -160,50 +160,50 @@ export const LOGO_FONT_OPTIONS = [
 export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description: string; colors: ColorScheme }[] = [
   {
     id: "trust",
-    label: "Professional Trust",
-    description: "Tiefes Mitternachtsblau und Schiefer – seriös, kompetent und zeitlos.",
+    label: "Preußisch Blau",
+    description: "Tiefes Marineblau mit warmem Goldakzent – Autorität, Kompetenz und zeitlose Seriosität.",
     colors: withOnColors({
-      primary: "#1e3a8a",
-      secondary: "#0f172a",
-      accent: "#f59e0b",
+      primary: "#1B3D6F",
+      secondary: "#0D2140",
+      accent: "#C9A43A",
       background: "#ffffff",
-      surface: "#f8fafc",
-      text: "#0f172a",
+      surface: "#F7F9FC",
+      text: "#0D1B2A",
       textLight: "#64748b"
     })
   },
   {
     id: "warm",
-    label: "Heritage Warmth",
-    description: "Edles Terracotta und Sandtöne – ideal für exzellente Gastronomie.",
+    label: "Terracotta",
+    description: "Warmes Terracotta und Naturstein – handwerkliche Wärme und Erdverbundenheit.",
     colors: withOnColors({
-      primary: "#9a3412",
-      secondary: "#431407",
-      accent: "#b3966a",
-      background: "#fffcfb",
-      surface: "#fef2f2",
-      text: "#1e1b1b",
-      textLight: "#71717a"
+      primary: "#B44D1F",
+      secondary: "#3D1A0A",
+      accent: "#C4956A",
+      background: "#FEFCFA",
+      surface: "#F5EDE0",
+      text: "#1E1208",
+      textLight: "#7A6A56"
     })
   },
   {
     id: "elegant",
-    label: "Pure Elegance",
-    description: "Champagner und weiches Anthrazit – für Luxus und Ästhetik.",
+    label: "Champagner",
+    description: "Warmes Champagnergold und tiefes Anthrazit – für Luxus, Schönheit und hohe Ästhetik.",
     colors: withOnColors({
-      primary: "#bfa37e",
-      secondary: "#1a1a1a",
-      accent: "#f2f2f2",
-      background: "#ffffff",
-      surface: "#faf9f6",
-      text: "#0f172a",
-      textLight: "#64748b"
+      primary: "#967B5C",
+      secondary: "#1A1511",
+      accent: "#F0EBE3",
+      background: "#FDFBF8",
+      surface: "#F7F3EE",
+      text: "#1A1511",
+      textLight: "#7A7065"
     })
   },
   {
     id: "modern",
-    label: "Contemporary Dark",
-    description: "Scharfes Graphit und klares Weiß – puristisch und fokussiert.",
+    label: "Grafitmodern",
+    description: "Dunkles Graphit mit elektrischem Akzent – präzise, fokussiert und zeitgemäß.",
     colors: withOnColors({
       primary: "#bef264",
       secondary: "#0a0a0a",
