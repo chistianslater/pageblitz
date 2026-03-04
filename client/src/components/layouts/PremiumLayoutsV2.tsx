@@ -221,7 +221,8 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
                   <Shield size={22} className="text-neutral-400" />
                 </div>
                 <p className={`font-bold text-sm mb-1 ${textMain}`}>Kontaktformular</p>
-                <p className={`text-xs mb-4 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
+                <p className={`text-xs mb-1 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
+                <p className={`text-xs font-semibold mb-4`} style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
                 <button className="w-full py-2.5 px-4 text-xs font-bold uppercase tracking-widest text-white rounded-lg hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: cs.primary }}>
                   Freischalten
