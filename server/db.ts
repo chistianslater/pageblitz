@@ -72,7 +72,12 @@ export async function upsertBusiness(data: InsertBusiness) {
   if (!db) throw new Error("DB not available");
   if (data.placeId) {
     const existing = await db.select().from(businesses).where(eq(businesses.placeId, data.placeId)).limit(1);
-    if (existing.length > 0) return existing[0].id;
+    if (existing.length > 0) {
+      // Update fields so stale data (e.g. old category) gets refreshed
+      const { placeId: _pid, ...updateData } = data;
+      await db.update(businesses).set(updateData).where(eq(businesses.placeId, data.placeId));
+      return existing[0].id;
+    }
   }
   const result = await db.insert(businesses).values(data);
   return result[0].insertId;
