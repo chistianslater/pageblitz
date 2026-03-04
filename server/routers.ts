@@ -842,10 +842,9 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     // Progress: 80% - AI response received / Fallback applied
     await updateGenerationJob(jobId, { progress: 80 });
 
-    // ── Inject verified stats (replaces any LLM-generated stats) ────
+    // ── Strip any LLM-generated stats (GoogleTrustBadge uses googleRating/googleReviewCount directly) ──
     if (websiteData.sections) {
       websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
-      websiteData.sections.push({ type: 'stats', items: buildVerifiedStats(business, category) });
     }
 
     const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
@@ -1338,10 +1337,9 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
-        // Inject verified stats (replaces any LLM-generated stats)
+        // Strip any LLM-generated stats (GoogleTrustBadge uses googleRating/googleReviewCount directly)
         if (websiteData.sections) {
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
-          websiteData.sections.push({ type: 'stats', items: buildVerifiedStats(business, category) });
         }
 
         // Inject real contact data from business record (overrides any AI-generated contact section)
@@ -1526,10 +1524,9 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
-        // Inject verified stats (replaces any LLM-generated stats)
+        // Strip any LLM-generated stats (GoogleTrustBadge uses googleRating/googleReviewCount directly)
         if (websiteData.sections) {
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
-          websiteData.sections.push({ type: 'stats', items: buildVerifiedStats(business, category) });
         }
 
         // Inject real contact data from business record (overrides any AI-generated contact section)

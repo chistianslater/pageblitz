@@ -80,6 +80,162 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false }: any) {
   );
 }
 
+// ── GOOGLE TRUST BADGE ───────────────────────────────────────────
+function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
+  const rating = websiteData?.googleRating;
+  const reviewCount = websiteData?.googleReviewCount;
+  if (!isLoading && !rating) return null;
+
+  const textSub = dark ? "text-white/50" : "text-neutral-500";
+  const bg = dark ? "bg-white/5" : "bg-neutral-50";
+  const cardBg = dark ? "bg-white/10" : "bg-white";
+  const divider = dark ? "bg-white/20" : "bg-neutral-200";
+  const border = dark ? "border-white/10" : "border-neutral-100";
+
+  const stars = rating ? Math.round(rating) : 5;
+  const displayRating = rating ? rating.toFixed(1) : "5.0";
+  const displayCount = reviewCount
+    ? reviewCount >= 50 ? `${Math.floor(reviewCount / 10) * 10}+` : `${reviewCount}`
+    : "–";
+
+  return (
+    <section className={`py-12 px-6 ${bg}`}>
+      <div className="max-w-7xl mx-auto flex justify-center">
+        <Skeleton isLoading={isLoading} className="w-80 h-20">
+          <div className={`inline-flex items-center gap-6 px-8 py-4 rounded-xl border ${cardBg} ${border} shadow-sm`}>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Google</span>
+              <div className="flex gap-0.5 mt-1">
+                {[0,1,2,3,4].map(i => (
+                  <Star key={i} size={14}
+                    fill={i < stars ? '#FBBC04' : 'none'}
+                    stroke={i < stars ? '#FBBC04' : '#ccc'}
+                    strokeWidth={1.5}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className={`w-px h-10 ${divider}`} />
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-black leading-none" style={{ color: cs.primary }}>{displayRating}</span>
+              <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`}>Bewertung</span>
+            </div>
+            <div className={`w-px h-10 ${divider}`} />
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-black leading-none" style={{ color: cs.primary }}>{displayCount}</span>
+              <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`}>Rezensionen</span>
+            </div>
+          </div>
+        </Skeleton>
+      </div>
+    </section>
+  );
+}
+
+// ── CONTACT SECTION ───────────────────────────────────────────────
+function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
+  const phone = getContactItem(websiteData, 'Phone');
+  const address = getContactItem(websiteData, 'MapPin');
+  const hours = getContactItem(websiteData, 'Clock');
+
+  const textMain = dark ? "text-white" : "text-neutral-900";
+  const textSub = dark ? "text-white/50" : "text-neutral-500";
+  const bg = dark ? "bg-white/5" : "bg-neutral-50";
+  const cardBg = dark ? "bg-neutral-800" : "bg-white";
+  const border = dark ? "border-white/10" : "border-neutral-200";
+  const iconBg = `${cs.primary}20`;
+
+  return (
+    <section id="kontakt" className={`py-20 px-6 scroll-mt-20 ${bg}`}>
+      <div className="max-w-7xl mx-auto">
+        <Skeleton isLoading={isLoading} className="w-48 h-10 mb-12">
+          <h2 className={`text-3xl md:text-4xl font-black mb-12 ${textMain}`}>Kontakt</h2>
+        </Skeleton>
+        <div className="grid md:grid-cols-2 gap-12">
+
+          {/* Left: real contact data */}
+          <div className="space-y-6">
+            {(address || isLoading) && (
+              <Skeleton isLoading={isLoading} className="w-full h-16">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
+                    <MapPin size={18} style={{ color: cs.primary }} />
+                  </div>
+                  <div>
+                    <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Adresse</p>
+                    <p className={`font-medium ${textMain}`}>{address}</p>
+                  </div>
+                </div>
+              </Skeleton>
+            )}
+            {(phone || isLoading) && (
+              <Skeleton isLoading={isLoading} className="w-full h-16">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
+                    <Phone size={18} style={{ color: cs.primary }} />
+                  </div>
+                  <div>
+                    <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Telefon</p>
+                    <p className={`font-medium ${textMain}`}>{phone}</p>
+                  </div>
+                </div>
+              </Skeleton>
+            )}
+            {(hours || isLoading) && (
+              <Skeleton isLoading={isLoading} className="w-full h-16">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
+                    <Clock size={18} style={{ color: cs.primary }} />
+                  </div>
+                  <div>
+                    <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Öffnungszeiten</p>
+                    <p className={`font-medium whitespace-pre-line ${textMain}`}>{hours}</p>
+                  </div>
+                </div>
+              </Skeleton>
+            )}
+          </div>
+
+          {/* Right: locked premium form */}
+          <div className="relative">
+            <div className={`rounded-xl border ${cardBg} ${border} p-6 opacity-40 blur-[2px] pointer-events-none`}>
+              <div className="space-y-4">
+                <div>
+                  <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Name</p>
+                  <div className={`h-10 rounded-lg border ${border}`} />
+                </div>
+                <div>
+                  <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>E-Mail</p>
+                  <div className={`h-10 rounded-lg border ${border}`} />
+                </div>
+                <div>
+                  <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Nachricht</p>
+                  <div className={`h-24 rounded-lg border ${border}`} />
+                </div>
+                <div className="h-10 rounded-lg" style={{ backgroundColor: cs.primary }} />
+              </div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className={`${cardBg} rounded-xl border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}>
+                <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-3">
+                  <Shield size={22} className="text-neutral-400" />
+                </div>
+                <p className={`font-bold text-sm mb-1 ${textMain}`}>Kontaktformular</p>
+                <p className={`text-xs mb-4 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
+                <button className="w-full py-2.5 px-4 text-xs font-bold uppercase tracking-widest text-white rounded-lg hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: cs.primary }}>
+                  Freischalten
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── TESTIMONIALS ─────────────────────────────────────────────────
 /** Dark-theme testimonials block – only renders when real reviews exist */
 function TestimonialsDark({ websiteData, cs, isLoading, heading }: any) {
@@ -216,8 +372,6 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Qualität" }, { title: "Geprüft", description: "Zertifiziert" }, { title: "24/7", description: "Support" }, { title: "100%", description: "Handarbeit" }];
   const heroCta = hero?.ctaText || 'Projekt anfragen';
   const heroSub = hero?.subheadline || websiteData.tagline || '';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
@@ -265,20 +419,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         </div>
       </section>
 
-      <section className="py-20 md:py-32 px-6 border-b border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-12 mx-auto">
-                  <p className="text-4xl md:text-5xl font-black" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs md:text-sm uppercase tracking-widest text-white/50 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
@@ -334,7 +475,9 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} />
 
-      <footer id="kontakt" className="py-16 md:py-24 px-6 border-t border-white/10">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+
+      <footer className="py-16 md:py-24 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-12 md:gap-8 mb-16">
             <div className="md:col-span-2">
@@ -372,8 +515,6 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Expertise" }, { title: "Premium", description: "Qualität" }, { title: "100%", description: "Hingabe" }, { title: "Exklusiv", description: "Service" }];
   const heroCta = hero?.ctaText || 'Termin buchen';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
   const heroSub = hero?.subheadline || websiteData.description || '';
@@ -414,20 +555,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </div>
       </section>
 
-      <section className="py-16 md:py-24 px-4 md:px-6 bg-neutral-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center p-4 md:p-6">
-                <Skeleton isLoading={isLoading} className="w-24 h-10 mx-auto">
-                  <p className="text-3xl md:text-4xl font-serif italic" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-neutral-400 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-4 md:px-6 scroll-mt-20">
@@ -485,7 +613,9 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} />
 
-      <footer id="kontakt" className="py-16 md:py-24 px-4 md:px-6 bg-neutral-900 text-white">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
+      <footer className="py-16 md:py-24 px-4 md:px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-12 md:gap-8 mb-16">
             <div className="md:col-span-2">
@@ -523,8 +653,6 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Standard" }, { title: "Geprüft", description: "Qualität" }, { title: "100%", description: "Vertrauen" }, { title: "24h", description: "Notfallservice" }];
   const heroCta = hero?.ctaText || 'Termin buchen';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
   const aboutHeadline = about?.headline || 'Über uns';
@@ -566,20 +694,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center p-6 bg-white rounded-xl shadow-sm">
-                <Skeleton isLoading={isLoading} className="w-20 h-10 mx-auto">
-                  <p className="text-3xl font-black" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-slate-400 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
@@ -625,7 +740,9 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-slate-900 text-white">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
+      <footer className="py-16 px-6 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -661,8 +778,6 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Meisterqualität" }, { title: "100%", description: "Handarbeit" }, { title: "TÜV", description: "Zertifiziert" }, { title: "Garantie", description: "Auf alle Arbeiten" }];
   const heroCta = hero?.ctaText || 'Projekt planen';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
   const aboutHeadline = about?.headline || 'Über uns';
@@ -704,20 +819,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </Skeleton>
       </section>
 
-      <section className="py-20 px-6 border-y border-neutral-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-12 mx-auto">
-                  <p className="text-4xl font-black" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-neutral-400 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
@@ -765,7 +867,9 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
+      <footer className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -801,8 +905,6 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Trainer" }, { title: "24/7", description: "Geöffnet" }, { title: "100%", description: "Motivation" }, { title: "Zert.", description: "Ausbilder" }];
   const heroCta = hero?.ctaText || 'Training buchen';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
   const aboutHeadline = about?.headline || 'Unsere Mission';
@@ -847,20 +949,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </div>
       </section>
 
-      <section className="py-20 px-6 border-y border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-14 mx-auto">
-                  <p className="text-5xl font-black italic" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-white/50 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
@@ -906,7 +995,9 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-black border-t border-white/10">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+
+      <footer className="py-16 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -942,8 +1033,6 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "100%", description: "Regional" }, { title: "Täglich", description: "Frisch" }, { title: "Bio", description: "Zertifiziert" }, { title: "Zero", description: "Waste" }];
   const heroCta = hero?.ctaText || 'Reservieren';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
   const aboutHeadline = about?.headline || 'Unsere Philosophie';
@@ -977,20 +1066,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </div>
       </section>
 
-      <section className="py-20 px-6 mt-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-12 mx-auto">
-                  <p className="text-4xl font-serif italic" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-neutral-400 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 bg-white scroll-mt-20">
@@ -1036,7 +1112,9 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Gäste sagen" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
+      <footer className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1072,8 +1150,6 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Exklusivität" }, { title: "Premium", description: "Service" }, { title: "5★", description: "Bewertung" }, { title: "Exklusiv", description: "Kollektion" }];
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
   const aboutHeadline = about?.headline || 'Über uns';
@@ -1113,20 +1189,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </div>
       </section>
 
-      <section className="py-20 px-6 border-y border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-12 mx-auto">
-                  <p className="text-4xl font-serif italic" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-white/50 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
@@ -1172,7 +1235,9 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-black border-t border-white/10">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+
+      <footer className="py-16 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1208,8 +1273,6 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Qualität" }, { title: "Agil", description: "Arbeitsweise" }, { title: "Modern", description: "Technologie" }, { title: "100%", description: "Zufriedenheit" }];
   const heroCta = hero?.ctaText || 'Projekt starten';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
   const aboutHeadline = about?.headline || 'Über uns';
@@ -1253,20 +1316,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-12 mx-auto">
-                  <p className="text-4xl font-black" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-slate-400 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
@@ -1312,7 +1362,9 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-slate-900 text-white">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
+      <footer className="py-16 px-6 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1348,8 +1400,6 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "100%", description: "Natürlich" }, { title: "Bio", description: "Zertifiziert" }, { title: "Lokal", description: "Bezogen" }, { title: "Zero", description: "Waste" }];
   const heroCta = hero?.ctaText || 'Beratung anfragen';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
   const aboutHeadline = about?.headline || 'Philosophie';
@@ -1387,20 +1437,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </div>
       </section>
 
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-12 mx-auto">
-                  <p className="text-4xl font-serif italic" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-neutral-400 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 bg-white scroll-mt-20">
@@ -1446,7 +1483,9 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
+      <footer className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1482,8 +1521,6 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
-  const statsItems = sec(websiteData, 'stats')?.items ||
-    [{ title: "Top", description: "Expertise" }, { title: "Global", description: "Präsenz" }, { title: "Boutique", description: "Service" }, { title: "100%", description: "Ergebnis" }];
   const heroCta = hero?.ctaText || 'Kontakt aufnehmen';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
   const aboutHeadline = about?.headline || 'Expertise';
@@ -1522,20 +1559,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </div>
       </section>
 
-      <section className="py-20 px-6 border-y border-neutral-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsItems.map((stat: any, i: number) => (
-              <div key={i} className="text-center">
-                <Skeleton isLoading={isLoading} className="w-24 h-12 mx-auto">
-                  <p className="text-4xl font-black" style={{ color: cs.primary }}>{stat.title}</p>
-                </Skeleton>
-                <p className="text-xs uppercase tracking-widest text-neutral-400 mt-2">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
@@ -1581,7 +1605,9 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
+      <footer className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
