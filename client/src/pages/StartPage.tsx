@@ -32,6 +32,8 @@ export default function StartPage() {
     category: string | null;
     reviews: any[];
     openingHours: string[];
+    rating: string | null;
+    reviewCount: number | null;
   } | null>(null);
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [capturedLeadId, setCapturedLeadId] = useState<number | null>(null);
@@ -59,6 +61,8 @@ export default function StartPage() {
           category: (data as any).category ?? null,
           reviews: (data as any).reviews || [],
           openingHours: (data as any).openingHours || [],
+          rating: (data as any).rating ? String((data as any).rating) : null,
+          reviewCount: (data as any).reviewCount || null,
         });
         setResolveError(null);
         toast.success(`"${data.businessName}" gefunden!`);
@@ -126,6 +130,8 @@ export default function StartPage() {
       source: "external",
       googleReviews: resolvedInfo.reviews.length > 0 ? resolvedInfo.reviews : undefined,
       openingHours: resolvedInfo.openingHours.length > 0 ? resolvedInfo.openingHours : undefined,
+      rating: resolvedInfo.rating || undefined,
+      reviewCount: resolvedInfo.reviewCount || undefined,
     });
   };
 

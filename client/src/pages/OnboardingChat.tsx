@@ -1131,11 +1131,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           captureStatus: "onboarding_started",
         });
 
-        // Send welcome email (non-blocking)
-        sendLeadEmailMutation.mutate({
-          websiteId,
-          template: "onboardingStarted",
-        });
+        // Email disabled during development
+        // sendLeadEmailMutation.mutate({ websiteId, template: "onboardingStarted" });
       }
 
       const initChat = async () => {
@@ -1548,11 +1545,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           captureStatus: "onboarding_completed",
         });
         
-        // Send completion email with CTA to activate (non-blocking)
-        sendLeadEmailMutation.mutate({
-          websiteId,
-          template: "onboardingCompleted",
-        });
+        // Email disabled during development
+        // sendLeadEmailMutation.mutate({ websiteId, template: "onboardingCompleted" });
       }
       
       // Then create checkout session

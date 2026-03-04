@@ -511,8 +511,7 @@ REGELN:
 2. KEINE generischen Phrasen wie "Ihr Partner für..."
 3. Der KUNDE ist der Held, ${business.name} ist der Guide
 4. Authentische deutsche Kundennamen in Testimonials
-5. STATS – nur faktisch glaubwürdige Kennzahlen: Erfahrungsjahre (z.B. "12+"), Öffnungstage (z.B. "6"), Zertifizierungen (z.B. "TÜV"), Kundenzahlen konservativ (z.B. "200+"), oder "0€" für "Versteckte Kosten". VERBOTEN: erfundene Prozentzahlen (97%...), Zeitersparnisangaben (38 min...), physikalische Einheiten für abstrakte Konzepte (kg für Kosten), Werte von exakt 0 ohne Einheit.
-${isRegenerate ? "6. ANDERE Perspektive als zuvor wählen" : ""}
+${isRegenerate ? "5. ANDERE Perspektive als zuvor wählen" : ""}
 
 JSON-AUSGABE:
 {
@@ -539,15 +538,6 @@ JSON-AUSGABE:
       "type": "about",
       "headline": "Kurze Über-uns-Überschrift max 5 Wörter",
       "content": "2-3 authentische Sätze über das Unternehmen, seine Stärken, Werte und was es von der Konkurrenz unterscheidet. Konkret und spezifisch für diese Branche."
-    },
-    {
-      "type": "stats",
-      "items": [
-        {"title": "Wert", "description": "Label"},
-        {"title": "Wert", "description": "Label"},
-        {"title": "Wert", "description": "Label"},
-        {"title": "Wert", "description": "Label"}
-      ]
     },
     {
       "type": "cta",
@@ -618,24 +608,50 @@ Return ONLY the key (one word, lowercase).`;
 
 // ── Background Website Generation Worker ────────────────────────────────────
 
-/** Removes stats items that are clearly hallucinated or nonsensical */
-function sanitizeStatsSection(websiteData: any): void {
-  if (!websiteData?.sections) return;
-  const statsSection = websiteData.sections.find((s: any) => s.type === 'stats');
-  if (!statsSection?.items) return;
-  statsSection.items = statsSection.items.filter((item: any) => {
-    const title = String(item.title ?? '').trim();
-    const desc = String(item.description ?? '').toLowerCase();
-    if (!title || title === '0') return false;
-    // Block suspiciously high invented percentages
-    const pctMatch = title.match(/^(\d+)\s*%/);
-    if (pctMatch && parseInt(pctMatch[1]) > 95) return false;
-    // Block time-saving stats (e.g. "38 min Zeitersparnis") – unverifiable
-    if (/\d+\s*(min|std|h)\b/i.test(title) && /spar|einspar|pro\s*(woche|tag|monat)/i.test(desc)) return false;
-    // Block "0 <unit>" that isn't explicitly "0€" / "0 €" (a valid "no hidden costs" claim)
-    if (/^0\s+[a-zA-Z]/.test(title) && !/^0\s*€/.test(title)) return false;
-    return true;
-  });
+/**
+ * Builds verified stats from real business data only.
+ * Replaces any LLM-generated stats – every value is either from the DB or a safe universal claim.
+ */
+function buildVerifiedStats(business: any, category: string): Array<{title: string; description: string}> {
+  const stats: Array<{title: string; description: string}> = [];
+  const cat = (category || '').toLowerCase();
+
+  // 1. Google rating (verified)
+  if (business.rating && parseFloat(business.rating) >= 3) {
+    stats.push({ title: `${parseFloat(business.rating).toFixed(1)}★`, description: 'Google Bewertung' });
+  }
+
+  // 2. Review count (verified) – rounded to nearest 10 if ≥ 50
+  if (business.reviewCount && business.reviewCount >= 5) {
+    const rc = business.reviewCount;
+    const display = rc >= 50 ? `${Math.floor(rc / 10) * 10}+` : `${rc}+`;
+    stats.push({ title: display, description: 'Kundenbewertungen' });
+  }
+
+  // 3. Open days per week (derived from real opening hours)
+  if (business.openingHours && Array.isArray(business.openingHours)) {
+    const openDays = (business.openingHours as string[]).filter((h: string) =>
+      h && !h.toLowerCase().includes('geschlossen') && !h.toLowerCase().includes('closed')
+    ).length;
+    if (openDays >= 5 && openDays <= 7) {
+      stats.push({ title: `${openDays}×`, description: 'Wochentage geöffnet' });
+    }
+  }
+
+  // 4. Universal: no hidden costs (safe for any legitimate business)
+  stats.push({ title: '0€', description: 'Versteckte Kosten' });
+
+  // 5. Fill to 4 with a safe universal qualitative signal
+  if (stats.length < 4) {
+    const extra = cat.includes('fitness') || cat.includes('sport')
+      ? { title: 'Kostenlos', description: 'Erstgespräch' }
+      : cat.includes('restaurant') || cat.includes('café')
+      ? { title: 'Täglich', description: 'Frisch zubereitet' }
+      : { title: 'Persönlich', description: 'Betreut' };
+    stats.push(extra);
+  }
+
+  return stats.slice(0, 4);
 }
 
 /** Fallback-Template-Daten wenn KI fehlschlägt */
@@ -817,8 +833,11 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     // Progress: 80% - AI response received / Fallback applied
     await updateGenerationJob(jobId, { progress: 80 });
 
-    // ── Post-process: sanitize stats ────────────────────────────────
-    sanitizeStatsSection(websiteData);
+    // ── Inject verified stats (replaces any LLM-generated stats) ────
+    if (websiteData.sections) {
+      websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
+      websiteData.sections.push({ type: 'stats', items: buildVerifiedStats(business, category) });
+    }
 
     const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
     const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
@@ -1310,8 +1329,11 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
-        // Sanitize stats
-        sanitizeStatsSection(websiteData);
+        // Inject verified stats (replaces any LLM-generated stats)
+        if (websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
+          websiteData.sections.push({ type: 'stats', items: buildVerifiedStats(business, category) });
+        }
 
         // Inject real contact data from business record (overrides any AI-generated contact section)
         if (websiteData.sections) {
@@ -1495,8 +1517,11 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
-        // Sanitize stats
-        sanitizeStatsSection(websiteData);
+        // Inject verified stats (replaces any LLM-generated stats)
+        if (websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== 'stats');
+          websiteData.sections.push({ type: 'stats', items: buildVerifiedStats(business, category) });
+        }
 
         // Inject real contact data from business record (overrides any AI-generated contact section)
         if (websiteData.sections) {
@@ -2599,6 +2624,8 @@ Kontext: ${input.context}`,
         source: z.enum(["admin", "external"]).optional().default("external"), // Source tracking
         googleReviews: z.array(z.any()).optional(), // Google reviews from resolveLink
         openingHours: z.array(z.string()).optional(), // Opening hours from resolveLink
+        rating: z.string().optional(), // Google rating from resolveLink
+        reviewCount: z.number().optional(), // Google review count from resolveLink
       }))
       .mutation(async ({ input }) => {
         // Validate email for external sources
@@ -2620,6 +2647,8 @@ Kontext: ${input.context}`,
           email: input.customerEmail, // Also store in business for convenience
           googleReviews: input.googleReviews?.length ? input.googleReviews : null,
           openingHours: input.openingHours?.length ? input.openingHours : null,
+          rating: input.rating || null,
+          reviewCount: input.reviewCount || null,
         });
         // Create a preview website
         const previewToken = nanoid(32);

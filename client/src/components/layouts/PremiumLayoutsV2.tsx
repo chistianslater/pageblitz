@@ -141,6 +141,15 @@ function TestimonialsLight({ websiteData, cs, isLoading, heading, serif }: any) 
   );
 }
 
+// ── NAV LINKS ────────────────────────────────────────────────────
+const NavLinks = ({ textClass = "text-inherit" }: { textClass?: string }) => (
+  <div className="hidden md:flex items-center gap-6">
+    <a href="#leistungen" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Leistungen</a>
+    <a href="#ueber-uns" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Über uns</a>
+    <a href="#kontakt" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Kontakt</a>
+  </div>
+);
+
 // ── FOOTER CONTACT BLOCK ─────────────────────────────────────────
 function FooterContact({ websiteData, textClass }: { websiteData: any, textClass: string }) {
   const phone = getContactItem(websiteData, 'Phone');
@@ -178,12 +187,13 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         <Skeleton isLoading={isLoading} className="w-32 h-8">
           <span className="font-black text-xl md:text-2xl uppercase tracking-tighter italic">{websiteData.businessName}</span>
         </Skeleton>
+        <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-28 h-10">
           <button style={{ backgroundColor: cs.primary }} className="px-4 md:px-8 py-2.5 md:py-3 font-bold uppercase text-xs tracking-widest hover:scale-105 transition-transform">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section className="relative min-h-screen flex items-center overflow-hidden pt-20">
+      <section id="hero" className="relative min-h-screen flex items-center overflow-hidden pt-20">
         <Skeleton isLoading={isLoading} className="absolute right-0 w-full lg:w-1/2 h-full">
           <div className="absolute right-0 w-full lg:w-1/2 h-full opacity-40 grayscale" style={{ clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0% 100%)' }}>
             <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
@@ -227,7 +237,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-64 h-12 mx-auto mb-16">
               <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-center mb-16">Unsere <span style={{ color: cs.primary }}>Leistungen</span></h2>
@@ -249,7 +259,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6 bg-neutral-900">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-900 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
             <Skeleton isLoading={isLoading} className="w-full aspect-[4/3]">
@@ -278,7 +288,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} />
 
-      <footer className="py-16 md:py-24 px-6 border-t border-white/10">
+      <footer id="kontakt" className="py-16 md:py-24 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-12 md:gap-8 mb-16">
             <div className="md:col-span-2">
@@ -327,13 +337,17 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
   return (
     <div className="bg-[#FFFDFB] text-neutral-900 font-light">
-      <header className="py-6 md:py-10 text-center px-4">
-        <Skeleton isLoading={isLoading} className="w-64 h-10 mx-auto">
-          <span className="font-serif italic text-2xl md:text-4xl">{websiteData.businessName}</span>
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FFFDFB]/90 backdrop-blur-md border-b border-neutral-200/50">
+        <NavLinks textClass="text-neutral-900" />
+        <Skeleton isLoading={isLoading} className="w-48 h-8 absolute left-1/2 -translate-x-1/2">
+          <span className="font-serif italic text-xl md:text-2xl">{websiteData.businessName}</span>
         </Skeleton>
-      </header>
+        <Skeleton isLoading={isLoading} className="w-32 h-10">
+          <button style={{ backgroundColor: cs.primary }} className="px-6 py-2.5 rounded-full text-white text-xs font-bold uppercase tracking-[0.2em] hover:scale-105 transition-transform shadow-sm">{heroCta}</button>
+        </Skeleton>
+      </nav>
 
-      <section className="max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-2 gap-12 md:gap-20 items-center min-h-[70vh] md:min-h-[80vh] pb-12 md:pb-0">
+      <section id="hero" className="max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-2 gap-12 md:gap-20 items-center min-h-[80vh] pb-12 md:pb-0 pt-24">
         <div className="relative order-2 lg:order-1">
           <Skeleton isLoading={isLoading} className="w-full aspect-[3/4] rounded-t-full">
             <div className="overflow-hidden aspect-[3/4] shadow-2xl rounded-t-full" style={{ borderRadius: '50% 50% 0 0 / 30% 30% 0 0' }}>
@@ -370,7 +384,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-4 md:px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-4 md:px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-80 h-16 mx-auto mb-16">
               <div className="text-center mb-16">
@@ -395,7 +409,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-4 md:px-6 bg-neutral-50">
+      <section id="ueber-uns" className="py-20 md:py-32 px-4 md:px-6 bg-neutral-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
             <div className="order-2 lg:order-1">
@@ -423,7 +437,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} />
 
-      <footer className="py-16 md:py-24 px-4 md:px-6 bg-neutral-900 text-white">
+      <footer id="kontakt" className="py-16 md:py-24 px-4 md:px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-12 md:gap-8 mb-16">
             <div className="md:col-span-2">
@@ -475,17 +489,13 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         <Skeleton isLoading={isLoading} className="w-32 h-8">
           <span className="font-bold text-xl tracking-tight">{websiteData.businessName}</span>
         </Skeleton>
-        <div className="flex gap-4">
-          <Skeleton isLoading={isLoading} className="w-24 h-10">
-            <button className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">Leistungen</button>
-          </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-28 h-10">
-            <button style={{ backgroundColor: cs.primary }} className="px-4 py-2 text-white text-sm font-medium rounded-md">{heroCta}</button>
-          </Skeleton>
-        </div>
+        <NavLinks textClass="text-slate-900" />
+        <Skeleton isLoading={isLoading} className="w-28 h-10">
+          <button style={{ backgroundColor: cs.primary }} className="px-4 py-2 text-white text-sm font-medium rounded-md">{heroCta}</button>
+        </Skeleton>
       </nav>
 
-      <section className="min-h-screen flex items-center pt-32 px-6">
+      <section id="hero" className="min-h-screen flex items-center pt-32 px-6">
         <div className="max-w-7xl mx-auto border-x border-slate-100 min-h-screen p-12 grid lg:grid-cols-2 gap-20">
           <div className="flex flex-col justify-center">
             <Skeleton isLoading={isLoading} className="w-full h-40">
@@ -524,7 +534,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-64 h-12 mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-black text-center mb-4">Unsere <span style={{ color: cs.primary }}>Leistungen</span></h2>
@@ -546,7 +556,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6 bg-slate-50">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-slate-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
             <img src={heroImageUrl} className="w-full h-full object-cover rounded-2xl" alt="" />
@@ -565,7 +575,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer className="py-16 px-6 bg-slate-900 text-white">
+      <footer id="kontakt" className="py-16 px-6 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -615,12 +625,13 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         <Skeleton isLoading={isLoading} className="w-40 h-8">
           <span className="font-black text-xl uppercase tracking-tight">{websiteData.businessName}</span>
         </Skeleton>
+        <NavLinks textClass="text-neutral-900" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
           <button style={{ backgroundColor: cs.primary }} className="px-6 py-2.5 text-white font-bold uppercase text-xs tracking-widest">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section className="grid lg:grid-cols-2 min-h-screen pt-20">
+      <section id="hero" className="grid lg:grid-cols-2 min-h-screen pt-20">
         <div className="p-12 lg:p-20 flex flex-col justify-center relative">
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 0)', backgroundSize: '30px 30px' }} />
           <div className="relative z-10">
@@ -659,7 +670,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-72 h-12 mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-black uppercase text-center mb-4">Unsere <span style={{ color: cs.primary }}>Leistungen</span></h2>
@@ -681,7 +692,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6 bg-neutral-50">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -702,7 +713,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer className="py-16 px-6 bg-neutral-900 text-white">
+      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -752,12 +763,13 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         <Skeleton isLoading={isLoading} className="w-32 h-8">
           <span className="font-black text-xl uppercase italic tracking-tight">{websiteData.businessName}</span>
         </Skeleton>
+        <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-28 h-10">
           <button style={{ backgroundColor: cs.primary }} className="px-6 py-2.5 font-black uppercase text-xs tracking-widest">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section className="relative min-h-screen flex items-center pt-20">
+      <section id="hero" className="relative min-h-screen flex items-center pt-20">
         <div className="absolute right-0 w-[60%] h-full skew-x-[-12deg] translate-x-20 overflow-hidden" style={{ borderLeft: `8px solid ${cs.primary}` }}>
           <Skeleton isLoading={isLoading} className="w-full h-full">
             <img src={heroImageUrl} className="w-full h-full object-cover opacity-60 scale-125" alt="" />
@@ -799,7 +811,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-80 h-16 mx-auto mb-16">
               <h2 className="text-5xl md:text-7xl font-black uppercase italic text-center mb-4">Unsere <span style={{ color: cs.primary }}>Leistungen</span></h2>
@@ -821,7 +833,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6 bg-neutral-900">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-900 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-square">
             <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
@@ -840,7 +852,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
 
-      <footer className="py-16 px-6 bg-black border-t border-white/10">
+      <footer id="kontakt" className="py-16 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -890,12 +902,13 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         <Skeleton isLoading={isLoading} className="w-32 h-8">
           <span className="font-serif italic text-xl">{websiteData.businessName}</span>
         </Skeleton>
+        <NavLinks textClass="text-neutral-900" />
         <Skeleton isLoading={isLoading} className="w-28 h-10">
           <button style={{ backgroundColor: cs.primary }} className="px-6 py-2.5 text-white font-bold uppercase text-xs tracking-widest rounded-full">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section className="pt-40 pb-20 text-center px-6">
+      <section id="hero" className="pt-40 pb-20 text-center px-6">
         <Skeleton isLoading={isLoading} className="mx-auto w-3/4 h-40">
           <h1 className="font-serif text-[8vw] leading-none mb-10 italic">{heroHeadline.split(' ').slice(0, -1).join(' ')} <span style={{ color: cs.primary }}>{heroHeadline.split(' ').slice(-1)[0]}</span></h1>
         </Skeleton>
@@ -926,7 +939,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6 bg-white">
+        <section id="leistungen" className="py-20 md:py-32 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-64 h-12 mx-auto mb-16">
               <h2 className="font-serif text-4xl md:text-6xl italic text-center mb-4">Unser <span style={{ color: cs.primary }}>Angebot</span></h2>
@@ -948,7 +961,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl">
             <img src={heroImageUrl} className="w-full h-full object-cover rounded-3xl" alt="" />
@@ -967,7 +980,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Gäste sagen" />
 
-      <footer className="py-16 px-6 bg-neutral-900 text-white">
+      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1017,12 +1030,13 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         <Skeleton isLoading={isLoading} className="w-40 h-8">
           <span className="font-serif italic text-xl tracking-wider">{websiteData.businessName}</span>
         </Skeleton>
+        <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
           <button style={{ backgroundColor: cs.primary }} className="px-6 py-2.5 text-black font-bold uppercase text-xs tracking-widest">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section className="relative min-h-screen flex items-center justify-center text-center px-6 pt-20">
+      <section id="hero" className="relative min-h-screen flex items-center justify-center text-center px-6 pt-20">
         <div className="absolute inset-0 opacity-40">
           <Skeleton isLoading={isLoading} className="w-full h-full">
             <img src={heroImageUrl} className="w-full h-full object-cover scale-105" alt="" />
@@ -1059,7 +1073,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-72 h-12 mx-auto mb-16">
               <h2 className="font-serif text-4xl md:text-6xl italic text-center">Exklusive <span style={{ color: cs.primary }}>Services</span></h2>
@@ -1081,7 +1095,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6 bg-neutral-900">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-900 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3]">
             <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
@@ -1100,7 +1114,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
 
-      <footer className="py-16 px-6 bg-black border-t border-white/10">
+      <footer id="kontakt" className="py-16 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1150,17 +1164,13 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         <Skeleton isLoading={isLoading} className="w-32 h-8">
           <span className="font-bold text-xl tracking-tight">{websiteData.businessName}</span>
         </Skeleton>
-        <div className="flex gap-4">
-          <Skeleton isLoading={isLoading} className="w-24 h-10">
-            <button className="px-4 py-2 text-sm font-medium">Leistungen</button>
-          </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-32 h-10">
-            <button style={{ backgroundColor: cs.primary }} className="px-4 py-2 text-white text-sm font-medium rounded-lg">{heroCta}</button>
-          </Skeleton>
-        </div>
+        <NavLinks textClass="text-slate-900" />
+        <Skeleton isLoading={isLoading} className="w-32 h-10">
+          <button style={{ backgroundColor: cs.primary }} className="px-4 py-2 text-white text-sm font-medium rounded-lg">{heroCta}</button>
+        </Skeleton>
       </nav>
 
-      <section className="max-w-7xl mx-auto px-6 py-40 grid lg:grid-cols-12 gap-16 items-center pt-32">
+      <section id="hero" className="max-w-7xl mx-auto px-6 py-40 grid lg:grid-cols-12 gap-16 items-center pt-32">
         <div className="lg:col-span-7">
           <Skeleton isLoading={isLoading} className="w-full h-64">
             <h1 className="text-[7vw] font-black tracking-tighter leading-[0.9] mb-12">
@@ -1201,7 +1211,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-72 h-12 mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-black text-center mb-4">Unsere <span style={{ color: cs.primary }}>Leistungen</span></h2>
@@ -1223,7 +1233,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6 bg-slate-50">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-slate-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
             <img src={heroImageUrl} className="w-full h-full object-cover rounded-2xl" alt="" />
@@ -1242,7 +1252,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer className="py-16 px-6 bg-slate-900 text-white">
+      <footer id="kontakt" className="py-16 px-6 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1292,12 +1302,13 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         <Skeleton isLoading={isLoading} className="w-32 h-8">
           <span className="font-serif italic text-xl">{websiteData.businessName}</span>
         </Skeleton>
+        <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-28 h-10">
           <button style={{ backgroundColor: cs.primary }} className="px-6 py-2.5 text-white font-bold uppercase text-xs tracking-widest rounded-full">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section className="max-w-7xl mx-auto px-6 py-32 grid lg:grid-cols-2 gap-24 items-center pt-40">
+      <section id="hero" className="max-w-7xl mx-auto px-6 py-32 grid lg:grid-cols-2 gap-24 items-center pt-40">
         <Skeleton isLoading={isLoading} className="w-full h-80">
           <div>
             <h1 className="font-serif text-[7vw] leading-[0.85] font-light mb-10">
@@ -1332,7 +1343,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6 bg-white">
+        <section id="leistungen" className="py-20 md:py-32 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-64 h-12 mx-auto mb-16">
               <h2 className="font-serif text-4xl md:text-6xl italic text-center">Unsere <span style={{ color: cs.primary }}>Leistungen</span></h2>
@@ -1354,7 +1365,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl">
             <img src={heroImageUrl} className="w-full h-full object-cover rounded-3xl" alt="" />
@@ -1373,7 +1384,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
 
-      <footer className="py-16 px-6 bg-neutral-900 text-white">
+      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
@@ -1423,12 +1434,13 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         <Skeleton isLoading={isLoading} className="w-40 h-8">
           <span className="font-bold text-xl tracking-tight">{websiteData.businessName}</span>
         </Skeleton>
+        <NavLinks textClass="text-neutral-900" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
           <button style={{ backgroundColor: cs.primary }} className="px-6 py-2.5 text-white font-bold uppercase text-xs tracking-widest">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section className="grid lg:grid-cols-12 min-h-screen pt-20">
+      <section id="hero" className="grid lg:grid-cols-12 min-h-screen pt-20">
         <div className="lg:col-span-5 bg-neutral-900 text-white p-12 lg:p-24 flex flex-col justify-center relative overflow-hidden">
           <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '50px 50px' }} />
           <Skeleton isLoading={isLoading} className="w-full h-64 relative z-10">
@@ -1464,7 +1476,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       {services.length > 0 && (
-        <section className="py-20 md:py-32 px-6">
+        <section id="leistungen" className="py-20 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-72 h-12 mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-black text-center">Unsere <span style={{ color: cs.primary }}>Leistungen</span></h2>
@@ -1486,7 +1498,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <section className="py-20 md:py-32 px-6 bg-neutral-50">
+      <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
@@ -1505,7 +1517,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <footer className="py-16 px-6 bg-neutral-900 text-white">
+      <footer id="kontakt" className="py-16 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="md:col-span-2">
