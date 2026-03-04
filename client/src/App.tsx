@@ -22,6 +22,7 @@ import StartPage from "./pages/StartPage";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import LayoutOverviewPage from "./pages/LayoutOverviewPage";
 import LayoutPreviewStandalone from "./pages/LayoutPreviewStandalone";
+import LoginPage from "./pages/LoginPage";
 
 function AdminRouter() {
   return (
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
       <Route path="/my-website" component={CustomerDashboard} />
+      <Route path="/login" component={LoginPage} />
       <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
       <Route path="/admin">
         <AdminRouter />
