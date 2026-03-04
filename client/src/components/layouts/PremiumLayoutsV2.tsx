@@ -53,7 +53,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false }: any) {
     <section className={`py-20 px-6 ${bg}`}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-14">
-          <h2 className={`text-3xl md:text-4xl font-black text-center ${textMain}`}>
+          <h2 className={`text-3xl md:text-4xl font-black text-center mb-14 ${textMain}`}>
             {process?.headline || "So einfach geht's"}
           </h2>
         </Skeleton>
@@ -141,12 +141,13 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
   const textMain = dark ? "text-white" : "text-neutral-900";
   const textSub = dark ? "text-white/50" : "text-neutral-500";
   const bg = dark ? "bg-white/5" : "bg-neutral-50";
+  const topBorder = dark ? "border-t border-white/10" : "";
   const cardBg = dark ? "bg-neutral-800" : "bg-white";
   const border = dark ? "border-white/10" : "border-neutral-200";
   const iconBg = `${cs.primary}20`;
 
   return (
-    <section id="kontakt" className={`py-20 px-6 scroll-mt-20 ${bg}`}>
+    <section id="kontakt" className={`py-20 px-6 scroll-mt-20 ${bg} ${topBorder}`}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-12">
           <h2 className={`text-3xl md:text-4xl font-black mb-12 ${textMain}`}>Kontakt</h2>
@@ -1020,7 +1021,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = "'Fraunces', Georgia, serif";
-  const BODY = "'Fraunces', Georgia, serif";
+  const BODY = "'Jost', 'Helvetica Neue', sans-serif";
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#FBF7F0] text-neutral-800 overflow-hidden">
@@ -1035,7 +1036,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </nav>
 
       {/* HERO: editorial centered */}
-      <section id="hero" className="pt-40 pb-12 text-center px-6">
+      <section id="hero" className="pt-40 pb-24 text-center px-6">
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-44 mb-8">
           <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, lineHeight: 1.0, fontSize: 'clamp(3rem, 8vw, 7.5rem)' }}>
             {heroHeadline.split(' ').slice(0, -1).join(' ')}{' '}
@@ -1043,7 +1044,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
           </h1>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-12">
-          <p style={{ fontFamily: DISPLAY, fontWeight: 300, fontStyle: 'italic' }} className="text-neutral-500 text-lg max-w-lg mx-auto">{hero?.subheadline || websiteData.tagline}</p>
+          <p style={{ fontFamily: BODY, fontWeight: 300 }} className="text-neutral-500 text-lg max-w-lg mx-auto">{hero?.subheadline || websiteData.tagline}</p>
         </Skeleton>
 
         {/* Full-width image with circular badge */}
@@ -1083,7 +1084,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
                       <Utensils size={22} style={{ color: cs.primary }} />
                     </div>
                     <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: '1.3rem' }} className="mb-3">{service.title}</h3>
-                    <p style={{ fontFamily: DISPLAY, fontWeight: 300 }} className="text-neutral-500 text-sm leading-relaxed">{service.description}</p>
+                    <p style={{ fontFamily: BODY, fontWeight: 300 }} className="text-neutral-500 text-sm leading-relaxed">{service.description}</p>
                   </div>
                 </Skeleton>
               ))}
@@ -1105,7 +1106,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
               <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.2 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p style={{ fontFamily: DISPLAY, fontWeight: 300, lineHeight: 1.8 }} className="text-neutral-600">{aboutContent}</p>
+              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8 }} className="text-neutral-600">{aboutContent}</p>
             </Skeleton>
           </div>
         </div>
@@ -1326,7 +1327,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 bg-neutral-50 scroll-mt-20">
+        <section id="leistungen" className="py-20 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-64 h-14 mb-14">
               <h2 style={{ fontFamily: DISPLAY, fontWeight: 800, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', letterSpacing: '-0.02em' }}>
@@ -1427,7 +1428,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </nav>
 
       {/* HERO: asymmetric with pill images */}
-      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-16 grid lg:grid-cols-2 gap-16 items-center">
+      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-28 grid lg:grid-cols-2 gap-16 items-center">
         <div>
           <Skeleton isLoading={isLoading} className="w-full h-56 mb-8">
             <span style={{ fontFamily: BODY, fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.2em', color: cs.primary }} className="uppercase block mb-4">Natürlich. Nachhaltig. Wirksam.</span>
