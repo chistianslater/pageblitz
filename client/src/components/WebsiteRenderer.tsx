@@ -9,6 +9,7 @@ interface WebsiteRendererProps {
   websiteData: WebsiteData;
   colorScheme?: ColorScheme;
   heroImageUrl?: string | null;
+  aboutImageUrl?: string | null;
   businessCategory?: string | null;
   isLoading?: boolean;
 }
@@ -27,9 +28,11 @@ function getLayoutComponent(category: string = ""): any {
   return PremiumLayoutV2;
 }
 
-export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, isLoading = false, businessCategory }: WebsiteRendererProps) {
+export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory }: WebsiteRendererProps) {
   const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
   const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
+  // Patch aboutImageUrl into websiteData if provided externally (published websites)
+  const wd = aboutImageUrl ? { ...websiteData, aboutImageUrl } as any : websiteData;
   const LayoutComponent = getLayoutComponent(businessCategory || websiteData?.business?.category);
-  return <LayoutComponent websiteData={websiteData} cs={cs} heroImageUrl={heroImg} isLoading={isLoading} />;
+  return <LayoutComponent websiteData={wd} cs={cs} heroImageUrl={heroImg} isLoading={isLoading} />;
 }

@@ -414,17 +414,16 @@ const COLOR_SCHEMES = PREDEFINED_COLOR_SCHEMES;
 
 const STEP_ORDER: ChatStep[] = [
   "businessCategory",  // 1. Branche erfassen (für Bilder/Farben)
-  "businessName",    // 2. Unternehmensname erfassen (wichtig für Personalisierung!)
-  "colorScheme",     // 3. Farben
-  "heroPhoto",       // 4. Bilder
-  "aboutPhoto",
-  "brandLogo",
-  "headlineFont",
+  "businessName",      // 2. Unternehmensname erfassen
+  "brandLogo",         // 3. Logo / Schriftart für Logo
+  "colorScheme",       // 4. Farben
+  "heroPhoto",         // 5. Hauptbild
+  "aboutPhoto",        // 6. Über-uns-Bild
+  "headlineFont",      // 7. Überschriften-Schriftart
   "tagline",
   "description",
   "usp",
   "services",
-  "targetAudience",
   "legalOwner",
   "legalStreet",
   "legalZipCity",
@@ -1699,13 +1698,29 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       (patched as any)._colorSchemeOverride = data.colorScheme;
     }
 
-    // Patch brandLogo font or URL
-    if (data.brandLogo && data.brandLogo.startsWith("font:")) {
-      (patched as any)._brandLogoFont = data.brandLogo.replace("font:", "");
-      delete (patched as any)._brandLogoUrl;
-    } else if (data.brandLogo && data.brandLogo.startsWith("url:")) {
-      (patched as any)._brandLogoUrl = data.brandLogo.replace("url:", "");
-      delete (patched as any)._brandLogoFont;
+    // Patch headline font into designTokens
+    if (data.headlineFont) {
+      patched.designTokens = {
+        ...(patched.designTokens || {} as any),
+        headlineFont: data.headlineFont,
+      };
+    }
+
+    // Patch logo font or image URL (used by layout components for nav/footer logo)
+    if (data.brandLogo?.startsWith("font:")) {
+      (patched as any).logoFont = data.brandLogo.replace("font:", "");
+      delete (patched as any).logoImageUrl;
+    } else if (data.brandLogo?.startsWith("url:")) {
+      (patched as any).logoImageUrl = data.brandLogo.replace("url:", "");
+      delete (patched as any).logoFont;
+    }
+
+    // Patch addOnContactForm state for ContactSection lock
+    (patched as any).addOnContactForm = data.addOnContactForm;
+
+    // Patch about photo URL for "Über uns" section image
+    if (data.aboutPhotoUrl) {
+      (patched as any).aboutImageUrl = data.aboutPhotoUrl;
     }
 
     return patched;
@@ -1717,7 +1732,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.topServices,
     data.topServicesSkipped,
     data.colorScheme,
+    data.headlineFont,
     data.brandLogo,
+    data.aboutPhotoUrl,
     data.addOnContactForm,
     data.addOnGallery,
     data.addOnMenu,

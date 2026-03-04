@@ -137,6 +137,8 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
+  // addOnContactForm=true (or undefined for published sites) → show unlocked form
+  const locked = websiteData?.addOnContactForm === false;
 
   const textMain = dark ? "text-white" : "text-neutral-900";
   const textSub = dark ? "text-white/50" : "text-neutral-500";
@@ -197,9 +199,9 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
             )}
           </div>
 
-          {/* Right: locked premium form */}
+          {/* Right: contact form – unlocked when addOnContactForm is active */}
           <div className="relative">
-            <div className={`rounded-xl border ${cardBg} ${border} p-6 opacity-40 blur-[2px] pointer-events-none`}>
+            <div className={`rounded-xl border ${cardBg} ${border} p-6 ${locked ? 'opacity-40 blur-[2px] pointer-events-none' : ''}`}>
               <div className="space-y-4">
                 <div>
                   <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Name</p>
@@ -216,20 +218,22 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
                 <div className="h-10 rounded-lg" style={{ backgroundColor: cs.primary }} />
               </div>
             </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`${cardBg} rounded-xl border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}>
-                <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-3">
-                  <Shield size={22} className="text-neutral-400" />
+            {locked && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className={`${cardBg} rounded-xl border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}>
+                  <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-3">
+                    <Shield size={22} className="text-neutral-400" />
+                  </div>
+                  <p className={`font-bold text-sm mb-1 ${textMain}`}>Kontaktformular</p>
+                  <p className={`text-xs mb-1 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
+                  <p className={`text-xs font-semibold mb-4`} style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
+                  <button className="w-full py-2.5 px-4 text-xs font-bold uppercase tracking-widest text-white rounded-lg hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: cs.primary }}>
+                    Freischalten
+                  </button>
                 </div>
-                <p className={`font-bold text-sm mb-1 ${textMain}`}>Kontaktformular</p>
-                <p className={`text-xs mb-1 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
-                <p className={`text-xs font-semibold mb-4`} style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
-                <button className="w-full py-2.5 px-4 text-xs font-bold uppercase tracking-widest text-white rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: cs.primary }}>
-                  Freischalten
-                </button>
               </div>
-            </div>
+            )}
           </div>
 
         </div>
@@ -365,6 +369,19 @@ function FooterContact({ websiteData, textClass }: { websiteData: any, textClass
   );
 }
 
+// ── FONT HELPERS ─────────────────────────────────────────────────
+/** Returns the headline/display font – uses user-selected headlineFont if set, else layout default */
+function getDisplayFont(websiteData: any, fallback: string): string {
+  const hlFont = websiteData?.designTokens?.headlineFont;
+  return hlFont ? `'${hlFont}', sans-serif` : fallback;
+}
+
+/** Returns the logo font – uses user-selected logoFont if set, else falls back to display font */
+function resolveLogoFont(websiteData: any, fallback: string): string {
+  const logoFont = (websiteData as any)?.logoFont;
+  return logoFont ? `'${logoFont}', sans-serif` : fallback;
+}
+
 // ================================================================
 // 1. BOLD (Industrial & Construction)
 // ================================================================
@@ -379,14 +396,17 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
   const aboutHeadline = about?.headline || 'Unser Handwerk';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Barlow Condensed', Impact, 'Arial Narrow', sans-serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Barlow Condensed', Impact, 'Arial Narrow', sans-serif");
   const BODY = "'Barlow', 'Arial', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#0A0A0A] text-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#0A0A0A]/90 backdrop-blur-sm border-b border-white/10">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
-          <span style={{ fontFamily: DISPLAY, fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem' }} className="uppercase">{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem' }} className="uppercase">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
@@ -451,7 +471,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20 border-t border-white/10">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3]">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-36 mb-6">
@@ -472,7 +492,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
           <div>
             <Skeleton isLoading={isLoading} className="w-40 h-8 mb-2">
-              <span style={{ fontFamily: DISPLAY, fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem' }} className="uppercase">{websiteData.businessName}</span>
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem' }} className="uppercase">{websiteData.businessName}</span>
             </Skeleton>
             <p className="text-white/25 text-sm mt-1">{footerText}</p>
           </div>
@@ -503,14 +523,17 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const aboutHeadline = about?.headline || 'Unsere Philosophie';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Cormorant Garamond', 'Garamond', Georgia, serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', 'Garamond', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#FAF7F2] text-neutral-800 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FAF7F2]/90 backdrop-blur-sm border-b border-neutral-200/60">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
-          <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.5rem', fontWeight: 400, letterSpacing: '0.02em' }}>{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.5rem', fontWeight: 400, letterSpacing: '0.02em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
@@ -578,7 +601,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       <section id="ueber-uns" className="py-24 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[3/4]">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-36 mb-8">
@@ -598,7 +621,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       <footer className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <Skeleton isLoading={isLoading} className="w-40 h-8">
-            <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>
           </Skeleton>
           <ul className="space-y-1 text-sm text-white/50 text-center">
             <FooterContact websiteData={websiteData} textClass="text-white/50" />
@@ -630,8 +653,9 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const aboutHeadline = about?.headline || 'Über uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'DM Serif Display', Georgia, serif";
+  const DISPLAY = getDisplayFont(websiteData, "'DM Serif Display', Georgia, serif");
   const BODY = "'DM Sans', 'Helvetica Neue', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
@@ -639,7 +663,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         <Skeleton isLoading={isLoading} className="w-44 h-8">
           <div className="flex items-center gap-2">
             <div className="w-2 h-8 rounded-sm" style={{ backgroundColor: cs.primary }} />
-            <span style={{ fontFamily: BODY, fontWeight: 500, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>
+            <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
@@ -722,7 +746,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
             </Skeleton>
           </div>
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
-            <img src={heroImageUrl} className="w-full h-full object-cover rounded-2xl" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover rounded-2xl" alt="" />
           </Skeleton>
         </div>
       </section>
@@ -736,7 +760,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
             <Skeleton isLoading={isLoading} className="w-40 h-8 mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-6 rounded-sm" style={{ backgroundColor: cs.primary }} />
-                <span style={{ fontFamily: BODY, fontWeight: 500, fontSize: '1rem' }}>{websiteData.businessName}</span>
+                <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1rem' }}>{websiteData.businessName}</span>
               </div>
             </Skeleton>
             <p className="text-neutral-400 text-sm">{footerText}</p>
@@ -768,14 +792,17 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const aboutHeadline = about?.headline || 'Über uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Playfair Display', Georgia, serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Playfair Display', Georgia, serif");
   const BODY = "'Source Sans 3', 'Georgia', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#F2EBD9] text-neutral-800 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F2EBD9]/90 backdrop-blur-sm border-b border-neutral-300/50">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
-          <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -839,7 +866,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3]">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
@@ -860,7 +887,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
           <div>
             <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
-              <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: '1.2rem' }}>{websiteData.businessName}</span>
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.2rem' }}>{websiteData.businessName}</span>
             </Skeleton>
             <p className="text-neutral-400 text-sm">{footerText}</p>
           </div>
@@ -891,14 +918,17 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const aboutHeadline = about?.headline || 'Unsere Mission';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Bebas Neue', Impact, 'Arial Narrow', sans-serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Bebas Neue', Impact, 'Arial Narrow', sans-serif");
   const BODY = "'Rajdhani', 'Arial', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#080808] text-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#080808]/90 backdrop-blur-sm border-b border-white/10">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
-          <span style={{ fontFamily: DISPLAY, fontSize: '1.6rem', letterSpacing: '0.08em' }}>{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.6rem', letterSpacing: '0.08em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -965,7 +995,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       <section id="ueber-uns" className="py-20 px-6 bg-[#111111] scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-square">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-36 mb-6">
@@ -989,7 +1019,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
           <div>
             <Skeleton isLoading={isLoading} className="w-44 h-8 mb-2">
-              <span style={{ fontFamily: DISPLAY, fontSize: '1.4rem', letterSpacing: '0.06em' }}>{websiteData.businessName}</span>
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.4rem', letterSpacing: '0.06em' }}>{websiteData.businessName}</span>
             </Skeleton>
             <p className="text-white/25 text-sm">{footerText}</p>
           </div>
@@ -1020,14 +1050,17 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const aboutHeadline = about?.headline || 'Unsere Philosophie';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Fraunces', Georgia, serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Fraunces', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#FBF7F0] text-neutral-800 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FBF7F0]/90 backdrop-blur-sm border-b border-neutral-200/60">
         <Skeleton isLoading={isLoading} className="w-40 h-8">
-          <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }}>{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
@@ -1098,7 +1131,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl">
-            <img src={heroImageUrl} className="w-full h-full object-cover rounded-3xl" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover rounded-3xl" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
@@ -1119,7 +1152,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
           <div>
             <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
-              <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }}>{websiteData.businessName}</span>
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }}>{websiteData.businessName}</span>
             </Skeleton>
             <p className="text-neutral-400 text-sm">{footerText}</p>
           </div>
@@ -1150,14 +1183,17 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const aboutHeadline = about?.headline || 'Über uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Libre Baskerville', Georgia, serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Libre Baskerville', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#0C0A09] text-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#0C0A09]/80 backdrop-blur-sm">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
-          <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.35rem', fontWeight: 400, letterSpacing: '0.04em' }}>{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.35rem', fontWeight: 400, letterSpacing: '0.04em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
@@ -1225,7 +1261,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       <section id="ueber-uns" className="py-24 px-8 scroll-mt-20" style={{ backgroundColor: '#130F0D' }}>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[3/4]">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover" alt="" />
           </Skeleton>
           <div>
             <div className="w-12 h-px mb-10" style={{ backgroundColor: cs.primary }} />
@@ -1246,7 +1282,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       <footer className="py-12 px-8 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <Skeleton isLoading={isLoading} className="w-44 h-8">
-            <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}>{websiteData.businessName}</span>
           </Skeleton>
           <ul className="space-y-1 text-sm text-white/40 text-center">
             <FooterContact websiteData={websiteData} textClass="text-white/40" />
@@ -1278,15 +1314,18 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const aboutHeadline = about?.headline || 'Über uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Syne', 'DM Sans', sans-serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Syne', 'DM Sans', sans-serif");
   const BODY = "'DM Sans', 'Helvetica Neue', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const MONO = "'Space Mono', 'Courier New', monospace";
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="w-40 h-8">
-          <span style={{ fontFamily: DISPLAY, fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -1357,7 +1396,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
-            <img src={heroImageUrl} className="w-full h-full object-cover rounded-2xl" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover rounded-2xl" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
@@ -1378,7 +1417,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
           <div>
             <Skeleton isLoading={isLoading} className="w-40 h-8 mb-3">
-              <span style={{ fontFamily: DISPLAY, fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>
             </Skeleton>
             <p className="text-neutral-400 text-sm">{footerText}</p>
           </div>
@@ -1409,8 +1448,9 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const aboutHeadline = about?.headline || 'Unsere Philosophie';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Lora', Georgia, serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Lora', Georgia, serif");
   const BODY = "'Source Sans 3', 'Georgia', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#F4F0E8] text-neutral-800 overflow-hidden">
@@ -1418,7 +1458,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         <Skeleton isLoading={isLoading} className="w-40 h-8">
           <div className="flex items-center gap-2">
             <Leaf size={20} style={{ color: cs.primary }} />
-            <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
@@ -1450,7 +1490,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
             <img src={heroImageUrl} className="rounded-full w-full h-full object-cover" alt="" />
           </Skeleton>
           <Skeleton isLoading={isLoading} className="rounded-full aspect-[1/2]">
-            <img src={heroImageUrl} className="rounded-full w-full h-full object-cover object-right" alt="" />
+            <img src={aboutImg} className="rounded-full w-full h-full object-cover object-right" alt="" />
           </Skeleton>
         </div>
       </section>
@@ -1487,7 +1527,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl">
-            <img src={heroImageUrl} className="w-full h-full object-cover rounded-3xl" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover rounded-3xl" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
@@ -1510,7 +1550,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
             <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
               <div className="flex items-center gap-2">
                 <Leaf size={16} style={{ color: cs.primary }} />
-                <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.2rem' }}>{websiteData.businessName}</span>
+                <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem' }}>{websiteData.businessName}</span>
               </div>
             </Skeleton>
             <p className="text-neutral-400 text-sm">{footerText}</p>
@@ -1542,14 +1582,17 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const aboutHeadline = about?.headline || 'Expertise';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = "'Instrument Serif', Georgia, serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Instrument Serif', Georgia, serif");
   const BODY = "'Plus Jakarta Sans', 'Helvetica Neue', sans-serif";
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
-          <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
@@ -1627,7 +1670,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
             </Skeleton>
           </div>
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-xl">
-            <img src={heroImageUrl} className="w-full h-full object-cover rounded-xl" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover rounded-xl" alt="" />
           </Skeleton>
         </div>
       </section>
@@ -1639,7 +1682,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
           <div>
             <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
-              <span style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}>{websiteData.businessName}</span>
             </Skeleton>
             <p className="text-white/30 text-sm">{footerText}</p>
           </div>

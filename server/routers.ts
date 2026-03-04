@@ -920,7 +920,7 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
 
     let hoursText = "Nicht angegeben";
     if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
-      hoursText = (business.openingHours as string[]).join(", ");
+      hoursText = (business.openingHours as string[]).join("\n");
     }
 
     const prompt = buildEnhancedPrompt({ 
@@ -1391,7 +1391,7 @@ export const appRouter = router({
         // Opening hours formatting
         let hoursText = "Nicht angegeben";
         if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
-          hoursText = (business.openingHours as string[]).join(", ");
+          hoursText = (business.openingHours as string[]).join("\n");
         }
 
         const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText });
@@ -1590,7 +1590,7 @@ export const appRouter = router({
 
         let hoursText = "Nicht angegeben";
         if (business.openingHours && Array.isArray(business.openingHours) && (business.openingHours as string[]).length > 0) {
-          hoursText = (business.openingHours as string[]).join(", ");
+          hoursText = (business.openingHours as string[]).join("\n");
         }
 
         const prompt = buildEnhancedPrompt({ business: { ...business, openingHours: business.openingHours as string[] | null }, category, industryContext, personalityHint, layoutStyle, colorScheme, templateStyleDesc, hoursText, isRegenerate: true });
