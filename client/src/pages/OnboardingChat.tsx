@@ -1193,10 +1193,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         },
       }));
       
-      // After 500ms, reveal images
+      // After 500ms, reveal images – for GMB flow skip straight to 'complete'
+      // because the server already generated full content; 'images' would leave
+      // isLoading=true indefinitely since Phase 2 is skipped for GMB.
       setTimeout(() => {
-        setContentPhase('images');
-        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'images');
+        const isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
+        const nextPhase = isGmb ? 'complete' : 'images';
+        setContentPhase(nextPhase);
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, nextPhase);
       }, 500);
     }
   }, [data.businessCategory, contentPhase, previewToken, websiteIdProp]);
