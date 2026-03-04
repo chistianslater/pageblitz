@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, Search, Globe, Mail, BarChart3, LogOut, PanelLeft, Zap, Layers, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Search, Globe, Mail, BarChart3, LogOut, PanelLeft, Zap, Layers, TrendingUp, Palette } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -35,6 +35,7 @@ const menuItems = [
   { icon: Mail, label: "Outreach", path: "/admin/outreach" },
   { icon: BarChart3, label: "Statistiken", path: "/admin/stats" },
   { icon: Layers, label: "Templates", path: "/admin/templates" },
+  { icon: Palette, label: "Layout-Vorschau", path: "/admin/layouts" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

@@ -20,6 +20,8 @@ import OnboardingChat from "./pages/OnboardingChat";
 import LegalPage from "./pages/LegalPage";
 import StartPage from "./pages/StartPage";
 import CustomerDashboard from "./pages/CustomerDashboard";
+import LayoutOverviewPage from "./pages/LayoutOverviewPage";
+import LayoutPreviewStandalone from "./pages/LayoutPreviewStandalone";
 
 function AdminRouter() {
   return (
@@ -32,6 +34,7 @@ function AdminRouter() {
         <Route path="/admin/stats" component={StatsPage} />
         <Route path="/admin/templates" component={TemplatesPage} />
         <Route path="/admin/leads" component={LeadsPage} />
+        <Route path="/admin/layouts" component={LayoutOverviewPage} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -50,6 +53,7 @@ function Router() {
       <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
       <Route path="/my-website" component={CustomerDashboard} />
+      <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
       <Route path="/admin/:rest*">
         <AdminRouter />
       </Route>
