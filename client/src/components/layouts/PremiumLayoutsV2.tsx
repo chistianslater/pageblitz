@@ -37,9 +37,10 @@ const splitHeadline = (text: string) => {
 };
 
 // ── TESTIMONIALS ─────────────────────────────────────────────────
-/** Dark-theme testimonials block (real or placeholder) */
+/** Dark-theme testimonials block – only renders when real reviews exist */
 function TestimonialsDark({ websiteData, cs, isLoading, heading }: any) {
   const items = sec(websiteData, 'testimonials')?.items;
+  if (!isLoading && !items?.length) return null;
   return (
     <section className="py-20 md:py-32 px-6">
       <div className="max-w-7xl mx-auto">
@@ -85,9 +86,10 @@ function TestimonialsDark({ websiteData, cs, isLoading, heading }: any) {
   );
 }
 
-/** Light-theme testimonials block (real or placeholder) */
+/** Light-theme testimonials block – only renders when real reviews exist */
 function TestimonialsLight({ websiteData, cs, isLoading, heading, serif }: any) {
   const items = sec(websiteData, 'testimonials')?.items;
+  if (!isLoading && !items?.length) return null;
   return (
     <section className="py-20 md:py-32 px-6">
       <div className="max-w-7xl mx-auto">

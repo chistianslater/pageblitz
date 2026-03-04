@@ -511,7 +511,8 @@ REGELN:
 2. KEINE generischen Phrasen wie "Ihr Partner für..."
 3. Der KUNDE ist der Held, ${business.name} ist der Guide
 4. Authentische deutsche Kundennamen in Testimonials
-${isRegenerate ? "5. ANDERE Perspektive als zuvor wählen" : ""}
+5. STATS – nur faktisch glaubwürdige Kennzahlen: Erfahrungsjahre (z.B. "12+"), Öffnungstage (z.B. "6"), Zertifizierungen (z.B. "TÜV"), Kundenzahlen konservativ (z.B. "200+"), oder "0€" für "Versteckte Kosten". VERBOTEN: erfundene Prozentzahlen (97%...), Zeitersparnisangaben (38 min...), physikalische Einheiten für abstrakte Konzepte (kg für Kosten), Werte von exakt 0 ohne Einheit.
+${isRegenerate ? "6. ANDERE Perspektive als zuvor wählen" : ""}
 
 JSON-AUSGABE:
 {
@@ -542,10 +543,10 @@ JSON-AUSGABE:
     {
       "type": "stats",
       "items": [
-        {"title": "Zahl oder Kürzel passend zur Branche (z.B. '12+' für 12 Jahre, 'TÜV', '4.8★')", "description": "Kurzes Label wie 'Jahre Erfahrung'"},
-        {"title": "Zahl oder Kürzel", "description": "Kurzes Label"},
-        {"title": "Zahl oder Kürzel", "description": "Kurzes Label"},
-        {"title": "Zahl oder Kürzel", "description": "Kurzes Label"}
+        {"title": "Wert", "description": "Label"},
+        {"title": "Wert", "description": "Label"},
+        {"title": "Wert", "description": "Label"},
+        {"title": "Wert", "description": "Label"}
       ]
     },
     {
@@ -616,6 +617,26 @@ Return ONLY the key (one word, lowercase).`;
 }
 
 // ── Background Website Generation Worker ────────────────────────────────────
+
+/** Removes stats items that are clearly hallucinated or nonsensical */
+function sanitizeStatsSection(websiteData: any): void {
+  if (!websiteData?.sections) return;
+  const statsSection = websiteData.sections.find((s: any) => s.type === 'stats');
+  if (!statsSection?.items) return;
+  statsSection.items = statsSection.items.filter((item: any) => {
+    const title = String(item.title ?? '').trim();
+    const desc = String(item.description ?? '').toLowerCase();
+    if (!title || title === '0') return false;
+    // Block suspiciously high invented percentages
+    const pctMatch = title.match(/^(\d+)\s*%/);
+    if (pctMatch && parseInt(pctMatch[1]) > 95) return false;
+    // Block time-saving stats (e.g. "38 min Zeitersparnis") – unverifiable
+    if (/\d+\s*(min|std|h)\b/i.test(title) && /spar|einspar|pro\s*(woche|tag|monat)/i.test(desc)) return false;
+    // Block "0 <unit>" that isn't explicitly "0€" / "0 €" (a valid "no hidden costs" claim)
+    if (/^0\s+[a-zA-Z]/.test(title) && !/^0\s*€/.test(title)) return false;
+    return true;
+  });
+}
 
 /** Fallback-Template-Daten wenn KI fehlschlägt */
 function getFallbackWebsiteData(business: any, category: string, colorScheme: any, layoutStyle: string) {
@@ -795,6 +816,9 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
 
     // Progress: 80% - AI response received / Fallback applied
     await updateGenerationJob(jobId, { progress: 80 });
+
+    // ── Post-process: sanitize stats ────────────────────────────────
+    sanitizeStatsSection(websiteData);
 
     const finalHeroImageUrl = gmbPhotos.length > 0 ? gmbPhotos[0] : heroImageUrl;
     const effectiveGalleryImages = gmbPhotos.length >= 3 ? gmbPhotos.slice(1) : galleryImages;
@@ -1286,6 +1310,9 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
+        // Sanitize stats
+        sanitizeStatsSection(websiteData);
+
         // Inject real contact data from business record (overrides any AI-generated contact section)
         if (websiteData.sections) {
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "contact");
@@ -1467,6 +1494,9 @@ export const appRouter = router({
         if (!injectedRealReviews && websiteData.sections) {
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
+
+        // Sanitize stats
+        sanitizeStatsSection(websiteData);
 
         // Inject real contact data from business record (overrides any AI-generated contact section)
         if (websiteData.sections) {

@@ -15,17 +15,6 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-const INDUSTRIES = [
-  { label: "Bau", value: "bau", emoji: "🏗️" },
-  { label: "Handwerk", value: "handwerk", emoji: "🔨" },
-  { label: "Beauty", value: "beauty", emoji: "✂️" },
-  { label: "Medizin", value: "praxis", emoji: "🏥" },
-  { label: "Restaurant", value: "restaurant", emoji: "🍽️" },
-  { label: "Fitness", value: "fitness", emoji: "💪" },
-  { label: "Auto", value: "auto", emoji: "🚗" },
-  { label: "Agentur", value: "agentur", emoji: "💻" },
-];
-
 // Step 1 → 2 → 3
 // "email" → "choice" → "gmb" | "manual"
 type Step = "email" | "choice" | "gmb";
@@ -34,7 +23,6 @@ export default function StartPage() {
   const [step, setStep] = useState<Step>("email");
   const [customerEmail, setCustomerEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [gmbUrl, setGmbUrl] = useState("");
   const [resolvedInfo, setResolvedInfo] = useState<{
     businessName: string | null;
@@ -111,7 +99,7 @@ export default function StartPage() {
   // ── Step 2: Choice → Manual ─────────────────────────
   const handleManualStart = () => {
     toast.info("Website wird erstellt...");
-    startMutation.mutate({ customerEmail: customerEmail.trim(), category: selectedCategory || undefined, source: "external" });
+    startMutation.mutate({ customerEmail: customerEmail.trim(), source: "external" });
   };
 
   // ── Step 3: GMB ─────────────────────────────────────
@@ -121,7 +109,7 @@ export default function StartPage() {
     if (isGoogleLink(url)) {
       resolveMutation.mutate({ url });
     } else {
-      startMutation.mutate({ gmbUrl: url, customerEmail: customerEmail.trim(), category: selectedCategory || undefined, source: "external" });
+      startMutation.mutate({ gmbUrl: url, customerEmail: customerEmail.trim(), source: "external" });
     }
   };
 
@@ -133,7 +121,7 @@ export default function StartPage() {
       placeId: resolvedInfo.placeId || undefined,
       address: resolvedInfo.address || undefined,
       phone: resolvedInfo.phone || undefined,
-      category: resolvedInfo.category || selectedCategory || undefined,
+      category: resolvedInfo.category || undefined,
       customerEmail: customerEmail.trim(),
       source: "external",
       googleReviews: resolvedInfo.reviews.length > 0 ? resolvedInfo.reviews : undefined,
@@ -220,28 +208,6 @@ export default function StartPage() {
                     <Lock className="w-3 h-3" /> Kein Spam – nur dein Website-Link und wichtige Updates.
                   </p>
                 )}
-              </div>
-
-              {/* Industry selection */}
-              <div>
-                <p className="text-slate-500 text-xs mb-2">Welche Branche? <span className="text-slate-600">(optional – für das passende Design)</span></p>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {INDUSTRIES.map((ind) => (
-                    <button
-                      key={ind.value}
-                      type="button"
-                      onClick={() => setSelectedCategory(prev => prev === ind.value ? null : ind.value)}
-                      className={`flex flex-col items-center gap-0.5 p-2 rounded-lg text-[11px] leading-tight transition-all ${
-                        selectedCategory === ind.value
-                          ? "bg-indigo-500/25 border border-indigo-500/50 text-indigo-300"
-                          : "bg-slate-700/40 border border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-700/60"
-                      }`}
-                    >
-                      <span>{ind.emoji}</span>
-                      <span>{ind.label}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <Button
@@ -397,7 +363,7 @@ export default function StartPage() {
                   <div className="flex-1">
                     <p className="text-amber-400 text-sm">{resolveError}</p>
                     <button
-                      onClick={() => startMutation.mutate({ gmbUrl: gmbUrl.trim(), customerEmail: customerEmail.trim(), category: selectedCategory || undefined, source: "external" })}
+                      onClick={() => startMutation.mutate({ gmbUrl: gmbUrl.trim(), customerEmail: customerEmail.trim(), source: "external" })}
                       disabled={startMutation.isPending}
                       className="text-amber-300 text-xs underline mt-2 hover:text-amber-200"
                     >

@@ -3583,7 +3583,75 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               );
             })()}
           </div>
-          {liveWebsiteData && colorScheme ? (
+          {contentPhase === 'skeleton' ? (
+            <MacbookMockup
+              label="Live-Vorschau deiner Website"
+              innerRef={previewInnerRef}
+              externalScrollTop={previewScrollTop}
+              onScrollChange={setPreviewScrollTop}
+            >
+              {/* Animated wireframe placeholder – shown until category is chosen */}
+              <div className="w-full min-h-screen bg-slate-950 relative overflow-hidden">
+                {/* Grid background */}
+                <div className="absolute inset-0 opacity-60" style={{
+                  backgroundImage: 'linear-gradient(rgba(99,102,241,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.12) 1px, transparent 1px)',
+                  backgroundSize: '28px 28px',
+                }} />
+                {/* Slow radial glow pulse */}
+                <div className="absolute inset-0 animate-pulse" style={{
+                  background: 'radial-gradient(ellipse 60% 40% at 50% 40%, rgba(99,102,241,0.08) 0%, transparent 70%)',
+                  animationDuration: '3s',
+                }} />
+                {/* Wireframe blocks */}
+                <div className="relative z-10 p-5 space-y-3">
+                  {/* Navbar */}
+                  <div className="flex items-center justify-between pb-1">
+                    <div className="h-3 w-14 bg-slate-700/60 rounded-full animate-pulse" />
+                    <div className="flex gap-2">
+                      {[0, 100, 200].map(d => (
+                        <div key={d} className="h-2 w-8 bg-slate-700/40 rounded-full animate-pulse" style={{ animationDelay: `${d}ms` }} />
+                      ))}
+                    </div>
+                  </div>
+                  {/* Hero */}
+                  <div className="h-28 bg-slate-800/50 rounded-lg border border-slate-700/20 animate-pulse" style={{ animationDelay: '150ms' }} />
+                  {/* 3 cards */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[0, 150, 300].map(d => (
+                      <div key={d} className="h-16 bg-slate-800/40 rounded border border-slate-700/15 animate-pulse" style={{ animationDelay: `${d}ms` }} />
+                    ))}
+                  </div>
+                  {/* Text lines */}
+                  <div className="space-y-2 pt-1">
+                    {[{ w: '75%', d: 400 }, { w: '55%', d: 500 }, { w: '35%', d: 600 }].map(({ w, d }) => (
+                      <div key={d} className="h-1.5 bg-slate-700/30 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
+                    ))}
+                  </div>
+                  {/* Wide block */}
+                  <div className="h-16 bg-slate-800/35 rounded border border-slate-700/15 animate-pulse" style={{ animationDelay: '300ms' }} />
+                  {/* 2-col */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="h-12 bg-slate-800/30 rounded animate-pulse" style={{ animationDelay: '450ms' }} />
+                    <div className="h-12 bg-slate-800/30 rounded animate-pulse" style={{ animationDelay: '550ms' }} />
+                  </div>
+                  {/* More text lines */}
+                  <div className="space-y-2 pt-1">
+                    {[{ w: '60%', d: 700 }, { w: '40%', d: 800 }].map(({ w, d }) => (
+                      <div key={d} className="h-1.5 bg-slate-700/20 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
+                    ))}
+                  </div>
+                </div>
+                {/* Center hint */}
+                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                  <div className="text-center bg-slate-900/80 backdrop-blur-sm rounded-xl border border-indigo-500/20 px-5 py-3 space-y-1.5 shadow-xl">
+                    <Sparkles className="w-5 h-5 text-indigo-400/80 mx-auto" />
+                    <p className="text-slate-200 text-xs font-medium">Vorschau erscheint hier</p>
+                    <p className="text-slate-500 text-[10px]">beantworte die Fragen im Chat</p>
+                  </div>
+                </div>
+              </div>
+            </MacbookMockup>
+          ) : liveWebsiteData && colorScheme ? (
             <MacbookMockup
               label="Live-Vorschau deiner Website"
               innerRef={previewInnerRef}
@@ -3611,7 +3679,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 // Progressive content revelation phase
                 contentPhase={contentPhase}
                 // Skeleton loading state - true when initial content is being generated
-                isLoading={isGeneratingInitialContent || contentPhase === 'skeleton'}
+                isLoading={isGeneratingInitialContent}
               />
             </MacbookMockup>
           ) : (
