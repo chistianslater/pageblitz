@@ -47,6 +47,22 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
 }
 
+// Generic Google Places types that apply to virtually every business – not useful as category
+const GENERIC_GMB_TYPES = new Set([
+  "establishment", "point_of_interest", "local_business", "store", "food",
+  "premise", "political", "geocode", "route",
+]);
+
+/**
+ * Pick the most specific category from a Google Places `types` array.
+ * Filters out generic catch-all types and returns a human-readable string.
+ */
+function extractGmbCategory(types?: string[]): string | null {
+  if (!types?.length) return null;
+  const specific = types.find(t => !GENERIC_GMB_TYPES.has(t));
+  return (specific || types[0]).replace(/_/g, " ");
+}
+
 /**
  * Fetch photos from Google My Business (Places API) for a given placeId.
  * Returns an array of photo URLs (up to maxPhotos), or empty array on failure.
@@ -1126,7 +1142,7 @@ export const appRouter = router({
               { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
             );
             const hasWebsite = !!(details.result?.website);
-            const category = place.types?.[0]?.replace(/_/g, " ") || input.query;
+            const category = extractGmbCategory(place.types) || input.query;
             const websiteUrl = details.result?.website || null;
 
             // Determine initial lead type
@@ -1156,7 +1172,7 @@ export const appRouter = router({
               phone: null, website: null,
               rating: place.rating || null,
               reviewCount: place.user_ratings_total || 0,
-              category: place.types?.[0]?.replace(/_/g, " ") || input.query,
+              category: extractGmbCategory(place.types) || input.query,
               lat: place.geometry?.location?.lat,
               lng: place.geometry?.location?.lng,
               openingHours: [],
@@ -2681,7 +2697,7 @@ Kontext: ${input.context}`,
               website: r?.website || null,
               rating: r?.rating || null,
               reviewCount: r?.user_ratings_total || 0,
-              category: place.types?.[0]?.replace(/_/g, " ") || null,
+              category: extractGmbCategory(place.types) || null,
               openingHours: r?.opening_hours?.weekday_text || [],
               reviews: r?.reviews || [],
             };

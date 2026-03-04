@@ -244,27 +244,30 @@ const GMB_CATEGORY_MAP: Record<string, string> = {
 
 /**
  * Translates a GMB category string to German.
+ * Handles both human-readable ("Hair care") and machine-format ("hair_care") strings.
  * Falls back to the original string if no translation is found.
  */
 export function translateGmbCategory(category: string): string {
   if (!category) return category;
-  
-  // Direct match
-  if (GMB_CATEGORY_MAP[category]) {
-    return GMB_CATEGORY_MAP[category];
-  }
-  
+
+  // Normalise: replace underscores with spaces so "hair_care" → "hair care"
+  const normalised = category.replace(/_/g, " ");
+
+  // Direct match (original or normalised)
+  if (GMB_CATEGORY_MAP[normalised]) return GMB_CATEGORY_MAP[normalised];
+  if (GMB_CATEGORY_MAP[category]) return GMB_CATEGORY_MAP[category];
+
   // Case-insensitive match
-  const lower = category.toLowerCase();
+  const lower = normalised.toLowerCase();
   const key = Object.keys(GMB_CATEGORY_MAP).find(k => k.toLowerCase() === lower);
   if (key) return GMB_CATEGORY_MAP[key];
-  
+
   // Partial match – check if any key is contained in the category string
-  const partialKey = Object.keys(GMB_CATEGORY_MAP).find(k => 
+  const partialKey = Object.keys(GMB_CATEGORY_MAP).find(k =>
     lower.includes(k.toLowerCase()) || k.toLowerCase().includes(lower)
   );
   if (partialKey) return GMB_CATEGORY_MAP[partialKey];
-  
-  // Return original if no match found
-  return category;
+
+  // Return normalised (spaces instead of underscores) if no match found
+  return normalised;
 }
