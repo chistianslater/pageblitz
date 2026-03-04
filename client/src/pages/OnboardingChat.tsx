@@ -1744,7 +1744,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }
 
   const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;
-  const colorScheme = siteData?.website?.colorScheme as ColorScheme | undefined;
+  // Fallback to local data.colorScheme so preview works even when DB value is null
+  const colorScheme = (siteData?.website?.colorScheme ?? data.colorScheme ?? undefined) as ColorScheme | undefined;
   const heroImageUrl = (siteData?.website as any)?.heroImageUrl as string | undefined;
   const aboutImageUrl = (siteData?.website as any)?.aboutImageUrl as string | undefined;
   const layoutStyle = (siteData?.website as any)?.layoutStyle as string | undefined;
