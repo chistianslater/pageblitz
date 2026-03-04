@@ -3592,6 +3592,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             >
               <WebsiteRenderer isLoading={isGenerating}
                 websiteData={liveWebsiteData}
+                businessCategory={data.businessCategory || (business as any)?.category || undefined}
                 colorScheme={{
                     ...colorScheme,
                     ...data.colorScheme,

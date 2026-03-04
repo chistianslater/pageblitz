@@ -2567,6 +2567,8 @@ Kontext: ${input.context}`,
         category: z.string().optional(),
         customerEmail: z.string().email().optional(), // Email for external visitors (required for landing page)
         source: z.enum(["admin", "external"]).optional().default("external"), // Source tracking
+        googleReviews: z.array(z.any()).optional(), // Google reviews from resolveLink
+        openingHours: z.array(z.string()).optional(), // Opening hours from resolveLink
       }))
       .mutation(async ({ input }) => {
         // Validate email for external sources
@@ -2586,6 +2588,8 @@ Kontext: ${input.context}`,
           address: input.address || "",
           phone: input.phone || "",
           email: input.customerEmail, // Also store in business for convenience
+          googleReviews: input.googleReviews?.length ? input.googleReviews : null,
+          openingHours: input.openingHours?.length ? input.openingHours : null,
         });
         // Create a preview website
         const previewToken = nanoid(32);
