@@ -535,6 +535,20 @@ JSON-AUSGABE:
       ]
     },
     {
+      "type": "about",
+      "headline": "Kurze Über-uns-Überschrift max 5 Wörter",
+      "content": "2-3 authentische Sätze über das Unternehmen, seine Stärken, Werte und was es von der Konkurrenz unterscheidet. Konkret und spezifisch für diese Branche."
+    },
+    {
+      "type": "stats",
+      "items": [
+        {"title": "Zahl oder Kürzel passend zur Branche (z.B. '12+' für 12 Jahre, 'TÜV', '4.8★')", "description": "Kurzes Label wie 'Jahre Erfahrung'"},
+        {"title": "Zahl oder Kürzel", "description": "Kurzes Label"},
+        {"title": "Zahl oder Kürzel", "description": "Kurzes Label"},
+        {"title": "Zahl oder Kürzel", "description": "Kurzes Label"}
+      ]
+    },
+    {
       "type": "cta",
       "headline": "CTA-Überschrift",
       "content": "Kurzer Text",
@@ -542,7 +556,7 @@ JSON-AUSGABE:
     }
   ],
   "seoTitle": "${business.name} - ${category}",
-  "footer": {"text": "© ${year} ${business.name}"},
+  "footer": {"text": "© ${year} ${business.name}. Alle Rechte vorbehalten."},
   "designTokens": {
     "accentColor": "${colorScheme.accent}",
     "backgroundColor": "${archetype.colors.background}",
@@ -822,6 +836,18 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     // Remove testimonials if they are not real reviews (AI hallucinations)
     if (!injectedRealReviewsSS && websiteData.sections) {
       websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
+    }
+
+    // Inject real contact data from business record (overrides any AI-generated contact section)
+    if (websiteData.sections) {
+      websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "contact");
+      const contactItems: Array<{ title: string; description: string; icon: string }> = [];
+      if (business.phone) contactItems.push({ title: "Telefon", description: business.phone, icon: "Phone" });
+      if (business.address) contactItems.push({ title: "Adresse", description: business.address, icon: "MapPin" });
+      if (hoursText) contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
+      if (contactItems.length > 0) {
+        websiteData.sections.push({ type: "contact", headline: "Kontakt", items: contactItems });
+      }
     }
 
     // Progress: 90% - Processing website data
@@ -1260,6 +1286,18 @@ export const appRouter = router({
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
 
+        // Inject real contact data from business record (overrides any AI-generated contact section)
+        if (websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "contact");
+          const contactItems: Array<{ title: string; description: string; icon: string }> = [];
+          if (business.phone) contactItems.push({ title: "Telefon", description: business.phone, icon: "Phone" });
+          if (business.address) contactItems.push({ title: "Adresse", description: business.address, icon: "MapPin" });
+          if (hoursText) contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
+          if (contactItems.length > 0) {
+            websiteData.sections.push({ type: "contact", headline: "Kontakt", items: contactItems });
+          }
+        }
+
         // Sanitize designTokens: ensure enum values are valid
         if (websiteData.designTokens) {
           const dt = websiteData.designTokens;
@@ -1428,6 +1466,18 @@ export const appRouter = router({
         // Remove testimonials if they are not real reviews (AI hallucinations)
         if (!injectedRealReviews && websiteData.sections) {
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
+        }
+
+        // Inject real contact data from business record (overrides any AI-generated contact section)
+        if (websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "contact");
+          const contactItems: Array<{ title: string; description: string; icon: string }> = [];
+          if (business.phone) contactItems.push({ title: "Telefon", description: business.phone, icon: "Phone" });
+          if (business.address) contactItems.push({ title: "Adresse", description: business.address, icon: "MapPin" });
+          if (hoursText) contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
+          if (contactItems.length > 0) {
+            websiteData.sections.push({ type: "contact", headline: "Kontakt", items: contactItems });
+          }
         }
 
         // Sanitize designTokens: ensure enum values are valid
