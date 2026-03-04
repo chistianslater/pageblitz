@@ -3583,104 +3583,100 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               );
             })()}
           </div>
-          {contentPhase === 'skeleton' ? (
+          {liveWebsiteData && colorScheme ? (
             <MacbookMockup
               label="Live-Vorschau deiner Website"
               innerRef={previewInnerRef}
               externalScrollTop={previewScrollTop}
               onScrollChange={setPreviewScrollTop}
             >
-              {/* Animated wireframe placeholder – shown until category is chosen */}
-              <div className="w-full min-h-screen bg-slate-950 relative overflow-hidden">
-                {/* Grid background */}
-                <div className="absolute inset-0 opacity-60" style={{
-                  backgroundImage: 'linear-gradient(rgba(99,102,241,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.12) 1px, transparent 1px)',
-                  backgroundSize: '28px 28px',
-                }} />
-                {/* Slow radial glow pulse */}
-                <div className="absolute inset-0 animate-pulse" style={{
-                  background: 'radial-gradient(ellipse 60% 40% at 50% 40%, rgba(99,102,241,0.08) 0%, transparent 70%)',
-                  animationDuration: '3s',
-                }} />
-                {/* Wireframe blocks */}
-                <div className="relative z-10 p-5 space-y-3">
-                  {/* Navbar */}
-                  <div className="flex items-center justify-between pb-1">
-                    <div className="h-3 w-14 bg-slate-700/60 rounded-full animate-pulse" />
-                    <div className="flex gap-2">
-                      {[0, 100, 200].map(d => (
-                        <div key={d} className="h-2 w-8 bg-slate-700/40 rounded-full animate-pulse" style={{ animationDelay: `${d}ms` }} />
+              {/* Crossfade wrapper: placeholder fades out, skeleton template fades in */}
+              <div className="relative">
+                {/* White wireframe placeholder – fades out when category is chosen */}
+                <div
+                  className="absolute inset-0 z-10 w-full bg-white overflow-hidden"
+                  style={{
+                    opacity: contentPhase === 'skeleton' ? 1 : 0,
+                    transition: 'opacity 0.45s ease',
+                    pointerEvents: contentPhase === 'skeleton' ? 'auto' : 'none',
+                    minHeight: '100vh',
+                  }}
+                >
+                  {/* Subtle grid */}
+                  <div className="absolute inset-0" style={{
+                    backgroundImage: 'linear-gradient(rgba(99,102,241,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.07) 1px, transparent 1px)',
+                    backgroundSize: '28px 28px',
+                  }} />
+                  {/* Wireframe blocks */}
+                  <div className="relative z-10 p-5 space-y-3">
+                    <div className="flex items-center justify-between pb-1">
+                      <div className="h-3 w-14 bg-slate-200 rounded-full animate-pulse" />
+                      <div className="flex gap-2">
+                        {[0, 100, 200].map(d => (
+                          <div key={d} className="h-2 w-8 bg-slate-100 rounded-full animate-pulse" style={{ animationDelay: `${d}ms` }} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="h-28 bg-slate-100 rounded-lg border border-slate-200/80 animate-pulse" style={{ animationDelay: '150ms' }} />
+                    <div className="grid grid-cols-3 gap-2">
+                      {[0, 150, 300].map(d => (
+                        <div key={d} className="h-16 bg-slate-100/80 rounded border border-slate-200/60 animate-pulse" style={{ animationDelay: `${d}ms` }} />
+                      ))}
+                    </div>
+                    <div className="space-y-2 pt-1">
+                      {[{ w: '75%', d: 400 }, { w: '55%', d: 500 }, { w: '35%', d: 600 }].map(({ w, d }) => (
+                        <div key={d} className="h-1.5 bg-slate-200/70 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
+                      ))}
+                    </div>
+                    <div className="h-16 bg-slate-100/70 rounded border border-slate-200/50 animate-pulse" style={{ animationDelay: '300ms' }} />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="h-12 bg-slate-100/60 rounded animate-pulse" style={{ animationDelay: '450ms' }} />
+                      <div className="h-12 bg-slate-100/60 rounded animate-pulse" style={{ animationDelay: '550ms' }} />
+                    </div>
+                    <div className="space-y-2 pt-1">
+                      {[{ w: '60%', d: 700 }, { w: '40%', d: 800 }].map(({ w, d }) => (
+                        <div key={d} className="h-1.5 bg-slate-200/40 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
                       ))}
                     </div>
                   </div>
-                  {/* Hero */}
-                  <div className="h-28 bg-slate-800/50 rounded-lg border border-slate-700/20 animate-pulse" style={{ animationDelay: '150ms' }} />
-                  {/* 3 cards */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {[0, 150, 300].map(d => (
-                      <div key={d} className="h-16 bg-slate-800/40 rounded border border-slate-700/15 animate-pulse" style={{ animationDelay: `${d}ms` }} />
-                    ))}
-                  </div>
-                  {/* Text lines */}
-                  <div className="space-y-2 pt-1">
-                    {[{ w: '75%', d: 400 }, { w: '55%', d: 500 }, { w: '35%', d: 600 }].map(({ w, d }) => (
-                      <div key={d} className="h-1.5 bg-slate-700/30 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
-                    ))}
-                  </div>
-                  {/* Wide block */}
-                  <div className="h-16 bg-slate-800/35 rounded border border-slate-700/15 animate-pulse" style={{ animationDelay: '300ms' }} />
-                  {/* 2-col */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="h-12 bg-slate-800/30 rounded animate-pulse" style={{ animationDelay: '450ms' }} />
-                    <div className="h-12 bg-slate-800/30 rounded animate-pulse" style={{ animationDelay: '550ms' }} />
-                  </div>
-                  {/* More text lines */}
-                  <div className="space-y-2 pt-1">
-                    {[{ w: '60%', d: 700 }, { w: '40%', d: 800 }].map(({ w, d }) => (
-                      <div key={d} className="h-1.5 bg-slate-700/20 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
-                    ))}
+                  {/* Center hint */}
+                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                    <div className="text-center bg-white/90 backdrop-blur-sm rounded-xl border border-slate-200 px-5 py-3 space-y-1.5 shadow-md">
+                      <Sparkles className="w-5 h-5 text-indigo-400 mx-auto" />
+                      <p className="text-slate-700 text-xs font-medium">Vorschau erscheint hier</p>
+                      <p className="text-slate-400 text-[10px]">beantworte die Fragen im Chat</p>
+                    </div>
                   </div>
                 </div>
-                {/* Center hint */}
-                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                  <div className="text-center bg-slate-900/80 backdrop-blur-sm rounded-xl border border-indigo-500/20 px-5 py-3 space-y-1.5 shadow-xl">
-                    <Sparkles className="w-5 h-5 text-indigo-400/80 mx-auto" />
-                    <p className="text-slate-200 text-xs font-medium">Vorschau erscheint hier</p>
-                    <p className="text-slate-500 text-[10px]">beantworte die Fragen im Chat</p>
-                  </div>
+
+                {/* Website – fades in when category is entered; skeleton mode prevents flash */}
+                <div style={{
+                  opacity: contentPhase === 'skeleton' ? 0 : 1,
+                  transition: 'opacity 0.45s ease',
+                }}>
+                  <WebsiteRenderer
+                    websiteData={liveWebsiteData}
+                    businessCategory={data.businessCategory || (business as any)?.category || undefined}
+                    colorScheme={{
+                        ...colorScheme,
+                        ...data.colorScheme,
+                      } as any}
+                    heroImageUrl={data.heroPhotoUrl || heroImageUrl}
+                    aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
+                    layoutStyle={layoutStyle}
+                    businessPhone={business?.phone || undefined}
+                    businessAddress={business?.address || undefined}
+                    businessEmail={business?.email || undefined}
+                    openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
+                    slug={slug}
+                    contactFormLocked={!data.addOnContactForm}
+                    logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
+                    headlineFontOverride={data.headlineFont || undefined}
+                    contentPhase={contentPhase}
+                    isLoading={isGeneratingInitialContent || contentPhase === 'colors' || contentPhase === 'images'}
+                  />
                 </div>
               </div>
-            </MacbookMockup>
-          ) : liveWebsiteData && colorScheme ? (
-            <MacbookMockup
-              label="Live-Vorschau deiner Website"
-              innerRef={previewInnerRef}
-              externalScrollTop={previewScrollTop}
-              onScrollChange={setPreviewScrollTop}
-            >
-              <WebsiteRenderer isLoading={isGenerating}
-                websiteData={liveWebsiteData}
-                businessCategory={data.businessCategory || (business as any)?.category || undefined}
-                colorScheme={{
-                    ...colorScheme,
-                    ...data.colorScheme,
-                  } as any}
-                heroImageUrl={data.heroPhotoUrl || heroImageUrl}
-                aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
-                layoutStyle={layoutStyle}
-                businessPhone={business?.phone || undefined}
-                businessAddress={business?.address || undefined}
-                businessEmail={business?.email || undefined}
-                openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
-                slug={slug}
-                contactFormLocked={!data.addOnContactForm}
-                logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
-                headlineFontOverride={data.headlineFont || undefined}
-                // Progressive content revelation phase
-                contentPhase={contentPhase}
-                // Skeleton loading state - true when initial content is being generated
-                isLoading={isGeneratingInitialContent}
-              />
             </MacbookMockup>
           ) : (
             <div className="h-full flex items-center justify-center text-slate-500 min-h-[400px]">
