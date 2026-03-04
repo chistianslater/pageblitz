@@ -60,12 +60,18 @@ async function getGmbPhotos(placeId: string, maxPhotos = 6): Promise<string[]> {
     const photos: Array<{ photo_reference: string; width: number; height: number }> =
       details?.result?.photos || [];
     if (!photos.length) return [];
-    // Build photo URLs via the Manus Maps proxy (same pattern as map.ts)
-    const baseUrl = (ENV.forgeApiUrl || "").replace(/\/+$/, "");
-    const apiKey = ENV.forgeApiKey || "";
+    // Build photo URLs – direct Google API or Forge proxy
+    const isDirectGoogle = !!ENV.googlePlacesApiKey;
+    const baseUrl = isDirectGoogle
+      ? "https://maps.googleapis.com"
+      : (ENV.forgeApiUrl || "").replace(/\/+$/, "");
+    const apiKey = isDirectGoogle ? ENV.googlePlacesApiKey : ENV.forgeApiKey || "";
     if (!baseUrl || !apiKey) return [];
+    const photoPath = isDirectGoogle
+      ? "/maps/api/place/photo"
+      : "/v1/maps/proxy/maps/api/place/photo";
     return photos.slice(0, maxPhotos).map((p) => {
-      const url = new URL(`${baseUrl}/v1/maps/proxy/maps/api/place/photo`);
+      const url = new URL(`${baseUrl}${photoPath}`);
       url.searchParams.set("maxwidth", "1600");
       url.searchParams.set("photo_reference", p.photo_reference);
       url.searchParams.set("key", apiKey);

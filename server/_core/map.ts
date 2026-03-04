@@ -19,12 +19,21 @@ type MapsConfig = {
 };
 
 function getMapsConfig(): MapsConfig {
+  // Prefer direct Google Places API key if configured
+  if (ENV.googlePlacesApiKey) {
+    return {
+      baseUrl: "https://maps.googleapis.com",
+      apiKey: ENV.googlePlacesApiKey,
+    };
+  }
+
+  // Fall back to Forge/Manus proxy
   const baseUrl = ENV.forgeApiUrl;
   const apiKey = ENV.forgeApiKey;
 
   if (!baseUrl || !apiKey) {
     throw new Error(
-      "Google Maps proxy credentials missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY"
+      "Google Maps credentials missing: set GOOGLE_PLACES_API_KEY (recommended) or BUILT_IN_FORGE_API_URL + BUILT_IN_FORGE_API_KEY"
     );
   }
 
@@ -58,8 +67,11 @@ export async function makeRequest<T = unknown>(
 ): Promise<T> {
   const { baseUrl, apiKey } = getMapsConfig();
 
-  // Construct full URL: baseUrl + /v1/maps/proxy + endpoint
-  const url = new URL(`${baseUrl}/v1/maps/proxy${endpoint}`);
+  // Direct Google API: use endpoint as-is (e.g. /maps/api/place/textsearch/json)
+  // Forge proxy: prepend /v1/maps/proxy
+  const isDirectGoogle = baseUrl.includes("googleapis.com");
+  const fullPath = isDirectGoogle ? endpoint : `/v1/maps/proxy${endpoint}`;
+  const url = new URL(`${baseUrl}${fullPath}`);
 
   // Add API key as query parameter (standard Google Maps API authentication)
   url.searchParams.append("key", apiKey);
