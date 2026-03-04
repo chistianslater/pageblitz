@@ -364,7 +364,7 @@ function FooterContact({ websiteData, textClass }: { websiteData: any, textClass
     <>
       {address && <li className={`flex items-start gap-2 ${textClass}`}><MapPin size={14} className="mt-0.5 shrink-0" /> {address}</li>}
       {phone && <li className={`flex items-center gap-2 ${textClass}`}><Phone size={14} /> {phone}</li>}
-      {hours && <li className={`flex items-start gap-2 ${textClass}`}><Clock size={14} className="mt-0.5 shrink-0" /> {hours}</li>}
+      {hours && <li className={`flex items-start gap-2 ${textClass}`}><Clock size={14} className="mt-0.5 shrink-0" /><span style={{ whiteSpace: 'pre-line' }}>{hours}</span></li>}
     </>
   );
 }
@@ -542,23 +542,23 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </nav>
 
       {/* HERO: editorial centered with giant background initial */}
-      <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-28 pb-20">
+      <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-28 pb-24">
         <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden">
           <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: '40vw', lineHeight: 1, color: cs.primary, opacity: 0.04 }}>
             {(heroHeadline || websiteData.businessName || 'E').charAt(0).toUpperCase()}
           </span>
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">
-          <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-48 mb-8">
-            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 1.1, letterSpacing: '0.02em', fontSize: 'clamp(3.5rem, 8vw, 7.5rem)' }}>
+          <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-48 mb-10">
+            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 0.95, letterSpacing: '0.02em', fontSize: 'clamp(3rem, 7vw, 6.5rem)' }}>
               {heroHeadline.split(' ').slice(0, -1).join(' ')}{' '}
               <span style={{ color: cs.primary }}>{heroHeadline.split(' ').slice(-1)[0]}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-12">
+          <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-14">
             <p style={{ fontFamily: BODY, fontWeight: 300, letterSpacing: '0.04em' }} className="text-neutral-500 text-lg max-w-xl mx-auto">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-40 h-12 mx-auto mb-16">
+          <Skeleton isLoading={isLoading} className="w-40 h-12 mx-auto mb-20">
             <button style={{ backgroundColor: cs.primary, fontFamily: BODY, letterSpacing: '0.12em' }} className="px-10 py-3.5 text-white text-xs uppercase">{heroCta}</button>
           </Skeleton>
           <div className="max-w-3xl mx-auto aspect-[16/9] relative">
