@@ -522,7 +522,7 @@ JSON-AUSGABE:
     {
       "type": "hero",
       "headline": "Hauptüberschrift max 7 Wörter",
-      "subheadline": "USP in 1-2 Sätzen",
+      "subheadline": "1-2 Sätze: erst das Kundenproblem oder den Schmerz nennen, dann die Lösung – aus Kundenperspektive",
       "ctaText": "Button-Text"
     },
     {
@@ -538,6 +538,15 @@ JSON-AUSGABE:
       "type": "about",
       "headline": "Kurze Über-uns-Überschrift max 5 Wörter",
       "content": "2-3 authentische Sätze über das Unternehmen, seine Stärken, Werte und was es von der Konkurrenz unterscheidet. Konkret und spezifisch für diese Branche."
+    },
+    {
+      "type": "process",
+      "headline": "So einfach geht's",
+      "items": [
+        {"step": "1", "title": "Schritt 1 Titel", "description": "1 Satz – branchenspezifisch, wie der Kunde Kontakt aufnimmt"},
+        {"step": "2", "title": "Schritt 2 Titel", "description": "1 Satz – was beim Beratungs- oder Planungsgespräch passiert"},
+        {"step": "3", "title": "Schritt 3 Titel", "description": "1 Satz – das konkrete Ergebnis, das der Kunde erhält"}
+      ]
     },
     {
       "type": "cta",

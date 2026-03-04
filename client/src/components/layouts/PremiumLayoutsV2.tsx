@@ -36,6 +36,50 @@ const splitHeadline = (text: string) => {
   return { main: words.slice(0, -1).join(' '), last: words[words.length - 1] };
 };
 
+// ── PROCESS SECTION ──────────────────────────────────────────────
+function ProcessSection({ websiteData, cs, isLoading, dark = false }: any) {
+  const process = sec(websiteData, 'process');
+  if (!isLoading && !process?.items?.length) return null;
+  const items = process?.items || [
+    { step: "1", title: "Kontakt", description: "" },
+    { step: "2", title: "Beratung", description: "" },
+    { step: "3", title: "Ergebnis", description: "" }
+  ];
+  const bg = dark ? "bg-white/5" : "bg-neutral-50";
+  const textMain = dark ? "text-white" : "text-neutral-900";
+  const textSub = dark ? "text-white/60" : "text-neutral-500";
+
+  return (
+    <section className={`py-20 px-6 ${bg}`}>
+      <div className="max-w-7xl mx-auto">
+        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-14">
+          <h2 className={`text-3xl md:text-4xl font-black text-center ${textMain}`}>
+            {process?.headline || "So einfach geht's"}
+          </h2>
+        </Skeleton>
+        <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+          {items.map((item: any, i: number) => (
+            <Skeleton key={i} isLoading={isLoading} className="h-44">
+              <div className="flex flex-col items-center text-center relative">
+                {i < items.length - 1 && (
+                  <div className="hidden md:block absolute top-7 left-[60%] w-[80%] border-t-2 border-dashed"
+                    style={{ borderColor: cs.primary + '40' }} />
+                )}
+                <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black text-white mb-4 z-10"
+                  style={{ backgroundColor: cs.primary }}>
+                  {item.step}
+                </div>
+                <h3 className={`font-bold text-lg mb-2 ${textMain}`}>{item.title}</h3>
+                <p className={`text-sm leading-relaxed ${textSub}`}>{item.description}</p>
+              </div>
+            </Skeleton>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── TESTIMONIALS ─────────────────────────────────────────────────
 /** Dark-theme testimonials block – only renders when real reviews exist */
 function TestimonialsDark({ websiteData, cs, isLoading, heading }: any) {
@@ -259,6 +303,8 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         </section>
       )}
 
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+
       <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-900 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
@@ -409,6 +455,8 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
       <section id="ueber-uns" className="py-20 md:py-32 px-4 md:px-6 bg-neutral-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
@@ -556,6 +604,8 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
       <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-slate-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
@@ -691,6 +741,8 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
           </div>
         </section>
       )}
+
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
@@ -833,6 +885,8 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+
       <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-900 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-square">
@@ -960,6 +1014,8 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
           </div>
         </section>
       )}
+
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       <section id="ueber-uns" className="py-20 md:py-32 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1094,6 +1150,8 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
           </div>
         </section>
       )}
+
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
       <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-900 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1233,6 +1291,8 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </section>
       )}
 
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+
       <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-slate-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
@@ -1364,6 +1424,8 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
           </div>
         </section>
       )}
+
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       <section id="ueber-uns" className="py-20 md:py-32 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1497,6 +1559,8 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
           </div>
         </section>
       )}
+
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       <section id="ueber-uns" className="py-20 md:py-32 px-6 bg-neutral-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
