@@ -60,7 +60,7 @@ const GENERIC_GMB_TYPES = new Set([
 function extractGmbCategory(types?: string[]): string | null {
   if (!types?.length) return null;
   const specific = types.find(t => !GENERIC_GMB_TYPES.has(t));
-  return (specific || types[0]).replace(/_/g, " ");
+  return specific ? specific.replace(/_/g, " ") : null;
 }
 
 /**
