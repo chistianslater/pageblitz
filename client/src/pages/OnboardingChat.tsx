@@ -9,7 +9,7 @@ import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
-import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif } from "@shared/layoutConfig";
+import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
 import { getGalleryImages } from "@shared/industryImages";
 import { motion } from "framer-motion";
 
@@ -2460,6 +2460,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   ))}
                 </div>
+
+                {/* 🎲 Random Color Generator Button */}
+                <button
+                  onClick={() => {
+                    const randomScheme = generateRandomColorScheme();
+                    setData((p) => ({ ...p, colorScheme: randomScheme.colors }));
+                    setShowIndividualColors(false);
+                  }}
+                  className="w-full py-3 px-4 rounded-xl border-2 border-purple-500/50 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 transition-all flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wider text-purple-300 hover:text-purple-200 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20"
+                >
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                  Überrasch mich! (Zufallsmix)
+                </button>
 
                 <div className="flex flex-col gap-3">
                   <button
