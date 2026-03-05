@@ -49,18 +49,18 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        <Skeleton isLoading={isLoading} className="w-full h-64 mb-8">
+        <Skeleton isLoading={isLoading} className="w-full h-64 mb-10">
           <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: 'clamp(3rem, 8vw, 7rem)' }} className="uppercase drop-shadow-xl">
             {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-16">
+        <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-20">
           <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-14 mb-8">
-          <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs hover:scale-105 transition-transform shadow-xl">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-16 mb-10">
+          <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
             {heroCta}
           </button>
         </Skeleton>
@@ -143,7 +143,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           </Skeleton>
           <div className="flex flex-wrap gap-6 mt-20">
             <Skeleton isLoading={isLoading} className="w-48 h-14">
-              <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest shadow-2xl">
+              <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest rounded-full shadow-2xl">
                 {heroCta}
               </button>
             </Skeleton>
