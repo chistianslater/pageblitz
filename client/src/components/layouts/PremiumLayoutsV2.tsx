@@ -54,12 +54,12 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-12">
+        <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-16">
           <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-500 text-xl leading-relaxed max-w-lg border-l-4 pl-6">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-10 mb-6">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-12 mb-8">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs hover:scale-105 transition-transform shadow-xl">
             {heroCta}
           </button>
