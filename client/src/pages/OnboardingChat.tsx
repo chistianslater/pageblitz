@@ -2061,8 +2061,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             )}
 
             {/* Interactive step UI with futuristic transitions */}
-            <AnimatePresence mode="wait">
-              {!isTyping && currentStep === "services" && (
+            {!isTyping && (
+              <AnimatePresence mode="wait">
+                {currentStep === "services" && (
                 <motion.div
                   key="services-step"
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -2352,7 +2353,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "businessCategory" && (
+          {currentStep === "businessCategory" && (
             <motion.div
               key="businessCategory-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -2437,7 +2438,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "colorScheme" && (
+          {currentStep === "colorScheme" && (
             <motion.div
               key="colorScheme-step"
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -2575,7 +2576,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "heroPhoto" && (
+          {currentStep === "heroPhoto" && (
             <motion.div
               key="heroPhoto-step"
               initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
@@ -2600,7 +2601,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "aboutPhoto" && (
+          {currentStep === "aboutPhoto" && (
             <motion.div
               key="aboutPhoto-step"
               initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
@@ -2626,7 +2627,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "brandLogo" && (
+          {currentStep === "brandLogo" && (
             <motion.div
               key="brandLogo-step"
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -2725,7 +2726,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "headlineFont" && (
+          {currentStep === "headlineFont" && (
             <motion.div
               key="headlineFont-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -2799,7 +2800,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "headlineSize" && (
+          {currentStep === "headlineSize" && (
             <motion.div
               key="headlineSize-step"
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -2859,7 +2860,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "addons" && (
+          {currentStep === "addons" && (
             <motion.div
               key="addons-step"
               initial={{ opacity: 0, scale: 0.9, rotateY: -5 }}
@@ -2933,7 +2934,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "editMenu" && (
+          {currentStep === "editMenu" && (
             <motion.div
               key="editMenu-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -3083,7 +3084,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "editPricelist" && (
+          {currentStep === "editPricelist" && (
             <motion.div
               key="editPricelist-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -3219,7 +3220,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "editGallery" && (
+          {currentStep === "editGallery" && (
             <motion.div
               key="editGallery-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -3272,7 +3273,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "subpages" && (
+          {currentStep === "subpages" && (
             <motion.div
               key="subpages-step"
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -3362,7 +3363,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
+          {currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
             <motion.div
               key="legalOwner-gmb-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -3458,7 +3459,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           )}
 
           {/* Pencil to re-open edit mode after GMB data was confirmed */}
-          {!isTyping && currentStep !== "legalOwner" && ["legalStreet","legalZipCity","legalEmail","legalPhone","legalVat"].includes(currentStep) && data.legalStreet && (
+          {currentStep !== "legalOwner" && ["legalStreet","legalZipCity","legalEmail","legalPhone","legalVat"].includes(currentStep) && data.legalStreet && (
             <motion.div
               key="legal-edit-pencil"
               initial={{ opacity: 0 }}
@@ -3480,7 +3481,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "hideSections" && (
+          {currentStep === "hideSections" && (
             <motion.div
               key="hideSections-step"
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -3583,7 +3584,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "preview" && (
+          {currentStep === "preview" && (
             <motion.div
               key="preview-step"
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -3604,7 +3605,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {!isTyping && currentStep === "checkout" && (
+          {currentStep === "checkout" && (
             <motion.div
               key="checkout-step"
               initial={{ opacity: 0, y: 40, scale: 0.9 }}
@@ -3699,7 +3700,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 </p>
             </motion.div>
           )}
-        </AnimatePresence>
+              </AnimatePresence>
+            )}
 
         <div ref={messagesEndRef} />
         </div>
