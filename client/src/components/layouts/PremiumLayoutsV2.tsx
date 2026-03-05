@@ -127,7 +127,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <Skeleton isLoading={isLoading} className="w-full h-72 mb-10">
+          <Skeleton isLoading={isLoading} className="w-full h-72 mb-12">
             <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.9, fontSize: 'clamp(4rem, 12vw, 10rem)' }} className="uppercase tracking-tighter drop-shadow-2xl">
               {hl.main}<br />
               <span className="relative inline-block">
@@ -141,7 +141,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
-          <div className="flex flex-wrap gap-6 mt-20">
+          <div className="flex flex-wrap gap-6 mt-24">
             <Skeleton isLoading={isLoading} className="w-48 h-14">
               <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest rounded-full shadow-2xl">
                 {heroCta}
