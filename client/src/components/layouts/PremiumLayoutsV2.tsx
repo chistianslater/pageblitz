@@ -117,8 +117,8 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <img src={heroImageUrl} className="w-full h-full object-cover opacity-20 grayscale" alt="" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white" />
+        <img src={heroImageUrl} className="w-full h-full object-cover opacity-10 grayscale" alt="" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/70" />
       </div>
       <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-[60%_40%] items-center gap-12">
         <motion.div
@@ -127,8 +127,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <div className="w-12 h-1 mb-8" style={{ backgroundColor: cs.primary }} />
-          <Skeleton isLoading={isLoading} className="w-full h-72 mb-8">
+          <Skeleton isLoading={isLoading} className="w-full h-72 mb-10">
             <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.9, fontSize: 'clamp(4rem, 12vw, 10rem)' }} className="uppercase tracking-tighter">
               {hl.main}<br />
               <span className="relative inline-block">
@@ -137,12 +136,12 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               </span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-12">
+          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-16">
             <p style={{ fontFamily: bodyFont }} className="text-neutral-600 text-2xl font-light leading-relaxed">
               {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
-          <div className="flex flex-wrap gap-6 mt-10">
+          <div className="flex flex-wrap gap-6 mt-12">
             <Skeleton isLoading={isLoading} className="w-48 h-14">
               <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest shadow-2xl">
                 {heroCta}
