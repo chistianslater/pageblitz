@@ -50,16 +50,16 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 0.8 }}
       >
         <Skeleton isLoading={isLoading} className="w-full h-64 mb-8">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: 'clamp(3rem, 8vw, 7rem)' }} className="uppercase">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: 'clamp(3rem, 8vw, 7rem)' }} className="uppercase drop-shadow-xl">
             {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-16">
-          <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-500 text-xl leading-relaxed max-w-lg border-l-4 pl-6">
+          <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-12 mb-8">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-14 mb-8">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs hover:scale-105 transition-transform shadow-xl">
             {heroCta}
           </button>
@@ -91,12 +91,12 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 0.8 }}
       >
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-44 mb-8">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: 'clamp(3.5rem, 9vw, 8rem)' }} className="uppercase">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: 'clamp(3.5rem, 9vw, 8rem)' }} className="uppercase drop-shadow-xl">
             {hl.main} <span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-12">
-          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-xl max-w-2xl mx-auto italic">
+        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-16">
+          <p style={{ fontFamily: bodyFont }} className="text-neutral-400 text-xl max-w-2xl mx-auto italic drop-shadow-lg">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
