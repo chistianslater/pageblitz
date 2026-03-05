@@ -692,7 +692,6 @@ export default function LandingPage() {
               </motion.div>
             </div>
           </div>
-        </div>
       </section>
 
       {/* Stats Section */}

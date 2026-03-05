@@ -5,6 +5,7 @@
  * Structure: Split hero, arch imagery, generous whitespace, gold accents
  */
 import { Star, Sparkles, Heart, Clock, MapPin, Phone, Mail } from "lucide-react";
+import { motion } from "framer-motion";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 interface Props {
@@ -74,7 +75,13 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, isLoading
           </div>
         </div>
 
-        <div className="order-1 lg:order-2 lg:col-span-7 lg:pl-12">
+        <motion.div 
+          className="order-1 lg:order-2 lg:col-span-7 lg:pl-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
           <Skeleton isLoading={isLoading} className="w-full h-32 md:h-64 mb-8">
             <h1 className="font-serif text-5xl md:text-8xl lg:text-9xl leading-[0.8] italic font-light mb-10 md:mb-16 tracking-tighter">
               {headline.split(' ').map((word, i) => (
@@ -97,7 +104,7 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, isLoading
               Reserve Experience
             </button>
           </Skeleton>
-        </div>
+        </motion.div>
       </section>
 
       {/* Features */}
