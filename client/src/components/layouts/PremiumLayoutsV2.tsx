@@ -100,7 +100,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-10 mb-16">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-14 mb-20">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
             {heroCta}
           </button>
