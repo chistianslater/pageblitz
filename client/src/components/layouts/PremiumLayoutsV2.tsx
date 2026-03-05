@@ -52,12 +52,12 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const hs = { fontFamily: displayFont, ...headlineStyle };
 
   return (
-    <section className={`py-20 px-6 ${bg}`} style={{ fontFamily: bodyFont }}>
+    <section className={`py-24 md:py-32 px-6 ${bg}`} style={{ fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-14">
-          <h2 className={`text-3xl md:text-4xl text-center mb-14 ${textMain}`} style={hs}>
+        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-20">
+          <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={hs}>
             {process?.headline || "So einfach geht's"}
-          </h2>
+          h2>
         </Skeleton>
         <div className="grid md:grid-cols-3 gap-8 md:gap-12">
           {items.map((item: any, i: number) => (
@@ -101,7 +101,7 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
     : "–";
 
   return (
-    <section className={`py-12 px-6 ${bg}`}>
+    <section className={`py-16 md:py-24 px-6 ${bg}`}>
       <div className="max-w-7xl mx-auto flex justify-center">
         <Skeleton isLoading={isLoading} className="w-80 h-20">
           <div className={`inline-flex items-center gap-6 px-8 py-4 rounded-xl border ${cardBg} ${border} shadow-sm`}>
@@ -162,10 +162,10 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const hs = { fontFamily: displayFont, ...headlineStyle };
 
   return (
-    <section id="kontakt" className={`py-20 px-6 scroll-mt-20 ${bg} ${topBorder}`} style={{ fontFamily: bodyFont }}>
+    <section id="kontakt" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bg} ${topBorder}`} style={{ fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-48 h-10 mb-12">
-          <h2 className={`text-3xl md:text-4xl mb-12 ${textMain}`} style={hs}>Kontakt</h2>
+        <Skeleton isLoading={isLoading} className="w-48 h-10 mb-16">
+          <h2 className={`text-3xl md:text-4xl mb-16 ${textMain}`} style={hs}>Kontakt</h2>
         </Skeleton>
         <div className="grid md:grid-cols-2 gap-12">
 
@@ -450,9 +450,9 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
       </nav>
 
       {/* HERO: split grid with industrial accents and overlapping elements */}
-      <section id="hero" className="min-h-[110vh] grid lg:grid-cols-[54%_46%] pt-[64px] relative overflow-hidden">
+      <section id="hero" className="min-h-[110vh] grid lg:grid-cols-[54%_46%] pt-[120px] relative overflow-hidden">
         <motion.div 
-          className="flex flex-col justify-center p-10 lg:p-20 relative z-20"
+          className="flex flex-col justify-center p-10 lg:p-24 relative z-20"
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
@@ -463,12 +463,12 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
             Engineering Excellence
           </div>
           
-          <Skeleton isLoading={isLoading} className="w-full h-64 mb-8">
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 900, lineHeight: 0.75, fontSize: 'clamp(4rem, 12vw, 10.5rem)', letterSpacing: '-0.04em' }} className="uppercase drop-shadow-2xl">
+          <Skeleton isLoading={isLoading} className="w-full h-64 mb-10">
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 900, lineHeight: 0.85, fontSize: 'clamp(4rem, 12vw, 10.5rem)', letterSpacing: '-0.04em' }} className="uppercase drop-shadow-2xl">
               {hl.main}<br /><span style={{ color: cs.primary }} className="italic">{hl.last}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-12">
+          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-16">
             <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.7 }} className="text-white/50 text-xl max-w-md border-l border-white/20 pl-6">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-48 h-14">
@@ -499,7 +499,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 scroll-mt-20">
+        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-64 h-16 mb-12">
               <h2 style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 'clamp(2.5rem, 6vw, 5rem)', letterSpacing: '0.02em' }} className="uppercase">
@@ -509,7 +509,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
             <div className="border-t border-white/10">
               {services.map((service: any, i: number) => (
                 <Skeleton key={i} isLoading={isLoading} className="h-28">
-                  <div className="border-b border-white/10 py-7 flex items-center gap-6 hover:bg-white/[0.02] transition-colors group px-2">
+                  <div className="border-b border-white/10 py-10 flex items-center gap-6 hover:bg-white/[0.02] transition-colors group px-2">
                     <span style={{ fontFamily: DISPLAY, fontWeight: 900, color: cs.primary, fontSize: 'clamp(2rem, 4vw, 3rem)', lineHeight: 1, opacity: 0.7 }} className="shrink-0 w-14">{String(i + 1).padStart(2, '0')}</span>
                     <div className="flex-1 min-w-0">
                       <h3 style={{ fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.04em', fontSize: '1.2rem' }} className="uppercase mb-1">{service.title}</h3>
@@ -526,8 +526,8 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
-      <section id="ueber-uns" className="py-20 px-6 scroll-mt-20 border-t border-white/10">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20 border-t border-white/10">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
           <Skeleton isLoading={isLoading} className="aspect-[4/3]">
             <img src={aboutImg} className="w-full h-full object-cover" alt="" />
           </Skeleton>
@@ -537,7 +537,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
               <h2 style={{ fontFamily: DISPLAY, fontWeight: 900, letterSpacing: '0.02em', fontSize: 'clamp(2.2rem, 5vw, 4rem)' }} className="uppercase leading-tight">{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p className="text-white/60 leading-relaxed">{aboutContent}</p>
+              <p className="text-white/60 leading-relaxed text-lg">{aboutContent}</p>
             </Skeleton>
           </div>
         </div>
@@ -601,7 +601,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </nav>
 
       {/* HERO: editorial asymmetrical with overlapping elements */}
-      <section id="hero" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12 md:gap-20 items-center min-h-[90vh] pb-24 pt-32 relative">
+      <section id="hero" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12 md:gap-24 items-center min-h-[90vh] pb-32 md:pb-48 pt-32 md:pt-48 relative">
         {/* Background Accent */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-neutral-50/50 -z-10 skew-x-12 translate-x-1/2" />
         
@@ -646,10 +646,10 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <Skeleton isLoading={isLoading} className="w-full h-32 md:h-64 mb-10">
-            <div className="absolute -top-12 -left-4 text-xs font-serif italic text-neutral-300 select-none pointer-events-none text-[8vw] opacity-40">
+            <div className="absolute -top-16 -left-8 text-xs font-serif italic text-neutral-300 select-none pointer-events-none text-[10vw] opacity-30">
               {(heroHeadline || 'E').charAt(0)}
             </div>
-            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 0.85, letterSpacing: '-0.02em', fontSize: 'clamp(3.5rem, 8vw, 7.5rem)' }}>
+            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 1.0, letterSpacing: '-0.02em', fontSize: 'clamp(3.5rem, 8vw, 7.5rem)' }}>
               {heroHeadline.split(' ').map((word, i) => (
                 <span key={i} className={i % 2 === 0 ? "block text-right lg:text-left" : "block text-left lg:text-right opacity-60"}>
                   {word}
@@ -657,8 +657,8 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
               ))}
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-full h-24 mb-12">
-            <p className="text-lg md:text-2xl text-neutral-500 font-light leading-relaxed mb-12 max-w-lg italic border-l-2 border-neutral-200 pl-8">
+          <Skeleton isLoading={isLoading} className="w-full h-24 mb-16">
+            <p className="text-lg md:text-2xl text-neutral-500 font-light leading-relaxed mb-16 max-w-lg italic border-l-2 border-neutral-200 pl-8">
               {hero?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
@@ -777,7 +777,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </Skeleton>
       </nav>
 
-      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-20 grid lg:grid-cols-12 gap-12 items-center">
+      <section id="hero" className="max-w-7xl mx-auto px-6 pt-48 pb-32 grid lg:grid-cols-12 gap-12 items-center">
         <motion.div 
           className="lg:col-span-6 xl:col-span-5"
           initial={{ opacity: 0, x: -30 }}
@@ -785,19 +785,19 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <Skeleton isLoading={isLoading} className="w-full h-52 mb-8">
-            <div className="mb-8">
-              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-4 border-l-2 border-primary pl-4">Excellence & Precision</span>
-              <h1 style={{ fontFamily: DISPLAY, fontWeight: 800, lineHeight: 0.85, fontSize: 'clamp(3.5rem, 7vw, 7.5rem)', textTransform: 'uppercase', letterSpacing: '-0.04em' }}>
+          <Skeleton isLoading={isLoading} className="w-full h-52 mb-10">
+            <div className="mb-10">
+              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-6 border-l-2 border-primary pl-4">Excellence & Precision</span>
+              <h1 style={{ fontFamily: DISPLAY, fontWeight: 800, lineHeight: 0.95, fontSize: 'clamp(3.5rem, 7vw, 7.5rem)', textTransform: 'uppercase', letterSpacing: '-0.04em' }}>
                 Expert <br /><span style={{ color: cs.primary }}>{hl.last}</span>
               </h1>
             </div>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-full h-16 mb-12">
+          <Skeleton isLoading={isLoading} className="w-full h-16 mb-16">
             <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.75 }} className="text-neutral-400 text-xl max-w-md">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-44 h-12">
-            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-10 py-4 text-white text-xs rounded-full uppercase tracking-widest shadow-2xl">{heroCta}</button>
+            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-10 py-4 text-white text-xs rounded-full uppercase tracking-widest shadow-2xl hover:scale-105 transition-transform">{heroCta}</button>
           </Skeleton>
         </motion.div>
         <motion.div 
@@ -822,21 +822,21 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 bg-neutral-50 scroll-mt-20">
+        <section id="leistungen" className="py-24 md:py-32 px-6 bg-neutral-50 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-64 h-14 mb-12">
+            <Skeleton isLoading={isLoading} className="w-64 h-14 mb-16">
               <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)' }}>
                 Unsere <em style={{ color: cs.primary }}>Leistungen</em>
               </h2>
             </Skeleton>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="h-56">
-                  <div className="bg-white p-8 h-full" style={{ borderLeft: `3px solid ${cs.primary}` }}>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center mb-5" style={{ backgroundColor: cs.primary }}>
+                <Skeleton key={i} isLoading={isLoading} className="h-64">
+                  <div className="bg-white p-10 h-full shadow-sm hover:shadow-md transition-shadow" style={{ borderLeft: `3px solid ${cs.primary}` }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: cs.primary }}>
                       <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', color: 'white' }}>{i + 1}</span>
                     </div>
-                    <h3 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: '1.25rem' }} className="mb-3">{service.title}</h3>
+                    <h3 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: '1.25rem' }} className="mb-4">{service.title}</h3>
                     <p style={{ fontFamily: BODY, fontWeight: 400 }} className="text-neutral-500 text-sm leading-relaxed">{service.description}</p>
                   </div>
                 </Skeleton>
@@ -848,22 +848,22 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
-      <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
           <div>
-            <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
-              <span style={{ fontFamily: BODY, fontWeight: 500, fontSize: '0.7rem', letterSpacing: '0.2em', color: cs.primary }} className="uppercase block mb-3">Über uns</span>
+            <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
+              <span style={{ fontFamily: BODY, fontWeight: 500, fontSize: '0.7rem', letterSpacing: '0.2em', color: cs.primary }} className="uppercase block mb-4">Über uns</span>
               <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: 'clamp(2rem, 4vw, 3.5rem)', lineHeight: 1.2 }}>
                 {aboutHeadline.split(' ').slice(0, -1).join(' ')}{' '}
                 <em style={{ color: cs.primary }}>{aboutHeadline.split(' ').slice(-1)[0]}</em>
               </h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p style={{ fontFamily: BODY, lineHeight: 1.8 }} className="text-neutral-500">{aboutContent}</p>
+              <p style={{ fontFamily: BODY, lineHeight: 1.8, fontSize: '1.125rem' }} className="text-neutral-500">{aboutContent}</p>
             </Skeleton>
           </div>
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
-            <img src={aboutImg} className="w-full h-full object-cover rounded-2xl" alt="" />
+            <img src={aboutImg} className="w-full h-full object-cover rounded-2xl shadow-2xl" alt="" />
           </Skeleton>
         </div>
       </section>
@@ -928,19 +928,19 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </Skeleton>
       </nav>
 
-      <section id="hero" className="min-h-screen grid lg:grid-cols-2 pt-[64px]">
-        <div className="flex flex-col justify-center p-10 lg:p-20">
-          <Skeleton isLoading={isLoading} className="w-full h-56 mb-8">
-            <Ruler size={36} style={{ color: cs.primary }} className="mb-6" />
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 900, lineHeight: 1.05, fontSize: 'clamp(3rem, 7vw, 6rem)' }}>
+      <section id="hero" className="min-h-screen grid lg:grid-cols-2 pt-[80px]">
+        <div className="flex flex-col justify-center p-12 lg:p-24 bg-[#F2EBD9]/50">
+          <Skeleton isLoading={isLoading} className="w-full h-56 mb-10">
+            <Ruler size={36} style={{ color: cs.primary }} className="mb-8" />
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 900, lineHeight: 1.1, fontSize: 'clamp(3rem, 7vw, 6rem)' }}>
               {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-10">
-            <p className="text-neutral-600 text-lg leading-relaxed max-w-md">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-14">
+            <p className="text-neutral-600 text-lg leading-relaxed max-w-md border-l-2 border-neutral-300 pl-6">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-44 h-12">
-            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-10 py-4 text-white uppercase text-sm">{heroCta}</button>
+            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-12 py-5 text-white uppercase text-sm shadow-xl hover:scale-105 transition-transform">{heroCta}</button>
           </Skeleton>
         </div>
         <div className="relative min-h-[50vh]">
@@ -954,22 +954,22 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 bg-white scroll-mt-20">
+        <section id="leistungen" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-64 h-14 mb-14">
+            <Skeleton isLoading={isLoading} className="w-64 h-14 mb-16">
               <h2 style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 'clamp(2.2rem, 5vw, 4rem)' }}>
                 Unsere <span style={{ color: cs.primary }}>Leistungen</span>
               </h2>
             </Skeleton>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="h-60">
-                  <div className="p-8 bg-[#F2EBD9] h-full relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-16 h-16 flex items-center justify-center" style={{ backgroundColor: cs.primary }}>
+                <Skeleton key={i} isLoading={isLoading} className="h-64">
+                  <div className="p-10 bg-[#F2EBD9]/60 h-full relative overflow-hidden hover:bg-[#F2EBD9] transition-colors border border-neutral-200">
+                    <div className="absolute top-0 right-0 w-16 h-16 flex items-center justify-center shadow-sm" style={{ backgroundColor: cs.primary }}>
                       <span style={{ fontFamily: DISPLAY, fontWeight: 900, color: 'white', fontSize: '1.4rem', lineHeight: 1 }}>{i + 1}</span>
                     </div>
-                    <Award size={28} style={{ color: cs.primary }} className="mb-4" />
-                    <h3 style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: '1.25rem' }} className="mb-3 pr-8">{service.title}</h3>
+                    <Award size={28} style={{ color: cs.primary }} className="mb-6" />
+                    <h3 style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: '1.4rem' }} className="mb-4 pr-8">{service.title}</h3>
                     <p className="text-neutral-600 text-sm leading-relaxed">{service.description}</p>
                   </div>
                 </Skeleton>
@@ -981,18 +981,18 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
-      <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <Skeleton isLoading={isLoading} className="aspect-[4/3]">
-            <img src={aboutImg} className="w-full h-full object-cover" alt="" />
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
+          <Skeleton isLoading={isLoading} className="aspect-[4/3] shadow-2xl overflow-hidden rounded-sm">
+            <img src={aboutImg} className="w-full h-full object-cover hover:scale-105 transition-transform duration-[2s]" alt="" />
           </Skeleton>
           <div>
-            <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
-              <span className="text-xs uppercase tracking-[0.2em] mb-4 block" style={{ color: cs.primary }}>Über uns</span>
-              <h2 style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.2 }}>{aboutHeadline}</h2>
+            <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
+              <span className="text-xs uppercase tracking-[0.2em] mb-6 block font-bold" style={{ color: cs.primary }}>// Handwerk & Expertise</span>
+              <h2 style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.1 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p className="text-neutral-600 leading-relaxed">{aboutContent}</p>
+              <p className="text-neutral-600 leading-relaxed text-lg">{aboutContent}</p>
             </Skeleton>
           </div>
         </div>
@@ -1056,27 +1056,27 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </nav>
 
       {/* HERO: Giant Bebas headline with skewed image */}
-      <section id="hero" className="relative min-h-screen flex items-center pt-20">
+      <section id="hero" className="relative min-h-screen flex items-center pt-32 md:pt-48 pb-24">
         <div className="absolute right-0 w-[55%] h-full overflow-hidden" style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 100%, 0 100%)', borderLeft: `6px solid ${cs.primary}` }}>
           <Skeleton isLoading={isLoading} className="w-full h-full">
-            <img src={heroImageUrl} className="w-full h-full object-cover opacity-55 scale-110" alt="" />
+            <img src={heroImageUrl} className="w-full h-full object-cover opacity-55 scale-110 grayscale" alt="" />
           </Skeleton>
         </div>
         <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-          <Skeleton isLoading={isLoading} className="w-full h-72 mb-8">
-            <h1 style={{ fontFamily: DISPLAY, lineHeight: 0.85, fontSize: 'clamp(5rem, 14vw, 13rem)', letterSpacing: '0.02em' }}>
+          <Skeleton isLoading={isLoading} className="w-full h-72 mb-12">
+            <h1 style={{ fontFamily: DISPLAY, lineHeight: 0.9, fontSize: 'clamp(5rem, 14vw, 13rem)', letterSpacing: '0.02em' }}>
               {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-2/5 h-14 mb-10">
-            <p style={{ fontFamily: BODY, fontWeight: 500, letterSpacing: '0.04em' }} className="text-white/60 text-lg max-w-sm">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-2/5 h-14 mb-16">
+            <p style={{ fontFamily: BODY, fontWeight: 500, letterSpacing: '0.04em' }} className="text-white/70 text-xl max-w-sm border-l-4 pl-8" style={{ borderColor: cs.primary }}>{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
-          <div className="flex gap-4">
-            <Skeleton isLoading={isLoading} className="w-44 h-14">
-              <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, letterSpacing: '0.12em', fontSize: '1.05rem' }} className="px-10 py-4 text-white uppercase">{heroCta}</button>
+          <div className="flex flex-wrap gap-6 pt-4">
+            <Skeleton isLoading={isLoading} className="w-56 h-16">
+              <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, letterSpacing: '0.12em', fontSize: '1.15rem' }} className="px-12 py-5 text-white uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform">{heroCta}</button>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-44 h-14">
-              <button style={{ fontFamily: DISPLAY, letterSpacing: '0.1em', fontSize: '1rem' }} className="px-8 py-4 border-2 border-white text-white uppercase hover:bg-white hover:text-black transition-colors">Mehr erfahren</button>
+            <Skeleton isLoading={isLoading} className="w-56 h-16">
+              <button style={{ fontFamily: DISPLAY, letterSpacing: '0.1em', fontSize: '1.1rem' }} className="px-10 py-5 border-2 border-white text-white uppercase hover:bg-white hover:text-black transition-colors">Mehr erfahren</button>
             </Skeleton>
           </div>
         </div>
@@ -1085,22 +1085,22 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 scroll-mt-20">
+        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-72 h-20 mb-12">
-              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(3rem, 7vw, 6rem)', letterSpacing: '0.03em', lineHeight: 0.9 }}>
+            <Skeleton isLoading={isLoading} className="w-72 h-20 mb-16">
+              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(3.4rem, 8vw, 7rem)', letterSpacing: '0.03em', lineHeight: 0.9 }}>
                 Unsere <span style={{ color: cs.primary }}>Leistungen</span>
               </h2>
             </Skeleton>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-6">
               {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="h-64">
-                  <div className="p-8 border border-white/15 hover:border-white/30 transition-all group">
-                    <div className="w-12 h-12 mb-5 flex items-center justify-center" style={{ backgroundColor: cs.primary }}>
-                      <Dumbbell size={24} className="text-white" />
+                <Skeleton key={i} isLoading={isLoading} className="h-72">
+                  <div className="p-10 border border-white/10 hover:border-white/40 transition-all group bg-white/5">
+                    <div className="w-14 h-14 mb-8 flex items-center justify-center shadow-lg" style={{ backgroundColor: cs.primary }}>
+                      <Dumbbell size={28} className="text-white" />
                     </div>
-                    <h3 style={{ fontFamily: DISPLAY, fontSize: '1.6rem', letterSpacing: '0.03em', lineHeight: 1.1 }} className="mb-3">{service.title}</h3>
-                    <p style={{ fontFamily: BODY, fontWeight: 400 }} className="text-white/55 leading-relaxed text-sm">{service.description}</p>
+                    <h3 style={{ fontFamily: DISPLAY, fontSize: '1.8rem', letterSpacing: '0.04em', lineHeight: 1.1 }} className="mb-4">{service.title}</h3>
+                    <p style={{ fontFamily: BODY, fontWeight: 400 }} className="text-white/60 leading-relaxed text-sm">{service.description}</p>
                   </div>
                 </Skeleton>
               ))}
@@ -1111,21 +1111,21 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
-      <section id="ueber-uns" className="py-20 px-6 bg-[#111111] scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <Skeleton isLoading={isLoading} className="aspect-square">
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-[#0a0a0a] scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
+          <Skeleton isLoading={isLoading} className="aspect-square grayscale hover:grayscale-0 transition-all duration-700 shadow-2xl overflow-hidden">
             <img src={aboutImg} className="w-full h-full object-cover" alt="" />
           </Skeleton>
           <div>
-            <Skeleton isLoading={isLoading} className="w-full h-36 mb-6">
-              <span className="text-xs uppercase tracking-[0.2em] mb-4 block" style={{ color: cs.primary, fontFamily: BODY, fontWeight: 600 }}>Über uns</span>
-              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.5rem, 6vw, 5rem)', letterSpacing: '0.02em', lineHeight: 0.9 }}>
+            <Skeleton isLoading={isLoading} className="w-full h-36 mb-8">
+              <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: cs.primary, fontFamily: BODY }}>// MISSION_STATEMENT</span>
+              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '0.02em', lineHeight: 0.95 }}>
                 {aboutHeadline.split(' ').slice(0, -1).join(' ')}{' '}
                 <span style={{ color: cs.primary }}>{aboutHeadline.split(' ').slice(-1)[0]}</span>
               </h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p style={{ fontFamily: BODY, fontWeight: 400 }} className="text-white/60 leading-relaxed">{aboutContent}</p>
+              <p style={{ fontFamily: BODY, fontWeight: 400, fontSize: '1.125rem' }} className="text-white/60 leading-relaxed">{aboutContent}</p>
             </Skeleton>
           </div>
         </div>
@@ -1189,32 +1189,32 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </nav>
 
       {/* HERO: editorial centered */}
-      <section id="hero" className="pt-40 pb-24 text-center px-6">
-        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-44 mb-8">
-          <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, lineHeight: 1.0, fontSize: 'clamp(3rem, 8vw, 7.5rem)' }}>
+      <section id="hero" className="pt-48 pb-32 text-center px-6">
+        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-44 mb-10">
+          <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, lineHeight: 1.1, fontSize: 'clamp(3rem, 8vw, 7.5rem)' }}>
             {heroHeadline.split(' ').slice(0, -1).join(' ')}{' '}
             <span style={{ color: cs.primary }}>{heroHeadline.split(' ').slice(-1)[0]}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-12">
-          <p style={{ fontFamily: BODY, fontWeight: 300 }} className="text-neutral-500 text-lg max-w-lg mx-auto">{hero?.subheadline || websiteData.tagline}</p>
+        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-16">
+          <p style={{ fontFamily: BODY, fontWeight: 300, fontSize: '1.25rem' }} className="text-neutral-500 max-w-lg mx-auto italic">{hero?.subheadline || websiteData.tagline}</p>
         </Skeleton>
 
         {/* Full-width image with circular badge */}
-        <div className="max-w-5xl mx-auto relative">
+        <div className="max-w-5xl mx-auto relative px-4">
           <Skeleton isLoading={isLoading} className="rounded-[3rem] aspect-video">
-            <img src={heroImageUrl} className="rounded-[3rem] w-full h-full object-cover shadow-xl" alt="" />
+            <img src={heroImageUrl} className="rounded-[3rem] w-full h-full object-cover shadow-2xl" alt="" />
           </Skeleton>
           {/* Spinning circular badge */}
-          <div className="absolute -bottom-8 -right-4 md:right-4 w-28 h-28 rounded-full flex items-center justify-center text-white"
+          <div className="absolute -bottom-10 -right-4 md:right-8 w-32 h-32 rounded-full flex items-center justify-center text-white shadow-2xl"
             style={{ backgroundColor: cs.primary }}>
-            <svg viewBox="0 0 100 100" className="w-full h-full absolute animate-spin" style={{ animationDuration: '20s' }}>
+            <svg viewBox="0 0 100 100" className="w-full h-full absolute animate-spin" style={{ animationDuration: '25s' }}>
               <path id="circle" d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
-              <text style={{ fontFamily: DISPLAY, fontSize: '10.5px', fontStyle: 'italic' }} fill="white">
+              <text style={{ fontFamily: DISPLAY, fontSize: '10px', fontStyle: 'italic', letterSpacing: '0.05em' }} fill="white">
                 <textPath href="#circle">Frisch • Regional • Täglich • Handgemacht •</textPath>
               </text>
             </svg>
-            <Utensils size={20} className="relative z-10 text-white" />
+            <Utensils size={24} className="relative z-10 text-white" />
           </div>
         </div>
       </section>
@@ -1222,22 +1222,22 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 bg-white scroll-mt-20">
+        <section id="leistungen" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-56 h-14 mx-auto mb-14">
+            <Skeleton isLoading={isLoading} className="w-56 h-14 mx-auto mb-16">
               <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: 'clamp(2.2rem, 5vw, 4rem)' }} className="text-center">
                 Unser <span style={{ color: cs.primary }}>Angebot</span>
               </h2>
             </Skeleton>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="h-60">
-                  <div className="p-8 border border-neutral-200 rounded-3xl bg-[#FBF7F0] hover:shadow-lg transition-all">
-                    <div className="w-12 h-12 rounded-full mb-5 flex items-center justify-center" style={{ backgroundColor: cs.primary + '20' }}>
-                      <Utensils size={22} style={{ color: cs.primary }} />
+                <Skeleton key={i} isLoading={isLoading} className="h-64">
+                  <div className="p-10 border border-neutral-100 rounded-[2.5rem] bg-[#FBF7F0] hover:shadow-xl transition-all duration-500">
+                    <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner" style={{ backgroundColor: cs.primary + '15' }}>
+                      <Utensils size={24} style={{ color: cs.primary }} />
                     </div>
-                    <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: '1.3rem' }} className="mb-3">{service.title}</h3>
-                    <p style={{ fontFamily: BODY, fontWeight: 300 }} className="text-neutral-500 text-sm leading-relaxed">{service.description}</p>
+                    <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: '1.5rem' }} className="mb-4">{service.title}</h3>
+                    <p style={{ fontFamily: BODY, fontWeight: 300, fontSize: '0.95rem' }} className="text-neutral-500 leading-relaxed">{service.description}</p>
                   </div>
                 </Skeleton>
               ))}
@@ -1248,18 +1248,18 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
-      <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl">
-            <img src={aboutImg} className="w-full h-full object-cover rounded-3xl" alt="" />
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
+          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-[3rem] shadow-2xl overflow-hidden">
+            <img src={aboutImg} className="w-full h-full object-cover rounded-[3rem] hover:scale-105 transition-transform duration-[3s]" alt="" />
           </Skeleton>
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
-              <span className="text-xs uppercase tracking-[0.2em] mb-4 block" style={{ color: cs.primary, fontFamily: DISPLAY }}>Über uns</span>
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.2 }}>{aboutHeadline}</h2>
+              <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: cs.primary, fontFamily: DISPLAY }}>// Unsere Geschichte</span>
+              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1.1 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8 }} className="text-neutral-600">{aboutContent}</p>
+              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.125rem' }} className="text-neutral-600">{aboutContent}</p>
             </Skeleton>
           </div>
         </div>
@@ -1342,16 +1342,16 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
             <Shield size={24} className="text-yellow-500" />
             <div className="h-px w-16 bg-white/30" />
           </div>
-          <Skeleton isLoading={isLoading} className="w-full h-48 mb-12 mx-auto">
-            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 0.8, fontSize: 'clamp(4rem, 12vw, 11rem)', letterSpacing: '-0.02em' }}>
+          <Skeleton isLoading={isLoading} className="w-full h-48 mb-16 mx-auto">
+            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 0.95, fontSize: 'clamp(4rem, 12vw, 11rem)', letterSpacing: '-0.02em' }}>
               Beyond <br />Perfection
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-2/3 h-14 mb-16 mx-auto">
-            <p style={{ fontFamily: BODY, fontWeight: 300, letterSpacing: '0.1em' }} className="text-white/60 text-xl max-w-xl mx-auto italic">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-2/3 h-14 mb-20 mx-auto">
+            <p style={{ fontFamily: BODY, fontWeight: 300, letterSpacing: '0.15em', fontSize: '1.25rem' }} className="text-white/60 max-w-xl mx-auto italic border-y border-white/10 py-6">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-56 h-14 mx-auto">
-            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 400, letterSpacing: '0.3em', fontSize: '0.7rem', color: '#000' }} className="px-12 py-5 rounded-full uppercase hover:bg-white hover:scale-105 transition-all shadow-[0_20px_50px_-10px_rgba(0,0,0,0.8)] border border-white/10">{heroCta}</button>
+            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 400, letterSpacing: '0.4em', fontSize: '0.75rem', color: '#000' }} className="px-14 py-6 rounded-full uppercase hover:bg-white hover:scale-105 transition-all shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/10">{heroCta}</button>
           </Skeleton>
         </motion.div>
       </section>
@@ -1468,7 +1468,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </Skeleton>
       </nav>
 
-      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-20 grid lg:grid-cols-12 gap-12 items-center">
+      <section id="hero" className="max-w-7xl mx-auto px-6 pt-48 pb-32 grid lg:grid-cols-12 gap-16 items-center">
         <motion.div 
           className="lg:col-span-7"
           initial={{ opacity: 0, x: -30 }}
@@ -1476,19 +1476,19 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <Skeleton isLoading={isLoading} className="w-full h-64 mb-8">
-            <span style={{ fontFamily: MONO, fontSize: '0.7rem', color: cs.primary, letterSpacing: '0.1em' }} className="block mb-6 uppercase tracking-[0.2em] font-bold">// Digitale Innovation</span>
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 800, lineHeight: 0.85, fontSize: 'clamp(3rem, 8vw, 7.5rem)', letterSpacing: '-0.04em', textTransform: 'uppercase' }}>
+          <Skeleton isLoading={isLoading} className="w-full h-64 mb-10">
+            <span style={{ fontFamily: MONO, fontSize: '0.75rem', color: cs.primary, letterSpacing: '0.2em' }} className="block mb-8 uppercase tracking-[0.3em] font-bold">// Digitale Innovation</span>
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 800, lineHeight: 0.95, fontSize: 'clamp(3rem, 8vw, 7.5rem)', letterSpacing: '-0.04em', textTransform: 'uppercase' }}>
               {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-10">
-            <p className="text-neutral-500 text-xl max-w-lg leading-relaxed font-light">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-16">
+            <p className="text-neutral-500 text-2xl max-w-lg leading-relaxed font-light border-l-4 pl-8" style={{ borderColor: cs.primary + '30' }}>{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-44 h-12">
-            <div className="flex flex-wrap gap-4">
-              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-10 py-4 text-white rounded-full shadow-2xl hover:scale-105 transition-transform uppercase text-xs tracking-widest">{heroCta}</button>
-              <button className="px-10 py-4 border-2 border-neutral-100 rounded-full font-bold hover:bg-neutral-50 transition-all uppercase text-xs tracking-widest">View Showcase</button>
+          <Skeleton isLoading={isLoading} className="w-full h-16">
+            <div className="flex flex-wrap gap-6 pt-4">
+              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-12 py-5 text-white rounded-full shadow-2xl hover:scale-105 transition-transform uppercase text-xs tracking-widest">{heroCta}</button>
+              <button className="px-12 py-5 border-2 border-neutral-100 rounded-full font-bold hover:bg-neutral-50 transition-all uppercase text-xs tracking-widest">Case Studies</button>
             </div>
           </Skeleton>
         </motion.div>
@@ -1616,7 +1616,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </nav>
 
       {/* HERO: organic asymmetrical with pill images and background accents */}
-      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-28 grid lg:grid-cols-2 gap-16 items-center relative">
+      <section id="hero" className="max-w-7xl mx-auto px-6 pt-48 pb-32 grid lg:grid-cols-2 gap-20 items-center relative">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-green-900/5 -skew-x-12 translate-x-1/2 pointer-events-none" />
         
         <motion.div
@@ -1625,18 +1625,18 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <Flower className="text-green-800 mb-8" size={42} />
-          <Skeleton isLoading={isLoading} className="w-full h-56 mb-8">
-            <span style={{ fontFamily: BODY, fontWeight: 600, fontSize: '0.65rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-6">Natürlich. Nachhaltig. Rein.</span>
-            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 0.8, fontSize: 'clamp(3.5rem, 8vw, 8.5rem)' }}>
+          <Flower className="text-green-800 mb-10" size={56} />
+          <Skeleton isLoading={isLoading} className="w-full h-56 mb-10">
+            <span style={{ fontFamily: BODY, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.4em', color: cs.primary }} className="uppercase block mb-8 tracking-[0.4em]">Natürlich. Nachhaltig. Rein.</span>
+            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 0.95, fontSize: 'clamp(3.5rem, 8vw, 8.5rem)' }}>
               Rooted <br /><span style={{ color: cs.primary }} className="font-normal">{heroHeadline.split(' ').slice(-1)[0]}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-full h-16 mb-12">
-            <p className="text-[#4a4a4a]/70 text-xl leading-relaxed max-w-md italic">"{hero?.subheadline || websiteData.tagline}"</p>
+          <Skeleton isLoading={isLoading} className="w-full h-16 mb-16">
+            <p className="text-[#4a4a4a]/70 text-2xl leading-relaxed max-w-md italic border-l-2 border-green-100 pl-8">"{hero?.subheadline || websiteData.tagline}"</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-44 h-12">
-            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-10 py-4 text-white rounded-full uppercase text-xs tracking-widest shadow-2xl hover:bg-green-900 transition-colors">{heroCta}</button>
+            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-12 py-5 text-white rounded-full uppercase text-xs tracking-widest shadow-2xl hover:bg-green-900 transition-colors">{heroCta}</button>
           </Skeleton>
         </motion.div>
         
@@ -1661,21 +1661,21 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 bg-white scroll-mt-20">
+        <section id="leistungen" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-56 h-14 mx-auto mb-14">
+            <Skeleton isLoading={isLoading} className="w-56 h-14 mx-auto mb-16">
               <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: 'clamp(2.2rem, 5vw, 4rem)' }} className="text-center">
                 Unsere <span style={{ color: cs.primary }}>Leistungen</span>
               </h2>
             </Skeleton>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {services.map((service: any, i: number) => (
                 <Skeleton key={i} isLoading={isLoading} className="h-64">
-                  <div className="p-8 rounded-3xl border border-neutral-200 bg-[#F4F0E8] hover:shadow-lg transition-all">
-                    <div className="w-12 h-12 rounded-full mb-5 flex items-center justify-center" style={{ backgroundColor: cs.primary + '20' }}>
-                      <Flower size={22} style={{ color: cs.primary }} />
+                  <div className="p-10 rounded-[2.5rem] border border-neutral-100 bg-[#F4F0E8] hover:shadow-xl transition-all duration-500">
+                    <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner" style={{ backgroundColor: cs.primary + '20' }}>
+                      <Flower size={24} style={{ color: cs.primary }} />
                     </div>
-                    <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: '1.25rem' }} className="mb-3">{service.title}</h3>
+                    <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: '1.4rem' }} className="mb-4 pr-4">{service.title}</h3>
                     <p className="text-neutral-600 text-sm leading-relaxed">{service.description}</p>
                   </div>
                 </Skeleton>
@@ -1687,18 +1687,18 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
-      <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl">
-            <img src={aboutImg} className="w-full h-full object-cover rounded-3xl" alt="" />
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
+          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-[3rem] shadow-2xl overflow-hidden">
+            <img src={aboutImg} className="w-full h-full object-cover rounded-[3rem] hover:scale-105 transition-transform duration-[3s]" alt="" />
           </Skeleton>
           <div>
-            <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
-              <span className="text-xs uppercase tracking-[0.2em] mb-4 block" style={{ color: cs.primary, fontFamily: BODY, fontWeight: 600 }}>Über uns</span>
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.2 }}>{aboutHeadline}</h2>
+            <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
+              <span className="text-xs uppercase tracking-[0.4em] mb-6 block font-bold" style={{ color: cs.primary, fontFamily: BODY }}>// Natürliche Balance</span>
+              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1.1 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p className="text-neutral-600 leading-relaxed">{aboutContent}</p>
+              <p className="text-neutral-600 leading-relaxed text-lg">{aboutContent}</p>
             </Skeleton>
           </div>
         </div>
@@ -1765,21 +1765,21 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </nav>
 
       {/* HERO: Navy left panel / white right panel */}
-      <section id="hero" className="min-h-screen grid lg:grid-cols-[45%_55%] pt-[64px]">
+      <section id="hero" className="min-h-screen grid lg:grid-cols-[45%_55%] pt-[80px]">
         {/* Left: dark authority panel */}
-        <div className="bg-[#0F1E3C] text-white p-12 lg:p-20 flex flex-col justify-center relative overflow-hidden">
+        <div className="bg-[#0F1E3C] text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden">
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10">
-            <Skeleton isLoading={isLoading} className="w-full h-56 mb-8">
-              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.1, fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)' }}>
+            <Skeleton isLoading={isLoading} className="w-full h-56 mb-12">
+              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)' }}>
                 {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
               </h1>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-10">
-              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.75 }} className="text-white/60 text-lg max-w-md">{hero?.subheadline || websiteData.tagline}</p>
+            <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-16">
+              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-44 h-12">
-              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em' }} className="px-8 py-3.5 text-white text-sm uppercase">{heroCta}</button>
+              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-10 py-4 text-white text-sm uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform">{heroCta}</button>
             </Skeleton>
           </div>
         </div>
@@ -1795,22 +1795,24 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
-        <section id="leistungen" className="py-20 px-6 scroll-mt-20">
+        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-64 h-14 mb-14">
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(2rem, 4.5vw, 3.8rem)' }}>
+            <Skeleton isLoading={isLoading} className="w-64 h-14 mb-16">
+              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(2.4rem, 5vw, 4.2rem)' }}>
                 Unsere <span style={{ color: cs.primary }}>Leistungen</span>
               </h2>
             </Skeleton>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="h-64">
-                  <div className="p-8 border border-neutral-100 hover:shadow-xl transition-all bg-white group" style={{ borderTop: `3px solid ${cs.primary}` }}>
-                    <Target size={24} style={{ color: cs.primary }} className="mb-5" />
-                    <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: '1.3rem' }} className="mb-3">{service.title}</h3>
-                    <p style={{ fontFamily: BODY, fontWeight: 400 }} className="text-neutral-500 text-sm leading-relaxed">{service.description}</p>
-                    <div className="mt-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: cs.primary }}>
-                      <span>Mehr erfahren</span><ArrowRight size={12} />
+                <Skeleton key={i} isLoading={isLoading} className="h-72">
+                  <div className="p-10 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col justify-between" style={{ borderTop: `4px solid ${cs.primary}` }}>
+                    <div>
+                      <Target size={28} style={{ color: cs.primary }} className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: '1.6rem', lineHeight: 1.2 }} className="mb-4">{service.title}</h3>
+                      <p style={{ fontFamily: BODY, fontWeight: 400, fontSize: '0.9rem' }} className="text-neutral-500 leading-relaxed">{service.description}</p>
+                    </div>
+                    <div className="mt-8 flex items-center gap-3 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" style={{ color: cs.primary }}>
+                      <span>Mehr erfahren</span><ArrowRight size={14} />
                     </div>
                   </div>
                 </Skeleton>
@@ -1822,19 +1824,19 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
-      <section id="ueber-uns" className="py-20 px-6 bg-[#F7F9FC] scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-[#F7F9FC] scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
           <div>
-            <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
-              <span style={{ fontFamily: BODY, fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.2em', color: cs.primary }} className="uppercase block mb-3">Über uns</span>
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(2rem, 4vw, 3.5rem)', lineHeight: 1.2 }}>{aboutHeadline}</h2>
+            <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
+              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Exzellenz & Strategie</span>
+              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1.1 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.8 }} className="text-neutral-600">{aboutContent}</p>
+              <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.8, fontSize: '1.125rem' }} className="text-neutral-600">{aboutContent}</p>
             </Skeleton>
           </div>
-          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-xl">
-            <img src={aboutImg} className="w-full h-full object-cover rounded-xl" alt="" />
+          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl shadow-2xl overflow-hidden">
+            <img src={aboutImg} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
           </Skeleton>
         </div>
       </section>
