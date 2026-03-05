@@ -476,8 +476,8 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
           </Skeleton>
         </motion.div>
         
-        <motion.div 
-          className="relative min-h-[60vh] z-10 group"
+        <motion.div
+          className="relative min-h-[60vh] overflow-hidden z-10 group"
           initial={{ opacity: 0, scale: 1.1 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -486,10 +486,10 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
           <div className="absolute inset-0 z-20 pointer-events-none" style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%)' }}>
             <div className="absolute top-1/4 -left-12 w-24 h-96 bg-white/5 backdrop-blur-3xl border-l border-white/10 hidden lg:block skew-x-12" />
           </div>
-          
-          <Skeleton isLoading={isLoading} className="w-full h-full">
-            <div className="w-full h-full overflow-hidden" style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%)' }}>
-              <img src={heroImageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[2s] scale-110 group-hover:scale-100" alt="" />
+
+          <Skeleton isLoading={isLoading} className="absolute inset-0">
+            <div className="absolute inset-0 overflow-hidden" style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%)' }}>
+              <img src={heroImageUrl} className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[2s] scale-110 group-hover:scale-100" alt="" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent" />
             </div>
           </Skeleton>
@@ -943,9 +943,9 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
             <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-12 py-5 text-white uppercase text-sm shadow-xl hover:scale-105 transition-transform">{heroCta}</button>
           </Skeleton>
         </div>
-        <div className="relative min-h-[50vh]">
-          <Skeleton isLoading={isLoading} className="w-full h-full">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+        <div className="relative min-h-[50vh] overflow-hidden">
+          <Skeleton isLoading={isLoading} className="absolute inset-0">
+            <img src={heroImageUrl} className="absolute inset-0 w-full h-full object-cover" alt="" />
             <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#F2EBD9]/20" />
           </Skeleton>
         </div>
@@ -1784,9 +1784,9 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
           </div>
         </div>
         {/* Right: image panel */}
-        <div className="relative">
-          <Skeleton isLoading={isLoading} className="w-full h-full min-h-[60vh]">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+        <div className="relative min-h-[60vh] overflow-hidden">
+          <Skeleton isLoading={isLoading} className="absolute inset-0">
+            <img src={heroImageUrl} className="absolute inset-0 w-full h-full object-cover" alt="" />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/10" />
           </Skeleton>
         </div>
