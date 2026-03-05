@@ -1756,6 +1756,10 @@ export const appRouter = router({
         const enriched = [];
         for (const w of websites) {
           const biz = await getBusinessById(w.businessId);
+          // Inject ID into websiteData for stable randomization seed in frontend
+          if (w.websiteData) {
+            (w.websiteData as any).id = w.id;
+          }
           enriched.push({ ...w, business: biz });
         }
         return { websites: enriched, total };
@@ -1770,6 +1774,12 @@ export const appRouter = router({
         else if (input.token) website = await getWebsiteByToken(input.token);
         if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
         const business = await getBusinessById(website.businessId);
+        
+        // Inject ID into websiteData for stable randomization seed in frontend
+        if (website.websiteData) {
+          (website.websiteData as any).id = website.id;
+        }
+        
         return { website, business };
       }),
 

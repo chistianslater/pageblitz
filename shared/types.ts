@@ -68,6 +68,7 @@ export interface DesignTokens {
 }
 
 export interface WebsiteData {
+  id?: number;
   businessName: string;
   tagline: string;
   description: string;
