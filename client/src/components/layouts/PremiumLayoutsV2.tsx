@@ -37,7 +37,7 @@ const splitHeadline = (text: string) => {
 };
 
 // ── PROCESS SECTION ──────────────────────────────────────────────
-function ProcessSection({ websiteData, cs, isLoading, dark = false }: any) {
+function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit" }: any) {
   const process = sec(websiteData, 'process');
   if (!isLoading && !process?.items?.length) return null;
   const items = process?.items || [
@@ -53,7 +53,8 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false }: any) {
     <section className={`py-20 px-6 ${bg}`}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-14">
-          <h2 className={`text-3xl md:text-4xl font-black text-center mb-14 ${textMain}`}>
+          <h2 className={`text-3xl md:text-4xl font-black text-center mb-14 ${textMain}`}
+            style={{ fontFamily: displayFont }}>
             {process?.headline || "So einfach geht's"}
           </h2>
         </Skeleton>
@@ -66,10 +67,10 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false }: any) {
                     style={{ borderColor: cs.primary + '40' }} />
                 )}
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black text-white mb-4 z-10"
-                  style={{ backgroundColor: cs.primary }}>
+                  style={{ backgroundColor: cs.primary, fontFamily: displayFont }}>
                   {item.step}
                 </div>
-                <h3 className={`font-bold text-lg mb-2 ${textMain}`}>{item.title}</h3>
+                <h3 className={`font-bold text-lg mb-2 ${textMain}`} style={{ fontFamily: displayFont }}>{item.title}</h3>
                 <p className={`text-sm leading-relaxed ${textSub}`}>{item.description}</p>
               </div>
             </Skeleton>
@@ -133,7 +134,7 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
 }
 
 // ── CONTACT SECTION ───────────────────────────────────────────────
-function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
+function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit" }: any) {
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
@@ -145,14 +146,24 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
   const bg = dark ? "bg-white/5" : "bg-neutral-50";
   const topBorder = dark ? "border-t border-white/10" : "";
   const cardBg = dark ? "bg-neutral-800" : "bg-white";
+  const borderColor = dark ? "rgba(255,255,255,0.1)" : "#e5e7eb";
   const border = dark ? "border-white/10" : "border-neutral-200";
+  const inputBg = dark ? "rgba(255,255,255,0.05)" : "#f9fafb";
+  const inputText = dark ? "rgba(255,255,255,0.85)" : "#111827";
+  const inputPlaceholder = dark ? "rgba(255,255,255,0.3)" : "#9ca3af";
   const iconBg = `${cs.primary}20`;
+  const labelStyle = { fontFamily: bodyFont, letterSpacing: '0.1em', fontSize: '0.7rem', textTransform: 'uppercase' as const };
+  const inputStyle = {
+    fontFamily: bodyFont, width: '100%', padding: '0.6rem 0.875rem',
+    borderRadius: '0.5rem', border: `1px solid ${borderColor}`,
+    background: inputBg, color: inputText, outline: 'none', fontSize: '0.9rem',
+  };
 
   return (
-    <section id="kontakt" className={`py-20 px-6 scroll-mt-20 ${bg} ${topBorder}`}>
+    <section id="kontakt" className={`py-20 px-6 scroll-mt-20 ${bg} ${topBorder}`} style={{ fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-12">
-          <h2 className={`text-3xl md:text-4xl font-black mb-12 ${textMain}`}>Kontakt</h2>
+          <h2 className={`text-3xl md:text-4xl font-black mb-12 ${textMain}`} style={{ fontFamily: displayFont }}>Kontakt</h2>
         </Skeleton>
         <div className="grid md:grid-cols-2 gap-12">
 
@@ -165,7 +176,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
                     <MapPin size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Adresse</p>
+                    <p className={`mb-1 ${textSub}`} style={labelStyle}>Adresse</p>
                     <p className={`font-medium ${textMain}`}>{address}</p>
                   </div>
                 </div>
@@ -178,7 +189,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
                     <Phone size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Telefon</p>
+                    <p className={`mb-1 ${textSub}`} style={labelStyle}>Telefon</p>
                     <p className={`font-medium ${textMain}`}>{phone}</p>
                   </div>
                 </div>
@@ -191,7 +202,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
                     <Clock size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Öffnungszeiten</p>
+                    <p className={`mb-1 ${textSub}`} style={labelStyle}>Öffnungszeiten</p>
                     <p className={`font-medium whitespace-pre-line ${textMain}`}>{hours}</p>
                   </div>
                 </div>
@@ -201,22 +212,43 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
 
           {/* Right: contact form – unlocked when addOnContactForm is active */}
           <div className="relative">
-            <div className={`rounded-xl border ${cardBg} ${border} p-6 ${locked ? 'opacity-40 blur-[2px] pointer-events-none' : ''}`}>
-              <div className="space-y-4">
+            <div className={`rounded-xl border ${cardBg} ${border} p-6 ${locked ? 'opacity-40 blur-[2px] pointer-events-none select-none' : ''}`}>
+              <form className="space-y-4" onSubmit={e => e.preventDefault()}>
                 <div>
-                  <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Name</p>
-                  <div className={`h-10 rounded-lg border ${border}`} />
+                  <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>Name</label>
+                  <input type="text" placeholder="Max Mustermann" style={inputStyle}
+                    className="focus:outline-none" />
                 </div>
                 <div>
-                  <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>E-Mail</p>
-                  <div className={`h-10 rounded-lg border ${border}`} />
+                  <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>E-Mail</label>
+                  <input type="email" placeholder="max@beispiel.de" style={inputStyle}
+                    className="focus:outline-none" />
                 </div>
                 <div>
-                  <p className={`text-xs uppercase tracking-widest mb-1 ${textSub}`}>Nachricht</p>
-                  <div className={`h-24 rounded-lg border ${border}`} />
+                  <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>Nachricht</label>
+                  <textarea rows={4} placeholder="Ihre Nachricht…"
+                    style={{ ...inputStyle, resize: 'none' as const }}
+                    className="focus:outline-none" />
                 </div>
-                <div className="h-10 rounded-lg" style={{ backgroundColor: cs.primary }} />
-              </div>
+                {/* DSGVO checkbox */}
+                <div className="flex items-start gap-2.5 pt-1">
+                  <div className="mt-0.5 w-4 h-4 rounded shrink-0 border flex items-center justify-center"
+                    style={{ borderColor: inputPlaceholder, backgroundColor: inputBg }}>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${textSub}`} style={{ fontFamily: bodyFont }}>
+                    Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
+                    <a href="#datenschutz" className="underline underline-offset-2" style={{ color: cs.primary }}>
+                      Datenschutzerklärung
+                    </a>{' '}
+                    zu.
+                  </p>
+                </div>
+                <button type="submit"
+                  className="w-full py-3 px-6 text-white font-bold tracking-wide rounded-lg hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: cs.primary, fontFamily: displayFont }}>
+                  Nachricht senden
+                </button>
+              </form>
             </div>
             {locked && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -224,11 +256,11 @@ function ContactSection({ websiteData, cs, isLoading, dark = false }: any) {
                   <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-3">
                     <Shield size={22} className="text-neutral-400" />
                   </div>
-                  <p className={`font-bold text-sm mb-1 ${textMain}`}>Kontaktformular</p>
+                  <p className={`font-bold text-sm mb-1 ${textMain}`} style={{ fontFamily: displayFont }}>Kontaktformular</p>
                   <p className={`text-xs mb-1 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
-                  <p className={`text-xs font-semibold mb-4`} style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
+                  <p className="text-xs font-semibold mb-4" style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
                   <button className="w-full py-2.5 px-4 text-xs font-bold uppercase tracking-widest text-white rounded-lg hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: cs.primary }}>
+                    style={{ backgroundColor: cs.primary, fontFamily: displayFont }}>
                     Freischalten
                   </button>
                 </div>
@@ -466,7 +498,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20 border-t border-white/10">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -486,7 +518,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
       </section>
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kundenstimmen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -596,7 +628,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-24 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
@@ -616,7 +648,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Klientinnen sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -729,7 +761,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -752,7 +784,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Patienten sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -861,7 +893,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -881,7 +913,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -990,7 +1022,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 bg-[#111111] scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1013,7 +1045,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -1126,7 +1158,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1146,7 +1178,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Gäste sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1256,7 +1288,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-24 px-8 scroll-mt-20" style={{ backgroundColor: '#130F0D' }}>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
@@ -1277,7 +1309,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       </section>
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-8 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1391,7 +1423,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1411,7 +1443,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1522,7 +1554,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1542,7 +1574,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1656,7 +1688,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <section id="ueber-uns" className="py-20 px-6 bg-[#F7F9FC] scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1676,7 +1708,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
 
       <footer className="py-12 px-6 bg-[#0F1E3C] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">

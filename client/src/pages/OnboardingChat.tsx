@@ -3988,6 +3988,16 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
   );
   const gmbPhotos = (gmbData?.photos || []).map((url) => ({ url, thumb: url, alt: "Google My Business Foto", isGmb: true }));
 
+  // Auto-select first GMB photo if nothing chosen yet
+  React.useEffect(() => {
+    if (gmbPhotos.length > 0 && !heroPhotoUrl) {
+      const idx = isAboutPhoto ? 1 : 0;
+      const photo = gmbPhotos[idx] || gmbPhotos[0];
+      if (photo) onSelect(photo.url);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gmbData]);
+
   const photos = suggestionsData?.suggestions || [
     { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70", alt: "Modernes Büro" },
     { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=70", alt: "Helles Büro" },
