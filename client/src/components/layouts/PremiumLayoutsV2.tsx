@@ -38,19 +38,44 @@ const splitHeadline = (text: string) => {
   return { main: words.slice(0, -1).join(' '), last: words[words.length - 1] };
 };
 
+/** Calculate font size based on headlineSize preference */
+const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 'clamp(3rem, 8vw, 7rem)') => {
+  const sizeMap: Record<string, Record<string, string>> = {
+    large: {
+      'clamp(3rem, 8vw, 7rem)': 'clamp(3rem, 8vw, 7rem)',     // HeroVariantA
+      'clamp(3.5rem, 9vw, 8rem)': 'clamp(3.5rem, 9vw, 8rem)', // HeroVariantB
+      'clamp(4rem, 12vw, 10rem)': 'clamp(4rem, 12vw, 10rem)', // HeroVariantC
+      'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.8rem, 5.5vw, 5.5rem)', // Premium
+    },
+    medium: {
+      'clamp(3rem, 8vw, 7rem)': 'clamp(2.5rem, 6vw, 5rem)',
+      'clamp(3.5rem, 9vw, 8rem)': 'clamp(3rem, 7vw, 6rem)',
+      'clamp(4rem, 12vw, 10rem)': 'clamp(3.2rem, 9vw, 7rem)',
+      'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.4rem, 4.5vw, 4.5rem)',
+    },
+    small: {
+      'clamp(3rem, 8vw, 7rem)': 'clamp(2rem, 5vw, 4rem)',
+      'clamp(3.5rem, 9vw, 8rem)': 'clamp(2.5rem, 6vw, 5rem)',
+      'clamp(4rem, 12vw, 10rem)': 'clamp(2.8rem, 8vw, 6rem)',
+      'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2rem, 4vw, 3.5rem)',
+    },
+  };
+  return sizeMap[headlineSize]?.[baseSize] || baseSize;
+};
+
 // ── HERO VARIANTS ───────────────────────────────────────────────
 
-function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl }: any) {
+function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
   return (
     <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] items-center gap-12 max-w-7xl mx-auto px-6">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
         <Skeleton isLoading={isLoading} className="w-full h-64 mb-10">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: 'clamp(3rem, 8vw, 7rem)' }} className="uppercase drop-shadow-xl">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)') }} className="uppercase drop-shadow-xl">
             {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
@@ -81,7 +106,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   );
 }
 
-function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl }: any) {
+function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
   return (
     <section id="hero" className="pt-40 pb-24 text-center px-6 max-w-5xl mx-auto">
       <motion.div
@@ -91,7 +116,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 0.8 }}
       >
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-44 mb-8">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: 'clamp(3.5rem, 9vw, 8rem)' }} className="uppercase drop-shadow-xl">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)') }} className="uppercase drop-shadow-xl">
             {hl.main} <span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
@@ -113,7 +138,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   );
 }
 
-function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl }: any) {
+function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -128,7 +153,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           transition={{ duration: 0.8 }}
         >
           <Skeleton isLoading={isLoading} className="w-full h-72 mb-12">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.9, fontSize: 'clamp(4rem, 12vw, 10rem)' }} className="uppercase tracking-tighter drop-shadow-2xl">
+            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.9, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)') }} className="uppercase tracking-tighter drop-shadow-2xl">
               {hl.main}<br />
               <span className="relative inline-block">
                 {hl.last}
@@ -730,7 +755,7 @@ function resolveLogoFont(websiteData: any, fallback: string): string {
 // ================================================================
 // Aesthetic: Raw industrial muscle. Barlow Condensed 900 at massive scale.
 // Key move: Diagonal hero split with clip-path, numbered service list, accent stripe.
-export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
@@ -772,7 +797,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
@@ -812,7 +837,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
 // ================================================================
 // Aesthetic: Parisian editorial. Cormorant Garamond italic, generous whitespace.
 // Key move: Giant floating background initial, centered editorial hero.
-export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin buchen';
@@ -855,7 +880,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
@@ -895,7 +920,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 // ================================================================
 // Aesthetic: Clinical precision. DM Serif Display meets DM Sans.
 // Key move: Left-aligned editorial with offset image, primary-bordered service cards.
-export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
@@ -938,7 +963,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
@@ -981,7 +1006,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 // ================================================================
 // Aesthetic: Workshop warmth. Playfair Display bold, parchment base.
 // Key move: Warm parchment bg, numbered service blocks with earthy sienna accents.
-export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
@@ -1023,7 +1048,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
@@ -1063,7 +1088,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 // ================================================================
 // Aesthetic: Kinetic energy. Bebas Neue at giant scale, diagonal image cut.
 // Key move: Massive italic type, skewed image panel, electric accent.
-export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Training buchen';
@@ -1105,7 +1130,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
@@ -1145,7 +1170,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
 // ================================================================
 // Aesthetic: Artisan food editorial. Fraunces all-serif, warm cream.
 // Key move: Centered editorial hero, large rounded image, spinning circular badge.
-export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Reservieren';
@@ -1188,7 +1213,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
@@ -1228,7 +1253,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
 // ================================================================
 // Aesthetic: Fashion editorial. Libre Baskerville italic, rich near-black.
 // Key move: Full-bleed cinematic hero, maximum negative space, thin accent lines.
-export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
@@ -1271,7 +1296,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
@@ -1311,7 +1336,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
 // ================================================================
 // Aesthetic: Tech geometric. Syne 800 with Space Mono accents.
 // Key move: 12-col grid hero, monospace decorative numbers, geometric accent blob.
-export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
@@ -1354,7 +1379,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
@@ -1394,7 +1419,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
 // ================================================================
 // Aesthetic: Botanical organic. Lora italic, organic cream base.
 // Key move: Asymmetric pill-shaped images, leaf-green accents, flowing curves.
-export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) {
+export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
@@ -1439,7 +1464,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} />
+      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
@@ -1487,6 +1512,7 @@ export function PremiumLayoutV2({
   cs,
   heroImageUrl,
   isLoading,
+  headlineSize,
 }: any) {
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
@@ -1543,7 +1569,7 @@ export function PremiumLayoutV2({
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10">
             <Skeleton isLoading={isLoading} className="w-full h-56 mb-14">
-              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)' }}>
+              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 5.5vw, 5.5rem)') }}>
                 {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
               </h1>
             </Skeleton>

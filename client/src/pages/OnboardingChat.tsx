@@ -354,6 +354,7 @@ interface OnboardingData {
   aboutPhotoUrl: string; // selected or uploaded about/second photo URL
   brandLogo: string; // base64 or "font:<fontName>"
   headlineFont: string; // Serif or Sans-serif font name
+  headlineSize: 'large' | 'medium' | 'small'; // Headline font size
   addOnContactForm: boolean;
   addOnGallery: boolean;
   addOnGalleryData: { headline?: string; images: string[] };
@@ -388,6 +389,7 @@ type ChatStep =
   | "aboutPhoto"
   | "brandLogo"
   | "headlineFont"
+  | "headlineSize"
   | "addons"
   | "editMenu"
   | "editPricelist"
@@ -420,6 +422,7 @@ const STEP_ORDER: ChatStep[] = [
   "heroPhoto",         // 5. Hauptbild
   "aboutPhoto",        // 6. Über-uns-Bild
   "headlineFont",      // 7. Überschriften-Schriftart
+  "headlineSize",      // 8. Überschriften-Größe
   "tagline",
   "description",
   "usp",
@@ -451,6 +454,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   aboutPhoto: "about",
   brandLogo: "header",
   headlineFont: "hero",
+  headlineSize: "hero",
   businessName: "header",
   tagline: "hero",
   description: "hero",
@@ -667,6 +671,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     aboutPhotoUrl: "",
     brandLogo: "",
     headlineFont: "",
+    headlineSize: "large", // Default: extra groß
     addOnContactForm: true,
     addOnGallery: false,
     addOnGalleryData: { headline: "Unsere Galerie", images: [] },
@@ -1006,6 +1011,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Hast du ein **Logo**? Du kannst es hier hochladen.\n\nFalls nicht – kein Problem! Ich zeige dir drei verschiedene Schriftarten, mit denen wir deinen Firmennamen als Logo darstellen können. Wähle einfach deinen Favoriten.`;
         case "headlineFont":
           return `Perfekt! Jetzt wählen wir noch die **Schriftart für deine Überschriften**. Das gibt deiner Website einen ganz eigenen Charakter!\n\nMöchtest du eine **elegante Serifenschrift** (klassisch, zeitlos) oder eine **moderne Serifenlose** (clean, aktuell)?`;
+        case "headlineSize":
+          return `Fast fertig! Wie groß sollen deine Überschriften sein?\n\n🔹 **Extra groß** – Dramatisch, mutig, für kurze, kraftvolle Statements\n🔹 **Groß** – Ausgewogen, klassisch, gut lesbar\n🔹 **Normal** – Dezent, elegant, für längere Texte`;
         case "addons":
           return `⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern? Du kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
         case "editMenu":
@@ -2707,12 +2714,65 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   </div>
 
                 <button
-                  disabled={isTyping}
+                  disabled={isTyping || !data.headlineFont}
                   onClick={async () => {
                     if (isTyping) return;
                     const fontLabel = data.headlineFont;
                     addUserMessage(`Schriftart gewählt: ${fontLabel} ✓`);
                     await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {!isTyping && currentStep === "headlineSize" && (
+              <div className="ml-9 space-y-3">
+                <p className="text-slate-400 text-xs">Wähle die Größe deiner Überschriften:</p>
+                <div className="space-y-2">
+                  {[
+                    { value: 'large', label: 'Extra groß', desc: 'Dramatisch, mutig', sample: 'PROJEKT' },
+                    { value: 'medium', label: 'Groß', desc: 'Ausgewogen, klassisch', sample: 'PROJEKT' },
+                    { value: 'small', label: 'Normal', desc: 'Dezent, elegant', sample: 'PROJEKT' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setData((p) => ({ ...p, headlineSize: opt.value as 'large' | 'medium' | 'small' }))}
+                      className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                        data.headlineSize === opt.value
+                          ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                          : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-semibold">{opt.label}</p>
+                          <p className="text-slate-400 text-xs">{opt.desc}</p>
+                        </div>
+                        <p 
+                          className="text-white/80 font-bold" 
+                          style={{ 
+                            fontSize: opt.value === 'large' ? '2rem' : opt.value === 'medium' ? '1.5rem' : '1.1rem',
+                            fontFamily: data.headlineFont || 'inherit'
+                          }}
+                        >
+                          {opt.sample}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const sizeLabel = data.headlineSize === 'large' ? 'Extra groß' : data.headlineSize === 'medium' ? 'Groß' : 'Normal';
+                    addUserMessage(`Schriftgröße gewählt: ${sizeLabel} ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("headlineSize"), { headlineSize: data.headlineSize });
                     await goToNextStep();
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -3734,6 +3794,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     contactFormLocked={!data.addOnContactForm}
                     logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
                     headlineFontOverride={data.headlineFont || undefined}
+                    headlineSize={data.headlineSize}
                     contentPhase={contentPhase}
                     isLoading={isGeneratingInitialContent || contentPhase === 'colors' || contentPhase === 'images'}
                   />
