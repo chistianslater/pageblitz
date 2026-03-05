@@ -11,7 +11,7 @@ import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
 import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
 import { getGalleryImages } from "@shared/industryImages";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ── Epic Loading Screen Component ───────────────────────────────────────────
 
@@ -2060,9 +2060,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </div>
             )}
 
-            {/* Interactive step UI */}
-            {!isTyping && currentStep === "services" && (
-              <div className="ml-9 space-y-3">
+            {/* Interactive step UI with futuristic transitions */}
+            <AnimatePresence mode="wait">
+              {!isTyping && currentStep === "services" && (
+                <motion.div
+                  key="services-step"
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  className="ml-9 space-y-3"
+                >
                 {/* Suggestions Section */}
                 {(serviceSuggestions.length > 0 || initialServices.length > 0) && (
                   <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-4">
@@ -2339,14 +2347,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Weiter <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                </button>
               </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "businessCategory" && (
-              <div className="ml-9 space-y-3">
-                {/* Show GMB category as pre-selected if available */}
+          {!isTyping && currentStep === "businessCategory" && (
+            <motion.div
+              key="businessCategory-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              {/* Show GMB category as pre-selected if available */}
                 {data.businessCategory && (
                   <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2">
                     <span className="text-emerald-400 text-xs">✓ Aus Google My Business:</span>
@@ -2419,11 +2434,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     OK
                   </button>
                 </div>
-              </div>
-            )}
-            {!isTyping && currentStep === "colorScheme" && (
-              <div className="ml-9 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            </motion.div>
+          )}
+
+          {!isTyping && currentStep === "colorScheme" && (
+            <motion.div
+              key="colorScheme-step"
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {COLOR_SCHEMES.map((scheme) => (
                     <button
                       key={scheme.id}
@@ -2549,10 +2572,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   Farben übernehmen <ChevronRight className="w-4 h-4" />
                 </button>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "heroPhoto" && (
+          {!isTyping && currentStep === "heroPhoto" && (
+            <motion.div
+              key="heroPhoto-step"
+              initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              exit={{ opacity: 0, scale: 0.9, rotateY: 10 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9"
+            >
               <HeroPhotoStep
                 businessCategory={data.businessCategory}
                 heroPhotoUrl={data.heroPhotoUrl}
@@ -2566,8 +2597,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await goToNextStep();
                 }}
               />
-            )}
-            {!isTyping && currentStep === "aboutPhoto" && (
+            </motion.div>
+          )}
+
+          {!isTyping && currentStep === "aboutPhoto" && (
+            <motion.div
+              key="aboutPhoto-step"
+              initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              exit={{ opacity: 0, scale: 0.9, rotateY: 10 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9"
+            >
               <HeroPhotoStep
                 businessCategory={data.businessCategory}
                 heroPhotoUrl={data.aboutPhotoUrl}
@@ -2582,10 +2623,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await goToNextStep();
                 }}
               />
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "brandLogo" && (
-              <div className="ml-9 space-y-3">
+          {!isTyping && currentStep === "brandLogo" && (
+            <motion.div
+              key="brandLogo-step"
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
                 <p className="text-slate-400 text-xs">Wähle eine Schriftart für deinen Firmennamen als Logo:</p>
                 {LOGO_FONT_OPTIONS.map((opt) => (
                   <button
@@ -2673,11 +2722,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
-              </div>
-            )}
-            {!isTyping && currentStep === "headlineFont" && (
-              <div className="ml-9 space-y-3">
-                <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau rechts ändert sich sofort:</p>
+            </motion.div>
+          )}
+
+          {!isTyping && currentStep === "headlineFont" && (
+            <motion.div
+              key="headlineFont-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau rechts ändert sich sofort:</p>
                 <div className="space-y-2">
                   {(() => {
                     const hideSerifs = prefersSansSerif(data.businessCategory);
@@ -2739,12 +2796,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "headlineSize" && (
-              <div className="ml-9 space-y-3">
-                <p className="text-slate-400 text-xs">Wähle die Größe deiner Überschriften:</p>
+          {!isTyping && currentStep === "headlineSize" && (
+            <motion.div
+              key="headlineSize-step"
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              <p className="text-slate-400 text-xs">Wähle die Größe deiner Überschriften:</p>
                 <div className="space-y-2">
                   {[
                     { value: 'large', label: 'Extra groß', desc: 'Dramatisch, mutig', sample: 'PROJEKT' },
@@ -2792,11 +2856,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "addons" && (
-              <div className="ml-9 space-y-2">
+          {!isTyping && currentStep === "addons" && (
+            <motion.div
+              key="addons-step"
+              initial={{ opacity: 0, scale: 0.9, rotateY: -5 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              exit={{ opacity: 0, scale: 0.9, rotateY: 5 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-2"
+            >
                 {/* Build industry-specific addon list */}
                 {(() => {
                   const cat = data.businessCategory.toLowerCase();
@@ -2859,11 +2930,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "editMenu" && (
-              <div className="ml-9 space-y-4">
+          {!isTyping && currentStep === "editMenu" && (
+            <motion.div
+              key="editMenu-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-4"
+            >
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
                   <input
@@ -3002,11 +3080,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 </div>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "editPricelist" && (
-              <div className="ml-9 space-y-4">
+          {!isTyping && currentStep === "editPricelist" && (
+            <motion.div
+              key="editPricelist-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-4"
+            >
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
                   <input
@@ -3131,11 +3216,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 </div>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "editGallery" && (
-              <div className="ml-9 space-y-4">
+          {!isTyping && currentStep === "editGallery" && (
+            <motion.div
+              key="editGallery-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-4"
+            >
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
                   <input
@@ -3177,12 +3269,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     Weiter <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "subpages" && (
-              <div className="ml-9 space-y-4">
-                {/* Info Card */}
+          {!isTyping && currentStep === "subpages" && (
+            <motion.div
+              key="subpages-step"
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-4"
+            >
+              {/* Info Card */}
                 <div className="bg-blue-600/10 border border-blue-500/30 rounded-2xl p-4 space-y-2">
                   <div className="flex items-start gap-3">
                     <Monitor className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
@@ -3260,11 +3359,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 </div>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
-              <div className="ml-9 mt-2">
+          {!isTyping && currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
+            <motion.div
+              key="legalOwner-gmb-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 mt-2"
+            >
                 {!gmbÜbernommenEditMode ? (
                   <button
                     onClick={async () => {
@@ -3348,11 +3454,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 )}
-              </div>
-            )}
-            {/* Pencil to re-open edit mode after GMB data was confirmed */}
-            {!isTyping && currentStep !== "legalOwner" && ["legalStreet","legalZipCity","legalEmail","legalPhone","legalVat"].includes(currentStep) && data.legalStreet && (
-              <div className="ml-9 mt-1">
+            </motion.div>
+          )}
+
+          {/* Pencil to re-open edit mode after GMB data was confirmed */}
+          {!isTyping && currentStep !== "legalOwner" && ["legalStreet","legalZipCity","legalEmail","legalPhone","legalVat"].includes(currentStep) && data.legalStreet && (
+            <motion.div
+              key="legal-edit-pencil"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="ml-9 mt-1"
+            >
                 <button
                   onClick={() => {
                     setGmbÜbernommenEditMode(true);
@@ -3364,11 +3477,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   <Pencil className="w-3 h-3" /> Angaben bearbeiten
                 </button>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "hideSections" && (
-              <div className="ml-9 space-y-2">
+          {!isTyping && currentStep === "hideSections" && (
+            <motion.div
+              key="hideSections-step"
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-2"
+            >
                 {(() => {
                   const base = siteData?.website?.websiteData as any;
                   const sectionsFromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
@@ -3460,11 +3580,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </>
                   );
                 })()}
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "preview" && (
-              <div className="ml-9">
+          {!isTyping && currentStep === "preview" && (
+            <motion.div
+              key="preview-step"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9"
+            >
                 <button
                   onClick={async () => {
                     addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
@@ -3474,11 +3601,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   <Zap className="w-4 h-4" /> Website freischalten
                 </button>
-              </div>
-            )}
+            </motion.div>
+          )}
 
-            {!isTyping && currentStep === "checkout" && (
-              <div className="ml-9 space-y-3">
+          {!isTyping && currentStep === "checkout" && (
+            <motion.div
+              key="checkout-step"
+              initial={{ opacity: 0, y: 40, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -40, scale: 0.9 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
                 <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
                   {/* Intro offer banner */}
                   <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-3 py-2 mb-2">
@@ -3563,12 +3697,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <p className="text-center text-xs text-slate-500">
                   Monatlich kündbar • Keine Einrichtungsgebühr • SSL inklusive
                 </p>
-              </div>
-            )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            <div ref={messagesEndRef} />
-          </div>
-          {/* Input area – sticky at bottom */}
+        <div ref={messagesEndRef} />
+        </div>
+        {/* Input area – sticky at bottom */}
           {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
