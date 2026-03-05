@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   Phone, Star, Shield, Zap,
   Award, Clock, MapPin, Utensils, Flower,
@@ -429,47 +430,70 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
   const aboutHeadline = about?.headline || 'Unser Handwerk';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = getDisplayFont(websiteData, "'Barlow Condensed', Impact, 'Arial Narrow', sans-serif");
-  const BODY = "'Barlow', 'Arial', sans-serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Space Grotesk', Impact, 'Arial Narrow', sans-serif");
+  const BODY = "'Plus Jakarta Sans', 'Arial', sans-serif";
   const HL: React.CSSProperties = { fontWeight: 900, letterSpacing: '0.02em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#0A0A0A] text-white overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#0A0A0A]/90 backdrop-blur-sm border-b border-white/10">
+    <div style={{ fontFamily: BODY }} className="bg-[#0A0A0A] text-white overflow-hidden grain-overlay">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/10 relative">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem' }} className="uppercase">{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em' }} className="px-8 py-3 text-white text-sm uppercase">{heroCta}</button>
+          <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em' }} className="px-10 py-3 text-white text-xs uppercase hover:scale-105 transition-transform">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      {/* HERO: split grid with diagonal clip */}
-      <section id="hero" className="min-h-screen grid lg:grid-cols-[54%_46%] pt-[64px]">
-        <div className="flex flex-col justify-center p-10 lg:p-16 relative overflow-hidden">
-          <div className="absolute left-0 top-0 w-[3px] h-full" style={{ backgroundColor: cs.primary }} />
-          <Skeleton isLoading={isLoading} className="w-full h-60 mb-8">
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 900, lineHeight: 0.85, fontSize: 'clamp(4rem, 11vw, 9.5rem)', letterSpacing: '0.01em' }} className="uppercase">
-              {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
+      {/* HERO: split grid with industrial accents and overlapping elements */}
+      <section id="hero" className="min-h-[110vh] grid lg:grid-cols-[54%_46%] pt-[64px] relative overflow-hidden">
+        <motion.div 
+          className="flex flex-col justify-center p-10 lg:p-20 relative z-20"
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="absolute left-0 top-0 w-[4px] h-full" style={{ backgroundColor: cs.primary }} />
+          <div className="absolute -top-12 -left-6 text-[12vw] font-black opacity-[0.03] select-none pointer-events-none text-white whitespace-nowrap uppercase tracking-tighter">
+            Engineering Excellence
+          </div>
+          
+          <Skeleton isLoading={isLoading} className="w-full h-64 mb-8">
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 900, lineHeight: 0.75, fontSize: 'clamp(4rem, 12vw, 10.5rem)', letterSpacing: '-0.04em' }} className="uppercase drop-shadow-2xl">
+              {hl.main}<br /><span style={{ color: cs.primary }} className="italic">{hl.last}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-10">
-            <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.7 }} className="text-white/50 text-lg max-w-md">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-12">
+            <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.7 }} className="text-white/50 text-xl max-w-md border-l border-white/20 pl-6">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-48 h-14">
-            <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em' }} className="px-10 py-4 text-white uppercase text-sm inline-block">{heroCta}</button>
+            <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em' }} className="px-12 py-5 text-white uppercase text-xs inline-block hover:bg-white hover:text-black transition-all shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5)]">{heroCta}</button>
           </Skeleton>
-        </div>
-        <div className="relative min-h-[50vh]" style={{ clipPath: 'polygon(6% 0, 100% 0, 100% 100%, 0 100%)' }}>
+        </motion.div>
+        
+        <motion.div 
+          className="relative min-h-[60vh] z-10 group"
+          initial={{ opacity: 0, scale: 1.1 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.5 }}
+        >
+          <div className="absolute inset-0 z-20 pointer-events-none" style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%)' }}>
+            <div className="absolute top-1/4 -left-12 w-24 h-96 bg-white/5 backdrop-blur-3xl border-l border-white/10 hidden lg:block skew-x-12" />
+          </div>
+          
           <Skeleton isLoading={isLoading} className="w-full h-full">
-            <img src={heroImageUrl} className="w-full h-full object-cover opacity-75" alt="" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/20 to-transparent" />
+            <div className="w-full h-full overflow-hidden" style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%)' }}>
+              <img src={heroImageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-[2s] scale-110 group-hover:scale-100" alt="" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent" />
+            </div>
           </Skeleton>
-        </div>
+        </motion.div>
       </section>
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
@@ -563,45 +587,90 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#FAF7F2] text-neutral-800 overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FAF7F2]/90 backdrop-blur-sm border-b border-neutral-200/60">
+    <div style={{ fontFamily: BODY }} className="bg-[#FFFDFB] text-neutral-900 overflow-hidden grain-overlay">
+      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40 relative">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.5rem', fontWeight: 400, letterSpacing: '0.02em' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-32 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 500, letterSpacing: '0.12em' }} className="px-7 py-2.5 text-white text-xs uppercase">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-36 h-10">
+          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em' }} className="px-8 py-3 text-white text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      {/* HERO: editorial centered with giant background initial */}
-      <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-28 pb-24">
-        <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none overflow-hidden">
-          <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: '40vw', lineHeight: 1, color: cs.primary, opacity: 0.04 }}>
-            {(heroHeadline || websiteData.businessName || 'E').charAt(0).toUpperCase()}
-          </span>
-        </div>
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-48 mb-10">
-            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 0.95, letterSpacing: '0.02em', fontSize: 'clamp(3rem, 7vw, 6.5rem)' }}>
-              {heroHeadline.split(' ').slice(0, -1).join(' ')}{' '}
-              <span style={{ color: cs.primary }}>{heroHeadline.split(' ').slice(-1)[0]}</span>
+      {/* HERO: editorial asymmetrical with overlapping elements */}
+      <section id="hero" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12 md:gap-20 items-center min-h-[90vh] pb-24 pt-32 relative">
+        {/* Background Accent */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-neutral-50/50 -z-10 skew-x-12 translate-x-1/2" />
+        
+        <motion.div 
+          className="relative order-2 lg:order-1 lg:col-span-5"
+          initial={{ opacity: 0, x: -40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        >
+          <Skeleton isLoading={isLoading} className="w-full aspect-[4/5] rounded-t-full">
+            <div 
+              className="overflow-hidden aspect-[4/5] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.1)] rounded-t-full relative"
+              style={{ borderRadius: '60% 60% 0 0 / 40% 40% 0 0' }}
+            >
+              <img 
+                src={heroImageUrl} 
+                className="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-[3s] grayscale-[0.2] hover:grayscale-0" 
+                alt=""
+              />
+              <div className="absolute inset-0 bg-neutral-200/10 mix-blend-overlay" />
+            </div>
+          </Skeleton>
+          
+          {/* Overlapping Badge */}
+          <div className="absolute -bottom-10 -right-6 md:-right-12 bg-white/90 backdrop-blur-2xl p-6 md:p-10 rounded-2xl shadow-2xl border border-neutral-100 relative z-20 max-w-[240px]">
+            <div className="flex gap-1.5 mb-3">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={12} fill="currentColor" className="text-yellow-500" />
+              ))}
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-800 mb-2 leading-tight">Ausgezeichnete Qualität</p>
+            <p className="text-[9px] uppercase tracking-widest text-neutral-400">Edition 2026</p>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          className="order-1 lg:order-2 lg:col-span-7 lg:pl-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <Skeleton isLoading={isLoading} className="w-full h-32 md:h-64 mb-10">
+            <div className="absolute -top-12 -left-4 text-xs font-serif italic text-neutral-300 select-none pointer-events-none text-[8vw] opacity-40">
+              {(heroHeadline || 'E').charAt(0)}
+            </div>
+            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 0.85, letterSpacing: '-0.02em', fontSize: 'clamp(3.5rem, 8vw, 7.5rem)' }}>
+              {heroHeadline.split(' ').map((word, i) => (
+                <span key={i} className={i % 2 === 0 ? "block text-right lg:text-left" : "block text-left lg:text-right opacity-60"}>
+                  {word}
+                </span>
+              ))}
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-14">
-            <p style={{ fontFamily: BODY, fontWeight: 300, letterSpacing: '0.04em' }} className="text-neutral-500 text-lg max-w-xl mx-auto">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-full h-24 mb-12">
+            <p className="text-lg md:text-2xl text-neutral-500 font-light leading-relaxed mb-12 max-w-lg italic border-l-2 border-neutral-200 pl-8">
+              {hero?.subheadline || websiteData.tagline}
+            </p>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-40 h-12 mx-auto mb-20">
-            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, letterSpacing: '0.12em' }} className="px-10 py-3.5 text-white text-xs uppercase">{heroCta}</button>
+          <Skeleton isLoading={isLoading} className="w-48 h-16">
+            <button 
+              style={{ backgroundColor: cs.primary }} 
+              className="px-10 md:px-16 py-5 md:py-6 rounded-full text-white text-[10px] font-bold uppercase tracking-[0.3em] hover:scale-105 transition-transform shadow-2xl"
+            >
+              {heroCta}
+            </button>
           </Skeleton>
-          <div className="max-w-3xl mx-auto aspect-[16/9] relative">
-            <Skeleton isLoading={isLoading} className="w-full h-full">
-              <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
-            </Skeleton>
-          </div>
-        </div>
+        </motion.div>
       </section>
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
@@ -688,54 +757,66 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const aboutHeadline = about?.headline || 'Über uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = getDisplayFont(websiteData, "'DM Serif Display', Georgia, serif");
-  const BODY = "'DM Sans', 'Helvetica Neue', sans-serif";
-  const HL: React.CSSProperties = { fontWeight: 400 };
+  const DISPLAY = getDisplayFont(websiteData, "'Outfit', 'Helvetica Neue', sans-serif");
+  const BODY = "'Outfit', 'Helvetica Neue', sans-serif";
+  const HL: React.CSSProperties = { fontWeight: 600 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/95 backdrop-blur-sm border-b border-neutral-100">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-8 rounded-sm" style={{ backgroundColor: cs.primary }} />
-            <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>
+            <div className="w-2.5 h-8 rounded-full" style={{ backgroundColor: cs.primary }} />
+            <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }}>{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 500, letterSpacing: '0.04em' }} className="px-6 py-2.5 text-white text-sm rounded-sm">{heroCta}</button>
+          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em' }} className="px-8 py-3 text-white text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform">{heroCta}</button>
         </Skeleton>
       </nav>
 
       <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-20 grid lg:grid-cols-12 gap-12 items-center">
-        <div className="lg:col-span-6 xl:col-span-5">
+        <motion.div 
+          className="lg:col-span-6 xl:col-span-5"
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
           <Skeleton isLoading={isLoading} className="w-full h-52 mb-8">
-            <div className="mb-6">
-              <span style={{ fontFamily: BODY, fontWeight: 500, fontSize: '0.7rem', letterSpacing: '0.25em', color: cs.primary }} className="uppercase block mb-3">Ihre Praxis – Ihr Vertrauen</span>
-              <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.15, fontSize: 'clamp(2.8rem, 5.5vw, 5rem)' }}>
-                {hl.main}<br /><em style={{ color: cs.primary }}>{hl.last}</em>
+            <div className="mb-8">
+              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-4 border-l-2 border-primary pl-4">Excellence & Precision</span>
+              <h1 style={{ fontFamily: DISPLAY, fontWeight: 800, lineHeight: 0.85, fontSize: 'clamp(3.5rem, 7vw, 7.5rem)', textTransform: 'uppercase', letterSpacing: '-0.04em' }}>
+                Expert <br /><span style={{ color: cs.primary }}>{hl.last}</span>
               </h1>
             </div>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-full h-16 mb-10">
-            <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.75 }} className="text-neutral-500 text-lg max-w-md">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-full h-16 mb-12">
+            <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.75 }} className="text-neutral-400 text-xl max-w-md">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-44 h-12">
-            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 500 }} className="px-8 py-3.5 text-white text-sm rounded-sm">{heroCta}</button>
+            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-10 py-4 text-white text-xs rounded-full uppercase tracking-widest shadow-2xl">{heroCta}</button>
           </Skeleton>
-        </div>
-        <div className="lg:col-span-6 xl:col-span-7 relative">
-          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl">
-            <img src={heroImageUrl} className="w-full h-full object-cover rounded-2xl" alt="" />
+        </motion.div>
+        <motion.div 
+          className="lg:col-span-6 xl:col-span-7 relative"
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 0.2 }}
+        >
+          <Skeleton isLoading={isLoading} className="aspect-square rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden">
+            <img src={heroImageUrl} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 scale-110 hover:scale-100" alt="" />
           </Skeleton>
-          <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-xl hidden lg:flex items-center justify-center" style={{ backgroundColor: cs.primary }}>
-            <div className="text-center text-white">
-              <div style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.8rem', lineHeight: 1 }}>✓</div>
-              <div style={{ fontFamily: BODY, fontSize: '0.55rem', letterSpacing: '0.1em' }} className="uppercase mt-1">Geprüft</div>
+          <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-3xl hidden lg:flex items-center justify-center shadow-2xl backdrop-blur-3xl border border-white/20 bg-white/10" style={{ backgroundColor: cs.primary + '20' }}>
+            <div className="text-center">
+              <Award size={32} style={{ color: cs.primary }} className="mx-auto mb-2" />
+              <div style={{ fontFamily: BODY, fontSize: '0.6rem', letterSpacing: '0.15em', fontWeight: 800 }} className="uppercase text-neutral-800">Certified</div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
@@ -1222,50 +1303,57 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const aboutHeadline = about?.headline || 'Über uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = getDisplayFont(websiteData, "'Libre Baskerville', Georgia, serif");
-  const BODY = "'Jost', 'Helvetica Neue', sans-serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Playfair Display', Georgia, serif");
+  const BODY = "'Tenor Sans', 'Helvetica Neue', sans-serif";
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 400, letterSpacing: '0.01em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#0C0A09] text-white overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#0C0A09]/80 backdrop-blur-sm">
+    <div style={{ fontFamily: BODY }} className="bg-[#0C0A09] text-white overflow-hidden grain-overlay">
+      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#0C0A09]/80 backdrop-blur-md border-b border-white/5 relative">
         <Skeleton isLoading={isLoading} className="w-44 h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.35rem', fontWeight: 400, letterSpacing: '0.04em' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.15em', fontSize: '0.7rem', borderColor: cs.primary, color: cs.primary }} className="px-8 py-3 border uppercase">{heroCta}</button>
+          <button style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: cs.primary, color: '#000' }} className="px-10 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      {/* HERO: Full-bleed image with text overlay */}
-      <section id="hero" className="relative min-h-screen flex items-end pb-24 px-8">
+      {/* HERO: Cinematic with dramatic scale and overlays */}
+      <section id="hero" className="relative min-h-screen flex items-center justify-center text-center px-8 overflow-hidden">
         <div className="absolute inset-0">
           <Skeleton isLoading={isLoading} className="w-full h-full">
-            <img src={heroImageUrl} className="w-full h-full object-cover opacity-45" alt="" />
+            <img src={heroImageUrl} className="w-full h-full object-cover opacity-60 grayscale scale-110 hover:scale-100 transition-transform duration-[4s]" alt="" />
           </Skeleton>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0C0A09] via-[#0C0A09]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-black/20 to-black" />
         </div>
-        <div className="relative z-10 max-w-7xl mx-auto w-full">
-          <div className="max-w-3xl">
-            <Skeleton isLoading={isLoading} className="w-full h-40 mb-8">
-              <div className="w-16 h-px mb-8" style={{ backgroundColor: cs.primary }} />
-              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.1, fontSize: 'clamp(3rem, 7vw, 6.5rem)', letterSpacing: '0.01em' }}>
-                {heroHeadline.split(' ').slice(0, -1).join(' ')}{' '}
-                <span style={{ color: cs.primary }}>{heroHeadline.split(' ').slice(-1)[0]}</span>
-              </h1>
-            </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-2/3 h-14 mb-10">
-              <p style={{ fontFamily: BODY, fontWeight: 300, letterSpacing: '0.06em' }} className="text-white/55 text-lg max-w-lg">{hero?.subheadline || websiteData.tagline}</p>
-            </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-48 h-12">
-              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 400, letterSpacing: '0.15em', fontSize: '0.7rem', color: '#000' }} className="px-10 py-4 uppercase">{heroCta}</button>
-            </Skeleton>
+        <motion.div 
+          className="relative z-10 max-w-5xl mx-auto"
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2 }}
+        >
+          <div className="flex justify-center items-center gap-6 mb-12">
+            <div className="h-px w-16 bg-white/30" />
+            <Shield size={24} className="text-yellow-500" />
+            <div className="h-px w-16 bg-white/30" />
           </div>
-        </div>
+          <Skeleton isLoading={isLoading} className="w-full h-48 mb-12 mx-auto">
+            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 0.8, fontSize: 'clamp(4rem, 12vw, 11rem)', letterSpacing: '-0.02em' }}>
+              Beyond <br />Perfection
+            </h1>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-2/3 h-14 mb-16 mx-auto">
+            <p style={{ fontFamily: BODY, fontWeight: 300, letterSpacing: '0.1em' }} className="text-white/60 text-xl max-w-xl mx-auto italic">{hero?.subheadline || websiteData.tagline}</p>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-56 h-14 mx-auto">
+            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 400, letterSpacing: '0.3em', fontSize: '0.7rem', color: '#000' }} className="px-12 py-5 rounded-full uppercase hover:bg-white hover:scale-105 transition-all shadow-[0_20px_50px_-10px_rgba(0,0,0,0.8)] border border-white/10">{heroCta}</button>
+          </Skeleton>
+        </motion.div>
       </section>
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
@@ -1354,54 +1442,72 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const aboutHeadline = about?.headline || 'Über uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = getDisplayFont(websiteData, "'Syne', 'DM Sans', sans-serif");
-  const BODY = "'DM Sans', 'Helvetica Neue', sans-serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Clash Display', 'Syne', sans-serif");
+  const BODY = "'Satoshi', 'Helvetica Neue', sans-serif";
   const HL: React.CSSProperties = { fontWeight: 800, letterSpacing: '-0.03em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const MONO = "'Space Mono', 'Courier New', monospace";
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
+    <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden grain-overlay">
+      {/* Background Gradient Mesh */}
+      <div 
+        className="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full blur-[120px] opacity-10 pointer-events-none" 
+        style={{ backgroundColor: cs.primary }} 
+      />
+
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
         <Skeleton isLoading={isLoading} className="w-40 h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 500, letterSpacing: '0.02em' }} className="px-5 py-2.5 text-white text-sm rounded-lg">{heroCta}</button>
+          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em' }} className="px-6 py-2.5 text-white text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-20 grid lg:grid-cols-12 gap-8 items-center">
-        <div className="lg:col-span-7">
+      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-20 grid lg:grid-cols-12 gap-12 items-center">
+        <motion.div 
+          className="lg:col-span-7"
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
           <Skeleton isLoading={isLoading} className="w-full h-64 mb-8">
-            <span style={{ fontFamily: MONO, fontSize: '0.7rem', color: cs.primary, letterSpacing: '0.1em' }} className="block mb-6">// Digitale Lösungen</span>
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 800, lineHeight: 0.92, fontSize: 'clamp(3rem, 7vw, 6.5rem)', letterSpacing: '-0.03em' }}>
+            <span style={{ fontFamily: MONO, fontSize: '0.7rem', color: cs.primary, letterSpacing: '0.1em' }} className="block mb-6 uppercase tracking-[0.2em] font-bold">// Digitale Innovation</span>
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 800, lineHeight: 0.85, fontSize: 'clamp(3rem, 8vw, 7.5rem)', letterSpacing: '-0.04em', textTransform: 'uppercase' }}>
               {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
             </h1>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-10">
-            <p className="text-neutral-500 text-xl max-w-lg leading-relaxed">{hero?.subheadline || websiteData.tagline}</p>
+            <p className="text-neutral-500 text-xl max-w-lg leading-relaxed font-light">{hero?.subheadline || websiteData.tagline}</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-44 h-12">
-            <div className="flex gap-4">
-              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 500 }} className="px-8 py-3.5 text-white rounded-lg shadow-xl">{heroCta}</button>
-              <button className="px-8 py-3.5 border border-neutral-200 rounded-lg font-medium hover:bg-neutral-50 transition-colors">Mehr erfahren</button>
+            <div className="flex flex-wrap gap-4">
+              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-10 py-4 text-white rounded-full shadow-2xl hover:scale-105 transition-transform uppercase text-xs tracking-widest">{heroCta}</button>
+              <button className="px-10 py-4 border-2 border-neutral-100 rounded-full font-bold hover:bg-neutral-50 transition-all uppercase text-xs tracking-widest">View Showcase</button>
             </div>
           </Skeleton>
-        </div>
-        <div className="lg:col-span-5 relative">
-          <Skeleton isLoading={isLoading} className="rounded-2xl aspect-[4/5]">
-            <img src={heroImageUrl} className="rounded-2xl w-full h-full object-cover" alt="" />
+        </motion.div>
+        <motion.div 
+          className="lg:col-span-5 relative"
+          initial={{ opacity: 0, x: 30, scale: 0.9 }}
+          whileInView={{ opacity: 1, x: 0, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <Skeleton isLoading={isLoading} className="rounded-[2.5rem] aspect-[4/5] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden">
+            <img src={heroImageUrl} className="w-full h-full object-cover hover:scale-110 transition-transform duration-[3s]" alt="" />
           </Skeleton>
-          <div className="absolute -top-6 -left-6 w-32 h-32 rounded-2xl blur-3xl animate-pulse pointer-events-none" style={{ backgroundColor: cs.primary + '30' }} />
+          <div className="absolute -top-6 -left-6 w-32 h-32 rounded-2xl blur-3xl opacity-20 pointer-events-none" style={{ backgroundColor: cs.primary }} />
           {/* Monospace floating badge */}
-          <div className="absolute bottom-6 -left-6 hidden lg:block bg-white border border-neutral-100 rounded-xl px-4 py-3 shadow-xl">
-            <p style={{ fontFamily: MONO, fontSize: '0.6rem', color: cs.primary }}>{'{ success: true }'}</p>
+          <div className="absolute bottom-10 -left-10 hidden lg:block bg-white/80 backdrop-blur-xl border border-neutral-100 rounded-2xl px-6 py-4 shadow-2xl">
+            <p style={{ fontFamily: MONO, fontSize: '0.65rem', color: cs.primary, fontWeight: 700 }} className="tracking-tight">{'{ status: "excellence" }'}</p>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
@@ -1489,52 +1595,67 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const aboutHeadline = about?.headline || 'Unsere Philosophie';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const DISPLAY = getDisplayFont(websiteData, "'Lora', Georgia, serif");
-  const BODY = "'Source Sans 3', 'Georgia', sans-serif";
+  const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', Georgia, serif");
+  const BODY = "'DM Sans', 'Georgia', sans-serif";
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 700 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#F4F0E8] text-neutral-800 overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F4F0E8]/90 backdrop-blur-sm border-b border-neutral-300/40">
+    <div style={{ fontFamily: BODY }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5 relative">
         <Skeleton isLoading={isLoading} className="w-40 h-8">
           <div className="flex items-center gap-2">
-            <Leaf size={20} style={{ color: cs.primary }} />
-            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+            <Leaf size={24} style={{ color: cs.primary }} />
+            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 400 }}>{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-36 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-6 py-2.5 text-white text-sm rounded-full uppercase tracking-wide">{heroCta}</button>
+          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-8 py-2.5 text-white text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      {/* HERO: asymmetric with pill images */}
-      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-28 grid lg:grid-cols-2 gap-16 items-center">
-        <div>
+      {/* HERO: organic asymmetrical with pill images and background accents */}
+      <section id="hero" className="max-w-7xl mx-auto px-6 pt-36 pb-28 grid lg:grid-cols-2 gap-16 items-center relative">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-green-900/5 -skew-x-12 translate-x-1/2 pointer-events-none" />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <Flower className="text-green-800 mb-8" size={42} />
           <Skeleton isLoading={isLoading} className="w-full h-56 mb-8">
-            <span style={{ fontFamily: BODY, fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.2em', color: cs.primary }} className="uppercase block mb-4">Natürlich. Nachhaltig. Wirksam.</span>
-            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 700, lineHeight: 1.15, fontSize: 'clamp(2.8rem, 6vw, 5.5rem)' }}>
-              {heroHeadline.split(' ').slice(0, -1).join(' ')}{' '}
-              <span style={{ color: cs.primary }}>{heroHeadline.split(' ').slice(-1)[0]}</span>
+            <span style={{ fontFamily: BODY, fontWeight: 600, fontSize: '0.65rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-6">Natürlich. Nachhaltig. Rein.</span>
+            <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, lineHeight: 0.8, fontSize: 'clamp(3.5rem, 8vw, 8.5rem)' }}>
+              Rooted <br /><span style={{ color: cs.primary }} className="font-normal">{heroHeadline.split(' ').slice(-1)[0]}</span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-full h-16 mb-10">
-            <p className="text-neutral-600 text-lg leading-relaxed max-w-md">{hero?.subheadline || websiteData.tagline}</p>
+          <Skeleton isLoading={isLoading} className="w-full h-16 mb-12">
+            <p className="text-[#4a4a4a]/70 text-xl leading-relaxed max-w-md italic">"{hero?.subheadline || websiteData.tagline}"</p>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-44 h-12">
-            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-8 py-3.5 text-white rounded-full uppercase text-sm tracking-wider">{heroCta}</button>
+            <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-10 py-4 text-white rounded-full uppercase text-xs tracking-widest shadow-2xl hover:bg-green-900 transition-colors">{heroCta}</button>
           </Skeleton>
-        </div>
-        {/* Pill-shaped images */}
-        <div className="grid grid-cols-2 gap-4">
-          <Skeleton isLoading={isLoading} className="rounded-full aspect-[1/2] mt-12">
+        </motion.div>
+        
+        {/* Pill-shaped images with coordination */}
+        <motion.div 
+          className="grid grid-cols-2 gap-6 relative"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 0.2 }}
+        >
+          <div className="absolute inset-0 bg-green-900/5 blur-[100px] rounded-full pointer-events-none" />
+          <Skeleton isLoading={isLoading} className="rounded-full aspect-[2/3] mt-16 shadow-2xl">
             <img src={heroImageUrl} className="rounded-full w-full h-full object-cover" alt="" />
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="rounded-full aspect-[1/2]">
-            <img src={aboutImg} className="rounded-full w-full h-full object-cover object-right" alt="" />
+          <Skeleton isLoading={isLoading} className="rounded-full aspect-[2/3] shadow-2xl">
+            <img src={aboutImg} className="rounded-full w-full h-full object-cover scale-110" alt="" />
           </Skeleton>
-        </div>
+        </motion.div>
       </section>
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
