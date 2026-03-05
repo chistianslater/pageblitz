@@ -59,7 +59,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-10 mb-6">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs hover:scale-105 transition-transform shadow-xl">
             {heroCta}
           </button>
@@ -100,7 +100,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mb-16">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-10 mb-16">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
             {heroCta}
           </button>
@@ -142,7 +142,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
-          <div className="flex flex-wrap gap-6">
+          <div className="flex flex-wrap gap-6 mt-10">
             <Skeleton isLoading={isLoading} className="w-48 h-14">
               <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest shadow-2xl">
                 {heroCta}
