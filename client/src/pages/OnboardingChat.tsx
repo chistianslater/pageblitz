@@ -3989,7 +3989,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
   const gmbPhotos = (gmbData?.photos || []).map((url) => ({ url, thumb: url, alt: "Google My Business Foto", isGmb: true }));
 
   // Auto-select first GMB photo if nothing chosen yet
-  React.useEffect(() => {
+  useEffect(() => {
     if (gmbPhotos.length > 0 && !heroPhotoUrl) {
       const idx = isAboutPhoto ? 1 : 0;
       const photo = gmbPhotos[idx] || gmbPhotos[0];

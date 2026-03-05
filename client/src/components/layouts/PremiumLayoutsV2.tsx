@@ -37,7 +37,7 @@ const splitHeadline = (text: string) => {
 };
 
 // ── PROCESS SECTION ──────────────────────────────────────────────
-function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit" }: any) {
+function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit", headlineStyle = {} }: any) {
   const process = sec(websiteData, 'process');
   if (!isLoading && !process?.items?.length) return null;
   const items = process?.items || [
@@ -48,13 +48,13 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const bg = dark ? "bg-white/5" : "bg-neutral-50";
   const textMain = dark ? "text-white" : "text-neutral-900";
   const textSub = dark ? "text-white/60" : "text-neutral-500";
+  const hs = { fontFamily: displayFont, ...headlineStyle };
 
   return (
-    <section className={`py-20 px-6 ${bg}`}>
+    <section className={`py-20 px-6 ${bg}`} style={{ fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-14">
-          <h2 className={`text-3xl md:text-4xl font-black text-center mb-14 ${textMain}`}
-            style={{ fontFamily: displayFont }}>
+          <h2 className={`text-3xl md:text-4xl text-center mb-14 ${textMain}`} style={hs}>
             {process?.headline || "So einfach geht's"}
           </h2>
         </Skeleton>
@@ -66,12 +66,12 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <div className="hidden md:block absolute top-7 left-[60%] w-[80%] border-t-2 border-dashed"
                     style={{ borderColor: cs.primary + '40' }} />
                 )}
-                <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black text-white mb-4 z-10"
-                  style={{ backgroundColor: cs.primary, fontFamily: displayFont }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl text-white mb-4 z-10"
+                  style={{ backgroundColor: cs.primary, ...hs }}>
                   {item.step}
                 </div>
-                <h3 className={`font-bold text-lg mb-2 ${textMain}`} style={{ fontFamily: displayFont }}>{item.title}</h3>
-                <p className={`text-sm leading-relaxed ${textSub}`}>{item.description}</p>
+                <h3 className={`text-lg mb-2 ${textMain}`} style={hs}>{item.title}</h3>
+                <p className={`text-sm leading-relaxed ${textSub}`} style={{ fontFamily: bodyFont }}>{item.description}</p>
               </div>
             </Skeleton>
           ))}
@@ -134,7 +134,7 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
 }
 
 // ── CONTACT SECTION ───────────────────────────────────────────────
-function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit" }: any) {
+function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit", headlineStyle = {} }: any) {
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
@@ -158,12 +158,13 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
     borderRadius: '0.5rem', border: `1px solid ${borderColor}`,
     background: inputBg, color: inputText, outline: 'none', fontSize: '0.9rem',
   };
+  const hs = { fontFamily: displayFont, ...headlineStyle };
 
   return (
     <section id="kontakt" className={`py-20 px-6 scroll-mt-20 ${bg} ${topBorder}`} style={{ fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-12">
-          <h2 className={`text-3xl md:text-4xl font-black mb-12 ${textMain}`} style={{ fontFamily: displayFont }}>Kontakt</h2>
+          <h2 className={`text-3xl md:text-4xl mb-12 ${textMain}`} style={hs}>Kontakt</h2>
         </Skeleton>
         <div className="grid md:grid-cols-2 gap-12">
 
@@ -245,7 +246,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                 </div>
                 <button type="submit"
                   className="w-full py-3 px-6 text-white font-bold tracking-wide rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: cs.primary, fontFamily: displayFont }}>
+                  style={{ backgroundColor: cs.primary, ...hs }}>
                   Nachricht senden
                 </button>
               </form>
@@ -256,7 +257,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-3">
                     <Shield size={22} className="text-neutral-400" />
                   </div>
-                  <p className={`font-bold text-sm mb-1 ${textMain}`} style={{ fontFamily: displayFont }}>Kontaktformular</p>
+                  <p className={`font-bold text-sm mb-1 ${textMain}`} style={hs}>Kontaktformular</p>
                   <p className={`text-xs mb-1 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
                   <p className="text-xs font-semibold mb-4" style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
                   <button className="w-full py-2.5 px-4 text-xs font-bold uppercase tracking-widest text-white rounded-lg hover:opacity-90 transition-opacity"
@@ -430,6 +431,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Barlow Condensed', Impact, 'Arial Narrow', sans-serif");
   const BODY = "'Barlow', 'Arial', sans-serif";
+  const HL: React.CSSProperties = { fontWeight: 900, letterSpacing: '0.02em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -498,7 +500,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20 border-t border-white/10">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -518,7 +520,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any) 
       </section>
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kundenstimmen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -557,6 +559,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', 'Garamond', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
+  const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 300 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -628,7 +631,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-24 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
@@ -648,7 +651,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Klientinnen sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -687,6 +690,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'DM Serif Display', Georgia, serif");
   const BODY = "'DM Sans', 'Helvetica Neue', sans-serif";
+  const HL: React.CSSProperties = { fontWeight: 400 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -761,7 +765,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -784,7 +788,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Patienten sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -826,6 +830,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Playfair Display', Georgia, serif");
   const BODY = "'Source Sans 3', 'Georgia', sans-serif";
+  const HL: React.CSSProperties = { fontWeight: 900 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -893,7 +898,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -913,7 +918,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -952,6 +957,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Bebas Neue', Impact, 'Arial Narrow', sans-serif");
   const BODY = "'Rajdhani', 'Arial', sans-serif";
+  const HL: React.CSSProperties = { letterSpacing: '0.04em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -1022,7 +1028,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 bg-[#111111] scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1045,7 +1051,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -1084,6 +1090,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Fraunces', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
+  const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 700 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -1158,7 +1165,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1178,7 +1185,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any)
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Gäste sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1217,6 +1224,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Libre Baskerville', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
+  const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 400, letterSpacing: '0.01em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -1288,7 +1296,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-24 px-8 scroll-mt-20" style={{ backgroundColor: '#130F0D' }}>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
@@ -1309,7 +1317,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       </section>
 
       <TestimonialsDark websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-8 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1348,6 +1356,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Syne', 'DM Sans', sans-serif");
   const BODY = "'DM Sans', 'Helvetica Neue', sans-serif";
+  const HL: React.CSSProperties = { fontWeight: 800, letterSpacing: '-0.03em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const MONO = "'Space Mono', 'Courier New', monospace";
 
@@ -1423,7 +1432,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1443,7 +1452,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: any
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1482,6 +1491,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Lora', Georgia, serif");
   const BODY = "'Source Sans 3', 'Georgia', sans-serif";
+  const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 700 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -1554,7 +1564,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1574,7 +1584,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1616,6 +1626,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Instrument Serif', Georgia, serif");
   const BODY = "'Plus Jakarta Sans', 'Helvetica Neue', sans-serif";
+  const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 400 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
@@ -1688,7 +1699,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-20 px-6 bg-[#F7F9FC] scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -1708,7 +1719,7 @@ export function PremiumLayoutV2({ websiteData, cs, heroImageUrl, isLoading }: an
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <footer className="py-12 px-6 bg-[#0F1E3C] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
