@@ -96,11 +96,11 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           </h1>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-20">
-          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-xl max-w-2xl mx-auto italic">
+          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-xl max-w-2xl mx-auto italic drop-shadow-lg">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-16 mb-24">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-14 mb-20">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
             {heroCta}
           </button>
@@ -128,7 +128,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           transition={{ duration: 0.8 }}
         >
           <Skeleton isLoading={isLoading} className="w-full h-72 mb-10">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.9, fontSize: 'clamp(4rem, 12vw, 10rem)' }} className="uppercase tracking-tighter">
+            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.9, fontSize: 'clamp(4rem, 12vw, 10rem)' }} className="uppercase tracking-tighter drop-shadow-2xl">
               {hl.main}<br />
               <span className="relative inline-block">
                 {hl.last}
@@ -136,12 +136,12 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               </span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-20">
-            <p style={{ fontFamily: bodyFont }} className="text-neutral-600 text-2xl font-light leading-relaxed">
+          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-24">
+            <p style={{ fontFamily: bodyFont }} className="text-neutral-600/90 text-2xl font-light leading-relaxed drop-shadow-lg">
               {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
-          <div className="flex flex-wrap gap-6 mt-16">
+          <div className="flex flex-wrap gap-6 mt-20">
             <Skeleton isLoading={isLoading} className="w-48 h-14">
               <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest shadow-2xl">
                 {heroCta}
