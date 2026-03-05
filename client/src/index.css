@@ -252,3 +252,37 @@ html {
   filter: blur(100px);
   border-radius: 50%;
 }
+
+/* Grain / Noise Texture */
+.grain-overlay {
+  position: relative;
+}
+
+.grain-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  filter: contrast(120%) brightness(120%);
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Typography Classes */
+.font-clash { font-family: 'Clash Display', sans-serif; }
+.font-satoshi { font-family: 'Satoshi', sans-serif; }
+.font-outfit { font-family: 'Outfit', sans-serif; }
+.font-tenor { font-family: 'Tenor Sans', sans-serif; }
+
+/* Gradient Mesh Utilities */
+.mesh-gradient-1 {
+  background-color: #000;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+}

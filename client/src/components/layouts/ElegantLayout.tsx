@@ -29,60 +29,72 @@ export default function ElegantLayout({ websiteData, cs, heroImageUrl, isLoading
   const subheadline = websiteData.sections?.[0]?.subheadline || "Erleben Sie erstklassige Behandlungen in luxuriösem Ambiente.";
 
   return (
-    <div className="bg-[#FFFDFB] text-neutral-900">
+    <div className="bg-[#FFFDFB] text-neutral-900 font-jost grain-overlay">
       {/* Header */}
-      <header className="py-6 md:py-10 text-center px-4">
+      <header className="py-6 md:py-10 text-center px-4 relative z-10">
         <Skeleton isLoading={isLoading} className="w-48 h-4 mx-auto mb-4">
-          <h2 className="uppercase tracking-[0.3em] md:tracking-[0.4em] text-[10px] font-bold opacity-40 mb-4">
+          <h2 className="uppercase tracking-[0.4em] text-[10px] font-bold opacity-40 mb-4">
             Est. 2026 — Pure Luxury
           </h2>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-64 h-10 mx-auto">
-          <span className="font-serif italic text-2xl md:text-4xl">{websiteData.businessName}</span>
+          <span className="font-serif italic text-2xl md:text-5xl">{websiteData.businessName}</span>
         </Skeleton>
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-2 gap-12 md:gap-20 items-center min-h-[70vh] md:min-h-[80vh] pb-12 md:pb-0">
-        <div className="relative order-2 lg:order-1">
-          <Skeleton isLoading={isLoading} className="w-full aspect-[3/4] rounded-t-full">
+      <section className="max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-12 gap-12 md:gap-20 items-center min-h-[90vh] pb-12 md:pb-24 pt-12 relative">
+        {/* Background Accent */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-neutral-50/50 -z-10 skew-x-12 translate-x-1/2" />
+        
+        <div className="relative order-2 lg:order-1 lg:col-span-5">
+          <Skeleton isLoading={isLoading} className="w-full aspect-[4/5] rounded-t-full">
             <div 
-              className="overflow-hidden aspect-[3/4] shadow-2xl rounded-t-full"
-              style={{ borderRadius: '50% 50% 0 0 / 30% 30% 0 0' }}
+              className="overflow-hidden aspect-[4/5] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] rounded-t-full relative"
+              style={{ borderRadius: '60% 60% 0 0 / 40% 40% 0 0' }}
             >
               <img 
                 src={heroImageUrl} 
-                className="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-1000" 
+                className="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-[3s] grayscale-[0.3] hover:grayscale-0" 
                 alt=""
               />
+              <div className="absolute inset-0 bg-neutral-200/10 mix-blend-overlay" />
             </div>
           </Skeleton>
-          <div className="absolute -bottom-6 md:-bottom-10 -right-4 md:-right-10 bg-white/80 backdrop-blur-md p-4 md:p-8 rounded-2xl shadow-xl">
-            <div className="flex gap-1 mb-2">
+          
+          {/* Overlapping Badge */}
+          <div className="absolute -bottom-10 -right-6 md:-right-12 bg-white/90 backdrop-blur-2xl p-6 md:p-10 rounded-2xl shadow-2xl border border-neutral-100 relative z-20 max-w-[240px]">
+            <div className="flex gap-1.5 mb-3">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} size={14} fill="currentColor" className="text-yellow-500" />
               ))}
             </div>
-            <p className="text-xs font-bold uppercase tracking-widest text-neutral-800">Kunden-Favorit</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-800 mb-2 leading-tight">Voted #1 Beauty Experience</p>
+            <p className="text-[9px] uppercase tracking-widest text-neutral-400">Berlin 2026 Edition</p>
           </div>
         </div>
-        <div className="order-1 lg:order-2">
-          <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
-            <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-tight italic font-light mb-6 md:mb-8">
-              {headline}
+
+        <div className="order-1 lg:order-2 lg:col-span-7 lg:pl-12">
+          <Skeleton isLoading={isLoading} className="w-full h-32 md:h-64 mb-8">
+            <h1 className="font-serif text-5xl md:text-8xl lg:text-9xl leading-[0.8] italic font-light mb-10 md:mb-16 tracking-tighter">
+              {headline.split(' ').map((word, i) => (
+                <span key={i} className={i % 2 === 0 ? "block text-right" : "block text-left opacity-60"}>
+                  {word}
+                </span>
+              ))}
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-full h-20 mb-8">
-            <p className="text-base md:text-lg text-neutral-500 font-light leading-relaxed mb-8 md:mb-12 max-w-md">
+          <Skeleton isLoading={isLoading} className="w-full h-24 mb-10">
+            <p className="text-lg md:text-2xl text-neutral-500 font-light leading-relaxed mb-12 max-w-lg italic border-l-2 border-neutral-200 pl-8">
               {subheadline}
             </p>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-40 h-14">
+          <Skeleton isLoading={isLoading} className="w-48 h-16">
             <button 
               style={{ backgroundColor: cs.primary }} 
-              className="px-8 md:px-12 py-4 md:py-5 rounded-full text-white text-xs font-bold uppercase tracking-[0.2em] hover:scale-105 transition-transform shadow-lg"
+              className="px-10 md:px-16 py-5 md:py-6 rounded-full text-white text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 transition-transform shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1)]"
             >
-              Termin buchen
+              Reserve Experience
             </button>
           </Skeleton>
         </div>

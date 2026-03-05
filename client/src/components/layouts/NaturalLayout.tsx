@@ -26,14 +26,15 @@ const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean,
 
 export default function NaturalLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   return (
-    <div className="bg-[#fcfaf7] text-[#4a4a4a]">
+    <div className="bg-[#fcfaf7] text-[#4a4a4a] font-dm-sans">
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center px-4 md:px-6 py-16 md:py-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-20 items-center w-full">
+      <section className="min-h-screen flex items-center px-4 md:px-6 py-16 md:py-20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-green-900/5 -skew-x-12 translate-x-1/2 pointer-events-none" />
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-20 items-center w-full relative z-10">
           <div>
-            <Flower className="text-green-800 mb-6 md:mb-8" size={36} />
-            <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
-              <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-light leading-[0.8] mb-6 md:mb-8">
+            <Flower className="text-green-800 mb-8" size={42} />
+            <Skeleton isLoading={isLoading} className="w-full h-32 md:h-48 mb-8">
+              <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl font-light leading-[0.75] mb-8 md:mb-12">
                 Rooted <br/> 
                 <span className="italic text-green-900 font-normal">in Nature</span>
               </h1>

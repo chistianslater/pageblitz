@@ -28,19 +28,19 @@ export default function CleanLayout({ websiteData, cs, heroImageUrl, isLoading =
   const subheadline = websiteData.sections?.[0]?.subheadline || "Professionelle Beratung und Behandlung auf höchstem Niveau.";
 
   return (
-    <div className="bg-white text-neutral-900">
+    <div className="bg-white text-neutral-900 font-outfit">
       {/* Hero Section */}
       <section className="min-h-screen flex items-center pt-20 md:pt-32">
         <div className="max-w-7xl mx-auto px-4 md:px-6 w-full border-x border-neutral-100">
           <div className="grid lg:grid-cols-2">
             <div className="py-12 md:py-20 pr-0 md:pr-12 border-b border-neutral-100 flex flex-col justify-center">
               <Skeleton isLoading={isLoading} className="w-32 h-3 mb-6">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-blue-600 mb-6 md:mb-8 block">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-600 mb-6 md:mb-8 block">
                   Medical Excellence
                 </span>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
-                <h1 className="text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter leading-[0.85] mb-6 md:mb-12 uppercase">
+                <h1 className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tight leading-[0.8] mb-6 md:mb-12 uppercase">
                   Expert <br/> 
                   <span className="text-blue-600">Precision</span>
                 </h1>

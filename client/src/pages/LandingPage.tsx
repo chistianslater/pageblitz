@@ -153,16 +153,16 @@ const FeatureCard = ({ icon: Icon, title, description, index }: any) => (
     initial={{ opacity: 0, y: 30 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-50px" }}
-    transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    className="group relative p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500"
+    transition={{ delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+    className="group relative p-10 rounded-[2.5rem] bg-white/[0.01] border border-white/[0.05] hover:bg-white/[0.03] hover:border-white/[0.1] transition-all duration-700 overflow-hidden"
   >
-    <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors" />
     <div className="relative z-10">
-      <div className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-        <Icon className="w-5 h-5 text-white/70" />
+      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-700">
+        <Icon className="w-6 h-6 text-white/80" />
       </div>
-      <h3 className="text-white text-lg font-semibold mb-3 tracking-tight">{title}</h3>
-      <p className="text-white/50 text-sm leading-relaxed">{description}</p>
+      <h3 className="font-clash text-xl font-bold mb-4 tracking-tight text-white uppercase">{title}</h3>
+      <p className="text-white/40 text-sm leading-relaxed font-light">{description}</p>
     </div>
   </motion.div>
 );
@@ -453,138 +453,106 @@ const websiteExamples = [
 ];
 
 const WebsiteShowcase = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const scrollAmount = 400;
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth"
-      });
-    }
-  };
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) {
-      el.addEventListener("scroll", checkScroll);
-      checkScroll();
-      return () => el.removeEventListener("scroll", checkScroll);
-    }
-  }, []);
-
   return (
     <section id="showcase" className="py-32 relative overflow-hidden">
       <GradientOrb className="w-[600px] h-[600px] bg-indigo-500/10 -right-40 top-20" delay={0.2} />
       
-      <div className="max-w-7xl mx-auto px-6 mb-12 flex items-end justify-between">
-        <div>
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-white/40 text-sm font-medium uppercase tracking-widest mb-3"
-          >
-            Live Beispiele
-          </motion.h2>
-          <motion.h3 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl md:text-4xl font-semibold text-white tracking-tight"
-          >
-            Websites, die verkaufen.
-          </motion.h3>
-        </div>
-        
-        <div className="hidden md:flex gap-2">
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={`p-3 rounded-full border transition-all ${
-              canScrollLeft 
-                ? "border-white/20 text-white hover:bg-white/10" 
-                : "border-white/5 text-white/20 cursor-not-allowed"
-            }`}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={`p-3 rounded-full border transition-all ${
-              canScrollRight 
-                ? "border-white/20 text-white hover:bg-white/10" 
-                : "border-white/5 text-white/20 cursor-not-allowed"
-            }`}
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="max-w-7xl mx-auto px-6 mb-20 text-center">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-white/40 text-[10px] font-bold uppercase tracking-[0.4em] mb-4"
+        >
+          Selected Works
+        </motion.h2>
+        <motion.h3 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="font-clash text-4xl md:text-6xl font-black text-white tracking-tight uppercase"
+        >
+          Websites, die <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">überzeugen.</span>
+        </motion.h3>
       </div>
 
-      {/* Horizontal Scroll Gallery */}
-      <div 
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-auto scrollbar-hide px-6 pb-4 snap-x snap-mandatory"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {/* Spacer for max-width alignment */}
-        <div className="shrink-0 w-[calc((100vw-1280px)/2)]" />
-        
-        {websiteExamples.map((site, i) => (
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
+        {/* Editorial Grid Layout */}
+        <div className="md:col-span-7">
           <motion.div
-            key={i}
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ delay: i * 0.1 }}
-            className="snap-center shrink-0 w-[360px] md:w-[420px] group cursor-pointer"
+            viewport={{ once: true }}
+            className="group cursor-pointer relative"
           >
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white/5 mb-4 border border-white/10 group-hover:border-white/20 transition-all">
-              <img 
-                src={site.image} 
-                alt={site.name}
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
-                  <ArrowUpRight className="w-6 h-6 text-black" />
-                </div>
+            <div className="relative aspect-[16/10] rounded-3xl overflow-hidden bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-700">
+              <img src={websiteExamples[0].image} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+              <div className="absolute bottom-8 left-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">{websiteExamples[0].industry}</p>
+                <h4 className="font-clash text-2xl md:text-3xl font-bold text-white uppercase">{websiteExamples[0].name}</h4>
               </div>
-
-              {/* Layout Badge */}
-              <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
-                <span className="text-xs text-white/80 font-medium">{site.layout}</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-medium mb-1 group-hover:text-white/80 transition-colors">{site.name}</h4>
-                <p className="text-white/40 text-sm">{site.industry}</p>
-              </div>
-              <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
             </div>
           </motion.div>
-        ))}
-        
-        <div className="shrink-0 w-6" />
+        </div>
+
+        <div className="md:col-span-5 md:pt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="group cursor-pointer relative"
+          >
+            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-700">
+              <img src={websiteExamples[1].image} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+              <div className="absolute bottom-8 left-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">{websiteExamples[1].industry}</p>
+                <h4 className="font-clash text-2xl font-bold text-white uppercase">{websiteExamples[1].name}</h4>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="md:col-span-5">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="group cursor-pointer relative"
+          >
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-700">
+              <img src={websiteExamples[2].image} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+              <div className="absolute bottom-8 left-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">{websiteExamples[2].industry}</p>
+                <h4 className="font-clash text-2xl font-bold text-white uppercase">{websiteExamples[2].name}</h4>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="md:col-span-7 md:-mt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="group cursor-pointer relative"
+          >
+            <div className="relative aspect-[16/9] rounded-3xl overflow-hidden bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-700">
+              <img src={websiteExamples[3].image} className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+              <div className="absolute bottom-8 left-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">{websiteExamples[3].industry}</p>
+                <h4 className="font-clash text-2xl md:text-4xl font-bold text-white uppercase">{websiteExamples[3].name}</h4>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -598,83 +566,67 @@ export default function LandingPage() {
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans">
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-satoshi grain-overlay">
       <Navbar />
 
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <GradientOrb className="w-[800px] h-[800px] bg-indigo-500/10 -left-40 -top-40" delay={0} />
+        <GradientOrb className="w-[800px] h-[800px] bg-blue-500/10 -left-40 -top-40" delay={0} />
         <GradientOrb className="w-[600px] h-[600px] bg-purple-500/10 right-0 top-1/4" delay={0.3} />
-        <GradientOrb className="w-[400px] h-[400px] bg-blue-500/5 left-1/3 bottom-0" delay={0.5} />
         
+        {/* Subtle Mesh Gradients */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.15] mix-blend-screen pointer-events-none">
+          <div className="absolute top-0 right-0 w-[60vw] h-[60vw] rounded-full bg-indigo-500/20 blur-[120px]" />
+          <div className="absolute bottom-0 left-0 w-[50vw] h-[50vw] rounded-full bg-blue-600/20 blur-[100px]" />
+        </div>
+
         {/* Grid pattern */}
         <div 
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
+            backgroundSize: '80px 80px'
           }}
         />
       </div>
 
       {/* Hero Section with Animated Gradient Background */}
-      <section className="relative min-h-screen">
-        {/* Background Animation - Full screen */}
-        <div className="absolute inset-0 h-screen">
-          <BackgroundGradientAnimation 
-            containerClassName="absolute inset-0"
-            gradientBackgroundStart="rgb(10, 10, 15)"
-            gradientBackgroundEnd="rgb(15, 15, 25)"
-            firstColor="59, 130, 246"
-            secondColor="147, 51, 234"
-            thirdColor="99, 102, 241"
-            fourthColor="79, 70, 229"
-            fifthColor="139, 92, 246"
-            pointerColor="99, 102, 241"
-            size="70%"
-            interactive={true}
-          />
-        </div>
-        
-        {/* Content Layer - Two Column Layout */}
-        <div className="relative z-10 flex flex-col justify-center min-h-screen pt-24 pb-12">
-          <div className="max-w-7xl mx-auto px-6 w-full">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-              {/* Left Column - Text */}
-              <div className="max-w-xl">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-sm mb-8"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Jetzt mit GMB-Integration</span>
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </motion.div>
+      <section className="relative min-h-screen flex items-center pt-20">
+        <div className="max-w-7xl mx-auto px-6 w-full relative z-10">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            {/* Left Column - Text */}
+            <div className="lg:col-span-7 max-w-2xl">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em] mb-10"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>AI-Powered Website Creation</span>
+              </motion.div>
 
-                <motion.h1 
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.1 }}
-                  className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 leading-[1.1]"
-                >
-                  <span className="text-white">Websites die sich</span>
-                  <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400">
-                    selbst erstellen.
-                  </span>
-                </motion.h1>
+              <motion.h1 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                className="font-clash text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-[0.85] uppercase"
+              >
+                Websites <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 italic">
+                  Redefined.
+                </span>
+              </motion.h1>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-lg text-white/60 max-w-lg mb-8 leading-relaxed"
-                >
-                  Keine Templates. Kein Drag-and-Drop. Nur dein Google My Business Link 
-                  und 3 Minuten Zeit. Die KI erledigt den Rest.
-                </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-lg md:text-xl text-white/50 max-w-lg mb-10 leading-relaxed font-light"
+              >
+                No templates. No drag-and-drop. Just your vision powered by advanced AI. 
+                Get a production-grade website in less than 3 minutes.
+              </motion.p>
 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -877,75 +829,120 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section - Clean */}
-      <section id="pricing" className="py-32">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Preise</h2>
-            <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Ein Preis. Alles inklusive.</h3>
+      {/* Pricing Section - High End */}
+      <section id="pricing" className="py-40 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/5 blur-[150px] rounded-full pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-24">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-white/40 text-[10px] font-bold uppercase tracking-[0.4em] mb-4"
+            >
+              Pricing
+            </motion.h2>
+            <motion.h3 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="font-clash text-4xl md:text-7xl font-black text-white tracking-tight uppercase"
+            >
+              Simple. <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Powerful.</span>
+            </motion.h3>
           </div>
 
-          <div className="max-w-lg mx-auto">
-            <div className="relative p-1 rounded-3xl bg-gradient-to-b from-white/20 to-white/5">
-              <div className="bg-[#0a0a0a] rounded-[22px] p-10 border border-white/10">
-                <div className="text-center mb-10">
-                  <div className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium mb-6">
-                    Pageblitz Pro
+          <div className="max-w-2xl mx-auto relative">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="p-[1px] rounded-[3rem] bg-gradient-to-b from-white/20 to-transparent"
+            >
+              <div className="bg-[#0c0c0c] rounded-[3rem] p-12 md:p-20 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] -mr-32 -mt-32" />
+                <div className="text-center mb-16 relative z-10">
+                  <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em] mb-10">
+                    Full Access Plan
                   </div>
-                  <div className="flex items-baseline justify-center gap-2 mb-4">
-                    <span className="text-6xl font-semibold text-white tracking-tight">39€</span>
-                    <span className="text-white/40">/Monat</span>
+                  <div className="flex items-baseline justify-center gap-4 mb-6">
+                    <span className="font-clash text-8xl md:text-9xl font-black text-white tracking-tighter">39€</span>
+                    <span className="text-white/40 font-clash text-2xl uppercase tracking-widest italic">/mo</span>
                   </div>
-                  <p className="text-white/40 text-sm">Monatlich kündbar. Keine versteckten Kosten.</p>
+                  <p className="text-white/40 text-base font-light max-w-sm mx-auto leading-relaxed">Cancel anytime. All features included. No hidden fees.</p>
                 </div>
 
-                <div className="space-y-4 mb-10">
+                <div className="grid md:grid-cols-2 gap-x-12 gap-y-6 mb-16 relative z-10">
                   {[
-                    "KI-generierte Website",
-                    "Eigene Domain inklusive",
-                    "SSL-Zertifikat",
-                    "DSGVO-konformer Datenschutz",
-                    "Premium Cloud Hosting",
-                    "Chat-Support",
+                    "AI Website Generation",
+                    "Custom Domain Link",
+                    "Enterprise SSL",
+                    "GDPR Compliant",
+                    "Ultra-Fast Hosting",
+                    "24/7 Priority Support",
                   ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-white/40" />
-                      <span className="text-white/70 text-sm">{feature}</span>
-                    </div>
+                    <motion.div 
+                      key={i} 
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white/40" />
+                      </div>
+                      <span className="text-white/70 text-sm font-light tracking-wide">{feature}</span>
+                    </motion.div>
                   ))}
                 </div>
 
-                <Button 
-                  onClick={() => navigate("/start")}
-                  className="w-full bg-white text-black hover:bg-white/90 rounded-full h-14 text-base font-medium"
-                >
-                  Jetzt starten
-                </Button>
-                <p className="text-center text-white/30 text-xs mt-4">14 Tage kostenlos testen</p>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    onClick={() => navigate("/start")}
+                    className="w-full bg-white text-black hover:bg-neutral-200 rounded-full h-20 text-lg font-black uppercase tracking-[0.2em] shadow-[0_20px_60px_-10px_rgba(255,255,255,0.2)]"
+                  >
+                    Start Creating Now
+                  </Button>
+                </motion.div>
+                <p className="text-center text-white/20 text-[10px] font-bold uppercase tracking-[0.2em] mt-8">Risk-free 14-day trial</p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-4xl md:text-6xl font-semibold text-white mb-8 tracking-tight">
-            Bereit für deine<br />neue Website?
-          </h2>
-          <p className="text-lg text-white/50 mb-10 max-w-xl mx-auto">
-            Überlass die Technik uns. Konzentrier dich auf dein Business.
-          </p>
-          <Button 
-            size="lg"
-            onClick={() => navigate("/start")}
-            className="bg-white text-black hover:bg-white/90 rounded-full h-16 px-12 text-lg font-medium shadow-xl shadow-white/10"
+      <section className="py-40 relative overflow-hidden bg-white/[0.01]">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/5 to-transparent" />
+        <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
+          <motion.h2 
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="font-clash text-5xl md:text-8xl lg:text-9xl font-black text-white mb-12 tracking-tight uppercase leading-[0.85]"
           >
-            Kostenlos starten
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+            Ready to <br />
+            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Evolve?</span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-xl text-white/40 mb-16 max-w-xl mx-auto font-light leading-relaxed"
+          >
+            Don't settle for the ordinary. Give your brand the high-end digital presence it deserves.
+          </motion.p>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button 
+              size="lg"
+              onClick={() => navigate("/start")}
+              className="bg-white text-black hover:bg-neutral-200 rounded-full h-24 px-16 text-xl font-black uppercase tracking-[0.3em] shadow-[0_30px_100px_-15px_rgba(255,255,255,0.3)]"
+            >
+              Get Started <ArrowRight className="ml-4 w-6 h-6" />
+            </Button>
+          </motion.div>
         </div>
       </section>
 

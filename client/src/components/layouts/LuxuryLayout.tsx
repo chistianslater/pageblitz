@@ -26,24 +26,24 @@ const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean,
 
 export default function LuxuryLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   return (
-    <div className="bg-black text-white selection:bg-yellow-500">
+    <div className="bg-black text-white selection:bg-yellow-500 font-tenor grain-overlay">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center text-center px-4 md:px-6">
+      <section className="relative min-h-screen flex items-center justify-center text-center px-4 md:px-6 overflow-hidden">
         <Skeleton isLoading={isLoading} className="absolute inset-0 z-0">
-          <div className="absolute inset-0 z-0 opacity-40">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+          <div className="absolute inset-0 z-0 opacity-60">
+            <img src={heroImageUrl} className="w-full h-full object-cover grayscale hover:scale-110 transition-transform duration-[3s]" alt="" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-black/20 to-black" />
           </div>
         </Skeleton>
         <div className="relative z-10 max-w-4xl">
-          <div className="flex justify-center items-center gap-3 md:gap-4 mb-6 md:mb-8">
-            <div className="h-[1px] w-8 md:w-12 bg-white/30" />
-            <Shield size={16} className="text-yellow-500 md:w-5 md:h-5" />
-            <div className="h-[1px] w-8 md:w-12 bg-white/30" />
+          <div className="flex justify-center items-center gap-4 mb-10">
+            <div className="h-[1px] w-12 bg-white/40" />
+            <Shield size={20} className="text-yellow-500" />
+            <div className="h-[1px] w-12 bg-white/40" />
           </div>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-24 md:h-32 mx-auto mb-8">
-            <h1 className="font-serif italic text-[10vw] md:text-[8vw] leading-none mb-8 md:mb-12">
-              Beyond Perfection
+          <Skeleton isLoading={isLoading} className="w-3/4 h-24 md:h-48 mx-auto mb-10">
+            <h1 className="font-serif italic text-[14vw] md:text-[10vw] leading-[0.8] mb-12">
+              Beyond <br/> Perfection
             </h1>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-1/2 h-16 mx-auto mb-8">

@@ -26,9 +26,9 @@ const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean,
 
 export default function BoldLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
   return (
-    <div className="bg-neutral-950 text-white selection:bg-orange-500">
+    <div className="bg-neutral-950 text-white selection:bg-orange-500 font-jakarta grain-overlay">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/10">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/10 relative">
         <Skeleton isLoading={isLoading} className="w-32 h-8">
           <span className="font-black text-xl md:text-2xl uppercase tracking-tighter italic">{websiteData.businessName}</span>
         </Skeleton>
@@ -43,21 +43,33 @@ export default function BoldLayout({ websiteData, cs, heroImageUrl, isLoading = 
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden pt-20">
-        <Skeleton isLoading={isLoading} className="absolute right-0 w-full lg:w-1/2 h-full">
-          <div 
-            className="absolute right-0 w-full lg:w-1/2 h-full opacity-40 grayscale" 
-            style={{ clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0% 100%)' }}
-          >
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
-          </div>
-        </Skeleton>
-        <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-          <div className="max-w-3xl">
-            <Skeleton isLoading={isLoading} className="w-full h-32 md:h-48">
-              <h1 className="text-[12vw] md:text-[10vw] font-black leading-[0.8] uppercase tracking-tighter">
-                Build <br/> 
-                <span className="italic" style={{ color: cs.primary }}>Beyond</span> <br/> 
+      <section className="relative min-h-[110vh] flex items-center overflow-hidden pt-20">
+        <div className="absolute top-0 right-0 w-full lg:w-2/3 h-full relative group">
+          <Skeleton isLoading={isLoading} className="absolute right-0 w-full h-full">
+            <div 
+              className="absolute right-0 w-full h-full opacity-60 grayscale group-hover:grayscale-0 transition-all duration-[2s]" 
+              style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)' }}
+            >
+              <img src={heroImageUrl} className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-[3s]" alt="" />
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-neutral-950/80" />
+            </div>
+          </Skeleton>
+          
+          {/* Overlapping Industrial Accent */}
+          <div className="absolute top-1/4 -left-12 w-24 h-96 bg-white/5 backdrop-blur-3xl border-l border-white/10 hidden lg:block skew-x-12 relative z-20" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-30 w-full">
+          <div className="max-w-4xl relative">
+            {/* Absolute Text Overlay */}
+            <div className="absolute -top-12 -left-6 text-xs font-black uppercase tracking-[1em] text-white/20 select-none">
+              Engineering Excellence
+            </div>
+            
+            <Skeleton isLoading={isLoading} className="w-full h-40 md:h-64">
+              <h1 className="text-[14vw] md:text-[12vw] font-black leading-[0.75] uppercase tracking-tighter drop-shadow-2xl">
+                Precision <br/> 
+                <span className="italic outline-text" style={{ color: cs.primary }}>Beyond</span> <br/> 
                 Limits
               </h1>
             </Skeleton>
