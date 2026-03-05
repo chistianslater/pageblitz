@@ -1666,10 +1666,10 @@ export function PremiumLayoutV2({
         </Skeleton>
       </nav>
 
-      {/* HERO: Navy left panel / white right panel */}
+      {/* HERO: Dynamic colored left panel / white right panel */}
       <section id="hero" className="min-h-screen grid lg:grid-cols-[45%_55%] pt-[80px]">
-        {/* Left: dark authority panel */}
-        <div className="bg-[#0F1E3C] text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden">
+        {/* Left: dynamic primary color panel */}
+        <div className="text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden" style={{ backgroundColor: cs.secondary || cs.primary }}>
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10">
             <Skeleton isLoading={isLoading} className="w-full h-56 mb-14">
@@ -1746,7 +1746,7 @@ export function PremiumLayoutV2({
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-6 bg-[#0F1E3C] text-white">
+      <footer className="py-12 px-6 text-white" style={{ backgroundColor: cs.secondary || cs.primary }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
           <div>
             <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
