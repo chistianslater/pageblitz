@@ -1542,15 +1542,15 @@ export function PremiumLayoutV2({
         <div className="bg-[#0F1E3C] text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden">
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10">
-            <Skeleton isLoading={isLoading} className="w-full h-56 mb-12">
+            <Skeleton isLoading={isLoading} className="w-full h-56 mb-14">
               <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)' }}>
                 {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
               </h1>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-16">
+            <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-20">
               <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-44 h-12">
+            <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
               <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-10 py-4 text-white text-sm uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform">{heroCta}</button>
             </Skeleton>
           </div>
