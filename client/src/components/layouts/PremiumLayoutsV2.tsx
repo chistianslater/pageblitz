@@ -57,7 +57,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
         <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-20">
           <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={hs}>
             {process?.headline || "So einfach geht's"}
-          h2>
+          </h2>
         </Skeleton>
         <div className="grid md:grid-cols-3 gap-8 md:gap-12">
           {items.map((item: any, i: number) => (
