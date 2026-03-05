@@ -475,11 +475,10 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
 }
 
 // ── CONTACT SECTION ───────────────────────────────────────────────
-function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit", headlineStyle = {} }: any) {
+function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit", headlineStyle = {}, template = 'modern' }: any) {
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
-  // addOnContactForm=true (or undefined for published sites) → show unlocked form
   const locked = websiteData?.addOnContactForm === false;
 
   const textMain = dark ? "text-white" : "text-neutral-900";
@@ -493,13 +492,86 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const inputText = dark ? "rgba(255,255,255,0.85)" : "#111827";
   const inputPlaceholder = dark ? "rgba(255,255,255,0.3)" : "#9ca3af";
   const iconBg = `${cs.primary}20`;
-  const labelStyle = { fontFamily: bodyFont, letterSpacing: '0.1em', fontSize: '0.7rem', textTransform: 'uppercase' as const };
-  const inputStyle = {
-    fontFamily: bodyFont, width: '100%', padding: '0.6rem 0.875rem',
-    borderRadius: '0.5rem', border: `1px solid ${borderColor}`,
-    background: inputBg, color: inputText, outline: 'none', fontSize: '0.9rem',
-  };
   const hs = { fontFamily: displayFont, ...headlineStyle };
+
+  const templateConfig: Record<string, {
+    inputRadius: string;
+    inputPadding: string;
+    inputFontSize: string;
+    buttonRadius: string;
+    buttonStyle: 'uppercase' | 'normal';
+    buttonPadding: string;
+    labelTransform: 'uppercase' | 'normal';
+    labelSize: string;
+    iconRadius: string;
+    cardRadius: string;
+  }> = {
+    bold: {
+      inputRadius: '0', inputPadding: '0.875rem 1rem', inputFontSize: '1rem',
+      buttonRadius: '0', buttonStyle: 'uppercase', buttonPadding: '1rem 1.5rem',
+      labelTransform: 'uppercase', labelSize: '0.65rem',
+      iconRadius: '0', cardRadius: '0',
+    },
+    elegant: {
+      inputRadius: '1rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.95rem',
+      buttonRadius: '9999px', buttonStyle: 'normal', buttonPadding: '0.875rem 1.5rem',
+      labelTransform: 'uppercase', labelSize: '0.65rem',
+      iconRadius: '0.75rem', cardRadius: '1.5rem',
+    },
+    modern: {
+      inputRadius: '0.75rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.9rem',
+      buttonRadius: '0.75rem', buttonStyle: 'normal', buttonPadding: '0.875rem 1.5rem',
+      labelTransform: 'uppercase', labelSize: '0.7rem',
+      iconRadius: '0.75rem', cardRadius: '1rem',
+    },
+    luxury: {
+      inputRadius: '0.5rem', inputPadding: '0.875rem 1.25rem', inputFontSize: '0.95rem',
+      buttonRadius: '9999px', buttonStyle: 'uppercase', buttonPadding: '1rem 2rem',
+      labelTransform: 'uppercase', labelSize: '0.65rem',
+      iconRadius: '0.5rem', cardRadius: '1rem',
+    },
+    craft: {
+      inputRadius: '0.25rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.9rem',
+      buttonRadius: '0.25rem', buttonStyle: 'uppercase', buttonPadding: '0.875rem 1.5rem',
+      labelTransform: 'uppercase', labelSize: '0.7rem',
+      iconRadius: '0.25rem', cardRadius: '0.5rem',
+    },
+    fresh: {
+      inputRadius: '1rem', inputPadding: '0.75rem 1.25rem', inputFontSize: '0.95rem',
+      buttonRadius: '9999px', buttonStyle: 'normal', buttonPadding: '0.875rem 2rem',
+      labelTransform: 'normal', labelSize: '0.75rem',
+      iconRadius: '1rem', cardRadius: '1.5rem',
+    },
+    clean: {
+      inputRadius: '0.375rem', inputPadding: '0.625rem 0.875rem', inputFontSize: '0.875rem',
+      buttonRadius: '0.375rem', buttonStyle: 'uppercase', buttonPadding: '0.75rem 1.25rem',
+      labelTransform: 'uppercase', labelSize: '0.65rem',
+      iconRadius: '0.375rem', cardRadius: '0.75rem',
+    },
+  };
+
+  const config = templateConfig[template] || templateConfig.modern;
+
+  const labelStyle = {
+    fontFamily: bodyFont,
+    letterSpacing: config.labelTransform === 'uppercase' ? '0.1em' : '0.05em',
+    fontSize: config.labelSize,
+    textTransform: config.labelTransform as const,
+    fontWeight: config.labelTransform === 'uppercase' ? 600 : 500,
+  };
+
+  const inputStyle = {
+    fontFamily: bodyFont, width: '100%', padding: config.inputPadding,
+    borderRadius: config.inputRadius, border: `1px solid ${borderColor}`,
+    background: inputBg, color: inputText, outline: 'none', fontSize: config.inputFontSize,
+  };
+
+  const buttonStyle = {
+    backgroundColor: cs.primary, fontFamily: displayFont,
+    borderRadius: config.buttonRadius, padding: config.buttonPadding,
+    textTransform: config.buttonStyle, letterSpacing: config.buttonStyle === 'uppercase' ? '0.05em' : '0',
+    fontWeight: config.buttonStyle === 'uppercase' ? 700 : 600,
+  };
 
   return (
     <section id="kontakt" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bg} ${topBorder}`} style={{ fontFamily: bodyFont }}>
@@ -507,14 +579,12 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-16">
           <h2 className={`text-3xl md:text-4xl mb-16 ${textMain}`} style={hs}>Kontakt</h2>
         </Skeleton>
-        <div className="grid md:grid-cols-2 gap-12">
-
-          {/* Left: real contact data */}
+        <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="space-y-6">
             {(address || isLoading) && (
               <Skeleton isLoading={isLoading} className="w-full h-16">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
+                  <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <MapPin size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
@@ -527,7 +597,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
             {(phone || isLoading) && (
               <Skeleton isLoading={isLoading} className="w-full h-16">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
+                  <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <Phone size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
@@ -540,7 +610,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
             {(hours || isLoading) && (
               <Skeleton isLoading={isLoading} className="w-full h-16">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
+                  <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <Clock size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
@@ -551,65 +621,64 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
               </Skeleton>
             )}
           </div>
-
-          {/* Right: contact form – unlocked when addOnContactForm is active */}
           <div className="relative">
-            <div className={`rounded-xl border ${cardBg} ${border} p-6 ${locked ? 'opacity-40 blur-[2px] pointer-events-none select-none' : ''}`}>
+            <div className={`border ${cardBg} ${border} ${locked ? 'opacity-40 blur-[2px] pointer-events-none select-none' : ''}`}
+              style={{ borderRadius: config.cardRadius, padding: '1.5rem' }}>
               <form className="space-y-4" onSubmit={e => e.preventDefault()}>
                 <div>
                   <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>Name</label>
                   <input type="text" placeholder="Max Mustermann" style={inputStyle}
-                    className="focus:outline-none" />
+                    className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
+                    onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
+                    onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
                 <div>
                   <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>E-Mail</label>
                   <input type="email" placeholder="max@beispiel.de" style={inputStyle}
-                    className="focus:outline-none" />
+                    className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
+                    onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
+                    onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
                 <div>
                   <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>Nachricht</label>
                   <textarea rows={4} placeholder="Ihre Nachricht…"
-                    style={{ ...inputStyle, resize: 'none' as const }}
-                    className="focus:outline-none" />
+                    style={{ ...inputStyle, resize: 'none' as const, minHeight: '100px' }}
+                    className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
+                    onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
+                    onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
-                {/* DSGVO checkbox */}
                 <div className="flex items-start gap-2.5 pt-1">
-                  <div className="mt-0.5 w-4 h-4 rounded shrink-0 border flex items-center justify-center"
-                    style={{ borderColor: inputPlaceholder, backgroundColor: inputBg }}>
+                  <div className="mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center"
+                    style={{ borderRadius: config.inputRadius, borderColor: inputPlaceholder, backgroundColor: inputBg }}>
                   </div>
                   <p className={`text-xs leading-relaxed ${textSub}`} style={{ fontFamily: bodyFont }}>
                     Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
-                    <a href="#datenschutz" className="underline underline-offset-2" style={{ color: cs.primary }}>
-                      Datenschutzerklärung
-                    </a>{' '}
-                    zu.
+                    <a href="#datenschutz" className="underline underline-offset-2" style={{ color: cs.primary }}>Datenschutzerklärung</a> zu.
                   </p>
                 </div>
-                <button type="submit"
-                  className="w-full py-3 px-6 text-white font-bold tracking-wide rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: cs.primary, ...hs }}>
+                <button type="submit" className="w-full text-white hover:opacity-90 transition-opacity" style={buttonStyle}>
                   Nachricht senden
                 </button>
               </form>
             </div>
             {locked && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className={`${cardBg} rounded-xl border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}>
-                  <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-3">
+              <div className="absolute inset-0 flex items-start justify-center pt-20">
+                <div className={`${cardBg} border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}
+                  style={{ borderRadius: config.cardRadius }}>
+                  <div className="w-12 h-12 bg-neutral-100 flex items-center justify-center mx-auto mb-3"
+                    style={{ borderRadius: config.iconRadius }}>
                     <Shield size={22} className="text-neutral-400" />
                   </div>
                   <p className={`font-bold text-sm mb-1 ${textMain}`} style={hs}>Kontaktformular</p>
                   <p className={`text-xs mb-1 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
                   <p className="text-xs font-semibold mb-4" style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
-                  <button className="w-full py-2.5 px-4 text-xs font-bold uppercase tracking-widest text-white rounded-lg hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: cs.primary, fontFamily: displayFont }}>
+                  <button className="w-full text-xs text-white hover:opacity-90 transition-opacity" style={buttonStyle}>
                     Freischalten
                   </button>
                 </div>
               </div>
             )}
           </div>
-
         </div>
       </div>
     </section>
@@ -809,7 +878,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -892,7 +961,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" />
 
       <footer className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -975,7 +1044,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1060,7 +1129,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1142,7 +1211,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -1225,7 +1294,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1308,7 +1377,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" />
 
       <footer className="py-12 px-8 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1391,7 +1460,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1476,7 +1545,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} />
       
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1640,7 +1709,7 @@ export function PremiumLayoutV2({
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" />
 
       <footer className="py-12 px-6 bg-[#0F1E3C] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
