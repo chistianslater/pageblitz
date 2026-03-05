@@ -2542,6 +2542,18 @@ Kontext: ${input.context}`,
 
         return { suggestions };
       }),
+
+    // Fetch GMB photos for this business (shown in hero/about photo selection step)
+    getGmbPhotos: publicProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) return { photos: [] };
+        const business = await getBusinessById((website as any).businessId);
+        if (!business?.placeId || business.placeId.startsWith("self-") || business.placeId.startsWith("email-")) return { photos: [] };
+        const photos = await getGmbPhotos(business.placeId, 7);
+        return { photos };
+      }),
   }),
 
   // ── Self-Service: Start without GMB ────────────────────────────────

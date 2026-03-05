@@ -3982,6 +3982,11 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
     { category: businessCategory },
     { enabled: !!businessCategory }
   );
+  const { data: gmbData } = trpc.onboarding.getGmbPhotos.useQuery(
+    { websiteId: websiteId! },
+    { enabled: !!websiteId }
+  );
+  const gmbPhotos = (gmbData?.photos || []).map((url) => ({ url, thumb: url, alt: "Google My Business Foto", isGmb: true }));
 
   const photos = suggestionsData?.suggestions || [
     { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70", alt: "Modernes Büro" },
@@ -3996,6 +4001,43 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
           ? 'Wähle ein Foto für den "Über uns"-Bereich deiner Website:'
           : "Wähle ein passendes Foto für den Hero-Bereich deiner Website:"}
       </p>
+
+      {/* GMB photos section */}
+      {gmbPhotos.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Deine Google-Fotos</p>
+          <div className="grid grid-cols-3 gap-2">
+            {gmbPhotos.filter(p => !brokenImages.has(p.url)).map((photo, idx) => (
+              <button
+                key={photo.url + idx}
+                onClick={() => onSelect(heroPhotoUrl === photo.url ? "" : photo.url)}
+                className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
+                  heroPhotoUrl === photo.url
+                    ? "border-blue-400 ring-2 ring-blue-400/40"
+                    : "border-slate-600/40 hover:border-slate-400"
+                }`}
+                title={photo.alt}
+              >
+                <img
+                  src={photo.thumb}
+                  alt={photo.alt}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={() => setBrokenImages(prev => { const next = new Set(prev); next.add(photo.url); return next; })}
+                />
+                {heroPhotoUrl === photo.url && (
+                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide pt-1">Oder Stockfoto wählen</p>
+        </div>
+      )}
 
       {/* Photo grid */}
       <div className="grid grid-cols-3 gap-2">
@@ -4024,11 +4066,11 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
                 }`}
                 title={alt}
               >
-                <img 
-                  src={thumb} 
-                  alt={alt} 
-                  className="w-full h-full object-cover" 
-                  loading="lazy" 
+                <img
+                  src={thumb}
+                  alt={alt}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                   onError={() => {
                     setBrokenImages(prev => {
                       const next = new Set(prev);
