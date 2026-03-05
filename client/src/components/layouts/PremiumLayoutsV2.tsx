@@ -63,6 +63,41 @@ const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 
   return sizeMap[headlineSize]?.[baseSize] || baseSize;
 };
 
+/** Calculate section headline sizes based on headlineSize preference */
+const getSectionHeadlineSize = (headlineSize: string = 'large', type: 'services' | 'about' | 'testimonials' | 'contact' = 'services') => {
+  const sizes = {
+    large: {
+      services: 'clamp(2rem, 4vw, 3rem)',
+      about: 'clamp(1.8rem, 3.5vw, 2.5rem)',
+      testimonials: 'clamp(1.8rem, 3.5vw, 2.5rem)',
+      contact: 'clamp(1.8rem, 3.5vw, 2.5rem)',
+    },
+    medium: {
+      services: 'clamp(1.75rem, 3.5vw, 2.5rem)',
+      about: 'clamp(1.6rem, 3vw, 2.2rem)',
+      testimonials: 'clamp(1.6rem, 3vw, 2.2rem)',
+      contact: 'clamp(1.6rem, 3vw, 2.2rem)',
+    },
+    small: {
+      services: 'clamp(1.5rem, 3vw, 2rem)',
+      about: 'clamp(1.4rem, 2.5vw, 1.8rem)',
+      testimonials: 'clamp(1.4rem, 2.5vw, 1.8rem)',
+      contact: 'clamp(1.4rem, 2.5vw, 1.8rem)',
+    },
+  };
+  return sizes[headlineSize as keyof typeof sizes]?.[type] || sizes.large[type];
+};
+
+/** Calculate body text size multiplier based on headlineSize */
+const getBodyTextMultiplier = (headlineSize: string = 'large'): number => {
+  const multipliers = {
+    large: 1,
+    medium: 0.95,
+    small: 0.9,
+  };
+  return multipliers[headlineSize as keyof typeof multipliers] || 1;
+};
+
 // ── HERO VARIANTS ───────────────────────────────────────────────
 
 function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
@@ -79,12 +114,12 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-20">
+        <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-24">
           <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-16 mb-10">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-20 mb-10">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
             {heroCta}
           </button>
@@ -120,12 +155,12 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             {hl.main} <span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-20">
+        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-24">
           <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-xl max-w-2xl mx-auto italic drop-shadow-lg">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-14 mb-20">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-20 mb-20">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
             {heroCta}
           </button>
@@ -193,13 +228,13 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
 // ── SERVICES VARIANTS ───────────────────────────────────────────
 
-function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont }: any) {
+function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
   const services = sec(websiteData, 'services')?.items || [];
   return (
     <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-64 h-16 mb-16">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }} className="uppercase">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services') }} className="uppercase">
             Unsere <span style={{ color: cs.primary }}>Leistungen</span>
           </h2>
         </Skeleton>
@@ -221,14 +256,14 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont }:
   );
 }
 
-function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont }: any) {
+function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
   const services = sec(websiteData, 'services')?.items || [];
   return (
     <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <Skeleton isLoading={isLoading} className="w-64 h-16">
-            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }} className="uppercase leading-none">
+            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services') }} className="uppercase leading-none">
               Exzellente<br /><span style={{ color: cs.primary }}>Services</span>
             </h2>
           </Skeleton>
@@ -256,7 +291,7 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont }:
 
 // ── ABOUT VARIANTS ──────────────────────────────────────────────
 
-function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont }: any) {
+function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
   return (
     <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
@@ -273,7 +308,7 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
         <div>
           <Skeleton isLoading={isLoading} className="w-full h-36 mb-8">
             <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: cs.primary }}>// Über uns</span>
-            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: 'clamp(2.5rem, 5vw, 4rem)', lineHeight: 1.1 }} className="uppercase mb-8">
+            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase mb-8">
               {aboutHeadline}
             </h2>
           </Skeleton>
@@ -288,14 +323,14 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   );
 }
 
-function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont }: any) {
+function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
   return (
     <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-900 text-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-[55%_45%] gap-16 items-center">
         <div>
           <Skeleton isLoading={isLoading} className="w-full h-32 mb-10">
             <div className="inline-block px-4 py-1 rounded-full border border-white/20 mb-6 text-xs uppercase tracking-widest font-bold">Die Story</div>
-            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: 'clamp(2.5rem, 5vw, 4rem)', lineHeight: 1.1 }} className="uppercase italic">
+            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase italic">
               {aboutHeadline}
             </h2>
           </Skeleton>
@@ -475,7 +510,7 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
 }
 
 // ── CONTACT SECTION ───────────────────────────────────────────────
-function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit", headlineStyle = {}, template = 'modern' }: any) {
+function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit", headlineStyle = {}, template = 'modern', headlineSize }: any) {
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
@@ -577,7 +612,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
     <section id="kontakt" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bg} ${topBorder}`} style={{ fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-16">
-          <h2 className={`text-3xl md:text-4xl mb-16 ${textMain}`} style={hs}>Kontakt</h2>
+          <h2 className={`mb-16 ${textMain}`} style={{ ...hs, fontSize: getSectionHeadlineSize(headlineSize, 'contact') }}>Kontakt</h2>
         </Skeleton>
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="space-y-6">
@@ -686,7 +721,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
 }
 
 // ── TESTIMONIALS ─────────────────────────────────────────────────
-function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false, variant = 0, serif = false }: any) {
+function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false, variant = 0, serif = false, headlineSize }: any) {
   const items = sec(websiteData, 'testimonials')?.items;
   if (!isLoading && !items?.length) return null;
 
@@ -703,7 +738,7 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
           <Skeleton isLoading={isLoading} className="w-80 h-16 mx-auto mb-20">
             <div className="text-center mb-20">
               <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-4 ${dark ? 'text-white/40' : 'opacity-40'}`}>Kundenstimmen</span>
-              <h2 className={`${textMain} ${serif ? "font-serif text-4xl md:text-6xl italic font-light" : "text-4xl md:text-5xl font-black text-center"}`}>
+              <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black text-center"}`} style={{ fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
                 {heading || 'Was unsere Kunden sagen'}
               </h2>
             </div>
@@ -742,7 +777,7 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-6 ${dark ? 'text-white/40' : 'opacity-40'}`}>Testimonials</span>
-            <h2 className={`${textMain} ${serif ? "font-serif text-4xl md:text-6xl italic font-light" : "text-4xl md:text-6xl font-black"} mb-8`}>
+            <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black"} mb-8`} style={{ fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
               Echte <span style={{ color: cs.primary }}>Erfahrungen</span>
             </h2>
             <p className={`${textSub} text-xl font-light leading-relaxed mb-12`}>
@@ -870,15 +905,15 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -953,15 +988,15 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" headlineSize={headlineSize} />
 
       <footer className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1036,15 +1071,15 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1121,15 +1156,15 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1203,15 +1238,15 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
@@ -1286,15 +1321,15 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1369,15 +1404,15 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
       <footer className="py-12 px-8 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1452,15 +1487,15 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1537,15 +1572,15 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} />
-      
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" />
+      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
@@ -1665,7 +1700,7 @@ export function PremiumLayoutV2({
         <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-64 h-14 mb-16">
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(2.4rem, 5vw, 4.2rem)' }}>
+              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services') }}>
                 Unsere <span style={{ color: cs.primary }}>Leistungen</span>
               </h2>
             </Skeleton>
@@ -1696,7 +1731,7 @@ export function PremiumLayoutV2({
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
               <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Exzellenz & Strategie</span>
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1.1 }}>{aboutHeadline}</h2>
+              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
               <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.8, fontSize: '1.125rem' }} className="text-neutral-600">{aboutContent}</p>
@@ -1709,7 +1744,7 @@ export function PremiumLayoutV2({
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" />
+      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
       <footer className="py-12 px-6 bg-[#0F1E3C] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
