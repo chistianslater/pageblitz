@@ -553,18 +553,22 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const textMainStyle = dark ? { color: safeCs.lightText || '#ffffff' } : { color: safeCs.text || '#171717' };
   const textSub = dark ? (safeCs.lightTextMuted ? '' : 'text-white/50') : (safeCs.textLight ? '' : 'text-neutral-500');
   const textSubStyle = dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.5)' } : { color: safeCs.textLight || '#737373' };
-  const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-white/5') : (safeCs.background ? '' : 'bg-neutral-50');
-  const bgStyle = dark ? { backgroundColor: safeCs.darkBackground || 'rgba(255,255,255,0.05)' } : { backgroundColor: safeCs.surface || safeCs.background || '#fafafa' };
-  const topBorder = dark ? (safeCs.lightTextMuted ? '' : 'border-t border-white/10') : '';
-  const topBorderStyle = dark && safeCs.lightTextMuted ? { borderTop: `1px solid ${safeCs.lightTextMuted || 'rgba(255,255,255,0.1)'}` } : {};
-  const cardBgClass = dark ? (safeCs.darkSurface ? '' : 'bg-neutral-800') : (safeCs.surface ? '' : 'bg-white');
-  const cardBgStyle = dark ? { backgroundColor: safeCs.darkSurface || '#1f2937' } : { backgroundColor: safeCs.surface || '#ffffff' };
-  const borderColor = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.1)') : (safeCs.textLight || '#e5e7eb');
-  const border = dark ? (safeCs.lightTextMuted ? '' : 'border-white/10') : (safeCs.textLight ? '' : 'border-neutral-200');
-  const borderStyle = dark && safeCs.lightTextMuted ? { borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : { borderColor: safeCs.textLight || '#e5e7eb' };
-  const inputBg = dark ? (safeCs.darkSurface ? `${safeCs.darkSurface}80` : 'rgba(255,255,255,0.05)') : (safeCs.surface ? `${safeCs.surface}` : '#f9fafb');
-  const inputText = dark ? (safeCs.lightText || 'rgba(255,255,255,0.85)') : (safeCs.text || '#111827');
-  const inputPlaceholder = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.3)') : (safeCs.textLight || '#9ca3af');
+  const darkBgColor = (safeCs as any).darkBackground || '#0a0a0a';
+  const bgStyle = dark
+    ? { backgroundColor: darkBgColor }
+    : { backgroundColor: safeCs.background || '#fafafa' };
+  const topBorder = dark ? 'border-t border-white/10' : '';
+  const cardBgStyle = dark
+    ? { backgroundColor: 'rgba(255,255,255,0.07)' }
+    : { backgroundColor: safeCs.surface || '#ffffff' };
+  const cardBgClass = '';
+  const borderColor = dark ? 'rgba(255,255,255,0.12)' : (safeCs.textLight || '#e5e7eb');
+  const border = '';
+  const borderStyle = { borderColor };
+  const topBorderStyle = {};
+  const inputBg = dark ? 'rgba(255,255,255,0.06)' : (safeCs.background || '#f9fafb');
+  const inputText = dark ? ((safeCs as any).lightText || '#ffffff') : (safeCs.text || '#111827');
+  const inputPlaceholder = dark ? 'rgba(255,255,255,0.3)' : (safeCs.textLight || '#9ca3af');
   const iconBg = `${safeCs.primary || '#3b82f6'}20`;
   const hs = { fontFamily: displayFont, ...headlineStyle };
 
