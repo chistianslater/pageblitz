@@ -941,16 +941,16 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-40 h-8 mb-2">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem' }} className="uppercase">{websiteData.businessName}</span>
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-2">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem' }} className="uppercase break-words">{websiteData.businessName}</span>
             </Skeleton>
-            <p className="text-white/25 text-sm mt-1">{footerText}</p>
+            <p className="text-white/25 text-sm mt-1 break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-white/40">
             <FooterContact websiteData={websiteData} textClass="text-white/40" />
           </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
@@ -1024,19 +1024,21 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <footer className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <Skeleton isLoading={isLoading} className="w-40 h-8">
-            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>
-          </Skeleton>
+          <div className="md:max-w-[280px] lg:max-w-[320px] text-center md:text-left">
+            <Skeleton isLoading={isLoading} className="w-full h-8">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="break-words">{websiteData.businessName}</span>
+            </Skeleton>
+          </div>
           <ul className="space-y-1 text-sm text-white/50 text-center">
             <FooterContact websiteData={websiteData} textClass="text-white/50" />
           </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/10">
-          <p className="text-white/20 text-xs text-center">{footerText}</p>
+          <p className="text-white/20 text-xs text-center break-words">{footerText}</p>
         </div>
       </footer>
     </div>
@@ -1107,19 +1109,19 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-40 h-8 mb-3">
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-6 rounded-sm" style={{ backgroundColor: cs.primary }} />
-                <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1rem' }}>{websiteData.businessName}</span>
+                <div className="w-1.5 h-6 rounded-sm shrink-0" style={{ backgroundColor: cs.primary }} />
+                <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1rem' }} className="break-words">{websiteData.businessName}</span>
               </div>
             </Skeleton>
-            <p className="text-neutral-400 text-sm">{footerText}</p>
+            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-neutral-400">
             <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
           </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
@@ -1192,16 +1194,16 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.2rem' }}>{websiteData.businessName}</span>
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.2rem' }} className="break-words">{websiteData.businessName}</span>
             </Skeleton>
-            <p className="text-neutral-400 text-sm">{footerText}</p>
+            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-neutral-400">
             <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
           </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
@@ -1274,16 +1276,16 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <footer className="py-10 px-6 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-44 h-8 mb-2">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.4rem', letterSpacing: '0.06em' }}>{websiteData.businessName}</span>
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-2">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.4rem', letterSpacing: '0.06em' }} className="break-words">{websiteData.businessName}</span>
             </Skeleton>
-            <p className="text-white/25 text-sm">{footerText}</p>
+            <p className="text-white/25 text-sm break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-white/40">
             <FooterContact websiteData={websiteData} textClass="text-white/40" />
           </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
@@ -1357,16 +1359,16 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }}>{websiteData.businessName}</span>
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }} className="break-words">{websiteData.businessName}</span>
             </Skeleton>
-            <p className="text-neutral-400 text-sm">{footerText}</p>
+            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-neutral-400">
             <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
           </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
@@ -1440,19 +1442,21 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <footer className="py-12 px-8 bg-black border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <Skeleton isLoading={isLoading} className="w-44 h-8">
-            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}>{websiteData.businessName}</span>
-          </Skeleton>
+          <div className="md:max-w-[280px] lg:max-w-[320px] text-center md:text-left">
+            <Skeleton isLoading={isLoading} className="w-full h-8">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }} className="break-words">{websiteData.businessName}</span>
+            </Skeleton>
+          </div>
           <ul className="space-y-1 text-sm text-white/40 text-center">
             <FooterContact websiteData={websiteData} textClass="text-white/40" />
           </ul>
-          <div className="flex gap-8 text-white/25 text-xs uppercase tracking-widest">
+          <div className="flex gap-8 text-white/25 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/10">
-          <p className="text-white/20 text-xs text-center">{footerText}</p>
+          <p className="text-white/20 text-xs text-center break-words">{footerText}</p>
         </div>
       </footer>
     </div>
@@ -1523,16 +1527,16 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-40 h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }} className="break-words">{websiteData.businessName}</span>
             </Skeleton>
-            <p className="text-neutral-400 text-sm">{footerText}</p>
+            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-neutral-400">
             <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
           </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
@@ -1608,19 +1612,19 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <footer className="py-12 px-6 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
               <div className="flex items-center gap-2">
-                <Leaf size={16} style={{ color: cs.primary }} />
-                <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem' }}>{websiteData.businessName}</span>
+                <Leaf size={16} style={{ color: cs.primary }} className="shrink-0" />
+                <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem' }} className="break-words">{websiteData.businessName}</span>
               </div>
             </Skeleton>
-            <p className="text-neutral-400 text-sm">{footerText}</p>
+            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-neutral-400">
             <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
           </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
@@ -1772,16 +1776,16 @@ export function PremiumLayoutV2({
 
       <footer className="py-12 px-6 text-white" style={{ backgroundColor: cs.secondary || cs.primary }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-44 h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+          <div className="md:max-w-[280px] lg:max-w-[320px]">
+            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }} className="break-words">{websiteData.businessName}</span>
             </Skeleton>
-            <p className="text-white/30 text-sm">{footerText}</p>
+            <p className="text-white/30 text-sm break-words">{footerText}</p>
           </div>
           <ul className="space-y-1.5 text-sm text-white/50">
             <FooterContact websiteData={websiteData} textClass="text-white/50" />
           </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest">
+          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
             <a href="#" className="hover:text-white transition-colors">Impressum</a>
             <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
           </div>
