@@ -2511,183 +2511,110 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     Farben individuell anpassen
                   </button>
 
-                  {showIndividualColors && (
-                    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                      {/* Basis Farben */}
-                      <div>
-                        <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                          Basis-Farben
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          {[
-                            { key: "primary", label: "Hauptfarbe" },
-                            { key: "secondary", label: "Sekundärfarbe" },
-                            { key: "accent", label: "Akzentfarbe" },
-                            { key: "background", label: "Hintergrund" },
-                            { key: "surface", label: "Oberflächen" },
-                            { key: "text", label: "Textfarbe" },
-                          ].map((item) => (
-                            <div key={item.key} className="space-y-1.5">
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
-                              <div className="flex gap-2">
-                                <div
-                                  className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
-                                  style={{ backgroundColor: (data.colorScheme as any)[item.key] }}
-                                >
-                                  <input
-                                    type="color"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    value={(data.colorScheme as any)[item.key]}
-                                    onChange={(e) => {
-                                      const newValue = e.target.value;
-                                      setData(p => {
-                                        const newScheme = { ...p.colorScheme, [item.key]: newValue };
-                                        // Recalculate on-colors when primary/secondary/accent/surface/background change
-                                        if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(item.key)) {
-                                          newScheme[`on${item.key.charAt(0).toUpperCase() + item.key.slice(1)}`] = getContrastColor(newValue);
-                                        }
-                                        return { ...p, colorScheme: newScheme };
-                                      });
-                                    }}
-                                  />
-                                </div>
-                                <input
-                                  type="text"
-                                  className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
-                                  value={(data.colorScheme as any)[item.key]}
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
-                                      setData(p => {
-                                        const newScheme = { ...p.colorScheme, [item.key]: v };
-                                        // Recalculate on-colors when primary/secondary/accent/surface/background change
-                                        if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(item.key)) {
-                                          newScheme[`on${item.key.charAt(0).toUpperCase() + item.key.slice(1)}`] = getContrastColor(v);
-                                        }
-                                        return { ...p, colorScheme: newScheme };
-                                      });
-                                    }
-                                  }}
-                                />
+                  {showIndividualColors && (() => {
+                    const cs = data.colorScheme as any;
+                    const colorGroups = [
+                      {
+                        label: "Basis", dot: "bg-blue-400",
+                        keys: [
+                          { key: "primary", label: "Hauptfarbe", auto: false },
+                          { key: "secondary", label: "Sekundärfarbe", auto: false },
+                          { key: "accent", label: "Akzentfarbe", auto: false },
+                          { key: "background", label: "Hintergrund", auto: false },
+                          { key: "surface", label: "Oberflächen", auto: false },
+                          { key: "text", label: "Textfarbe", auto: false },
+                          { key: "textLight", label: "Gedämpfte Schrift", auto: false },
+                        ],
+                      },
+                      {
+                        label: "Kontrast", dot: "bg-amber-400",
+                        keys: [
+                          { key: "onPrimary", label: "Text auf Hauptfarbe", auto: true },
+                          { key: "onSecondary", label: "Text auf Sekundär", auto: true },
+                          { key: "onAccent", label: "Text auf Akzent", auto: true },
+                          { key: "onSurface", label: "Text auf Oberflächen", auto: true },
+                          { key: "onBackground", label: "Text auf Hintergrund", auto: true },
+                        ],
+                      },
+                      {
+                        label: "Dunkle Bereiche", dot: "bg-purple-400",
+                        keys: [
+                          { key: "darkBackground", label: "Dunkler Hintergrund", auto: false },
+                          { key: "darkSurface", label: "Dunkle Oberfläche", auto: false },
+                          { key: "lightText", label: "Heller Text", auto: false },
+                          { key: "lightTextMuted", label: "Heller Text (gedämpft)", auto: false },
+                        ],
+                      },
+                    ];
+
+                    const handleColorChange = (key: string, newValue: string) => {
+                      setData(p => {
+                        const newScheme = { ...p.colorScheme, [key]: newValue };
+                        if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(key)) {
+                          (newScheme as any)[`on${key.charAt(0).toUpperCase() + key.slice(1)}`] = getContrastColor(newValue);
+                        }
+                        return { ...p, colorScheme: newScheme };
+                      });
+                    };
+
+                    return (
+                      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        {colorGroups.map(({ label, dot, keys }, gi) => {
+                          const activeKeys = keys.filter(item => cs[item.key] !== undefined && cs[item.key] !== '');
+                          if (activeKeys.length === 0) return null;
+                          return (
+                            <div key={label} className={gi > 0 ? "mt-4 pt-4 border-t border-slate-700/50" : ""}>
+                              <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span className={`w-1.5 h-1.5 rounded-full inline-block ${dot}`} />
+                                {label}
+                                {label === "Kontrast" && <span className="text-slate-500 normal-case font-normal tracking-normal">· auto</span>}
+                              </p>
+                              <div className="space-y-0.5">
+                                {activeKeys.map((item) => {
+                                  const rawVal = cs[item.key] || '';
+                                  const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
+                                  return (
+                                    <div key={item.key} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors group">
+                                      <div
+                                        className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 cursor-pointer overflow-hidden relative shadow-sm"
+                                        style={{ backgroundColor: colorVal }}
+                                        title="Klicken um Farbe zu wählen"
+                                      >
+                                        <input
+                                          type="color"
+                                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                          value={colorVal}
+                                          onChange={(e) => handleColorChange(item.key, e.target.value)}
+                                        />
+                                      </div>
+                                      <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{item.label}</span>
+                                      <input
+                                        type="text"
+                                        className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
+                                        value={rawVal}
+                                        placeholder="#000000"
+                                        onChange={(e) => {
+                                          const v = e.target.value;
+                                          if (/^#?[0-9A-Fa-f]{0,6}$/.test(v)) {
+                                            const normalized = v.startsWith('#') ? v : `#${v}`;
+                                            setData(p => ({ ...p, colorScheme: { ...p.colorScheme, [item.key]: normalized } }));
+                                            if (normalized.length === 7) handleColorChange(item.key, normalized);
+                                          }
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Kontrast Farben (Text auf farbigen Hintergründen) */}
-                      <div>
-                        <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                          Kontrast-Farben (Text auf farbigen Hintergründen)
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          {[
-                            { key: "onPrimary", label: "Text auf Hauptfarbe" },
-                            { key: "onSecondary", label: "Text auf Sekundärfarbe" },
-                            { key: "onAccent", label: "Text auf Akzent" },
-                            { key: "onSurface", label: "Text auf Oberflächen" },
-                            { key: "onBackground", label: "Text auf Hintergrund" },
-                            { key: "textLight", label: "Hellere Textfarbe" },
-                          ].map((item) => (
-                            <div key={item.key} className="space-y-1.5">
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
-                              <div className="flex gap-2">
-                                <div
-                                  className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
-                                  style={{ backgroundColor: (data.colorScheme as any)[item.key] || '#ffffff' }}
-                                >
-                                  <input
-                                    type="color"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    value={(data.colorScheme as any)[item.key] || '#ffffff'}
-                                    onChange={(e) => setData(p => ({
-                                      ...p,
-                                      colorScheme: { ...p.colorScheme, [item.key]: e.target.value }
-                                    }))}
-                                  />
-                                </div>
-                                <input
-                                  type="text"
-                                  className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
-                                  value={(data.colorScheme as any)[item.key] || ''}
-                                  placeholder="#ffffff"
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    if (/^#[0-9A-Fa-f]{0,6}$/.test(v) || v === '') {
-                                      setData(p => ({
-                                        ...p,
-                                        colorScheme: { ...p.colorScheme, [item.key]: v || undefined }
-                                      }));
-                                    }
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Dunkle Sektionen */}
-                      <div>
-                        <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
-                          Dunkle Sektionen (Hero, Footer, etc.)
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          {[
-                            { key: "darkBackground", label: "Dunkler Hintergrund" },
-                            { key: "darkSurface", label: "Dunkle Oberflächen" },
-                            { key: "lightText", label: "Heller Text (dunkle BG)" },
-                            { key: "lightTextMuted", label: "Heller Text (gedämpft)" },
-                          ].map((item) => (
-                            <div key={item.key} className="space-y-1.5">
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
-                              <div className="flex gap-2">
-                                <div
-                                  className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
-                                  style={{ backgroundColor: (data.colorScheme as any)[item.key] || (item.key.includes('dark') ? '#0f172a' : '#ffffff') }}
-                                >
-                                  <input
-                                    type="color"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    value={(data.colorScheme as any)[item.key] || (item.key.includes('dark') ? '#0f172a' : '#ffffff')}
-                                    onChange={(e) => setData(p => ({
-                                      ...p,
-                                      colorScheme: { ...p.colorScheme, [item.key]: e.target.value }
-                                    }))}
-                                  />
-                                </div>
-                                <input
-                                  type="text"
-                                  className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
-                                  value={(data.colorScheme as any)[item.key] || ''}
-                                  placeholder={item.key.includes('dark') ? "#0f172a" : "#ffffff"}
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    if (/^#[0-9A-Fa-f]{0,6}$/.test(v) || v === '') {
-                                      setData(p => ({
-                                        ...p,
-                                        colorScheme: { ...p.colorScheme, [item.key]: v || undefined }
-                                      }));
-                                    }
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Info Text */}
-                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                        <p className="text-[11px] text-blue-300 leading-relaxed">
-                          <strong>Tipp:</strong> Die Kontrast-Farben werden automatisch berechnet, wenn du die Basis-Farben änderst. Für dunkle Sektionen (wie Hero mit Bild oder Footer) kannst du separate Farben definieren.
+                          );
+                        })}
+                        <p className="text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-700/50">
+                          Kontrast-Farben werden automatisch neu berechnet wenn du Basis-Farben änderst.
                         </p>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
 
                 <button
