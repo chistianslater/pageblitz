@@ -2559,40 +2559,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       },
                     ];
 
-                    const ColorRow = ({ colorKey, label }: { colorKey: string; label: string }) => {
-                      const rawVal = getValue(colorKey);
-                      const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
-                      return (
-                        <div className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors">
-                          <div
-                            className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 cursor-pointer overflow-hidden relative shadow-sm"
-                            style={{ backgroundColor: colorVal }}
-                          >
-                            <input
-                              type="color"
-                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                              value={colorVal}
-                              onChange={(e) => handleColorChange(colorKey, e.target.value)}
-                            />
-                          </div>
-                          <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{label}</span>
-                          <input
-                            type="text"
-                            className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
-                            value={rawVal}
-                            placeholder="#000000"
-                            onChange={(e) => {
-                              const v = e.target.value.startsWith('#') ? e.target.value : `#${e.target.value}`;
-                              if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
-                                setData(p => ({ ...p, colorScheme: { ...(p.colorScheme as any), [colorKey]: v } }));
-                                if (v.length === 7) handleColorChange(colorKey, v);
-                              }
-                            }}
-                          />
-                        </div>
-                      );
-                    };
-
                     return (
                       <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
                         {colorGroups.map(({ label, dot, keys }, gi) => (
@@ -2602,7 +2568,39 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               {label}
                             </p>
                             <div className="space-y-0.5">
-                              {keys.map(item => <ColorRow key={item.key} colorKey={item.key} label={item.label} />)}
+                              {keys.map(item => {
+                                const rawVal = getValue(item.key);
+                                const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
+                                return (
+                                  <div key={item.key} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors">
+                                    <div
+                                      className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 overflow-hidden relative shadow-sm"
+                                      style={{ backgroundColor: colorVal }}
+                                    >
+                                      <input
+                                        type="color"
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                        value={colorVal}
+                                        onChange={(e) => handleColorChange(item.key, e.target.value)}
+                                      />
+                                    </div>
+                                    <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{item.label}</span>
+                                    <input
+                                      type="text"
+                                      className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
+                                      value={rawVal}
+                                      placeholder="#000000"
+                                      onChange={(e) => {
+                                        const v = e.target.value.startsWith('#') ? e.target.value : `#${e.target.value}`;
+                                        if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
+                                          setData(p => ({ ...p, colorScheme: { ...(p.colorScheme as any), [item.key]: v } }));
+                                          if (v.length === 7) handleColorChange(item.key, v);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         ))}
