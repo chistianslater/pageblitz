@@ -550,12 +550,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const sections = websiteDataRaw?.sections || [];
     const hasAbout = sections.some((s: any) => s.type === "about");
     const layoutHasAboutImage = !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
+    const hasCustomerEmail = !!(siteData?.website as any)?.customerEmail;
 
     return STEP_ORDER.filter((step) => {
       if (step === "aboutPhoto") return hasAbout && layoutHasAboutImage;
       if (step === "editMenu") return _addOnMenu;
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
+      if (step === "email") return !hasCustomerEmail; // Skip email step if already provided
       return true;
     });
   }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
@@ -1330,7 +1332,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
       const initChat = async () => {
         const source = siteData?.website?.source;
-        const hasEmail = !!(siteData?.website as any)?.customerEmail;
+        const customerEmail = (siteData?.website as any)?.customerEmail as string | undefined;
+        const hasEmail = !!customerEmail;
+
+        // If customerEmail exists, auto-save it as the notification email
+        if (hasEmail && customerEmail) {
+          setData((p) => ({ ...p, email: customerEmail }));
+          // Also save to database silently
+          if (websiteId) {
+            try {
+              await saveStepMutation.mutateAsync({ 
+                websiteId, 
+                step: STEP_ORDER.indexOf("email"), 
+                data: { email: customerEmail } 
+              });
+            } catch (e) {
+              // Silent fail - not critical
+              console.warn("[Onboarding] Could not auto-save email step:", e);
+            }
+          }
+        }
 
         // Resume from saved step - check localStorage first, then database
         const effectiveWebsiteId = websiteIdProp || websiteId;
