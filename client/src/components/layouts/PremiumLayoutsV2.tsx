@@ -437,7 +437,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
     return (
       <section className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
-          <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-12">
+          <Skeleton isLoading={isLoading} className="w-56 h-16 mx-auto mb-16">
             <h2 className={`text-3xl md:text-4xl text-center mb-0 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
               {process?.headline || "So einfach geht's"}
             </h2>

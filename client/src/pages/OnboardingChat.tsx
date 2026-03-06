@@ -1825,8 +1825,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         websiteId,
         addOns: {
           subpages: data.subPages.filter((p) => p.name.trim()).length,
-          gallery: data.addOnGallery,
-          contactForm: data.addOnContactForm,
+          features: {
+            gallery: data.addOnGallery,
+            contactForm: data.addOnContactForm,
+          },
         },
       });
       window.open(session.url, "_blank");
@@ -4329,16 +4331,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     heroImageUrl={data.heroPhotoUrl || heroImageUrl}
                     aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
                     layoutStyle={layoutStyle}
-                    businessPhone={business?.phone || undefined}
-                    businessAddress={business?.address || undefined}
-                    businessEmail={business?.email || undefined}
-                    openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
-                    slug={slug}
-                    contactFormLocked={!data.addOnContactForm}
-                    logoFont={data.brandLogo?.startsWith("font:") ? data.brandLogo.replace("font:", "") : undefined}
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
-                    contentPhase={contentPhase}
                     isLoading={isGeneratingInitialContent || contentPhase === 'colors' || contentPhase === 'images'}
                   />
                 </div>

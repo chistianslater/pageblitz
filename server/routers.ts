@@ -2592,6 +2592,54 @@ Kontext: ${input.context}`,
         const photos = await getGmbPhotos(business.placeId, 7);
         return { photos };
       }),
+
+    // Regenerate legal pages (Impressum & Datenschutz) after legal data changes
+    regenerateLegalPages: publicProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input }) => {
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        if (!onboarding) throw new TRPCError({ code: "NOT_FOUND", message: "Onboarding nicht gefunden" });
+        
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+        
+        // Only regenerate if we have the minimum required legal data
+        if (!onboarding.legalOwner || !onboarding.legalEmail) {
+          return { success: false, error: "Rechtliche Daten unvollständig (Eigentümer und E-Mail erforderlich)" };
+        }
+        
+        const legalData = {
+          businessName: onboarding.businessName || (website.websiteData as any)?.businessName || "Unternehmen",
+          legalOwner: onboarding.legalOwner,
+          legalStreet: onboarding.legalStreet || "",
+          legalZip: onboarding.legalZip || "",
+          legalCity: onboarding.legalCity || "",
+          legalCountry: onboarding.legalCountry || "Deutschland",
+          legalEmail: onboarding.legalEmail,
+          legalPhone: onboarding.legalPhone || undefined,
+          legalVatId: onboarding.legalVatId || undefined,
+          legalRegister: onboarding.legalRegister || undefined,
+          legalRegisterCourt: onboarding.legalRegisterCourt || undefined,
+          legalResponsible: onboarding.legalResponsible || undefined,
+        };
+        
+        const impressumHtml = generateImpressum(legalData);
+        const datenschutzHtml = generateDatenschutz(legalData);
+        
+        // Update website with new legal pages
+        const websiteData = website.websiteData as any || {};
+        await updateWebsite(input.websiteId, {
+          websiteData: {
+            ...websiteData,
+            impressumHtml,
+            datenschutzHtml,
+            hasLegalPages: true,
+          },
+          hasLegalPages: true,
+        });
+        
+        return { success: true, impressumHtml: !!impressumHtml, datenschutzHtml: !!datenschutzHtml };
+      }),
   }),
 
   // ── Self-Service: Start without GMB ────────────────────────────────
@@ -2667,6 +2715,75 @@ Kontext: ${input.context}`,
         await updateWebsite(input.websiteId, updateData);
         return { success: true };
       }),
+
+    // Update legal data and regenerate Impressum/Datenschutz pages
+    updateLegalData: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        legalData: z.object({
+          legalOwner: z.string().optional(),
+          legalStreet: z.string().optional(),
+          legalZip: z.string().optional(),
+          legalCity: z.string().optional(),
+          legalEmail: z.string().optional(),
+          legalPhone: z.string().optional(),
+          legalVatId: z.string().optional(),
+        }),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership via subscription
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        
+        const website = owned.website;
+        
+        // Update onboarding with new legal data
+        await updateOnboarding(input.websiteId, {
+          ...input.legalData,
+          updatedAt: Date.now(),
+        });
+        
+        // Get updated onboarding data
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        
+        // Regenerate legal pages if we have minimum required data
+        if (onboarding?.legalOwner && onboarding?.legalEmail) {
+          const legalData = {
+            businessName: onboarding.businessName || (website.websiteData as any)?.businessName || "Unternehmen",
+            legalOwner: onboarding.legalOwner,
+            legalStreet: onboarding.legalStreet || "",
+            legalZip: onboarding.legalZip || "",
+            legalCity: onboarding.legalCity || "",
+            legalCountry: onboarding.legalCountry || "Deutschland",
+            legalEmail: onboarding.legalEmail,
+            legalPhone: onboarding.legalPhone || undefined,
+            legalVatId: onboarding.legalVatId || undefined,
+            legalRegister: onboarding.legalRegister || undefined,
+            legalRegisterCourt: onboarding.legalRegisterCourt || undefined,
+            legalResponsible: onboarding.legalResponsible || undefined,
+          };
+          
+          const impressumHtml = generateImpressum(legalData);
+          const datenschutzHtml = generateDatenschutz(legalData);
+          
+          const websiteData = website.websiteData as any || {};
+          await updateWebsite(input.websiteId, {
+            websiteData: {
+              ...websiteData,
+              impressumHtml,
+              datenschutzHtml,
+              hasLegalPages: true,
+            },
+            hasLegalPages: true,
+          });
+          
+          return { success: true, regenerated: true };
+        }
+        
+        return { success: true, regenerated: false };
+      }),
+
     setWebsiteActive: adminProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
