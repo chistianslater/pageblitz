@@ -365,6 +365,11 @@ interface OnboardingData {
   subPages: SubPage[];
   email: string; // for FOMO reminder
   topServicesSkipped?: boolean;
+  // Optional fields loaded from database
+  brandColor?: string;
+  brandSecondaryColor?: string;
+  logoUrl?: string;
+  photoUrls?: string[];
 }
 
 type ChatStep =
@@ -708,6 +713,45 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // Load existing onboarding data when available
   useEffect(() => {
     if (!existingOnboarding) return;
+
+    // Helper to safely convert topServices from DB format
+    const rawTopServices = (existingOnboarding as any).topServices;
+    const safeTopServices: { title: string; description: string }[] | undefined =
+      Array.isArray(rawTopServices) && rawTopServices.length > 0
+        ? rawTopServices.map((s: any) => ({ title: s.title || '', description: s.description || '' }))
+        : undefined;
+
+    // Sync basic onboarding data
+    setData(p => ({
+      ...p,
+      // Business info
+      businessCategory: existingOnboarding.businessCategory || p.businessCategory,
+      businessName: existingOnboarding.businessName || p.businessName,
+      tagline: existingOnboarding.tagline || p.tagline,
+      description: existingOnboarding.description || p.description,
+      usp: existingOnboarding.usp || p.usp,
+      targetAudience: existingOnboarding.targetAudience || p.targetAudience,
+      topServices: safeTopServices || p.topServices,
+      // Legal data
+      legalOwner: existingOnboarding.legalOwner || p.legalOwner,
+      legalStreet: existingOnboarding.legalStreet || p.legalStreet,
+      legalZip: existingOnboarding.legalZip || p.legalZip,
+      legalCity: existingOnboarding.legalCity || p.legalCity,
+      legalEmail: existingOnboarding.legalEmail || p.legalEmail,
+      legalPhone: existingOnboarding.legalPhone || p.legalPhone,
+      legalVatId: existingOnboarding.legalVatId || p.legalVatId,
+      // Brand
+      brandColor: (existingOnboarding as any).brandColor || p.brandColor,
+      brandSecondaryColor: (existingOnboarding as any).brandSecondaryColor || p.brandSecondaryColor,
+      headlineFont: existingOnboarding.headlineFont || p.headlineFont,
+      // Photos
+      logoUrl: (existingOnboarding as any).logoUrl || p.logoUrl,
+      heroPhotoUrl: existingOnboarding.heroPhotoUrl || p.heroPhotoUrl,
+      aboutPhotoUrl: existingOnboarding.aboutPhotoUrl || p.aboutPhotoUrl,
+      photoUrls: (existingOnboarding as any).photoUrls || p.photoUrls,
+      // Subpages
+      subPages: (existingOnboarding as any).subPages || p.subPages,
+    }));
 
     // Sync add-on boolean flags
     if (existingOnboarding.addOnMenu !== undefined && existingOnboarding.addOnMenu !== null) {
@@ -1237,11 +1281,33 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         const source = siteData?.website?.source;
         const hasEmail = !!(siteData?.website as any)?.customerEmail;
 
-        // Resume from saved step if available
-        const savedStep = websiteIdProp ? localStorage.getItem(`onboarding_step_${websiteIdProp}`) : null;
+        // Resume from saved step - check localStorage first, then database
+        const effectiveWebsiteId = websiteIdProp || websiteId;
+        const savedStep = effectiveWebsiteId
+          ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+          : null;
+
         if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
           setCurrentStep(savedStep as ChatStep);
           return;
+        }
+
+        // If no localStorage, check if we have stepCurrent from database
+        const dbStepCurrent = existingOnboarding?.stepCurrent;
+        if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
+          // Map step number to ChatStep
+          const stepIndex = dbStepCurrent;
+          if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
+            const targetStep = STEP_ORDER[stepIndex];
+            if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
+              setCurrentStep(targetStep);
+              // Also save to localStorage for next time
+              if (effectiveWebsiteId) {
+                localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+              }
+              return;
+            }
+          }
         }
 
         // For admin-generated websites without a customer email yet,
@@ -1259,7 +1325,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       };
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, websiteIdProp]);
 
   // ── Progressive content revelation based on user input ─────────
   
