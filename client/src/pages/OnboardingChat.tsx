@@ -2512,50 +2512,179 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   </button>
 
                   {showIndividualColors && (
-                    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="grid grid-cols-2 gap-4">
-                        {[
-                          { key: "primary", label: "Hauptfarbe" },
-                          { key: "secondary", label: "Sekundärfarbe" },
-                          { key: "accent", label: "Akzentfarbe" },
-                          { key: "background", label: "Hintergrund" },
-                          { key: "surface", label: "Oberflächen" },
-                          { key: "text", label: "Textfarbe" },
-                        ].map((item) => (
-                          <div key={item.key} className="space-y-1.5">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
-                            <div className="flex gap-2">
-                              <div 
-                                className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
-                                style={{ backgroundColor: (data.colorScheme as any)[item.key] }}
-                              >
-                                <input 
-                                  type="color" 
-                                  className="absolute inset-0 opacity-0 cursor-pointer"
+                    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {/* Basis Farben */}
+                      <div>
+                        <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                          Basis-Farben
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          {[
+                            { key: "primary", label: "Hauptfarbe" },
+                            { key: "secondary", label: "Sekundärfarbe" },
+                            { key: "accent", label: "Akzentfarbe" },
+                            { key: "background", label: "Hintergrund" },
+                            { key: "surface", label: "Oberflächen" },
+                            { key: "text", label: "Textfarbe" },
+                          ].map((item) => (
+                            <div key={item.key} className="space-y-1.5">
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
+                              <div className="flex gap-2">
+                                <div
+                                  className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
+                                  style={{ backgroundColor: (data.colorScheme as any)[item.key] }}
+                                >
+                                  <input
+                                    type="color"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    value={(data.colorScheme as any)[item.key]}
+                                    onChange={(e) => {
+                                      const newValue = e.target.value;
+                                      setData(p => {
+                                        const newScheme = { ...p.colorScheme, [item.key]: newValue };
+                                        // Recalculate on-colors when primary/secondary/accent/surface/background change
+                                        if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(item.key)) {
+                                          newScheme[`on${item.key.charAt(0).toUpperCase() + item.key.slice(1)}`] = getContrastColor(newValue);
+                                        }
+                                        return { ...p, colorScheme: newScheme };
+                                      });
+                                    }}
+                                  />
+                                </div>
+                                <input
+                                  type="text"
+                                  className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
                                   value={(data.colorScheme as any)[item.key]}
-                                  onChange={(e) => setData(p => ({
-                                    ...p,
-                                    colorScheme: { ...p.colorScheme, [item.key]: e.target.value }
-                                  }))}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
+                                      setData(p => {
+                                        const newScheme = { ...p.colorScheme, [item.key]: v };
+                                        // Recalculate on-colors when primary/secondary/accent/surface/background change
+                                        if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(item.key)) {
+                                          newScheme[`on${item.key.charAt(0).toUpperCase() + item.key.slice(1)}`] = getContrastColor(v);
+                                        }
+                                        return { ...p, colorScheme: newScheme };
+                                      });
+                                    }
+                                  }}
                                 />
                               </div>
-                              <input 
-                                type="text"
-                                className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
-                                value={(data.colorScheme as any)[item.key]}
-                                onChange={(e) => {
-                                  const v = e.target.value;
-                                  if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
-                                    setData(p => ({
-                                      ...p,
-                                      colorScheme: { ...p.colorScheme, [item.key]: v }
-                                    }));
-                                  }
-                                }}
-                              />
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Kontrast Farben (Text auf farbigen Hintergründen) */}
+                      <div>
+                        <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                          Kontrast-Farben (Text auf farbigen Hintergründen)
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          {[
+                            { key: "onPrimary", label: "Text auf Hauptfarbe" },
+                            { key: "onSecondary", label: "Text auf Sekundärfarbe" },
+                            { key: "onAccent", label: "Text auf Akzent" },
+                            { key: "onSurface", label: "Text auf Oberflächen" },
+                            { key: "onBackground", label: "Text auf Hintergrund" },
+                            { key: "textLight", label: "Hellere Textfarbe" },
+                          ].map((item) => (
+                            <div key={item.key} className="space-y-1.5">
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
+                              <div className="flex gap-2">
+                                <div
+                                  className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
+                                  style={{ backgroundColor: (data.colorScheme as any)[item.key] || '#ffffff' }}
+                                >
+                                  <input
+                                    type="color"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    value={(data.colorScheme as any)[item.key] || '#ffffff'}
+                                    onChange={(e) => setData(p => ({
+                                      ...p,
+                                      colorScheme: { ...p.colorScheme, [item.key]: e.target.value }
+                                    }))}
+                                  />
+                                </div>
+                                <input
+                                  type="text"
+                                  className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
+                                  value={(data.colorScheme as any)[item.key] || ''}
+                                  placeholder="#ffffff"
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    if (/^#[0-9A-Fa-f]{0,6}$/.test(v) || v === '') {
+                                      setData(p => ({
+                                        ...p,
+                                        colorScheme: { ...p.colorScheme, [item.key]: v || undefined }
+                                      }));
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Dunkle Sektionen */}
+                      <div>
+                        <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
+                          Dunkle Sektionen (Hero, Footer, etc.)
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          {[
+                            { key: "darkBackground", label: "Dunkler Hintergrund" },
+                            { key: "darkSurface", label: "Dunkle Oberflächen" },
+                            { key: "lightText", label: "Heller Text (dunkle BG)" },
+                            { key: "lightTextMuted", label: "Heller Text (gedämpft)" },
+                          ].map((item) => (
+                            <div key={item.key} className="space-y-1.5">
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
+                              <div className="flex gap-2">
+                                <div
+                                  className="w-8 h-8 rounded-lg border border-slate-600 flex-shrink-0 cursor-pointer overflow-hidden relative"
+                                  style={{ backgroundColor: (data.colorScheme as any)[item.key] || (item.key.includes('dark') ? '#0f172a' : '#ffffff') }}
+                                >
+                                  <input
+                                    type="color"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    value={(data.colorScheme as any)[item.key] || (item.key.includes('dark') ? '#0f172a' : '#ffffff')}
+                                    onChange={(e) => setData(p => ({
+                                      ...p,
+                                      colorScheme: { ...p.colorScheme, [item.key]: e.target.value }
+                                    }))}
+                                  />
+                                </div>
+                                <input
+                                  type="text"
+                                  className="flex-1 bg-slate-700/60 text-white text-[11px] px-2 py-1 rounded-lg outline-none border border-slate-600/50 font-mono"
+                                  value={(data.colorScheme as any)[item.key] || ''}
+                                  placeholder={item.key.includes('dark') ? "#0f172a" : "#ffffff"}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    if (/^#[0-9A-Fa-f]{0,6}$/.test(v) || v === '') {
+                                      setData(p => ({
+                                        ...p,
+                                        colorScheme: { ...p.colorScheme, [item.key]: v || undefined }
+                                      }));
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Info Text */}
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                        <p className="text-[11px] text-blue-300 leading-relaxed">
+                          <strong>Tipp:</strong> Die Kontrast-Farben werden automatisch berechnet, wenn du die Basis-Farben änderst. Für dunkle Sektionen (wie Hero mit Bild oder Footer) kannst du separate Farben definieren.
+                        </p>
                       </div>
                     </div>
                   )}

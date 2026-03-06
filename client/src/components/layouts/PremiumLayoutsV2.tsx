@@ -377,18 +377,24 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
     { step: "2", title: "Beratung", description: "" },
     { step: "3", title: "Ergebnis", description: "" }
   ];
-  const bg = dark ? "bg-white/5" : "bg-neutral-50";
-  const textMain = dark ? "text-white" : "text-neutral-900";
-  const textSub = dark ? "text-white/60" : "text-neutral-500";
+  // Use dynamic colors from colorScheme if available, fallback to defaults
+  const bgClass = dark ? (cs.darkBackground ? '' : "bg-white/5") : (cs.background ? '' : "bg-neutral-50");
+  const bgStyle = dark
+    ? { backgroundColor: cs.darkSurface || 'rgba(255,255,255,0.05)', fontFamily: bodyFont }
+    : { backgroundColor: cs.surface || '#fafafa', fontFamily: bodyFont };
+  const textMain = dark ? (cs.lightText ? '' : 'text-white') : (cs.text ? '' : 'text-neutral-900');
+  const textMainStyle = dark ? { color: cs.lightText || '#ffffff' } : { color: cs.text || '#171717' };
+  const textSub = dark ? (cs.lightTextMuted ? '' : 'text-white/60') : (cs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.6)' } : { color: cs.textLight || '#737373' };
   const hs = { fontFamily: displayFont, ...headlineStyle };
 
   // Variant 0: Horizontal Steps (Current)
   if (variant === 0) {
     return (
-      <section className={`py-24 md:py-32 px-6 ${bg}`} style={{ fontFamily: bodyFont }}>
+      <section className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-20">
-            <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={hs}>
+            <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
               {process?.headline || "So einfach geht's"}
             </h2>
           </Skeleton>
@@ -400,12 +406,12 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                     <div className="hidden md:block absolute top-7 left-[60%] w-[80%] border-t-2 border-dashed"
                       style={{ borderColor: cs.primary + '40' }} />
                   )}
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl text-white mb-4 z-10"
-                    style={{ backgroundColor: cs.primary, ...hs }}>
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-4 z-10"
+                    style={{ backgroundColor: cs.primary, color: cs.onPrimary || '#ffffff', ...hs }}>
                     {item.step}
                   </div>
-                  <h3 className={`text-lg mb-2 ${textMain}`} style={hs}>{item.title}</h3>
-                  <p className={`text-sm leading-relaxed ${textSub}`} style={{ fontFamily: bodyFont }}>{item.description}</p>
+                  <h3 className={`text-lg mb-2 ${textMain}`} style={{ ...hs, ...textMainStyle }}>{item.title}</h3>
+                  <p className={`text-sm leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>{item.description}</p>
                 </div>
               </Skeleton>
             ))}
@@ -471,11 +477,17 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
   const reviewCount = websiteData?.googleReviewCount;
   if (!isLoading && !rating) return null;
 
-  const textSub = dark ? "text-white/50" : "text-neutral-500";
-  const bg = dark ? "bg-white/5" : "bg-neutral-50";
-  const cardBg = dark ? "bg-white/10" : "bg-white";
-  const divider = dark ? "bg-white/20" : "bg-neutral-200";
-  const border = dark ? "border-white/10" : "border-neutral-100";
+  // Use dynamic colors from colorScheme if available, fallback to defaults
+  const textSub = dark ? (cs.lightTextMuted ? '' : 'text-white/50') : (cs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.5)' } : { color: cs.textLight || '#737373' };
+  const bgClass = dark ? (cs.darkBackground ? '' : 'bg-white/5') : (cs.background ? '' : 'bg-neutral-50');
+  const bgStyle = dark ? { backgroundColor: cs.darkBackground || 'rgba(255,255,255,0.05)' } : { backgroundColor: cs.background || '#fafafa' };
+  const cardBgClass = dark ? (cs.darkSurface ? '' : 'bg-white/10') : (cs.surface ? '' : 'bg-white');
+  const cardBgStyle = dark ? { backgroundColor: cs.darkSurface || 'rgba(255,255,255,0.1)' } : { backgroundColor: cs.surface || '#ffffff' };
+  const dividerClass = dark ? (cs.lightTextMuted ? '' : 'bg-white/20') : (cs.textLight ? '' : 'bg-neutral-200');
+  const dividerStyle = dark ? { backgroundColor: cs.lightTextMuted || 'rgba(255,255,255,0.2)' } : { backgroundColor: cs.textLight || '#e5e7eb' };
+  const borderClass = dark ? (cs.lightTextMuted ? '' : 'border-white/10') : (cs.textLight ? '' : 'border-neutral-100');
+  const borderStyle = dark ? { borderColor: cs.lightTextMuted || 'rgba(255,255,255,0.1)' } : { borderColor: cs.textLight || '#f5f5f5' };
 
   const stars = rating ? Math.round(rating) : 5;
   const displayRating = rating ? rating.toFixed(1) : "5.0";
@@ -484,10 +496,10 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
     : "–";
 
   return (
-    <section className={`py-16 md:py-24 px-6 ${bg}`}>
+    <section className={`py-16 md:py-24 px-6 ${bgClass}`} style={bgStyle}>
       <div className="max-w-7xl mx-auto flex justify-center">
         <Skeleton isLoading={isLoading} className="w-80 h-20">
-          <div className={`inline-flex items-center gap-6 px-8 py-4 rounded-xl border ${cardBg} ${border} shadow-sm`}>
+          <div className={`inline-flex items-center gap-6 px-8 py-4 rounded-xl border ${cardBgClass} ${borderClass} shadow-sm`} style={{ ...cardBgStyle, ...borderStyle }}>
             <div className="flex flex-col items-center">
               <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Google</span>
               <div className="flex gap-0.5 mt-1">
@@ -500,15 +512,15 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
                 ))}
               </div>
             </div>
-            <div className={`w-px h-10 ${divider}`} />
+            <div className={`w-px h-10 ${dividerClass}`} style={dividerStyle} />
             <div className="flex flex-col items-center">
               <span className="text-3xl font-black leading-none" style={{ color: cs.primary }}>{displayRating}</span>
-              <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`}>Bewertung</span>
+              <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`} style={textSubStyle}>Bewertung</span>
             </div>
-            <div className={`w-px h-10 ${divider}`} />
+            <div className={`w-px h-10 ${dividerClass}`} style={dividerStyle} />
             <div className="flex flex-col items-center">
               <span className="text-3xl font-black leading-none" style={{ color: cs.primary }}>{displayCount}</span>
-              <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`}>Rezensionen</span>
+              <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`} style={textSubStyle}>Rezensionen</span>
             </div>
           </div>
         </Skeleton>
@@ -524,16 +536,23 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const hours = getContactItem(websiteData, 'Clock');
   const locked = websiteData?.addOnContactForm === false;
 
-  const textMain = dark ? "text-white" : "text-neutral-900";
-  const textSub = dark ? "text-white/50" : "text-neutral-500";
-  const bg = dark ? "bg-white/5" : "bg-neutral-50";
-  const topBorder = dark ? "border-t border-white/10" : "";
-  const cardBg = dark ? "bg-neutral-800" : "bg-white";
-  const borderColor = dark ? "rgba(255,255,255,0.1)" : "#e5e7eb";
-  const border = dark ? "border-white/10" : "border-neutral-200";
-  const inputBg = dark ? "rgba(255,255,255,0.05)" : "#f9fafb";
-  const inputText = dark ? "rgba(255,255,255,0.85)" : "#111827";
-  const inputPlaceholder = dark ? "rgba(255,255,255,0.3)" : "#9ca3af";
+  // Use dynamic colors from colorScheme if available, fallback to defaults
+  const textMain = dark ? (cs.lightText ? '' : 'text-white') : (cs.text ? '' : 'text-neutral-900');
+  const textMainStyle = dark ? { color: cs.lightText || '#ffffff' } : { color: cs.text || '#171717' };
+  const textSub = dark ? (cs.lightTextMuted ? '' : 'text-white/50') : (cs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.5)' } : { color: cs.textLight || '#737373' };
+  const bgClass = dark ? (cs.darkBackground ? '' : 'bg-white/5') : (cs.background ? '' : 'bg-neutral-50');
+  const bgStyle = dark ? { backgroundColor: cs.darkBackground || 'rgba(255,255,255,0.05)' } : { backgroundColor: cs.surface || cs.background || '#fafafa' };
+  const topBorder = dark ? (cs.lightTextMuted ? '' : 'border-t border-white/10') : '';
+  const topBorderStyle = dark && cs.lightTextMuted ? { borderTop: `1px solid ${cs.lightTextMuted || 'rgba(255,255,255,0.1)'}` } : {};
+  const cardBgClass = dark ? (cs.darkSurface ? '' : 'bg-neutral-800') : (cs.surface ? '' : 'bg-white');
+  const cardBgStyle = dark ? { backgroundColor: cs.darkSurface || '#1f2937' } : { backgroundColor: cs.surface || '#ffffff' };
+  const borderColor = dark ? (cs.lightTextMuted || 'rgba(255,255,255,0.1)') : (cs.textLight || '#e5e7eb');
+  const border = dark ? (cs.lightTextMuted ? '' : 'border-white/10') : (cs.textLight ? '' : 'border-neutral-200');
+  const borderStyle = dark && cs.lightTextMuted ? { borderColor: cs.lightTextMuted || 'rgba(255,255,255,0.1)' } : { borderColor: cs.textLight || '#e5e7eb' };
+  const inputBg = dark ? (cs.darkSurface ? `${cs.darkSurface}80` : 'rgba(255,255,255,0.05)') : (cs.surface ? `${cs.surface}` : '#f9fafb');
+  const inputText = dark ? (cs.lightText || 'rgba(255,255,255,0.85)') : (cs.text || '#111827');
+  const inputPlaceholder = dark ? (cs.lightTextMuted || 'rgba(255,255,255,0.3)') : (cs.textLight || '#9ca3af');
   const iconBg = `${cs.primary}20`;
   const hs = { fontFamily: displayFont, ...headlineStyle };
 
@@ -617,10 +636,10 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   };
 
   return (
-    <section id="kontakt" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bg} ${topBorder}`} style={{ fontFamily: bodyFont }}>
+    <section id="kontakt" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bgClass} ${topBorder}`} style={{ ...bgStyle, ...topBorderStyle, fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-16">
-          <h2 className={`mb-16 ${textMain}`} style={{ ...hs, fontSize: getSectionHeadlineSize(headlineSize, 'contact') }}>Kontakt</h2>
+          <h2 className={`mb-16 ${textMain}`} style={{ ...hs, ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'contact') }}>Kontakt</h2>
         </Skeleton>
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="space-y-6">
@@ -631,15 +650,15 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                     <MapPin size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Adresse</p>
+                    <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Adresse</p>
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`${textSub} transition-colors hover:opacity-80`}
-                      style={{ '--hover-color': cs.primary } as React.CSSProperties}
+                      style={textSubStyle}
                       onMouseEnter={(e) => (e.currentTarget.style.color = cs.primary)}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = textSubStyle.color || '')}
                     >
                       {address}
                     </a>
@@ -654,12 +673,13 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                     <Phone size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Telefon</p>
+                    <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Telefon</p>
                     <a
                       href={`tel:${phone.replace(/\s/g, '')}`}
                       className={`${textSub} transition-colors hover:opacity-80`}
+                      style={textSubStyle}
                       onMouseEnter={(e) => (e.currentTarget.style.color = cs.primary)}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = textSubStyle.color || '')}
                     >
                       {phone}
                     </a>
@@ -674,33 +694,33 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                     <Clock size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Öffnungszeiten</p>
-                    <p className={`whitespace-pre-line ${textSub}`}>{hours}</p>
+                    <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Öffnungszeiten</p>
+                    <p className={`whitespace-pre-line ${textSub}`} style={textSubStyle}>{hours}</p>
                   </div>
                 </div>
               </Skeleton>
             )}
           </div>
           <div className="relative">
-            <div className={`border ${cardBg} ${border} ${locked ? 'opacity-40 blur-[2px] pointer-events-none select-none' : ''}`}
-              style={{ borderRadius: config.cardRadius, padding: '1.5rem' }}>
+            <div className={`border ${cardBgClass} ${border} ${locked ? 'opacity-40 blur-[2px] pointer-events-none select-none' : ''}`}
+              style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius, padding: '1.5rem' }}>
               <form className="space-y-4" onSubmit={e => e.preventDefault()}>
                 <div>
-                  <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>Name</label>
+                  <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>Name</label>
                   <input type="text" placeholder="Max Mustermann" style={inputStyle}
                     className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
                     onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
                     onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
                 <div>
-                  <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>E-Mail</label>
+                  <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>E-Mail</label>
                   <input type="email" placeholder="max@beispiel.de" style={inputStyle}
                     className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
                     onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
                     onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
                 <div>
-                  <label className={`block mb-1.5 ${textSub}`} style={labelStyle}>Nachricht</label>
+                  <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>Nachricht</label>
                   <textarea rows={4} placeholder="Ihre Nachricht…"
                     style={{ ...inputStyle, resize: 'none' as const, minHeight: '100px' }}
                     className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
@@ -711,28 +731,28 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <div className="mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center"
                     style={{ borderRadius: config.inputRadius, borderColor: inputPlaceholder, backgroundColor: inputBg }}>
                   </div>
-                  <p className={`text-xs leading-relaxed ${textSub}`} style={{ fontFamily: bodyFont }}>
+                  <p className={`text-xs leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>
                     Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
                     <a href="#datenschutz" className="underline underline-offset-2" style={{ color: cs.primary }}>Datenschutzerklärung</a> zu.
                   </p>
                 </div>
-                <button type="submit" className="w-full text-white hover:opacity-90 transition-opacity" style={buttonStyle}>
+                <button type="submit" className="w-full hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: cs.onPrimary || '#ffffff' }}>
                   Nachricht senden
                 </button>
               </form>
             </div>
             {locked && (
               <div className="absolute inset-0 flex items-start justify-center pt-20">
-                <div className={`${cardBg} border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}
-                  style={{ borderRadius: config.cardRadius }}>
-                  <div className="w-12 h-12 bg-neutral-100 flex items-center justify-center mx-auto mb-3"
-                    style={{ borderRadius: config.iconRadius }}>
-                    <Shield size={22} className="text-neutral-400" />
+                <div className={`${cardBgClass} border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}
+                  style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius }}>
+                  <div className="w-12 h-12 flex items-center justify-center mx-auto mb-3"
+                    style={{ borderRadius: config.iconRadius, backgroundColor: dark ? (cs.darkSurface || '#374151') : '#f3f4f6' }}>
+                    <Shield size={22} style={{ color: dark ? (cs.lightTextMuted || '#9ca3af') : '#6b7280' }} />
                   </div>
-                  <p className={`font-bold text-sm mb-1 ${textMain}`} style={hs}>Kontaktformular</p>
-                  <p className={`text-xs mb-1 ${textSub}`}>Erhalte direkte Kundenanfragen über deine Website.</p>
+                  <p className={`font-bold text-sm mb-1 ${textMain}`} style={{ ...hs, ...textMainStyle }}>Kontaktformular</p>
+                  <p className={`text-xs mb-1 ${textSub}`} style={textSubStyle}>Erhalte direkte Kundenanfragen über deine Website.</p>
                   <p className="text-xs font-semibold mb-4" style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
-                  <button className="w-full text-xs text-white hover:opacity-90 transition-opacity" style={buttonStyle}>
+                  <button className="w-full text-xs hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: cs.onPrimary || '#ffffff' }}>
                     Freischalten
                   </button>
                 </div>
@@ -750,20 +770,36 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
   const items = sec(websiteData, 'testimonials')?.items;
   if (!isLoading && !items?.length) return null;
 
-  const bg = dark ? "bg-black" : "bg-white";
-  const textMain = dark ? "text-white" : "text-neutral-900";
-  const textSub = dark ? "text-white/60" : "text-neutral-500";
+  // Use dynamic colors from colorScheme if available, fallback to defaults
+  const bg = dark 
+    ? (cs.darkBackground ? '' : 'bg-black')
+    : (cs.background ? '' : 'bg-white');
+  const bgStyle = dark 
+    ? { backgroundColor: cs.darkBackground || '#000000' }
+    : { backgroundColor: cs.background || '#ffffff' };
+  const textMain = dark 
+    ? (cs.lightText ? '' : 'text-white')
+    : (cs.text ? '' : 'text-neutral-900');
+  const textMainStyle = dark 
+    ? { color: cs.lightText || '#ffffff' }
+    : { color: cs.text || '#171717' };
+  const textSub = dark 
+    ? (cs.lightTextMuted ? '' : 'text-white/60')
+    : (cs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark 
+    ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.6)' }
+    : { color: cs.textLight || '#737373' };
   const border = dark ? "border-white/10" : "border-neutral-200";
 
   // Variant 0: Standard Grid
   if (variant === 0) {
     return (
-      <section className={`py-24 md:py-32 px-6 ${bg}`}>
+      <section className={`py-24 md:py-32 px-6 ${bg}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="w-80 h-16 mx-auto mb-20">
             <div className="text-center mb-20">
-              <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-4 ${dark ? 'text-white/40' : 'opacity-40'}`}>Kundenstimmen</span>
-              <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black text-center"}`} style={{ fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
+              <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-4 ${dark ? (cs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Kundenstimmen</span>
+              <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black text-center"}`} style={{ ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
                 {heading || 'Was unsere Kunden sagen'}
               </h2>
             </div>
@@ -771,18 +807,18 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
           <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {items?.length > 0 ? items.map((t: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-64">
-                <div className={`p-10 border ${border} ${dark ? 'bg-white/5' : 'bg-white shadow-sm'} hover:shadow-xl transition-all duration-500 rounded-2xl`}>
+                <div className={`p-10 border ${border} ${dark ? (cs.darkSurface ? '' : 'bg-white/5') : 'bg-white shadow-sm'} hover:shadow-xl transition-all duration-500 rounded-2xl`} style={dark && cs.darkSurface ? { backgroundColor: cs.darkSurface, borderColor: cs.lightTextMuted || 'rgba(255,255,255,0.1)' } : undefined}>
                   <div className="flex gap-1 mb-6">
                     {[...Array(t.rating || 5)].map((_, j) => <Star key={j} size={16} fill="currentColor" className="text-yellow-500" />)}
                   </div>
-                  <p className={`${textSub} font-light leading-relaxed italic mb-8 text-lg`}>"{t.description || t.title}"</p>
+                  <p className={`${textSub} font-light leading-relaxed italic mb-8 text-lg`} style={textSubStyle}>"{t.description || t.title}"</p>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: cs.primary + '20' }}>
                       <Heart size={20} style={{ color: cs.primary }} />
                     </div>
                     <div>
-                      <p className={`font-bold ${textMain}`}>{t.author}</p>
-                      <p className="text-xs opacity-40 uppercase tracking-widest">Kunde</p>
+                      <p className={`font-bold ${textMain}`} style={textMainStyle}>{t.author}</p>
+                      <p className="text-xs uppercase tracking-widest" style={{ opacity: 0.4, color: dark ? (cs.lightTextMuted || '#ffffff') : (cs.textLight || '#737373') }}>Kunde</p>
                     </div>
                   </div>
                 </div>
@@ -796,34 +832,35 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
 
   // Variant 1: Large Focus (Single or Two columns)
   return (
-    <section className={`py-24 md:py-32 px-6 ${bg} overflow-hidden relative`}>
+    <section className={`py-24 md:py-32 px-6 ${bg} overflow-hidden relative`} style={bgStyle}>
       <div className="absolute top-0 right-0 w-1/2 h-full bg-neutral-500/5 -z-0 skew-x-12 translate-x-1/2" />
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-6 ${dark ? 'text-white/40' : 'opacity-40'}`}>Testimonials</span>
-            <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black"} mb-8`} style={{ fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
+            <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-6 ${dark ? (cs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Testimonials</span>
+            <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black"} mb-8`} style={{ ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
               Echte <span style={{ color: cs.primary }}>Erfahrungen</span>
             </h2>
-            <p className={`${textSub} text-xl font-light leading-relaxed mb-12`}>
+            <p className={`${textSub} text-xl font-light leading-relaxed mb-12`} style={textSubStyle}>
               Wir legen höchsten Wert auf Qualität und Kundenzufriedenheit. Das sagen unsere Partner über die Zusammenarbeit.
             </p>
           </div>
           <div className="space-y-8">
             {items?.slice(0, 2).map((t: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-48">
-                <motion.div 
-                  className={`p-10 ${dark ? 'bg-white/10' : 'bg-white shadow-2xl'} rounded-[2rem] relative`}
+                <motion.div
+                  className={`p-10 ${dark ? (cs.darkSurface ? '' : 'bg-white/10') : 'bg-white shadow-2xl'} rounded-[2rem] relative`}
+                  style={dark && cs.darkSurface ? { backgroundColor: cs.darkSurface } : undefined}
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.2 }}
                 >
                   <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: cs.primary }}>
-                    <Star size={20} className="text-white" fill="currentColor" />
+                    <Star size={20} style={{ color: cs.onPrimary || '#ffffff' }} fill="currentColor" />
                   </div>
-                  <p className={`${textMain} text-lg mb-6 italic leading-relaxed`}>"{t.description || t.title}"</p>
-                  <p className={`font-bold ${textMain} uppercase tracking-widest text-sm`}>— {t.author}</p>
+                  <p className={`${textMain} text-lg mb-6 italic leading-relaxed`} style={textMainStyle}>"{t.description || t.title}"</p>
+                  <p className={`font-bold ${textMain} uppercase tracking-widest text-sm`} style={textMainStyle}>— {t.author}</p>
                 </motion.div>
               </Skeleton>
             ))}
@@ -862,6 +899,66 @@ function FooterContact({ websiteData, textClass }: { websiteData: any, textClass
       {address && <li className={`flex items-start gap-2 ${textClass}`}><MapPin size={14} className="mt-0.5 shrink-0" /> {address}</li>}
       {phone && <li className={`flex items-center gap-2 ${textClass}`}><Phone size={14} /> {phone}</li>}
     </>
+  );
+}
+
+// ── DYNAMIC FOOTER ─────────────────────────────────────────────────
+interface FooterProps {
+  websiteData: any;
+  cs: any;
+  isLoading: boolean;
+  footerText: string;
+  variant?: 'default' | 'centered' | 'elegant' | 'modern' | 'minimal';
+  logoStyle?: React.CSSProperties;
+  showBorder?: boolean;
+}
+
+function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'default', logoStyle = {}, showBorder = true }: FooterProps) {
+  // Use dynamic colors from colorScheme
+  const bgClass = cs.darkBackground ? '' : 'bg-neutral-900';
+  const bgStyle = { backgroundColor: cs.darkBackground || '#171717' };
+  const textMain = cs.lightText ? '' : 'text-white';
+  const textMainStyle = { color: cs.lightText || '#ffffff' };
+  const textMuted = cs.lightTextMuted ? '' : 'text-neutral-400';
+  const textMutedStyle = { color: cs.lightTextMuted || '#a3a6b5' };
+  const textSubtle = cs.lightTextMuted ? '' : 'text-neutral-500';
+  const textSubtleStyle = { color: cs.lightTextMuted ? `${cs.lightTextMuted}99` : '#737373' };
+  const borderColor = cs.lightTextMuted || 'rgba(255,255,255,0.1)';
+
+  const baseClasses = "py-10 md:py-12 px-6";
+  const borderClasses = showBorder ? "border-t" : "";
+
+  const containerClasses = {
+    default: "flex flex-col md:flex-row justify-between items-start gap-8",
+    centered: "flex flex-col md:flex-row justify-between items-center gap-8",
+    elegant: "flex flex-col md:flex-row justify-between gap-8",
+    modern: "flex flex-col md:flex-row justify-between items-start gap-8",
+    minimal: "flex flex-col md:flex-row justify-between items-center gap-8",
+  };
+
+  return (
+    <footer className={`${baseClasses} ${bgClass} ${borderClasses} ${textMain}`} style={{ ...bgStyle, borderColor: borderColor }}>
+      <div className="max-w-7xl mx-auto w-full" style={containerClasses[variant]}>
+        <div className="md:max-w-[280px] lg:max-w-[320px]">
+          <Skeleton isLoading={isLoading} className="w-full h-8 mb-2">
+            <span
+              style={{ ...logoStyle, ...textMainStyle }}
+              className="break-words"
+            >
+              {websiteData.businessName}
+            </span>
+          </Skeleton>
+          <p className="text-sm break-words" style={textMutedStyle}>{footerText}</p>
+        </div>
+        <ul className="space-y-1.5 text-sm" style={textMutedStyle}>
+          <FooterContact websiteData={websiteData} textClass="" />
+        </ul>
+        <div className="flex gap-6 text-xs uppercase tracking-widest shrink-0" style={textSubtleStyle}>
+          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': cs.primary } as React.CSSProperties}>Impressum</a>
+          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': cs.primary } as React.CSSProperties}>Datenschutz</a>
+        </div>
+      </div>
+    </footer>
   );
 }
 
@@ -939,23 +1036,15 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
-      <footer className="py-10 px-6 bg-black border-t border-white/10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-2">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem' }} className="uppercase break-words">{websiteData.businessName}</span>
-            </Skeleton>
-            <p className="text-white/25 text-sm mt-1 break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-white/40">
-            <FooterContact websiteData={websiteData} textClass="text-white/40" />
-          </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="default"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem', textTransform: 'uppercase' }}
+        showBorder={true}
+      />
     </div>
   );
 }
@@ -1107,26 +1196,15 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-6 bg-neutral-900 text-white">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-6 rounded-sm shrink-0" style={{ backgroundColor: cs.primary }} />
-                <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1rem' }} className="break-words">{websiteData.businessName}</span>
-              </div>
-            </Skeleton>
-            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-neutral-400">
-            <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
-          </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="elegant"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1rem' }}
+        showBorder={false}
+      />
     </div>
   );
 }
@@ -1192,23 +1270,15 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-6 bg-neutral-900 text-white">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.2rem' }} className="break-words">{websiteData.businessName}</span>
-            </Skeleton>
-            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-neutral-400">
-            <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
-          </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="default"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.2rem' }}
+        showBorder={false}
+      />
     </div>
   );
 }
@@ -1274,23 +1344,15 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
-      <footer className="py-10 px-6 bg-black border-t border-white/10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-2">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.4rem', letterSpacing: '0.06em' }} className="break-words">{websiteData.businessName}</span>
-            </Skeleton>
-            <p className="text-white/25 text-sm break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-white/40">
-            <FooterContact websiteData={websiteData} textClass="text-white/40" />
-          </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="default"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.4rem', letterSpacing: '0.06em' }}
+        showBorder={true}
+      />
     </div>
   );
 }
@@ -1357,23 +1419,15 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-6 bg-neutral-900 text-white">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }} className="break-words">{websiteData.businessName}</span>
-            </Skeleton>
-            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-neutral-400">
-            <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
-          </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="elegant"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }}
+        showBorder={false}
+      />
     </div>
   );
 }
@@ -1440,25 +1494,15 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-8 bg-black border-t border-white/10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px] text-center md:text-left">
-            <Skeleton isLoading={isLoading} className="w-full h-8">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }} className="break-words">{websiteData.businessName}</span>
-            </Skeleton>
-          </div>
-          <ul className="space-y-1 text-sm text-white/40 text-center">
-            <FooterContact websiteData={websiteData} textClass="text-white/40" />
-          </ul>
-          <div className="flex gap-8 text-white/25 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/10">
-          <p className="text-white/20 text-xs text-center break-words">{footerText}</p>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="centered"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
+        showBorder={true}
+      />
     </div>
   );
 }
@@ -1525,23 +1569,15 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-6 bg-neutral-900 text-white">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }} className="break-words">{websiteData.businessName}</span>
-            </Skeleton>
-            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-neutral-400">
-            <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
-          </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="modern"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }}
+        showBorder={false}
+      />
     </div>
   );
 }
@@ -1610,26 +1646,15 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-6 bg-neutral-900 text-white">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
-              <div className="flex items-center gap-2">
-                <Leaf size={16} style={{ color: cs.primary }} className="shrink-0" />
-                <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem' }} className="break-words">{websiteData.businessName}</span>
-              </div>
-            </Skeleton>
-            <p className="text-neutral-400 text-sm break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-neutral-400">
-            <FooterContact websiteData={websiteData} textClass="text-neutral-400" />
-          </ul>
-          <div className="flex gap-6 text-neutral-500 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="elegant"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem' }}
+        showBorder={false}
+      />
     </div>
   );
 }
@@ -1774,23 +1799,15 @@ export function PremiumLayoutV2({
       <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
-      <footer className="py-12 px-6 text-white" style={{ backgroundColor: cs.secondary || cs.primary }}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-          <div className="md:max-w-[280px] lg:max-w-[320px]">
-            <Skeleton isLoading={isLoading} className="w-full h-8 mb-3">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }} className="break-words">{websiteData.businessName}</span>
-            </Skeleton>
-            <p className="text-white/30 text-sm break-words">{footerText}</p>
-          </div>
-          <ul className="space-y-1.5 text-sm text-white/50">
-            <FooterContact websiteData={websiteData} textClass="text-white/50" />
-          </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
-        </div>
-      </footer>
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={cs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="elegant"
+        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
+        showBorder={false}
+      />
     </div>
   );
 }
