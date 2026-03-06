@@ -1101,7 +1101,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#FFFDFB] text-neutral-900 overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-[#FFFDFB] overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40 relative">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
@@ -1186,7 +1186,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -1262,7 +1262,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#F2EBD9] text-neutral-800 overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524' }} className="bg-[#F2EBD9] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F2EBD9]/90 backdrop-blur-sm border-b border-neutral-300/50">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
@@ -1414,7 +1414,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#FBF7F0] text-neutral-800 overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524' }} className="bg-[#FBF7F0] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FBF7F0]/90 backdrop-blur-sm border-b border-neutral-200/60">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
@@ -1567,7 +1567,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
@@ -1733,7 +1733,7 @@ export function PremiumLayoutV2({
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl

@@ -791,29 +791,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [siteData?.website?.websiteData, initialized]);
 
-  // ── Persist & restore current step across page reloads ──────────────────
+  // ── Persist current step across page reloads ────────────────────────────
   const stepStorageKey = websiteIdProp ? `onboarding_step_${websiteIdProp}` : null;
 
-  // Save step whenever it changes (skip "welcome" as starting point)
+  // Save step whenever it changes
   useEffect(() => {
-    if (stepStorageKey && currentStep !== 'welcome') {
-      localStorage.setItem(stepStorageKey, currentStep);
-    }
-  }, [currentStep, stepStorageKey]);
-
-  // Restore step once website data is loaded (first render after siteData arrives)
-  useEffect(() => {
-    if (!stepStorageKey || !siteData?.website?.websiteData || initialized) return;
-    const saved = localStorage.getItem(stepStorageKey);
-    if (saved && saved !== 'welcome' && saved !== 'checkout') {
-      setCurrentStep(saved as ChatStep);
-    }
-  }, [stepStorageKey, siteData?.website?.websiteData, initialized]);
-
-  // Clear saved step on checkout/preview completion
-  useEffect(() => {
-    if (stepStorageKey && (currentStep === 'checkout' || currentStep === 'preview')) {
+    if (!stepStorageKey) return;
+    if (currentStep === 'checkout' || currentStep === 'preview') {
       localStorage.removeItem(stepStorageKey);
+    } else if (currentStep !== 'welcome') {
+      localStorage.setItem(stepStorageKey, currentStep);
     }
   }, [currentStep, stepStorageKey]);
 
@@ -1174,6 +1161,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const initChat = async () => {
         const source = siteData?.website?.source;
         const hasEmail = !!(siteData?.website as any)?.customerEmail;
+
+        // Resume from saved step if available
+        const savedStep = websiteIdProp ? localStorage.getItem(`onboarding_step_${websiteIdProp}`) : null;
+        if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
+          setCurrentStep(savedStep as ChatStep);
+          return;
+        }
+
         // For admin-generated websites without a customer email yet,
         // ask for the email as the very first step.
         if (source === "admin" && !hasEmail) {
