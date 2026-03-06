@@ -632,11 +632,14 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   </div>
                   <div>
                     <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Adresse</p>
-                    <a 
+                    <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`${textSub} hover:text-primary transition-colors`}
+                      className={`${textSub} transition-colors hover:opacity-80`}
+                      style={{ '--hover-color': cs.primary } as React.CSSProperties}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = cs.primary)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
                     >
                       {address}
                     </a>
@@ -652,9 +655,11 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   </div>
                   <div>
                     <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Telefon</p>
-                    <a 
+                    <a
                       href={`tel:${phone.replace(/\s/g, '')}`}
-                      className={`${textSub} hover:text-primary transition-colors`}
+                      className={`${textSub} transition-colors hover:opacity-80`}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = cs.primary)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
                     >
                       {phone}
                     </a>
