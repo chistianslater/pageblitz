@@ -243,21 +243,22 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 // ── SERVICES VARIANTS ───────────────────────────────────────────
 
 function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  const safeCs = cs || {};
   const services = sec(websiteData, 'services')?.items || [];
   return (
     <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-24">
           <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="uppercase mb-0">
-            Unsere <span style={{ color: cs.primary }}>Leistungen</span>
+            Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
           </h2>
         </Skeleton>
         <div className="grid md:grid-cols-3 gap-8">
           {services.map((service: any, i: number) => (
             <Skeleton key={i} isLoading={isLoading} className="h-72">
               <div className="p-10 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all border border-neutral-100 group">
-                <div className="w-14 h-14 rounded-full mb-8 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: cs.primary + '15' }}>
-                  <Zap size={28} style={{ color: cs.primary }} />
+                <div className="w-14 h-14 rounded-full mb-8 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
+                  <Zap size={28} style={{ color: safeCs.primary }} />
                 </div>
                 <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem' }} className="mb-4">{service.title}</h3>
                 <p style={{ fontFamily: bodyFont }} className="text-neutral-500 leading-relaxed">{service.description}</p>
@@ -271,6 +272,7 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
 }
 
 function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  const safeCs = cs || {};
   const services = sec(websiteData, 'services')?.items || [];
   return (
     <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
@@ -278,7 +280,7 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
           <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="uppercase mb-0">
-              Exzellente<br /><span style={{ color: cs.primary }}>Services</span>
+              Exzellente<br /><span style={{ color: safeCs.primary }}>Services</span>
             </h2>
           </Skeleton>
           <div className="h-px flex-1 bg-neutral-200 hidden md:block mb-4" />
@@ -288,12 +290,12 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
           {services.map((service: any, i: number) => (
             <Skeleton key={i} isLoading={isLoading} className="h-40">
               <div className="py-14 flex flex-col md:flex-row md:items-center gap-8 group hover:bg-neutral-50 px-4 transition-colors">
-                <span style={{ fontFamily: displayFont, fontWeight: 900, color: cs.primary }} className="text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
+                <span style={{ fontFamily: displayFont, fontWeight: 900, color: safeCs.primary }} className="text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
                 <div className="flex-1">
                   <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem' }} className="mb-2 uppercase">{service.title}</h3>
                   <p style={{ fontFamily: bodyFont }} className="text-neutral-500 max-w-2xl">{service.description}</p>
                 </div>
-                <ArrowRight size={24} style={{ color: cs.primary }} className="shrink-0 opacity-0 group-hover:opacity-100 transition-all translate-x-[-20px] group-hover:translate-x-0" />
+                <ArrowRight size={24} style={{ color: safeCs.primary }} className="shrink-0 opacity-0 group-hover:opacity-100 transition-all translate-x-[-20px] group-hover:translate-x-0" />
               </div>
             </Skeleton>
           ))}
@@ -306,6 +308,7 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
 // ── ABOUT VARIANTS ──────────────────────────────────────────────
 
 function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  const safeCs = cs || {};
   return (
     <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
@@ -321,7 +324,7 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
         </motion.div>
         <div>
           <Skeleton isLoading={isLoading} className="w-full h-36 mb-8">
-            <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: cs.primary }}>// Über uns</span>
+            <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: safeCs.primary }}>// Über uns</span>
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase mb-8">
               {aboutHeadline}
             </h2>
@@ -411,10 +414,10 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                 <div className="flex flex-col items-center text-center relative">
                   {i < items.length - 1 && (
                     <div className="hidden md:block absolute top-7 left-[60%] w-[80%] border-t-2 border-dashed"
-                      style={{ borderColor: cs.primary + '40' }} />
+                      style={{ borderColor: safeCs.primary + '40' }} />
                   )}
                   <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-4 z-10"
-                    style={{ backgroundColor: cs.primary, color: cs.onPrimary || '#ffffff', ...hs }}>
+                    style={{ backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff', ...hs }}>
                     {item.step}
                   </div>
                   <h3 className={`text-lg mb-2 ${textMain}`} style={{ ...hs, ...textMainStyle }}>{item.title}</h3>
@@ -457,7 +460,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                     ) : null}
                   </div>
                   <div className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0 shadow-lg"
-                    style={{ backgroundColor: cs.primary }}>
+                    style={{ backgroundColor: safeCs.primary }}>
                     {item.step}
                   </div>
                   <div className="w-full md:w-1/2 md:px-12">
@@ -522,12 +525,12 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
             </div>
             <div className={`w-px h-10 ${dividerClass}`} style={dividerStyle} />
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-black leading-none" style={{ color: cs.primary }}>{displayRating}</span>
+              <span className="text-3xl font-black leading-none" style={{ color: safeCs.primary }}>{displayRating}</span>
               <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`} style={textSubStyle}>Bewertung</span>
             </div>
             <div className={`w-px h-10 ${dividerClass}`} style={dividerStyle} />
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-black leading-none" style={{ color: cs.primary }}>{displayCount}</span>
+              <span className="text-3xl font-black leading-none" style={{ color: safeCs.primary }}>{displayCount}</span>
               <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`} style={textSubStyle}>Rezensionen</span>
             </div>
           </div>
@@ -638,7 +641,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   };
 
   const buttonStyle = {
-    backgroundColor: cs.primary, fontFamily: displayFont,
+    backgroundColor: safeCs.primary, fontFamily: displayFont,
     borderRadius: config.buttonRadius, padding: config.buttonPadding,
     textTransform: config.buttonStyle, letterSpacing: config.buttonStyle === 'uppercase' ? '0.05em' : '0',
     fontWeight: config.buttonStyle === 'uppercase' ? 700 : 600,
@@ -656,7 +659,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
               <Skeleton isLoading={isLoading} className="w-full h-20">
                 <div className="flex items-start gap-4">
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
-                    <MapPin size={18} style={{ color: cs.primary }} />
+                    <MapPin size={18} style={{ color: safeCs.primary }} />
                   </div>
                   <div>
                     <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Adresse</p>
@@ -666,7 +669,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                       rel="noopener noreferrer"
                       className={`${textSub} transition-colors hover:opacity-80`}
                       style={textSubStyle}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = cs.primary)}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = safeCs.primary)}
                       onMouseLeave={(e) => (e.currentTarget.style.color = textSubStyle.color || '')}
                     >
                       {address}
@@ -679,7 +682,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
               <Skeleton isLoading={isLoading} className="w-full h-20">
                 <div className="flex items-start gap-4">
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
-                    <Phone size={18} style={{ color: cs.primary }} />
+                    <Phone size={18} style={{ color: safeCs.primary }} />
                   </div>
                   <div>
                     <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Telefon</p>
@@ -687,7 +690,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                       href={`tel:${phone.replace(/\s/g, '')}`}
                       className={`${textSub} transition-colors hover:opacity-80`}
                       style={textSubStyle}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = cs.primary)}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = safeCs.primary)}
                       onMouseLeave={(e) => (e.currentTarget.style.color = textSubStyle.color || '')}
                     >
                       {phone}
@@ -700,7 +703,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
               <Skeleton isLoading={isLoading} className="w-full h-20">
                 <div className="flex items-start gap-4">
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
-                    <Clock size={18} style={{ color: cs.primary }} />
+                    <Clock size={18} style={{ color: safeCs.primary }} />
                   </div>
                   <div>
                     <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Öffnungszeiten</p>
@@ -718,14 +721,14 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>Name</label>
                   <input type="text" placeholder="Max Mustermann" style={inputStyle}
                     className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                    onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
+                    onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
                     onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
                 <div>
                   <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>E-Mail</label>
                   <input type="email" placeholder="max@beispiel.de" style={inputStyle}
                     className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                    onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
+                    onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
                     onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
                 <div>
@@ -733,7 +736,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <textarea rows={4} placeholder="Ihre Nachricht…"
                     style={{ ...inputStyle, resize: 'none' as const, minHeight: '100px' }}
                     className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                    onFocus={(e) => e.currentTarget.style.borderColor = cs.primary}
+                    onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
                     onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
                 </div>
                 <div className="flex items-start gap-2.5 pt-1">
@@ -742,10 +745,10 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   </div>
                   <p className={`text-xs leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>
                     Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
-                    <a href="#datenschutz" className="underline underline-offset-2" style={{ color: cs.primary }}>Datenschutzerklärung</a> zu.
+                    <a href="#datenschutz" className="underline underline-offset-2" style={{ color: safeCs.primary }}>Datenschutzerklärung</a> zu.
                   </p>
                 </div>
-                <button type="submit" className="w-full hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: cs.onPrimary || '#ffffff' }}>
+                <button type="submit" className="w-full hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}>
                   Nachricht senden
                 </button>
               </form>
@@ -755,13 +758,13 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                 <div className={`${cardBgClass} border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}
                   style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius }}>
                   <div className="w-12 h-12 flex items-center justify-center mx-auto mb-3"
-                    style={{ borderRadius: config.iconRadius, backgroundColor: dark ? (cs.darkSurface || '#374151') : '#f3f4f6' }}>
-                    <Shield size={22} style={{ color: dark ? (cs.lightTextMuted || '#9ca3af') : '#6b7280' }} />
+                    style={{ borderRadius: config.iconRadius, backgroundColor: dark ? (safeCs.darkSurface || '#374151') : '#f3f4f6' }}>
+                    <Shield size={22} style={{ color: dark ? (safeCs.lightTextMuted || '#9ca3af') : '#6b7280' }} />
                   </div>
                   <p className={`font-bold text-sm mb-1 ${textMain}`} style={{ ...hs, ...textMainStyle }}>Kontaktformular</p>
                   <p className={`text-xs mb-1 ${textSub}`} style={textSubStyle}>Erhalte direkte Kundenanfragen über deine Website.</p>
-                  <p className="text-xs font-semibold mb-4" style={{ color: cs.primary }}>Ab 4,90 € / Monat</p>
-                  <button className="w-full text-xs hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: cs.onPrimary || '#ffffff' }}>
+                  <p className="text-xs font-semibold mb-4" style={{ color: safeCs.primary }}>Ab 4,90 € / Monat</p>
+                  <button className="w-full text-xs hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}>
                     Freischalten
                   </button>
                 </div>
@@ -808,7 +811,7 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="w-80 h-16 mx-auto mb-20">
             <div className="text-center mb-20">
-              <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-4 ${dark ? (cs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Kundenstimmen</span>
+              <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-4 ${dark ? (safeCs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Kundenstimmen</span>
               <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black text-center"}`} style={{ ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
                 {heading || 'Was unsere Kunden sagen'}
               </h2>
@@ -817,18 +820,18 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
           <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {items?.length > 0 ? items.map((t: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-64">
-                <div className={`p-10 border ${border} ${dark ? (cs.darkSurface ? '' : 'bg-white/5') : 'bg-white shadow-sm'} hover:shadow-xl transition-all duration-500 rounded-2xl`} style={dark && cs.darkSurface ? { backgroundColor: cs.darkSurface, borderColor: cs.lightTextMuted || 'rgba(255,255,255,0.1)' } : undefined}>
+                <div className={`p-10 border ${border} ${dark ? (safeCs.darkSurface ? '' : 'bg-white/5') : 'bg-white shadow-sm'} hover:shadow-xl transition-all duration-500 rounded-2xl`} style={dark && safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface, borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : undefined}>
                   <div className="flex gap-1 mb-6">
                     {[...Array(t.rating || 5)].map((_, j) => <Star key={j} size={16} fill="currentColor" className="text-yellow-500" />)}
                   </div>
                   <p className={`${textSub} font-light leading-relaxed italic mb-8 text-lg`} style={textSubStyle}>"{t.description || t.title}"</p>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: cs.primary + '20' }}>
-                      <Heart size={20} style={{ color: cs.primary }} />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: safeCs.primary + '20' }}>
+                      <Heart size={20} style={{ color: safeCs.primary }} />
                     </div>
                     <div>
                       <p className={`font-bold ${textMain}`} style={textMainStyle}>{t.author}</p>
-                      <p className="text-xs uppercase tracking-widest" style={{ opacity: 0.4, color: dark ? (cs.lightTextMuted || '#ffffff') : (cs.textLight || '#737373') }}>Kunde</p>
+                      <p className="text-xs uppercase tracking-widest" style={{ opacity: 0.4, color: dark ? (safeCs.lightTextMuted || '#ffffff') : (safeCs.textLight || '#737373') }}>Kunde</p>
                     </div>
                   </div>
                 </div>
@@ -847,9 +850,9 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-6 ${dark ? (cs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Testimonials</span>
+            <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-6 ${dark ? (safeCs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Testimonials</span>
             <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black"} mb-8`} style={{ ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
-              Echte <span style={{ color: cs.primary }}>Erfahrungen</span>
+              Echte <span style={{ color: safeCs.primary }}>Erfahrungen</span>
             </h2>
             <p className={`${textSub} text-xl font-light leading-relaxed mb-12`} style={textSubStyle}>
               Wir legen höchsten Wert auf Qualität und Kundenzufriedenheit. Das sagen unsere Partner über die Zusammenarbeit.
@@ -859,15 +862,15 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
             {items?.slice(0, 2).map((t: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-48">
                 <motion.div
-                  className={`p-10 ${dark ? (cs.darkSurface ? '' : 'bg-white/10') : 'bg-white shadow-2xl'} rounded-[2rem] relative`}
-                  style={dark && cs.darkSurface ? { backgroundColor: cs.darkSurface } : undefined}
+                  className={`p-10 ${dark ? (safeCs.darkSurface ? '' : 'bg-white/10') : 'bg-white shadow-2xl'} rounded-[2rem] relative`}
+                  style={dark && safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface } : undefined}
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.2 }}
                 >
-                  <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: cs.primary }}>
-                    <Star size={20} style={{ color: cs.onPrimary || '#ffffff' }} fill="currentColor" />
+                  <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: safeCs.primary }}>
+                    <Star size={20} style={{ color: safeCs.onPrimary || '#ffffff' }} fill="currentColor" />
                   </div>
                   <p className={`${textMain} text-lg mb-6 italic leading-relaxed`} style={textMainStyle}>"{t.description || t.title}"</p>
                   <p className={`font-bold ${textMain} uppercase tracking-widest text-sm`} style={textMainStyle}>— {t.author}</p>
@@ -965,8 +968,8 @@ function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'defa
           <FooterContact websiteData={websiteData} textClass="" />
         </ul>
         <div className="flex gap-6 text-xs uppercase tracking-widest shrink-0" style={textSubtleStyle}>
-          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': cs.primary } as React.CSSProperties}>Impressum</a>
-          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': cs.primary } as React.CSSProperties}>Datenschutz</a>
+          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': safeCs.primary } as React.CSSProperties}>Impressum</a>
+          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': safeCs.primary } as React.CSSProperties}>Datenschutz</a>
         </div>
       </div>
     </footer>
@@ -992,6 +995,7 @@ function resolveLogoFont(websiteData: any, fallback: string): string {
 // Aesthetic: Raw industrial muscle. Barlow Condensed 900 at massive scale.
 // Key move: Diagonal hero split with clip-path, numbered service list, accent stripe.
 export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
@@ -1029,27 +1033,27 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em' }} className="px-10 py-3 text-white text-xs uppercase hover:scale-105 transition-transform">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em' }} className="px-10 py-3 text-white text-xs uppercase hover:scale-105 transition-transform">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="default"
@@ -1066,6 +1070,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 // Aesthetic: Parisian editorial. Cormorant Garamond italic, generous whitespace.
 // Key move: Giant floating background initial, centered editorial hero.
 export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin buchen';
@@ -1104,23 +1109,23 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-36 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em' }} className="px-8 py-3 text-white text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em' }} className="px-8 py-3 text-white text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" headlineSize={headlineSize} />
 
       <footer className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
@@ -1151,6 +1156,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 // Aesthetic: Clinical precision. DM Serif Display meets DM Sans.
 // Key move: Left-aligned editorial with offset image, primary-bordered service cards.
 export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
@@ -1183,33 +1189,33 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-2.5 h-8 rounded-full shrink-0" style={{ backgroundColor: cs.primary }} />
+            <div className="w-2.5 h-8 rounded-full shrink-0" style={{ backgroundColor: safeCs.primary }} />
             <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }} className="truncate block">{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em' }} className="px-8 py-3 text-white text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em' }} className="px-8 py-3 text-white text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="elegant"
@@ -1226,6 +1232,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 // Aesthetic: Workshop warmth. Playfair Display bold, parchment base.
 // Key move: Warm parchment bg, numbered service blocks with earthy sienna accents.
 export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
@@ -1263,27 +1270,27 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em' }} className="px-7 py-2.5 text-white text-sm uppercase">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em' }} className="px-7 py-2.5 text-white text-sm uppercase">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="default"
@@ -1300,6 +1307,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 // Aesthetic: Kinetic energy. Bebas Neue at giant scale, diagonal image cut.
 // Key move: Massive italic type, skewed image panel, electric accent.
 export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Training buchen';
@@ -1337,27 +1345,27 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, letterSpacing: '0.12em', fontSize: '1.05rem' }} className="px-8 py-2.5 text-white uppercase">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.12em', fontSize: '1.05rem' }} className="px-8 py-2.5 text-white uppercase">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="default"
@@ -1374,6 +1382,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 // Aesthetic: Artisan food editorial. Fraunces all-serif, warm cream.
 // Key move: Centered editorial hero, large rounded image, spinning circular badge.
 export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Reservieren';
@@ -1412,27 +1421,27 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300 }} className="px-6 py-2.5 text-white text-sm rounded-full">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300 }} className="px-6 py-2.5 text-white text-sm rounded-full">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="elegant"
@@ -1449,6 +1458,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 // Aesthetic: Fashion editorial. Libre Baskerville italic, rich near-black.
 // Key move: Full-bleed cinematic hero, maximum negative space, thin accent lines.
 export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
@@ -1487,27 +1497,27 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: cs.primary, color: '#000' }} className="px-10 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl">{heroCta}</button>
+          <button style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: '#000' }} className="px-10 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="centered"
@@ -1524,6 +1534,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 // Aesthetic: Tech geometric. Syne 800 with Space Mono accents.
 // Key move: 12-col grid hero, monospace decorative numbers, geometric accent blob.
 export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
@@ -1562,27 +1573,27 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em' }} className="px-6 py-2.5 text-white text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em' }} className="px-6 py-2.5 text-white text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="modern"
@@ -1599,6 +1610,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 // Aesthetic: Botanical organic. Lora italic, organic cream base.
 // Key move: Asymmetric pill-shaped images, leaf-green accents, flowing curves.
 export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
@@ -1633,27 +1645,27 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5 relative">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           <div className="flex items-center gap-2 overflow-hidden">
-            <Leaf size={24} style={{ color: cs.primary }} className="shrink-0" />
+            <Leaf size={24} style={{ color: safeCs.primary }} className="shrink-0" />
             <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 400 }} className="truncate block">{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-36 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-8 py-2.5 text-white text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600 }} className="px-8 py-2.5 text-white text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={cs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={cs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
@@ -1682,6 +1694,7 @@ export function PremiumLayoutV2({
   isLoading,
   headlineSize,
 }: any) {
+  const safeCs = cs || {};
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
@@ -1726,26 +1739,26 @@ export function PremiumLayoutV2({
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em' }} className="px-6 py-2.5 text-white text-sm uppercase tracking-wider">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em' }} className="px-6 py-2.5 text-white text-sm uppercase tracking-wider">{heroCta}</button>
         </Skeleton>
       </nav>
 
       {/* HERO: Dynamic colored left panel / white right panel */}
       <section id="hero" className="min-h-screen grid lg:grid-cols-[45%_55%] pt-[80px]">
         {/* Left: dynamic primary color panel */}
-        <div className="text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden" style={{ backgroundColor: cs.secondary || cs.primary }}>
+        <div className="text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden" style={{ backgroundColor: safeCs.secondary || safeCs.primary }}>
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
           <div className="relative z-10 flex flex-col items-start">
             <Skeleton isLoading={isLoading} className="w-full min-h-[14rem] mb-12">
               <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 5.5vw, 5.5rem)') }} className="mb-0">
-                {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
+                {hl.main}<br /><span style={{ color: safeCs.primary }}>{hl.last}</span>
               </h1>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
               <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
-              <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-10 py-4 text-white text-sm uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform">{heroCta}</button>
+              <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-10 py-4 text-white text-sm uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform">{heroCta}</button>
             </Skeleton>
           </div>
         </div>
@@ -1758,26 +1771,26 @@ export function PremiumLayoutV2({
         </div>
       </section>
 
-      <GoogleTrustBadge websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} />
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
       {services.length > 0 && (
         <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
             <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[6rem] mb-24">
               <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="mb-0">
-                Unsere <span style={{ color: cs.primary }}>Leistungen</span>
+                Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
               </h2>
             </Skeleton>
             <div className="grid md:grid-cols-3 gap-8">
               {services.map((service: any, i: number) => (
                 <Skeleton key={i} isLoading={isLoading} className="h-72">
-                  <div className="p-10 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col justify-between" style={{ borderTop: `4px solid ${cs.primary}` }}>
+                  <div className="p-10 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col justify-between" style={{ borderTop: `4px solid ${safeCs.primary}` }}>
                     <div>
-                      <Target size={28} style={{ color: cs.primary }} className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <Target size={28} style={{ color: safeCs.primary }} className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity" />
                       <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: '1.6rem', lineHeight: 1.2 }} className="mb-4">{service.title}</h3>
                       <p style={{ fontFamily: BODY, fontWeight: 400, fontSize: '0.9rem' }} className="text-neutral-500 leading-relaxed">{service.description}</p>
                     </div>
-                    <div className="mt-8 flex items-center gap-3 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" style={{ color: cs.primary }}>
+                    <div className="mt-8 flex items-center gap-3 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" style={{ color: safeCs.primary }}>
                       <span>Mehr erfahren</span><ArrowRight size={14} />
                     </div>
                   </div>
@@ -1788,13 +1801,13 @@ export function PremiumLayoutV2({
         </section>
       )}
 
-      <ProcessSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
 
       <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-[#F7F9FC] scroll-mt-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
-              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: cs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Exzellenz & Strategie</span>
+              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: safeCs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Exzellenz & Strategie</span>
               <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">
@@ -1807,12 +1820,12 @@ export function PremiumLayoutV2({
         </div>
       </section>
 
-      <TestimonialsLight websiteData={websiteData} cs={cs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
+      <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
       <DynamicFooter
         websiteData={websiteData}
-        cs={cs}
+        cs={safeCs}
         isLoading={isLoading}
         footerText={footerText}
         variant="elegant"
