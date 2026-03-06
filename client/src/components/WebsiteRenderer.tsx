@@ -11,12 +11,28 @@ interface WebsiteRendererProps {
   heroImageUrl?: string | null;
   aboutImageUrl?: string | null;
   businessCategory?: string | null;
+  layoutStyle?: string | null;
   isLoading?: boolean;
   headlineSize?: 'large' | 'medium' | 'small';
   headlineFontOverride?: string;
 }
 
-function getLayoutComponent(category: string = ""): any {
+function getLayoutComponent(category: string = "", layoutStyle?: string | null): any {
+  // If explicit layoutStyle is provided (from admin/dashboard), use it directly
+  if (layoutStyle) {
+    const style = layoutStyle.toLowerCase();
+    if (style.includes('bold')) return BoldLayoutV2;
+    if (style.includes('elegant')) return ElegantLayoutV2;
+    if (style.includes('clean')) return CleanLayoutV2;
+    if (style.includes('craft')) return CraftLayoutV2;
+    if (style.includes('dynamic')) return DynamicLayoutV2;
+    if (style.includes('fresh')) return FreshLayoutV2;
+    if (style.includes('luxury')) return LuxuryLayoutV2;
+    if (style.includes('modern')) return ModernLayoutV2;
+    if (style.includes('natural')) return NaturalLayoutV2;
+  }
+  
+  // Fallback: determine by business category
   const cat = category.toLowerCase();
   if (cat.includes('bau') || cat.includes('industrie')) return BoldLayoutV2;
   if (cat.includes('friseur') || cat.includes('beauty')) return ElegantLayoutV2;
@@ -30,7 +46,7 @@ function getLayoutComponent(category: string = ""): any {
   return PremiumLayoutV2;
 }
 
-export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, headlineSize, headlineFontOverride }: WebsiteRendererProps) {
+export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, headlineSize, headlineFontOverride }: WebsiteRendererProps) {
   const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
   const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
   // Patch aboutImageUrl and headlineFont into websiteData if provided externally
@@ -42,6 +58,10 @@ export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl
       wd.designTokens = { ...(wd.designTokens || {}), headlineFont: headlineFontOverride };
     }
   }
-  const LayoutComponent = getLayoutComponent(businessCategory || websiteData?.business?.category);
+  // Use layoutStyle if provided (from admin/dashboard), otherwise fall back to businessCategory
+  const LayoutComponent = getLayoutComponent(
+    businessCategory || websiteData?.business?.category,
+    layoutStyle || (websiteData as any)?.layoutStyle
+  );
   return <LayoutComponent websiteData={wd} cs={cs} heroImageUrl={heroImg} isLoading={isLoading} headlineSize={headlineSize} />;
 }
