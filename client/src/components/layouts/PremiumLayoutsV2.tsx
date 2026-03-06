@@ -423,10 +423,10 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
 
   // Variant 1: Vertical Alternating Timeline
   return (
-    <section className={`py-24 md:py-32 px-6 ${bg}`} style={{ fontFamily: bodyFont }}>
+    <section className={`py-24 md:py-32 px-6 ${bgClass}`} style={{ ...bgStyle, fontFamily: bodyFont }}>
       <div className="max-w-4xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-20">
-          <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={hs}>
+          <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
             {process?.headline || "Der Ablauf"}
           </h2>
         </Skeleton>
