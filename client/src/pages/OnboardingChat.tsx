@@ -699,6 +699,81 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [previewToken, websiteIdProp]);
 
+  // ── tRPC queries ────────────────────────────────────────────────────────
+  const { data: existingOnboarding } = trpc.onboarding.get.useQuery(
+    { websiteId: websiteId! },
+    { enabled: !!websiteId }
+  );
+
+  // Load existing onboarding data when available
+  useEffect(() => {
+    if (!existingOnboarding) return;
+
+    // Sync add-on boolean flags
+    if (existingOnboarding.addOnMenu !== undefined && existingOnboarding.addOnMenu !== null) {
+      setData(p => ({ ...p, addOnMenu: existingOnboarding.addOnMenu! }));
+      _setAddOnMenu(existingOnboarding.addOnMenu!);
+    }
+    if (existingOnboarding.addOnPricelist !== undefined && existingOnboarding.addOnPricelist !== null) {
+      setData(p => ({ ...p, addOnPricelist: existingOnboarding.addOnPricelist! }));
+      _setAddOnPricelist(existingOnboarding.addOnPricelist!);
+    }
+    if (existingOnboarding.addOnGallery !== undefined && existingOnboarding.addOnGallery !== null) {
+      setData(p => ({ ...p, addOnGallery: existingOnboarding.addOnGallery! }));
+      _setAddOnGallery(existingOnboarding.addOnGallery!);
+    }
+    if (existingOnboarding.addOnContactForm !== undefined && existingOnboarding.addOnContactForm !== null) {
+      setData(p => ({ ...p, addOnContactForm: existingOnboarding.addOnContactForm! }));
+    }
+
+    // Sync add-on data (menu, pricelist, gallery)
+    if (existingOnboarding.addOnMenuData) {
+      const menuData = existingOnboarding.addOnMenuData as any;
+      setData(p => ({
+        ...p,
+        addOnMenuData: {
+          headline: menuData.headline || p.addOnMenuData.headline,
+          categories: menuData.categories || p.addOnMenuData.categories
+        }
+      }));
+    }
+    if (existingOnboarding.addOnPricelistData) {
+      const pricelistData = existingOnboarding.addOnPricelistData as any;
+      setData(p => ({
+        ...p,
+        addOnPricelistData: {
+          headline: pricelistData.headline || p.addOnPricelistData.headline,
+          categories: pricelistData.categories || p.addOnPricelistData.categories
+        }
+      }));
+    }
+    // Note: Gallery data is stored in the database but the field name may differ
+    // The gallery images are stored via photoUrls or addOnGalleryData
+    const galleryImages = (existingOnboarding as any).photoUrls || (existingOnboarding as any).addOnGalleryData?.images || [];
+    if (galleryImages.length > 0) {
+      setData(p => ({
+        ...p,
+        addOnGalleryData: {
+          ...p.addOnGalleryData,
+          images: galleryImages
+        }
+      }));
+    }
+  }, [existingOnboarding]);
+
+  // Synchronize add-on states with data to ensure edit steps appear when selected in real-time
+  useEffect(() => {
+    if (data.addOnMenu !== _addOnMenu) {
+      _setAddOnMenu(data.addOnMenu);
+    }
+    if (data.addOnPricelist !== _addOnPricelist) {
+      _setAddOnPricelist(data.addOnPricelist);
+    }
+    if (data.addOnGallery !== _addOnGallery) {
+      _setAddOnGallery(data.addOnGallery);
+    }
+  }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
+
   // ── tRPC mutations ──────────────────────────────────────────────────────
   const saveStepMutation = trpc.onboarding.saveStep.useMutation();
   const completeMutation = trpc.onboarding.complete.useMutation();
