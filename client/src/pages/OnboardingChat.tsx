@@ -1574,8 +1574,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (editMode.isEditing && editMode.returnToStep) {
       addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
       await new Promise(resolve => setTimeout(resolve, 600));
-      setCurrentStep(editMode.returnToStep);
+      const returnStep = editMode.returnToStep;
+      setCurrentStep(returnStep);
       setEditMode({ isEditing: false, returnToStep: null });
+      // Show the prompt for the step we're returning to
+      await addBotMessage(getStepPrompt(returnStep), 400);
       return;
     }
 
@@ -1767,8 +1770,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (editMode.isEditing && editMode.returnToStep) {
         addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
         await new Promise(resolve => setTimeout(resolve, 600));
-        setCurrentStep(editMode.returnToStep);
+        const returnStep = editMode.returnToStep;
+        setCurrentStep(returnStep);
         setEditMode({ isEditing: false, returnToStep: null });
+        // Show the prompt for the step we're returning to
+        await addBotMessage(getStepPrompt(returnStep), 400);
       } else {
         await advanceToStep(nextStep);
       }
