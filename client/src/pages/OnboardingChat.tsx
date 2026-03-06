@@ -818,6 +818,52 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
 
+  // ── Save current step to localStorage whenever it changes ───────────────
+  useEffect(() => {
+    if (currentStep === 'welcome') return; // Don't save initial state
+
+    const effectiveWebsiteId = websiteIdProp || websiteId;
+    if (effectiveWebsiteId && currentStep) {
+      localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, currentStep);
+    }
+  }, [currentStep, websiteId, websiteIdProp]);
+
+  // ── Resume from database when onboarding data loads ────────────────────
+  // This effect runs when onboarding data is loaded from the server
+  // and restores the step position if user returns to an ongoing onboarding
+  useEffect(() => {
+    // Only proceed if we have onboarding data and are still at welcome step
+    if (!existingOnboarding || currentStep !== 'welcome') return;
+
+    const effectiveWebsiteId = websiteIdProp || websiteId;
+
+    // First check localStorage (takes precedence)
+    const savedStep = effectiveWebsiteId
+      ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+      : null;
+
+    if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
+      setCurrentStep(savedStep as ChatStep);
+      return;
+    }
+
+    // If no localStorage, check stepCurrent from database
+    const dbStepCurrent = existingOnboarding?.stepCurrent;
+    if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
+      const stepIndex = dbStepCurrent;
+      if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
+        const targetStep = STEP_ORDER[stepIndex];
+        if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
+          setCurrentStep(targetStep);
+          // Also save to localStorage for next time
+          if (effectiveWebsiteId) {
+            localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+          }
+        }
+      }
+    }
+  }, [existingOnboarding, currentStep, websiteId, websiteIdProp]);
+
   // ── tRPC mutations ──────────────────────────────────────────────────────
   const saveStepMutation = trpc.onboarding.saveStep.useMutation();
   const completeMutation = trpc.onboarding.complete.useMutation();

@@ -1055,7 +1055,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
@@ -1133,7 +1133,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" headlineSize={headlineSize} />
 
@@ -1221,7 +1221,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
 
@@ -1298,7 +1298,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
 
@@ -1376,7 +1376,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
@@ -1454,7 +1454,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
@@ -1533,7 +1533,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
@@ -1611,7 +1611,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
 
@@ -1691,7 +1691,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
@@ -1848,7 +1848,7 @@ export function PremiumLayoutV2({
 
       <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
@@ -1871,7 +1871,7 @@ export function PremiumLayoutV2({
 // ================================================================
 
 // ── GALLERY SECTION ──────────────────────────────────────────────
-function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const gallery = sec(websiteData, 'gallery');
   const items = gallery?.items || [];
@@ -1879,11 +1879,18 @@ function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, hea
 
   if (items.length === 0) return null;
 
+  // Dynamic colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : 'bg-neutral-50';
+  const bgStyle = dark
+    ? { backgroundColor: safeCs.darkBackground || '#0a0a0a' }
+    : { backgroundColor: safeCs.surface || '#fafafa' };
+
   return (
-    <section id="galerie" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+    <section id="galerie" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bgClass}`} style={bgStyle}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
             {headline}
           </h2>
         </Skeleton>
@@ -1911,7 +1918,7 @@ function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, hea
 }
 
 // ── MENU SECTION (Speisekarte) ───────────────────────────────────
-function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const menu = sec(websiteData, 'menu');
   const items = menu?.items || [];
@@ -1927,11 +1934,20 @@ function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headli
     return acc;
   }, {});
 
+  // Dynamic colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const borderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+  const bgClass = dark ? (safeCs.darkSurface ? '' : 'bg-neutral-800') : 'bg-white';
+  const bgStyle = dark
+    ? { backgroundColor: safeCs.darkSurface || '#1a1a1a' }
+    : { backgroundColor: safeCs.surface || '#ffffff' };
+
   return (
-    <section id="speisekarte" className="py-24 md:py-32 px-6 scroll-mt-20 bg-white">
+    <section id="speisekarte" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bgClass}`} style={bgStyle}>
       <div className="max-w-4xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
             {headline}
           </h2>
         </Skeleton>
@@ -1946,11 +1962,11 @@ function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headli
               <div className="space-y-4">
                 {categoryItems.map((item: any, i: number) => (
                   <Skeleton key={i} isLoading={isLoading} className="h-20">
-                    <div className="flex justify-between items-start py-4 border-b border-neutral-100">
+                    <div className="flex justify-between items-start py-4" style={{ borderBottom: `1px solid ${borderColor}` }}>
                       <div className="flex-1">
-                        <h4 style={{ fontFamily: displayFont, fontWeight: 600 }} className="text-lg">{item.title}</h4>
+                        <h4 style={{ fontFamily: displayFont, fontWeight: 600, color: textColor }} className="text-lg">{item.title}</h4>
                         {item.description && (
-                          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-sm mt-1">{item.description}</p>
+                          <p style={{ fontFamily: bodyFont, color: textMuted }} className="text-sm mt-1">{item.description}</p>
                         )}
                       </div>
                       {item.price && (
@@ -1971,7 +1987,7 @@ function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headli
 }
 
 // ── PRICELIST SECTION ───────────────────────────────────────────
-function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const pricelist = sec(websiteData, 'pricelist');
   const items = pricelist?.items || [];
@@ -1987,17 +2003,30 @@ function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, h
     return acc;
   }, {});
 
+  // Dynamic colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.7)') : (safeCs.textLight || '#737373');
+  const cardBgClass = dark ? (safeCs.darkSurface ? '' : 'bg-neutral-800') : 'bg-white';
+  const cardBgStyle = dark
+    ? { backgroundColor: safeCs.darkSurface || '#1a1a1a' }
+    : { backgroundColor: safeCs.surface || '#ffffff' };
+  const sectionBgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : 'bg-neutral-50';
+  const sectionBgStyle = dark
+    ? { backgroundColor: safeCs.darkBackground || '#0a0a0a' }
+    : { backgroundColor: safeCs.background || '#fafafa' };
+  const borderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+
   return (
-    <section id="preise" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+    <section id="preise" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-4xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
             {headline}
           </h2>
         </Skeleton>
         <div className="space-y-12">
           {Object.entries(grouped).map(([category, categoryItems]: [string, any]) => (
-            <div key={category} className="bg-white rounded-2xl p-8 shadow-sm">
+            <div key={category} className={`rounded-2xl p-8 shadow-sm ${cardBgClass}`} style={cardBgStyle}>
               <Skeleton isLoading={isLoading} className="w-48 h-8 mb-6">
                 <h3 style={{ fontFamily: displayFont, fontWeight: 600, color: safeCs.primary }} className="text-lg uppercase tracking-wide">
                   {category}
@@ -2006,8 +2035,8 @@ function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, h
               <div className="space-y-3">
                 {categoryItems.map((item: any, i: number) => (
                   <Skeleton key={i} isLoading={isLoading} className="h-12">
-                    <div className="flex justify-between items-center py-3 border-b border-neutral-100 last:border-0">
-                      <span style={{ fontFamily: bodyFont }} className="text-neutral-700">{item.title}</span>
+                    <div className="flex justify-between items-center py-3 last:border-0" style={{ borderBottom: i < categoryItems.length - 1 ? `1px solid ${borderColor}` : 'none' }}>
+                      <span style={{ fontFamily: bodyFont, color: textMuted }}>{item.title}</span>
                       {item.price && (
                         <span style={{ fontFamily: displayFont, color: safeCs.primary }} className="font-semibold">
                           {item.price}
@@ -2026,12 +2055,12 @@ function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, h
 }
 
 // ── DYNAMIC ADD-ON SECTIONS RENDERER ─────────────────────────────
-function DynamicAddonSections({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+function DynamicAddonSections({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   return (
     <>
-      <GallerySection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} />
-      <MenuSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} />
-      <PricelistSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} />
+      <GallerySection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} dark={dark} />
+      <MenuSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} dark={dark} />
+      <PricelistSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} dark={dark} />
     </>
   );
 }
