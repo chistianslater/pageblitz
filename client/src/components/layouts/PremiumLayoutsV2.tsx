@@ -107,7 +107,7 @@ const getBodyTextMultiplier = (headlineSize: string = 'large'): number => {
 
 function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
   return (
-    <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] items-center gap-12 max-w-7xl mx-auto px-6">
+    <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] pb-20 items-center gap-12 max-w-7xl mx-auto px-6">
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
@@ -182,7 +182,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
 function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
   return (
-    <section id="hero" className="min-h-screen flex items-center relative overflow-hidden">
+    <section id="hero" className="min-h-screen flex items-center relative overflow-hidden pb-12">
       <div className="absolute inset-0 z-0">
         <img src={heroImageUrl} className="w-full h-full object-cover opacity-10 grayscale" alt="" />
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/70" />
