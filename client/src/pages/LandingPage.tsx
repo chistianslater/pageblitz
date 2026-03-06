@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import { useLocation } from "wouter";
 import { 
@@ -24,6 +24,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+import {
+  BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
+  DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
+  NaturalLayoutV2, PremiumLayoutV2
+} from "@/components/layouts/PremiumLayoutsV2";
+import type { ColorScheme } from "@shared/types";
 
 // --- Animation Components ---
 
@@ -417,186 +423,222 @@ const GhostWebsiteCreation = () => {
   );
 };
 
-// --- Layout Preview Card with Random Colors & Autoscroll ---
+// --- Website Showcase Gallery with Live Layout Previews ---
 
-const colorSchemes = [
-  { name: "Ocean", primary: "#1565c0", secondary: "#0d47a1", accent: "#42a5f5" },
-  { name: "Emerald", primary: "#2e7d32", secondary: "#1b5e20", accent: "#66bb6a" },
-  { name: "Ruby", primary: "#c62828", secondary: "#8e0000", accent: "#ef5350" },
-  { name: "Violet", primary: "#6a1b9a", secondary: "#4a148c", accent: "#ab47bc" },
-  { name: "Amber", primary: "#e65100", secondary: "#bf360c", accent: "#ff9800" },
-  { name: "Gold", primary: "#c9a96e", secondary: "#8d6e63", accent: "#d4af37" },
-  { name: "Indigo", primary: "#283593", secondary: "#1a237e", accent: "#5c6bc0" },
-  { name: "Teal", primary: "#00695c", secondary: "#004d40", accent: "#26a69a" },
-];
+const LAYOUT_COMPONENTS = {
+  Bold: BoldLayoutV2,
+  Elegant: ElegantLayoutV2,
+  Clean: CleanLayoutV2,
+  Craft: CraftLayoutV2,
+  Dynamic: DynamicLayoutV2,
+  Fresh: FreshLayoutV2,
+  Luxury: LuxuryLayoutV2,
+  Modern: ModernLayoutV2,
+  Natural: NaturalLayoutV2,
+  Premium: PremiumLayoutV2,
+};
+
+// Generate random color schemes
+const generateRandomColorScheme = (): ColorScheme => {
+  const hues = [0, 30, 60, 120, 180, 210, 240, 270, 300, 330];
+  const hue = hues[Math.floor(Math.random() * hues.length)];
+  const saturation = 60 + Math.floor(Math.random() * 30); // 60-90%
+  const lightness = 45 + Math.floor(Math.random() * 20); // 45-65%
+  
+  const primary = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  const secondary = `hsl(${hue}, ${saturation}%, ${Math.max(30, lightness - 15)}%)`;
+  const accent = `hsl(${(hue + 30) % 360}, ${saturation}%, ${Math.min(70, lightness + 15)}%)`;
+  
+  return {
+    primary,
+    secondary,
+    accent,
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  };
+};
+
+// Mock website data for previews
+const createMockWebsiteData = (name: string, industry: string) => ({
+  business: {
+    name,
+    category: industry,
+    address: "Musterstraße 123, 12345 Musterstadt",
+    phone: "+49 123 456789",
+    email: "info@example.de",
+  },
+  hero: {
+    headline: name,
+    subheadline: "Professionelle Dienstleistungen für Sie",
+    description: "Wir bieten erstklassige Qualität und Service, der überzeugt. Kontaktieren Sie uns für ein unverbindliches Angebot.",
+    ctaText: "Jetzt Termin vereinbaren",
+    ctaLink: "#contact",
+  },
+  about: {
+    text: "Seit über 10 Jahren sind wir Ihr verlässlicher Partner. Unser erfahrenes Team steht Ihnen mit Kompetenz und Engagement zur Seite.",
+    usp: ["Qualitätsgarantie", "Persönliche Beratung", "Faire Preise"],
+  },
+  services: {
+    headline: "Unsere Leistungen",
+    items: [
+      { title: "Beratung", description: "Individuelle Beratung nach Ihren Bedürfnissen", icon: "star" },
+      { title: "Service", description: "Schneller und zuverlässiger Service", icon: "zap" },
+      { title: "Support", description: "Rund um die Uhr für Sie da", icon: "phone" },
+    ],
+  },
+  sections: [
+    { type: "hero", headline: name, subheadline: "Professionelle Dienstleistungen" },
+    { type: "about", text: "Über uns Text..." },
+    { type: "services", headline: "Leistungen" },
+    { type: "process", headline: "So funktioniert's", items: [
+      { step: "1", title: "Anfrage", description: "Beschreiben Sie Ihr Projekt" },
+      { step: "2", title: "Planung", description: "Wir erstellen ein Konzept" },
+      { step: "3", title: "Umsetzung", description: "Professionelle Durchführung" },
+    ]},
+    { type: "cta", headline: "Bereit zu starten?", content: "Kontaktieren Sie uns jetzt" },
+  ],
+});
 
 const websiteExamples = [
-  { 
-    name: "Friseur Bocholt", 
-    industry: "Beauty & Wellness",
-    layout: "Elegant"
-  },
-  { 
-    name: "Pizzeria Napoli", 
-    industry: "Restaurant",
-    layout: "Bold"
-  },
-  { 
-    name: "Bauunternehmen Müller", 
-    industry: "Handwerk",
-    layout: "Trust"
-  },
-  { 
-    name: "Beauty Lounge", 
-    industry: "Beauty",
-    layout: "Luxury"
-  },
-  { 
-    name: "Café Central", 
-    industry: "Gastronomie",
-    layout: "Warm"
-  },
-  { 
-    name: "IT Solutions", 
-    industry: "Technologie",
-    layout: "Modern"
-  },
+  { name: "Friseur Studio", industry: "Beauty & Wellness", layout: "Elegant" as const },
+  { name: "Pizzeria Napoli", industry: "Restaurant", layout: "Bold" as const },
+  { name: "Bauunternehmen", industry: "Handwerk", layout: "Craft" as const },
+  { name: "Beauty Lounge", industry: "Beauty", layout: "Luxury" as const },
+  { name: "Café Central", industry: "Gastronomie", layout: "Fresh" as const },
+  { name: "Fitness Studio", industry: "Fitness", layout: "Dynamic" as const },
+  { name: "Arztpraxis", industry: "Medizin", layout: "Clean" as const },
+  { name: "Agentur", industry: "IT", layout: "Modern" as const },
 ];
 
-const LayoutPreviewCard = ({ site, colorScheme, index }: { site: typeof websiteExamples[0]; colorScheme: typeof colorSchemes[0]; index: number }) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+// Live Preview Component with Autoscroll
+interface LivePreviewCardProps {
+  name: string;
+  industry: string;
+  layout: keyof typeof LAYOUT_COMPONENTS;
+  delay?: number;
+}
+
+const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardProps) => {
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [colorScheme] = useState(() => generateRandomColorScheme());
   const [isHovering, setIsHovering] = useState(false);
+  const scrollPositionRef = useRef(0);
+  const animationRef = useRef<number>();
 
-  // Autoscroll effect on hover
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || !isHovering) return;
+  const LayoutComponent = LAYOUT_COMPONENTS[layout] || PremiumLayoutV2;
+  const websiteData = createMockWebsiteData(name, industry);
 
-    let animationId: number;
-    let scrollPos = 0;
-    const maxScroll = container.scrollHeight - container.clientHeight;
-    const speed = 0.5; // pixels per frame
-
-    const scroll = () => {
-      scrollPos += speed;
-      if (scrollPos > maxScroll) {
-        scrollPos = 0; // Loop back to top
+  const startAutoScroll = useCallback(() => {
+    if (!previewRef.current) return;
+    
+    const scrollStep = () => {
+      if (previewRef.current && isHovering) {
+        scrollPositionRef.current += 1.5;
+        const maxScroll = previewRef.current.scrollHeight - previewRef.current.clientHeight;
+        
+        // Reset to top when reaching bottom for seamless loop
+        if (scrollPositionRef.current >= maxScroll) {
+          scrollPositionRef.current = 0;
+        }
+        
+        previewRef.current.scrollTop = scrollPositionRef.current;
+        animationRef.current = requestAnimationFrame(scrollStep);
       }
-      container.scrollTop = scrollPos;
-      animationId = requestAnimationFrame(scroll);
     };
-
-    animationId = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(animationId);
+    
+    animationRef.current = requestAnimationFrame(scrollStep);
   }, [isHovering]);
+
+  useEffect(() => {
+    if (isHovering) {
+      startAutoScroll();
+    } else {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isHovering, startAutoScroll]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ delay }}
       className="snap-center shrink-0 w-[360px] md:w-[420px] group cursor-pointer"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
-      <div 
-        className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white/5 mb-4 border border-white/10 group-hover:border-white/30 transition-all shadow-lg shadow-black/20"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
-        {/* Scrollable Mini Website Preview */}
+      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white/5 mb-4 border border-white/10 group-hover:border-white/30 transition-all shadow-2xl">
+        {/* Live Website Preview */}
         <div 
-          ref={scrollContainerRef}
+          ref={previewRef}
           className="absolute inset-0 overflow-hidden"
-          style={{ scrollBehavior: 'auto' }}
+          style={{ scrollBehavior: "auto" }}
         >
-          {/* Mini Website Content */}
-          <div className="w-full">
-            {/* Hero Section */}
-            <div 
-              className="h-32 p-4 flex flex-col justify-center gap-2"
-              style={{ background: `linear-gradient(135deg, ${colorScheme.primary} 0%, ${colorScheme.secondary} 100%)` }}
-            >
-              <div className="h-3 bg-white/30 rounded-full w-3/4" />
-              <div className="h-2 bg-white/20 rounded-full w-1/2" />
-            </div>
-            
-            {/* Features Section */}
-            <div className="p-3 grid grid-cols-3 gap-2 bg-white">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colorScheme.accent}20` }}>
-                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorScheme.primary }} />
-                </div>
-              ))}
-            </div>
-
-            {/* About Section */}
-            <div className="p-3 flex gap-3 bg-gray-50">
-              <div className="w-16 h-16 rounded-lg shrink-0" style={{ backgroundColor: colorScheme.accent }} />
-              <div className="flex-1 space-y-2 py-1">
-                <div className="h-2 bg-gray-300 rounded-full w-full" />
-                <div className="h-2 bg-gray-200 rounded-full w-4/5" />
-                <div className="h-2 bg-gray-200 rounded-full w-3/5" />
-              </div>
-            </div>
-
-            {/* Services Section */}
-            <div className="p-3 space-y-2 bg-white">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-lg" style={{ backgroundColor: `${colorScheme.primary}10` }}>
-                  <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: colorScheme.primary }} />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-2 bg-gray-300 rounded-full w-2/3" />
-                    <div className="h-1.5 bg-gray-200 rounded-full w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA Section */}
-            <div 
-              className="h-20 p-3 flex items-center justify-center"
-              style={{ background: `linear-gradient(135deg, ${colorScheme.secondary} 0%, ${colorScheme.primary} 100%)` }}
-            >
-              <div className="px-4 py-2 bg-white/90 rounded-full text-xs font-medium shadow-lg" style={{ color: colorScheme.primary }}>
-                Jetzt kontaktieren
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="h-12 bg-gray-900 flex items-center justify-center">
-              <div className="h-2 bg-white/20 rounded-full w-20" />
-            </div>
+          <div className="transform scale-[0.35] origin-top" style={{ width: "285.7%", height: "285.7%" }}>
+            <LayoutComponent 
+              websiteData={websiteData} 
+              cs={colorScheme}
+              heroImageUrl="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80"
+              isLoading={false}
+            />
           </div>
         </div>
-
-        {/* Overlay Gradient at Bottom */}
-        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/40 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
-
-        {/* Hover overlay with Arrow */}
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        
+        {/* Gradient overlay for smooth fade */}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-none" />
+        
+        {/* Hover overlay with zoom icon */}
+        <div className={`absolute inset-0 bg-black/40 transition-opacity duration-300 flex items-center justify-center ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
           <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform shadow-xl">
             <ArrowUpRight className="w-6 h-6 text-black" />
           </div>
+          <div className="absolute bottom-4 left-4 right-4 text-center">
+            <span className="text-white/80 text-xs font-medium bg-black/50 px-3 py-1 rounded-full">
+              Hover für Animation
+            </span>
+          </div>
         </div>
 
-        {/* Layout Badge */}
-        <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20">
-          <span className="text-xs text-white/90 font-medium">{site.layout}</span>
-        </div>
-
-        {/* Color indicator dots */}
-        <div className="absolute top-4 right-4 flex gap-1">
-          <div className="w-3 h-3 rounded-full border border-white/30" style={{ backgroundColor: colorScheme.primary }} />
-          <div className="w-3 h-3 rounded-full border border-white/30" style={{ backgroundColor: colorScheme.accent }} />
+        {/* Layout badge */}
+        <div className="absolute top-3 right-3">
+          <span className="text-xs font-medium bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded border border-white/20">
+            {layout}
+          </span>
         </div>
       </div>
       
+      {/* Info */}
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="text-white font-medium mb-1 group-hover:text-white/80 transition-colors">{site.name}</h4>
-          <p className="text-white/40 text-sm">{site.industry}</p>
+          <h4 className="text-white font-semibold group-hover:text-indigo-300 transition-colors">{name}</h4>
+          <p className="text-white/50 text-sm">{industry}</p>
         </div>
-        <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+        <div className="flex gap-1">
+          <div 
+            className="w-4 h-4 rounded-full border border-white/20" 
+            style={{ backgroundColor: colorScheme.primary }}
+          />
+          <div 
+            className="w-4 h-4 rounded-full border border-white/20" 
+            style={{ backgroundColor: colorScheme.secondary }}
+          />
+          <div 
+            className="w-4 h-4 rounded-full border border-white/20" 
+            style={{ backgroundColor: colorScheme.accent }}
+          />
+        </div>
       </div>
     </motion.div>
   );
@@ -617,7 +659,7 @@ const WebsiteShowcase = () => {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const scrollAmount = 400;
+      const scrollAmount = 440;
       scrollRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth"
@@ -632,14 +674,6 @@ const WebsiteShowcase = () => {
       checkScroll();
       return () => el.removeEventListener("scroll", checkScroll);
     }
-  }, []);
-
-  // Assign random color schemes to examples
-  const examplesWithColors = useMemo(() => {
-    return websiteExamples.map((site, i) => ({
-      ...site,
-      colorScheme: colorSchemes[i % colorSchemes.length],
-    }));
   }, []);
 
   return (
@@ -665,6 +699,15 @@ const WebsiteShowcase = () => {
           >
             Websites, die verkaufen.
           </motion.h3>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-white/60 mt-3 text-sm"
+          >
+            Hover über die Vorschau, um die Animation zu sehen. Jedes Layout hat zufällige Farben.
+          </motion.p>
         </div>
         
         <div className="hidden md:flex gap-2">
@@ -702,13 +745,30 @@ const WebsiteShowcase = () => {
         {/* Spacer for max-width alignment */}
         <div className="shrink-0 w-[calc((100vw-1280px)/2)]" />
         
-        {examplesWithColors.map((site, i) => (
-          <LayoutPreviewCard 
-            key={i} 
-            site={site} 
-            colorScheme={site.colorScheme}
-            index={i}
+        {websiteExamples.map((site, i) => (
+          <LivePreviewCard
+            key={i}
+            name={site.name}
+            industry={site.industry}
+            layout={site.layout}
+            delay={i * 0.1}
           />
+        ))}
+
+              {/* Layout Badge */}
+              <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+                <span className="text-xs text-white/80 font-medium">{site.layout}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-white font-medium mb-1 group-hover:text-white/80 transition-colors">{site.name}</h4>
+                <p className="text-white/40 text-sm">{site.industry}</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+            </div>
+          </motion.div>
         ))}
         
         <div className="shrink-0 w-6" />
@@ -963,312 +1023,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-// --- Workflow Animation Component ---
-const WorkflowAnimation = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const totalSteps = 4;
-  const stepDuration = 3000; // 3 seconds per step
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % totalSteps);
-    }, stepDuration);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="relative w-full aspect-[4/3] rounded-2xl bg-[#0a0a0a] border border-white/10 overflow-hidden shadow-2xl shadow-black/50">
-      {/* Browser Chrome */}
-      <div className="h-10 bg-[#111] border-b border-white/10 flex items-center px-3 gap-2 shrink-0">
-        <div className="flex gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-500/40" />
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/40" />
-        </div>
-        <div className="flex-1 max-w-md mx-auto h-6 bg-white/5 rounded-md flex items-center px-3 border border-white/5">
-          <div className="w-3 h-3 rounded-full bg-emerald-500/40 mr-2" />
-          <div className="h-2 bg-white/30 rounded-full w-32" />
-        </div>
-      </div>
-
-      {/* Content Area */}
-      <div className="relative h-[calc(100%-2.5rem)] bg-gradient-to-b from-[#0f0f15] to-[#0a0a0a] overflow-hidden">
-        <AnimatePresence mode="wait">
-          {/* Step 1: Link Input */}
-          {currentStep === 0 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.4 }}
-              className="absolute inset-0 flex flex-col items-center justify-center p-8"
-            >
-              <div className="w-full max-w-sm space-y-4">
-                <div className="flex items-center gap-2 text-white/60 text-sm mb-6">
-                  <Globe className="w-4 h-4" />
-                  <span>Google My Business Link</span>
-                </div>
-                <div className="h-12 bg-white/5 border border-white/10 rounded-lg px-4 flex items-center">
-                  <div className="h-2 bg-white/20 rounded-full w-48" />
-                </div>
-                <motion.div
-                  animate={{ scale: [1, 1.02, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center"
-                >
-                  <span className="text-white text-sm font-medium">Website erstellen</span>
-                </motion.div>
-                <div className="h-2 bg-white/10 rounded-full w-full mt-2" />
-                <div className="h-2 bg-white/10 rounded-full w-3/4" />
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 2: AI Analysis */}
-          {currentStep === 1 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.4 }}
-              className="absolute inset-0 flex flex-col items-center justify-center p-6"
-            >
-              {/* AI Processing Animation */}
-              <div className="relative w-24 h-24 mb-6">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 rounded-full border-2 border-transparent border-t-indigo-500 border-r-purple-500"
-                />
-                <div className="absolute inset-4 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-indigo-400" />
-                </div>
-              </div>
-              <div className="text-white/80 text-sm font-medium mb-4">KI analysiert Daten...</div>
-              
-              {/* Data Cards Appearing */}
-              <div className="w-full max-w-xs space-y-2">
-                {[
-                  { label: "Unternehmen", width: "60%", delay: 0 },
-                  { label: "Branche", width: "45%", delay: 0.3 },
-                  { label: "Adresse", width: "70%", delay: 0.6 },
-                  { label: "Öffnungszeiten", width: "55%", delay: 0.9 },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: item.delay, duration: 0.3 }}
-                    className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/10"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500/60" />
-                    <div className="flex-1">
-                      <div className="h-1.5 bg-white/20 rounded-full" style={{ width: item.width }} />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 3: Chat Interface */}
-          {currentStep === 2 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-              className="absolute inset-0 flex flex-col p-4"
-            >
-              {/* Chat Messages */}
-              <div className="flex-1 space-y-3 overflow-hidden">
-                {/* Bot Message */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex gap-2"
-                >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
-                    <Zap className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
-                      <div className="h-2 bg-white/30 rounded-full w-32 mb-1.5" />
-                      <div className="h-2 bg-white/20 rounded-full w-24" />
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* User Message */}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 }}
-                  className="flex justify-end"
-                >
-                  <div className="bg-indigo-600 rounded-2xl rounded-tr-sm px-4 py-2 max-w-[70%]">
-                    <div className="h-2 bg-white/40 rounded-full w-20" />
-                  </div>
-                </motion.div>
-
-                {/* Color Selection */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.4 }}
-                  className="flex gap-2 pt-2"
-                >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
-                    <Zap className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3">
-                    <div className="h-2 bg-white/30 rounded-full w-28 mb-3" />
-                    <div className="flex gap-2">
-                      {["#1565c0", "#2e7d32", "#c62828", "#6a1b9a"].map((color, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: 1.6 + i * 0.1 }}
-                          className="w-8 h-8 rounded-full border-2 border-white/20"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Chat Input */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 2.2 }}
-                className="h-10 bg-white/5 border border-white/10 rounded-full px-4 flex items-center gap-2 mt-2"
-              >
-                <div className="h-2 bg-white/20 rounded-full w-24 flex-1" />
-                <div className="w-6 h-6 rounded-full bg-indigo-500/60 flex items-center justify-center">
-                  <ArrowRight className="w-3 h-3 text-white" />
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {/* Step 4: Website Live */}
-          {currentStep === 3 && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              transition={{ duration: 0.4 }}
-              className="absolute inset-0"
-            >
-              {/* Mini Website */}
-              <div className="h-full flex flex-col">
-                {/* Header */}
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="h-8 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center px-3"
-                >
-                  <div className="h-2 bg-white/30 rounded-full w-20" />
-                  <div className="flex-1" />
-                  <div className="flex gap-2">
-                    <div className="h-2 bg-white/20 rounded-full w-8" />
-                    <div className="h-2 bg-white/20 rounded-full w-8" />
-                  </div>
-                </motion.div>
-
-                {/* Hero */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="h-20 bg-gradient-to-br from-indigo-500/30 to-purple-500/20 flex flex-col justify-center px-4"
-                >
-                  <div className="h-3 bg-white/40 rounded-full w-32 mb-2" />
-                  <div className="h-2 bg-white/20 rounded-full w-24" />
-                </motion.div>
-
-                {/* Content */}
-                <div className="flex-1 p-3 grid grid-cols-2 gap-2">
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 }}
-                    className="bg-white/5 rounded-lg p-2"
-                  >
-                    <div className="h-12 bg-indigo-500/20 rounded mb-2" />
-                    <div className="h-2 bg-white/20 rounded-full w-full mb-1" />
-                    <div className="h-2 bg-white/20 rounded-full w-4/5" />
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 }}
-                    className="bg-white/5 rounded-lg p-2"
-                  >
-                    <div className="h-12 bg-purple-500/20 rounded mb-2" />
-                    <div className="h-2 bg-white/20 rounded-full w-full mb-1" />
-                    <div className="h-2 bg-white/20 rounded-full w-3/5" />
-                  </motion.div>
-                </div>
-
-                {/* Live Badge */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1, type: "spring" }}
-                  className="absolute top-10 right-4 flex items-center gap-2 px-3 py-1.5 bg-emerald-500 rounded-full shadow-lg"
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                    className="w-2 h-2 bg-white rounded-full"
-                  />
-                  <span className="text-white text-xs font-semibold">LIVE</span>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Step Indicators */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {[0, 1, 2, 3].map((step) => (
-            <motion.div
-              key={step}
-              className="w-2 h-2 rounded-full"
-              animate={{
-                backgroundColor: currentStep === step ? "rgba(99, 102, 241, 1)" : "rgba(255, 255, 255, 0.2)",
-                scale: currentStep === step ? 1.2 : 1,
-              }}
-              transition={{ duration: 0.3 }}
-            />
-          ))}
-        </div>
-
-        {/* Step Label */}
-        <motion.div
-          key={`label-${currentStep}`}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="absolute top-4 right-4 px-2 py-1 rounded bg-black/40 backdrop-blur text-[10px] text-white/60"
-        >
-          Schritt {currentStep + 1}/4
-        </motion.div>
-      </div>
-    </div>
-  );
-};
-
       {/* How it Works - Minimalist */}
       <section className="py-32 border-y border-white/5 bg-white/[0.02]">
         <div className="max-w-7xl mx-auto px-6">
@@ -1284,27 +1038,27 @@ const WorkflowAnimation = () => {
                   { step: "03", title: "Anpassen", desc: "Ändere Texte, Farben und Bilder im Chat-Interface." },
                   { step: "04", title: "Veröffentlichen", desc: "Mit einem Klick ist deine Website live." },
                 ].map((item, i) => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.15 }}
-                    className="flex gap-6 group"
-                  >
+                  <div key={i} className="flex gap-6 group">
                     <div className="text-sm font-medium text-white/20 pt-1">{item.step}</div>
                     <div>
                       <h4 className="text-white text-lg font-medium mb-2 group-hover:text-white/80 transition-colors">{item.title}</h4>
                       <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
 
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl" />
-              <WorkflowAnimation />
+              <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-white/5 p-2">
+                <img 
+                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&auto=format&fit=crop" 
+                  alt="Dashboard Interface"
+                  className="rounded-2xl opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+              </div>
             </div>
           </div>
         </div>
