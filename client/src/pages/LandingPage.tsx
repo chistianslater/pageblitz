@@ -438,27 +438,92 @@ const LAYOUT_COMPONENTS = {
   Premium: PremiumLayoutV2,
 };
 
-// Generate random color schemes
-const generateRandomColorScheme = (): ColorScheme => {
-  const hues = [0, 30, 60, 120, 180, 210, 240, 270, 300, 330];
-  const hue = hues[Math.floor(Math.random() * hues.length)];
-  const saturation = 60 + Math.floor(Math.random() * 30); // 60-90%
-  const lightness = 45 + Math.floor(Math.random() * 20); // 45-65%
-  
-  const primary = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  const secondary = `hsl(${hue}, ${saturation}%, ${Math.max(30, lightness - 15)}%)`;
-  const accent = `hsl(${(hue + 30) % 360}, ${saturation}%, ${Math.min(70, lightness + 15)}%)`;
-  
-  return {
-    primary,
-    secondary,
-    accent,
+// Industry-specific color schemes
+const INDUSTRY_COLOR_SCHEMES: Record<string, ColorScheme> = {
+  "Beauty & Wellness": {
+    primary: "#9a8b7a",
+    secondary: "#c4a882",
+    accent: "#f8f6f3",
     background: "#fafafa",
     surface: "#ffffff",
     text: "#171717",
     textLight: "#737373",
     onPrimary: "#ffffff",
-  };
+  },
+  "Restaurant": {
+    primary: "#c45c26",
+    secondary: "#f4a261",
+    accent: "#e76f51",
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  },
+  "Handwerk": {
+    primary: "#4a5568",
+    secondary: "#bfa880",
+    accent: "#e2e8f0",
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  },
+  "Beauty": {
+    primary: "#d4a5a5",
+    secondary: "#e8c4c4",
+    accent: "#f5e6e6",
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  },
+  "Gastronomie": {
+    primary: "#6b4e3d",
+    secondary: "#d4a574",
+    accent: "#f5e6d3",
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  },
+  "Fitness": {
+    primary: "#2d3748",
+    secondary: "#4a6b6b",
+    accent: "#e2e8f0",
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  },
+  "Medizin": {
+    primary: "#64748b",
+    secondary: "#94a3b8",
+    accent: "#e8ded4",
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  },
+  "IT": {
+    primary: "#1e3a5f",
+    secondary: "#9a8b7a",
+    accent: "#e8ded4",
+    background: "#fafafa",
+    surface: "#ffffff",
+    text: "#171717",
+    textLight: "#737373",
+    onPrimary: "#ffffff",
+  },
+};
+
+const getIndustryColorScheme = (industry: string): ColorScheme => {
+  return INDUSTRY_COLOR_SCHEMES[industry] || INDUSTRY_COLOR_SCHEMES["Beauty & Wellness"];
 };
 
 // Mock website data for previews
@@ -523,7 +588,7 @@ interface LivePreviewCardProps {
 
 const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardProps) => {
   const previewRef = useRef<HTMLDivElement>(null);
-  const [colorScheme] = useState(() => generateRandomColorScheme());
+  const colorScheme = getIndustryColorScheme(industry);
   const [isHovering, setIsHovering] = useState(false);
   const scrollPositionRef = useRef(0);
   const animationRef = useRef<number>();
@@ -578,14 +643,22 @@ const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardP
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white/5 mb-4 border border-white/10 group-hover:border-white/30 transition-all shadow-2xl">
-        {/* Live Website Preview */}
+      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white mb-4 border border-white/10 group-hover:border-white/30 transition-all shadow-2xl">
+        {/* Live Website Preview - scaled to fit */}
         <div 
           ref={previewRef}
-          className="absolute inset-0 overflow-hidden"
+          className="absolute inset-0 overflow-auto scrollbar-hide"
           style={{ scrollBehavior: "auto" }}
         >
-          <div className="transform scale-[0.35] origin-top" style={{ width: "285.7%", height: "285.7%" }}>
+          <div 
+            className="origin-top-left"
+            style={{ 
+              transform: "scale(0.28)", 
+              transformOrigin: "top left",
+              width: "357%",
+              height: "357%",
+            }}
+          >
             <LayoutComponent 
               websiteData={websiteData} 
               cs={colorScheme}
