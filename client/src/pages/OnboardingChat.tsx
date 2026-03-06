@@ -2362,25 +2362,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-3"
             >
-              {/* Show GMB category as pre-selected if available */}
-                {data.businessCategory && (
-                  <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2">
-                    <span className="text-emerald-400 text-xs">✓ Aus Google My Business:</span>
-                    <span className="text-emerald-200 text-sm font-medium">{data.businessCategory}</span>
-                    <button
-                      onClick={async () => {
-                        addUserMessage(`Branche: ${data.businessCategory} ✓`);
-                        await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
-                        await goToNextStep();
-                      }}
-                      className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
-                    >
-                      Übernehmen
-                    </button>
-                  </div>
-                )}
-                <p className="text-xs text-slate-400">Branche auswählen:</p>
-                <div className="flex flex-wrap gap-2">
+              <p className="text-xs text-slate-400">Branche auswählen:</p>
+              <div className="flex flex-wrap gap-2">
                   {[
                     { label: "Restaurant", icon: "🍽️" },
                     { label: "Bar / Tapas", icon: "🍷" },
@@ -2435,6 +2418,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     OK
                   </button>
                 </div>
+                {/* Show GMB category as pre-selected if available - positioned under the buttons */}
+                {data.businessCategory && (
+                  <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2 mt-4">
+                    <span className="text-emerald-400 text-xs">✓ Aus Google My Business:</span>
+                    <span className="text-emerald-200 text-sm font-medium">{data.businessCategory}</span>
+                    <button
+                      onClick={async () => {
+                        addUserMessage(`Branche: ${data.businessCategory} ✓`);
+                        await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
+                        await goToNextStep();
+                      }}
+                      className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
+                    >
+                      Übernehmen
+                    </button>
+                  </div>
+                )}
             </motion.div>
           )}
 
