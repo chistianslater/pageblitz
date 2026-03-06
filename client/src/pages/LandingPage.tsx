@@ -417,40 +417,190 @@ const GhostWebsiteCreation = () => {
   );
 };
 
-// --- Website Showcase Gallery ---
+// --- Layout Preview Card with Random Colors & Autoscroll ---
+
+const colorSchemes = [
+  { name: "Ocean", primary: "#1565c0", secondary: "#0d47a1", accent: "#42a5f5" },
+  { name: "Emerald", primary: "#2e7d32", secondary: "#1b5e20", accent: "#66bb6a" },
+  { name: "Ruby", primary: "#c62828", secondary: "#8e0000", accent: "#ef5350" },
+  { name: "Violet", primary: "#6a1b9a", secondary: "#4a148c", accent: "#ab47bc" },
+  { name: "Amber", primary: "#e65100", secondary: "#bf360c", accent: "#ff9800" },
+  { name: "Gold", primary: "#c9a96e", secondary: "#8d6e63", accent: "#d4af37" },
+  { name: "Indigo", primary: "#283593", secondary: "#1a237e", accent: "#5c6bc0" },
+  { name: "Teal", primary: "#00695c", secondary: "#004d40", accent: "#26a69a" },
+];
 
 const websiteExamples = [
   { 
     name: "Friseur Bocholt", 
     industry: "Beauty & Wellness",
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80&auto=format&fit=crop",
     layout: "Elegant"
   },
   { 
     name: "Pizzeria Napoli", 
     industry: "Restaurant",
-    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&auto=format&fit=crop",
     layout: "Bold"
   },
   { 
     name: "Bauunternehmen Müller", 
     industry: "Handwerk",
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
     layout: "Trust"
   },
   { 
     name: "Beauty Lounge", 
     industry: "Beauty",
-    image: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=800&q=80&auto=format&fit=crop",
     layout: "Luxury"
   },
   { 
     name: "Café Central", 
     industry: "Gastronomie",
-    image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80&auto=format&fit=crop",
     layout: "Warm"
   },
+  { 
+    name: "IT Solutions", 
+    industry: "Technologie",
+    layout: "Modern"
+  },
 ];
+
+const LayoutPreviewCard = ({ site, colorScheme, index }: { site: typeof websiteExamples[0]; colorScheme: typeof colorSchemes[0]; index: number }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Autoscroll effect on hover
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || !isHovering) return;
+
+    let animationId: number;
+    let scrollPos = 0;
+    const maxScroll = container.scrollHeight - container.clientHeight;
+    const speed = 0.5; // pixels per frame
+
+    const scroll = () => {
+      scrollPos += speed;
+      if (scrollPos > maxScroll) {
+        scrollPos = 0; // Loop back to top
+      }
+      container.scrollTop = scrollPos;
+      animationId = requestAnimationFrame(scroll);
+    };
+
+    animationId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animationId);
+  }, [isHovering]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ delay: index * 0.1 }}
+      className="snap-center shrink-0 w-[360px] md:w-[420px] group cursor-pointer"
+    >
+      <div 
+        className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white/5 mb-4 border border-white/10 group-hover:border-white/30 transition-all shadow-lg shadow-black/20"
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
+        {/* Scrollable Mini Website Preview */}
+        <div 
+          ref={scrollContainerRef}
+          className="absolute inset-0 overflow-hidden"
+          style={{ scrollBehavior: 'auto' }}
+        >
+          {/* Mini Website Content */}
+          <div className="w-full">
+            {/* Hero Section */}
+            <div 
+              className="h-32 p-4 flex flex-col justify-center gap-2"
+              style={{ background: `linear-gradient(135deg, ${colorScheme.primary} 0%, ${colorScheme.secondary} 100%)` }}
+            >
+              <div className="h-3 bg-white/30 rounded-full w-3/4" />
+              <div className="h-2 bg-white/20 rounded-full w-1/2" />
+            </div>
+            
+            {/* Features Section */}
+            <div className="p-3 grid grid-cols-3 gap-2 bg-white">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colorScheme.accent}20` }}>
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colorScheme.primary }} />
+                </div>
+              ))}
+            </div>
+
+            {/* About Section */}
+            <div className="p-3 flex gap-3 bg-gray-50">
+              <div className="w-16 h-16 rounded-lg shrink-0" style={{ backgroundColor: colorScheme.accent }} />
+              <div className="flex-1 space-y-2 py-1">
+                <div className="h-2 bg-gray-300 rounded-full w-full" />
+                <div className="h-2 bg-gray-200 rounded-full w-4/5" />
+                <div className="h-2 bg-gray-200 rounded-full w-3/5" />
+              </div>
+            </div>
+
+            {/* Services Section */}
+            <div className="p-3 space-y-2 bg-white">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-2 rounded-lg" style={{ backgroundColor: `${colorScheme.primary}10` }}>
+                  <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: colorScheme.primary }} />
+                  <div className="flex-1 space-y-1">
+                    <div className="h-2 bg-gray-300 rounded-full w-2/3" />
+                    <div className="h-1.5 bg-gray-200 rounded-full w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Section */}
+            <div 
+              className="h-20 p-3 flex items-center justify-center"
+              style={{ background: `linear-gradient(135deg, ${colorScheme.secondary} 0%, ${colorScheme.primary} 100%)` }}
+            >
+              <div className="px-4 py-2 bg-white/90 rounded-full text-xs font-medium shadow-lg" style={{ color: colorScheme.primary }}>
+                Jetzt kontaktieren
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="h-12 bg-gray-900 flex items-center justify-center">
+              <div className="h-2 bg-white/20 rounded-full w-20" />
+            </div>
+          </div>
+        </div>
+
+        {/* Overlay Gradient at Bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/40 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        {/* Hover overlay with Arrow */}
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform shadow-xl">
+            <ArrowUpRight className="w-6 h-6 text-black" />
+          </div>
+        </div>
+
+        {/* Layout Badge */}
+        <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20">
+          <span className="text-xs text-white/90 font-medium">{site.layout}</span>
+        </div>
+
+        {/* Color indicator dots */}
+        <div className="absolute top-4 right-4 flex gap-1">
+          <div className="w-3 h-3 rounded-full border border-white/30" style={{ backgroundColor: colorScheme.primary }} />
+          <div className="w-3 h-3 rounded-full border border-white/30" style={{ backgroundColor: colorScheme.accent }} />
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="text-white font-medium mb-1 group-hover:text-white/80 transition-colors">{site.name}</h4>
+          <p className="text-white/40 text-sm">{site.industry}</p>
+        </div>
+        <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+      </div>
+    </motion.div>
+  );
+};
 
 const WebsiteShowcase = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -482,6 +632,14 @@ const WebsiteShowcase = () => {
       checkScroll();
       return () => el.removeEventListener("scroll", checkScroll);
     }
+  }, []);
+
+  // Assign random color schemes to examples
+  const examplesWithColors = useMemo(() => {
+    return websiteExamples.map((site, i) => ({
+      ...site,
+      colorScheme: colorSchemes[i % colorSchemes.length],
+    }));
   }, []);
 
   return (
@@ -544,44 +702,13 @@ const WebsiteShowcase = () => {
         {/* Spacer for max-width alignment */}
         <div className="shrink-0 w-[calc((100vw-1280px)/2)]" />
         
-        {websiteExamples.map((site, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ delay: i * 0.1 }}
-            className="snap-center shrink-0 w-[360px] md:w-[420px] group cursor-pointer"
-          >
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white/5 mb-4 border border-white/10 group-hover:border-white/20 transition-all">
-              <img 
-                src={site.image} 
-                alt={site.name}
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
-                  <ArrowUpRight className="w-6 h-6 text-black" />
-                </div>
-              </div>
-
-              {/* Layout Badge */}
-              <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
-                <span className="text-xs text-white/80 font-medium">{site.layout}</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-medium mb-1 group-hover:text-white/80 transition-colors">{site.name}</h4>
-                <p className="text-white/40 text-sm">{site.industry}</p>
-              </div>
-              <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
-            </div>
-          </motion.div>
+        {examplesWithColors.map((site, i) => (
+          <LayoutPreviewCard 
+            key={i} 
+            site={site} 
+            colorScheme={site.colorScheme}
+            index={i}
+          />
         ))}
         
         <div className="shrink-0 w-6" />
