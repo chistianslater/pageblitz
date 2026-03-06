@@ -630,7 +630,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
     fontFamily: bodyFont,
     letterSpacing: config.labelTransform === 'uppercase' ? '0.1em' : '0.05em',
     fontSize: config.labelSize,
-    textTransform: config.labelTransform as const,
+    textTransform: config.labelTransform as 'uppercase' | 'normal',
     fontWeight: config.labelTransform === 'uppercase' ? 600 : 500,
   };
 
@@ -643,7 +643,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const buttonStyle = {
     backgroundColor: safeCs.primary, fontFamily: displayFont,
     borderRadius: config.buttonRadius, padding: config.buttonPadding,
-    textTransform: config.buttonStyle, letterSpacing: config.buttonStyle === 'uppercase' ? '0.05em' : '0',
+    textTransform: config.buttonStyle as 'uppercase' | 'normal', letterSpacing: config.buttonStyle === 'uppercase' ? '0.05em' : '0',
     fontWeight: config.buttonStyle === 'uppercase' ? 700 : 600,
   };
 
@@ -664,7 +664,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <div>
                     <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Adresse</p>
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address ?? '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`${textSub} transition-colors hover:opacity-80`}
@@ -687,7 +687,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <div>
                     <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Telefon</p>
                     <a
-                      href={`tel:${phone.replace(/\s/g, '')}`}
+                      href={`tel:${(phone ?? '').replace(/\s/g, '')}`}
                       className={`${textSub} transition-colors hover:opacity-80`}
                       style={textSubStyle}
                       onMouseEnter={(e) => (e.currentTarget.style.color = safeCs.primary)}
@@ -952,7 +952,7 @@ function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'defa
 
   return (
     <footer className={`${baseClasses} ${bgClass} ${borderClasses} ${textMain}`} style={{ ...bgStyle, borderColor: borderColor }}>
-      <div className="max-w-7xl mx-auto w-full" style={containerClasses[variant]}>
+      <div className={`max-w-7xl mx-auto w-full ${containerClasses[variant as keyof typeof containerClasses] || containerClasses.default}`}>
         <div className="md:max-w-[280px] lg:max-w-[320px]">
           <Skeleton isLoading={isLoading} className="w-full h-8 mb-2">
             <span

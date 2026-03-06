@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(node -e \"const codes = require\\(''./node_modules/react/cjs/react.development.js''\\); console.log\\(''done''\\)\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/facebook/react/v19.0.0/scripts/error-codes/codes.json\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''62'', ''not found''\\)\\)\")",
+      "Bash(npm run build)"
     ]
   }
 }
