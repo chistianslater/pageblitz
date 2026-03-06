@@ -2513,104 +2513,101 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
                   {showIndividualColors && (() => {
                     const cs = data.colorScheme as any;
-                    const colorGroups = [
-                      {
-                        label: "Basis", dot: "bg-blue-400",
-                        keys: [
-                          { key: "primary", label: "Hauptfarbe", auto: false },
-                          { key: "secondary", label: "Sekundärfarbe", auto: false },
-                          { key: "accent", label: "Akzentfarbe", auto: false },
-                          { key: "background", label: "Hintergrund", auto: false },
-                          { key: "surface", label: "Oberflächen", auto: false },
-                          { key: "text", label: "Textfarbe", auto: false },
-                          { key: "textLight", label: "Gedämpfte Schrift", auto: false },
-                        ],
-                      },
-                      {
-                        label: "Kontrast", dot: "bg-amber-400",
-                        keys: [
-                          { key: "onPrimary", label: "Text auf Hauptfarbe", auto: true },
-                          { key: "onSecondary", label: "Text auf Sekundär", auto: true },
-                          { key: "onAccent", label: "Text auf Akzent", auto: true },
-                          { key: "onSurface", label: "Text auf Oberflächen", auto: true },
-                          { key: "onBackground", label: "Text auf Hintergrund", auto: true },
-                        ],
-                      },
-                      {
-                        label: "Dunkle Bereiche", dot: "bg-purple-400",
-                        keys: [
-                          { key: "darkBackground", label: "Dunkler Hintergrund", auto: false },
-                          { key: "darkSurface", label: "Dunkle Oberfläche", auto: false },
-                          { key: "lightText", label: "Heller Text", auto: false },
-                          { key: "lightTextMuted", label: "Heller Text (gedämpft)", auto: false },
-                        ],
-                      },
-                    ];
+
+                    // Dark section fallbacks (these fields may not exist yet in colorScheme)
+                    const darkDefaults: Record<string, string> = {
+                      darkBackground: '#0a0a0a',
+                      darkSurface: '#1a1a2e',
+                      lightText: '#ffffff',
+                      lightTextMuted: '#9ca3af',
+                    };
+
+                    const getValue = (key: string) =>
+                      cs[key] ?? darkDefaults[key] ?? '';
 
                     const handleColorChange = (key: string, newValue: string) => {
                       setData(p => {
-                        const newScheme = { ...p.colorScheme, [key]: newValue };
+                        const newScheme = { ...(p.colorScheme as any), [key]: newValue };
                         if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(key)) {
-                          (newScheme as any)[`on${key.charAt(0).toUpperCase() + key.slice(1)}`] = getContrastColor(newValue);
+                          newScheme[`on${key.charAt(0).toUpperCase() + key.slice(1)}`] = getContrastColor(newValue);
                         }
                         return { ...p, colorScheme: newScheme };
                       });
                     };
 
+                    const colorGroups = [
+                      {
+                        label: "Basis", dot: "bg-blue-400",
+                        keys: [
+                          { key: "primary", label: "Hauptfarbe" },
+                          { key: "secondary", label: "Sekundärfarbe" },
+                          { key: "accent", label: "Akzentfarbe" },
+                          { key: "background", label: "Hintergrund (hell)" },
+                          { key: "surface", label: "Oberflächen" },
+                          { key: "text", label: "Textfarbe" },
+                          { key: "textLight", label: "Gedämpfte Schrift" },
+                        ],
+                      },
+                      {
+                        label: "Dunkle Sektionen", dot: "bg-purple-400",
+                        keys: [
+                          { key: "darkBackground", label: "Hintergrund (dunkel)" },
+                          { key: "darkSurface", label: "Dunkle Oberfläche" },
+                          { key: "lightText", label: "Heller Text" },
+                          { key: "lightTextMuted", label: "Heller Text (gedämpft)" },
+                        ],
+                      },
+                    ];
+
+                    const ColorRow = ({ colorKey, label }: { colorKey: string; label: string }) => {
+                      const rawVal = getValue(colorKey);
+                      const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
+                      return (
+                        <div className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors">
+                          <div
+                            className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 cursor-pointer overflow-hidden relative shadow-sm"
+                            style={{ backgroundColor: colorVal }}
+                          >
+                            <input
+                              type="color"
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                              value={colorVal}
+                              onChange={(e) => handleColorChange(colorKey, e.target.value)}
+                            />
+                          </div>
+                          <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{label}</span>
+                          <input
+                            type="text"
+                            className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
+                            value={rawVal}
+                            placeholder="#000000"
+                            onChange={(e) => {
+                              const v = e.target.value.startsWith('#') ? e.target.value : `#${e.target.value}`;
+                              if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
+                                setData(p => ({ ...p, colorScheme: { ...(p.colorScheme as any), [colorKey]: v } }));
+                                if (v.length === 7) handleColorChange(colorKey, v);
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    };
+
                     return (
                       <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                        {colorGroups.map(({ label, dot, keys }, gi) => {
-                          const activeKeys = keys.filter(item => cs[item.key] !== undefined && cs[item.key] !== '');
-                          if (activeKeys.length === 0) return null;
-                          return (
-                            <div key={label} className={gi > 0 ? "mt-4 pt-4 border-t border-slate-700/50" : ""}>
-                              <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                                <span className={`w-1.5 h-1.5 rounded-full inline-block ${dot}`} />
-                                {label}
-                                {label === "Kontrast" && <span className="text-slate-500 normal-case font-normal tracking-normal">· auto</span>}
-                              </p>
-                              <div className="space-y-0.5">
-                                {activeKeys.map((item) => {
-                                  const rawVal = cs[item.key] || '';
-                                  const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
-                                  return (
-                                    <div key={item.key} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors group">
-                                      <div
-                                        className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 cursor-pointer overflow-hidden relative shadow-sm"
-                                        style={{ backgroundColor: colorVal }}
-                                        title="Klicken um Farbe zu wählen"
-                                      >
-                                        <input
-                                          type="color"
-                                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                          value={colorVal}
-                                          onChange={(e) => handleColorChange(item.key, e.target.value)}
-                                        />
-                                      </div>
-                                      <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{item.label}</span>
-                                      <input
-                                        type="text"
-                                        className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
-                                        value={rawVal}
-                                        placeholder="#000000"
-                                        onChange={(e) => {
-                                          const v = e.target.value;
-                                          if (/^#?[0-9A-Fa-f]{0,6}$/.test(v)) {
-                                            const normalized = v.startsWith('#') ? v : `#${v}`;
-                                            setData(p => ({ ...p, colorScheme: { ...p.colorScheme, [item.key]: normalized } }));
-                                            if (normalized.length === 7) handleColorChange(item.key, normalized);
-                                          }
-                                        }}
-                                      />
-                                    </div>
-                                  );
-                                })}
-                              </div>
+                        {colorGroups.map(({ label, dot, keys }, gi) => (
+                          <div key={label} className={gi > 0 ? "mt-4 pt-4 border-t border-slate-700/50" : ""}>
+                            <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
+                              <span className={`w-1.5 h-1.5 rounded-full inline-block ${dot}`} />
+                              {label}
+                            </p>
+                            <div className="space-y-0.5">
+                              {keys.map(item => <ColorRow key={item.key} colorKey={item.key} label={item.label} />)}
                             </div>
-                          );
-                        })}
+                          </div>
+                        ))}
                         <p className="text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-700/50">
-                          Kontrast-Farben werden automatisch neu berechnet wenn du Basis-Farben änderst.
+                          Kontrast-Farben (Text auf farbigen Hintergründen) werden automatisch berechnet.
                         </p>
                       </div>
                     );
