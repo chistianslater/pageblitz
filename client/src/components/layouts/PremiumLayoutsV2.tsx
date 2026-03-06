@@ -850,13 +850,12 @@ const NavLinks = ({ textClass = "text-inherit" }: { textClass?: string }) => (
 function FooterContact({ websiteData, textClass }: { websiteData: any, textClass: string }) {
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
-  const hours = getContactItem(websiteData, 'Clock');
-  if (!phone && !address && !hours) return null;
+  // Note: Opening hours are prominently displayed in the ContactSection, not here
+  if (!phone && !address) return null;
   return (
     <>
       {address && <li className={`flex items-start gap-2 ${textClass}`}><MapPin size={14} className="mt-0.5 shrink-0" /> {address}</li>}
       {phone && <li className={`flex items-center gap-2 ${textClass}`}><Phone size={14} /> {phone}</li>}
-      {hours && <li className={`flex items-start gap-2 ${textClass}`}><Clock size={14} className="mt-0.5 shrink-0" /><span style={{ whiteSpace: 'pre-line' }}>{hours}</span></li>}
     </>
   );
 }
