@@ -1055,6 +1055,8 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
       <DynamicFooter
@@ -1130,6 +1132,8 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
       <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" headlineSize={headlineSize} />
 
@@ -1217,6 +1221,8 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
 
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
 
       <DynamicFooter
@@ -1291,6 +1297,8 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
 
@@ -1368,6 +1376,8 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
 
       <DynamicFooter
@@ -1443,6 +1453,8 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
@@ -1521,6 +1533,8 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
       <DynamicFooter
@@ -1596,6 +1610,8 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
       <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
 
@@ -1674,6 +1690,8 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
       <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
       <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
 
@@ -1829,6 +1847,9 @@ export function PremiumLayoutV2({
       </section>
 
       <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
 
       <DynamicFooter
@@ -1844,6 +1865,176 @@ export function PremiumLayoutV2({
   );
 }
 
+
+// ================================================================
+// ADD-ON SECTIONS: Gallery, Menu, Pricelist
+// ================================================================
+
+// ── GALLERY SECTION ──────────────────────────────────────────────
+function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  const safeCs = cs || {};
+  const gallery = sec(websiteData, 'gallery');
+  const items = gallery?.items || [];
+  const headline = gallery?.headline || 'Unsere Galerie';
+
+  if (items.length === 0) return null;
+
+  return (
+    <section id="galerie" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+      <div className="max-w-7xl mx-auto">
+        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }}>
+            {headline}
+          </h2>
+        </Skeleton>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {items.map((item: any, i: number) => (
+            <Skeleton key={i} isLoading={isLoading} className="aspect-square">
+              <div className="relative overflow-hidden rounded-xl group">
+                <img
+                  src={item.imageUrl || item}
+                  alt={item.title || `Bild ${i + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                {item.title && (
+                  <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white text-sm font-medium">{item.title}</p>
+                  </div>
+                )}
+              </div>
+            </Skeleton>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── MENU SECTION (Speisekarte) ───────────────────────────────────
+function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  const safeCs = cs || {};
+  const menu = sec(websiteData, 'menu');
+  const items = menu?.items || [];
+  const headline = menu?.headline || 'Unsere Speisekarte';
+
+  if (items.length === 0) return null;
+
+  // Group by category
+  const grouped = items.reduce((acc: any, item: any) => {
+    const cat = item.category || 'Sonstiges';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(item);
+    return acc;
+  }, {});
+
+  return (
+    <section id="speisekarte" className="py-24 md:py-32 px-6 scroll-mt-20 bg-white">
+      <div className="max-w-4xl mx-auto">
+        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }}>
+            {headline}
+          </h2>
+        </Skeleton>
+        <div className="space-y-12">
+          {Object.entries(grouped).map(([category, categoryItems]: [string, any]) => (
+            <div key={category}>
+              <Skeleton isLoading={isLoading} className="w-48 h-8 mb-6">
+                <h3 style={{ fontFamily: displayFont, fontWeight: 600, color: safeCs.primary }} className="text-xl uppercase tracking-wide border-b-2 pb-2" style={{ borderColor: safeCs.primary }}>
+                  {category}
+                </h3>
+              </Skeleton>
+              <div className="space-y-4">
+                {categoryItems.map((item: any, i: number) => (
+                  <Skeleton key={i} isLoading={isLoading} className="h-20">
+                    <div className="flex justify-between items-start py-4 border-b border-neutral-100">
+                      <div className="flex-1">
+                        <h4 style={{ fontFamily: displayFont, fontWeight: 600 }} className="text-lg">{item.title}</h4>
+                        {item.description && (
+                          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-sm mt-1">{item.description}</p>
+                        )}
+                      </div>
+                      {item.price && (
+                        <span style={{ fontFamily: displayFont, color: safeCs.primary }} className="text-lg font-semibold ml-4">
+                          {item.price}
+                        </span>
+                      )}
+                    </div>
+                  </Skeleton>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── PRICELIST SECTION ───────────────────────────────────────────
+function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  const safeCs = cs || {};
+  const pricelist = sec(websiteData, 'pricelist');
+  const items = pricelist?.items || [];
+  const headline = pricelist?.headline || 'Unsere Preise';
+
+  if (items.length === 0) return null;
+
+  // Group by category
+  const grouped = items.reduce((acc: any, item: any) => {
+    const cat = item.category || 'Leistungen';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(item);
+    return acc;
+  }, {});
+
+  return (
+    <section id="preise" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+      <div className="max-w-4xl mx-auto">
+        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }}>
+            {headline}
+          </h2>
+        </Skeleton>
+        <div className="space-y-12">
+          {Object.entries(grouped).map(([category, categoryItems]: [string, any]) => (
+            <div key={category} className="bg-white rounded-2xl p-8 shadow-sm">
+              <Skeleton isLoading={isLoading} className="w-48 h-8 mb-6">
+                <h3 style={{ fontFamily: displayFont, fontWeight: 600, color: safeCs.primary }} className="text-lg uppercase tracking-wide">
+                  {category}
+                </h3>
+              </Skeleton>
+              <div className="space-y-3">
+                {categoryItems.map((item: any, i: number) => (
+                  <Skeleton key={i} isLoading={isLoading} className="h-12">
+                    <div className="flex justify-between items-center py-3 border-b border-neutral-100 last:border-0">
+                      <span style={{ fontFamily: bodyFont }} className="text-neutral-700">{item.title}</span>
+                      {item.price && (
+                        <span style={{ fontFamily: displayFont, color: safeCs.primary }} className="font-semibold">
+                          {item.price}
+                        </span>
+                      )}
+                    </div>
+                  </Skeleton>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── DYNAMIC ADD-ON SECTIONS RENDERER ─────────────────────────────
+function DynamicAddonSections({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  return (
+    <>
+      <GallerySection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} />
+      <MenuSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} />
+      <PricelistSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} />
+    </>
+  );
+}
 
 // ================================================================
 // INDUSTRY MAPPING & LAYOUT ENGINE
