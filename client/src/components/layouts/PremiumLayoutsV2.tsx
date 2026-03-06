@@ -557,6 +557,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const bgStyle = dark
     ? { backgroundColor: darkBgColor }
     : { backgroundColor: safeCs.background || '#fafafa' };
+  const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : (safeCs.background ? '' : 'bg-neutral-50');
   const topBorder = dark ? 'border-t border-white/10' : '';
   const cardBgStyle = dark
     ? { backgroundColor: 'rgba(255,255,255,0.07)' }
