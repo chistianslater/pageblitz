@@ -105,9 +105,12 @@ const getBodyTextMultiplier = (headlineSize: string = 'large'): number => {
 
 // ── HERO VARIANTS ───────────────────────────────────────────────
 
-function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
+function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
+  // Dynamic text colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
   return (
     <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] pb-20 items-center gap-12 max-w-7xl mx-auto px-6">
       <motion.div
@@ -118,12 +121,12 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         className="flex flex-col items-start text-left relative z-10"
       >
         <Skeleton isLoading={isLoading} className="w-full min-h-[16rem] mb-8">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)') }} className="uppercase drop-shadow-xl mb-0">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)'), color: textColor }} className="uppercase drop-shadow-xl mb-0">
             {hl.main}<br /><span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-12">
-          <p style={{ fontFamily: bodyFont, borderColor: primaryColor }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg mb-0">
+          <p style={{ fontFamily: bodyFont, borderColor: primaryColor, color: textMuted }} className="text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
@@ -149,9 +152,12 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   );
 }
 
-function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
+function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
+  // Dynamic text colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
   return (
     <section id="hero" className="pt-40 pb-32 text-center px-6 max-w-5xl mx-auto">
       <motion.div
@@ -162,12 +168,12 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         className="flex flex-col items-center"
       >
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[11rem] mb-12">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)') }} className="uppercase drop-shadow-xl mb-0">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)'), color: textColor }} className="uppercase drop-shadow-xl mb-0">
             {hl.main} <span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-16">
-          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-xl max-w-2xl mx-auto italic drop-shadow-lg mb-0">
+          <p style={{ fontFamily: bodyFont, color: textMuted }} className="text-xl max-w-2xl mx-auto italic drop-shadow-lg mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
@@ -184,14 +190,21 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   );
 }
 
-function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
+function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
+  // Dynamic text colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.7)') : (safeCs.textLight || '#737373');
+  // Background gradient based on dark mode
+  const bgGradient = dark
+    ? 'bg-gradient-to-r from-black via-black/90 to-black/70'
+    : 'bg-gradient-to-r from-white via-white/90 to-white/70';
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden pb-12">
       <div className="absolute inset-0 z-0">
         <img src={heroImageUrl} className="w-full h-full object-cover opacity-10 grayscale" alt="" />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/70" />
+        <div className={`absolute inset-0 ${bgGradient}`} />
       </div>
       <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-[60%_40%] items-center gap-12">
         <motion.div
@@ -202,7 +215,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           className="flex flex-col items-start relative z-10"
         >
           <Skeleton isLoading={isLoading} className="w-full min-h-[18rem] mb-12">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)') }} className="uppercase tracking-tighter drop-shadow-2xl mb-0">
+            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)'), color: textColor }} className="uppercase tracking-tighter drop-shadow-2xl mb-0">
               {hl.main}<br />
               <span className="relative inline-block">
                 {hl.last}
@@ -211,7 +224,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             </h1>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
-            <p style={{ fontFamily: bodyFont }} className="text-neutral-600/90 text-2xl font-light leading-relaxed drop-shadow-lg mb-0">
+            <p style={{ fontFamily: bodyFont, color: textMuted }} className="text-2xl font-light leading-relaxed drop-shadow-lg mb-0">
               {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
@@ -1043,7 +1056,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
@@ -1121,7 +1134,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
@@ -1209,7 +1222,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
@@ -1286,7 +1299,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
@@ -1364,7 +1377,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
@@ -1442,7 +1455,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
@@ -1521,7 +1534,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
@@ -1599,7 +1612,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
@@ -1679,7 +1692,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
       </nav>
 
-      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} />
+      <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
