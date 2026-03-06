@@ -113,7 +113,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="flex flex-col items-start text-left"
+        className="flex flex-col items-start text-left relative z-10"
       >
         <Skeleton isLoading={isLoading} className="w-full min-h-[16rem] mb-8">
           <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)') }} className="uppercase drop-shadow-xl mb-0">
@@ -193,7 +193,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col items-start"
+          className="flex flex-col items-start relative z-10"
         >
           <Skeleton isLoading={isLoading} className="w-full min-h-[18rem] mb-12">
             <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)') }} className="uppercase tracking-tighter drop-shadow-2xl mb-0">
@@ -241,8 +241,8 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
   return (
     <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
       <div className="max-w-7xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-64 h-16 mb-16">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services') }} className="uppercase">
+        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-24">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="uppercase mb-0">
             Unsere <span style={{ color: cs.primary }}>Leistungen</span>
           </h2>
         </Skeleton>
@@ -269,9 +269,9 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
   return (
     <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-          <Skeleton isLoading={isLoading} className="w-64 h-16">
-            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services') }} className="uppercase leading-none">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
+          <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
+            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="uppercase mb-0">
               Exzellente<br /><span style={{ color: cs.primary }}>Services</span>
             </h2>
           </Skeleton>
@@ -898,10 +898,10 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#0A0A0A] text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/10 relative">
-        <Skeleton isLoading={isLoading} className="w-44 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase">{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
@@ -981,10 +981,10 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#FFFDFB] text-neutral-900 overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40 relative">
-        <Skeleton isLoading={isLoading} className="w-44 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-36 h-10">
@@ -1063,10 +1063,10 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   return (
     <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
-        <Skeleton isLoading={isLoading} className="w-44 h-8">
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-8 rounded-full" style={{ backgroundColor: cs.primary }} />
-            <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }}>{websiteData.businessName}</span>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="w-2.5 h-8 rounded-full shrink-0" style={{ backgroundColor: cs.primary }} />
+            <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }} className="truncate block">{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
@@ -1149,10 +1149,10 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#F2EBD9] text-neutral-800 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F2EBD9]/90 backdrop-blur-sm border-b border-neutral-300/50">
-        <Skeleton isLoading={isLoading} className="w-44 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -1231,10 +1231,10 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#080808] text-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#080808]/90 backdrop-blur-sm border-b border-white/10">
-        <Skeleton isLoading={isLoading} className="w-44 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.6rem', letterSpacing: '0.08em' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.6rem', letterSpacing: '0.08em' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -1314,10 +1314,10 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#FBF7F0] text-neutral-800 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FBF7F0]/90 backdrop-blur-sm border-b border-neutral-200/60">
-        <Skeleton isLoading={isLoading} className="w-40 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
@@ -1397,10 +1397,10 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#0C0A09] text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#0C0A09]/80 backdrop-blur-md border-b border-white/5 relative">
-        <Skeleton isLoading={isLoading} className="w-44 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
@@ -1480,10 +1480,10 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   return (
     <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
-        <Skeleton isLoading={isLoading} className="w-40 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -1564,10 +1564,10 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5 relative">
-        <Skeleton isLoading={isLoading} className="w-40 h-8">
-          <div className="flex items-center gap-2">
-            <Leaf size={24} style={{ color: cs.primary }} />
-            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 400 }}>{websiteData.businessName}</span>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <Leaf size={24} style={{ color: cs.primary }} className="shrink-0" />
+            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 400 }} className="truncate block">{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
@@ -1663,10 +1663,10 @@ export function PremiumLayoutV2({
   return (
     <div style={{ fontFamily: BODY }} className="bg-white text-neutral-900 overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
-        <Skeleton isLoading={isLoading} className="w-44 h-8">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }}>{websiteData.businessName}</span>}
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-44 h-10">
@@ -1707,8 +1707,8 @@ export function PremiumLayoutV2({
       {services.length > 0 && (
         <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-64 h-14 mb-16">
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services') }}>
+            <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[6rem] mb-24">
+              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="mb-0">
                 Unsere <span style={{ color: cs.primary }}>Leistungen</span>
               </h2>
             </Skeleton>
