@@ -378,14 +378,15 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
     { step: "3", title: "Ergebnis", description: "" }
   ];
   // Use dynamic colors from colorScheme if available, fallback to defaults
-  const bgClass = dark ? (cs.darkBackground ? '' : "bg-white/5") : (cs.background ? '' : "bg-neutral-50");
+  const safeCs = cs || {};
+  const bgClass = dark ? (safeCs.darkBackground ? '' : "bg-white/5") : (safeCs.background ? '' : "bg-neutral-50");
   const bgStyle = dark
-    ? { backgroundColor: cs.darkSurface || 'rgba(255,255,255,0.05)', fontFamily: bodyFont }
-    : { backgroundColor: cs.surface || '#fafafa', fontFamily: bodyFont };
-  const textMain = dark ? (cs.lightText ? '' : 'text-white') : (cs.text ? '' : 'text-neutral-900');
-  const textMainStyle = dark ? { color: cs.lightText || '#ffffff' } : { color: cs.text || '#171717' };
-  const textSub = dark ? (cs.lightTextMuted ? '' : 'text-white/60') : (cs.textLight ? '' : 'text-neutral-500');
-  const textSubStyle = dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.6)' } : { color: cs.textLight || '#737373' };
+    ? { backgroundColor: safeCs.darkSurface || 'rgba(255,255,255,0.05)', fontFamily: bodyFont }
+    : { backgroundColor: safeCs.surface || '#fafafa', fontFamily: bodyFont };
+  const textMain = dark ? (safeCs.lightText ? '' : 'text-white') : (safeCs.text ? '' : 'text-neutral-900');
+  const textMainStyle = dark ? { color: safeCs.lightText || '#ffffff' } : { color: safeCs.text || '#171717' };
+  const textSub = dark ? (safeCs.lightTextMuted ? '' : 'text-white/60') : (safeCs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.6)' } : { color: safeCs.textLight || '#737373' };
   const hs = { fontFamily: displayFont, ...headlineStyle };
 
   // Variant 0: Horizontal Steps (Current)
@@ -478,16 +479,17 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
   if (!isLoading && !rating) return null;
 
   // Use dynamic colors from colorScheme if available, fallback to defaults
-  const textSub = dark ? (cs.lightTextMuted ? '' : 'text-white/50') : (cs.textLight ? '' : 'text-neutral-500');
-  const textSubStyle = dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.5)' } : { color: cs.textLight || '#737373' };
-  const bgClass = dark ? (cs.darkBackground ? '' : 'bg-white/5') : (cs.background ? '' : 'bg-neutral-50');
-  const bgStyle = dark ? { backgroundColor: cs.darkBackground || 'rgba(255,255,255,0.05)' } : { backgroundColor: cs.background || '#fafafa' };
-  const cardBgClass = dark ? (cs.darkSurface ? '' : 'bg-white/10') : (cs.surface ? '' : 'bg-white');
-  const cardBgStyle = dark ? { backgroundColor: cs.darkSurface || 'rgba(255,255,255,0.1)' } : { backgroundColor: cs.surface || '#ffffff' };
-  const dividerClass = dark ? (cs.lightTextMuted ? '' : 'bg-white/20') : (cs.textLight ? '' : 'bg-neutral-200');
-  const dividerStyle = dark ? { backgroundColor: cs.lightTextMuted || 'rgba(255,255,255,0.2)' } : { backgroundColor: cs.textLight || '#e5e7eb' };
-  const borderClass = dark ? (cs.lightTextMuted ? '' : 'border-white/10') : (cs.textLight ? '' : 'border-neutral-100');
-  const borderStyle = dark ? { borderColor: cs.lightTextMuted || 'rgba(255,255,255,0.1)' } : { borderColor: cs.textLight || '#f5f5f5' };
+  const safeCs = cs || {};
+  const textSub = dark ? (safeCs.lightTextMuted ? '' : 'text-white/50') : (safeCs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.5)' } : { color: safeCs.textLight || '#737373' };
+  const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-white/5') : (safeCs.background ? '' : 'bg-neutral-50');
+  const bgStyle = dark ? { backgroundColor: safeCs.darkBackground || 'rgba(255,255,255,0.05)' } : { backgroundColor: safeCs.background || '#fafafa' };
+  const cardBgClass = dark ? (safeCs.darkSurface ? '' : 'bg-white/10') : (safeCs.surface ? '' : 'bg-white');
+  const cardBgStyle = dark ? { backgroundColor: safeCs.darkSurface || 'rgba(255,255,255,0.1)' } : { backgroundColor: safeCs.surface || '#ffffff' };
+  const dividerClass = dark ? (safeCs.lightTextMuted ? '' : 'bg-white/20') : (safeCs.textLight ? '' : 'bg-neutral-200');
+  const dividerStyle = dark ? { backgroundColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.2)' } : { backgroundColor: safeCs.textLight || '#e5e7eb' };
+  const borderClass = dark ? (safeCs.lightTextMuted ? '' : 'border-white/10') : (safeCs.textLight ? '' : 'border-neutral-100');
+  const borderStyle = dark ? { borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : { borderColor: safeCs.textLight || '#f5f5f5' };
 
   const stars = rating ? Math.round(rating) : 5;
   const displayRating = rating ? rating.toFixed(1) : "5.0";
@@ -537,23 +539,24 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const locked = websiteData?.addOnContactForm === false;
 
   // Use dynamic colors from colorScheme if available, fallback to defaults
-  const textMain = dark ? (cs.lightText ? '' : 'text-white') : (cs.text ? '' : 'text-neutral-900');
-  const textMainStyle = dark ? { color: cs.lightText || '#ffffff' } : { color: cs.text || '#171717' };
-  const textSub = dark ? (cs.lightTextMuted ? '' : 'text-white/50') : (cs.textLight ? '' : 'text-neutral-500');
-  const textSubStyle = dark ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.5)' } : { color: cs.textLight || '#737373' };
-  const bgClass = dark ? (cs.darkBackground ? '' : 'bg-white/5') : (cs.background ? '' : 'bg-neutral-50');
-  const bgStyle = dark ? { backgroundColor: cs.darkBackground || 'rgba(255,255,255,0.05)' } : { backgroundColor: cs.surface || cs.background || '#fafafa' };
-  const topBorder = dark ? (cs.lightTextMuted ? '' : 'border-t border-white/10') : '';
-  const topBorderStyle = dark && cs.lightTextMuted ? { borderTop: `1px solid ${cs.lightTextMuted || 'rgba(255,255,255,0.1)'}` } : {};
-  const cardBgClass = dark ? (cs.darkSurface ? '' : 'bg-neutral-800') : (cs.surface ? '' : 'bg-white');
-  const cardBgStyle = dark ? { backgroundColor: cs.darkSurface || '#1f2937' } : { backgroundColor: cs.surface || '#ffffff' };
-  const borderColor = dark ? (cs.lightTextMuted || 'rgba(255,255,255,0.1)') : (cs.textLight || '#e5e7eb');
-  const border = dark ? (cs.lightTextMuted ? '' : 'border-white/10') : (cs.textLight ? '' : 'border-neutral-200');
-  const borderStyle = dark && cs.lightTextMuted ? { borderColor: cs.lightTextMuted || 'rgba(255,255,255,0.1)' } : { borderColor: cs.textLight || '#e5e7eb' };
-  const inputBg = dark ? (cs.darkSurface ? `${cs.darkSurface}80` : 'rgba(255,255,255,0.05)') : (cs.surface ? `${cs.surface}` : '#f9fafb');
-  const inputText = dark ? (cs.lightText || 'rgba(255,255,255,0.85)') : (cs.text || '#111827');
-  const inputPlaceholder = dark ? (cs.lightTextMuted || 'rgba(255,255,255,0.3)') : (cs.textLight || '#9ca3af');
-  const iconBg = `${cs.primary}20`;
+  const safeCs = cs || {};
+  const textMain = dark ? (safeCs.lightText ? '' : 'text-white') : (safeCs.text ? '' : 'text-neutral-900');
+  const textMainStyle = dark ? { color: safeCs.lightText || '#ffffff' } : { color: safeCs.text || '#171717' };
+  const textSub = dark ? (safeCs.lightTextMuted ? '' : 'text-white/50') : (safeCs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.5)' } : { color: safeCs.textLight || '#737373' };
+  const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-white/5') : (safeCs.background ? '' : 'bg-neutral-50');
+  const bgStyle = dark ? { backgroundColor: safeCs.darkBackground || 'rgba(255,255,255,0.05)' } : { backgroundColor: safeCs.surface || safeCs.background || '#fafafa' };
+  const topBorder = dark ? (safeCs.lightTextMuted ? '' : 'border-t border-white/10') : '';
+  const topBorderStyle = dark && safeCs.lightTextMuted ? { borderTop: `1px solid ${safeCs.lightTextMuted || 'rgba(255,255,255,0.1)'}` } : {};
+  const cardBgClass = dark ? (safeCs.darkSurface ? '' : 'bg-neutral-800') : (safeCs.surface ? '' : 'bg-white');
+  const cardBgStyle = dark ? { backgroundColor: safeCs.darkSurface || '#1f2937' } : { backgroundColor: safeCs.surface || '#ffffff' };
+  const borderColor = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.1)') : (safeCs.textLight || '#e5e7eb');
+  const border = dark ? (safeCs.lightTextMuted ? '' : 'border-white/10') : (safeCs.textLight ? '' : 'border-neutral-200');
+  const borderStyle = dark && safeCs.lightTextMuted ? { borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : { borderColor: safeCs.textLight || '#e5e7eb' };
+  const inputBg = dark ? (safeCs.darkSurface ? `${safeCs.darkSurface}80` : 'rgba(255,255,255,0.05)') : (safeCs.surface ? `${safeCs.surface}` : '#f9fafb');
+  const inputText = dark ? (safeCs.lightText || 'rgba(255,255,255,0.85)') : (safeCs.text || '#111827');
+  const inputPlaceholder = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.3)') : (safeCs.textLight || '#9ca3af');
+  const iconBg = `${safeCs.primary || '#3b82f6'}20`;
   const hs = { fontFamily: displayFont, ...headlineStyle };
 
   const templateConfig: Record<string, {
@@ -771,24 +774,25 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
   if (!isLoading && !items?.length) return null;
 
   // Use dynamic colors from colorScheme if available, fallback to defaults
-  const bg = dark 
-    ? (cs.darkBackground ? '' : 'bg-black')
-    : (cs.background ? '' : 'bg-white');
-  const bgStyle = dark 
-    ? { backgroundColor: cs.darkBackground || '#000000' }
-    : { backgroundColor: cs.background || '#ffffff' };
-  const textMain = dark 
-    ? (cs.lightText ? '' : 'text-white')
-    : (cs.text ? '' : 'text-neutral-900');
-  const textMainStyle = dark 
-    ? { color: cs.lightText || '#ffffff' }
-    : { color: cs.text || '#171717' };
-  const textSub = dark 
-    ? (cs.lightTextMuted ? '' : 'text-white/60')
-    : (cs.textLight ? '' : 'text-neutral-500');
-  const textSubStyle = dark 
-    ? { color: cs.lightTextMuted || 'rgba(255,255,255,0.6)' }
-    : { color: cs.textLight || '#737373' };
+  const safeCs = cs || {};
+  const bg = dark
+    ? (safeCs.darkBackground ? '' : 'bg-black')
+    : (safeCs.background ? '' : 'bg-white');
+  const bgStyle = dark
+    ? { backgroundColor: safeCs.darkBackground || '#000000' }
+    : { backgroundColor: safeCs.background || '#ffffff' };
+  const textMain = dark
+    ? (safeCs.lightText ? '' : 'text-white')
+    : (safeCs.text ? '' : 'text-neutral-900');
+  const textMainStyle = dark
+    ? { color: safeCs.lightText || '#ffffff' }
+    : { color: safeCs.text || '#171717' };
+  const textSub = dark
+    ? (safeCs.lightTextMuted ? '' : 'text-white/60')
+    : (safeCs.textLight ? '' : 'text-neutral-500');
+  const textSubStyle = dark
+    ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.6)' }
+    : { color: safeCs.textLight || '#737373' };
   const border = dark ? "border-white/10" : "border-neutral-200";
 
   // Variant 0: Standard Grid
@@ -915,15 +919,16 @@ interface FooterProps {
 
 function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'default', logoStyle = {}, showBorder = true }: FooterProps) {
   // Use dynamic colors from colorScheme
-  const bgClass = cs.darkBackground ? '' : 'bg-neutral-900';
-  const bgStyle = { backgroundColor: cs.darkBackground || '#171717' };
-  const textMain = cs.lightText ? '' : 'text-white';
-  const textMainStyle = { color: cs.lightText || '#ffffff' };
-  const textMuted = cs.lightTextMuted ? '' : 'text-neutral-400';
-  const textMutedStyle = { color: cs.lightTextMuted || '#a3a6b5' };
-  const textSubtle = cs.lightTextMuted ? '' : 'text-neutral-500';
-  const textSubtleStyle = { color: cs.lightTextMuted ? `${cs.lightTextMuted}99` : '#737373' };
-  const borderColor = cs.lightTextMuted || 'rgba(255,255,255,0.1)';
+  const safeCs = cs || {};
+  const bgClass = safeCs.darkBackground ? '' : 'bg-neutral-900';
+  const bgStyle = { backgroundColor: safeCs.darkBackground || '#171717' };
+  const textMain = safeCs.lightText ? '' : 'text-white';
+  const textMainStyle = { color: safeCs.lightText || '#ffffff' };
+  const textMuted = safeCs.lightTextMuted ? '' : 'text-neutral-400';
+  const textMutedStyle = { color: safeCs.lightTextMuted || '#a3a6b5' };
+  const textSubtle = safeCs.lightTextMuted ? '' : 'text-neutral-500';
+  const textSubtleStyle = { color: safeCs.lightTextMuted ? `${safeCs.lightTextMuted}99` : '#737373' };
+  const borderColor = safeCs.lightTextMuted || 'rgba(255,255,255,0.1)';
 
   const baseClasses = "py-10 md:py-12 px-6";
   const borderClasses = showBorder ? "border-t" : "";
