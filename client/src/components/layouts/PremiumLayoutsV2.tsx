@@ -16,10 +16,15 @@ import { getVariantIndex } from '../../lib/layoutUtils';
 
 // ── SKELETON ────────────────────────────────────────────────────
 const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
-  if (!isLoading) return <>{children}</>;
   return (
-    <div className={`bg-neutral-200 animate-pulse rounded-lg overflow-hidden ${className}`}>
-      <div className="opacity-0 pointer-events-none">{children}</div>
+    <div className={className}>
+      {isLoading ? (
+        <div className="bg-neutral-200 animate-pulse rounded-lg overflow-hidden w-full h-full">
+          <div className="opacity-0 pointer-events-none">{children}</div>
+        </div>
+      ) : (
+        children
+      )}
     </div>
   );
 };
@@ -108,18 +113,19 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
+        className="flex flex-col items-start text-left"
       >
-        <Skeleton isLoading={isLoading} className="w-full h-64 mb-10">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)') }} className="uppercase drop-shadow-xl">
+        <Skeleton isLoading={isLoading} className="w-full min-h-[16rem] mb-8">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)') }} className="uppercase drop-shadow-xl mb-0">
             {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-24">
-          <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg">
+        <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-12">
+          <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-20 mb-10">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-4">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
             {heroCta}
           </button>
@@ -149,18 +155,19 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
+        className="flex flex-col items-center"
       >
-        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto h-44 mb-8">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)') }} className="uppercase drop-shadow-xl">
+        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[11rem] mb-12">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)') }} className="uppercase drop-shadow-xl mb-0">
             {hl.main} <span style={{ color: cs.primary }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto h-14 mb-24">
-          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-xl max-w-2xl mx-auto italic drop-shadow-lg">
+        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-16">
+          <p style={{ fontFamily: bodyFont }} className="text-neutral-500 text-xl max-w-2xl mx-auto italic drop-shadow-lg mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-20 mb-20">
+        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-4 mb-20">
           <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
             {heroCta}
           </button>
@@ -186,9 +193,10 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
+          className="flex flex-col items-start"
         >
-          <Skeleton isLoading={isLoading} className="w-full h-72 mb-12">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.9, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)') }} className="uppercase tracking-tighter drop-shadow-2xl">
+          <Skeleton isLoading={isLoading} className="w-full min-h-[18rem] mb-12">
+            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)') }} className="uppercase tracking-tighter drop-shadow-2xl mb-0">
               {hl.main}<br />
               <span className="relative inline-block">
                 {hl.last}
@@ -196,14 +204,14 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               </span>
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-3/4 h-14 mb-24">
-            <p style={{ fontFamily: bodyFont }} className="text-neutral-600/90 text-2xl font-light leading-relaxed drop-shadow-lg">
+          <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
+            <p style={{ fontFamily: bodyFont }} className="text-neutral-600/90 text-2xl font-light leading-relaxed drop-shadow-lg mb-0">
               {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
-          <div className="flex flex-wrap gap-6 mt-24">
+          <div className="flex flex-wrap gap-6 mt-10">
             <Skeleton isLoading={isLoading} className="w-48 h-14">
-              <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest rounded-full shadow-2xl">
+              <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
                 {heroCta}
               </button>
             </Skeleton>
@@ -1671,14 +1679,14 @@ export function PremiumLayoutV2({
         {/* Left: dynamic primary color panel */}
         <div className="text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden" style={{ backgroundColor: cs.secondary || cs.primary }}>
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-          <div className="relative z-10">
-            <Skeleton isLoading={isLoading} className="w-full h-56 mb-14">
-              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 5.5vw, 5.5rem)') }}>
+          <div className="relative z-10 flex flex-col items-start">
+            <Skeleton isLoading={isLoading} className="w-full min-h-[14rem] mb-12">
+              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 5.5vw, 5.5rem)') }} className="mb-0">
                 {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
               </h1>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-20">
-              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic">{hero?.subheadline || websiteData.tagline}</p>
+            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
+              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
               <button style={{ backgroundColor: cs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em' }} className="px-10 py-4 text-white text-sm uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform">{heroCta}</button>
