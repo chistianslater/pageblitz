@@ -571,6 +571,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [serviceSuggestions, setServiceSuggestions] = useState<{ title: string; description: string }[]>([]);
   const [initialServices, setInitialServices] = useState<{ title: string; description: string }[]>([]);
 
+  // ── Edit mode state for revisiting completed steps ───────────────────────
+  // When user clicks a completed step to edit, we store the original position
+  // so we can return there after editing
+  const [editMode, setEditMode] = useState<{ isEditing: boolean; returnToStep: ChatStep | null }>({ isEditing: false, returnToStep: null });
+
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
@@ -1565,12 +1570,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   );
 
   const goToNextStep = useCallback(async () => {
+    // If in edit mode, return to the original position instead of advancing
+    if (editMode.isEditing && editMode.returnToStep) {
+      addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
+      await new Promise(resolve => setTimeout(resolve, 600));
+      setCurrentStep(editMode.returnToStep);
+      setEditMode({ isEditing: false, returnToStep: null });
+      return;
+    }
+
     const idx = dynamicStepOrder.indexOf(currentStep);
     const next = dynamicStepOrder[idx + 1];
     if (next) {
       await advanceToStep(next);
     }
-  }, [currentStep, dynamicStepOrder, advanceToStep]);
+  }, [currentStep, dynamicStepOrder, advanceToStep, editMode.isEditing, editMode.returnToStep]);
 
   // Helper to save step data without blocking chat advancement
   const trySaveStep = async (stepIdx: number, stepData: Record<string, unknown>) => {
@@ -1749,7 +1763,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Always advance to next step, even if save failed
     if (nextStep) {
-      await advanceToStep(nextStep);
+      // If in edit mode, return to the original position instead of advancing
+      if (editMode.isEditing && editMode.returnToStep) {
+        addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
+        await new Promise(resolve => setTimeout(resolve, 600));
+        setCurrentStep(editMode.returnToStep);
+        setEditMode({ isEditing: false, returnToStep: null });
+      } else {
+        await advanceToStep(nextStep);
+      }
     }
   };
 
@@ -4148,14 +4170,33 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
               return (
                 <div className="flex flex-col flex-1 gap-2">
+                  {/* Edit mode indicator */}
+                  {editMode.isEditing && editMode.returnToStep && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-amber-400">⚡ Bearbeitungsmodus</span>
+                      <button
+                        onClick={() => {
+                          setCurrentStep(editMode.returnToStep!);
+                          setEditMode({ isEditing: false, returnToStep: null });
+                        }}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 transition-colors border border-amber-500/50"
+                      >
+                        Zurück zu aktuellem Schritt
+                      </button>
+                    </div>
+                  )}
                   {/* Completed steps - clickable pills */}
-                  {completedSteps.length > 0 && (
+                  {!editMode.isEditing && completedSteps.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-[10px] text-slate-500 uppercase tracking-wider">Bearbeiten:</span>
                       {completedSteps.map((step, idx) => (
                         <button
                           key={step}
-                          onClick={() => setCurrentStep(step)}
+                          onClick={() => {
+                            // Enter edit mode: save current position and jump to selected step
+                            setEditMode({ isEditing: true, returnToStep: currentStep });
+                            setCurrentStep(step);
+                          }}
                           className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors border border-slate-600/50"
                           title={`Zurück zu: ${stepLabels[step] || step}`}
                         >
