@@ -280,8 +280,8 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
         </div>
         <div className="divide-y divide-neutral-100">
           {services.map((service: any, i: number) => (
-            <Skeleton key={i} isLoading={isLoading} className="h-32">
-              <div className="py-10 flex flex-col md:flex-row md:items-center gap-8 group hover:bg-neutral-50 px-4 transition-colors">
+            <Skeleton key={i} isLoading={isLoading} className="h-40">
+              <div className="py-14 flex flex-col md:flex-row md:items-center gap-8 group hover:bg-neutral-50 px-4 transition-colors">
                 <span style={{ fontFamily: displayFont, fontWeight: 900, color: cs.primary }} className="text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
                 <div className="flex-1">
                   <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem' }} className="mb-2 uppercase">{service.title}</h3>
