@@ -58,6 +58,18 @@ export function registerStripeWebhook(app: Express) {
             const website = await getWebsiteById(websiteId);
             if (!website) break;
 
+            // Parse addOns from metadata
+            const rawAddOns = session.metadata?.addOns ? JSON.parse(session.metadata.addOns) : {};
+            const addOns = {
+              subpages: rawAddOns.subpages || 0,
+              features: {
+                gallery: rawAddOns.features?.gallery || rawAddOns.gallery || false,
+                contactForm: rawAddOns.features?.contactForm || rawAddOns.contactForm || false,
+                menu: rawAddOns.features?.menu || false,
+                pricelist: rawAddOns.features?.pricelist || false,
+              }
+            };
+
             // Create subscription record
             const subscriptionId = typeof session.subscription === "string"
               ? session.subscription
@@ -71,7 +83,7 @@ export function registerStripeWebhook(app: Express) {
               stripeCustomerId: typeof session.customer === "string" ? session.customer : null,
               status: "active",
               plan: "base",
-              addOns: session.metadata?.addOns ? JSON.parse(session.metadata.addOns) : {},
+              addOns,
               createdAt: Date.now(),
               updatedAt: Date.now(),
             });

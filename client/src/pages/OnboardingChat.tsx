@@ -1209,7 +1209,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "editGallery":
           return `Du hast die **Bildergalerie** aktiviert! 🖼️\n\nWähle hier die ersten Bilder für deine Galerie aus. Du kannst unsere Vorschläge nutzen oder eigene Fotos hochladen. Du kannst bis zu 12 Bilder wählen.`;
         case "subpages":
-          return `Brauchst du zusätzliche Unterseiten? Zum Beispiel *"Projekte"*, *"Referenzen"* oder *"Team"*.\n\nDu kannst sie hier vormerken und nach der Freischaltung in deinem **Kunden-Dashboard** ganz einfach mit Inhalten füllen. Jede individuelle Unterseite kostet +9,90 €/Monat.\n\n*⚖️ Wichtig: Die rechtlich notwendigen Seiten wie **Impressum** und **Datenschutz** sind bereits kostenlos enthalten und müssen hier nicht hinzugefügt werden.*`;
+          return `Brauchst du zusätzliche Unterseiten? Zum Beispiel *"Projekte"*, *"Referenzen"* oder *"Team"*.\n\nDu kannst sie hier vormerken und nach der Freischaltung in deinem **Kunden-Dashboard** ganz einfach mit Inhalten füllen. Jede individuelle Unterseite kostet nur +2,50 €/Monat.\n\n*⚖️ Wichtig: Die rechtlich notwendigen Seiten wie **Impressum** und **Datenschutz** sind bereits kostenlos enthalten und müssen hier nicht hinzugefügt werden.*`;
         case "email":
           return `Fast fertig! 🎊 An welche E-Mail-Adresse sollen wir deine Website-Infos und die Freischalt-Bestätigung schicken?`;
         case "preview":
@@ -1987,16 +1987,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   ]);
 
   // ── Price calculation ───────────────────────────────────────────────────
-  const BASE_PRICE_INTRO = 39;  // First month intro offer
-  const BASE_PRICE_REGULAR = 79; // Regular monthly price
-  
+  const BASE_PRICE_INTRO = 19.90;  // First month intro offer (19,90 €)
+  const BASE_PRICE_REGULAR = 19.90; // Regular monthly price (19,90 €)
+  const FEATURE_PRICE = 3.90;       // Per feature (3,90 €)
+  const SUBPAGE_PRICE = 2.50;       // Per subpage (2,50 €)
+
   const totalPrice = (isFirstMonth = false) => {
     let price = isFirstMonth ? BASE_PRICE_INTRO : BASE_PRICE_REGULAR;
-    if (data.addOnContactForm) price += 4.9;
-    if (data.addOnGallery) price += 4.9;
-    if (data.addOnMenu) price += 4.9;
-    if (data.addOnPricelist) price += 4.9;
-    price += data.subPages.length * 9.9;
+    if (data.addOnContactForm) price += FEATURE_PRICE;
+    if (data.addOnGallery) price += FEATURE_PRICE;
+    if (data.addOnMenu) price += FEATURE_PRICE;
+    if (data.addOnPricelist) price += FEATURE_PRICE;
+    price += data.subPages.filter(p => p.name).length * SUBPAGE_PRICE;
     return price.toFixed(2);
   };
 
@@ -2048,7 +2050,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </div>
             {/* Price badge */}
             <div className="flex-shrink-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-center">
-              <p className="text-amber-300 text-xs font-bold leading-tight">Ab 39 €</p>
+              <p className="text-amber-300 text-xs font-bold leading-tight">Ab 19,90 €</p>
               <p className="text-amber-400/70 text-[10px] leading-tight">/Monat</p>
             </div>
 
@@ -3170,10 +3172,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   const showPricelist = !isFood;
 
                   const addons: { key: keyof OnboardingData; label: string; price: string; desc: string; emoji: string }[] = [
-                    { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+4,90 €/Monat", desc: "Kunden können direkt anfragen", emoji: "📬" },
-                    { key: "addOnGallery" as const, label: "Bildergalerie", price: "+4,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
-                    ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+4,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
-                    ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+4,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
+                    { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+3,90 €/Monat", desc: "Kunden können direkt anfragen", emoji: "📬" },
+                    { key: "addOnGallery" as const, label: "Bildergalerie", price: "+3,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
+                    ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+3,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
+                    ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+3,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
                   ];
 
                   return addons.map((addon) => (

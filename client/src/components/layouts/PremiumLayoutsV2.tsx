@@ -323,7 +323,7 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
         <div style={{ borderTop: `1px solid ${dividerColor}` }}>
           {services.map((service: any, i: number) => (
             <Skeleton key={i} isLoading={isLoading} className="h-40">
-              <div className="py-14 flex flex-col md:flex-row md:items-center gap-8 group px-4 transition-colors" style={{ borderBottom: `1px solid ${dividerColor}`, '--hover-bg': hoverBgColor } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverBgColor }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}>
+              <div className="py-8 flex flex-col md:flex-row md:items-center gap-8 group px-4 transition-colors" style={{ borderBottom: `1px solid ${dividerColor}`, '--hover-bg': hoverBgColor } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverBgColor }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}>
                 <span style={{ fontFamily: displayFont, fontWeight: 900, color: safeCs.primary }} className="text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
                 <div className="flex-1">
                   <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-2 uppercase">{service.title}</h3>
@@ -437,8 +437,8 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
     return (
       <section className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
-          <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-20">
-            <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
+          <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-12">
+            <h2 className={`text-3xl md:text-4xl text-center mb-0 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
               {process?.headline || "So einfach geht's"}
             </h2>
           </Skeleton>
@@ -469,8 +469,8 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   return (
     <section className={`py-24 md:py-32 px-6 ${bgClass}`} style={{ ...bgStyle, fontFamily: bodyFont }}>
       <div className="max-w-4xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-20">
-          <h2 className={`text-3xl md:text-4xl text-center mb-20 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
+        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-12">
+          <h2 className={`text-3xl md:text-4xl text-center mb-0 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
             {process?.headline || "Der Ablauf"}
           </h2>
         </Skeleton>
@@ -992,16 +992,16 @@ function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'defa
   return (
     <footer className={`${baseClasses} ${bgClass} ${borderClasses} ${textMain}`} style={{ ...bgStyle, borderColor: borderColor }}>
       <div className={`max-w-7xl mx-auto w-full ${containerClasses[variant as keyof typeof containerClasses] || containerClasses.default}`}>
-        <div className="md:max-w-[280px] lg:max-w-[320px]">
-          <Skeleton isLoading={isLoading} className="w-full h-8 mb-2">
+        <div className="md:max-w-[400px] lg:max-w-[480px]">
+          <Skeleton isLoading={isLoading} className="w-full h-8 mb-4">
             <span
               style={{ ...logoStyle, ...textMainStyle }}
-              className="break-words"
+              className="break-words block leading-tight"
             >
               {websiteData.businessName}
             </span>
           </Skeleton>
-          <p className="text-sm break-words" style={textMutedStyle}>{footerText}</p>
+          <p className="text-sm break-words leading-relaxed" style={textMutedStyle}>{footerText}</p>
         </div>
         <ul className="space-y-1.5 text-sm" style={textMutedStyle}>
           <FooterContact websiteData={websiteData} textClass="" />
@@ -1065,15 +1065,15 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden grain-overlay">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/10 relative" style={{ backgroundColor: darkBg + 'cc' }}>
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/10" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-10 py-3 text-xs uppercase hover:scale-105 transition-transform">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs uppercase hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1143,15 +1143,15 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-[#FFFDFB] overflow-hidden grain-overlay">
-      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40 relative">
+      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-36 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1230,7 +1230,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-2.5 h-8 rounded-full shrink-0" style={{ backgroundColor: safeCs.primary }} />
@@ -1238,8 +1238,8 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1543,15 +1543,15 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden grain-overlay">
-      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-md border-b border-white/5 relative" style={{ backgroundColor: darkBg + 'cc' }}>
+      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-md border-b border-white/5" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff' }} className="px-10 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+          <button style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1621,15 +1621,15 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden grain-overlay">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100 relative">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[130px] h-10">
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1700,7 +1700,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
   return (
     <div style={{ fontFamily: BODY }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5 relative">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           <div className="flex items-center gap-2 overflow-hidden">
             <Leaf size={24} style={{ color: safeCs.primary }} className="shrink-0" />
@@ -1708,8 +1708,8 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-36 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[130px] h-10">
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 

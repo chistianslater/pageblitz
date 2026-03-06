@@ -36,10 +36,19 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 const PRICING = {
-  base: { amount: 7900, currency: "eur", interval: "month" as const },
-  subpage: { amount: 990, currency: "eur", interval: "month" as const },
-  gallery: { amount: 490, currency: "eur", interval: "month" as const },
+  base: { amount: 1990, currency: "eur", interval: "month" as const },      // 19,90 €/Monat
+  feature: { amount: 390, currency: "eur", interval: "month" as const },     // 3,90 € pro Extra-Feature
+  subpage: { amount: 250, currency: "eur", interval: "month" as const },     // 2,50 € pro Extra-Unterseite
 } as const;
+
+// Feature-Typen für Stripe Checkout
+type FeatureType = "gallery" | "contactForm" | "menu" | "pricelist";
+const FEATURE_NAMES: Record<FeatureType, string> = {
+  gallery: "Bildergalerie",
+  contactForm: "Kontaktformular",
+  menu: "Speisekarte",
+  pricelist: "Preisliste",
+};
 
 function slugify(text: string): string {
   return text.toLowerCase()
@@ -2047,28 +2056,46 @@ Antworte NUR mit validem JSON:
         websiteId: z.number(),
         addOns: z.object({
           subpages: z.number().default(0),
-          gallery: z.boolean().default(false),
-          contactForm: z.boolean().default(false),
-        }).optional(),
+          features: z.object({
+            gallery: z.boolean().default(false),
+            contactForm: z.boolean().default(false),
+            menu: z.boolean().default(false),
+            pricelist: z.boolean().default(false),
+          }).default({}),
+        }).default({ subpages: 0, features: {} }),
       }))
       .mutation(async ({ input, ctx }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
-        
+
         let totalAmount = PRICING.base.amount;
-        const addOnsList = [];
-        if (input.addOns?.subpages) {
+        const addOnsList: string[] = [];
+        const featureCount = Object.values(input.addOns.features).filter(Boolean).length;
+
+        // Unterseiten berechnen (2,50 € pro Stück)
+        if (input.addOns.subpages > 0) {
           totalAmount += input.addOns.subpages * PRICING.subpage.amount;
-          addOnsList.push(`${input.addOns.subpages} Unterseite(n)`);
+          addOnsList.push(`${input.addOns.subpages}x Unterseite`);
         }
-        if (input.addOns?.gallery) {
-          totalAmount += PRICING.gallery.amount;
-          addOnsList.push("Bildergalerie");
+
+        // Features berechnen (3,90 € pro Feature)
+        if (featureCount > 0) {
+          totalAmount += featureCount * PRICING.feature.amount;
+
+          // Feature-Namen sammeln
+          (Object.entries(input.addOns.features) as [FeatureType, boolean][])
+            .filter(([, enabled]) => enabled)
+            .forEach(([type]) => addOnsList.push(FEATURE_NAMES[type]));
         }
-        if (input.addOns?.contactForm) {
-          addOnsList.push("Kontaktformular");
+
+        // Beschreibung erstellen
+        const basePrice = (PRICING.base.amount / 100).toFixed(2).replace('.', ',');
+        const descriptionParts = [`${basePrice} €/Monat Basis`];
+        if (addOnsList.length > 0) {
+          descriptionParts.push(addOnsList.join(', '));
         }
-        
+        const totalPrice = (totalAmount / 100).toFixed(2).replace('.', ',');
+
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
           mode: "subscription",
@@ -2078,8 +2105,8 @@ Antworte NUR mit validem JSON:
               price_data: {
                 currency: "eur",
                 product_data: {
-                  name: `Pageblitz Website - ${website.slug}`,
-                  description: `79EUR/Monat Basis${addOnsList.length > 0 ? " + " + addOnsList.join(", ") : ""}`,
+                  name: `Pageblitz Website - ${website.businessName || website.slug}`,
+                  description: descriptionParts.join(' + '),
                 },
                 unit_amount: totalAmount,
                 recurring: { interval: "month", interval_count: 1 },
@@ -2093,11 +2120,12 @@ Antworte NUR mit validem JSON:
             websiteId: website.id.toString(),
             userId: ctx.user?.id.toString() || "anonymous",
             addOns: JSON.stringify(input.addOns),
+            totalAmount: totalAmount.toString(),
           },
         });
-        
+
         if (!session.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Stripe session URL not generated" });
-        return { url: session.url, sessionId: session.id };
+        return { url: session.url, sessionId: session.id, totalAmount, addOnsList };
       }),
   }),
   
