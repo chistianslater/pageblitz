@@ -745,16 +745,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const cs = siteData.website.colorScheme as ColorScheme;
       setData((prev) => ({
         ...prev,
-        colorScheme: withOnColors({
-          primary: cs.primary || prev.colorScheme.primary,
-          secondary: cs.secondary || prev.colorScheme.secondary,
-          accent: cs.accent || prev.colorScheme.accent,
-          background: cs.background || prev.colorScheme.background,
-          surface: cs.surface || prev.colorScheme.surface,
-          text: cs.text || prev.colorScheme.text,
-          textLight: cs.textLight || prev.colorScheme.textLight,
-          gradient: cs.gradient || prev.colorScheme.gradient,
-        })
+        colorScheme: {
+          ...withOnColors({
+            primary: cs.primary || prev.colorScheme.primary,
+            secondary: cs.secondary || prev.colorScheme.secondary,
+            accent: cs.accent || prev.colorScheme.accent,
+            background: cs.background || prev.colorScheme.background,
+            surface: cs.surface || prev.colorScheme.surface,
+            text: cs.text || prev.colorScheme.text,
+            textLight: cs.textLight || prev.colorScheme.textLight,
+            gradient: cs.gradient || prev.colorScheme.gradient,
+          }),
+          ...(cs.darkBackground ? { darkBackground: cs.darkBackground } : {}),
+          ...(cs.lightText ? { lightText: cs.lightText } : {}),
+        }
       }));
     }
   }, [siteData?.website?.colorScheme, initialized]);
@@ -786,6 +790,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }
     }
   }, [siteData?.website?.websiteData, initialized]);
+
+  // ── Persist & restore current step across page reloads ──────────────────
+  const stepStorageKey = websiteIdProp ? `onboarding_step_${websiteIdProp}` : null;
+
+  // Save step whenever it changes (skip "welcome" as starting point)
+  useEffect(() => {
+    if (stepStorageKey && currentStep !== 'welcome') {
+      localStorage.setItem(stepStorageKey, currentStep);
+    }
+  }, [currentStep, stepStorageKey]);
+
+  // Restore step once website data is loaded (first render after siteData arrives)
+  useEffect(() => {
+    if (!stepStorageKey || !siteData?.website?.websiteData || initialized) return;
+    const saved = localStorage.getItem(stepStorageKey);
+    if (saved && saved !== 'welcome' && saved !== 'checkout') {
+      setCurrentStep(saved as ChatStep);
+    }
+  }, [stepStorageKey, siteData?.website?.websiteData, initialized]);
+
+  // Clear saved step on checkout/preview completion
+  useEffect(() => {
+    if (stepStorageKey && (currentStep === 'checkout' || currentStep === 'preview')) {
+      localStorage.removeItem(stepStorageKey);
+    }
+  }, [currentStep, stepStorageKey]);
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
@@ -2452,7 +2482,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       key={scheme.id}
                       onClick={() => {
-                        setData((p) => ({ ...p, colorScheme: scheme.colors }));
+                        setData((p) => ({
+                          ...p,
+                          colorScheme: {
+                            ...scheme.colors,
+                            // Preserve user-set dark overrides when switching scheme
+                            ...(p.colorScheme.darkBackground ? { darkBackground: p.colorScheme.darkBackground } : {}),
+                            ...(p.colorScheme.lightText ? { lightText: p.colorScheme.lightText } : {}),
+                          }
+                        }));
                         setShowIndividualColors(false);
                       }}
                       className={`text-left p-4 rounded-2xl border-2 transition-all group ${

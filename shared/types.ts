@@ -100,6 +100,9 @@ export interface ColorScheme {
   onAccent: string;
   onSurface: string;
   onBackground: string;
+  // Dark layout / dark section overrides
+  darkBackground?: string;
+  lightText?: string;
 }
 
 export interface BusinessSearchResult {
