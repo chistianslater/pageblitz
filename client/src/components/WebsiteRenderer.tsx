@@ -13,6 +13,7 @@ interface WebsiteRendererProps {
   businessCategory?: string | null;
   isLoading?: boolean;
   headlineSize?: 'large' | 'medium' | 'small';
+  headlineFontOverride?: string;
 }
 
 function getLayoutComponent(category: string = ""): any {
@@ -29,11 +30,18 @@ function getLayoutComponent(category: string = ""): any {
   return PremiumLayoutV2;
 }
 
-export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, headlineSize }: WebsiteRendererProps) {
+export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, headlineSize, headlineFontOverride }: WebsiteRendererProps) {
   const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
   const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
-  // Patch aboutImageUrl into websiteData if provided externally (published websites)
-  const wd = aboutImageUrl ? { ...websiteData, aboutImageUrl } as any : websiteData;
+  // Patch aboutImageUrl and headlineFont into websiteData if provided externally
+  let wd = websiteData as any;
+  if (aboutImageUrl || headlineFontOverride) {
+    wd = { ...websiteData } as any;
+    if (aboutImageUrl) wd.aboutImageUrl = aboutImageUrl;
+    if (headlineFontOverride) {
+      wd.designTokens = { ...(wd.designTokens || {}), headlineFont: headlineFontOverride };
+    }
+  }
   const LayoutComponent = getLayoutComponent(businessCategory || websiteData?.business?.category);
   return <LayoutComponent websiteData={wd} cs={cs} heroImageUrl={heroImg} isLoading={isLoading} headlineSize={headlineSize} />;
 }
