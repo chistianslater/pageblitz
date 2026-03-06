@@ -754,22 +754,6 @@ const WebsiteShowcase = () => {
             delay={i * 0.1}
           />
         ))}
-
-              {/* Layout Badge */}
-              <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
-                <span className="text-xs text-white/80 font-medium">{site.layout}</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-medium mb-1 group-hover:text-white/80 transition-colors">{site.name}</h4>
-                <p className="text-white/40 text-sm">{site.industry}</p>
-              </div>
-              <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
-            </div>
-          </motion.div>
-        ))}
         
         <div className="shrink-0 w-6" />
       </div>
