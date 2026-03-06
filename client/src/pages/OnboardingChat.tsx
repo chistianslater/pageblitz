@@ -1844,6 +1844,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.aboutPhotoUrl,
     data.addOnContactForm,
     data.addOnGallery,
+    data.addOnGalleryData,
     data.addOnMenu,
     data.addOnMenuData,
     data.addOnPricelist,
