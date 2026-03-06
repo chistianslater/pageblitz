@@ -106,6 +106,8 @@ const getBodyTextMultiplier = (headlineSize: string = 'large'): number => {
 // ── HERO VARIANTS ───────────────────────────────────────────────
 
 function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
+  const safeCs = cs || {};
+  const primaryColor = safeCs.primary || '#3b82f6';
   return (
     <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] pb-20 items-center gap-12 max-w-7xl mx-auto px-6">
       <motion.div
@@ -117,21 +119,21 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
       >
         <Skeleton isLoading={isLoading} className="w-full min-h-[16rem] mb-8">
           <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)') }} className="uppercase drop-shadow-xl mb-0">
-            {hl.main}<br /><span style={{ color: cs.primary }}>{hl.last}</span>
+            {hl.main}<br /><span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-12">
-          <p style={{ fontFamily: bodyFont, borderColor: cs.primary }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg mb-0">
+          <p style={{ fontFamily: bodyFont, borderColor: primaryColor }} className="text-neutral-400 text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-48 h-14 mt-4">
-          <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
+          <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
             {heroCta}
           </button>
         </Skeleton>
       </motion.div>
-      <motion.div 
+      <motion.div
         className="relative aspect-square"
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -141,13 +143,15 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         <Skeleton isLoading={isLoading} className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
           <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
         </Skeleton>
-        <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl blur-3xl opacity-20" style={{ backgroundColor: cs.primary }} />
+        <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl blur-3xl opacity-20" style={{ backgroundColor: primaryColor }} />
       </motion.div>
     </section>
   );
 }
 
 function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
+  const safeCs = cs || {};
+  const primaryColor = safeCs.primary || '#3b82f6';
   return (
     <section id="hero" className="pt-40 pb-32 text-center px-6 max-w-5xl mx-auto">
       <motion.div
@@ -159,7 +163,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
       >
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[11rem] mb-12">
           <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)') }} className="uppercase drop-shadow-xl mb-0">
-            {hl.main} <span style={{ color: cs.primary }}>{hl.last}</span>
+            {hl.main} <span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-16">
@@ -168,7 +172,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           </p>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-4 mb-20">
-          <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
+          <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
             {heroCta}
           </button>
         </Skeleton>
@@ -181,6 +185,8 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 }
 
 function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
+  const safeCs = cs || {};
+  const primaryColor = safeCs.primary || '#3b82f6';
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden pb-12">
       <div className="absolute inset-0 z-0">
@@ -200,7 +206,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               {hl.main}<br />
               <span className="relative inline-block">
                 {hl.last}
-                <div className="absolute -bottom-2 left-0 w-full h-4 opacity-30" style={{ backgroundColor: cs.primary }} />
+                <div className="absolute -bottom-2 left-0 w-full h-4 opacity-30" style={{ backgroundColor: primaryColor }} />
               </span>
             </h1>
           </Skeleton>
@@ -211,7 +217,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           </Skeleton>
           <div className="flex flex-wrap gap-6 mt-10">
             <Skeleton isLoading={isLoading} className="w-48 h-14">
-              <button style={{ backgroundColor: cs.primary, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
+              <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700 }} className="px-12 py-5 text-white uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
                 {heroCta}
               </button>
             </Skeleton>
