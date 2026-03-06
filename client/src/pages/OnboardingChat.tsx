@@ -1587,7 +1587,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
     const val = value !== undefined ? value.trim() : inputValue.trim();
     const isExplicitEmpty = value === "";
-    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout"].includes(currentStep)) return;
+    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat"].includes(currentStep)) return;
 
     setInputValue("");
 
@@ -4105,20 +4105,75 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {chatHidden ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
               {chatHidden ? "Chat einblenden" : "Chat ausblenden"}
             </button>
-            {/* Progress bar */}
+            {/* Progress bar with clickable completed steps */}
             {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
               const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
               const currentIdx = dynamicStepOrder.indexOf(currentStep);
               const progress = Math.round((currentIdx / totalSteps) * 100);
+
+              // Get completed steps (all steps before current)
+              const completedSteps = dynamicStepOrder.slice(0, currentIdx).filter((s) =>
+                s !== "welcome" && s !== "checkout" && s !== "preview"
+              );
+
+              // Step labels for display
+              const stepLabels: Record<string, string> = {
+                businessCategory: "Branche",
+                businessName: "Name",
+                brandLogo: "Logo",
+                colorScheme: "Farben",
+                heroPhoto: "Foto",
+                aboutPhoto: "Über uns",
+                headlineFont: "Schrift",
+                headlineSize: "Größe",
+                tagline: "Claim",
+                description: "Beschreibung",
+                usp: "USP",
+                services: "Leistungen",
+                legalOwner: "Impressum",
+                legalStreet: "Adresse",
+                legalZipCity: "Ort",
+                legalEmail: "E-Mail",
+                legalPhone: "Telefon",
+                legalVat: "Steuer",
+                addons: "Extras",
+                editMenu: "Speisekarte",
+                editPricelist: "Preise",
+                editGallery: "Galerie",
+                subpages: "Unterseiten",
+                email: "Kontakt",
+                hideSections: "Anzeige",
+                preview: "Vorschau",
+              };
+
               return (
-                <div className="flex flex-1 items-center gap-3">
-                  <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
+                <div className="flex flex-col flex-1 gap-2">
+                  {/* Completed steps - clickable pills */}
+                  {completedSteps.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider">Bearbeiten:</span>
+                      {completedSteps.map((step, idx) => (
+                        <button
+                          key={step}
+                          onClick={() => setCurrentStep(step)}
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors border border-slate-600/50"
+                          title={`Zurück zu: ${stepLabels[step] || step}`}
+                        >
+                          {stepLabels[step] || step}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Progress bar */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-slate-400 whitespace-nowrap">Schritt {currentIdx} / {totalSteps}</span>
                   </div>
-                  <span className="text-xs text-slate-400 whitespace-nowrap">Schritt {currentIdx} / {totalSteps}</span>
                 </div>
               );
             })()}
