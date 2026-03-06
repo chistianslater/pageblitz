@@ -625,40 +625,52 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="space-y-6">
             {(address || isLoading) && (
-              <Skeleton isLoading={isLoading} className="w-full h-16">
+              <Skeleton isLoading={isLoading} className="w-full h-20">
                 <div className="flex items-start gap-4">
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <MapPin size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`mb-1 ${textSub}`} style={labelStyle}>Adresse</p>
-                    <p className={`font-medium ${textMain}`}>{address}</p>
+                    <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Adresse</p>
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${textSub} hover:text-primary transition-colors`}
+                    >
+                      {address}
+                    </a>
                   </div>
                 </div>
               </Skeleton>
             )}
             {(phone || isLoading) && (
-              <Skeleton isLoading={isLoading} className="w-full h-16">
+              <Skeleton isLoading={isLoading} className="w-full h-20">
                 <div className="flex items-start gap-4">
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <Phone size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`mb-1 ${textSub}`} style={labelStyle}>Telefon</p>
-                    <p className={`font-medium ${textMain}`}>{phone}</p>
+                    <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Telefon</p>
+                    <a 
+                      href={`tel:${phone.replace(/\s/g, '')}`}
+                      className={`${textSub} hover:text-primary transition-colors`}
+                    >
+                      {phone}
+                    </a>
                   </div>
                 </div>
               </Skeleton>
             )}
             {(hours || isLoading) && (
-              <Skeleton isLoading={isLoading} className="w-full h-16">
+              <Skeleton isLoading={isLoading} className="w-full h-20">
                 <div className="flex items-start gap-4">
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <Clock size={18} style={{ color: cs.primary }} />
                   </div>
                   <div>
-                    <p className={`mb-1 ${textSub}`} style={labelStyle}>Öffnungszeiten</p>
-                    <p className={`font-medium whitespace-pre-line ${textMain}`}>{hours}</p>
+                    <p className={`mb-2 text-lg ${textMain}`} style={{ fontFamily: displayFont, fontWeight: 600 }}>Öffnungszeiten</p>
+                    <p className={`whitespace-pre-line ${textSub}`}>{hours}</p>
                   </div>
                 </div>
               </Skeleton>
