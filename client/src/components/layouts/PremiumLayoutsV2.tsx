@@ -1007,6 +1007,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const BODY = "'Plus Jakarta Sans', 'Arial', sans-serif";
   const HL: React.CSSProperties = { fontWeight: 900, letterSpacing: '0.02em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
+  const darkBg = (safeCs as any).darkBackground || '#0A0A0A';
 
   const seed = websiteData.id || websiteData.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
@@ -1024,8 +1025,8 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#0A0A0A] text-white overflow-hidden grain-overlay">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/10 relative">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden grain-overlay">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/10 relative" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
@@ -1319,6 +1320,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const BODY = "'Rajdhani', 'Arial', sans-serif";
   const HL: React.CSSProperties = { letterSpacing: '0.04em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
+  const darkBg = (safeCs as any).darkBackground || '#080808';
 
   const seed = websiteData.id || websiteData.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
@@ -1336,8 +1338,8 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#080808] text-white overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#080808]/90 backdrop-blur-sm border-b border-white/10">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-sm border-b border-white/10" style={{ backgroundColor: darkBg + 'e6' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
@@ -1471,6 +1473,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 400, letterSpacing: '0.01em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const hl = splitHeadline(heroHeadline);
+  const darkBg = (safeCs as any).darkBackground || '#0C0A09';
 
   const seed = websiteData.id || websiteData.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
@@ -1488,8 +1491,8 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#0C0A09] text-white overflow-hidden grain-overlay">
-      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#0C0A09]/80 backdrop-blur-md border-b border-white/5 relative">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden grain-overlay">
+      <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-md border-b border-white/5 relative" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />

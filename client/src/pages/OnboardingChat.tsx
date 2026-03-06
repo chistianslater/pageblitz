@@ -2540,21 +2540,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         label: "Basis", dot: "bg-blue-400",
                         keys: [
                           { key: "primary", label: "Hauptfarbe" },
-                          { key: "secondary", label: "Sekundärfarbe" },
                           { key: "accent", label: "Akzentfarbe" },
-                          { key: "background", label: "Hintergrund (hell)" },
-                          { key: "surface", label: "Oberflächen" },
+                          { key: "background", label: "Hintergrund (helle Layouts)" },
                           { key: "text", label: "Textfarbe" },
                           { key: "textLight", label: "Gedämpfte Schrift" },
                         ],
                       },
                       {
-                        label: "Dunkle Sektionen", dot: "bg-purple-400",
+                        label: "Dunkle Layouts & Sektionen", dot: "bg-purple-400",
                         keys: [
-                          { key: "darkBackground", label: "Hintergrund (dunkel)" },
-                          { key: "darkSurface", label: "Dunkle Oberfläche" },
+                          { key: "darkBackground", label: "Hintergrund (dunkle Layouts)" },
                           { key: "lightText", label: "Heller Text" },
-                          { key: "lightTextMuted", label: "Heller Text (gedämpft)" },
                         ],
                       },
                     ];
