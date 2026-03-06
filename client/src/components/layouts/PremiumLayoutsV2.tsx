@@ -255,26 +255,38 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
 // ── SERVICES VARIANTS ───────────────────────────────────────────
 
-function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const services = sec(websiteData, 'services')?.items || [];
+  // Dynamic colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const sectionBgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : 'bg-neutral-50';
+  const sectionBgStyle = dark
+    ? { backgroundColor: safeCs.darkBackground || '#0a0a0a' }
+    : { backgroundColor: safeCs.background || '#fafafa' };
+  const cardBgClass = dark ? (safeCs.darkSurface ? '' : 'bg-neutral-800') : 'bg-white';
+  const cardBgStyle = dark
+    ? { backgroundColor: safeCs.darkSurface || '#1a1a1a' }
+    : { backgroundColor: safeCs.surface || '#ffffff' };
+  const cardBorderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
   return (
-    <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+    <section id="leistungen" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-24">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="uppercase mb-0">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
             Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
           </h2>
         </Skeleton>
         <div className="grid md:grid-cols-3 gap-8">
           {services.map((service: any, i: number) => (
             <Skeleton key={i} isLoading={isLoading} className="h-72">
-              <div className="p-10 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all border border-neutral-100 group">
+              <div className={`p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass}`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
                 <div className="w-14 h-14 rounded-full mb-8 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
                   <Zap size={28} style={{ color: safeCs.primary }} />
                 </div>
-                <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem' }} className="mb-4">{service.title}</h3>
-                <p style={{ fontFamily: bodyFont }} className="text-neutral-500 leading-relaxed">{service.description}</p>
+                <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-4">{service.title}</h3>
+                <p style={{ fontFamily: bodyFont, color: textMuted }} className="leading-relaxed">{service.description}</p>
               </div>
             </Skeleton>
           ))}
@@ -284,29 +296,38 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
   );
 }
 
-function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const services = sec(websiteData, 'services')?.items || [];
+  // Dynamic colors based on dark mode
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const sectionBgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : '';
+  const sectionBgStyle = dark
+    ? { backgroundColor: safeCs.darkBackground || '#0a0a0a' }
+    : { backgroundColor: safeCs.background || '#ffffff' };
+  const dividerColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+  const hoverBgColor = dark ? 'rgba(255,255,255,0.05)' : '#f9fafb';
   return (
-    <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
+    <section id="leistungen" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
           <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
-            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="uppercase mb-0">
+            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
               Exzellente<br /><span style={{ color: safeCs.primary }}>Services</span>
             </h2>
           </Skeleton>
-          <div className="h-px flex-1 bg-neutral-200 hidden md:block mb-4" />
-          <p className="text-neutral-400 uppercase tracking-widest text-xs font-bold mb-4">Professionelle Lösungen</p>
+          <div className="h-px flex-1 hidden md:block mb-4" style={{ backgroundColor: dividerColor }} />
+          <p className="uppercase tracking-widest text-xs font-bold mb-4" style={{ color: textMuted }}>Professionelle Lösungen</p>
         </div>
-        <div className="divide-y divide-neutral-100">
+        <div style={{ borderTop: `1px solid ${dividerColor}` }}>
           {services.map((service: any, i: number) => (
             <Skeleton key={i} isLoading={isLoading} className="h-40">
-              <div className="py-14 flex flex-col md:flex-row md:items-center gap-8 group hover:bg-neutral-50 px-4 transition-colors">
+              <div className="py-14 flex flex-col md:flex-row md:items-center gap-8 group px-4 transition-colors" style={{ borderBottom: `1px solid ${dividerColor}`, '--hover-bg': hoverBgColor } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverBgColor }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}>
                 <span style={{ fontFamily: displayFont, fontWeight: 900, color: safeCs.primary }} className="text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
                 <div className="flex-1">
-                  <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem' }} className="mb-2 uppercase">{service.title}</h3>
-                  <p style={{ fontFamily: bodyFont }} className="text-neutral-500 max-w-2xl">{service.description}</p>
+                  <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-2 uppercase">{service.title}</h3>
+                  <p style={{ fontFamily: bodyFont, color: textMuted }} className="max-w-2xl">{service.description}</p>
                 </div>
                 <ArrowRight size={24} style={{ color: safeCs.primary }} className="shrink-0 opacity-0 group-hover:opacity-100 transition-all translate-x-[-20px] group-hover:translate-x-0" />
               </div>
@@ -1060,7 +1081,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1138,7 +1159,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1226,7 +1247,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1303,7 +1324,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1381,7 +1402,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1459,7 +1480,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1538,7 +1559,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1616,7 +1637,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -1696,7 +1717,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
@@ -2003,18 +2024,40 @@ function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headli
 function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const pricelist = sec(websiteData, 'pricelist');
-  const items = pricelist?.items || [];
   const headline = pricelist?.headline || 'Unsere Preise';
 
-  if (items.length === 0) return null;
+  // Support both formats: items array OR categories array
+  const items = pricelist?.items || [];
+  const categories = pricelist?.categories || [];
 
-  // Group by category
-  const grouped = items.reduce((acc: any, item: any) => {
-    const cat = item.category || 'Leistungen';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
-    return acc;
-  }, {});
+  // Build grouped data from either format
+  let grouped: Record<string, any[]> = {};
+
+  if (items.length > 0) {
+    // Format 1: flat items array with category field
+    grouped = items.reduce((acc: any, item: any) => {
+      const cat = item.category || 'Leistungen';
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return acc;
+    }, {});
+  } else if (categories.length > 0) {
+    // Format 2: categories array with nested items
+    categories.forEach((cat: any) => {
+      const catName = cat.name || 'Leistungen';
+      const catItems = cat.items || [];
+      if (catItems.length > 0) {
+        grouped[catName] = catItems.map((item: any) => ({
+          title: item.name || item.title,
+          price: item.price,
+          description: item.description
+        }));
+      }
+    });
+  }
+
+  // No data to show
+  if (Object.keys(grouped).length === 0) return null;
 
   // Dynamic colors based on dark mode
   const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
@@ -2049,7 +2092,7 @@ function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, h
                 {categoryItems.map((item: any, i: number) => (
                   <Skeleton key={i} isLoading={isLoading} className="h-12">
                     <div className="flex justify-between items-center py-3 last:border-0" style={{ borderBottom: i < categoryItems.length - 1 ? `1px solid ${borderColor}` : 'none' }}>
-                      <span style={{ fontFamily: bodyFont, color: textMuted }}>{item.title}</span>
+                      <span style={{ fontFamily: bodyFont, color: textMuted }}>{item.title || item.name}</span>
                       {item.price && (
                         <span style={{ fontFamily: displayFont, color: safeCs.primary }} className="font-semibold">
                           {item.price}
