@@ -149,7 +149,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
 function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize }: any) {
   return (
-    <section id="hero" className="pt-40 pb-24 text-center px-6 max-w-5xl mx-auto">
+    <section id="hero" className="pt-40 pb-32 text-center px-6 max-w-5xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
