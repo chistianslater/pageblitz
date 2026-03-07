@@ -29,6 +29,7 @@ import {
   DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
   NaturalLayoutV2, PremiumLayoutV2
 } from "@/components/layouts/PremiumLayoutsV2";
+import { PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
 import type { ColorScheme } from "@shared/types";
 
 // --- Animation Components ---
@@ -438,163 +439,428 @@ const LAYOUT_COMPONENTS = {
   Premium: PremiumLayoutV2,
 };
 
-// Industry-specific color schemes
-const INDUSTRY_COLOR_SCHEMES: Record<string, ColorScheme> = {
-  "Beauty & Wellness": {
-    primary: "#9a8b7a",
-    secondary: "#c4a882",
-    accent: "#f8f6f3",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+// Layout configurations matching the layout-preview pages exactly
+const LAYOUT_CONFIG: Record<string, { 
+  data: any; 
+  heroImage: string; 
+  scheme: string;
+  label: string;
+}> = {
+  Bold: {
+    label: "Bau & Handwerk",
+    scheme: "trust",
+    heroImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Müller Bau GmbH",
+      tagline: "Solide gebaut – seit 1987",
+      googleRating: 4.8,
+      googleReviewCount: 127,
+      sections: [
+        { type: "hero", headline: "Ihr Spezialist für Hochbau & Sanierung", subheadline: "Lange Wartezeiten? Nicht bei uns. Wir planen, bauen und liefern – termingerecht und zum Festpreis.", ctaText: "Angebot anfragen" },
+        { type: "services", headline: "Unsere Leistungen", items: [
+          { title: "Hochbau & Rohbau", description: "Von der Bodenplatte bis zum Dachstuhl – wir realisieren Ihr Bauprojekt mit modernster Technik und jahrzehntelanger Erfahrung." },
+          { title: "Sanierung & Umbau", description: "Wir modernisieren Altbauten und schaffen neuen Wohnraum mit minimalem Aufwand für Sie als Bauherr." },
+          { title: "Tiefbau & Erdarbeiten", description: "Fundamente, Kanalarbeiten, Entwässerung – unser Fuhrpark ist für jede Bautiefe ausgestattet." },
+        ]},
+        { type: "process", headline: "In 3 Schritten zum Festpreis", items: [
+          { step: "1", title: "Beratungsgespräch", description: "Kostenloser Termin vor Ort – wir besichtigen gemeinsam und nehmen alle Maße auf." },
+          { step: "2", title: "Detailofferte", description: "Sie erhalten ein transparentes Festpreisangebot ohne versteckte Kosten innerhalb von 48 Stunden." },
+          { step: "3", title: "Baubeginn", description: "Nach Ihrer Freigabe starten wir zum vereinbarten Termin – pünktlich und professionell." },
+        ]},
+        { type: "about", headline: "35 Jahre Erfahrung im Hochbau", content: "Seit 1987 bauen wir für private Bauherren und gewerbliche Kunden im Raum München. Über 800 erfolgreich abgeschlossene Projekte sprechen für sich." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Industriestraße 14, 80339 München" },
+          { icon: "Phone", description: "+49 89 123 456 78" },
+          { icon: "Clock", description: "Mo–Fr: 07:00–17:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Das sagen unsere Kunden", items: [
+          { author: "Thomas K.", rating: 5, description: "Absolut professionelle Arbeit. Unser Anbau wurde termingerecht und zum vereinbarten Preis fertiggestellt." },
+          { author: "Sabine M.", rating: 5, description: "Von der Planung bis zur Übergabe – alles reibungslos. Sehr empfehlenswert!" },
+          { author: "Georg F.", rating: 5, description: "Die Sanierung unseres Altbaus war eine große Aufgabe. Müller Bau hat sie perfekt gemeistert." },
+        ]},
+      ],
+    },
   },
-  "Restaurant": {
-    primary: "#c45c26",
-    secondary: "#f4a261",
-    accent: "#e76f51",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+  Elegant: {
+    label: "Beauty & Wellness",
+    scheme: "elegant",
+    heroImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Studio Belle",
+      tagline: "Schönheit, die bewegt",
+      googleRating: 4.9,
+      googleReviewCount: 156,
+      sections: [
+        { type: "hero", headline: "Schönheit, die bewegt", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Termin buchen" },
+        { type: "services", headline: "Unsere Services", items: [
+          { title: "Haarpflege & Styling", description: "Von der klassischen Pflege bis zum modernen Statement-Look – wir bringen Ihren Stil zum Strahlen." },
+          { title: "Kosmetik & Gesichtspflege", description: "Professionelle Gesichtsbehandlungen mit hochwertigen Produkten für jugendlich frische Haut." },
+          { title: "Nägel & Maniküre", description: "Gepflegte Hände und perfekte Nägel – für jeden Anlass und jeden Stil." },
+        ]},
+        { type: "process", headline: "So funktioniert's", items: [
+          { step: "1", title: "Termin buchen", description: "Online oder telefonisch – wir finden den passenden Termin für Sie." },
+          { step: "2", title: "Beratung", description: "Wir besprechen Ihre Wünsche und erstellen einen individuellen Plan." },
+          { step: "3", title: "Genießen", description: "Entspannen Sie sich bei unseren professionellen Behandlungen." },
+        ]},
+        { type: "about", headline: "Unser Konzept", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Kundenstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
   },
-  "Handwerk": {
-    primary: "#4a5568",
-    secondary: "#bfa880",
-    accent: "#e2e8f0",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+  Clean: {
+    label: "Medizin & Praxis",
+    scheme: "clean",
+    heroImage: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Dr. med. Lena Hoffmann",
+      tagline: "Ihre Gesundheit in guten Händen",
+      googleRating: 4.8,
+      googleReviewCount: 94,
+      sections: [
+        { type: "hero", headline: "Ihre Gesundheit in guten Händen", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Termin vereinbaren" },
+        { type: "services", headline: "Leistungen", items: [
+          { title: "Allgemeinmedizin", description: "Umfassende Grundversorgung für die ganze Familie – von der Vorsorge bis zur akuten Behandlung." },
+          { title: "Check-up & Vorsorge", description: "Regelmäßige Gesundheitschecks erkennen Risiken früh und sichern Ihre Lebensqualität langfristig." },
+          { title: "Hausbesuche", description: "Für Patienten, die nicht mobil sind – wir kommen zu Ihnen nach Hause." },
+        ]},
+        { type: "process", headline: "Ablauf", items: [
+          { step: "1", title: "Termin vereinbaren", description: "Online oder telefonisch – wir finden einen passenden Termin." },
+          { step: "2", title: "Untersuchung", description: "Umfassende Diagnostik und persönliche Beratung." },
+          { step: "3", title: "Behandlung", description: "Individuelle Therapie nach neuesten medizinischen Standards." },
+        ]},
+        { type: "about", headline: "Über die Praxis", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Patientenstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
   },
-  "Beauty": {
-    primary: "#d4a5a5",
-    secondary: "#e8c4c4",
-    accent: "#f5e6e6",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+  Craft: {
+    label: "Tischler & Handwerk",
+    scheme: "craft",
+    heroImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Tischler Grünwald",
+      tagline: "Handwerk mit Seele",
+      googleRating: 4.9,
+      googleReviewCount: 112,
+      sections: [
+        { type: "hero", headline: "Handwerk mit Seele", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Angebot anfragen" },
+        { type: "services", headline: "Leistungen", items: [
+          { title: "Maßmöbel & Einbauküchen", description: "Jedes Möbelstück wird individuell für Sie geplant und gefertigt – Handarbeit vom Feinsten." },
+          { title: "Treppen & Böden", description: "Holztreppen und Parkettböden die Generationen überdauern. Verlegt mit Präzision und Leidenschaft." },
+          { title: "Renovierung & Restaurierung", description: "Alten Möbeln neues Leben einhauchen – wir restaurieren mit Respekt vor dem Original." },
+        ]},
+        { type: "process", headline: "So arbeiten wir", items: [
+          { step: "1", title: "Beratung", description: "Wir besprechen Ihre Ideen und erstellen eine detaillierte Planung." },
+          { step: "2", title: "Fertigung", description: "In unserer Werkstatt entsteht Ihr Maßwerk mit traditionellen Techniken." },
+          { step: "3", title: "Montage", description: "Fachgerechte Installation bei Ihnen vor Ort – sauber und präzise." },
+        ]},
+        { type: "about", headline: "Unsere Werkstatt", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Kundenstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
   },
-  "Gastronomie": {
-    primary: "#6b4e3d",
-    secondary: "#d4a574",
-    accent: "#f5e6d3",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+  Dynamic: {
+    label: "Fitness & Sport",
+    scheme: "dynamic",
+    heroImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Iron Forge Gym",
+      tagline: "Stärker werden. Jeden Tag.",
+      googleRating: 4.7,
+      googleReviewCount: 203,
+      sections: [
+        { type: "hero", headline: "Stärker werden. Jeden Tag.", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Training buchen" },
+        { type: "services", headline: "Angebote", items: [
+          { title: "Personal Training", description: "1:1-Betreuung mit unserem erfahrenen Trainer-Team – individuell auf Ihre Ziele abgestimmt." },
+          { title: "Gruppentraining", description: "Gemeinsam stärker: HIIT, CrossFit, Boxen und Yoga in energiegeladener Gruppenatmosphäre." },
+          { title: "Ernährungsberatung", description: "Die Basis für Ihren Erfolg: professionelle Ernährungspläne, die wirklich funktionieren." },
+        ]},
+        { type: "process", headline: "So starten Sie", items: [
+          { step: "1", title: "Probetraining", description: "Vereinbaren Sie ein kostenloses Probetraining und lernen Sie uns kennen." },
+          { step: "2", title: "Ziele definieren", description: "Gemeinsam erstellen wir einen individuellen Plan für Ihren Erfolg." },
+          { step: "3", title: "Durchstarten", description: "Beginnen Sie Ihre Transformation mit professioneller Unterstützung." },
+        ]},
+        { type: "about", headline: "Unsere Mission", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 06:00–23:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Mitgliederstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
   },
-  "Fitness": {
-    primary: "#2d3748",
-    secondary: "#4a6b6b",
-    accent: "#e2e8f0",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+  Fresh: {
+    label: "Café & Gastronomie",
+    scheme: "fresh",
+    heroImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Café Morgenrot",
+      tagline: "Frisch. Regional. Mit Liebe.",
+      googleRating: 4.8,
+      googleReviewCount: 178,
+      sections: [
+        { type: "hero", headline: "Frisch. Regional. Mit Liebe.", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Reservieren" },
+        { type: "services", headline: "Angebot", items: [
+          { title: "Frühstück & Brunch", description: "Hausgemachte Aufschnitte, regionale Bio-Eier und unser legendäres Sauerteigbrot – täglich ab 8 Uhr." },
+          { title: "Mittagstisch", description: "Täglich wechselnde Gerichte mit saisonalen Zutaten direkt von Bauern aus der Region." },
+          { title: "Catering & Events", description: "Für Ihre Veranstaltung liefern wir – von der Geburtstagsfeier bis zur Firmenveranstaltung." },
+        ]},
+        { type: "process", headline: "So funktioniert's", items: [
+          { step: "1", title: "Reservieren", description: "Rufen Sie uns an oder reservieren Sie online – wir halten Ihren Tisch bereit." },
+          { step: "2", title: "Genießen", description: "Entspannen Sie sich bei hausgemachten Köstlichkeiten in gemütlicher Atmosphäre." },
+          { step: "3", title: "Wiederkommen", description: "Lassen Sie sich von unserer Qualität überzeugen und werden Sie Stammgast." },
+        ]},
+        { type: "about", headline: "Unsere Philosophie", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–So: 08:00–20:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Gästestimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
   },
-  "Medizin": {
-    primary: "#64748b",
-    secondary: "#94a3b8",
-    accent: "#e8ded4",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+  Luxury: {
+    label: "Premium & Exklusiv",
+    scheme: "luxury",
+    heroImage: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Galerie Noir",
+      tagline: "Exzellenz ohne Kompromisse",
+      googleRating: 4.9,
+      googleReviewCount: 67,
+      sections: [
+        { type: "hero", headline: "Exzellenz ohne Kompromisse", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Termin vereinbaren" },
+        { type: "services", headline: "Services", items: [
+          { title: "Premium Beratung", description: "Diskrete Einzelberatung auf Einladung – für Kunden, die das Beste erwarten." },
+          { title: "Exklusive Objekte", description: "Kuratierte Auswahl seltener Stücke aus den renommiertesten Häusern Europas." },
+          { title: "Private Events", description: "Exklusive Abendveranstaltungen und Präsentationen für ausgewählte Gäste." },
+        ]},
+        { type: "process", headline: "So funktioniert's", items: [
+          { step: "1", title: "Anfrage", description: "Rufen Sie uns an oder senden Sie eine Nachricht – wir melden uns innerhalb von 24 Stunden." },
+          { step: "2", title: "Beratung", description: "Wir analysieren Ihre Situation und erarbeiten gemeinsam die optimale Lösung für Sie." },
+          { step: "3", title: "Ergebnis", description: "Lehnen Sie sich zurück – wir kümmern uns um alles und informieren Sie zu jedem Schritt." },
+        ]},
+        { type: "about", headline: "Über uns", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 10:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Kundenstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
   },
-  "IT": {
-    primary: "#1e3a5f",
-    secondary: "#9a8b7a",
-    accent: "#e8ded4",
-    background: "#fafafa",
-    surface: "#ffffff",
-    text: "#171717",
-    textLight: "#737373",
-    onPrimary: "#ffffff",
+  Modern: {
+    label: "IT & Agentur",
+    scheme: "modern",
+    heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Pixel & Code Agency",
+      tagline: "Digitale Lösungen die wirken",
+      googleRating: 4.8,
+      googleReviewCount: 89,
+      sections: [
+        { type: "hero", headline: "Digitale Lösungen die wirken", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Projekt starten" },
+        { type: "services", headline: "Services", items: [
+          { title: "Webdesign & Entwicklung", description: "Individuelle Websites und Web-Apps, die Ihre Marke perfekt repräsentieren und konvertieren." },
+          { title: "SEO & Performance", description: "Mehr Sichtbarkeit, mehr Besucher, mehr Kunden – datengetriebene Strategien mit messbaren Ergebnissen." },
+          { title: "Branding & Design", description: "Von der Visitenkarte bis zur kompletten Corporate Identity – wir schaffen Identitäten, die in Erinnerung bleiben." },
+        ]},
+        { type: "process", headline: "So arbeiten wir", items: [
+          { step: "1", title: "Kennenlernen", description: "Wir besprechen Ihre Ziele und Anforderungen in einem unverbindlichen Erstgespräch." },
+          { step: "2", title: "Konzeption", description: "Wir entwickeln eine maßgeschneiderte Strategie und präsentieren Ihnen unser Konzept." },
+          { step: "3", title: "Umsetzung", description: "Agile Entwicklung mit regelmäßigen Updates – bis zum perfekten Ergebnis." },
+        ]},
+        { type: "about", headline: "Über die Agentur", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Kundenstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
+  },
+  Natural: {
+    label: "Natur & Bio",
+    scheme: "natural",
+    heroImage: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Naturheilpraxis Waldquelle",
+      tagline: "Im Einklang mit der Natur",
+      googleRating: 4.8,
+      googleReviewCount: 134,
+      sections: [
+        { type: "hero", headline: "Im Einklang mit der Natur", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Beratung anfragen" },
+        { type: "services", headline: "Angebote", items: [
+          { title: "Naturheilkunde", description: "Ganzheitliche Therapieansätze, die den Menschen in seiner Einheit aus Körper, Geist und Seele sehen." },
+          { title: "Kräuterkunde", description: "Heilpflanzen in der Behandlung: traditionelles Wissen, modern angewendet." },
+          { title: "Entspannung", description: "Shiatsu, Aromatherapie und Meditation für innere Balance und nachhaltiges Wohlbefinden." },
+        ]},
+        { type: "process", headline: "So funktioniert's", items: [
+          { step: "1", title: "Anfrage", description: "Rufen Sie uns an oder senden Sie eine Nachricht – wir melden uns innerhalb von 24 Stunden." },
+          { step: "2", title: "Beratung", description: "Wir analysieren Ihre Situation und erarbeiten gemeinsam die optimale Lösung für Sie." },
+          { step: "3", title: "Ergebnis", description: "Lehnen Sie sich zurück – wir kümmern uns um alles und informieren Sie zu jedem Schritt." },
+        ]},
+        { type: "about", headline: "Unsere Philosophie", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Kundenstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
+  },
+  Premium: {
+    label: "Business & Consulting",
+    scheme: "trust",
+    heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Consulting Partners GmbH",
+      tagline: "Strategie trifft Wirkung",
+      googleRating: 4.9,
+      googleReviewCount: 45,
+      sections: [
+        { type: "hero", headline: "Strategie trifft Wirkung", subheadline: "Professionell, zuverlässig und immer für Sie da – vereinbaren Sie noch heute Ihren Termin.", ctaText: "Kontakt aufnehmen" },
+        { type: "services", headline: "Services", items: [
+          { title: "Unternehmensberatung", description: "Strategische Weiterentwicklung, Prozessoptimierung und Change Management für nachhaltiges Wachstum." },
+          { title: "M&A Advisory", description: "Diskreter Begleiter bei Unternehmenstransaktionen – von der Due Diligence bis zum Closing." },
+          { title: "Executive Coaching", description: "Individuelle Führungskräfteentwicklung für Top-Manager und Geschäftsführer." },
+        ]},
+        { type: "process", headline: "So funktioniert's", items: [
+          { step: "1", title: "Anfrage", description: "Rufen Sie uns an oder senden Sie eine Nachricht – wir melden uns innerhalb von 24 Stunden." },
+          { step: "2", title: "Beratung", description: "Wir analysieren Ihre Situation und erarbeiten gemeinsam die optimale Lösung für Sie." },
+          { step: "3", title: "Ergebnis", description: "Lehnen Sie sich zurück – wir kümmern uns um alles und informieren Sie zu jedem Schritt." },
+        ]},
+        { type: "about", headline: "Unsere Expertise", content: "Mit jahrelanger Erfahrung und echtem Herzblut für unsere Arbeit stehen wir für Qualität, die man spürt. Unser Team aus erfahrenen Fachleuten ist täglich mit Leidenschaft für Sie im Einsatz." },
+        { type: "contact", headline: "Kontakt", items: [
+          { icon: "MapPin", description: "Hauptstraße 42, 80331 München" },
+          { icon: "Phone", description: "+49 89 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Kundenstimmen", items: [
+          { author: "Maria S.", rating: 5, description: "Einfach toll! Kompetente Beratung und ein hervorragendes Ergebnis. Sehr empfehlenswert." },
+          { author: "Klaus H.", rating: 5, description: "Professionell von Anfang bis Ende. Ich bin sehr zufrieden und komme gerne wieder." },
+          { author: "Anna B.", rating: 4, description: "Tolle Arbeit, schnelle Umsetzung. Meine Erwartungen wurden vollständig erfüllt." },
+        ]},
+      ],
+    },
   },
 };
 
-const getIndustryColorScheme = (industry: string): ColorScheme => {
-  return INDUSTRY_COLOR_SCHEMES[industry] || INDUSTRY_COLOR_SCHEMES["Beauty & Wellness"];
+// Get color scheme from predefined list
+const getColorScheme = (schemeId: string): ColorScheme => {
+  const scheme = PREDEFINED_COLOR_SCHEMES.find(s => s.id === schemeId);
+  return scheme?.colors || PREDEFINED_COLOR_SCHEMES[0].colors;
 };
 
-// Mock website data for previews
-const createMockWebsiteData = (name: string, industry: string) => ({
-  business: {
-    name,
-    category: industry,
-    address: "Musterstraße 123, 12345 Musterstadt",
-    phone: "+49 123 456789",
-    email: "info@example.de",
-  },
-  hero: {
-    headline: name,
-    subheadline: "Professionelle Dienstleistungen für Sie",
-    description: "Wir bieten erstklassige Qualität und Service, der überzeugt. Kontaktieren Sie uns für ein unverbindliches Angebot.",
-    ctaText: "Jetzt Termin vereinbaren",
-    ctaLink: "#contact",
-  },
-  about: {
-    text: "Seit über 10 Jahren sind wir Ihr verlässlicher Partner. Unser erfahrenes Team steht Ihnen mit Kompetenz und Engagement zur Seite.",
-    usp: ["Qualitätsgarantie", "Persönliche Beratung", "Faire Preise"],
-  },
-  services: {
-    headline: "Unsere Leistungen",
-    items: [
-      { title: "Beratung", description: "Individuelle Beratung nach Ihren Bedürfnissen", icon: "star" },
-      { title: "Service", description: "Schneller und zuverlässiger Service", icon: "zap" },
-      { title: "Support", description: "Rund um die Uhr für Sie da", icon: "phone" },
-    ],
-  },
-  sections: [
-    { type: "hero", headline: name, subheadline: "Professionelle Dienstleistungen" },
-    { type: "about", text: "Über uns Text..." },
-    { type: "services", headline: "Leistungen" },
-    { type: "process", headline: "So funktioniert's", items: [
-      { step: "1", title: "Anfrage", description: "Beschreiben Sie Ihr Projekt" },
-      { step: "2", title: "Planung", description: "Wir erstellen ein Konzept" },
-      { step: "3", title: "Umsetzung", description: "Professionelle Durchführung" },
-    ]},
-    { type: "cta", headline: "Bereit zu starten?", content: "Kontaktieren Sie uns jetzt" },
-  ],
-});
-
+// Website examples - all 10 layouts
 const websiteExamples = [
-  { name: "Friseur Studio", industry: "Beauty & Wellness", layout: "Elegant" as const },
-  { name: "Pizzeria Napoli", industry: "Restaurant", layout: "Bold" as const },
-  { name: "Bauunternehmen", industry: "Handwerk", layout: "Craft" as const },
-  { name: "Beauty Lounge", industry: "Beauty", layout: "Luxury" as const },
-  { name: "Café Central", industry: "Gastronomie", layout: "Fresh" as const },
-  { name: "Fitness Studio", industry: "Fitness", layout: "Dynamic" as const },
-  { name: "Arztpraxis", industry: "Medizin", layout: "Clean" as const },
-  { name: "Agentur", industry: "IT", layout: "Modern" as const },
+  { layout: "Bold" as const },
+  { layout: "Elegant" as const },
+  { layout: "Clean" as const },
+  { layout: "Craft" as const },
+  { layout: "Dynamic" as const },
+  { layout: "Fresh" as const },
+  { layout: "Luxury" as const },
+  { layout: "Modern" as const },
+  { layout: "Natural" as const },
+  { layout: "Premium" as const },
 ];
 
 // Live Preview Component with Autoscroll
 interface LivePreviewCardProps {
-  name: string;
-  industry: string;
   layout: keyof typeof LAYOUT_COMPONENTS;
   delay?: number;
 }
 
-const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardProps) => {
+const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
   const previewRef = useRef<HTMLDivElement>(null);
-  const colorScheme = getIndustryColorScheme(industry);
+  const config = LAYOUT_CONFIG[layout];
+  const colorScheme = getColorScheme(config.scheme);
   const [isHovering, setIsHovering] = useState(false);
   const scrollPositionRef = useRef(0);
   const animationRef = useRef<number>();
 
   const LayoutComponent = LAYOUT_COMPONENTS[layout] || PremiumLayoutV2;
-  const websiteData = createMockWebsiteData(name, industry);
+
+  // Smooth scroll back to top when mouse leaves
+  const scrollToTop = useCallback(() => {
+    if (!previewRef.current) return;
+    
+    const element = previewRef.current;
+    const startPosition = element.scrollTop;
+    const duration = 800; // ms
+    const startTime = performance.now();
+    
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    
+    const animateScroll = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = easeOutCubic(progress);
+      
+      element.scrollTop = startPosition * (1 - easeProgress);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
+      } else {
+        scrollPositionRef.current = 0;
+      }
+    };
+    
+    requestAnimationFrame(animateScroll);
+  }, []);
 
   const startAutoScroll = useCallback(() => {
     if (!previewRef.current) return;
@@ -624,6 +890,8 @@ const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardP
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      // Scroll back to top when mouse leaves
+      scrollToTop();
     }
     
     return () => {
@@ -631,7 +899,7 @@ const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardP
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isHovering, startAutoScroll]);
+  }, [isHovering, startAutoScroll, scrollToTop]);
 
   return (
     <motion.div
@@ -660,9 +928,9 @@ const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardP
             }}
           >
             <LayoutComponent 
-              websiteData={websiteData} 
+              websiteData={config.data} 
               cs={colorScheme}
-              heroImageUrl="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80"
+              heroImageUrl={config.heroImage}
               isLoading={false}
             />
           </div>
@@ -695,8 +963,8 @@ const LivePreviewCard = ({ name, industry, layout, delay = 0 }: LivePreviewCardP
       {/* Info */}
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="text-white font-semibold group-hover:text-indigo-300 transition-colors">{name}</h4>
-          <p className="text-white/50 text-sm">{industry}</p>
+          <h4 className="text-white font-semibold group-hover:text-indigo-300 transition-colors">{config.data.businessName}</h4>
+          <p className="text-white/50 text-sm">{config.label}</p>
         </div>
         <div className="flex gap-1">
           <div 
@@ -779,7 +1047,7 @@ const WebsiteShowcase = () => {
             transition={{ delay: 0.2 }}
             className="text-white/60 mt-3 text-sm"
           >
-            Hover über die Vorschau, um die Animation zu sehen. Jedes Layout hat zufällige Farben.
+            Alle 10 Premium-Layouts mit branchenspezifischen Farben. Hover für Autoscroll.
           </motion.p>
         </div>
         
@@ -821,8 +1089,6 @@ const WebsiteShowcase = () => {
         {websiteExamples.map((site, i) => (
           <LivePreviewCard
             key={i}
-            name={site.name}
-            industry={site.industry}
             layout={site.layout}
             delay={i * 0.1}
           />
