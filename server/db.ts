@@ -59,6 +59,25 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createUser(data: Omit<InsertUser, 'id'>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(users).values(data);
+}
+
+export async function updateUser(id: number, data: Partial<InsertUser>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set(data).where(eq(users.id, id));
+}
+
 // ── Businesses ─────────────────────────────────────────
 export async function createBusiness(data: InsertBusiness) {
   const db = await getDb();
