@@ -483,7 +483,7 @@ const LAYOUT_CONFIG: Record<string, {
   },
   Elegant: {
     label: "Beauty & Wellness",
-    scheme: "elegant",
+    scheme: "fresh",
     heroImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&q=80&fit=crop",
     data: {
       businessName: "Studio Belle",
@@ -518,7 +518,7 @@ const LAYOUT_CONFIG: Record<string, {
   },
   Clean: {
     label: "Medizin & Praxis",
-    scheme: "clean",
+    scheme: "natural",
     heroImage: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600&q=80&fit=crop",
     data: {
       businessName: "Dr. med. Lena Hoffmann",
@@ -623,7 +623,7 @@ const LAYOUT_CONFIG: Record<string, {
   },
   Fresh: {
     label: "Café & Gastronomie",
-    scheme: "fresh",
+    scheme: "warm",
     heroImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=80&fit=crop",
     data: {
       businessName: "Café Morgenrot",
@@ -693,7 +693,7 @@ const LAYOUT_CONFIG: Record<string, {
   },
   Modern: {
     label: "IT & Agentur",
-    scheme: "modern",
+    scheme: "monochrome",
     heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop",
     data: {
       businessName: "Pixel & Code Agency",
@@ -728,7 +728,7 @@ const LAYOUT_CONFIG: Record<string, {
   },
   Natural: {
     label: "Natur & Bio",
-    scheme: "natural",
+    scheme: "elegant",
     heroImage: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=80&fit=crop",
     data: {
       businessName: "Naturheilpraxis Waldquelle",
@@ -763,7 +763,7 @@ const LAYOUT_CONFIG: Record<string, {
   },
   Premium: {
     label: "Business & Consulting",
-    scheme: "warm",
+    scheme: "vibrant",
     heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop",
     data: {
       businessName: "Consulting Partners GmbH",
@@ -915,7 +915,7 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
         {/* Live Website Preview - scaled to fit */}
         <div 
           ref={previewRef}
-          className="absolute inset-0 overflow-auto scrollbar-hide"
+          className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide"
           style={{ scrollBehavior: "auto" }}
         >
           <div 
@@ -924,7 +924,10 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
               transform: "scale(0.28)", 
               transformOrigin: "top left",
               width: "357%",
-              height: "357%",
+              maxWidth: "357%",
+              height: "auto",
+              minHeight: "357%",
+              overflowX: "hidden",
             }}
           >
             <LayoutComponent 
