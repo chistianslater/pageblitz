@@ -23,22 +23,26 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import LayoutOverviewPage from "./pages/LayoutOverviewPage";
 import LayoutPreviewStandalone from "./pages/LayoutPreviewStandalone";
 import LoginPage from "./pages/LoginPage";
+import CustomerLoginPage from "./pages/CustomerLoginPage";
+import { AdminRoute, CustomerRoute } from "./components/ProtectedRoute";
 
 function AdminRouter() {
   return (
-    <DashboardLayout>
-      <Switch>
-        <Route path="/admin" component={Home} />
-        <Route path="/admin/search" component={SearchPage} />
-        <Route path="/admin/websites" component={WebsitesPage} />
-        <Route path="/admin/outreach" component={OutreachPage} />
-        <Route path="/admin/stats" component={StatsPage} />
-        <Route path="/admin/templates" component={TemplatesPage} />
-        <Route path="/admin/leads" component={LeadsPage} />
-        <Route path="/admin/layouts" component={LayoutOverviewPage} />
-        <Route component={NotFound} />
-      </Switch>
-    </DashboardLayout>
+    <AdminRoute>
+      <DashboardLayout>
+        <Switch>
+          <Route path="/admin" component={Home} />
+          <Route path="/admin/search" component={SearchPage} />
+          <Route path="/admin/websites" component={WebsitesPage} />
+          <Route path="/admin/outreach" component={OutreachPage} />
+          <Route path="/admin/stats" component={StatsPage} />
+          <Route path="/admin/templates" component={TemplatesPage} />
+          <Route path="/admin/leads" component={LeadsPage} />
+          <Route path="/admin/layouts" component={LayoutOverviewPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </DashboardLayout>
+    </AdminRoute>
   );
 }
 
@@ -53,8 +57,13 @@ function Router() {
       <Route path="/site/:slug/datenschutz" component={LegalPage} />
       <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
-      <Route path="/my-website" component={CustomerDashboard} />
-      <Route path="/login" component={LoginPage} />
+      <Route path="/my-website">
+        <CustomerRoute>
+          <CustomerDashboard />
+        </CustomerRoute>
+      </Route>
+      <Route path="/login" component={CustomerLoginPage} />
+      <Route path="/admin-login" component={LoginPage} />
       <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
       <Route path="/admin">
         <AdminRouter />
