@@ -1,43 +1,22 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Chrome, Mail, ArrowRight } from "lucide-react";
+import { Zap, Mail, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 
-interface ProviderButtonProps {
-  name: string;
-  icon: React.ReactNode;
-  color: string;
-  onClick: () => void;
-  loading?: boolean;
-}
-
-function ProviderButton({ name, icon, color, onClick, loading }: ProviderButtonProps) {
-  return (
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      disabled={loading}
-      className={`w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-all ${color} disabled:opacity-50 disabled:cursor-not-allowed`}
-    >
-      {loading ? (
-        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-      ) : (
-        icon
-      )}
-      <span>Mit {name} anmelden</span>
-    </motion.button>
-  );
-}
-
 export default function UserLoginPage() {
-  const [loading, setLoading] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [, navigate] = useLocation();
 
-  const handleLogin = async (provider: string) => {
-    setLoading(provider);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setLoading(true);
     setError(null);
 
     try {
@@ -45,19 +24,24 @@ export default function UserLoginPage() {
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get("redirect") || "/my-website";
 
-      const res = await fetch(`/api/auth/login-url?provider=${provider}&redirect=${encodeURIComponent(redirect)}`);
+      const res = await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), redirect }),
+      });
+
       const data = await res.json();
 
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || "Failed to get login URL");
+      if (!res.ok) {
+        throw new Error(data.error || "Fehler beim Senden des Links");
       }
 
-      // Redirect to OAuth server
-      window.location.href = data.url;
+      setSent(true);
     } catch (err) {
-      console.error("[Login] Failed to initiate login:", err);
-      setError("Login konnte nicht gestartet werden. Bitte versuche es erneut.");
-      setLoading(null);
+      console.error("[Login] Failed to send magic link:", err);
+      setError("Link konnte nicht gesendet werden. Bitte versuche es erneut.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,37 +91,71 @@ export default function UserLoginPage() {
             </motion.div>
           )}
 
-          <div className="space-y-3">
-            {/* Google */}
-            <ProviderButton
-              name="Google"
-              icon={<Chrome className="w-5 h-5" />}
-              color="bg-white text-gray-900 hover:bg-gray-100"
-              onClick={() => handleLogin("google")}
-              loading={loading === "google"}
-            />
-
-            {/* Divider */}
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
+          {sent ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-4"
+            >
+              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 bg-[#0a0a0a] text-xs text-white/40 uppercase tracking-wider">
-                  oder
-                </span>
+              <h3 className="text-lg font-medium text-white mb-2">Link gesendet!</h3>
+              <p className="text-sm text-white/60 mb-4">
+                Wir haben dir einen sicheren Login-Link an<br />
+                <span className="text-white font-medium">{email}</span><br />
+                gesendet. Klicke auf den Link, um dich einzuloggen.
+              </p>
+              <p className="text-xs text-white/40">
+                Keine E-Mail erhalten? Prüfe deinen Spam-Ordner oder{" "}
+                <button
+                  onClick={() => { setSent(false); setEmail(""); }}
+                  className="text-indigo-400 hover:text-indigo-300 underline"
+                >
+                  versuche es erneut
+                </button>
+              </p>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
+                  E-Mail-Adresse
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="deine@email.de"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-10 bg-white/[0.05] border-white/10 text-white placeholder:text-white/30 focus:border-indigo-500"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Email (coming soon) */}
-            <ProviderButton
-              name="E-Mail"
-              icon={<Mail className="w-5 h-5" />}
-              color="bg-white/[0.05] text-white border border-white/10 hover:bg-white/[0.08]"
-              onClick={() => navigate("/forgot-password")}
-              loading={false}
-            />
-          </div>
+              <Button
+                type="submit"
+                disabled={loading || !email.trim()}
+                className="w-full bg-white text-black hover:bg-gray-100 font-medium py-3 h-auto rounded-xl"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Login-Link senden
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+
+              <p className="text-xs text-white/40 text-center">
+                Wir senden dir einen sicheren Link – kein Passwort nötig.
+              </p>
+            </form>
+          )}
 
           {/* Admin Link */}
           <div className="mt-8 pt-6 border-t border-white/10">

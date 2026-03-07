@@ -16,6 +16,19 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+// Magic links for passwordless login
+export const magicLinks = mysqlTable("magic_links", {
+  id: int("id").autoincrement().primaryKey(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull(),
+  used: boolean("used").default(false).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MagicLink = typeof magicLinks.$inferSelect;
+export type InsertMagicLink = typeof magicLinks.$inferInsert;
+
 export const businesses = mysqlTable("businesses", {
   id: int("id").autoincrement().primaryKey(),
   placeId: varchar("placeId", { length: 255 }).unique(),
@@ -100,112 +113,114 @@ export type InsertSubscription = typeof subscriptions.$inferInsert;
 export const onboardingResponses = mysqlTable("onboarding_responses", {
   id: int("id").autoincrement().primaryKey(),
   websiteId: int("websiteId").notNull().unique(),
-  status: mysqlEnum("status", ["pending", "in_progress", "completed"]).notNull().default("pending"),
-  stepCurrent: int("stepCurrent").notNull().default(0),
-  // Business info
-  businessCategory: varchar("businessCategory", { length: 255 }),
-  businessName: varchar("businessName", { length: 255 }),
-  tagline: varchar("tagline", { length: 255 }),
+  businessName: varchar("businessName", { length: 500 }),
+  tagline: text("tagline"),
   description: text("description"),
-  foundedYear: int("foundedYear"),
-  teamSize: varchar("teamSize", { length: 50 }),
-  // USP & services
   usp: text("usp"),
-  topServices: json("topServices"), // [{ title, description }]
   targetAudience: text("targetAudience"),
-  faqItems: json("faqItems"), // [{ question, answer }]
-  // Media
-  logoUrl: varchar("logoUrl", { length: 1024 }),
+  // Services as JSON array: [{title, description}]
+  topServices: json("topServices"),
+  topServicesSkipped: boolean("topServicesSkipped").default(false),
+  // Selected color scheme
+  colorScheme: json("colorScheme"),
+  // Branding
+  brandLogo: text("brandLogo"),
+  headlineFont: varchar("headlineFont", { length: 100 }),
+  headlineSize: varchar("headlineSize", { length: 20 }),
+  // Photos
+  logoUrl: text("logoUrl"),
+  photoUrls: json("photoUrls"),
   heroPhotoUrl: text("heroPhotoUrl"),
   aboutPhotoUrl: text("aboutPhotoUrl"),
-  photoUrls: json("photoUrls"), // string[]
-  // Legal data
-  legalOwner: varchar("legalOwner", { length: 255 }),
-  legalStreet: varchar("legalStreet", { length: 255 }),
+  // Legal information
+  legalOwner: varchar("legalOwner", { length: 500 }),
+  legalStreet: varchar("legalStreet", { length: 500 }),
   legalZip: varchar("legalZip", { length: 20 }),
-  legalCity: varchar("legalCity", { length: 255 }),
-  legalCountry: varchar("legalCountry", { length: 100 }).default("Deutschland"),
-  legalEmail: varchar("legalEmail", { length: 255 }),
-  legalPhone: varchar("legalPhone", { length: 100 }),
-  legalVatId: varchar("legalVatId", { length: 100 }),
-  legalRegister: varchar("legalRegister", { length: 255 }),
-  legalRegisterCourt: varchar("legalRegisterCourt", { length: 255 }),
-  legalResponsible: varchar("legalResponsible", { length: 255 }),
-  // Brand colors
-  brandColor: varchar("brandColor", { length: 20 }),
-  brandSecondaryColor: varchar("brandSecondaryColor", { length: 20 }),
-  colorScheme: json("colorScheme"),
-  headlineFont: varchar("headlineFont", { length: 100 }),
-  // Add-ons
+  legalCity: varchar("legalCity", { length: 100 }),
+  legalCountry: varchar("legalCountry", { length: 100 }),
+  legalEmail: varchar("legalEmail", { length: 320 }),
+  legalPhone: varchar("legalPhone", { length: 50 }),
+  legalVatId: varchar("legalVatId", { length: 50 }),
+  legalRegister: varchar("legalRegister", { length: 100 }),
+  legalRegisterCourt: varchar("legalRegisterCourt", { length: 100 }),
+  legalResponsible: varchar("legalResponsible", { length: 500 }),
+  // Add-ons selected
   addOnContactForm: boolean("addOnContactForm").default(false),
   addOnGallery: boolean("addOnGallery").default(false),
   addOnMenu: boolean("addOnMenu").default(false),
-  addOnMenuData: json("addOnMenuData"), // { categories: [{ name, items: [{ name, price, description }] }] }
   addOnPricelist: boolean("addOnPricelist").default(false),
-  addOnPricelistData: json("addOnPricelistData"), // { categories: [{ name, items: [{ name, price }] }] }
-  addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
-  completedAt: bigint("completedAt", { mode: "number" }),
-  createdAt: bigint("createdAt", { mode: "number" }).notNull(),
-  updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
+  addOnMenuData: json("addOnMenuData"),
+  addOnPricelistData: json("addOnPricelistData"),
+  // Onboarding state
+  stepCurrent: int("stepCurrent").default(0),
+  status: mysqlEnum("status", ["in_progress", "completed", "abandoned"]).default("in_progress"),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
-
 export type OnboardingResponse = typeof onboardingResponses.$inferSelect;
 export type InsertOnboardingResponse = typeof onboardingResponses.$inferInsert;
 
 export const outreachEmails = mysqlTable("outreach_emails", {
   id: int("id").autoincrement().primaryKey(),
   businessId: int("businessId").notNull(),
-  websiteId: int("websiteId"),
-  recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
-  subject: varchar("subject", { length: 500 }).notNull(),
-  body: text("body"),
-  status: mysqlEnum("status", ["draft", "sent", "opened", "replied", "bounced"]).default("draft").notNull(),
+  emailType: mysqlEnum("emailType", ["initial", "followup1", "followup2", "final"]).notNull(),
+  status: mysqlEnum("status", ["pending", "sent", "failed", "bounced", "replied"]).default("pending"),
   sentAt: timestamp("sentAt"),
+  subject: text("subject"),
+  body: text("body"),
+  errorMessage: text("errorMessage"),
+  openedAt: timestamp("openedAt"),
+  clickedAt: timestamp("clickedAt"),
+  repliedAt: timestamp("repliedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
-
 export type OutreachEmail = typeof outreachEmails.$inferSelect;
 export type InsertOutreachEmail = typeof outreachEmails.$inferInsert;
 
+export const emailTemplates = mysqlTable("email_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  type: mysqlEnum("type", ["outreach", "followup", "notification"]).notNull(),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+
+// Template uploads for layout images
 export const templateUploads = mysqlTable("template_uploads", {
   id: int("id").autoincrement().primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  industry: varchar("industry", { length: 100 }).notNull().default("other"),
-  industries: text("industries"),
-  layoutPool: varchar("layoutPool", { length: 50 }).notNull().default("clean"),
-  aiIndustries: text("aiIndustries"),
-  aiLayoutPool: varchar("aiLayoutPool", { length: 50 }),
-  aiConfidence: varchar("aiConfidence", { length: 20 }),
-  aiReason: text("aiReason"),
-  status: varchar("status", { length: 20 }).notNull().default("pending"),
-  imageUrl: text("imageUrl").notNull(),
-  fileKey: varchar("fileKey", { length: 500 }).notNull(),
-  notes: text("notes"),
+  industry: varchar("industry", { length: 100 }).notNull(),
+  pool: varchar("pool", { length: 50 }).notNull(), // "hero", "about", "gallery"
+  url: text("url").notNull(),
+  storageKey: varchar("storageKey", { length: 500 }),
+  originalName: varchar("originalName", { length: 255 }),
+  mimeType: varchar("mimeType", { length: 100 }),
+  size: int("size"),
+  isActive: boolean("isActive").default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
-
 export type TemplateUpload = typeof templateUploads.$inferSelect;
 export type InsertTemplateUpload = typeof templateUploads.$inferInsert;
 
-export const layoutCounters = mysqlTable("layout_counters", {
-  industryKey: varchar("industryKey", { length: 100 }).primaryKey(),
-  counter: int("counter").notNull().default(0),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type LayoutCounter = typeof layoutCounters.$inferSelect;
-export type InsertLayoutCounter = typeof layoutCounters.$inferInsert;
-
+// Generation jobs for tracking long-running tasks
 export const generationJobs = mysqlTable("generation_jobs", {
   id: int("id").autoincrement().primaryKey(),
-  websiteId: int("websiteId").notNull(),
-  status: mysqlEnum("status", ["pending", "processing", "completed", "failed"]).default("pending").notNull(),
-  progress: int("progress").default(0).notNull(), // 0-100
-  result: json("result"), // { success: boolean, alreadyGenerated: boolean }
-  error: text("error"),
+  websiteId: int("websiteId"),
+  jobType: mysqlEnum("jobType", ["website", "onboarding", "batch"]).notNull(),
+  status: mysqlEnum("status", ["pending", "running", "completed", "failed"]).default("pending"),
+  progress: int("progress").default(0),
+  totalSteps: int("totalSteps").default(0),
+  currentStep: text("currentStep"),
+  errorMessage: text("errorMessage"),
+  result: json("result"),
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
-
 export type GenerationJob = typeof generationJobs.$inferSelect;
 export type InsertGenerationJob = typeof generationJobs.$inferInsert;

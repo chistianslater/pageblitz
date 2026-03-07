@@ -4,10 +4,38 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { ENV } from "./env";
+import { randomBytes } from "crypto";
+import { notifyOwner } from "./notification";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
   return typeof value === "string" ? value : undefined;
+}
+
+/**
+ * Generate a secure random token
+ */
+function generateToken(): string {
+  return randomBytes(32).toString("hex");
+}
+
+/**
+ * Send magic link email
+ */
+async function sendMagicLinkEmail(email: string, token: string, redirectPath: string): Promise<void> {
+  const baseUrl = ENV.isProduction ? "https://pageblitz.de" : "http://localhost:3000";
+  const magicLink = `${baseUrl}/api/auth/magic?token=${token}&redirect=${encodeURIComponent(redirectPath)}`;
+  
+  // For now, just log it (in production, send via email service)
+  console.log(`
+========================================
+MAGIC LINK for ${email}:
+${magicLink}
+========================================
+  `);
+  
+  // TODO: Send actual email via Resend or other service
+  // await sendEmail({ to: email, subject: "Login zu Pageblitz", body: magicLink });
 }
 
 /**
@@ -37,9 +65,15 @@ export function registerOAuthRoutes(app: Express) {
     const redirect = getQueryParam(req, "redirect") || "/my-website";
     
     // Validate provider
-    const validProviders = ["google", "microsoft", "apple", "github", "email"];
+    const validProviders = ["google", "microsoft", "apple", "github", "magic_link"];
     if (!validProviders.includes(provider)) {
       res.status(400).json({ error: "Invalid provider" });
+      return;
+    }
+    
+    // Magic link uses internal flow, not OAuth
+    if (provider === "magic_link") {
+      res.json({ provider: "magic_link", redirect });
       return;
     }
     
@@ -49,6 +83,117 @@ export function registerOAuthRoutes(app: Express) {
     } catch (error) {
       console.error("[OAuth] Failed to build login URL:", error);
       res.status(500).json({ error: "Failed to generate login URL" });
+    }
+  });
+
+  /**
+   * POST /api/auth/magic-link
+   * Send magic link to user's email
+   */
+  app.post("/api/auth/magic-link", async (req: Request, res: Response) => {
+    const { email, redirect } = req.body;
+    
+    if (!email || typeof email !== "string") {
+      res.status(400).json({ error: "Email is required" });
+      return;
+    }
+    
+    try {
+      // Generate token
+      const token = generateToken();
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
+      
+      // Save to database
+      await db.createMagicLink({
+        token,
+        email: email.toLowerCase().trim(),
+        expiresAt,
+        used: false,
+      });
+      
+      // Send email
+      await sendMagicLinkEmail(email, token, redirect || "/my-website");
+      
+      res.json({ success: true, message: "Magic link sent" });
+    } catch (error) {
+      console.error("[Magic Link] Failed to send:", error);
+      res.status(500).json({ error: "Failed to send magic link" });
+    }
+  });
+
+  /**
+   * GET /api/auth/magic
+   * Verify magic link token and log user in
+   */
+  app.get("/api/auth/magic", async (req: Request, res: Response) => {
+    const token = getQueryParam(req, "token");
+    const redirect = getQueryParam(req, "redirect") || "/my-website";
+    
+    if (!token) {
+      res.status(400).json({ error: "Token is required" });
+      return;
+    }
+    
+    try {
+      // Get magic link from database
+      const magicLink = await db.getMagicLinkByToken(token);
+      
+      if (!magicLink) {
+        res.status(400).json({ error: "Invalid token" });
+        return;
+      }
+      
+      if (magicLink.used) {
+        res.status(400).json({ error: "Link already used" });
+        return;
+      }
+      
+      if (new Date() > new Date(magicLink.expiresAt)) {
+        res.status(400).json({ error: "Link expired" });
+        return;
+      }
+      
+      // Mark as used
+      await db.markMagicLinkUsed(magicLink.id);
+      
+      // Create or get user
+      const openId = `email:${magicLink.email}`;
+      let user = await db.getUserByOpenId(openId);
+      
+      if (!user) {
+        // Create new user
+        await db.createUser({
+          openId,
+          email: magicLink.email,
+          name: null,
+          loginMethod: "magic_link",
+          lastSignedIn: new Date(),
+        });
+        user = await db.getUserByOpenId(openId);
+      } else {
+        // Update last signed in
+        await db.updateUser(user.id, { lastSignedIn: new Date() });
+      }
+      
+      if (!user) {
+        res.status(500).json({ error: "Failed to create/get user" });
+        return;
+      }
+      
+      // Create session
+      const sessionToken = await sdk.createSessionToken(user.openId, {
+        name: user.name || user.email || "",
+        expiresInMs: ONE_YEAR_MS,
+      });
+      
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      
+      res.redirect(302, redirect);
+    } catch (error) {
+      console.error("[Magic Link] Verification failed:", error);
+      res.status(500).json({ error: "Magic link verification failed" });
     }
   });
 
