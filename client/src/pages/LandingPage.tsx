@@ -798,10 +798,134 @@ const LAYOUT_CONFIG: Record<string, {
   },
 };
 
-// Get color scheme from predefined list
+// Extended color schemes with all 10 unique palettes
+const EXTENDED_COLOR_SCHEMES: Record<string, ColorScheme> = {
+  // 1. Preußisch Blau - Bold (Bau)
+  trust: {
+    primary: "#1B3D6F",
+    secondary: "#0D2140",
+    accent: "#C9A43A",
+    background: "#ffffff",
+    surface: "#F7F9FC",
+    text: "#0D1B2A",
+    textLight: "#64748b",
+    onPrimary: "#ffffff",
+  },
+  // 2. Terracotta - Fresh (Gastronomie)
+  warm: {
+    primary: "#B44D1F",
+    secondary: "#3D1A0A",
+    accent: "#C4956A",
+    background: "#FEFCFA",
+    surface: "#F5EDE0",
+    text: "#1E1208",
+    textLight: "#7A6A56",
+    onPrimary: "#ffffff",
+  },
+  // 3. Champagner - Elegant (Beauty)
+  elegant: {
+    primary: "#967B5C",
+    secondary: "#1A1511",
+    accent: "#F0EBE3",
+    background: "#FDFBF8",
+    surface: "#F7F3EE",
+    text: "#1A1511",
+    textLight: "#7A7065",
+    onPrimary: "#ffffff",
+  },
+  // 4. Grafitmodern - Modern (IT) - DARK
+  modern: {
+    primary: "#bef264",
+    secondary: "#0a0a0a",
+    accent: "#ffffff",
+    background: "#050505",
+    surface: "#121212",
+    text: "#ffffff",
+    textLight: "rgba(255,255,255,0.6)",
+    onPrimary: "#0a0a0a",
+  },
+  // 5. Schwarz-Weiß - Premium (Business)
+  monochrome: {
+    primary: "#1a1a1a",
+    secondary: "#000000",
+    accent: "#666666",
+    background: "#ffffff",
+    surface: "#f5f5f5",
+    text: "#1a1a1a",
+    textLight: "#6b7280",
+    onPrimary: "#ffffff",
+  },
+  // 6. Deep Purple - Dynamic (Fitness)
+  dynamic: {
+    primary: "#4c1d95",
+    secondary: "#1e1b4b",
+    accent: "#c4b5a0",
+    background: "#0f0a1a",
+    surface: "#1e1b4b",
+    text: "#fafafa",
+    textLight: "rgba(250,250,250,0.6)",
+    onPrimary: "#ffffff",
+  },
+  // 7. Slate Blue - Clean (Medizin)
+  clean: {
+    primary: "#475569",
+    secondary: "#f1f5f9",
+    accent: "#be7c7c",
+    background: "#ffffff",
+    surface: "#f8fafc",
+    text: "#0f172a",
+    textLight: "#64748b",
+    onPrimary: "#ffffff",
+  },
+  // 8. Dark Charcoal - Luxury (Premium)
+  luxury: {
+    primary: "#1c1917",
+    secondary: "#292524",
+    accent: "#b87333",
+    background: "#1c1917",
+    surface: "#292524",
+    text: "#fafaf9",
+    textLight: "rgba(250,250,249,0.6)",
+    onPrimary: "#ffffff",
+  },
+  // 9. Stone/Warm - Craft (Handwerk)
+  craft: {
+    primary: "#78716c",
+    secondary: "#292524",
+    accent: "#a0522d",
+    background: "#fafaf9",
+    surface: "#f5f5f4",
+    text: "#292524",
+    textLight: "#78716c",
+    onPrimary: "#ffffff",
+  },
+  // 10. Blue-gray - Natural (Natur)
+  natural: {
+    primary: "#64748b",
+    secondary: "#f8fafc",
+    accent: "#d4a574",
+    background: "#ffffff",
+    surface: "#f8fafc",
+    text: "#334155",
+    textLight: "#64748b",
+    onPrimary: "#ffffff",
+  },
+  // 11. Deep Red - Premium (Business)
+  vibrant: {
+    primary: "#9f1239",
+    secondary: "#881337",
+    accent: "#fda4af",
+    background: "#fff1f2",
+    surface: "#ffe4e6",
+    text: "#881337",
+    textLight: "#9f1239",
+    onPrimary: "#ffffff",
+  },
+};
+
+// Get color scheme from extended list
 const getColorScheme = (schemeId: string): ColorScheme => {
-  const scheme = PREDEFINED_COLOR_SCHEMES.find(s => s.id === schemeId);
-  return scheme?.colors || PREDEFINED_COLOR_SCHEMES[0].colors;
+  return EXTENDED_COLOR_SCHEMES[schemeId] || EXTENDED_COLOR_SCHEMES["trust"];
 };
 
 // Website examples - all 10 layouts
