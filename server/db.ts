@@ -59,6 +59,31 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateUser(id: number, data: Partial<InsertUser>): Promise<void> {
+  const db = await getDb();
+  if (!db) { console.warn("[Database] Cannot update user: database not available"); return; }
+  try {
+    await db.update(users).set({ ...data, updatedAt: new Date() }).where(eq(users.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to update user:", error);
+    throw error;
+  }
+}
+
 // ── Businesses ─────────────────────────────────────────
 export async function createBusiness(data: InsertBusiness) {
   const db = await getDb();
