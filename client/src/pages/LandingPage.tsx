@@ -763,7 +763,7 @@ const LAYOUT_CONFIG: Record<string, {
   },
   Premium: {
     label: "Business & Consulting",
-    scheme: "trust",
+    scheme: "warm",
     heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop",
     data: {
       businessName: "Consulting Partners GmbH",
@@ -939,18 +939,6 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
         {/* Gradient overlay for smooth fade */}
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-none" />
-        
-        {/* Hover overlay with zoom icon */}
-        <div className={`absolute inset-0 bg-black/40 transition-opacity duration-300 flex items-center justify-center ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform shadow-xl">
-            <ArrowUpRight className="w-6 h-6 text-black" />
-          </div>
-          <div className="absolute bottom-4 left-4 right-4 text-center">
-            <span className="text-white/80 text-xs font-medium bg-black/50 px-3 py-1 rounded-full">
-              Hover für Animation
-            </span>
-          </div>
-        </div>
 
         {/* Layout badge */}
         <div className="absolute top-3 right-3">
@@ -1040,15 +1028,6 @@ const WebsiteShowcase = () => {
           >
             Websites, die verkaufen.
           </motion.h3>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-white/60 mt-3 text-sm"
-          >
-            Alle 10 Premium-Layouts mit branchenspezifischen Farben. Hover für Autoscroll.
-          </motion.p>
         </div>
         
         <div className="hidden md:flex gap-2">
