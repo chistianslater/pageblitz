@@ -4,7 +4,6 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, adminProcedure, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import bcrypt from "bcrypt";
 import {
   upsertBusiness, getBusinessById, listBusinesses, countBusinesses, updateBusiness,
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByToken, getWebsiteByBusinessId,
@@ -18,7 +17,6 @@ import {
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
   getLeadFunnelStats, listExternalLeads, countExternalLeads,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
-  getUserById, getUserByEmail, updateUser,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -1113,77 +1111,11 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
-    
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
-    
-    // Update user profile (name, email)
-    updateProfile: protectedProcedure
-      .input(z.object({
-        name: z.string().min(1).max(100).optional(),
-        email: z.string().email().max(320).optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
-        
-        await updateUser(ctx.user.id, {
-          name: input.name,
-          email: input.email,
-        });
-        
-        return { success: true };
-      }),
-    
-    // Change password (for users with password set)
-    changePassword: protectedProcedure
-      .input(z.object({
-        currentPassword: z.string().min(1),
-        newPassword: z.string().min(8).max(100),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
-        
-        const user = await getUserById(ctx.user.id);
-        if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-        
-        // Check if user has a password set
-        if (!user.passwordHash) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Password login not enabled for this account" });
-        }
-        
-        // Verify current password
-        const valid = await bcrypt.compare(input.currentPassword, user.passwordHash);
-        if (!valid) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Current password is incorrect" });
-        }
-        
-        // Hash and save new password
-        const newHash = await bcrypt.hash(input.newPassword, 10);
-        await updateUser(ctx.user.id, { passwordHash: newHash });
-        
-        return { success: true };
-      }),
-    
-    // Request password reset (sends email with token)
-    requestPasswordReset: publicProcedure
-      .input(z.object({ email: z.string().email() }))
-      .mutation(async ({ input }) => {
-        const user = await getUserByEmail(input.email);
-        
-        // Always return success to prevent email enumeration
-        if (!user) {
-          return { success: true };
-        }
-        
-        // TODO: Generate reset token and send email
-        // For now, just log that we would send an email
-        console.log(`[Auth] Password reset requested for ${input.email}`);
-        
-        return { success: true };
-      }),
   }),
 
   // ── Admin: Dashboard Stats ─────────────────────────

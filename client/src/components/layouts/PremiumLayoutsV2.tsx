@@ -1989,7 +1989,7 @@ function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headli
           {Object.entries(grouped).map(([category, categoryItems]: [string, any]) => (
             <div key={category}>
               <Skeleton isLoading={isLoading} className="w-48 h-8 mb-6">
-                <h3 style={{ fontFamily: displayFont, fontWeight: 600, color: safeCs.primary, borderColor: safeCs.primary }} className="text-xl uppercase tracking-wide border-b-2 pb-2">
+                <h3 style={{ fontFamily: displayFont, fontWeight: 600, color: safeCs.primary }} className="text-xl uppercase tracking-wide border-b-2 pb-2" style={{ borderColor: safeCs.primary }}>
                   {category}
                 </h3>
               </Skeleton>

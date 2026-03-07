@@ -5,7 +5,6 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardLayout from "./components/DashboardLayout";
-import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import SearchPage from "./pages/SearchPage";
@@ -23,28 +22,23 @@ import StartPage from "./pages/StartPage";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import LayoutOverviewPage from "./pages/LayoutOverviewPage";
 import LayoutPreviewStandalone from "./pages/LayoutPreviewStandalone";
-import UserLoginPage from "./pages/UserLoginPage";
-import AdminLoginPage from "./pages/LoginPage";
-import UserProfilePage from "./pages/UserProfilePage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import LoginPage from "./pages/LoginPage";
 
 function AdminRouter() {
   return (
-    <AdminRoute>
-      <DashboardLayout>
-        <Switch>
-          <Route path="/admin" component={Home} />
-          <Route path="/admin/search" component={SearchPage} />
-          <Route path="/admin/websites" component={WebsitesPage} />
-          <Route path="/admin/outreach" component={OutreachPage} />
-          <Route path="/admin/stats" component={StatsPage} />
-          <Route path="/admin/templates" component={TemplatesPage} />
-          <Route path="/admin/leads" component={LeadsPage} />
-          <Route path="/admin/layouts" component={LayoutOverviewPage} />
-          <Route component={NotFound} />
-        </Switch>
-      </DashboardLayout>
-    </AdminRoute>
+    <DashboardLayout>
+      <Switch>
+        <Route path="/admin" component={Home} />
+        <Route path="/admin/search" component={SearchPage} />
+        <Route path="/admin/websites" component={WebsitesPage} />
+        <Route path="/admin/outreach" component={OutreachPage} />
+        <Route path="/admin/stats" component={StatsPage} />
+        <Route path="/admin/templates" component={TemplatesPage} />
+        <Route path="/admin/leads" component={LeadsPage} />
+        <Route path="/admin/layouts" component={LayoutOverviewPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </DashboardLayout>
   );
 }
 
@@ -59,26 +53,8 @@ function Router() {
       <Route path="/site/:slug/datenschutz" component={LegalPage} />
       <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
-      
-      {/* User Dashboard - Protected */}
-      <Route path="/my-website">
-        <ProtectedRoute>
-          <CustomerDashboard />
-        </ProtectedRoute>
-      </Route>
-      
-      {/* User Profile - Protected */}
-      <Route path="/profile">
-        <ProtectedRoute>
-          <UserProfilePage />
-        </ProtectedRoute>
-      </Route>
-      
-      {/* Login Routes */}
-      <Route path="/login" component={UserLoginPage} />
-      <Route path="/forgot-password" component={ForgotPasswordPage} />
-      <Route path="/admin-login" component={AdminLoginPage} />
-      
+      <Route path="/my-website" component={CustomerDashboard} />
+      <Route path="/login" component={LoginPage} />
       <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
       <Route path="/admin">
         <AdminRouter />

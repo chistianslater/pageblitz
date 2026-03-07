@@ -9,7 +9,6 @@ import {
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
   generationJobs, InsertGenerationJob, GenerationJob,
-  magicLinks, InsertMagicLink, MagicLink,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -58,59 +57,6 @@ export async function getUserByOpenId(openId: string) {
   if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
-}
-
-export async function getUserById(id: number) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
-}
-
-export async function getUserByEmail(email: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
-}
-
-export async function updateUser(id: number, data: Partial<InsertUser>): Promise<void> {
-  const db = await getDb();
-  if (!db) { console.warn("[Database] Cannot update user: database not available"); return; }
-  try {
-    await db.update(users).set({ ...data, updatedAt: new Date() }).where(eq(users.id, id));
-  } catch (error) {
-    console.error("[Database] Failed to update user:", error);
-    throw error;
-  }
-}
-
-// ── Magic Links ────────────────────────────────────────
-export async function createMagicLink(data: InsertMagicLink): Promise<number> {
-  const db = await getDb();
-  if (!db) throw new Error("DB not available");
-  const result = await db.insert(magicLinks).values(data);
-  return result[0].insertId;
-}
-
-export async function createUser(data: InsertUser): Promise<number> {
-  const db = await getDb();
-  if (!db) throw new Error("DB not available");
-  const result = await db.insert(users).values(data);
-  return result[0].insertId;
-}
-
-export async function getMagicLinkByToken(token: string): Promise<MagicLink | undefined> {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(magicLinks).where(eq(magicLinks.token, token)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
-}
-
-export async function markMagicLinkUsed(id: number): Promise<void> {
-  const db = await getDb();
-  if (!db) throw new Error("DB not available");
-  await db.update(magicLinks).set({ used: true }).where(eq(magicLinks.id, id));
 }
 
 // ── Businesses ─────────────────────────────────────────
