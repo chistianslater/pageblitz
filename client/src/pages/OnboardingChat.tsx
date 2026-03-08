@@ -983,34 +983,53 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [currentStep, stepStorageKey]);
 
-  // ── Pre-fill from GMB data ──────────────────────────────────────────────
+  // ── Pre-fill from GMB/business data ─────────────────────────────────────
   useEffect(() => {
-    if (business && !initialized) {
-      setData((prev) => ({
-        ...prev,
-        businessName: business.name || prev.businessName,
-        businessCategory: translateGmbCategory((business as any).category || "") || prev.businessCategory,
-        legalEmail: business.email || prev.legalEmail,
-        legalPhone: business.phone || prev.legalPhone,
-        email: business.email || prev.email,
-      }));
-    }
-  }, [business, initialized]);
+    if (!business) return;
 
-  // ── Pre-fill from website/business data (for non-GMB flows) ───────────────
+    setData((prev) => {
+      const updates: Partial<OnboardingData> = {};
+
+      if (!prev.businessName && business.name) {
+        updates.businessName = business.name;
+      }
+      if (!prev.businessCategory && (business as any).category) {
+        updates.businessCategory = translateGmbCategory((business as any).category);
+      }
+      if (!prev.legalEmail && business.email) {
+        updates.legalEmail = business.email;
+      }
+      if (!prev.legalPhone && business.phone) {
+        updates.legalPhone = business.phone;
+      }
+      if (!prev.email && business.email) {
+        updates.email = business.email;
+      }
+
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+    });
+  }, [business?.id, (business as any)?.category]);
+
+  // ── Pre-fill from website data (for non-GMB flows) ─────────────────────────
   useEffect(() => {
-    if (!business && siteData?.website && !initialized) {
-      // For non-GMB flows, pre-fill from website data if available
-      const businessData = (siteData.business || {}) as any;
-      const websiteData = (siteData.website.websiteData || {}) as any;
-      
-      setData((prev) => ({
-        ...prev,
-        businessName: websiteData.businessName || businessData.name || prev.businessName,
-        businessCategory: websiteData.businessCategory || businessData.category || prev.businessCategory,
-      }));
-    }
-  }, [business, siteData?.website, initialized]);
+    if (business || !siteData?.website) return;
+
+    const businessData = (siteData.business || {}) as any;
+    const websiteData = (siteData.website.websiteData || {}) as any;
+
+    setData((prev) => {
+      const updates: Partial<OnboardingData> = {};
+
+      if (!prev.businessName && (websiteData.businessName || businessData.name)) {
+        updates.businessName = websiteData.businessName || businessData.name;
+      }
+      if (!prev.businessCategory && (websiteData.businessCategory || businessData.category)) {
+        updates.businessCategory = websiteData.businessCategory || businessData.category;
+      }
+
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+    });
+  }, [business, siteData?.website?.id]);
 
   // ── Scroll to bottom ────────────────────────────────────────────────────
   useEffect(() => {
@@ -1235,9 +1254,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Initialize chat ─────────────────────────────────────────────────────
   // ── Auto-generate website if websiteData is missing ────────────────────
   useEffect(() => {
-    if (siteLoading || !websiteId || isGeneratingInitialWebsite) return;
+    if (siteLoading || !websiteId) return;
+
     const hasWebsiteData = !!(siteData?.website?.websiteData);
-    if (!hasWebsiteData) {
+
+    // If we have website data but isGeneratingInitialWebsite is still true (from localStorage),
+    // reset it so the chat can initialize
+    if (hasWebsiteData && isGeneratingInitialWebsite) {
+      console.log("[Onboarding] Website data found, resetting generation state");
+      setIsGeneratingInitialWebsite(false);
+      localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
+      return;
+    }
+
+    if (!hasWebsiteData && !isGeneratingInitialWebsite) {
       setIsGeneratingInitialWebsite(true);
       // Mark generation in progress in localStorage (persists across reloads)
       localStorage.setItem(`generating_website_${previewToken || websiteIdProp}`, 'true');
@@ -1321,6 +1351,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteLoading, websiteId, siteData?.website?.websiteData]);
+
+  // Reset initialized when website data becomes available after generation
+  useEffect(() => {
+    const hasWebsiteData = !!(siteData?.website?.websiteData);
+    if (hasWebsiteData && initialized && messages.length === 0 && !isGeneratingInitialWebsite) {
+      console.log("[Onboarding] Resetting initialized state for chat restart");
+      setInitialized(false);
+    }
+  }, [siteData?.website?.websiteData, initialized, messages.length, isGeneratingInitialWebsite]);
 
   useEffect(() => {
     if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {

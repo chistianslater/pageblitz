@@ -2962,11 +2962,39 @@ Kontext: ${input.context}`,
 
             // Extract place name from URL: /maps/place/NAME/@...
             const nameMatch = finalUrl.match(/\/maps\/place\/([^/@?]+)/);
-            const placeIdMatch = finalUrl.match(/0x[0-9a-f]+:0x[0-9a-f]+/i);
             if (nameMatch) {
               const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
               console.log("[resolveLink] Extracted business name:", businessName);
-              return { resolved: true, businessName, placeId: placeIdMatch?.[0] || null };
+
+              // Search Places API for full details
+              const placesResult = await makeRequest<PlacesSearchResult>(
+                "/maps/api/place/textsearch/json",
+                { query: businessName, language: "de" }
+              );
+              const place = placesResult.results?.[0];
+              if (!place) {
+                return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+              }
+
+              // Fetch place details for full data
+              const details = await makeRequest<PlaceDetailsResult>(
+                "/maps/api/place/details/json",
+                { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+              );
+              const r = details.result;
+              return {
+                resolved: true,
+                businessName: r?.name || businessName,
+                placeId: place.place_id,
+                address: r?.formatted_address || place.formatted_address || null,
+                phone: r?.formatted_phone_number || null,
+                website: r?.website || null,
+                rating: r?.rating || null,
+                reviewCount: r?.user_ratings_total || 0,
+                category: extractGmbCategory(place.types) || null,
+                openingHours: r?.opening_hours?.weekday_text || [],
+                reviews: r?.reviews || [],
+              };
             }
             console.log("[resolveLink] Could not extract business name from maps.app.goo.gl");
             return { resolved: false, businessName: null, placeId: null };
@@ -2982,7 +3010,67 @@ Kontext: ${input.context}`,
           console.log("[resolveLink] Detected full google.com/maps/place URL");
           const businessName = decodeURIComponent(fullUrlMatch[1].replace(/\+/g, " "));
           console.log("[resolveLink] Extracted business name:", businessName);
-          return { resolved: true, businessName, placeId: null };
+
+          // Extract place ID from URL if present (format: 0x...:0x...)
+          const placeIdMatch = url.match(/0x[0-9a-f]+:0x[0-9a-f]+/i);
+          if (placeIdMatch) {
+            // We have a place ID, fetch details directly
+            try {
+              const details = await makeRequest<PlaceDetailsResult>(
+                "/maps/api/place/details/json",
+                { place_id: placeIdMatch[0], fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+              );
+              const r = details.result;
+              return {
+                resolved: true,
+                businessName: r?.name || businessName,
+                placeId: placeIdMatch[0],
+                address: r?.formatted_address || null,
+                phone: r?.formatted_phone_number || null,
+                website: r?.website || null,
+                rating: r?.rating || null,
+                reviewCount: r?.user_ratings_total || 0,
+                category: extractGmbCategory(r?.types) || null,
+                openingHours: r?.opening_hours?.weekday_text || [],
+                reviews: r?.reviews || [],
+              };
+            } catch {
+              // Fallback to text search if place details fail
+            }
+          }
+
+          // Search Places API as fallback
+          try {
+            const placesResult = await makeRequest<PlacesSearchResult>(
+              "/maps/api/place/textsearch/json",
+              { query: businessName, language: "de" }
+            );
+            const place = placesResult.results?.[0];
+            if (place) {
+              const details = await makeRequest<PlaceDetailsResult>(
+                "/maps/api/place/details/json",
+                { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+              );
+              const r = details.result;
+              return {
+                resolved: true,
+                businessName: r?.name || businessName,
+                placeId: place.place_id,
+                address: r?.formatted_address || place.formatted_address || null,
+                phone: r?.formatted_phone_number || null,
+                website: r?.website || null,
+                rating: r?.rating || null,
+                reviewCount: r?.user_ratings_total || 0,
+                category: extractGmbCategory(place.types) || null,
+                openingHours: r?.opening_hours?.weekday_text || [],
+                reviews: r?.reviews || [],
+              };
+            }
+          } catch {
+            // Ignore and return basic info
+          }
+
+          return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
         }
 
         return { resolved: false, businessName: null, placeId: null };
