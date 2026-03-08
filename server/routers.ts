@@ -1116,7 +1116,14 @@ export const appRouter = router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      // Clear cookie by setting empty value and expired maxAge
+      ctx.res.cookie(COOKIE_NAME, "", {
+        ...cookieOptions,
+        maxAge: 0,
+        expires: new Date(0),
+      });
+      // Also try clearCookie as fallback
+      ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
       return { success: true } as const;
     }),
 
@@ -3071,9 +3078,10 @@ Kontext: ${input.context}`,
         rating: z.string().optional(), // Google rating from resolveLink
         reviewCount: z.number().optional(), // Google review count from resolveLink
       }))
-      .mutation(async ({ input }) => {
-        // Validate email for external sources
-        if (input.source === "external" && !input.customerEmail) {
+      .mutation(async ({ input, ctx }) => {
+        // Validate email for external sources (when no user is logged in)
+        const isLoggedIn = !!ctx.user;
+        if (!isLoggedIn && input.source === "external" && !input.customerEmail) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "E-Mail-Adresse ist erforderlich" });
         }
 
@@ -3088,12 +3096,13 @@ Kontext: ${input.context}`,
           category: input.category || "",
           address: input.address || "",
           phone: input.phone || "",
-          email: input.customerEmail, // Also store in business for convenience
+          email: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
           googleReviews: input.googleReviews?.length ? input.googleReviews : null,
           openingHours: input.openingHours?.length ? input.openingHours : null,
           rating: input.rating || null,
           reviewCount: input.reviewCount || null,
         });
+
         // Create a preview website
         const previewToken = nanoid(32);
         const websiteSlug = `preview-${uniqueSlug}`;
@@ -3104,9 +3113,22 @@ Kontext: ${input.context}`,
           previewToken,
           onboardingStatus: "in_progress",
           source: input.source,
-          customerEmail: input.customerEmail,
-          captureStatus: input.customerEmail ? "email_captured" : undefined,
+          customerEmail: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
+          captureStatus: (input.customerEmail || isLoggedIn) ? "email_captured" : undefined,
         });
+
+        // If user is logged in, create a subscription to link website to user
+        if (isLoggedIn && ctx.user) {
+          await createSubscription({
+            websiteId,
+            userId: ctx.user.id,
+            status: "incomplete", // Not paid yet
+            plan: "base",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }
+
         // Create onboarding record
         await createOnboarding({
           websiteId,
@@ -3115,6 +3137,7 @@ Kontext: ${input.context}`,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         });
+
         return { previewToken, websiteId };
       }),
 

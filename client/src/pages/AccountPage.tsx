@@ -151,8 +151,10 @@ export default function AccountPage() {
 
   const handleLogout = async () => {
     await logout();
-    // Hard redirect to clear all state and caches
-    window.location.href = "/login";
+    // Small delay to ensure all state is cleared before redirect
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
   };
 
   // Check if user logged in with Google

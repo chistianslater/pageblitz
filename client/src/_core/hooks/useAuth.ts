@@ -28,22 +28,14 @@ export function useAuth(options?: UseAuthOptions) {
     try {
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
-      if (
-        error instanceof TRPCClientError &&
-        error.data?.code === "UNAUTHORIZED"
-      ) {
-        // Already logged out, continue with cleanup
-      } else {
-        throw error;
-      }
+      // Ignore all errors during logout - we want to clear state regardless
     } finally {
-      // Clear all auth data
+      // Clear all auth data immediately
       utils.auth.me.setData(undefined, null);
-      await utils.auth.me.invalidate();
       // Clear localStorage auth data
       localStorage.removeItem("manus-runtime-user-info");
-      // Clear query cache for customer data
-      await utils.customer.getMyWebsites.invalidate();
+      // Clear all query caches
+      utils.queryClient.clear();
     }
   }, [logoutMutation, utils]);
 
