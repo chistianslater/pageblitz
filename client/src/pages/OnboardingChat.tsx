@@ -580,7 +580,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
-  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
+  // Check localStorage for generation in progress (persists across reloads)
+  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(`generating_website_${previewToken || websiteIdProp}`) === 'true';
+    }
+    return false;
+  });
   useEffect(() => {
     // Standard beforeunload alert (browser default)
     // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert))
@@ -609,6 +615,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Cleanup localStorage on unmount (checkout or preview step)
       if (currentStep === "checkout" || currentStep === "preview") {
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+        localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
       }
     };
   }, [currentStep, showExitIntent, isGeneratingInitialWebsite, previewToken, websiteIdProp]);
@@ -1233,7 +1240,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!hasWebsiteData) {
       setIsGeneratingInitialWebsite(true);
       // Mark generation in progress in localStorage (persists across reloads)
-      localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
+      localStorage.setItem(`generating_website_${previewToken || websiteIdProp}`, 'true');
       // Für GMB-Flows: 9 Phasen, für non-GMB: nur 5 Phasen (schneller)
       const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
       const allPhases = [
@@ -1283,7 +1290,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               setGenerationPhase("Website bereit!");
               // Reset state and clear localStorage
               setIsGeneratingInitialWebsite(false);
-              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+              localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
               // Refetch and then navigate
               refetchSiteData().then(() => {
                 setTimeout(() => {
@@ -1293,7 +1300,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             } else if (status.status === "failed") {
               clearInterval(pollInterval);
               setIsGeneratingInitialWebsite(false);
-              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+              localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
               console.error("Website generation failed:", status.error);
               toast.error("Fehler bei der Website-Erstellung: " + (status.error || "Unbekannter Fehler"));
             }
@@ -1307,7 +1314,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         return () => clearInterval(pollInterval);
       }).catch((err) => {
         setIsGeneratingInitialWebsite(false);
-        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+        localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
         console.error("Failed to start website generation:", err);
         toast.error("Fehler beim Starten der Website-Erstellung: " + (err.message || "Unbekannter Fehler"));
       });
