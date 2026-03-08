@@ -84,6 +84,7 @@ async function getGmbPhotos(placeId: string, maxPhotos = 6): Promise<string[]> {
     );
     const photos: Array<{ photo_reference: string; width: number; height: number }> =
       details?.result?.photos || [];
+
     if (!photos.length) return [];
     // Build photo URLs – direct Google API or Forge proxy
     const isDirectGoogle = !!ENV.googlePlacesApiKey;
@@ -1059,7 +1060,7 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       const contactItems: Array<{ title: string; description: string; icon: string }> = [];
       if (business.phone) contactItems.push({ title: "Telefon", description: business.phone, icon: "Phone" });
       if (business.address) contactItems.push({ title: "Adresse", description: business.address, icon: "MapPin" });
-      if (hoursText) contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
+      if (hoursText && hoursText !== "Nicht angegeben") contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
       if (contactItems.length > 0) {
         websiteData.sections.push({ type: "contact", headline: "Kontakt", items: contactItems });
       }
@@ -1515,7 +1516,7 @@ export const appRouter = router({
           const contactItems: Array<{ title: string; description: string; icon: string }> = [];
           if (business.phone) contactItems.push({ title: "Telefon", description: business.phone, icon: "Phone" });
           if (business.address) contactItems.push({ title: "Adresse", description: business.address, icon: "MapPin" });
-          if (hoursText) contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
+          if (hoursText && hoursText !== "Nicht angegeben") contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
           if (contactItems.length > 0) {
             websiteData.sections.push({ type: "contact", headline: "Kontakt", items: contactItems });
           }
@@ -1705,7 +1706,7 @@ export const appRouter = router({
           const contactItems: Array<{ title: string; description: string; icon: string }> = [];
           if (business.phone) contactItems.push({ title: "Telefon", description: business.phone, icon: "Phone" });
           if (business.address) contactItems.push({ title: "Adresse", description: business.address, icon: "MapPin" });
-          if (hoursText) contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
+          if (hoursText && hoursText !== "Nicht angegeben") contactItems.push({ title: "Öffnungszeiten", description: hoursText, icon: "Clock" });
           if (contactItems.length > 0) {
             websiteData.sections.push({ type: "contact", headline: "Kontakt", items: contactItems });
           }
@@ -2855,6 +2856,9 @@ Kontext: ${input.context}`,
               { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
             );
             const r = details.result;
+            const detailsTypes = (r as any)?.types as string[] | undefined;
+            const resolvedCategory = extractGmbCategory(detailsTypes || place.types) || null;
+
             return {
               resolved: true,
               businessName: r?.name || businessName,
@@ -2864,11 +2868,12 @@ Kontext: ${input.context}`,
               website: r?.website || null,
               rating: r?.rating || null,
               reviewCount: r?.user_ratings_total || 0,
-              category: extractGmbCategory(place.types) || null,
+              category: resolvedCategory,
               openingHours: r?.opening_hours?.weekday_text || [],
               reviews: r?.reviews || [],
             };
-          } catch {
+          } catch (err) {
+            console.error("[resolveLink] share.google catch:", err);
             return { resolved: false, businessName: null, placeId: null };
           }
         }
@@ -2880,12 +2885,39 @@ Kontext: ${input.context}`,
             const finalUrl = r.url;
             // Extract place name from URL: /maps/place/NAME/@...
             const nameMatch = finalUrl.match(/\/maps\/place\/([^/@?]+)/);
-            const placeIdMatch = finalUrl.match(/0x[0-9a-f]+:0x[0-9a-f]+/i);
-            if (nameMatch) {
-              const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
-              return { resolved: true, businessName, placeId: placeIdMatch?.[0] || null };
+            if (!nameMatch) return { resolved: false, businessName: null, placeId: null };
+            const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
+            // Call Places API to get proper place_id, category, hours, etc.
+            try {
+              const placesResult = await makeRequest<PlacesSearchResult>(
+                "/maps/api/place/textsearch/json",
+                { query: businessName, language: "de" }
+              );
+              const place = placesResult.results?.[0];
+              if (!place) return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+              const details = await makeRequest<PlaceDetailsResult>(
+                "/maps/api/place/details/json",
+                { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+              );
+              const rd = details.result;
+              const detailsTypes = (rd as any)?.types as string[] | undefined;
+              const resolvedCategory = extractGmbCategory(detailsTypes || place.types) || null;
+
+              return {
+                resolved: true,
+                businessName: rd?.name || businessName,
+                placeId: place.place_id,
+                address: rd?.formatted_address || place.formatted_address || null,
+                phone: rd?.formatted_phone_number || null,
+                rating: rd?.rating || null,
+                reviewCount: rd?.user_ratings_total || 0,
+                category: resolvedCategory,
+                openingHours: rd?.opening_hours?.weekday_text || [],
+                reviews: rd?.reviews || [],
+              };
+            } catch {
+              return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
             }
-            return { resolved: false, businessName: null, placeId: null };
           } catch {
             return { resolved: false, businessName: null, placeId: null };
           }
@@ -2895,7 +2927,36 @@ Kontext: ${input.context}`,
         const fullUrlMatch = url.match(/google\.com\/maps\/place\/([^/@?]+)/);
         if (fullUrlMatch) {
           const businessName = decodeURIComponent(fullUrlMatch[1].replace(/\+/g, " "));
-          return { resolved: true, businessName, placeId: null };
+          // Try Places API for full data
+          try {
+            const placesResult = await makeRequest<PlacesSearchResult>(
+              "/maps/api/place/textsearch/json",
+              { query: businessName, language: "de" }
+            );
+            const place = placesResult.results?.[0];
+            if (!place) return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+            const details = await makeRequest<PlaceDetailsResult>(
+              "/maps/api/place/details/json",
+              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+            );
+            const rd = details.result;
+            const detailsTypes = (rd as any)?.types as string[] | undefined;
+            const resolvedCategory = extractGmbCategory(detailsTypes || place.types) || null;
+            return {
+              resolved: true,
+              businessName: rd?.name || businessName,
+              placeId: place.place_id,
+              address: rd?.formatted_address || place.formatted_address || null,
+              phone: rd?.formatted_phone_number || null,
+              rating: rd?.rating || null,
+              reviewCount: rd?.user_ratings_total || 0,
+              category: resolvedCategory,
+              openingHours: rd?.opening_hours?.weekday_text || [],
+              reviews: rd?.reviews || [],
+            };
+          } catch {
+            return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+          }
         }
 
         return { resolved: false, businessName: null, placeId: null };

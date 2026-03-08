@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2 } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -12,6 +12,7 @@ import { getContrastColor } from "@shared/colorContrast";
 import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
 import { getGalleryImages } from "@shared/industryImages";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 // ── Epic Loading Screen Component ───────────────────────────────────────────
 
@@ -515,6 +516,7 @@ const LAYOUTS_WITHOUT_ABOUT_IMAGE = ["trust", "dynamic", "bold"];
 
 export default function OnboardingChat({ previewToken, websiteId: websiteIdProp }: Props) {
   const [, navigate] = useLocation();
+  const { user, isAuthenticated } = useAuth();
 
   // ── Website data ────────────────────────────────────────────────────────
   const { data: siteData, isLoading: siteLoading, error: siteError, refetch: refetchSiteData } = trpc.website.get.useQuery(
@@ -580,15 +582,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
+
   useEffect(() => {
+    // Check if user has email (either from auth or from data)
+    const hasUserEmail = !!(isAuthenticated && user?.email);
+
     // Standard beforeunload alert (browser default)
     // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert))
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Only show alert after user has started entering data (after welcome/email step)
       const earlySteps: ChatStep[] = ["welcome", "email", "businessCategory"];
       const isEarlyStep = earlySteps.includes(currentStep);
-      if (!isGeneratingInitialWebsite && !isEarlyStep && currentStep !== "checkout" && currentStep !== "preview") {
+      // Don't show for authenticated users with email
+      if (!isGeneratingInitialWebsite && !isEarlyStep && currentStep !== "checkout" && currentStep !== "preview" && !hasUserEmail) {
         e.preventDefault();
         e.returnValue = "";
       }
@@ -596,8 +604,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Exit intent (mouse leaves window upwards)
     const handleMouseOut = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !showExitIntent && currentStep !== "checkout" && currentStep !== "preview") {
-        setShowExitIntent(true);
+      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview") {
+        if (hasUserEmail && !showExitConfirmation) {
+          // Show confirmation for logged-in users
+          setShowExitConfirmation(true);
+        } else if (!hasUserEmail && !showExitIntent) {
+          // Show email capture for guests
+          setShowExitIntent(true);
+        }
       }
     };
 
@@ -611,7 +625,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       }
     };
-  }, [currentStep, showExitIntent, isGeneratingInitialWebsite, previewToken, websiteIdProp]);
+  }, [currentStep, showExitIntent, showExitConfirmation, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -1361,15 +1375,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
         if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
           setCurrentStep(savedStep as ChatStep);
+          await addBotMessage(getStepPrompt(savedStep as ChatStep), 800);
           return;
         }
 
         // If no localStorage, check if we have stepCurrent from database
         const dbStepCurrent = existingOnboarding?.stepCurrent;
         if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
-          // Map step number to ChatStep
+          // Map step number to ChatStep (only resume if user has actually progressed past step 0)
           const stepIndex = dbStepCurrent;
-          if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
+          if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
             const targetStep = STEP_ORDER[stepIndex];
             if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
               setCurrentStep(targetStep);
@@ -1388,6 +1403,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           setCurrentStep("email");
           await addBotMessage(
             "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**.",
+            800
+          );
+        } else if (source === "external" && (business as any)?.category) {
+          // GMB user: auto-confirm the category and skip to businessName
+          const translatedCategory = translateGmbCategory((business as any).category);
+          setData((p) => ({ ...p, businessCategory: translatedCategory }));
+          setCurrentStep("businessName");
+          await addBotMessage(
+            `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\n${getStepPrompt("businessName")}`,
             800
           );
         } else {
@@ -4407,6 +4431,75 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               >
                 Doch nicht schließen
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exit confirmation modal for logged-in users */}
+      {showExitConfirmation && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 text-center relative overflow-hidden">
+              {/* Decorative background circle */}
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+              <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-emerald-400/20 rounded-full blur-xl" />
+
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-black text-white mb-2 leading-tight">Achtung! ⚡</h2>
+                <p className="text-emerald-100 text-sm font-medium leading-relaxed">
+                  Du verlässt gerade deine Seite, obwohl sie noch nicht fertig ist.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-8 space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <Mail className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-emerald-300 text-sm font-medium">
+                      E-Mail gespeichert:
+                    </p>
+                    <p className="text-white font-semibold">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-slate-300 text-sm leading-relaxed text-center">
+                  Wir haben dir eine E-Mail mit deinem persönlichen Link geschickt.
+                  Über diesen Link kannst du deine Seite jederzeit fertigstellen.
+                </p>
+
+                <div className="bg-slate-700/50 border border-slate-600 rounded-xl p-4 text-center">
+                  <p className="text-slate-400 text-xs mb-1">Deine Website ist reserviert für:</p>
+                  <p className="text-white font-mono text-lg font-bold tabular-nums">{countdown}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowExitConfirmation(false)}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"
+                >
+                  Weiter bearbeiten
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowExitConfirmation(false);
+                    // Allow user to leave
+                    window.removeEventListener('beforeunload', () => {});
+                  }}
+                  className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors py-2"
+                >
+                  Trotzdem verlassen
+                </button>
+              </div>
             </div>
           </div>
         </div>
