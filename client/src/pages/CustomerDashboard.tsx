@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -227,6 +227,13 @@ export default function CustomerDashboard() {
               Website öffnen
             </a>
           )}
+          <a
+            href="/my-account"
+            className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+          >
+            <User className="w-4 h-4" />
+            Mein Konto
+          </a>
         </div>
       </header>
 
