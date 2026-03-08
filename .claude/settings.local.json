@@ -5,7 +5,9 @@
       "Bash(node -e \"const codes = require\\(''./node_modules/react/cjs/react.development.js''\\); console.log\\(''done''\\)\")",
       "Bash(curl -s \"https://raw.githubusercontent.com/facebook/react/v19.0.0/scripts/error-codes/codes.json\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''62'', ''not found''\\)\\)\")",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(lsof -i :3000)",
+      "Bash(rsync -az -e \"ssh -i ~/.ssh/id_ed25519\" \"/Users/christianniessing/cursor projects/pageblitz/pageblitz/package.json\" root@76.13.147.95:/root/pageblitz/package.json)"
     ]
   }
 }

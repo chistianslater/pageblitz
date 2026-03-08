@@ -17,6 +17,8 @@ import {
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
   getLeadFunnelStats, listExternalLeads, countExternalLeads,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
+  updateUser, getUserByOpenId,
+  type InsertUser,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -1116,6 +1118,53 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+
+    /**
+     * Update user profile (name, email)
+     */
+    updateProfile: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).optional(),
+        email: z.string().email().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const user = ctx.user;
+        if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
+
+        const updateData: Partial<InsertUser> = {};
+        if (input.name !== undefined) updateData.name = input.name;
+        if (input.email !== undefined) updateData.email = input.email;
+
+        if (Object.keys(updateData).length === 0) {
+          return { success: true, user };
+        }
+
+        await updateUser(user.id, updateData);
+        const updatedUser = await getUserByOpenId(user.openId);
+        return { success: true, user: updatedUser };
+      }),
+
+    /**
+     * Change password (only for non-Google users)
+     */
+    changePassword: protectedProcedure
+      .input(z.object({
+        currentPassword: z.string(),
+        newPassword: z.string().min(8),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const user = ctx.user;
+        if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
+
+        // Google users cannot change password
+        if (user.loginMethod === "google") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Google users cannot change password" });
+        }
+
+        // Note: For Magic Link users, we don't store passwords
+        // This would need a proper password system if implementing email+password auth
+        throw new TRPCError({ code: "NOT_IMPLEMENTED", message: "Password change not available for magic link accounts" });
+      }),
   }),
 
   // ── Admin: Dashboard Stats ─────────────────────────
