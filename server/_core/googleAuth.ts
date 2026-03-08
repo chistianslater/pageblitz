@@ -215,10 +215,12 @@ export function registerGoogleAuthRoutes(app: Express) {
 
       // Set cookie
       const cookieOptions = getSessionCookieOptions(req);
+      console.log("[Google OAuth] Setting cookie for user:", userInfo.email, "redirect:", decodeState(state).redirect);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
       // Decode redirect from state
       const { redirect } = decodeState(state);
+      console.log("[Google OAuth] Redirecting to:", redirect);
       res.redirect(302, redirect);
     } catch (err) {
       console.error("[Google OAuth] Callback failed:", err);

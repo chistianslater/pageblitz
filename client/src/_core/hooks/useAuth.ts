@@ -77,7 +77,15 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath;
+    // Add small delay to prevent race conditions
+    const timeout = setTimeout(() => {
+      if (!state.user && !meQuery.isLoading) {
+        console.log("[Auth] Redirecting to login, user not authenticated");
+        window.location.href = redirectPath;
+      }
+    }, 100);
+
+    return () => clearTimeout(timeout);
   }, [
     redirectOnUnauthenticated,
     redirectPath,
