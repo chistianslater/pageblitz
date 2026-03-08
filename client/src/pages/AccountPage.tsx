@@ -151,7 +151,8 @@ export default function AccountPage() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    // Hard redirect to clear all state and caches
+    window.location.href = "/login";
   };
 
   // Check if user logged in with Google
