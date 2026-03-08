@@ -1284,37 +1284,44 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         "Bereite Live-Vorschau vor...",
         "Finalisiere deine Website...",
       ];
-      // Non-GMB: Nur erste 5 Phasen zeigen, dafür schneller durchlaufen
-      const phases = isGmbFlow ? allPhases : allPhases.slice(0, 5);
-      const phaseDuration = isGmbFlow ? 2000 : 1500; // Non-GMB: 1.5s pro Phase
+      // Use ALL phases for realistic progress, but control minimum display time
+      const phases = allPhases;
+      const minPhaseDuration = 3500; // Minimum 3.5 seconds per phase for realistic feel
+      const totalMinDuration = phases.length * minPhaseDuration; // ~31.5 seconds total
       
       let phaseIdx = 0;
       setGenerationPhase(phases[0]);
-      setGenerationProgress(10);
+      setGenerationProgress(5);
+      
+      // Start time tracking for realistic progress
+      const startTime = Date.now();
       
       // Start async generation and poll for status
       generateWebsiteAsyncMutation.mutateAsync({ websiteId }).then(async (response) => {
         const jobId = response.jobId;
         
-        // Poll for status every 500ms (0.5 seconds) for smoother progress
+        // Poll for status every 3 seconds for realistic timing
         const pollInterval = setInterval(async () => {
           try {
             const status = await trpcContext.selfService.getGenerationStatus.fetch({ jobId });
+            const elapsed = Date.now() - startTime;
             
-            // Update progress from server (0-100)
-            if (status.progress > 0) {
-              setGenerationProgress(status.progress);
-            }
+            // Calculate minimum progress based on elapsed time (ensures phases don't rush)
+            const minProgress = Math.min(95, (elapsed / totalMinDuration) * 100);
             
-            // Update phase text based on progress
+            // Use the slower of actual progress or minimum progress
+            const displayProgress = Math.max(status.progress, minProgress);
+            setGenerationProgress(displayProgress);
+            
+            // Update phase text based on elapsed time for realistic feel
             const phaseIndex = Math.min(
-              Math.floor((status.progress / 100) * phases.length),
+              Math.floor((elapsed / totalMinDuration) * phases.length),
               phases.length - 1
             );
             setGenerationPhase(phases[phaseIndex]);
             
             // Check if completed or failed
-            if (status.status === "completed") {
+            if (status.status === "completed" && elapsed >= totalMinDuration * 0.8) {
               clearInterval(pollInterval);
               setGenerationProgress(100);
               setGenerationPhase("Website bereit!");
@@ -1325,7 +1332,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               refetchSiteData().then(() => {
                 setTimeout(() => {
                   window.location.href = window.location.href;
-                }, 300);
+                }, 800);
               });
             } else if (status.status === "failed") {
               clearInterval(pollInterval);
@@ -1338,7 +1345,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             console.error("Error polling generation status:", pollErr);
             // Don't stop polling on transient errors
           }
-        }, 2000); // Poll every 2 seconds
+        }, 3000); // Poll every 3 seconds
         
         // Store interval for cleanup
         return () => clearInterval(pollInterval);
@@ -1362,18 +1369,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [siteData?.website?.websiteData, initialized, messages.length, isGeneratingInitialWebsite]);
 
   useEffect(() => {
-    if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
+    if (!siteLoading && !initialized && !isGeneratingInitialWebsite && websiteId) {
+      console.log("[Onboarding] Initializing chat, siteData:", { 
+        hasBusiness: !!business, 
+        category: (business as any)?.category,
+        hasWebsiteData: !!(siteData?.website?.websiteData)
+      });
       setInitialized(true);
       
-      // Update captureStatus and send welcome email for external leads
-      if (websiteId && siteData?.website?.source === "external") {
+      // Update captureStatus for external leads
+      if (siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
           websiteId,
           captureStatus: "onboarding_started",
         });
-
-        // Email disabled during development
-        // sendLeadEmailMutation.mutate({ websiteId, template: "onboardingStarted" });
       }
 
       const initChat = async () => {
@@ -1381,69 +1390,36 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         const customerEmail = (siteData?.website as any)?.customerEmail as string | undefined;
         const hasEmail = !!customerEmail;
 
-        // If customerEmail exists, auto-save it as the notification email
+        // Auto-save email if exists
         if (hasEmail && customerEmail) {
           setData((p) => ({ ...p, email: customerEmail }));
-          // Also save to database silently
-          if (websiteId) {
-            try {
-              await saveStepMutation.mutateAsync({ 
-                websiteId, 
-                step: STEP_ORDER.indexOf("email"), 
-                data: { email: customerEmail } 
-              });
-            } catch (e) {
-              // Silent fail - not critical
-              console.warn("[Onboarding] Could not auto-save email step:", e);
-            }
-          }
         }
 
-        // Resume from saved step - check localStorage first, then database
+        // Check for saved step
         const effectiveWebsiteId = websiteIdProp || websiteId;
         const savedStep = effectiveWebsiteId
           ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
           : null;
 
-        if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
+        // If we have a saved step (and it's not a terminal step), resume there
+        if (savedStep && !['welcome', 'checkout', 'preview'].includes(savedStep)) {
+          console.log("[Onboarding] Resuming from saved step:", savedStep);
           setCurrentStep(savedStep as ChatStep);
           return;
         }
 
-        // If no localStorage, check if we have stepCurrent from database
-        const dbStepCurrent = existingOnboarding?.stepCurrent;
-        if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
-          // Map step number to ChatStep
-          const stepIndex = dbStepCurrent;
-          if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
-            const targetStep = STEP_ORDER[stepIndex];
-            if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
-              setCurrentStep(targetStep);
-              // Also save to localStorage for next time
-              if (effectiveWebsiteId) {
-                localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
-              }
-              return;
-            }
-          }
-        }
-
-        // For admin-generated websites without a customer email yet,
-        // ask for the email as the very first step.
-        if (source === "admin" && !hasEmail) {
-          setCurrentStep("email");
-          await addBotMessage(
-            "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**.",
-            800
-          );
-        } else {
-          setCurrentStep("businessCategory");
-          await addBotMessage(getStepPrompt("businessCategory"), 800);
-        }
+        // Otherwise, start fresh with businessCategory step
+        // This will show the pre-filled category if GMB data exists
+        console.log("[Onboarding] Starting fresh with businessCategory");
+        setCurrentStep("businessCategory");
+        // Small delay to ensure UI is ready
+        await new Promise(r => setTimeout(r, 100));
+        await addBotMessage(getStepPrompt("businessCategory"), 600);
       };
+      
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, websiteIdProp]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, websiteId]);
 
   // ── Progressive content revelation based on user input ─────────
   

@@ -2915,11 +2915,21 @@ Kontext: ${input.context}`,
               }
 
               // Step 4: fetch place details
+              console.log("[resolveLink] Fetching place details for place_id:", place.place_id);
               const details = await makeRequest<PlaceDetailsResult>(
                 "/maps/api/place/details/json",
                 { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
               );
               const r = details.result;
+              console.log("[resolveLink] Place details received:", {
+                name: r?.name,
+                address: r?.formatted_address,
+                phone: r?.formatted_phone_number,
+                rating: r?.rating,
+                reviewCount: r?.user_ratings_total,
+                openingHours: r?.opening_hours?.weekday_text?.length || 0,
+                reviews: r?.reviews?.length || 0,
+              });
               return {
                 resolved: true,
                 businessName: r?.name || businessName,
