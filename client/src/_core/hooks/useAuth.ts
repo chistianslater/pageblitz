@@ -36,18 +36,8 @@ export function useAuth(options?: UseAuthOptions) {
       }
       throw error;
     } finally {
-      // Clear all auth-related state
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
-      // Clear localStorage items that might persist auth state
-      localStorage.removeItem("manus-runtime-user-info");
-      // Clear any generation state that might be persisting
-      const keysToRemove = Object.keys(localStorage).filter(key => 
-        key.startsWith('generating_') || key.startsWith('onboarding_step_')
-      );
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      // Force reload to clear all React state
-      window.location.href = "/login";
     }
   }, [logoutMutation, utils]);
 
@@ -87,15 +77,7 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    // Add small delay to prevent race conditions
-    const timeout = setTimeout(() => {
-      if (!state.user && !meQuery.isLoading) {
-        console.log("[Auth] Redirecting to login, user not authenticated");
-        window.location.href = redirectPath;
-      }
-    }, 100);
-
-    return () => clearTimeout(timeout);
+    window.location.href = redirectPath;
   }, [
     redirectOnUnauthenticated,
     redirectPath,

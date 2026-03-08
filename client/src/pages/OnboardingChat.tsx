@@ -580,13 +580,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
-  // Check localStorage for generation in progress (persists across reloads)
-  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(`generating_website_${previewToken || websiteIdProp}`) === 'true';
-    }
-    return false;
-  });
+  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
   useEffect(() => {
     // Standard beforeunload alert (browser default)
     // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert))
@@ -615,7 +609,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Cleanup localStorage on unmount (checkout or preview step)
       if (currentStep === "checkout" || currentStep === "preview") {
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-        localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
       }
     };
   }, [currentStep, showExitIntent, isGeneratingInitialWebsite, previewToken, websiteIdProp]);
@@ -983,53 +976,34 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [currentStep, stepStorageKey]);
 
-  // ── Pre-fill from GMB/business data ─────────────────────────────────────
+  // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
-    if (!business) return;
+    if (business && !initialized) {
+      setData((prev) => ({
+        ...prev,
+        businessName: business.name || prev.businessName,
+        businessCategory: translateGmbCategory((business as any).category || "") || prev.businessCategory,
+        legalEmail: business.email || prev.legalEmail,
+        legalPhone: business.phone || prev.legalPhone,
+        email: business.email || prev.email,
+      }));
+    }
+  }, [business, initialized]);
 
-    setData((prev) => {
-      const updates: Partial<OnboardingData> = {};
-
-      if (!prev.businessName && business.name) {
-        updates.businessName = business.name;
-      }
-      if (!prev.businessCategory && (business as any).category) {
-        updates.businessCategory = translateGmbCategory((business as any).category);
-      }
-      if (!prev.legalEmail && business.email) {
-        updates.legalEmail = business.email;
-      }
-      if (!prev.legalPhone && business.phone) {
-        updates.legalPhone = business.phone;
-      }
-      if (!prev.email && business.email) {
-        updates.email = business.email;
-      }
-
-      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
-    });
-  }, [business?.id, (business as any)?.category]);
-
-  // ── Pre-fill from website data (for non-GMB flows) ─────────────────────────
+  // ── Pre-fill from website/business data (for non-GMB flows) ───────────────
   useEffect(() => {
-    if (business || !siteData?.website) return;
-
-    const businessData = (siteData.business || {}) as any;
-    const websiteData = (siteData.website.websiteData || {}) as any;
-
-    setData((prev) => {
-      const updates: Partial<OnboardingData> = {};
-
-      if (!prev.businessName && (websiteData.businessName || businessData.name)) {
-        updates.businessName = websiteData.businessName || businessData.name;
-      }
-      if (!prev.businessCategory && (websiteData.businessCategory || businessData.category)) {
-        updates.businessCategory = websiteData.businessCategory || businessData.category;
-      }
-
-      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
-    });
-  }, [business, siteData?.website?.id]);
+    if (!business && siteData?.website && !initialized) {
+      // For non-GMB flows, pre-fill from website data if available
+      const businessData = (siteData.business || {}) as any;
+      const websiteData = (siteData.website.websiteData || {}) as any;
+      
+      setData((prev) => ({
+        ...prev,
+        businessName: websiteData.businessName || businessData.name || prev.businessName,
+        businessCategory: websiteData.businessCategory || businessData.category || prev.businessCategory,
+      }));
+    }
+  }, [business, siteData?.website, initialized]);
 
   // ── Scroll to bottom ────────────────────────────────────────────────────
   useEffect(() => {
@@ -1254,23 +1228,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Initialize chat ─────────────────────────────────────────────────────
   // ── Auto-generate website if websiteData is missing ────────────────────
   useEffect(() => {
-    if (siteLoading || !websiteId) return;
-
+    if (siteLoading || !websiteId || isGeneratingInitialWebsite) return;
     const hasWebsiteData = !!(siteData?.website?.websiteData);
-
-    // If we have website data but isGeneratingInitialWebsite is still true (from localStorage),
-    // reset it so the chat can initialize
-    if (hasWebsiteData && isGeneratingInitialWebsite) {
-      console.log("[Onboarding] Website data found, resetting generation state");
-      setIsGeneratingInitialWebsite(false);
-      localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
-      return;
-    }
-
-    if (!hasWebsiteData && !isGeneratingInitialWebsite) {
+    if (!hasWebsiteData) {
       setIsGeneratingInitialWebsite(true);
       // Mark generation in progress in localStorage (persists across reloads)
-      localStorage.setItem(`generating_website_${previewToken || websiteIdProp}`, 'true');
+      localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
       // Für GMB-Flows: 9 Phasen, für non-GMB: nur 5 Phasen (schneller)
       const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
       const allPhases = [
@@ -1284,60 +1247,53 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         "Bereite Live-Vorschau vor...",
         "Finalisiere deine Website...",
       ];
-      // Use ALL phases for realistic progress, but control minimum display time
-      const phases = allPhases;
-      const minPhaseDuration = 3500; // Minimum 3.5 seconds per phase for realistic feel
-      const totalMinDuration = phases.length * minPhaseDuration; // ~31.5 seconds total
+      // Non-GMB: Nur erste 5 Phasen zeigen, dafür schneller durchlaufen
+      const phases = isGmbFlow ? allPhases : allPhases.slice(0, 5);
+      const phaseDuration = isGmbFlow ? 2000 : 1500; // Non-GMB: 1.5s pro Phase
       
       let phaseIdx = 0;
       setGenerationPhase(phases[0]);
-      setGenerationProgress(5);
-      
-      // Start time tracking for realistic progress
-      const startTime = Date.now();
+      setGenerationProgress(10);
       
       // Start async generation and poll for status
       generateWebsiteAsyncMutation.mutateAsync({ websiteId }).then(async (response) => {
         const jobId = response.jobId;
         
-        // Poll for status every 3 seconds for realistic timing
+        // Poll for status every 500ms (0.5 seconds) for smoother progress
         const pollInterval = setInterval(async () => {
           try {
             const status = await trpcContext.selfService.getGenerationStatus.fetch({ jobId });
-            const elapsed = Date.now() - startTime;
             
-            // Calculate minimum progress based on elapsed time (ensures phases don't rush)
-            const minProgress = Math.min(95, (elapsed / totalMinDuration) * 100);
+            // Update progress from server (0-100)
+            if (status.progress > 0) {
+              setGenerationProgress(status.progress);
+            }
             
-            // Use the slower of actual progress or minimum progress
-            const displayProgress = Math.max(status.progress, minProgress);
-            setGenerationProgress(displayProgress);
-            
-            // Update phase text based on elapsed time for realistic feel
+            // Update phase text based on progress
             const phaseIndex = Math.min(
-              Math.floor((elapsed / totalMinDuration) * phases.length),
+              Math.floor((status.progress / 100) * phases.length),
               phases.length - 1
             );
             setGenerationPhase(phases[phaseIndex]);
             
             // Check if completed or failed
-            if (status.status === "completed" && elapsed >= totalMinDuration * 0.8) {
+            if (status.status === "completed") {
               clearInterval(pollInterval);
               setGenerationProgress(100);
               setGenerationPhase("Website bereit!");
               // Reset state and clear localStorage
               setIsGeneratingInitialWebsite(false);
-              localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
+              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
               // Refetch and then navigate
               refetchSiteData().then(() => {
                 setTimeout(() => {
                   window.location.href = window.location.href;
-                }, 800);
+                }, 300);
               });
             } else if (status.status === "failed") {
               clearInterval(pollInterval);
               setIsGeneratingInitialWebsite(false);
-              localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
+              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
               console.error("Website generation failed:", status.error);
               toast.error("Fehler bei der Website-Erstellung: " + (status.error || "Unbekannter Fehler"));
             }
@@ -1345,13 +1301,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             console.error("Error polling generation status:", pollErr);
             // Don't stop polling on transient errors
           }
-        }, 3000); // Poll every 3 seconds
+        }, 2000); // Poll every 2 seconds
         
         // Store interval for cleanup
         return () => clearInterval(pollInterval);
       }).catch((err) => {
         setIsGeneratingInitialWebsite(false);
-        localStorage.removeItem(`generating_website_${previewToken || websiteIdProp}`);
+        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
         console.error("Failed to start website generation:", err);
         toast.error("Fehler beim Starten der Website-Erstellung: " + (err.message || "Unbekannter Fehler"));
       });
@@ -1359,30 +1315,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteLoading, websiteId, siteData?.website?.websiteData]);
 
-  // Reset initialized when website data becomes available after generation
   useEffect(() => {
-    const hasWebsiteData = !!(siteData?.website?.websiteData);
-    if (hasWebsiteData && initialized && messages.length === 0 && !isGeneratingInitialWebsite) {
-      console.log("[Onboarding] Resetting initialized state for chat restart");
-      setInitialized(false);
-    }
-  }, [siteData?.website?.websiteData, initialized, messages.length, isGeneratingInitialWebsite]);
-
-  useEffect(() => {
-    if (!siteLoading && !initialized && !isGeneratingInitialWebsite && websiteId) {
-      console.log("[Onboarding] Initializing chat, siteData:", { 
-        hasBusiness: !!business, 
-        category: (business as any)?.category,
-        hasWebsiteData: !!(siteData?.website?.websiteData)
-      });
+    if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
       
-      // Update captureStatus for external leads
-      if (siteData?.website?.source === "external") {
+      // Update captureStatus and send welcome email for external leads
+      if (websiteId && siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
           websiteId,
           captureStatus: "onboarding_started",
         });
+
+        // Email disabled during development
+        // sendLeadEmailMutation.mutate({ websiteId, template: "onboardingStarted" });
       }
 
       const initChat = async () => {
@@ -1390,36 +1335,69 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         const customerEmail = (siteData?.website as any)?.customerEmail as string | undefined;
         const hasEmail = !!customerEmail;
 
-        // Auto-save email if exists
+        // If customerEmail exists, auto-save it as the notification email
         if (hasEmail && customerEmail) {
           setData((p) => ({ ...p, email: customerEmail }));
+          // Also save to database silently
+          if (websiteId) {
+            try {
+              await saveStepMutation.mutateAsync({ 
+                websiteId, 
+                step: STEP_ORDER.indexOf("email"), 
+                data: { email: customerEmail } 
+              });
+            } catch (e) {
+              // Silent fail - not critical
+              console.warn("[Onboarding] Could not auto-save email step:", e);
+            }
+          }
         }
 
-        // Check for saved step
+        // Resume from saved step - check localStorage first, then database
         const effectiveWebsiteId = websiteIdProp || websiteId;
         const savedStep = effectiveWebsiteId
           ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
           : null;
 
-        // If we have a saved step (and it's not a terminal step), resume there
-        if (savedStep && !['welcome', 'checkout', 'preview'].includes(savedStep)) {
-          console.log("[Onboarding] Resuming from saved step:", savedStep);
+        if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
           setCurrentStep(savedStep as ChatStep);
           return;
         }
 
-        // Otherwise, start fresh with businessCategory step
-        // This will show the pre-filled category if GMB data exists
-        console.log("[Onboarding] Starting fresh with businessCategory");
-        setCurrentStep("businessCategory");
-        // Small delay to ensure UI is ready
-        await new Promise(r => setTimeout(r, 100));
-        await addBotMessage(getStepPrompt("businessCategory"), 600);
+        // If no localStorage, check if we have stepCurrent from database
+        const dbStepCurrent = existingOnboarding?.stepCurrent;
+        if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
+          // Map step number to ChatStep
+          const stepIndex = dbStepCurrent;
+          if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
+            const targetStep = STEP_ORDER[stepIndex];
+            if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
+              setCurrentStep(targetStep);
+              // Also save to localStorage for next time
+              if (effectiveWebsiteId) {
+                localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+              }
+              return;
+            }
+          }
+        }
+
+        // For admin-generated websites without a customer email yet,
+        // ask for the email as the very first step.
+        if (source === "admin" && !hasEmail) {
+          setCurrentStep("email");
+          await addBotMessage(
+            "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**.",
+            800
+          );
+        } else {
+          setCurrentStep("businessCategory");
+          await addBotMessage(getStepPrompt("businessCategory"), 800);
+        }
       };
-      
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, websiteId]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, websiteIdProp]);
 
   // ── Progressive content revelation based on user input ─────────
   

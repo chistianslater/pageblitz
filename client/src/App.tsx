@@ -20,7 +20,6 @@ import OnboardingChat from "./pages/OnboardingChat";
 import LegalPage from "./pages/LegalPage";
 import StartPage from "./pages/StartPage";
 import CustomerDashboard from "./pages/CustomerDashboard";
-import CustomerProfilePage from "./pages/CustomerProfilePage";
 import LayoutOverviewPage from "./pages/LayoutOverviewPage";
 import LayoutPreviewStandalone from "./pages/LayoutPreviewStandalone";
 import LoginPage from "./pages/LoginPage";
@@ -61,11 +60,6 @@ function Router() {
       <Route path="/my-website">
         <CustomerRoute>
           <CustomerDashboard />
-        </CustomerRoute>
-      </Route>
-      <Route path="/my-account">
-        <CustomerRoute>
-          <CustomerProfilePage />
         </CustomerRoute>
       </Route>
       <Route path="/login" component={CustomerLoginPage} />

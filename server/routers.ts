@@ -17,8 +17,6 @@ import {
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
   getLeadFunnelStats, listExternalLeads, countExternalLeads,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
-  updateUser, getUserByOpenId,
-  type InsertUser,
 } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -1112,62 +1110,12 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => {
-      console.log("[Auth.me] User from context:", opts.ctx.user?.id || "null", "email:", opts.ctx.user?.email || "none");
-      return opts.ctx.user;
-    }),
+    me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
-
-    /**
-     * Update user profile (name, email)
-     */
-    updateProfile: protectedProcedure
-      .input(z.object({
-        name: z.string().min(1).optional(),
-        email: z.string().email().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const user = ctx.user;
-        if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
-
-        const updateData: Partial<InsertUser> = {};
-        if (input.name !== undefined) updateData.name = input.name;
-        if (input.email !== undefined) updateData.email = input.email;
-
-        if (Object.keys(updateData).length === 0) {
-          return { success: true, user };
-        }
-
-        await updateUser(user.id, updateData);
-        const updatedUser = await getUserByOpenId(user.openId);
-        return { success: true, user: updatedUser };
-      }),
-
-    /**
-     * Change password (only for non-Google users)
-     */
-    changePassword: protectedProcedure
-      .input(z.object({
-        currentPassword: z.string(),
-        newPassword: z.string().min(8),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const user = ctx.user;
-        if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
-
-        // Google users cannot change password
-        if (user.loginMethod === "google") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Google users cannot change password" });
-        }
-
-        // Note: For Magic Link users, we don't store passwords
-        // This would need a proper password system if implementing email+password auth
-        throw new TRPCError({ code: "NOT_IMPLEMENTED", message: "Password change not available for magic link accounts" });
-      }),
   }),
 
   // ── Admin: Dashboard Stats ─────────────────────────
@@ -2875,89 +2823,52 @@ Kontext: ${input.context}`,
       .input(z.object({ url: z.string() }))
       .mutation(async ({ input }) => {
         const url = input.url.trim();
-        console.log("[resolveLink] Resolving URL:", url);
-
-        const fetchOptions = {
-          redirect: "follow" as const,
-          signal: AbortSignal.timeout(15000),
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
-          },
-        };
 
         // ── Pattern 1: share.google/CODE ─────────────────────────────────
         if (/share\.google\//.test(url)) {
           try {
-            console.log("[resolveLink] Detected share.google pattern");
-            // Step 1: Follow redirect to get the actual Google Maps page
-            const r1 = await fetch(url, fetchOptions);
-            const finalUrl = r1.url;
-            console.log("[resolveLink] Redirected to:", finalUrl);
+            // Step 1: follow the first redirect to google.com/share.google?q=...
+            const r1 = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(8000) });
+            const loc = r1.headers.get("location") || "";
+            if (!loc) return { resolved: false, businessName: null, placeId: null };
 
-            // Step 2: Extract place name from the final URL
-            // Format: https://www.google.com/maps/place/PLACE_NAME/...
-            const nameMatch = finalUrl.match(/\/maps\/place\/([^/@?]+)/);
-            if (nameMatch) {
-              const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
-              console.log("[resolveLink] Extracted business name:", businessName);
+            // Step 2: fetch the google.com/share.google page and extract search query
+            const r2 = await fetch(loc, { redirect: "follow", signal: AbortSignal.timeout(8000) });
+            const html = await r2.text();
 
-              // Step 3: Search Places API with the extracted name
-              const placesResult = await makeRequest<PlacesSearchResult>(
-                "/maps/api/place/textsearch/json",
-                { query: businessName, language: "de" }
-              );
-              const place = placesResult.results?.[0];
-              if (!place) {
-                console.log("[resolveLink] No place found in Places API, returning name only");
-                return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
-              }
-
-              // Step 4: fetch place details
-              console.log("[resolveLink] Fetching place details for place_id:", place.place_id);
-              const details = await makeRequest<PlaceDetailsResult>(
-                "/maps/api/place/details/json",
-                { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
-              );
-              const r = details.result;
-              console.log("[resolveLink] Place details received:", {
-                name: r?.name,
-                address: r?.formatted_address,
-                phone: r?.formatted_phone_number,
-                rating: r?.rating,
-                reviewCount: r?.user_ratings_total,
-                openingHours: r?.opening_hours?.weekday_text?.length || 0,
-                reviews: r?.reviews?.length || 0,
-              });
-              return {
-                resolved: true,
-                businessName: r?.name || businessName,
-                placeId: place.place_id,
-                address: r?.formatted_address || place.formatted_address || null,
-                phone: r?.formatted_phone_number || null,
-                website: r?.website || null,
-                rating: r?.rating || null,
-                reviewCount: r?.user_ratings_total || 0,
-                category: extractGmbCategory(place.types) || null,
-                openingHours: r?.opening_hours?.weekday_text || [],
-                reviews: r?.reviews || [],
-              };
-            }
-
-            // Fallback: Try to extract from HTML if URL extraction failed
-            const html = await r1.text();
+            // The page contains a fallback link like /search?q=SCHAU+%26+HORCH
             const match = html.match(/\/search\?q=([^"&<>]+)/);
-            if (match) {
-              const businessName = decodeURIComponent(match[1].replace(/\+/g, " "));
-              console.log("[resolveLink] Extracted from HTML:", businessName);
-              return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
-            }
+            if (!match) return { resolved: false, businessName: null, placeId: null };
+            const businessName = decodeURIComponent(match[1].replace(/\+/g, " "));
 
-            console.log("[resolveLink] Could not extract business name from share.google link");
-            return { resolved: false, businessName: null, placeId: null };
-          } catch (err) {
-            console.error("[resolveLink] Error resolving share.google:", err);
+            // Step 3: search Places API with the extracted name
+            const placesResult = await makeRequest<PlacesSearchResult>(
+              "/maps/api/place/textsearch/json",
+              { query: businessName, language: "de" }
+            );
+            const place = placesResult.results?.[0];
+            if (!place) return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+
+            // Step 4: fetch place details
+            const details = await makeRequest<PlaceDetailsResult>(
+              "/maps/api/place/details/json",
+              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+            );
+            const r = details.result;
+            return {
+              resolved: true,
+              businessName: r?.name || businessName,
+              placeId: place.place_id,
+              address: r?.formatted_address || place.formatted_address || null,
+              phone: r?.formatted_phone_number || null,
+              website: r?.website || null,
+              rating: r?.rating || null,
+              reviewCount: r?.user_ratings_total || 0,
+              category: extractGmbCategory(place.types) || null,
+              openingHours: r?.opening_hours?.weekday_text || [],
+              reviews: r?.reviews || [],
+            };
+          } catch {
             return { resolved: false, businessName: null, placeId: null };
           }
         }
@@ -2965,51 +2876,17 @@ Kontext: ${input.context}`,
         // ── Pattern 2: maps.app.goo.gl/CODE (short link) ─────────────────
         if (/maps\.app\.goo\.gl\//.test(url)) {
           try {
-            console.log("[resolveLink] Detected maps.app.goo.gl pattern");
-            const r = await fetch(url, fetchOptions);
+            const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(8000) });
             const finalUrl = r.url;
-            console.log("[resolveLink] Final URL after redirect:", finalUrl);
-
             // Extract place name from URL: /maps/place/NAME/@...
             const nameMatch = finalUrl.match(/\/maps\/place\/([^/@?]+)/);
+            const placeIdMatch = finalUrl.match(/0x[0-9a-f]+:0x[0-9a-f]+/i);
             if (nameMatch) {
               const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
-              console.log("[resolveLink] Extracted business name:", businessName);
-
-              // Search Places API for full details
-              const placesResult = await makeRequest<PlacesSearchResult>(
-                "/maps/api/place/textsearch/json",
-                { query: businessName, language: "de" }
-              );
-              const place = placesResult.results?.[0];
-              if (!place) {
-                return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
-              }
-
-              // Fetch place details for full data
-              const details = await makeRequest<PlaceDetailsResult>(
-                "/maps/api/place/details/json",
-                { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
-              );
-              const r = details.result;
-              return {
-                resolved: true,
-                businessName: r?.name || businessName,
-                placeId: place.place_id,
-                address: r?.formatted_address || place.formatted_address || null,
-                phone: r?.formatted_phone_number || null,
-                website: r?.website || null,
-                rating: r?.rating || null,
-                reviewCount: r?.user_ratings_total || 0,
-                category: extractGmbCategory(place.types) || null,
-                openingHours: r?.opening_hours?.weekday_text || [],
-                reviews: r?.reviews || [],
-              };
+              return { resolved: true, businessName, placeId: placeIdMatch?.[0] || null };
             }
-            console.log("[resolveLink] Could not extract business name from maps.app.goo.gl");
             return { resolved: false, businessName: null, placeId: null };
-          } catch (err) {
-            console.error("[resolveLink] Error resolving maps.app.goo.gl:", err);
+          } catch {
             return { resolved: false, businessName: null, placeId: null };
           }
         }
@@ -3017,70 +2894,8 @@ Kontext: ${input.context}`,
         // ── Pattern 3: Full google.com/maps/place/NAME/... URL ────────────
         const fullUrlMatch = url.match(/google\.com\/maps\/place\/([^/@?]+)/);
         if (fullUrlMatch) {
-          console.log("[resolveLink] Detected full google.com/maps/place URL");
           const businessName = decodeURIComponent(fullUrlMatch[1].replace(/\+/g, " "));
-          console.log("[resolveLink] Extracted business name:", businessName);
-
-          // Extract place ID from URL if present (format: 0x...:0x...)
-          const placeIdMatch = url.match(/0x[0-9a-f]+:0x[0-9a-f]+/i);
-          if (placeIdMatch) {
-            // We have a place ID, fetch details directly
-            try {
-              const details = await makeRequest<PlaceDetailsResult>(
-                "/maps/api/place/details/json",
-                { place_id: placeIdMatch[0], fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
-              );
-              const r = details.result;
-              return {
-                resolved: true,
-                businessName: r?.name || businessName,
-                placeId: placeIdMatch[0],
-                address: r?.formatted_address || null,
-                phone: r?.formatted_phone_number || null,
-                website: r?.website || null,
-                rating: r?.rating || null,
-                reviewCount: r?.user_ratings_total || 0,
-                category: extractGmbCategory(r?.types) || null,
-                openingHours: r?.opening_hours?.weekday_text || [],
-                reviews: r?.reviews || [],
-              };
-            } catch {
-              // Fallback to text search if place details fail
-            }
-          }
-
-          // Search Places API as fallback
-          try {
-            const placesResult = await makeRequest<PlacesSearchResult>(
-              "/maps/api/place/textsearch/json",
-              { query: businessName, language: "de" }
-            );
-            const place = placesResult.results?.[0];
-            if (place) {
-              const details = await makeRequest<PlaceDetailsResult>(
-                "/maps/api/place/details/json",
-                { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
-              );
-              const r = details.result;
-              return {
-                resolved: true,
-                businessName: r?.name || businessName,
-                placeId: place.place_id,
-                address: r?.formatted_address || place.formatted_address || null,
-                phone: r?.formatted_phone_number || null,
-                website: r?.website || null,
-                rating: r?.rating || null,
-                reviewCount: r?.user_ratings_total || 0,
-                category: extractGmbCategory(place.types) || null,
-                openingHours: r?.opening_hours?.weekday_text || [],
-                reviews: r?.reviews || [],
-              };
-            }
-          } catch {
-            // Ignore and return basic info
-          }
-
-          return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+          return { resolved: true, businessName, placeId: null };
         }
 
         return { resolved: false, businessName: null, placeId: null };
