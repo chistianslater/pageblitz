@@ -2875,52 +2875,79 @@ Kontext: ${input.context}`,
       .input(z.object({ url: z.string() }))
       .mutation(async ({ input }) => {
         const url = input.url.trim();
+        console.log("[resolveLink] Resolving URL:", url);
+
+        const fetchOptions = {
+          redirect: "follow" as const,
+          signal: AbortSignal.timeout(15000),
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+          },
+        };
 
         // ── Pattern 1: share.google/CODE ─────────────────────────────────
         if (/share\.google\//.test(url)) {
           try {
-            // Step 1: follow the first redirect to google.com/share.google?q=...
-            const r1 = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(8000) });
-            const loc = r1.headers.get("location") || "";
-            if (!loc) return { resolved: false, businessName: null, placeId: null };
+            console.log("[resolveLink] Detected share.google pattern");
+            // Step 1: Follow redirect to get the actual Google Maps page
+            const r1 = await fetch(url, fetchOptions);
+            const finalUrl = r1.url;
+            console.log("[resolveLink] Redirected to:", finalUrl);
 
-            // Step 2: fetch the google.com/share.google page and extract search query
-            const r2 = await fetch(loc, { redirect: "follow", signal: AbortSignal.timeout(8000) });
-            const html = await r2.text();
+            // Step 2: Extract place name from the final URL
+            // Format: https://www.google.com/maps/place/PLACE_NAME/...
+            const nameMatch = finalUrl.match(/\/maps\/place\/([^/@?]+)/);
+            if (nameMatch) {
+              const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
+              console.log("[resolveLink] Extracted business name:", businessName);
 
-            // The page contains a fallback link like /search?q=SCHAU+%26+HORCH
+              // Step 3: Search Places API with the extracted name
+              const placesResult = await makeRequest<PlacesSearchResult>(
+                "/maps/api/place/textsearch/json",
+                { query: businessName, language: "de" }
+              );
+              const place = placesResult.results?.[0];
+              if (!place) {
+                console.log("[resolveLink] No place found in Places API, returning name only");
+                return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+              }
+
+              // Step 4: fetch place details
+              const details = await makeRequest<PlaceDetailsResult>(
+                "/maps/api/place/details/json",
+                { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+              );
+              const r = details.result;
+              return {
+                resolved: true,
+                businessName: r?.name || businessName,
+                placeId: place.place_id,
+                address: r?.formatted_address || place.formatted_address || null,
+                phone: r?.formatted_phone_number || null,
+                website: r?.website || null,
+                rating: r?.rating || null,
+                reviewCount: r?.user_ratings_total || 0,
+                category: extractGmbCategory(place.types) || null,
+                openingHours: r?.opening_hours?.weekday_text || [],
+                reviews: r?.reviews || [],
+              };
+            }
+
+            // Fallback: Try to extract from HTML if URL extraction failed
+            const html = await r1.text();
             const match = html.match(/\/search\?q=([^"&<>]+)/);
-            if (!match) return { resolved: false, businessName: null, placeId: null };
-            const businessName = decodeURIComponent(match[1].replace(/\+/g, " "));
+            if (match) {
+              const businessName = decodeURIComponent(match[1].replace(/\+/g, " "));
+              console.log("[resolveLink] Extracted from HTML:", businessName);
+              return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
+            }
 
-            // Step 3: search Places API with the extracted name
-            const placesResult = await makeRequest<PlacesSearchResult>(
-              "/maps/api/place/textsearch/json",
-              { query: businessName, language: "de" }
-            );
-            const place = placesResult.results?.[0];
-            if (!place) return { resolved: true, businessName, placeId: null, address: null, phone: null, category: null };
-
-            // Step 4: fetch place details
-            const details = await makeRequest<PlaceDetailsResult>(
-              "/maps/api/place/details/json",
-              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
-            );
-            const r = details.result;
-            return {
-              resolved: true,
-              businessName: r?.name || businessName,
-              placeId: place.place_id,
-              address: r?.formatted_address || place.formatted_address || null,
-              phone: r?.formatted_phone_number || null,
-              website: r?.website || null,
-              rating: r?.rating || null,
-              reviewCount: r?.user_ratings_total || 0,
-              category: extractGmbCategory(place.types) || null,
-              openingHours: r?.opening_hours?.weekday_text || [],
-              reviews: r?.reviews || [],
-            };
-          } catch {
+            console.log("[resolveLink] Could not extract business name from share.google link");
+            return { resolved: false, businessName: null, placeId: null };
+          } catch (err) {
+            console.error("[resolveLink] Error resolving share.google:", err);
             return { resolved: false, businessName: null, placeId: null };
           }
         }
@@ -2928,17 +2955,23 @@ Kontext: ${input.context}`,
         // ── Pattern 2: maps.app.goo.gl/CODE (short link) ─────────────────
         if (/maps\.app\.goo\.gl\//.test(url)) {
           try {
-            const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(8000) });
+            console.log("[resolveLink] Detected maps.app.goo.gl pattern");
+            const r = await fetch(url, fetchOptions);
             const finalUrl = r.url;
+            console.log("[resolveLink] Final URL after redirect:", finalUrl);
+
             // Extract place name from URL: /maps/place/NAME/@...
             const nameMatch = finalUrl.match(/\/maps\/place\/([^/@?]+)/);
             const placeIdMatch = finalUrl.match(/0x[0-9a-f]+:0x[0-9a-f]+/i);
             if (nameMatch) {
               const businessName = decodeURIComponent(nameMatch[1].replace(/\+/g, " "));
+              console.log("[resolveLink] Extracted business name:", businessName);
               return { resolved: true, businessName, placeId: placeIdMatch?.[0] || null };
             }
+            console.log("[resolveLink] Could not extract business name from maps.app.goo.gl");
             return { resolved: false, businessName: null, placeId: null };
-          } catch {
+          } catch (err) {
+            console.error("[resolveLink] Error resolving maps.app.goo.gl:", err);
             return { resolved: false, businessName: null, placeId: null };
           }
         }
@@ -2946,7 +2979,9 @@ Kontext: ${input.context}`,
         // ── Pattern 3: Full google.com/maps/place/NAME/... URL ────────────
         const fullUrlMatch = url.match(/google\.com\/maps\/place\/([^/@?]+)/);
         if (fullUrlMatch) {
+          console.log("[resolveLink] Detected full google.com/maps/place URL");
           const businessName = decodeURIComponent(fullUrlMatch[1].replace(/\+/g, " "));
+          console.log("[resolveLink] Extracted business name:", businessName);
           return { resolved: true, businessName, placeId: null };
         }
 
