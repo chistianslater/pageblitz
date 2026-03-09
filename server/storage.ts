@@ -79,6 +79,10 @@ export async function storagePut(
   const { baseUrl, apiKey } = getStorageConfig();
   const key = normalizeKey(relKey);
   const uploadUrl = buildUploadUrl(baseUrl, key);
+
+  console.log("[Storage] Uploading to:", uploadUrl.toString());
+  console.log("[Storage] Base URL was:", baseUrl);
+
   const formData = toFormData(data, contentType, key.split("/").pop() ?? key);
   const response = await fetch(uploadUrl, {
     method: "POST",
@@ -88,11 +92,13 @@ export async function storagePut(
 
   if (!response.ok) {
     const message = await response.text().catch(() => response.statusText);
+    console.error("[Storage] Upload failed:", response.status, message);
     throw new Error(
       `Storage upload failed (${response.status} ${response.statusText}): ${message}`
     );
   }
   const url = (await response.json()).url;
+  console.log("[Storage] Upload successful:", url);
   return { key, url };
 }
 
