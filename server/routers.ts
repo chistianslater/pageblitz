@@ -2732,6 +2732,8 @@ Kontext: ${input.context}`,
           aboutPhotoUrl: z.string().optional(),
           brandColor: z.string().optional(),
           brandSecondaryColor: z.string().optional(),
+          sections: z.array(z.any()).optional(),
+          hiddenSections: z.array(z.string()).optional(),
         }),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -2742,7 +2744,7 @@ Kontext: ${input.context}`,
         const website = owned.website;
         // Patch websiteData
         const websiteData = (website.websiteData as any) || {};
-        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl } = input.patch;
+        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl, sections, hiddenSections } = input.patch;
         if (tagline !== undefined) websiteData.tagline = tagline;
         if (description !== undefined) websiteData.description = description;
         if (businessName !== undefined) websiteData.businessName = businessName;
@@ -2754,6 +2756,14 @@ Kontext: ${input.context}`,
             }
             return s;
           });
+        }
+        // Full sections reordering from structure editor
+        if (sections !== undefined) {
+          websiteData.sections = sections;
+        }
+        // Hidden sections toggle
+        if (hiddenSections !== undefined) {
+          websiteData.hiddenSections = hiddenSections;
         }
         // Patch color scheme
         const colorScheme = (website.colorScheme as any) || {};

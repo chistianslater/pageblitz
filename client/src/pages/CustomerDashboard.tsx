@@ -1,14 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "design" | "addons";
+type Tab = "preview" | "content" | "structure" | "design" | "addons";
+
+interface SectionConfig {
+  type: string;
+  headline?: string;
+  enabled: boolean;
+}
 
 // ── Helpers ───────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
@@ -1489,6 +1495,220 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   );
 }
 
+// ── Structure Editor ─────────────────────────────────
+interface StructureEditorProps {
+  websiteId: number;
+  websiteData: WebsiteData | undefined;
+  onUpdate: () => void;
+}
+
+function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorProps) {
+  const [sections, setSections] = useState<SectionConfig[]>([]);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const updateMutation = trpc.customer.updateWebsiteContent.useMutation({
+    onSuccess: () => {
+      setSaveStatus("saved");
+      onUpdate();
+      toast.success("Reihenfolge gespeichert");
+    },
+    onError: () => {
+      setSaveStatus("unsaved");
+      toast.error("Speichern fehlgeschlagen");
+    },
+  });
+
+  // Load sections from websiteData
+  useEffect(() => {
+    if (websiteData?.sections) {
+      const loadedSections = websiteData.sections.map((s: any) => ({
+        type: s.type,
+        headline: s.headline || getDefaultHeadline(s.type),
+        enabled: !websiteData?.hiddenSections?.includes(s.type),
+      }));
+      setSections(loadedSections);
+    }
+  }, [websiteData]);
+
+  function getDefaultHeadline(type: string): string {
+    const defaults: Record<string, string> = {
+      hero: "Hero Bereich",
+      about: "Über uns",
+      services: "Leistungen",
+      testimonials: "Kundenstimmen",
+      menu: "Speisekarte",
+      pricelist: "Preisliste",
+      gallery: "Galerie",
+      contact: "Kontakt",
+      cta: "Call-to-Action",
+    };
+    return defaults[type] || type;
+  }
+
+  function getSectionIcon(type: string): React.ReactNode {
+    const icons: Record<string, any> = {
+      hero: <LayoutGrid className="w-4 h-4" />,
+      about: <User className="w-4 h-4" />,
+      services: <Sparkles className="w-4 h-4" />,
+      testimonials: <MessageSquare className="w-4 h-4" />,
+      menu: <LayoutGrid className="w-4 h-4" />,
+      pricelist: <LayoutGrid className="w-4 h-4" />,
+      gallery: <Image className="w-4 h-4" />,
+      contact: <Phone className="w-4 h-4" />,
+      cta: <ExternalLink className="w-4 h-4" />,
+    };
+    return icons[type] || <LayoutGrid className="w-4 h-4" />;
+  }
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newSections = [...sections];
+    const draggedItem = newSections[draggedIndex];
+    newSections.splice(draggedIndex, 1);
+    newSections.splice(index, 0, draggedItem);
+
+    setSections(newSections);
+    setDraggedIndex(index);
+    setSaveStatus("unsaved");
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    // Auto-save after reorder
+    saveSections(sections);
+  };
+
+  const toggleSection = (index: number) => {
+    const newSections = sections.map((s, i) =>
+      i === index ? { ...s, enabled: !s.enabled } : s
+    );
+    setSections(newSections);
+    setSaveStatus("unsaved");
+    saveSections(newSections);
+  };
+
+  const saveSections = (newSections: SectionConfig[]) => {
+    setSaveStatus("saving");
+    const hiddenSections = newSections.filter((s) => !s.enabled).map((s) => s.type);
+
+    // Reorder sections in websiteData
+    const reorderedSections = newSections.map((s) => {
+      const original = websiteData?.sections?.find((orig: any) => orig.type === s.type);
+      return original || { type: s.type, headline: s.headline };
+    });
+
+    updateMutation.mutate({
+      websiteId,
+      patch: {
+        sections: reorderedSections,
+        hiddenSections: hiddenSections.length > 0 ? hiddenSections : undefined,
+      },
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-white font-semibold flex items-center gap-2">
+            <Layers className="w-4 h-4 text-violet-400" />
+            Sektionen verwalten
+          </h2>
+          <p className="text-slate-400 text-sm mt-1">
+            Sortiere Sektionen per Drag & Drop und blende sie ein oder aus
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {saveStatus === "saving" && (
+            <span className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Wird gespeichert...
+            </span>
+          )}
+          {saveStatus === "saved" && (
+            <span className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full">
+              <Check className="w-3.5 h-3.5" />
+              Gespeichert
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {sections.length === 0 ? (
+          <div className="text-center py-12 text-slate-500">
+            <Layers className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>Keine Sektionen verfügbar</p>
+          </div>
+        ) : (
+          sections.map((section, index) => (
+            <div
+              key={section.type}
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`flex items-center gap-3 p-4 bg-slate-800/60 rounded-xl border transition-all cursor-move ${
+                draggedIndex === index
+                  ? "border-violet-500/50 ring-1 ring-violet-500/20 opacity-50"
+                  : "border-slate-700/50 hover:border-slate-600"
+              } ${!section.enabled ? "opacity-60" : ""}`}
+            >
+              {/* Drag Handle */}
+              <div className="p-2 rounded-lg bg-slate-700/50 text-slate-400">
+                <GripVertical className="w-4 h-4" />
+              </div>
+
+              {/* Icon */}
+              <div className={`p-2 rounded-lg ${section.enabled ? "bg-violet-500/20 text-violet-400" : "bg-slate-700/50 text-slate-500"}`}>
+                {getSectionIcon(section.type)}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <h3 className={`font-medium ${section.enabled ? "text-white" : "text-slate-400"}`}>
+                  {section.headline}
+                </h3>
+                <p className="text-xs text-slate-500 capitalize">{section.type}</p>
+              </div>
+
+              {/* Toggle Button */}
+              <button
+                onClick={() => toggleSection(index)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  section.enabled
+                    ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                    : "bg-slate-700/50 text-slate-400 hover:bg-slate-700"
+                }`}
+                title={section.enabled ? "Sektion ausblenden" : "Sektion einblenden"}
+              >
+                {section.enabled ? (
+                  <>
+                    <Eye className="w-3.5 h-3.5" />
+                    Sichtbar
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5" />
+                    Ausgeblendet
+                  </>
+                )}
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -1581,6 +1801,7 @@ export default function CustomerDashboard() {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
+    { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
   ];
@@ -1911,6 +2132,34 @@ export default function CustomerDashboard() {
                   Bild ändern
                 </label>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Structure Tab */}
+        {activeTab === "structure" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+              <StructureEditor
+                websiteId={website.id}
+                websiteData={websiteData}
+                onUpdate={handleUpdate}
+              />
+            </div>
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
+                <Settings className="w-4 h-4 text-blue-400" />
+                Hinweise
+              </h2>
+              <p className="text-slate-400 text-sm mb-3">
+                <strong className="text-white">Sektionen sortieren:</strong> Ziehe die Sektionen per Drag & Drop in die gewünschte Reihenfolge.
+              </p>
+              <p className="text-slate-400 text-sm mb-3">
+                <strong className="text-white">Sektionen ausblenden:</strong> Klicke auf das Augen-Icon, um eine Sektion vorübergehend auszublenden.
+              </p>
+              <p className="text-slate-400 text-sm">
+                Ausgeblendete Sektionen werden auf der Website nicht angezeigt, bleiben aber gespeichert.
+              </p>
             </div>
           </div>
         )}
