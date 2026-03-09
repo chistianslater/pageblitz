@@ -588,8 +588,78 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     }
   };
 
+  // Gallery functions
+  const addGalleryPhoto = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const result = await (window as any).__trpcUpload?.({ websiteId, imageData: base64, mimeType: file.type });
+        if (result?.url) {
+          setAddons({
+            ...addons,
+            gallery: { ...addons.gallery, photos: [...addons.gallery.photos, result.url] },
+          });
+        }
+      } catch {
+        toast.error("Upload fehlgeschlagen");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeGalleryPhoto = (idx: number) => {
+    setAddons({
+      ...addons,
+      gallery: { ...addons.gallery, photos: addons.gallery.photos.filter((_, i) => i !== idx) },
+    });
+  };
+
+  // Menu functions
+  const addMenuItem = () => {
+    setAddons({
+      ...addons,
+      menu: { ...addons.menu, items: [...(addons.menu.items || []), { name: "", description: "", price: "" }] },
+    });
+  };
+
+  const updateMenuItem = (idx: number, field: string, value: string) => {
+    const newItems = [...(addons.menu.items || [])];
+    newItems[idx] = { ...newItems[idx], [field]: value };
+    setAddons({ ...addons, menu: { ...addons.menu, items: newItems } });
+  };
+
+  const removeMenuItem = (idx: number) => {
+    setAddons({
+      ...addons,
+      menu: { ...addons.menu, items: addons.menu.items?.filter((_, i) => i !== idx) },
+    });
+  };
+
+  // Pricelist functions
+  const addPriceItem = () => {
+    setAddons({
+      ...addons,
+      pricelist: { ...addons.pricelist, items: [...(addons.pricelist.items || []), { name: "", price: "", description: "" }] },
+    });
+  };
+
+  const updatePriceItem = (idx: number, field: string, value: string) => {
+    const newItems = [...(addons.pricelist.items || [])];
+    newItems[idx] = { ...newItems[idx], [field]: value };
+    setAddons({ ...addons, pricelist: { ...addons.pricelist, items: newItems } });
+  };
+
+  const removePriceItem = (idx: number) => {
+    setAddons({
+      ...addons,
+      pricelist: { ...addons.pricelist, items: addons.pricelist.items?.filter((_, i) => i !== idx) },
+    });
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Gallery */}
       <div className="bg-slate-800/40 rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
@@ -608,9 +678,36 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </label>
         </div>
         {addons.gallery.enabled && (
-          <p className="text-xs text-slate-400">
-            Galerie ist aktiviert. Verwalte Bilder im Onboarding für mehr Kontrolle.
-          </p>
+          <div className="space-y-3">
+            {addons.gallery.photos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {addons.gallery.photos.map((photo, idx) => (
+                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden">
+                    <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => removeGalleryPhoto(idx)}
+                      className="absolute top-1 right-1 p-1 rounded bg-red-600/80 hover:bg-red-600 text-white"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label className="flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 cursor-pointer transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) addGalleryPhoto(file);
+                }}
+              />
+              <Plus className="w-4 h-4" />
+              Bild hinzufügen
+            </label>
+          </div>
         )}
       </div>
 
@@ -632,9 +729,48 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </label>
         </div>
         {addons.menu.enabled && (
-          <p className="text-xs text-slate-400">
-            Speisekarte ist aktiviert. Verwalte Menüpunkte im Onboarding.
-          </p>
+          <div className="space-y-3">
+            {addons.menu.items?.map((item, idx) => (
+              <div key={idx} className="flex gap-2 items-start bg-slate-700/30 rounded-lg p-2">
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="text"
+                    value={item.name || ""}
+                    onChange={(e) => updateMenuItem(idx, "name", e.target.value)}
+                    placeholder="Name"
+                    className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    value={item.description || ""}
+                    onChange={(e) => updateMenuItem(idx, "description", e.target.value)}
+                    placeholder="Beschreibung"
+                    className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    value={item.price || ""}
+                    onChange={(e) => updateMenuItem(idx, "price", e.target.value)}
+                    placeholder="Preis"
+                    className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                  />
+                </div>
+                <button
+                  onClick={() => removeMenuItem(idx)}
+                  className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={addMenuItem}
+              className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Menüpunkt hinzufügen
+            </button>
+          </div>
         )}
       </div>
 
@@ -656,9 +792,50 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </label>
         </div>
         {addons.pricelist.enabled && (
-          <p className="text-xs text-slate-400">
-            Preisliste ist aktiviert. Verwalte Preise im Onboarding.
-          </p>
+          <div className="space-y-3">
+            {addons.pricelist.items?.map((item, idx) => (
+              <div key={idx} className="flex gap-2 items-start bg-slate-700/30 rounded-lg p-2">
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="text"
+                    value={item.name || ""}
+                    onChange={(e) => updatePriceItem(idx, "name", e.target.value)}
+                    placeholder="Leistung"
+                    className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={item.price || ""}
+                      onChange={(e) => updatePriceItem(idx, "price", e.target.value)}
+                      placeholder="Preis"
+                      className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                    />
+                    <input
+                      type="text"
+                      value={item.description || ""}
+                      onChange={(e) => updatePriceItem(idx, "description", e.target.value)}
+                      placeholder="Beschreibung (optional)"
+                      className="flex-1 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => removePriceItem(idx)}
+                  className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={addPriceItem}
+              className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Preis hinzufügen
+            </button>
+          </div>
         )}
       </div>
 
