@@ -11,15 +11,22 @@ export function registerAdminAuthRoutes(app: Express) {
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     const { password } = req.body ?? {};
 
+    console.log("[AdminAuth] Login attempt, ADMIN_PASSWORD configured:", !!ENV.adminPassword);
+    console.log("[AdminAuth] Password provided:", !!password, "Length:", password?.length);
+
     if (!ENV.adminPassword) {
+      console.log("[AdminAuth] Rejected: ADMIN_PASSWORD not configured");
       res.status(503).json({ error: "ADMIN_PASSWORD ist nicht konfiguriert." });
       return;
     }
 
     if (!password || password !== ENV.adminPassword) {
+      console.log("[AdminAuth] Rejected: Wrong password");
       res.status(401).json({ error: "Falsches Passwort." });
       return;
     }
+
+    console.log("[AdminAuth] Password correct, creating session...");
 
     try {
       await db.upsertUser({
