@@ -4896,5 +4896,6 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
         </button>
       </div>
     </div>
+    </div>
   );
 }
