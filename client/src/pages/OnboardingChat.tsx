@@ -357,6 +357,7 @@ interface OnboardingData {
   headlineFont: string; // Serif or Sans-serif font name
   headlineSize: 'large' | 'medium' | 'small'; // Headline font size
   addOnContactForm: boolean;
+  contactFormFields: { id: string; label: string; placeholder: string; type: "text" | "email" | "textarea" | "select"; required: boolean; options?: string[] }[];
   addOnGallery: boolean;
   addOnGalleryData: { headline?: string; images: string[] };
   addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
@@ -699,6 +700,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     headlineFont: "",
     headlineSize: "large", // Default: extra groß
     addOnContactForm: true,
+    contactFormFields: [
+      { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+      { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+      { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+    ],
     addOnGallery: false,
     addOnGalleryData: { headline: "Unsere Galerie", images: [] },
     addOnMenu: false,
@@ -789,6 +795,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
     if (existingOnboarding.addOnContactForm !== undefined && existingOnboarding.addOnContactForm !== null) {
       setData(p => ({ ...p, addOnContactForm: existingOnboarding.addOnContactForm! }));
+    }
+    // Sync contact form fields - default to simple fields for onboarding
+    if (existingOnboarding.contactFormFields) {
+      setData(p => ({ ...p, contactFormFields: existingOnboarding.contactFormFields! }));
     }
 
     // Sync add-on data (menu, pricelist, gallery)
@@ -2012,6 +2022,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Patch addOnContactForm state for ContactSection lock
     (patched as any).addOnContactForm = data.addOnContactForm;
 
+    // Patch contact form fields for dynamic form rendering
+    (patched as any).contactFormFields = data.contactFormFields;
+
     // Patch about photo URL for "Über uns" section image
     if (data.aboutPhotoUrl) {
       (patched as any).aboutImageUrl = data.aboutPhotoUrl;
@@ -2036,6 +2049,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.addOnMenuData,
     data.addOnPricelist,
     data.addOnPricelistData,
+    data.contactFormFields,
     hiddenSections,
   ]);
 
@@ -3253,6 +3267,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   ));
                 })()}
+
+                {/* Contact Form Info */}
+                {data.addOnContactForm && (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 mt-2">
+                    <p className="text-blue-300 text-xs">
+                      <strong>📬 Kontaktformular:</strong> Name, Betreff und Nachricht werden angezeigt. 
+                      Du kannst das Formular später im Kundenportal noch bearbeiten.
+                    </p>
+                  </div>
+                )}
                 <button
                   disabled={isTyping}
                   onClick={async () => {
@@ -3263,8 +3287,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     if (data.addOnMenu) selected.push("Speisekarte");
                     if (data.addOnPricelist) selected.push("Preisliste");
                     addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
-                    await trySaveStep(STEP_ORDER.indexOf("addons"), { 
-                      addOnContactForm: data.addOnContactForm, 
+                    await trySaveStep(STEP_ORDER.indexOf("addons"), {
+                      addOnContactForm: data.addOnContactForm,
+                      contactFormFields: data.contactFormFields,
                       addOnGallery: data.addOnGallery,
                       addOnMenu: data.addOnMenu,
                       addOnPricelist: data.addOnPricelist

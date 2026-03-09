@@ -575,11 +575,21 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
 }
 
 // ── CONTACT SECTION ───────────────────────────────────────────────
+// Default form fields if none configured
+const DEFAULT_CONTACT_FORM_FIELDS = [
+  { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+  { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+  { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht…", type: "textarea", required: true },
+];
+
 function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont = "inherit", bodyFont = "inherit", headlineStyle = {}, template = 'modern', headlineSize }: any) {
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
   const locked = websiteData?.addOnContactForm === false;
+
+  // Get form fields from websiteData or use defaults
+  const formFields = websiteData?.contactFormFields || DEFAULT_CONTACT_FORM_FIELDS;
 
   // Use dynamic colors from colorScheme if available, fallback to defaults
   const safeCs = cs || {};
@@ -756,28 +766,48 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
             <div className={`border ${cardBgClass} ${border} ${locked ? 'opacity-40 blur-[2px] pointer-events-none select-none' : ''}`}
               style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius, padding: '1.5rem' }}>
               <form className="space-y-4" onSubmit={e => e.preventDefault()}>
-                <div>
-                  <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>Name</label>
-                  <input type="text" placeholder="Max Mustermann" style={inputStyle}
-                    className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                    onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
-                    onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
-                </div>
-                <div>
-                  <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>E-Mail</label>
-                  <input type="email" placeholder="max@beispiel.de" style={inputStyle}
-                    className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                    onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
-                    onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
-                </div>
-                <div>
-                  <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>Nachricht</label>
-                  <textarea rows={4} placeholder="Ihre Nachricht…"
-                    style={{ ...inputStyle, resize: 'none' as const, minHeight: '100px' }}
-                    className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                    onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
-                    onBlur={(e) => e.currentTarget.style.borderColor = borderColor} />
-                </div>
+                {formFields.map((field: any) => (
+                  <div key={field.id}>
+                    <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>
+                      {field.label}
+                      {field.required && <span style={{ color: safeCs.primary }}>*</span>}
+                    </label>
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        rows={4}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                        style={{ ...inputStyle, resize: 'none' as const, minHeight: '100px' }}
+                        className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
+                        onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
+                        onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
+                      />
+                    ) : field.type === 'select' ? (
+                      <select
+                        required={field.required}
+                        style={inputStyle}
+                        className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all cursor-pointer"
+                        onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
+                        onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
+                      >
+                        <option value="">{field.placeholder || 'Bitte wählen...'}</option>
+                        {field.options?.map((option: string, idx: number) => (
+                          <option key={idx} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={field.type}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                        style={inputStyle}
+                        className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
+                        onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
+                        onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
+                      />
+                    )}
+                  </div>
+                ))}
                 <div className="flex items-start gap-2.5 pt-1">
                   <div className="mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center"
                     style={{ borderRadius: config.inputRadius, borderColor: inputPlaceholder, backgroundColor: inputBg }}>

@@ -73,6 +73,8 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   customerEmail: varchar("customerEmail", { length: 320 }),
   // Capture status for external leads: email_captured, onboarding_started, onboarding_completed, converted
   captureStatus: mysqlEnum("captureStatus", ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]).default("email_captured"),
+  // Contact form configuration
+  contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -143,6 +145,8 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnPricelist: boolean("addOnPricelist").default(false),
   addOnPricelistData: json("addOnPricelistData"), // { categories: [{ name, items: [{ name, price }] }] }
   addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
+  // Contact form configuration
+  contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
   completedAt: bigint("completedAt", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),

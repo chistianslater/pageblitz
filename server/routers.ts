@@ -3027,6 +3027,14 @@ Kontext: ${input.context}`,
             items: z.array(z.any()).optional(),
           }).optional(),
           contactForm: z.boolean().optional(),
+          contactFormFields: z.array(z.object({
+            id: z.string(),
+            label: z.string(),
+            placeholder: z.string(),
+            type: z.enum(["text", "email", "textarea", "select"]),
+            required: z.boolean(),
+            options: z.array(z.string()).optional(),
+          })).optional(),
         }),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -3043,6 +3051,7 @@ Kontext: ${input.context}`,
           addOnMenu: input.addOns.menu?.enabled,
           addOnPricelist: input.addOns.pricelist?.enabled,
           addOnContactForm: input.addOns.contactForm,
+          contactFormFields: input.addOns.contactFormFields,
           updatedAt: Date.now(),
         });
 
@@ -3143,7 +3152,17 @@ Kontext: ${input.context}`,
         }
 
         websiteData.sections = sections;
-        await updateWebsite(input.websiteId, { websiteData });
+
+        // Save contact form fields to both websiteData (for rendering) and website record
+        if (input.addOns.contactFormFields) {
+          websiteData.contactFormFields = input.addOns.contactFormFields;
+          await updateWebsite(input.websiteId, {
+            websiteData,
+            contactFormFields: input.addOns.contactFormFields,
+          });
+        } else {
+          await updateWebsite(input.websiteId, { websiteData });
+        }
         return { success: true };
       }),
 

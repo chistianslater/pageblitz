@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
@@ -367,19 +367,25 @@ interface ContactFormEditorProps {
   websiteId: number;
 }
 
-function ContactFormEditor({ websiteId }: ContactFormEditorProps) {
+function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEditorProps & { initialFields?: FormField[], onSave?: (fields: FormField[]) => void }) {
   // Default form fields
-  const [fields, setFields] = useState<FormField[]>([
+  const defaultFields: FormField[] = [
     { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
     { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
     { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
     { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
-  ]);
+  ];
+
+  const [fields, setFields] = useState<FormField[]>(initialFields || defaultFields);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Load saved fields from website data (could be implemented via API)
-  // For now, we use local state
+  // Update fields when initialFields changes
+  useEffect(() => {
+    if (initialFields && initialFields.length > 0) {
+      setFields(initialFields);
+    }
+  }, [initialFields]);
 
   const addField = () => {
     const newField: FormField = {
@@ -405,13 +411,18 @@ function ContactFormEditor({ websiteId }: ContactFormEditorProps) {
 
   const handleSave = async () => {
     setSaving(true);
-    // Here we would save to the backend
-    // For now, we just show a success message
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setSaved(true);
-    setSaving(false);
-    toast.success("Formularfelder gespeichert");
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      if (onSave) {
+        await onSave(fields);
+      }
+      setSaved(true);
+      toast.success("Formularfelder gespeichert");
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      toast.error("Speichern fehlgeschlagen");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -703,6 +714,9 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   const existingPricelist = websiteData.sections?.find((s: any) => s.type === "pricelist");
   const existingGallery = websiteData.sections?.find((s: any) => s.type === "gallery");
 
+  // Get contact form fields from onboarding or website
+  const contactFormFields = onboarding?.contactFormFields || websiteData?.contactFormFields || website?.contactFormFields;
+
   const [addons, setAddons] = useState({
     gallery: {
       enabled: onboarding?.addOnGallery || false,
@@ -710,7 +724,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     },
     menu: {
       enabled: onboarding?.addOnMenu || false,
-      categories: (existingMenu?.items ? 
+      categories: (existingMenu?.items ?
         // Convert items back to categories format for editing
         Object.entries(existingMenu.items.reduce((acc: any, item: any) => {
           const cat = item.category || "Speisekarte";
@@ -735,6 +749,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       ) as any[],
     },
     contactForm: onboarding?.addOnContactForm || false,
+    contactFormFields: contactFormFields as FormField[] | undefined,
   });
 
   const [uploading, setUploading] = useState(false);
@@ -760,9 +775,25 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
         pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
+        contactFormFields: addons.contactFormFields,
       },
     });
     setSaving(false);
+  };
+
+  const handleSaveContactFormFields = async (fields: FormField[]) => {
+    const newAddons = { ...addons, contactFormFields: fields };
+    setAddons(newAddons);
+    await updateAddons.mutateAsync({
+      websiteId,
+      addOns: {
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+        menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
+        pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+        contactForm: addons.contactForm,
+        contactFormFields: fields,
+      },
+    });
   };
 
   const toggleAddon = (key: keyof typeof addons) => {
@@ -953,7 +984,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         
         {expandedAddon === "gallery" && addons.gallery.enabled && (
           <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+            <div className="space-y-4 max-h-[700px] overflow-y-auto">
               {addons.gallery.photos.length > 0 && (
                 <div className="grid grid-cols-4 gap-2">
                   {addons.gallery.photos.map((photo, idx) => (
@@ -1028,7 +1059,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         
         {expandedAddon === "menu" && addons.menu.enabled && (
           <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+            <div className="space-y-4 max-h-[700px] overflow-y-auto">
               {addons.menu.categories.map((category, catIdx) => (
                 <div key={catIdx} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
                   <div className="flex items-center gap-2">
@@ -1145,7 +1176,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         
         {expandedAddon === "pricelist" && addons.pricelist.enabled && (
           <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+            <div className="space-y-4 max-h-[700px] overflow-y-auto">
               {addons.pricelist.categories.map((category, catIdx) => (
                 <div key={catIdx} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
                   <div className="flex items-center gap-2">
@@ -1264,7 +1295,11 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         
         {expandedAddon === "contactForm" && addons.contactForm && (
           <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <ContactFormEditor websiteId={websiteId} />
+            <ContactFormEditor
+              websiteId={websiteId}
+              initialFields={addons.contactFormFields}
+              onSave={handleSaveContactFormFields}
+            />
           </div>
         )}
       </div>
@@ -1709,8 +1744,8 @@ export default function CustomerDashboard() {
 
         {/* Add-ons Tab */}
         {activeTab === "addons" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
               <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
                 <Sparkles className="w-4 h-4 text-pink-400" />
                 Add-ons verwalten
