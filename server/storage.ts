@@ -19,7 +19,9 @@ function getStorageConfig(): StorageConfig {
 }
 
 function buildUploadUrl(baseUrl: string, relKey: string): URL {
-  const url = new URL("v1/storage/upload", ensureTrailingSlash(baseUrl));
+  // Remove trailing v1/ from baseUrl if present to avoid double v1/v1/
+  const cleanBaseUrl = baseUrl.replace(/\/v1\/?$/, "");
+  const url = new URL("v1/storage/upload", ensureTrailingSlash(cleanBaseUrl));
   url.searchParams.set("path", normalizeKey(relKey));
   return url;
 }
@@ -29,9 +31,11 @@ async function buildDownloadUrl(
   relKey: string,
   apiKey: string
 ): Promise<string> {
+  // Remove trailing v1/ from baseUrl if present to avoid double v1/v1/
+  const cleanBaseUrl = baseUrl.replace(/\/v1\/?$/, "");
   const downloadApiUrl = new URL(
     "v1/storage/downloadUrl",
-    ensureTrailingSlash(baseUrl)
+    ensureTrailingSlash(cleanBaseUrl)
   );
   downloadApiUrl.searchParams.set("path", normalizeKey(relKey));
   const response = await fetch(downloadApiUrl, {
