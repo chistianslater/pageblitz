@@ -49,15 +49,24 @@ function getLayoutComponent(category: string = "", layoutStyle?: string | null):
 export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, headlineSize, headlineFontOverride }: WebsiteRendererProps) {
   const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
   const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
+  
   // Patch aboutImageUrl and headlineFont into websiteData if provided externally
+  // Also filter out hidden sections
   let wd = websiteData as any;
-  if (aboutImageUrl || headlineFontOverride) {
+  const hiddenSections = (websiteData as any)?.hiddenSections || [];
+  
+  if (aboutImageUrl || headlineFontOverride || hiddenSections.length > 0) {
     wd = { ...websiteData } as any;
     if (aboutImageUrl) wd.aboutImageUrl = aboutImageUrl;
     if (headlineFontOverride) {
       wd.designTokens = { ...(wd.designTokens || {}), headlineFont: headlineFontOverride };
     }
+    // Filter out hidden sections
+    if (Array.isArray(wd.sections) && hiddenSections.length > 0) {
+      wd.sections = wd.sections.filter((s: any) => !hiddenSections.includes(s.type));
+    }
   }
+  
   // Use layoutStyle if provided (from admin/dashboard), otherwise fall back to businessCategory
   const LayoutComponent = getLayoutComponent(
     businessCategory || websiteData?.business?.category,
