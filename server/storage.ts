@@ -1,7 +1,8 @@
 // Preconfigured storage helpers for Manus WebDev templates
-// Uses the Biz-provided storage proxy (Authorization: Bearer <token>)
+// Uses R2 if configured, otherwise falls back to the Biz-provided storage proxy
 
 import { ENV } from './_core/env';
+import { uploadImageToR2 } from './r2Upload';
 
 type StorageConfig = { baseUrl: string; apiKey: string };
 
@@ -16,6 +17,11 @@ function getStorageConfig(): StorageConfig {
   }
 
   return { baseUrl: baseUrl.replace(/\/+$/, ""), apiKey };
+}
+
+// Check if R2 is configured
+function isR2Configured(): boolean {
+  return !!(ENV.r2AccountId && ENV.r2AccessKeyId && ENV.r2SecretAccessKey);
 }
 
 function buildUploadUrl(baseUrl: string, relKey: string): URL {
@@ -76,6 +82,30 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream"
 ): Promise<{ key: string; url: string }> {
+  // Prefer R2 if configured
+  if (isR2Configured()) {
+    try {
+      console.log("[Storage] Using R2 for upload");
+      // Extract websiteId from relKey (e.g., "onboarding/123/photo-xxx.jpg")
+      const match = relKey.match(/onboarding\/(\d+)\//);
+      const websiteId = match ? parseInt(match[1], 10) : 0;
+      const prefix = relKey.includes("logo") ? "logo" : "gallery";
+
+      const result = await uploadImageToR2(
+        typeof data === "string" ? data : data.toString("base64"),
+        contentType,
+        websiteId,
+        prefix
+      );
+      console.log("[Storage] R2 upload successful:", result.url);
+      return result;
+    } catch (error) {
+      console.error("[Storage] R2 upload failed, falling back to proxy:", error);
+      // Fall through to proxy upload
+    }
+  }
+
+  // Fallback to proxy storage
   const { baseUrl, apiKey } = getStorageConfig();
   const key = normalizeKey(relKey);
   const uploadUrl = buildUploadUrl(baseUrl, key);
