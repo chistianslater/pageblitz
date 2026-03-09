@@ -759,17 +759,71 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [expandedAddon, setExpandedAddon] = useState<string | null>(null);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasInitialSavedRef = useRef(false);
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
   const updateAddons = trpc.customer.updateAddons.useMutation({
     onSuccess: () => {
-      toast.success("Add-ons gespeichert");
+      setSaveStatus("saved");
+      setLastSaved(new Date());
+      setSaving(false);
       onUpdate();
     },
-    onError: () => toast.error("Speichern fehlgeschlagen"),
+    onError: () => {
+      setSaveStatus("unsaved");
+      setSaving(false);
+      toast.error("Speichern fehlgeschlagen");
+    },
   });
+
+  // Auto-save effect - watches for changes in addons
+  useEffect(() => {
+    // Skip initial render
+    if (!hasInitialSavedRef.current) {
+      hasInitialSavedRef.current = true;
+      return;
+    }
+
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    setSaveStatus("unsaved");
+
+    // Set new timeout for auto-save
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      setSaveStatus("saving");
+      setSaving(true);
+      updateAddons.mutate({
+        websiteId,
+        addOns: {
+          gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+          menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
+          pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+          contactForm: addons.contactForm,
+          contactFormFields: addons.contactFormFields || [
+            { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+            { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+            { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+            { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+          ],
+        },
+      });
+    }, 800); // 800ms debounce
+
+    // Cleanup on unmount
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [addons, websiteId, updateAddons]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -822,6 +876,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         setExpandedAddon(null);
       }
     }
+    // Auto-save will be triggered by useEffect
   };
 
   // Gallery functions
@@ -839,6 +894,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
             gallery: { ...addons.gallery, photos: [...addons.gallery.photos, result.url] },
           });
           toast.success("Bild hochgeladen");
+          // Auto-save will be triggered by useEffect
         }
       } catch (error: any) {
         console.error("Upload error:", error);
@@ -859,6 +915,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       ...addons,
       gallery: { ...addons.gallery, photos: addons.gallery.photos.filter((_, i) => i !== idx) },
     });
+    // Auto-save will be triggered by useEffect
   };
 
   // Menu category functions
@@ -962,16 +1019,58 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <p className="text-slate-400 text-sm">
-          Aktiviere Features für deine Website. Klicke auf ein aktiviertes Add-on, um es zu bearbeiten.
+          Aktiviere Features für deine Website. Änderungen werden automatisch gespeichert.
         </p>
-        <button
-          onClick={handleSave}
-          disabled={saving || uploading}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-          {saving ? "Speichern..." : "Änderungen speichern"}
-        </button>
+        {/* Auto-save Status Indicator */}
+        <div className="flex items-center gap-2">
+          {saveStatus === "saving" && (
+            <span className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Wird gespeichert...
+            </span>
+          )}
+          {saveStatus === "saved" && lastSaved && (
+            <span className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full">
+              <Check className="w-3.5 h-3.5" />
+              Gespeichert {lastSaved.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+          {saveStatus === "unsaved" && (
+            <span className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-500/10 px-3 py-1.5 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" />
+              Warte auf Eingabe...
+            </span>
+          )}
+          {/* Manual save button for instant save */}
+          <button
+            onClick={() => {
+              if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
+              setSaveStatus("saving");
+              setSaving(true);
+              updateAddons.mutate({
+                websiteId,
+                addOns: {
+                  gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+                  menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
+                  pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+                  contactForm: addons.contactForm,
+                  contactFormFields: addons.contactFormFields || [
+                    { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+                    { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+                    { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+                    { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+                  ],
+                },
+              });
+            }}
+            disabled={saving || uploading || saveStatus === "saved"}
+            className="flex items-center gap-1.5 text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-white px-3 py-1.5 rounded-lg transition-colors"
+            title="Jetzt sofort speichern"
+          >
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+            {saving ? "Speichern..." : "Jetzt speichern"}
+          </button>
+        </div>
       </div>
 
       {/* Gallery */}
