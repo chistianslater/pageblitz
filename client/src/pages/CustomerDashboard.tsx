@@ -8,7 +8,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "gallery" | "menu" | "pricelist" | "contactform";
 
 interface SectionConfig {
   type: string;
@@ -710,9 +710,11 @@ interface AddonsEditorProps {
   website: any;
   onboarding: any;
   onUpdate: () => void;
+  initialExpanded?: string | null;
+  filterAddon?: string | null; // If set, only show this specific addon
 }
 
-function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditorProps) {
+function AddonsEditor({ websiteId, website, onboarding, onUpdate, initialExpanded, filterAddon }: AddonsEditorProps) {
   const websiteData = (website.websiteData as WebsiteData) || {};
 
   // Get existing data from website sections
@@ -767,7 +769,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [expandedAddon, setExpandedAddon] = useState<string | null>(null);
+  const [expandedAddon, setExpandedAddon] = useState<string | null>(initialExpanded || null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
 
@@ -1080,8 +1082,10 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       </div>
 
       {/* Gallery */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.gallery.enabled ? (expandedAddon === "gallery" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        {/* Card Header */}
+      {(!filterAddon || filterAddon === "gallery") && (
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.gallery.enabled ? (expandedAddon === "gallery" || filterAddon === "gallery" ? "border-pink-500/50 ring-1 ring-pink-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        {/* Card Header - only show when not filtering */}
+        {!filterAddon && (
         <div className="p-5">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0">
@@ -1095,7 +1099,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 </span>
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Präsentiere deine Arbeiten und Projekte in einer ansprechenden Galerie. 
+                Präsentiere deine Arbeiten und Projekte in einer ansprechenden Galerie.
                 {addons.gallery.enabled && addons.gallery.photos.length > 0 && (
                   <span className="text-pink-400 ml-1">{addons.gallery.photos.length} Bilder hochgeladen</span>
                 )}
@@ -1113,10 +1117,12 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
             </label>
           </div>
         </div>
+        )}
 
-        {/* Expandable Content */}
-        {addons.gallery.enabled && (
-          <div className="border-t border-slate-700/50">
+        {/* Expandable Content - show always when filtering, otherwise based on enabled state */}
+        {(filterAddon === "gallery" || addons.gallery.enabled) && (
+          <div className={filterAddon === "gallery" ? "" : "border-t border-slate-700/50"}>
+            {!filterAddon && (
             <button
               onClick={() => setExpandedAddon(expandedAddon === "gallery" ? null : "gallery")}
               className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
@@ -1128,7 +1134,9 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
               {expandedAddon === "gallery" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
 
-            {expandedAddon === "gallery" && (
+            )}
+
+            {(filterAddon === "gallery" || expandedAddon === "gallery") && (
               <div className="p-5 pt-0 space-y-4">
                 {addons.gallery.photos.length > 0 && (
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -1170,9 +1178,12 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </div>
         )}
       </div>
+      )}
 
       {/* Menu */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.menu.enabled ? (expandedAddon === "menu" ? "border-amber-500/50 ring-1 ring-amber-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+      {(!filterAddon || filterAddon === "menu") && (
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.menu.enabled ? (expandedAddon === "menu" || filterAddon === "menu" ? "border-amber-500/50 ring-1 ring-amber-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        {!filterAddon && (
         <div className="p-5">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
@@ -1205,9 +1216,11 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
             </label>
           </div>
         </div>
+        )}
 
-        {addons.menu.enabled && (
-          <div className="border-t border-slate-700/50">
+        {(filterAddon === "menu" || addons.menu.enabled) && (
+          <div className={filterAddon === "menu" ? "" : "border-t border-slate-700/50"}>
+            {!filterAddon && (
             <button
               onClick={() => setExpandedAddon(expandedAddon === "menu" ? null : "menu")}
               className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
@@ -1218,8 +1231,9 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
               </span>
               {expandedAddon === "menu" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
+            )}
 
-            {expandedAddon === "menu" && (
+            {(filterAddon === "menu" || expandedAddon === "menu") && (
               <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
                 {addons.menu.categories.map((category, catIdx) => (
                   <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
@@ -1300,9 +1314,12 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </div>
         )}
       </div>
+      )}
 
       {/* Pricelist */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.pricelist.enabled ? (expandedAddon === "pricelist" ? "border-emerald-500/50 ring-1 ring-emerald-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+      {(!filterAddon || filterAddon === "pricelist") && (
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.pricelist.enabled ? (expandedAddon === "pricelist" || filterAddon === "pricelist" ? "border-emerald-500/50 ring-1 ring-emerald-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        {!filterAddon && (
         <div className="p-5">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0">
@@ -1335,9 +1352,11 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
             </label>
           </div>
         </div>
+        )}
 
-        {addons.pricelist.enabled && (
-          <div className="border-t border-slate-700/50">
+        {(filterAddon === "pricelist" || addons.pricelist.enabled) && (
+          <div className={filterAddon === "pricelist" ? "" : "border-t border-slate-700/50"}>
+            {!filterAddon && (
             <button
               onClick={() => setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist")}
               className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
@@ -1348,8 +1367,9 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
               </span>
               {expandedAddon === "pricelist" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
+            )}
 
-            {expandedAddon === "pricelist" && (
+            {(filterAddon === "pricelist" || expandedAddon === "pricelist") && (
               <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
                 {addons.pricelist.categories.map((category, catIdx) => (
                   <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
@@ -1430,9 +1450,12 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </div>
         )}
       </div>
+      )}
 
       {/* Contact Form */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.contactForm ? (expandedAddon === "contactForm" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+      {(!filterAddon || filterAddon === "contactForm") && (
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.contactForm ? (expandedAddon === "contactForm" || filterAddon === "contactForm" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        {!filterAddon && (
         <div className="p-5">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center flex-shrink-0">
@@ -1446,7 +1469,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 </span>
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Ermögliche Besuchern, direkt über deine Website Anfragen zu senden. 
+                Ermögliche Besuchern, direkt über deine Website Anfragen zu senden.
                 {addons.contactForm && (
                   <span className="text-blue-400 ml-1">
                     {addons.contactFormFields?.length || 4} Felder konfiguriert
@@ -1465,9 +1488,11 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
             </label>
           </div>
         </div>
+        )}
 
-        {addons.contactForm && (
-          <div className="border-t border-slate-700/50">
+        {(filterAddon === "contactForm" || addons.contactForm) && (
+          <div className={filterAddon === "contactForm" ? "" : "border-t border-slate-700/50"}>
+            {!filterAddon && (
             <button
               onClick={() => setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm")}
               className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
@@ -1478,8 +1503,9 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
               </span>
               {expandedAddon === "contactForm" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
+            )}
 
-            {expandedAddon === "contactForm" && (
+            {(filterAddon === "contactForm" || expandedAddon === "contactForm") && (
               <div className="p-5 pt-2">
                 <ContactFormEditor
                   websiteId={websiteId}
@@ -1491,6 +1517,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
@@ -1798,11 +1825,23 @@ export default function CustomerDashboard() {
     });
   };
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  // Get addon status for dynamic tabs
+  const hasGallery = onboardingData?.addOnGallery || websiteData?.sections?.some((s: any) => s.type === "gallery");
+  const hasMenu = onboardingData?.addOnMenu || websiteData?.sections?.some((s: any) => s.type === "menu");
+  const hasPricelist = onboardingData?.addOnPricelist || websiteData?.sections?.some((s: any) => s.type === "pricelist");
+  const hasContactForm = onboardingData?.addOnContactForm !== false; // Default true
+
+  const tabs: { id: Tab; label: string; icon: React.ReactNode; isAddon?: boolean }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
     { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
+    // Dynamic addon tabs - appear when enabled
+    ...(hasGallery ? [{ id: "gallery" as Tab, label: "Galerie", icon: <Image className="w-4 h-4 text-pink-400" />, isAddon: true }] : []),
+    ...(hasMenu ? [{ id: "menu" as Tab, label: "Speisekarte", icon: <Sparkles className="w-4 h-4 text-amber-400" />, isAddon: true }] : []),
+    ...(hasPricelist ? [{ id: "pricelist" as Tab, label: "Preisliste", icon: <LayoutGrid className="w-4 h-4 text-emerald-400" />, isAddon: true }] : []),
+    ...(hasContactForm ? [{ id: "contactform" as Tab, label: "Kontaktformular", icon: <Mail className="w-4 h-4 text-blue-400" />, isAddon: true }] : []),
+    // Add-ons management tab (always visible, for enabling/disabling)
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
   ];
 
@@ -1863,14 +1902,23 @@ export default function CustomerDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 relative ${
                   activeTab === tab.id
-                    ? "text-blue-400 border-blue-400 bg-blue-500/10"
-                    : "text-slate-400 border-transparent hover:text-white hover:bg-slate-800/50"
+                    ? tab.isAddon
+                      ? "text-amber-400 border-amber-400 bg-amber-500/10"
+                      : "text-blue-400 border-blue-400 bg-blue-500/10"
+                    : tab.isAddon
+                      ? "text-amber-300 border-transparent hover:text-amber-200 hover:bg-amber-500/10"
+                      : "text-slate-400 border-transparent hover:text-white hover:bg-slate-800/50"
                 }`}
               >
                 {tab.icon}
                 {tab.label}
+                {tab.isAddon && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center">
+                    <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -2164,7 +2212,7 @@ export default function CustomerDashboard() {
           </div>
         )}
 
-        {/* Add-ons Tab */}
+        {/* Add-ons Tab - only shows toggles to enable/disable */}
         {activeTab === "addons" && (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
@@ -2185,16 +2233,127 @@ export default function CustomerDashboard() {
                 Erweiterte Bearbeitung
               </h2>
               <p className="text-slate-400 text-sm mb-4">
-                Für detaillierte Bearbeitung von Galerie-Bildern, Menüpunkten und Preisen nutze das vollständige Onboarding.
+                Aktivierte Add-ons erscheinen als eigene Tabs oben in der Navigation. So hast du für jedes Add-on mehr Platz zum Bearbeiten.
               </p>
-              <a
-                href={`/preview/${website.previewToken}/onboarding`}
-                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Vollständiges Onboarding öffnen
-              </a>
+              <div className="space-y-2 text-sm text-slate-400">
+                <p className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Addon-Tabs sind mit Sternchen markiert</span>
+                </p>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Gallery Tab */}
+        {activeTab === "gallery" && hasGallery && (
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center">
+                <Image className="w-5 h-5 text-pink-400" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold flex items-center gap-2">
+                  Galerie
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
+                    <Sparkles className="w-3 h-3 inline mr-1" />Add-on
+                  </span>
+                </h2>
+                <p className="text-slate-400 text-sm">Verwalte deine Galerie-Bilder</p>
+              </div>
+            </div>
+            <AddonsEditor
+              websiteId={website.id}
+              website={website}
+              onboarding={onboardingData}
+              onUpdate={handleUpdate}
+              initialExpanded="gallery"
+              filterAddon="gallery"
+            />
+          </div>
+        )}
+
+        {/* Menu Tab */}
+        {activeTab === "menu" && hasMenu && (
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold flex items-center gap-2">
+                  Speisekarte
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
+                    <Sparkles className="w-3 h-3 inline mr-1" />Add-on
+                  </span>
+                </h2>
+                <p className="text-slate-400 text-sm">Verwalte deine Gerichte und Kategorien</p>
+              </div>
+            </div>
+            <AddonsEditor
+              websiteId={website.id}
+              website={website}
+              onboarding={onboardingData}
+              onUpdate={handleUpdate}
+              initialExpanded="menu"
+              filterAddon="menu"
+            />
+          </div>
+        )}
+
+        {/* Pricelist Tab */}
+        {activeTab === "pricelist" && hasPricelist && (
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+                <LayoutGrid className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold flex items-center gap-2">
+                  Preisliste
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
+                    <Sparkles className="w-3 h-3 inline mr-1" />Add-on
+                  </span>
+                </h2>
+                <p className="text-slate-400 text-sm">Verwalte deine Leistungen und Preise</p>
+              </div>
+            </div>
+            <AddonsEditor
+              websiteId={website.id}
+              website={website}
+              onboarding={onboardingData}
+              onUpdate={handleUpdate}
+              initialExpanded="pricelist"
+              filterAddon="pricelist"
+            />
+          </div>
+        )}
+
+        {/* Contact Form Tab */}
+        {activeTab === "contactform" && hasContactForm && (
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
+                <Mail className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold flex items-center gap-2">
+                  Kontaktformular
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
+                    <Sparkles className="w-3 h-3 inline mr-1" />Add-on
+                  </span>
+                </h2>
+                <p className="text-slate-400 text-sm">Passe die Felder deines Kontaktformulars an</p>
+              </div>
+            </div>
+            <AddonsEditor
+              websiteId={website.id}
+              website={website}
+              onboarding={onboardingData}
+              onUpdate={handleUpdate}
+              initialExpanded="contactForm"
+              filterAddon="contactForm"
+            />
           </div>
         )}
       </div>
