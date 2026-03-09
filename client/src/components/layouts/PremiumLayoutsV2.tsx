@@ -273,16 +273,16 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
   return (
     <section id="leistungen" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-24">
+        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-16 md:mb-20">
           <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
             Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
           </h2>
         </Skeleton>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6 md:gap-8 gap-y-10 md:gap-y-12">
           {services.map((service: any, i: number) => (
             <Skeleton key={i} isLoading={isLoading} className="h-72">
-              <div className={`p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass}`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
-                <div className="w-14 h-14 rounded-full mb-8 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
+              <div className={`p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass} h-full`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
+                <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
                   <Zap size={28} style={{ color: safeCs.primary }} />
                 </div>
                 <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-4">{service.title}</h3>
@@ -311,7 +311,7 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
   return (
     <section id="leistungen" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-8">
           <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
               Exzellente<br /><span style={{ color: safeCs.primary }}>Services</span>
@@ -884,11 +884,11 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
 
   // Variant 1: Large Focus (Single or Two columns)
   return (
-    <section className={`py-24 md:py-32 px-6 ${bg} overflow-hidden relative`} style={bgStyle}>
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-neutral-500/5 -z-0 skew-x-12 translate-x-1/2" />
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div>
+    <section className={`py-24 md:py-32 px-6 ${bg} overflow-hidden relative isolate`} style={bgStyle}>
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-neutral-500/5 -z-10 skew-x-12 translate-x-1/2" />
+      <div className="max-w-7xl mx-auto relative z-0">
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div className="lg:sticky lg:top-32">
             <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-6 ${dark ? (safeCs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Testimonials</span>
             <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black"} mb-8`} style={{ ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
               Echte <span style={{ color: safeCs.primary }}>Erfahrungen</span>
@@ -897,22 +897,24 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
               Wir legen höchsten Wert auf Qualität und Kundenzufriedenheit. Das sagen unsere Partner über die Zusammenarbeit.
             </p>
           </div>
-          <div className="space-y-8">
+          <div className="space-y-8 relative z-10">
             {items?.slice(0, 2).map((t: any, i: number) => (
-              <Skeleton key={i} isLoading={isLoading} className="h-48">
+              <Skeleton key={i} isLoading={isLoading} className="min-h-[200px]">
                 <motion.div
-                  className={`p-10 ${dark ? (safeCs.darkSurface ? '' : 'bg-white/10') : 'bg-white shadow-2xl'} rounded-[2rem] relative`}
+                  className={`p-8 md:p-10 ${dark ? (safeCs.darkSurface ? '' : 'bg-white/10') : 'bg-white shadow-2xl'} rounded-[2rem] relative overflow-visible`}
                   style={dark && safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface } : undefined}
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.2 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ delay: i * 0.15, duration: 0.5 }}
                 >
-                  <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: safeCs.primary }}>
-                    <Star size={20} style={{ color: safeCs.onPrimary || '#ffffff' }} fill="currentColor" />
+                  <div className="absolute -top-3 -left-3 md:-top-4 md:-left-4 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg z-20" style={{ backgroundColor: safeCs.primary }}>
+                    <Star size={18} style={{ color: safeCs.onPrimary || '#ffffff' }} fill="currentColor" />
                   </div>
-                  <p className={`${textMain} text-lg mb-6 italic leading-relaxed`} style={textMainStyle}>"{t.description || t.title}"</p>
-                  <p className={`font-bold ${textMain} uppercase tracking-widest text-sm`} style={textMainStyle}>— {t.author}</p>
+                  <div className="pt-2">
+                    <p className={`${textMain} text-base md:text-lg mb-4 italic leading-relaxed`} style={textMainStyle}>"{t.description || t.title}"</p>
+                    <p className={`font-bold ${textMain} uppercase tracking-widest text-xs md:text-sm`} style={textMainStyle}>— {t.author}</p>
+                  </div>
                 </motion.div>
               </Skeleton>
             ))}
