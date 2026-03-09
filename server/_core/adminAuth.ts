@@ -48,8 +48,13 @@ export function registerAdminAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       console.log("[AdminAuth] Cookie options:", cookieOptions);
 
+      // Explicitly clear old cookie first to ensure it gets replaced
+      res.clearCookie(COOKIE_NAME, { path: "/" });
+      res.clearCookie(COOKIE_NAME, { path: "/", domain: req.hostname });
+      console.log("[AdminAuth] Old cookies cleared");
+
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      console.log("[AdminAuth] Cookie set");
+      console.log("[AdminAuth] New cookie set");
 
       res.json({ ok: true });
       console.log("[AdminAuth] Response sent");
