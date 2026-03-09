@@ -30,7 +30,8 @@ export default function LoginPage() {
         return;
       }
 
-      navigate("/admin");
+      // Hard redirect to ensure fresh auth state
+      window.location.href = "/admin";
     } catch {
       setError("Verbindungsfehler. Bitte erneut versuchen.");
     } finally {
