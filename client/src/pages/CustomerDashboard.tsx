@@ -1825,11 +1825,20 @@ export default function CustomerDashboard() {
     });
   };
 
-  // Get addon status for dynamic tabs
-  const hasGallery = onboardingData?.addOnGallery || websiteData?.sections?.some((s: any) => s.type === "gallery");
-  const hasMenu = onboardingData?.addOnMenu || websiteData?.sections?.some((s: any) => s.type === "menu");
-  const hasPricelist = onboardingData?.addOnPricelist || websiteData?.sections?.some((s: any) => s.type === "pricelist");
+  // Get addon status for dynamic tabs - ONLY from onboarding data
+  // websiteData.sections is NOT reliable because sections remain even when disabled
+  const hasGallery = !!onboardingData?.addOnGallery;
+  const hasMenu = !!onboardingData?.addOnMenu;
+  const hasPricelist = !!onboardingData?.addOnPricelist;
   const hasContactForm = onboardingData?.addOnContactForm !== false; // Default true
+
+  // If current active tab is an addon that was disabled, switch back to addons tab
+  useEffect(() => {
+    if (activeTab === "gallery" && !hasGallery) setActiveTab("addons");
+    if (activeTab === "menu" && !hasMenu) setActiveTab("addons");
+    if (activeTab === "pricelist" && !hasPricelist) setActiveTab("addons");
+    if (activeTab === "contactform" && !hasContactForm) setActiveTab("addons");
+  }, [hasGallery, hasMenu, hasPricelist, hasContactForm, activeTab]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode; isAddon?: boolean }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },

@@ -872,6 +872,49 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
 
+  // Compute sections for hideSections step using useMemo instead of IIFE
+  const hideSectionsData = useMemo(() => {
+    const base = siteData?.website?.websiteData as any;
+    const sectionsFromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
+
+    // Add dynamic sections if they are active in data
+    const sectionsToShow = [...sectionsFromBase];
+    if (data.addOnMenu && !sectionsToShow.some((s: any) => s.type === "menu")) {
+      sectionsToShow.push({ type: "menu" });
+    }
+    if (data.addOnPricelist && !sectionsToShow.some((s: any) => s.type === "pricelist")) {
+      sectionsToShow.push({ type: "pricelist" });
+    }
+    if (data.addOnGallery && !sectionsToShow.some((s: any) => s.type === "gallery")) {
+      sectionsToShow.push({ type: "gallery" });
+    }
+    if (!sectionsToShow.some((s: any) => s.type === "contact")) {
+      sectionsToShow.push({ type: "contact" });
+    }
+
+    const labels: Record<string, { label: string; emoji: string }> = {
+      about: { label: "Über uns", emoji: "👤" },
+      services: { label: "Leistungen", emoji: "🔧" },
+      testimonials: { label: "Kundenstimmen", emoji: "⭐" },
+      gallery: { label: "Bildergalerie", emoji: "🖼️" },
+      contact: { label: "Kontaktbereich", emoji: "📬" },
+      cta: { label: "Direktkontakt-Banner", emoji: "🎯" },
+      features: { label: "Vorteile", emoji: "✅" },
+      team: { label: "Team", emoji: "👥" },
+      faq: { label: "FAQ", emoji: "❓" },
+      menu: { label: "Speisekarte", emoji: "📖" },
+      pricelist: { label: "Preisliste", emoji: "🏷️" },
+    };
+
+    const allSectionsFull = sectionsToShow.map((s: any) => ({
+      type: s.type,
+      ...(labels[s.type] || { label: s.type, emoji: "📄" }),
+    }));
+
+    // Unique by type to avoid duplicates in the UI
+    return Array.from(new Map(allSectionsFull.map((s: any) => [s.type, s])).values());
+  }, [siteData?.website?.websiteData, data.addOnMenu, data.addOnPricelist, data.addOnGallery]);
+
   // ── Save current step to localStorage whenever it changes ───────────────
   useEffect(() => {
     if (currentStep === 'welcome') return; // Don't save initial state
@@ -3883,97 +3926,54 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-2"
             >
-                {(() => {
-                  const base = siteData?.website?.websiteData as any;
-                  const sectionsFromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
-                  
-                  // Add dynamic sections if they are active in data
-                  const sectionsToShow = [...sectionsFromBase];
-                  if (data.addOnMenu && !sectionsToShow.some(s => s.type === "menu")) {
-                    sectionsToShow.push({ type: "menu" });
-                  }
-                  if (data.addOnPricelist && !sectionsToShow.some(s => s.type === "pricelist")) {
-                    sectionsToShow.push({ type: "pricelist" });
-                  }
-                  if (data.addOnGallery && !sectionsToShow.some(s => s.type === "gallery")) {
-                    sectionsToShow.push({ type: "gallery" });
-                  }
-                  if (!sectionsToShow.some(s => s.type === "contact")) {
-                    sectionsToShow.push({ type: "contact" });
-                  }
-
-                  const allSectionsFull: Array<{ type: string; label: string; emoji: string }> = sectionsToShow
-                    .map((s: any) => {
-                      const labels: Record<string, { label: string; emoji: string }> = {
-                        about: { label: "Über uns", emoji: "👤" },
-                        services: { label: "Leistungen", emoji: "🔧" },
-                        testimonials: { label: "Kundenstimmen", emoji: "⭐" },
-                        gallery: { label: "Bildergalerie", emoji: "🖼️" },
-                        contact: { label: "Kontaktbereich", emoji: "📬" },
-                        cta: { label: "Direktkontakt-Banner", emoji: "🎯" },
-                        features: { label: "Vorteile", emoji: "✅" },
-                        team: { label: "Team", emoji: "👥" },
-                        faq: { label: "FAQ", emoji: "❓" },
-                        menu: { label: "Speisekarte", emoji: "📖" },
-                        pricelist: { label: "Preisliste", emoji: "🏷️" },
-                      };
-                      return { type: s.type, ...(labels[s.type] || { label: s.type, emoji: "📄" }) };
-                    });
-
-                  // Unique by type to avoid duplicates in the UI
-                  const allSections = Array.from(new Map(allSectionsFull.map(s => [s.type, s])).values());
-
-                  return (
-                    <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {allSections.map((sec) => {
-                          const isHidden = hiddenSections.has(sec.type);
-                          return (
-                            <button
-                              key={sec.type}
-                              onClick={() => {
-                                setHiddenSections((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(sec.type)) next.delete(sec.type);
-                                  else next.add(sec.type);
-                                  return next;
-                                });
-                              }}
-                              className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all text-left ${
-                                isHidden
-                                  ? "border-slate-700 bg-slate-800/40 text-slate-500 opacity-60"
-                                  : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
-                              }`}
-                            >
-                              <div className={`w-4 h-4 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
-                                {!isHidden && <Check className="w-3 h-3 text-white" />}
-                              </div>
-                              <span className="flex-shrink-0">{sec.emoji}</span>
-                              <span className={`flex-1 leading-tight ${isHidden ? "line-through" : ""}`}>{sec.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {hiddenSections.size > 0 && (
-                        <p className="text-xs text-amber-400/80 mt-1">
-                          {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – du kannst sie jederzeit wieder aktivieren.
-                        </p>
-                      )}
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {hideSectionsData.map((sec: any) => {
+                    const isHidden = hiddenSections.has(sec.type);
+                    return (
                       <button
-                        disabled={isTyping}
-                        onClick={async () => {
-                          if (isTyping) return;
-                          const hidden = Array.from(hiddenSections);
-                          addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
-                          await advanceToStep("preview");
+                        key={sec.type}
+                        onClick={() => {
+                          setHiddenSections((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(sec.type)) next.delete(sec.type);
+                            else next.add(sec.type);
+                            return next;
+                          });
                         }}
-                        className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+                        className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all text-left ${
+                          isHidden
+                            ? "border-slate-700 bg-slate-800/40 text-slate-500 opacity-60"
+                            : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
+                        }`}
                       >
-                        Weiter <ChevronRight className="w-4 h-4" />
+                        <div className={`w-4 h-4 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
+                          {!isHidden && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        <span className="flex-shrink-0">{sec.emoji}</span>
+                        <span className={`flex-1 leading-tight ${isHidden ? "line-through" : ""}`}>{sec.label}</span>
                       </button>
-                    </>
-                  );
-                })()}
+                    );
+                  })}
+                </div>
+                {hiddenSections.size > 0 && (
+                  <p className="text-xs text-amber-400/80 mt-1">
+                    {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – du kannst sie jederzeit wieder aktivieren.
+                  </p>
+                )}
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const hidden = Array.from(hiddenSections);
+                    addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
+                    await advanceToStep("preview");
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
             </motion.div>
           )}
 
