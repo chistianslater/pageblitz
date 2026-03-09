@@ -2429,10 +2429,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Render ──────────────────────────────────────────────────────────────
 
-  if (siteLoading || isGeneratingInitialWebsite) {
-    return <EpicGenerationLoading phase={generationPhase} progress={generationProgress} />;
-  }
-
   const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;
   // Fallback to local data.colorScheme so preview works even when DB value is null
   const colorScheme = (siteData?.website?.colorScheme ?? data.colorScheme ?? undefined) as ColorScheme | undefined;
@@ -2441,8 +2437,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const layoutStyle = (siteData?.website as any)?.layoutStyle as string | undefined;
   const slug = siteData?.website?.slug;
 
+  const isLoading = siteLoading || isGeneratingInitialWebsite;
+
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
+    <>
+      {isLoading ? (
+        <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
+          <EpicGenerationLoading phase={generationPhase} progress={generationProgress} />
+        </div>
+      ) : (
+        <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
       {/* FOMO Header */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
         <Clock className="w-4 h-4 flex-shrink-0" />
@@ -4629,6 +4633,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         </div>
       )}
     </div>
+      )}
+    </>
   );
 }
 
