@@ -537,23 +537,31 @@ interface AddonsEditorProps {
 function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditorProps) {
   const websiteData = (website.websiteData as WebsiteData) || {};
 
+  // Get existing data from website sections
+  const existingMenu = websiteData.sections?.find((s: any) => s.type === "menu");
+  const existingPricelist = websiteData.sections?.find((s: any) => s.type === "pricelist");
+  const existingGallery = websiteData.sections?.find((s: any) => s.type === "gallery");
+
   const [addons, setAddons] = useState({
     gallery: {
       enabled: onboarding?.addOnGallery || false,
-      photos: (websiteData.sections?.find((s: any) => s.type === "gallery")?.photos || []) as string[],
+      photos: (existingGallery?.photos || []) as string[],
     },
     menu: {
       enabled: onboarding?.addOnMenu || false,
-      items: (websiteData.sections?.find((s: any) => s.type === "menu")?.items || []) as any[],
+      categories: (existingMenu?.categories || [{ name: "Speisekarte", items: [] }]) as any[],
     },
     pricelist: {
       enabled: onboarding?.addOnPricelist || false,
-      items: (websiteData.sections?.find((s: any) => s.type === "pricelist")?.items || []) as any[],
+      categories: (existingPricelist?.categories || [{ name: "Leistungen", items: [] }]) as any[],
     },
     contactForm: onboarding?.addOnContactForm || false,
   });
 
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
   const updateAddons = trpc.customer.updateAddons.useMutation({
     onSuccess: () => {
@@ -569,8 +577,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       websiteId,
       addOns: {
         gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
-        menu: addons.menu.enabled ? { enabled: true, items: addons.menu.items } : { enabled: false },
-        pricelist: addons.pricelist.enabled ? { enabled: true, items: addons.pricelist.items } : { enabled: false },
+        menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
+        pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
       },
     });
@@ -591,19 +599,23 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   // Gallery functions
   const addGalleryPhoto = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    setUploading(true);
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = (reader.result as string).split(",")[1];
       try {
-        const result = await (window as any).__trpcUpload?.({ websiteId, imageData: base64, mimeType: file.type });
+        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
         if (result?.url) {
           setAddons({
             ...addons,
             gallery: { ...addons.gallery, photos: [...addons.gallery.photos, result.url] },
           });
+          toast.success("Bild hochgeladen");
         }
       } catch {
         toast.error("Upload fehlgeschlagen");
+      } finally {
+        setUploading(false);
       }
     };
     reader.readAsDataURL(file);
@@ -616,46 +628,100 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     });
   };
 
-  // Menu functions
-  const addMenuItem = () => {
+  // Menu category functions
+  const addMenuCategory = () => {
     setAddons({
       ...addons,
-      menu: { ...addons.menu, items: [...(addons.menu.items || []), { name: "", description: "", price: "" }] },
+      menu: { ...addons.menu, categories: [...addons.menu.categories, { name: "Neue Kategorie", items: [] }] },
     });
   };
 
-  const updateMenuItem = (idx: number, field: string, value: string) => {
-    const newItems = [...(addons.menu.items || [])];
-    newItems[idx] = { ...newItems[idx], [field]: value };
-    setAddons({ ...addons, menu: { ...addons.menu, items: newItems } });
+  const updateMenuCategoryName = (catIdx: number, name: string) => {
+    const newCategories = [...addons.menu.categories];
+    newCategories[catIdx] = { ...newCategories[catIdx], name };
+    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
   };
 
-  const removeMenuItem = (idx: number) => {
+  const removeMenuCategory = (catIdx: number) => {
+    if (addons.menu.categories.length <= 1) return;
     setAddons({
       ...addons,
-      menu: { ...addons.menu, items: addons.menu.items?.filter((_, i) => i !== idx) },
+      menu: { ...addons.menu, categories: addons.menu.categories.filter((_, i) => i !== catIdx) },
     });
   };
 
-  // Pricelist functions
-  const addPriceItem = () => {
+  const addMenuItem = (catIdx: number) => {
+    const newCategories = [...addons.menu.categories];
+    newCategories[catIdx] = {
+      ...newCategories[catIdx],
+      items: [...(newCategories[catIdx].items || []), { name: "", description: "", price: "" }],
+    };
+    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+  };
+
+  const updateMenuItem = (catIdx: number, itemIdx: number, field: string, value: string) => {
+    const newCategories = [...addons.menu.categories];
+    const items = [...(newCategories[catIdx].items || [])];
+    items[itemIdx] = { ...items[itemIdx], [field]: value };
+    newCategories[catIdx] = { ...newCategories[catIdx], items };
+    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+  };
+
+  const removeMenuItem = (catIdx: number, itemIdx: number) => {
+    const newCategories = [...addons.menu.categories];
+    newCategories[catIdx] = {
+      ...newCategories[catIdx],
+      items: newCategories[catIdx].items.filter((_: any, i: number) => i !== itemIdx),
+    };
+    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+  };
+
+  // Pricelist category functions
+  const addPriceCategory = () => {
     setAddons({
       ...addons,
-      pricelist: { ...addons.pricelist, items: [...(addons.pricelist.items || []), { name: "", price: "", description: "" }] },
+      pricelist: { ...addons.pricelist, categories: [...addons.pricelist.categories, { name: "Neue Kategorie", items: [] }] },
     });
   };
 
-  const updatePriceItem = (idx: number, field: string, value: string) => {
-    const newItems = [...(addons.pricelist.items || [])];
-    newItems[idx] = { ...newItems[idx], [field]: value };
-    setAddons({ ...addons, pricelist: { ...addons.pricelist, items: newItems } });
+  const updatePriceCategoryName = (catIdx: number, name: string) => {
+    const newCategories = [...addons.pricelist.categories];
+    newCategories[catIdx] = { ...newCategories[catIdx], name };
+    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
   };
 
-  const removePriceItem = (idx: number) => {
+  const removePriceCategory = (catIdx: number) => {
+    if (addons.pricelist.categories.length <= 1) return;
     setAddons({
       ...addons,
-      pricelist: { ...addons.pricelist, items: addons.pricelist.items?.filter((_, i) => i !== idx) },
+      pricelist: { ...addons.pricelist, categories: addons.pricelist.categories.filter((_, i) => i !== catIdx) },
     });
+  };
+
+  const addPriceItem = (catIdx: number) => {
+    const newCategories = [...addons.pricelist.categories];
+    newCategories[catIdx] = {
+      ...newCategories[catIdx],
+      items: [...(newCategories[catIdx].items || []), { name: "", description: "", price: "" }],
+    };
+    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+  };
+
+  const updatePriceItem = (catIdx: number, itemIdx: number, field: string, value: string) => {
+    const newCategories = [...addons.pricelist.categories];
+    const items = [...(newCategories[catIdx].items || [])];
+    items[itemIdx] = { ...items[itemIdx], [field]: value };
+    newCategories[catIdx] = { ...newCategories[catIdx], items };
+    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+  };
+
+  const removePriceItem = (catIdx: number, itemIdx: number) => {
+    const newCategories = [...addons.pricelist.categories];
+    newCategories[catIdx] = {
+      ...newCategories[catIdx],
+      items: newCategories[catIdx].items.filter((_: any, i: number) => i !== itemIdx),
+    };
+    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
   };
 
   return (
@@ -694,18 +760,19 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 ))}
               </div>
             )}
-            <label className="flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 cursor-pointer transition-colors">
+            <label className={`flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 cursor-pointer transition-colors ${uploading ? "opacity-50" : ""}`}>
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
+                disabled={uploading}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) addGalleryPhoto(file);
                 }}
               />
-              <Plus className="w-4 h-4" />
-              Bild hinzufügen
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              {uploading ? "Wird hochgeladen..." : "Bild hinzufügen"}
             </label>
           </div>
         )}
@@ -729,46 +796,77 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </label>
         </div>
         {addons.menu.enabled && (
-          <div className="space-y-3">
-            {addons.menu.items?.map((item, idx) => (
-              <div key={idx} className="flex gap-2 items-start bg-slate-700/30 rounded-lg p-2">
-                <div className="flex-1 space-y-2">
+          <div className="space-y-4">
+            {addons.menu.categories.map((category, catIdx) => (
+              <div key={catIdx} className="bg-slate-700/30 rounded-lg p-3 space-y-3">
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    value={item.name || ""}
-                    onChange={(e) => updateMenuItem(idx, "name", e.target.value)}
-                    placeholder="Name"
-                    className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                    value={category.name}
+                    onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)}
+                    placeholder="Kategorie Name"
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded border border-slate-600 outline-none focus:border-blue-500 font-medium"
                   />
-                  <input
-                    type="text"
-                    value={item.description || ""}
-                    onChange={(e) => updateMenuItem(idx, "description", e.target.value)}
-                    placeholder="Beschreibung"
-                    className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                  />
-                  <input
-                    type="text"
-                    value={item.price || ""}
-                    onChange={(e) => updateMenuItem(idx, "price", e.target.value)}
-                    placeholder="Preis"
-                    className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                  />
+                  {addons.menu.categories.length > 1 && (
+                    <button
+                      onClick={() => removeMenuCategory(catIdx)}
+                      className="p-2 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-                <button
-                  onClick={() => removeMenuItem(idx)}
-                  className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+
+                <div className="space-y-2 pl-2 border-l-2 border-slate-600">
+                  {category.items?.map((item: any, itemIdx: number) => (
+                    <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-2">
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="text"
+                          value={item.name || ""}
+                          onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)}
+                          placeholder="Name"
+                          className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                        />
+                        <input
+                          type="text"
+                          value={item.description || ""}
+                          onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)}
+                          placeholder="Beschreibung"
+                          className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                        />
+                        <input
+                          type="text"
+                          value={item.price || ""}
+                          onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)}
+                          placeholder="Preis"
+                          className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeMenuItem(catIdx, itemIdx)}
+                        className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addMenuItem(catIdx)}
+                    className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Gericht hinzufügen
+                  </button>
+                </div>
               </div>
             ))}
             <button
-              onClick={addMenuItem}
-              className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              onClick={addMenuCategory}
+              className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Menüpunkt hinzufügen
+              Kategorie hinzufügen
             </button>
           </div>
         )}
@@ -792,48 +890,79 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </label>
         </div>
         {addons.pricelist.enabled && (
-          <div className="space-y-3">
-            {addons.pricelist.items?.map((item, idx) => (
-              <div key={idx} className="flex gap-2 items-start bg-slate-700/30 rounded-lg p-2">
-                <div className="flex-1 space-y-2">
+          <div className="space-y-4">
+            {addons.pricelist.categories.map((category, catIdx) => (
+              <div key={catIdx} className="bg-slate-700/30 rounded-lg p-3 space-y-3">
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    value={item.name || ""}
-                    onChange={(e) => updatePriceItem(idx, "name", e.target.value)}
-                    placeholder="Leistung"
-                    className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                    value={category.name}
+                    onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)}
+                    placeholder="Kategorie Name"
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded border border-slate-600 outline-none focus:border-blue-500 font-medium"
                   />
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={item.price || ""}
-                      onChange={(e) => updatePriceItem(idx, "price", e.target.value)}
-                      placeholder="Preis"
-                      className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                    />
-                    <input
-                      type="text"
-                      value={item.description || ""}
-                      onChange={(e) => updatePriceItem(idx, "description", e.target.value)}
-                      placeholder="Beschreibung (optional)"
-                      className="flex-1 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                    />
-                  </div>
+                  {addons.pricelist.categories.length > 1 && (
+                    <button
+                      onClick={() => removePriceCategory(catIdx)}
+                      className="p-2 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-                <button
-                  onClick={() => removePriceItem(idx)}
-                  className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+
+                <div className="space-y-2 pl-2 border-l-2 border-slate-600">
+                  {category.items?.map((item: any, itemIdx: number) => (
+                    <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-2">
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="text"
+                          value={item.name || ""}
+                          onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)}
+                          placeholder="Leistung"
+                          className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={item.price || ""}
+                            onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)}
+                            placeholder="Preis"
+                            className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                          />
+                          <input
+                            type="text"
+                            value={item.description || ""}
+                            onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)}
+                            placeholder="Beschreibung (optional)"
+                            className="flex-1 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removePriceItem(catIdx, itemIdx)}
+                        className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addPriceItem(catIdx)}
+                    className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Preis hinzufügen
+                  </button>
+                </div>
               </div>
             ))}
             <button
-              onClick={addPriceItem}
-              className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              onClick={addPriceCategory}
+              className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Preis hinzufügen
+              Kategorie hinzufügen
             </button>
           </div>
         )}
@@ -860,7 +989,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
 
       <button
         onClick={handleSave}
-        disabled={saving}
+        disabled={saving || uploading}
         className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
       >
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}

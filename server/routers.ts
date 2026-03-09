@@ -27,6 +27,7 @@ import { generateImage } from "./_core/imageGeneration";
 import { notifyOwner } from "./_core/notification";
 import { TRPCError } from "@trpc/server";
 import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutStyle, getLayoutPool, getIndustryImages, getContrastColor } from "./industryImages";
+import { uploadPhoto } from "./onboardingUpload";
 import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
@@ -2986,14 +2987,45 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    // Upload image for gallery
+    uploadGalleryImage: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        imageData: z.string(), // base64
+        mimeType: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const result = await uploadPhoto(input.imageData, input.mimeType, input.websiteId, Date.now());
+        return { url: result.url };
+      }),
+
     // Update add-ons (gallery, menu, pricelist, contact form)
     updateAddons: protectedProcedure
       .input(z.object({
         websiteId: z.number(),
         addOns: z.object({
           gallery: z.object({ enabled: z.boolean(), photos: z.array(z.string()).optional() }).optional(),
-          menu: z.object({ enabled: z.boolean(), items: z.array(z.any()).optional() }).optional(),
-          pricelist: z.object({ enabled: z.boolean(), items: z.array(z.any()).optional() }).optional(),
+          menu: z.object({
+            enabled: z.boolean(),
+            categories: z.array(z.object({
+              name: z.string(),
+              items: z.array(z.any()),
+            })).optional(),
+            items: z.array(z.any()).optional(),
+          }).optional(),
+          pricelist: z.object({
+            enabled: z.boolean(),
+            categories: z.array(z.object({
+              name: z.string(),
+              items: z.array(z.any()),
+            })).optional(),
+            items: z.array(z.any()).optional(),
+          }).optional(),
           contactForm: z.boolean().optional(),
         }),
       }))
@@ -3042,11 +3074,19 @@ Kontext: ${input.context}`,
         // Handle menu
         if (input.addOns.menu?.enabled) {
           const hasMenu = sections.some((s: any) => s.type === "menu");
+          const menuData = input.addOns.menu.categories || (input.addOns.menu.items ? [{ name: "Speisekarte", items: input.addOns.menu.items }] : []);
           if (!hasMenu) {
             sections.push({
               type: "menu",
               headline: "Speisekarte",
-              items: input.addOns.menu.items || [],
+              categories: menuData,
+            });
+          } else {
+            sections = sections.map((s: any) => {
+              if (s.type === "menu") {
+                return { ...s, categories: menuData };
+              }
+              return s;
             });
           }
         } else if (input.addOns.menu?.enabled === false) {
@@ -3056,11 +3096,19 @@ Kontext: ${input.context}`,
         // Handle pricelist
         if (input.addOns.pricelist?.enabled) {
           const hasPricelist = sections.some((s: any) => s.type === "pricelist");
+          const priceData = input.addOns.pricelist.categories || (input.addOns.pricelist.items ? [{ name: "Leistungen", items: input.addOns.pricelist.items }] : []);
           if (!hasPricelist) {
             sections.push({
               type: "pricelist",
               headline: "Preise",
-              items: input.addOns.pricelist.items || [],
+              categories: priceData,
+            });
+          } else {
+            sections = sections.map((s: any) => {
+              if (s.type === "pricelist") {
+                return { ...s, categories: priceData };
+              }
+              return s;
             });
           }
         } else if (input.addOns.pricelist?.enabled === false) {
