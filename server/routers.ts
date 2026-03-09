@@ -1113,7 +1113,10 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query(opts => {
+      console.log("[Auth] me endpoint - ctx.user:", opts.ctx.user ? `found (${opts.ctx.user.openId})` : "null");
+      return opts.ctx.user;
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       // Clear cookie by setting empty value and expired maxAge

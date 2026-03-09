@@ -260,11 +260,17 @@ class SDKServer {
     // Regular authentication flow
     const cookies = this.parseCookies(req.headers.cookie);
     const sessionCookie = cookies.get(COOKIE_NAME);
+
+    console.log("[Auth] authenticateRequest - cookies header:", req.headers.cookie ? "present" : "missing");
+    console.log("[Auth] authenticateRequest - sessionCookie found:", !!sessionCookie, "length:", sessionCookie?.length);
+
     const session = await this.verifySession(sessionCookie);
 
     if (!session) {
+      console.log("[Auth] authenticateRequest - session verification failed");
       throw ForbiddenError("Invalid session cookie");
     }
+    console.log("[Auth] authenticateRequest - session verified for:", session.openId);
 
     const sessionUserId = session.openId;
     const signedInAt = new Date();
