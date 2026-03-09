@@ -257,7 +257,12 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
 function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
-  const services = sec(websiteData, 'services')?.items || [];
+  const servicesSection = sec(websiteData, 'services');
+  const services = servicesSection?.items || [];
+  
+  // Don't render if section doesn't exist
+  if (!servicesSection && !isLoading) return null;
+  
   // Dynamic colors based on dark mode
   const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
   const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
@@ -298,7 +303,12 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
 
 function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
-  const services = sec(websiteData, 'services')?.items || [];
+  const servicesSection = sec(websiteData, 'services');
+  const services = servicesSection?.items || [];
+  
+  // Don't render if section doesn't exist
+  if (!servicesSection && !isLoading) return null;
+  
   // Dynamic colors based on dark mode
   const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
   const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
@@ -343,6 +353,8 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
 
 function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
   const safeCs = cs || {};
+  // Don't render if no about content
+  if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
     <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
@@ -375,6 +387,8 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
 }
 
 function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  // Don't render if no about content
+  if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
     <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-900 text-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-[55%_45%] gap-16 items-center">

@@ -547,6 +547,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [_addOnMenu, _setAddOnMenu] = useState(false);
   const [_addOnPricelist, _setAddOnPricelist] = useState(false);
   const [_addOnGallery, _setAddOnGallery] = useState(false);
+  const [_addOnContactForm, _setAddOnContactForm] = useState(true); // Default true
+
+  // Initialize addon states from existing data
+  useEffect(() => {
+    if (existingOnboarding) {
+      if (existingOnboarding.addOnMenu) _setAddOnMenu(true);
+      if (existingOnboarding.addOnPricelist) _setAddOnPricelist(true);
+      if (existingOnboarding.addOnGallery) _setAddOnGallery(true);
+      if (existingOnboarding.addOnContactForm !== undefined) {
+        _setAddOnContactForm(existingOnboarding.addOnContactForm);
+      }
+    }
+  }, [existingOnboarding]);
+
   const dynamicStepOrder = useMemo(() => {
     const layout = (siteData?.website as any)?.layoutStyle as string | undefined;
     const websiteDataRaw = siteData?.website?.websiteData as any;
@@ -564,6 +578,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       return true;
     });
   }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
+
+  // Get active addon steps for display
+  const activeAddonSteps = useMemo(() => {
+    const addons: { step: ChatStep; label: string; icon: string }[] = [];
+    if (_addOnMenu) addons.push({ step: "editMenu", label: "Speisekarte", icon: "📖" });
+    if (_addOnPricelist) addons.push({ step: "editPricelist", label: "Preisliste", icon: "🏷️" });
+    if (_addOnGallery) addons.push({ step: "editGallery", label: "Galerie", icon: "🖼️" });
+    return addons;
+  }, [_addOnMenu, _addOnPricelist, _addOnGallery]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -4248,6 +4271,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 preview: "Vorschau",
               };
 
+              // Check if step is an addon step
+              const isAddonStep = (step: string) => ["editMenu", "editPricelist", "editGallery"].includes(step);
+              const isAddonsStep = (step: string) => step === "addons";
+
               return (
                 <div className="flex flex-col flex-1 gap-2">
                   {/* Edit mode indicator */}
@@ -4277,11 +4304,35 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             setEditMode({ isEditing: true, returnToStep: currentStep });
                             setCurrentStep(step);
                           }}
-                          className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors border border-slate-600/50"
-                          title={`Zurück zu: ${stepLabels[step] || step}`}
+                          className={`text-[10px] px-2 py-0.5 rounded-full transition-colors border flex items-center gap-1 ${
+                            isAddonStep(step)
+                              ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/40"
+                              : "bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white border-slate-600/50"
+                          }`}
+                          title={`Zurück zu: ${stepLabels[step] || step}${isAddonStep(step) ? " (Add-on)" : ""}`}
                         >
+                          {isAddonStep(step) && <Sparkles className="w-3 h-3" />}
                           {stepLabels[step] || step}
                         </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Active addon steps indicator */}
+                  {activeAddonSteps.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      <span className="text-[10px] text-amber-500 uppercase tracking-wider">★ Add-ons:</span>
+                      {activeAddonSteps.map((addon) => (
+                        <span
+                          key={addon.step}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border flex items-center gap-1 ${
+                            currentStep === addon.step
+                              ? "bg-amber-500 text-white border-amber-500"
+                              : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                          }`}
+                        >
+                          <span>{addon.icon}</span>
+                          {addon.label}
+                        </span>
                       ))}
                     </div>
                   )}
@@ -4289,11 +4340,24 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isAddonStep(currentStep)
+                            ? "bg-gradient-to-r from-amber-500 to-orange-500"
+                            : "bg-gradient-to-r from-blue-500 to-violet-500"
+                        }`}
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <span className="text-xs text-slate-400 whitespace-nowrap">Schritt {currentIdx} / {totalSteps}</span>
+                    <span className="text-xs text-slate-400 whitespace-nowrap">
+                      {isAddonStep(currentStep) ? (
+                        <span className="text-amber-400 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          Add-on
+                        </span>
+                      ) : (
+                        `Schritt ${currentIdx} / ${totalSteps}`
+                      )}
+                    </span>
                   </div>
                 </div>
               );
