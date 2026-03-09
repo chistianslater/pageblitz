@@ -506,298 +506,6 @@ function useCountdown(expiresAt: number | null) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-// ── Progress Bar Component (extracted to avoid IIFE TDZ issues) ──────────────
-interface ProgressBarProps {
-  currentStep: ChatStep;
-  dynamicStepOrder: ChatStep[];
-  activeAddonSteps: { step: ChatStep; label: string; icon: string }[];
-  editMode: { isEditing: boolean; returnToStep: ChatStep | null };
-  setEditMode: React.Dispatch<React.SetStateAction<{ isEditing: boolean; returnToStep: ChatStep | null }>>;
-  setCurrentStep: React.Dispatch<React.SetStateAction<ChatStep>>;
-}
-
-function ProgressBar({ currentStep, dynamicStepOrder, activeAddonSteps, editMode, setEditMode, setCurrentStep }: ProgressBarProps) {
-  const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
-  const currentIdx = dynamicStepOrder.indexOf(currentStep);
-  const progress = Math.round((currentIdx / totalSteps) * 100);
-
-  // Get completed steps (all steps before current)
-  const completedSteps = dynamicStepOrder.slice(0, currentIdx).filter((s) =>
-    s !== "welcome" && s !== "checkout" && s !== "preview"
-  );
-
-  // Step labels for display
-  const stepLabels: Record<string, string> = {
-    businessCategory: "Branche",
-    businessName: "Name",
-    brandLogo: "Logo",
-    colorScheme: "Farben",
-    heroPhoto: "Foto",
-    aboutPhoto: "Über uns",
-    headlineFont: "Schrift",
-    headlineSize: "Größe",
-    tagline: "Claim",
-    description: "Beschreibung",
-    usp: "USP",
-    services: "Leistungen",
-    legalOwner: "Impressum",
-    legalStreet: "Adresse",
-    legalZipCity: "Ort",
-    legalEmail: "E-Mail",
-    legalPhone: "Telefon",
-    legalVat: "Steuer",
-    addons: "Extras",
-    editMenu: "Speisekarte",
-    editPricelist: "Preise",
-    editGallery: "Galerie",
-    subpages: "Unterseiten",
-    email: "Kontakt",
-    hideSections: "Anzeige",
-    preview: "Vorschau",
-  };
-
-  // Check if step is an addon step
-  const isAddonStep = (step: string) => ["editMenu", "editPricelist", "editGallery"].includes(step);
-
-  return (
-    <div className="flex flex-col flex-1 gap-2">
-      {/* Edit mode indicator */}
-      {editMode.isEditing && editMode.returnToStep && (
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-amber-400">⚡ Bearbeitungsmodus</span>
-          <button
-            onClick={() => {
-              setCurrentStep(editMode.returnToStep!);
-              setEditMode({ isEditing: false, returnToStep: null });
-            }}
-            className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 transition-colors border border-amber-500/50"
-          >
-            Zurück zu aktuellem Schritt
-          </button>
-        </div>
-      )}
-      {/* Completed steps - clickable pills */}
-      {!editMode.isEditing && completedSteps.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] text-slate-500 uppercase tracking-wider">Bearbeiten:</span>
-          {completedSteps.map((step) => (
-            <button
-              key={step}
-              onClick={() => {
-                // Enter edit mode: save current position and jump to selected step
-                setEditMode({ isEditing: true, returnToStep: currentStep });
-                setCurrentStep(step);
-              }}
-              className={`text-[10px] px-2 py-0.5 rounded-full transition-colors border flex items-center gap-1 ${
-                isAddonStep(step)
-                  ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/40"
-                  : "bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white border-slate-600/50"
-              }`}
-              title={`Zurück zu: ${stepLabels[step] || step}${isAddonStep(step) ? " (Add-on)" : ""}`}
-            >
-              {isAddonStep(step) && <Sparkles className="w-3 h-3" />}
-              {stepLabels[step] || step}
-            </button>
-          ))}
-        </div>
-      )}
-      {/* Active addon steps indicator */}
-      {activeAddonSteps.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 mt-1">
-          <span className="text-[10px] text-amber-500 uppercase tracking-wider">★ Add-ons:</span>
-          {activeAddonSteps.map((addon) => (
-            <span
-              key={addon.step}
-              className={`text-[10px] px-2 py-0.5 rounded-full border flex items-center gap-1 ${
-                currentStep === addon.step
-                  ? "bg-amber-500 text-white border-amber-500"
-                  : "bg-amber-500/10 text-amber-300 border-amber-500/30"
-              }`}
-            >
-              <span>{addon.icon}</span>
-              {addon.label}
-            </span>
-          ))}
-        </div>
-      )}
-      {/* Progress bar */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              isAddonStep(currentStep)
-                ? "bg-gradient-to-r from-amber-500 to-orange-500"
-                : "bg-gradient-to-r from-blue-500 to-violet-500"
-            }`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <span className="text-xs text-slate-400 whitespace-nowrap">
-          {isAddonStep(currentStep) ? (
-            <span className="text-amber-400 flex items-center gap-1">
-              <Sparkles className="w-3 h-3" />
-              Add-on
-            </span>
-          ) : (
-            `Schritt ${currentIdx} / ${totalSteps}`
-          )}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ── Addon Selector Component (extracted to avoid IIFE TDZ issues) ───────────────
-interface AddonSelectorProps {
-  data: OnboardingData;
-  setData: React.Dispatch<React.SetStateAction<OnboardingData>>;
-}
-
-function AddonSelector({ data, setData }: AddonSelectorProps) {
-  const cat = data.businessCategory.toLowerCase();
-  // Broad food industry detection
-  const isFood = /restaurant|café|cafe|bistro|bäckerei|bakery|bar|tapas|pizza|sushi|burger|imbiss|gastronomie|lieferservice|delivery|lieferdienst|catering|food|kueche|küche|steakhouse|grill|gasthaus|wirtshaus|tavern|taverne|pizzeria|trattoria|osteria|ristorante/.test(cat);
-
-  // For everything else, we offer a pricelist
-  const showMenu = isFood;
-  const showPricelist = !isFood;
-
-  const addons: { key: keyof OnboardingData; label: string; price: string; desc: string; emoji: string }[] = [
-    { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+3,90 €/Monat", desc: "Kunden können direkt anfragen", emoji: "📬" },
-    { key: "addOnGallery" as const, label: "Bildergalerie", price: "+3,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
-    ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+3,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
-    ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+3,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
-  ];
-
-  return (
-    <>
-      {addons.map((addon) => (
-        <button
-          key={addon.key}
-          onClick={() => setData((p) => ({ ...p, [addon.key]: !(p as any)[addon.key] }))}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-            (data as any)[addon.key]
-              ? "border-blue-500 bg-blue-500/10"
-              : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
-          }`}
-        >
-          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${(data as any)[addon.key] ? "border-blue-500 bg-blue-500" : "border-slate-500"}`}>
-            {(data as any)[addon.key] && <Check className="w-3 h-3 text-white" />}
-          </div>
-          <span className="text-lg">{addon.emoji}</span>
-          <div className="flex-1">
-            <p className="text-white text-sm font-medium">{addon.label}</p>
-            <p className="text-slate-400 text-xs">{addon.desc}</p>
-          </div>
-          <span className="text-blue-400 text-xs font-medium">{addon.price}</span>
-        </button>
-      ))}
-    </>
-  );
-}
-
-// ── Individual Color Picker Component (extracted to avoid IIFE TDZ issues) ─────
-interface IndividualColorPickerProps {
-  data: OnboardingData;
-  setData: React.Dispatch<React.SetStateAction<OnboardingData>>;
-}
-
-function IndividualColorPicker({ data, setData }: IndividualColorPickerProps) {
-  const cs = data.colorScheme as any;
-
-  // Dark section fallbacks (these fields may not exist yet in colorScheme)
-  const darkDefaults: Record<string, string> = {
-    darkBackground: '#0a0a0a',
-    darkSurface: '#1a1a2e',
-    lightText: '#ffffff',
-    lightTextMuted: '#9ca3af',
-  };
-
-  const getValue = (key: string) =>
-    cs[key] ?? darkDefaults[key] ?? '';
-
-  const handleColorChange = (key: string, newValue: string) => {
-    setData(p => {
-      const newScheme = { ...(p.colorScheme as any), [key]: newValue };
-      if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(key)) {
-        newScheme[`on${key.charAt(0).toUpperCase() + key.slice(1)}`] = getContrastColor(newValue);
-      }
-      return { ...p, colorScheme: newScheme };
-    });
-  };
-
-  const colorGroups = [
-    {
-      label: "Basis", dot: "bg-blue-400",
-      keys: [
-        { key: "primary", label: "Hauptfarbe" },
-        { key: "accent", label: "Akzentfarbe" },
-        { key: "background", label: "Hintergrund (helle Layouts)" },
-        { key: "text", label: "Textfarbe" },
-        { key: "textLight", label: "Gedämpfte Schrift" },
-      ],
-    },
-    {
-      label: "Dunkle Layouts & Sektionen", dot: "bg-purple-400",
-      keys: [
-        { key: "darkBackground", label: "Hintergrund (dunkle Layouts)" },
-        { key: "lightText", label: "Heller Text" },
-      ],
-    },
-  ];
-
-  return (
-    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
-      {colorGroups.map(({ label, dot, keys }, gi) => (
-        <div key={label} className={gi > 0 ? "mt-4 pt-4 border-t border-slate-700/50" : ""}>
-          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
-            <span className={`w-1.5 h-1.5 rounded-full inline-block ${dot}`} />
-            {label}
-          </p>
-          <div className="space-y-0.5">
-            {keys.map(item => {
-              const rawVal = getValue(item.key);
-              const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
-              return (
-                <div key={item.key} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors">
-                  <div
-                    className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 overflow-hidden relative shadow-sm"
-                    style={{ backgroundColor: colorVal }}
-                  >
-                    <input
-                      type="color"
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      value={colorVal}
-                      onChange={(e) => handleColorChange(item.key, e.target.value)}
-                    />
-                  </div>
-                  <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{item.label}</span>
-                  <input
-                    type="text"
-                    className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
-                    value={rawVal}
-                    placeholder="#000000"
-                    onChange={(e) => {
-                      const v = e.target.value.startsWith('#') ? e.target.value : `#${e.target.value}`;
-                      if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
-                        setData(p => ({ ...p, colorScheme: { ...(p.colorScheme as any), [item.key]: v } }));
-                        if (v.length === 7) handleColorChange(item.key, v);
-                      }
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-      <p className="text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-700/50">
-        Kontrast-Farben (Text auf farbigen Hintergründen) werden automatisch berechnet.
-      </p>
-    </div>
-  );
-}
-
 // ── Main Component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -839,20 +547,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [_addOnMenu, _setAddOnMenu] = useState(false);
   const [_addOnPricelist, _setAddOnPricelist] = useState(false);
   const [_addOnGallery, _setAddOnGallery] = useState(false);
-  const [_addOnContactForm, _setAddOnContactForm] = useState(true); // Default true
-
-  // Initialize addon states from existing data
-  useEffect(() => {
-    if (existingOnboarding) {
-      if (existingOnboarding.addOnMenu) _setAddOnMenu(true);
-      if (existingOnboarding.addOnPricelist) _setAddOnPricelist(true);
-      if (existingOnboarding.addOnGallery) _setAddOnGallery(true);
-      if (existingOnboarding.addOnContactForm !== undefined) {
-        _setAddOnContactForm(existingOnboarding.addOnContactForm);
-      }
-    }
-  }, [existingOnboarding]);
-
   const dynamicStepOrder = useMemo(() => {
     const layout = (siteData?.website as any)?.layoutStyle as string | undefined;
     const websiteDataRaw = siteData?.website?.websiteData as any;
@@ -870,15 +564,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       return true;
     });
   }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
-
-  // Get active addon steps for display
-  const activeAddonSteps = useMemo(() => {
-    const addons: { step: ChatStep; label: string; icon: string }[] = [];
-    if (_addOnMenu) addons.push({ step: "editMenu", label: "Speisekarte", icon: "📖" });
-    if (_addOnPricelist) addons.push({ step: "editPricelist", label: "Preisliste", icon: "🏷️" });
-    if (_addOnGallery) addons.push({ step: "editGallery", label: "Galerie", icon: "🖼️" });
-    return addons;
-  }, [_addOnMenu, _addOnPricelist, _addOnGallery]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -1163,49 +848,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       _setAddOnGallery(data.addOnGallery);
     }
   }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
-
-  // Compute sections for hideSections step using useMemo instead of IIFE
-  const hideSectionsData = useMemo(() => {
-    const base = siteData?.website?.websiteData as any;
-    const sectionsFromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
-
-    // Add dynamic sections if they are active in data
-    const sectionsToShow = [...sectionsFromBase];
-    if (data.addOnMenu && !sectionsToShow.some((s: any) => s.type === "menu")) {
-      sectionsToShow.push({ type: "menu" });
-    }
-    if (data.addOnPricelist && !sectionsToShow.some((s: any) => s.type === "pricelist")) {
-      sectionsToShow.push({ type: "pricelist" });
-    }
-    if (data.addOnGallery && !sectionsToShow.some((s: any) => s.type === "gallery")) {
-      sectionsToShow.push({ type: "gallery" });
-    }
-    if (!sectionsToShow.some((s: any) => s.type === "contact")) {
-      sectionsToShow.push({ type: "contact" });
-    }
-
-    const labels: Record<string, { label: string; emoji: string }> = {
-      about: { label: "Über uns", emoji: "👤" },
-      services: { label: "Leistungen", emoji: "🔧" },
-      testimonials: { label: "Kundenstimmen", emoji: "⭐" },
-      gallery: { label: "Bildergalerie", emoji: "🖼️" },
-      contact: { label: "Kontaktbereich", emoji: "📬" },
-      cta: { label: "Direktkontakt-Banner", emoji: "🎯" },
-      features: { label: "Vorteile", emoji: "✅" },
-      team: { label: "Team", emoji: "👥" },
-      faq: { label: "FAQ", emoji: "❓" },
-      menu: { label: "Speisekarte", emoji: "📖" },
-      pricelist: { label: "Preisliste", emoji: "🏷️" },
-    };
-
-    const allSectionsFull = sectionsToShow.map((s: any) => ({
-      type: s.type,
-      ...(labels[s.type] || { label: s.type, emoji: "📄" }),
-    }));
-
-    // Unique by type to avoid duplicates in the UI
-    return Array.from(new Map(allSectionsFull.map((s: any) => [s.type, s])).values());
-  }, [siteData?.website?.websiteData, data.addOnMenu, data.addOnPricelist, data.addOnGallery]);
 
   // ── Save current step to localStorage whenever it changes ───────────────
   useEffect(() => {
@@ -2429,6 +2071,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Render ──────────────────────────────────────────────────────────────
 
+  if (siteLoading || isGeneratingInitialWebsite) {
+    return <EpicGenerationLoading phase={generationPhase} progress={generationProgress} />;
+  }
+
   const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;
   // Fallback to local data.colorScheme so preview works even when DB value is null
   const colorScheme = (siteData?.website?.colorScheme ?? data.colorScheme ?? undefined) as ColorScheme | undefined;
@@ -2437,16 +2083,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const layoutStyle = (siteData?.website as any)?.layoutStyle as string | undefined;
   const slug = siteData?.website?.slug;
 
-  const isLoading = siteLoading || isGeneratingInitialWebsite;
-
   return (
-    <>
-      {isLoading ? (
-        <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
-          <EpicGenerationLoading phase={generationPhase} progress={generationProgress} />
-        </div>
-      ) : (
-        <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
       {/* FOMO Header */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
         <Clock className="w-4 h-4 flex-shrink-0" />
@@ -3185,7 +2823,101 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     Farben individuell anpassen
                   </button>
 
-                  {showIndividualColors && <IndividualColorPicker data={data} setData={setData} />}
+                  {showIndividualColors && (() => {
+                    const cs = data.colorScheme as any;
+
+                    // Dark section fallbacks (these fields may not exist yet in colorScheme)
+                    const darkDefaults: Record<string, string> = {
+                      darkBackground: '#0a0a0a',
+                      darkSurface: '#1a1a2e',
+                      lightText: '#ffffff',
+                      lightTextMuted: '#9ca3af',
+                    };
+
+                    const getValue = (key: string) =>
+                      cs[key] ?? darkDefaults[key] ?? '';
+
+                    const handleColorChange = (key: string, newValue: string) => {
+                      setData(p => {
+                        const newScheme = { ...(p.colorScheme as any), [key]: newValue };
+                        if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(key)) {
+                          newScheme[`on${key.charAt(0).toUpperCase() + key.slice(1)}`] = getContrastColor(newValue);
+                        }
+                        return { ...p, colorScheme: newScheme };
+                      });
+                    };
+
+                    const colorGroups = [
+                      {
+                        label: "Basis", dot: "bg-blue-400",
+                        keys: [
+                          { key: "primary", label: "Hauptfarbe" },
+                          { key: "accent", label: "Akzentfarbe" },
+                          { key: "background", label: "Hintergrund (helle Layouts)" },
+                          { key: "text", label: "Textfarbe" },
+                          { key: "textLight", label: "Gedämpfte Schrift" },
+                        ],
+                      },
+                      {
+                        label: "Dunkle Layouts & Sektionen", dot: "bg-purple-400",
+                        keys: [
+                          { key: "darkBackground", label: "Hintergrund (dunkle Layouts)" },
+                          { key: "lightText", label: "Heller Text" },
+                        ],
+                      },
+                    ];
+
+                    return (
+                      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        {colorGroups.map(({ label, dot, keys }, gi) => (
+                          <div key={label} className={gi > 0 ? "mt-4 pt-4 border-t border-slate-700/50" : ""}>
+                            <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
+                              <span className={`w-1.5 h-1.5 rounded-full inline-block ${dot}`} />
+                              {label}
+                            </p>
+                            <div className="space-y-0.5">
+                              {keys.map(item => {
+                                const rawVal = getValue(item.key);
+                                const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
+                                return (
+                                  <div key={item.key} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors">
+                                    <div
+                                      className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 overflow-hidden relative shadow-sm"
+                                      style={{ backgroundColor: colorVal }}
+                                    >
+                                      <input
+                                        type="color"
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                        value={colorVal}
+                                        onChange={(e) => handleColorChange(item.key, e.target.value)}
+                                      />
+                                    </div>
+                                    <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{item.label}</span>
+                                    <input
+                                      type="text"
+                                      className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
+                                      value={rawVal}
+                                      placeholder="#000000"
+                                      onChange={(e) => {
+                                        const v = e.target.value.startsWith('#') ? e.target.value : `#${e.target.value}`;
+                                        if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
+                                          setData(p => ({ ...p, colorScheme: { ...(p.colorScheme as any), [item.key]: v } }));
+                                          if (v.length === 7) handleColorChange(item.key, v);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                        <p className="text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-700/50">
+                          Kontrast-Farben (Text auf farbigen Hintergründen) werden automatisch berechnet.
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <button
@@ -3364,47 +3096,52 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             >
               <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau rechts ändert sich sofort:</p>
                 <div className="space-y-2">
-                  {/* Serif fonts - only show if not sans-serif preferred */}
-                  {!prefersSansSerif(data.businessCategory) && (
-                    <div>
-                      <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenschriften (klassisch, edel)</p>
-                      {FONT_OPTIONS.serif.map((opt) => (
-                        <button
-                          key={opt.font}
-                          onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                          className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
-                            data.headlineFont === opt.font
-                              ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
-                              : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
-                          }`}
-                        >
-                          <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
-                            {opt.label}
-                          </p>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {/* Sans-serif fonts - always show */}
-                  <div className={!prefersSansSerif(data.businessCategory) ? "mt-6" : ""}>
-                    <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenlose (modern, progressiv)</p>
-                    {FONT_OPTIONS.sans.map((opt) => (
-                      <button
-                        key={opt.font}
-                        onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                        className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
-                          data.headlineFont === opt.font
-                            ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
-                            : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
-                        }`}
-                      >
-                        <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
-                          {opt.label}
-                        </p>
-                      </button>
-                    ))}
+                  {(() => {
+                    const hideSerifs = prefersSansSerif(data.businessCategory);
+                    return (
+                      <>
+                        {!hideSerifs && (
+                          <div>
+                            <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenschriften (klassisch, edel)</p>
+                            {FONT_OPTIONS.serif.map((opt) => (
+                              <button
+                                key={opt.font}
+                                onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
+                                className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                                  data.headlineFont === opt.font
+                                    ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                    : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                                }`}
+                              >
+                                <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
+                                  {opt.label}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className={!hideSerifs ? "mt-6" : ""}>
+                          <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenlose (modern, progressiv)</p>
+                          {FONT_OPTIONS.sans.map((opt) => (
+                            <button
+                              key={opt.font}
+                              onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
+                              className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                                data.headlineFont === opt.font
+                                  ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                    : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                                }`}
+                              >
+                                <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
+                                  {opt.label}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
-                </div>
 
                 <button
                   disabled={isTyping || !data.headlineFont}
@@ -3491,8 +3228,45 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-2"
             >
-                {/* Industry-specific addon list */}
-                <AddonSelector data={data} setData={setData} />
+                {/* Build industry-specific addon list */}
+                {(() => {
+                  const cat = data.businessCategory.toLowerCase();
+                  // Broad food industry detection
+                  const isFood = /restaurant|café|cafe|bistro|bäckerei|bakery|bar|tapas|pizza|sushi|burger|imbiss|gastronomie|lieferservice|delivery|lieferdienst|catering|food|kueche|küche|steakhouse|grill|gasthaus|wirtshaus|tavern|taverne|pizzeria|trattoria|osteria|ristorante/.test(cat);
+                  
+                  // For everything else, we offer a pricelist
+                  const showMenu = isFood;
+                  const showPricelist = !isFood;
+
+                  const addons: { key: keyof OnboardingData; label: string; price: string; desc: string; emoji: string }[] = [
+                    { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+3,90 €/Monat", desc: "Kunden können direkt anfragen", emoji: "📬" },
+                    { key: "addOnGallery" as const, label: "Bildergalerie", price: "+3,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
+                    ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+3,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
+                    ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+3,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
+                  ];
+
+                  return addons.map((addon) => (
+                    <button
+                      key={addon.key}
+                      onClick={() => setData((p) => ({ ...p, [addon.key]: !(p as any)[addon.key] }))}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        (data as any)[addon.key]
+                          ? "border-blue-500 bg-blue-500/10"
+                          : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${(data as any)[addon.key] ? "border-blue-500 bg-blue-500" : "border-slate-500"}`}>
+                        {(data as any)[addon.key] && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className="text-lg">{addon.emoji}</span>
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium">{addon.label}</p>
+                        <p className="text-slate-400 text-xs">{addon.desc}</p>
+                      </div>
+                      <span className="text-blue-400 text-xs font-medium">{addon.price}</span>
+                    </button>
+                  ));
+                })()}
 
                 {/* Contact Form Info */}
                 {data.addOnContactForm && (
@@ -4086,54 +3860,97 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-2"
             >
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {hideSectionsData.map((sec: any) => {
-                    const isHidden = hiddenSections.has(sec.type);
-                    return (
+                {(() => {
+                  const base = siteData?.website?.websiteData as any;
+                  const sectionsFromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
+                  
+                  // Add dynamic sections if they are active in data
+                  const sectionsToShow = [...sectionsFromBase];
+                  if (data.addOnMenu && !sectionsToShow.some(s => s.type === "menu")) {
+                    sectionsToShow.push({ type: "menu" });
+                  }
+                  if (data.addOnPricelist && !sectionsToShow.some(s => s.type === "pricelist")) {
+                    sectionsToShow.push({ type: "pricelist" });
+                  }
+                  if (data.addOnGallery && !sectionsToShow.some(s => s.type === "gallery")) {
+                    sectionsToShow.push({ type: "gallery" });
+                  }
+                  if (!sectionsToShow.some(s => s.type === "contact")) {
+                    sectionsToShow.push({ type: "contact" });
+                  }
+
+                  const allSectionsFull: Array<{ type: string; label: string; emoji: string }> = sectionsToShow
+                    .map((s: any) => {
+                      const labels: Record<string, { label: string; emoji: string }> = {
+                        about: { label: "Über uns", emoji: "👤" },
+                        services: { label: "Leistungen", emoji: "🔧" },
+                        testimonials: { label: "Kundenstimmen", emoji: "⭐" },
+                        gallery: { label: "Bildergalerie", emoji: "🖼️" },
+                        contact: { label: "Kontaktbereich", emoji: "📬" },
+                        cta: { label: "Direktkontakt-Banner", emoji: "🎯" },
+                        features: { label: "Vorteile", emoji: "✅" },
+                        team: { label: "Team", emoji: "👥" },
+                        faq: { label: "FAQ", emoji: "❓" },
+                        menu: { label: "Speisekarte", emoji: "📖" },
+                        pricelist: { label: "Preisliste", emoji: "🏷️" },
+                      };
+                      return { type: s.type, ...(labels[s.type] || { label: s.type, emoji: "📄" }) };
+                    });
+
+                  // Unique by type to avoid duplicates in the UI
+                  const allSections = Array.from(new Map(allSectionsFull.map(s => [s.type, s])).values());
+
+                  return (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {allSections.map((sec) => {
+                          const isHidden = hiddenSections.has(sec.type);
+                          return (
+                            <button
+                              key={sec.type}
+                              onClick={() => {
+                                setHiddenSections((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(sec.type)) next.delete(sec.type);
+                                  else next.add(sec.type);
+                                  return next;
+                                });
+                              }}
+                              className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all text-left ${
+                                isHidden
+                                  ? "border-slate-700 bg-slate-800/40 text-slate-500 opacity-60"
+                                  : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
+                              }`}
+                            >
+                              <div className={`w-4 h-4 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
+                                {!isHidden && <Check className="w-3 h-3 text-white" />}
+                              </div>
+                              <span className="flex-shrink-0">{sec.emoji}</span>
+                              <span className={`flex-1 leading-tight ${isHidden ? "line-through" : ""}`}>{sec.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {hiddenSections.size > 0 && (
+                        <p className="text-xs text-amber-400/80 mt-1">
+                          {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – du kannst sie jederzeit wieder aktivieren.
+                        </p>
+                      )}
                       <button
-                        key={sec.type}
-                        onClick={() => {
-                          setHiddenSections((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(sec.type)) next.delete(sec.type);
-                            else next.add(sec.type);
-                            return next;
-                          });
+                        disabled={isTyping}
+                        onClick={async () => {
+                          if (isTyping) return;
+                          const hidden = Array.from(hiddenSections);
+                          addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
+                          await advanceToStep("preview");
                         }}
-                        className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all text-left ${
-                          isHidden
-                            ? "border-slate-700 bg-slate-800/40 text-slate-500 opacity-60"
-                            : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
-                        }`}
+                        className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
                       >
-                        <div className={`w-4 h-4 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
-                          {!isHidden && <Check className="w-3 h-3 text-white" />}
-                        </div>
-                        <span className="flex-shrink-0">{sec.emoji}</span>
-                        <span className={`flex-1 leading-tight ${isHidden ? "line-through" : ""}`}>{sec.label}</span>
+                        Weiter <ChevronRight className="w-4 h-4" />
                       </button>
-                    );
-                  })}
-                </div>
-                {hiddenSections.size > 0 && (
-                  <p className="text-xs text-amber-400/80 mt-1">
-                    {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – du kannst sie jederzeit wieder aktivieren.
-                  </p>
-                )}
-                <button
-                  disabled={isTyping}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const hidden = Array.from(hiddenSections);
-                    addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
-                    await advanceToStep("preview");
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
-              </>
+                    </>
+                  );
+                })()}
             </motion.div>
           )}
 
@@ -4391,16 +4208,96 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {chatHidden ? "Chat einblenden" : "Chat ausblenden"}
             </button>
             {/* Progress bar with clickable completed steps */}
-            {currentStep !== "welcome" && currentStep !== "checkout" && (
-              <ProgressBar
-                currentStep={currentStep}
-                dynamicStepOrder={dynamicStepOrder}
-                activeAddonSteps={activeAddonSteps}
-                editMode={editMode}
-                setEditMode={setEditMode}
-                setCurrentStep={setCurrentStep}
-              />
-            )}
+            {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
+              const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
+              const currentIdx = dynamicStepOrder.indexOf(currentStep);
+              const progress = Math.round((currentIdx / totalSteps) * 100);
+
+              // Get completed steps (all steps before current)
+              const completedSteps = dynamicStepOrder.slice(0, currentIdx).filter((s) =>
+                s !== "welcome" && s !== "checkout" && s !== "preview"
+              );
+
+              // Step labels for display
+              const stepLabels: Record<string, string> = {
+                businessCategory: "Branche",
+                businessName: "Name",
+                brandLogo: "Logo",
+                colorScheme: "Farben",
+                heroPhoto: "Foto",
+                aboutPhoto: "Über uns",
+                headlineFont: "Schrift",
+                headlineSize: "Größe",
+                tagline: "Claim",
+                description: "Beschreibung",
+                usp: "USP",
+                services: "Leistungen",
+                legalOwner: "Impressum",
+                legalStreet: "Adresse",
+                legalZipCity: "Ort",
+                legalEmail: "E-Mail",
+                legalPhone: "Telefon",
+                legalVat: "Steuer",
+                addons: "Extras",
+                editMenu: "Speisekarte",
+                editPricelist: "Preise",
+                editGallery: "Galerie",
+                subpages: "Unterseiten",
+                email: "Kontakt",
+                hideSections: "Anzeige",
+                preview: "Vorschau",
+              };
+
+              return (
+                <div className="flex flex-col flex-1 gap-2">
+                  {/* Edit mode indicator */}
+                  {editMode.isEditing && editMode.returnToStep && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-amber-400">⚡ Bearbeitungsmodus</span>
+                      <button
+                        onClick={() => {
+                          setCurrentStep(editMode.returnToStep!);
+                          setEditMode({ isEditing: false, returnToStep: null });
+                        }}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 transition-colors border border-amber-500/50"
+                      >
+                        Zurück zu aktuellem Schritt
+                      </button>
+                    </div>
+                  )}
+                  {/* Completed steps - clickable pills */}
+                  {!editMode.isEditing && completedSteps.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider">Bearbeiten:</span>
+                      {completedSteps.map((step, idx) => (
+                        <button
+                          key={step}
+                          onClick={() => {
+                            // Enter edit mode: save current position and jump to selected step
+                            setEditMode({ isEditing: true, returnToStep: currentStep });
+                            setCurrentStep(step);
+                          }}
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors border border-slate-600/50"
+                          title={`Zurück zu: ${stepLabels[step] || step}`}
+                        >
+                          {stepLabels[step] || step}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Progress bar */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-slate-400 whitespace-nowrap">Schritt {currentIdx} / {totalSteps}</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           {liveWebsiteData && colorScheme ? (
             <MacbookMockup
@@ -4633,8 +4530,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         </div>
       )}
     </div>
-      )}
-    </>
   );
 }
 
