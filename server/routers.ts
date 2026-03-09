@@ -3050,19 +3050,20 @@ Kontext: ${input.context}`,
         const websiteData = (website.websiteData as any) || {};
         let sections = Array.isArray(websiteData.sections) ? websiteData.sections : [];
 
-        // Handle gallery
+        // Handle gallery - convert photos to items format expected by layouts
         if (input.addOns.gallery?.enabled) {
           const hasGallery = sections.some((s: any) => s.type === "gallery");
+          const galleryItems = input.addOns.gallery.photos?.map((url: string) => ({ imageUrl: url, title: "" })) || [];
           if (!hasGallery) {
             sections.push({
               type: "gallery",
               headline: "Galerie",
-              photos: input.addOns.gallery.photos || [],
+              items: galleryItems,
             });
           } else {
             sections = sections.map((s: any) => {
               if (s.type === "gallery") {
-                return { ...s, photos: input.addOns.gallery?.photos || s.photos };
+                return { ...s, items: galleryItems };
               }
               return s;
             });
@@ -3071,20 +3072,33 @@ Kontext: ${input.context}`,
           sections = sections.filter((s: any) => s.type !== "gallery");
         }
 
-        // Handle menu
+        // Handle menu - convert categories to items format expected by layouts
         if (input.addOns.menu?.enabled) {
           const hasMenu = sections.some((s: any) => s.type === "menu");
-          const menuData = input.addOns.menu.categories || (input.addOns.menu.items ? [{ name: "Speisekarte", items: input.addOns.menu.items }] : []);
+          // Convert categories format to items format
+          const menuItems: any[] = [];
+          const categories = input.addOns.menu.categories || [];
+          categories.forEach((cat: any) => {
+            const catItems = cat.items || [];
+            catItems.forEach((item: any) => {
+              menuItems.push({
+                title: item.name || item.title,
+                description: item.description,
+                price: item.price,
+                category: cat.name,
+              });
+            });
+          });
           if (!hasMenu) {
             sections.push({
               type: "menu",
               headline: "Speisekarte",
-              categories: menuData,
+              items: menuItems,
             });
           } else {
             sections = sections.map((s: any) => {
               if (s.type === "menu") {
-                return { ...s, categories: menuData };
+                return { ...s, items: menuItems };
               }
               return s;
             });
@@ -3093,20 +3107,33 @@ Kontext: ${input.context}`,
           sections = sections.filter((s: any) => s.type !== "menu");
         }
 
-        // Handle pricelist
+        // Handle pricelist - convert categories to items format
         if (input.addOns.pricelist?.enabled) {
           const hasPricelist = sections.some((s: any) => s.type === "pricelist");
-          const priceData = input.addOns.pricelist.categories || (input.addOns.pricelist.items ? [{ name: "Leistungen", items: input.addOns.pricelist.items }] : []);
+          // Convert categories format to items format
+          const priceItems: any[] = [];
+          const categories = input.addOns.pricelist.categories || [];
+          categories.forEach((cat: any) => {
+            const catItems = cat.items || [];
+            catItems.forEach((item: any) => {
+              priceItems.push({
+                title: item.name || item.title,
+                description: item.description,
+                price: item.price,
+                category: cat.name,
+              });
+            });
+          });
           if (!hasPricelist) {
             sections.push({
               type: "pricelist",
               headline: "Preise",
-              categories: priceData,
+              items: priceItems,
             });
           } else {
             sections = sections.map((s: any) => {
               if (s.type === "pricelist") {
-                return { ...s, categories: priceData };
+                return { ...s, items: priceItems };
               }
               return s;
             });

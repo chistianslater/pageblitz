@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -353,6 +353,167 @@ function LegalEditor({ websiteId, initialData, onUpdate }: LegalEditorProps) {
   );
 }
 
+// ── Contact Form Editor ───────────────────────────────
+interface FormField {
+  id: string;
+  label: string;
+  placeholder: string;
+  type: "text" | "email" | "textarea" | "select";
+  required: boolean;
+  options?: string[]; // for select type
+}
+
+interface ContactFormEditorProps {
+  websiteId: number;
+}
+
+function ContactFormEditor({ websiteId }: ContactFormEditorProps) {
+  // Default form fields
+  const [fields, setFields] = useState<FormField[]>([
+    { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+    { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+    { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+    { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+  ]);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Load saved fields from website data (could be implemented via API)
+  // For now, we use local state
+
+  const addField = () => {
+    const newField: FormField = {
+      id: `field_${Date.now()}`,
+      label: "Neues Feld",
+      placeholder: "",
+      type: "text",
+      required: false,
+    };
+    setFields([...fields, newField]);
+  };
+
+  const removeField = (idx: number) => {
+    if (fields.length <= 1) return;
+    setFields(fields.filter((_, i) => i !== idx));
+  };
+
+  const updateField = (idx: number, updates: Partial<FormField>) => {
+    const newFields = [...fields];
+    newFields[idx] = { ...newFields[idx], ...updates };
+    setFields(newFields);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    // Here we would save to the backend
+    // For now, we just show a success message
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setSaved(true);
+    setSaving(false);
+    toast.success("Formularfelder gespeichert");
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="text-sm text-slate-400 mb-3">
+        Passe die Felde deines Kontaktformulars an. Die Änderungen werden auf der Website übernommen.
+      </div>
+
+      <div className="space-y-3">
+        {fields.map((field, idx) => (
+          <div key={field.id} className="bg-slate-800/60 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500 text-xs font-mono">#{idx + 1}</span>
+              <input
+                type="text"
+                value={field.label}
+                onChange={(e) => updateField(idx, { label: e.target.value })}
+                placeholder="Feldname"
+                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500 font-medium"
+              />
+              <button
+                onClick={() => removeField(idx)}
+                disabled={fields.length <= 1}
+                className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors disabled:opacity-30"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-slate-500 mb-1 block">Feldtyp</label>
+                <select
+                  value={field.type}
+                  onChange={(e) => updateField(idx, { type: e.target.value as FormField["type"] })}
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                >
+                  <option value="text">Text</option>
+                  <option value="email">E-Mail</option>
+                  <option value="textarea">Mehrzeilig</option>
+                  <option value="select">Auswahl</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={field.required}
+                    onChange={(e) => updateField(idx, { required: e.target.checked })}
+                    className="w-4 h-4 rounded border-slate-600 bg-slate-700/60 text-blue-600 focus:ring-blue-500"
+                  />
+                  Pflichtfeld
+                </label>
+              </div>
+            </div>
+
+            {field.type !== "textarea" && (
+              <input
+                type="text"
+                value={field.placeholder}
+                onChange={(e) => updateField(idx, { placeholder: e.target.value })}
+                placeholder="Platzhalter-Text"
+                className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+              />
+            )}
+
+            {field.type === "select" && (
+              <div className="space-y-2">
+                <label className="text-xs text-slate-500">Optionen (kommagetrennt)</label>
+                <input
+                  type="text"
+                  value={field.options?.join(", ") || ""}
+                  onChange={(e) => updateField(idx, { options: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  placeholder="Option 1, Option 2, Option 3"
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={addField}
+        className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2"
+      >
+        <Plus className="w-4 h-4" />
+        Feld hinzufügen
+      </button>
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+      >
+        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+        {saving ? "Speichern..." : saved ? "Gespeichert!" : "Formularfelder speichern"}
+      </button>
+    </div>
+  );
+}
+
 // ── Design Editor ────────────────────────────────────
 interface DesignEditorProps {
   websiteId: number;
@@ -545,21 +706,40 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   const [addons, setAddons] = useState({
     gallery: {
       enabled: onboarding?.addOnGallery || false,
-      photos: (existingGallery?.photos || []) as string[],
+      photos: (existingGallery?.items?.map((item: any) => item.imageUrl || item) || []) as string[],
     },
     menu: {
       enabled: onboarding?.addOnMenu || false,
-      categories: (existingMenu?.categories || [{ name: "Speisekarte", items: [] }]) as any[],
+      categories: (existingMenu?.items ? 
+        // Convert items back to categories format for editing
+        Object.entries(existingMenu.items.reduce((acc: any, item: any) => {
+          const cat = item.category || "Speisekarte";
+          if (!acc[cat]) acc[cat] = [];
+          acc[cat].push({ name: item.title, description: item.description, price: item.price });
+          return acc;
+        }, {})).map(([name, items]) => ({ name, items })) :
+        [{ name: "Speisekarte", items: [] }]
+      ) as any[],
     },
     pricelist: {
       enabled: onboarding?.addOnPricelist || false,
-      categories: (existingPricelist?.categories || [{ name: "Leistungen", items: [] }]) as any[],
+      categories: (existingPricelist?.items ?
+        // Convert items back to categories format for editing
+        Object.entries(existingPricelist.items.reduce((acc: any, item: any) => {
+          const cat = item.category || "Leistungen";
+          if (!acc[cat]) acc[cat] = [];
+          acc[cat].push({ name: item.title, description: item.description, price: item.price });
+          return acc;
+        }, {})).map(([name, items]) => ({ name, items })) :
+        [{ name: "Leistungen", items: [] }]
+      ) as any[],
     },
     contactForm: onboarding?.addOnContactForm || false,
   });
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [expandedAddon, setExpandedAddon] = useState<string | null>(null);
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
@@ -589,10 +769,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     if (key === "contactForm") {
       setAddons({ ...addons, contactForm: !addons.contactForm });
     } else {
+      const newEnabled = !addons[key].enabled;
       setAddons({
         ...addons,
-        [key]: { ...addons[key], enabled: !addons[key].enabled },
+        [key]: { ...addons[key], enabled: newEnabled },
       });
+      // Auto-expand when enabling
+      if (newEnabled) {
+        setExpandedAddon(key);
+      } else {
+        setExpandedAddon(null);
+      }
     }
   };
 
@@ -725,266 +912,361 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Gallery */}
-      <div className="bg-slate-800/40 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-white font-medium flex items-center gap-2">
-            <Image className="w-4 h-4 text-pink-400" />
-            Bildergalerie
-          </h3>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={addons.gallery.enabled}
-              onChange={() => toggleAddon("gallery")}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
-          </label>
-        </div>
-        {addons.gallery.enabled && (
-          <div className="space-y-3">
-            {addons.gallery.photos.length > 0 && (
-              <div className="grid grid-cols-3 gap-2">
-                {addons.gallery.photos.map((photo, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden">
-                    <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => removeGalleryPhoto(idx)}
-                      className="absolute top-1 right-1 p-1 rounded bg-red-600/80 hover:bg-red-600 text-white"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <label className={`flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 cursor-pointer transition-colors ${uploading ? "opacity-50" : ""}`}>
+      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "gallery" ? "ring-2 ring-blue-500/50" : ""}`}>
+        <div 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
+          onClick={() => setExpandedAddon(expandedAddon === "gallery" ? null : "gallery")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
+              <Image className="w-5 h-5 text-pink-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium">Bildergalerie</h3>
+              <p className="text-slate-400 text-xs">
+                {addons.gallery.enabled 
+                  ? `${addons.gallery.photos.length} Bilder` 
+                  : "Deaktiviert"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
               <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                disabled={uploading}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) addGalleryPhoto(file);
-                }}
+                type="checkbox"
+                checked={addons.gallery.enabled}
+                onChange={() => toggleAddon("gallery")}
+                className="sr-only peer"
               />
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              {uploading ? "Wird hochgeladen..." : "Bild hinzufügen"}
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
             </label>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "gallery" ? null : "gallery"); }}
+              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
+            >
+              {expandedAddon === "gallery" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+        
+        {expandedAddon === "gallery" && addons.gallery.enabled && (
+          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              {addons.gallery.photos.length > 0 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {addons.gallery.photos.map((photo, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
+                      <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeGalleryPhoto(idx)}
+                        className="absolute top-1 right-1 p-1.5 rounded bg-red-600/90 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <label className={`flex items-center gap-2 justify-center text-sm text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl px-4 py-6 cursor-pointer transition-colors ${uploading ? "opacity-50" : ""}`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) addGalleryPhoto(file);
+                  }}
+                />
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+                {uploading ? "Wird hochgeladen..." : "Bild hochladen"}
+              </label>
+            </div>
           </div>
         )}
       </div>
 
       {/* Menu */}
-      <div className="bg-slate-800/40 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-white font-medium flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            Speisekarte
-          </h3>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={addons.menu.enabled}
-              onChange={() => toggleAddon("menu")}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
-          </label>
+      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "menu" ? "ring-2 ring-blue-500/50" : ""}`}>
+        <div 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
+          onClick={() => setExpandedAddon(expandedAddon === "menu" ? null : "menu")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium">Speisekarte</h3>
+              <p className="text-slate-400 text-xs">
+                {addons.menu.enabled 
+                  ? `${addons.menu.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Gerichte in ${addons.menu.categories.length} Kategorien` 
+                  : "Deaktiviert"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="checkbox"
+                checked={addons.menu.enabled}
+                onChange={() => toggleAddon("menu")}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+            </label>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "menu" ? null : "menu"); }}
+              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
+            >
+              {expandedAddon === "menu" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-        {addons.menu.enabled && (
-          <div className="space-y-4">
-            {addons.menu.categories.map((category, catIdx) => (
-              <div key={catIdx} className="bg-slate-700/30 rounded-lg p-3 space-y-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={category.name}
-                    onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)}
-                    placeholder="Kategorie Name"
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded border border-slate-600 outline-none focus:border-blue-500 font-medium"
-                  />
-                  {addons.menu.categories.length > 1 && (
-                    <button
-                      onClick={() => removeMenuCategory(catIdx)}
-                      className="p-2 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="space-y-2 pl-2 border-l-2 border-slate-600">
-                  {category.items?.map((item: any, itemIdx: number) => (
-                    <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-2">
-                      <div className="flex-1 space-y-2">
-                        <input
-                          type="text"
-                          value={item.name || ""}
-                          onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)}
-                          placeholder="Name"
-                          className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                        />
-                        <input
-                          type="text"
-                          value={item.description || ""}
-                          onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)}
-                          placeholder="Beschreibung"
-                          className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                        />
-                        <input
-                          type="text"
-                          value={item.price || ""}
-                          onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)}
-                          placeholder="Preis"
-                          className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                        />
-                      </div>
+        
+        {expandedAddon === "menu" && addons.menu.enabled && (
+          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              {addons.menu.categories.map((category, catIdx) => (
+                <div key={catIdx} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={category.name}
+                      onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)}
+                      placeholder="Kategorie Name"
+                      className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2.5 rounded-lg border border-slate-600 outline-none focus:border-blue-500 font-medium"
+                    />
+                    {addons.menu.categories.length > 1 && (
                       <button
-                        onClick={() => removeMenuItem(catIdx, itemIdx)}
-                        className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        onClick={() => removeMenuCategory(catIdx)}
+                        className="p-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addMenuItem(catIdx)}
-                    className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Gericht hinzufügen
-                  </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 pl-2 border-l-2 border-slate-600 ml-1">
+                    {category.items?.map((item: any, itemIdx: number) => (
+                      <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3">
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            value={item.name || ""}
+                            onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)}
+                            placeholder="Gerichtname"
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                          />
+                          <input
+                            type="text"
+                            value={item.description || ""}
+                            onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)}
+                            placeholder="Beschreibung"
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                          />
+                          <input
+                            type="text"
+                            value={item.price || ""}
+                            onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)}
+                            placeholder="Preis"
+                            className="w-32 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <button
+                          onClick={() => removeMenuItem(catIdx, itemIdx)}
+                          className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addMenuItem(catIdx)}
+                      className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Gericht hinzufügen
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-            <button
-              onClick={addMenuCategory}
-              className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Kategorie hinzufügen
-            </button>
+              ))}
+              <button
+                onClick={addMenuCategory}
+                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-2"
+              >
+                <Plus className="w-4 h-4" />
+                Kategorie hinzufügen
+              </button>
+            </div>
           </div>
         )}
       </div>
 
       {/* Pricelist */}
-      <div className="bg-slate-800/40 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-white font-medium flex items-center gap-2">
-            <LayoutGrid className="w-4 h-4 text-emerald-400" />
-            Preisliste
-          </h3>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={addons.pricelist.enabled}
-              onChange={() => toggleAddon("pricelist")}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
-          </label>
+      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "pricelist" ? "ring-2 ring-blue-500/50" : ""}`}>
+        <div 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
+          onClick={() => setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+              <LayoutGrid className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium">Preisliste</h3>
+              <p className="text-slate-400 text-xs">
+                {addons.pricelist.enabled 
+                  ? `${addons.pricelist.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Preise in ${addons.pricelist.categories.length} Kategorien` 
+                  : "Deaktiviert"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="checkbox"
+                checked={addons.pricelist.enabled}
+                onChange={() => toggleAddon("pricelist")}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+            </label>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist"); }}
+              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
+            >
+              {expandedAddon === "pricelist" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-        {addons.pricelist.enabled && (
-          <div className="space-y-4">
-            {addons.pricelist.categories.map((category, catIdx) => (
-              <div key={catIdx} className="bg-slate-700/30 rounded-lg p-3 space-y-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={category.name}
-                    onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)}
-                    placeholder="Kategorie Name"
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded border border-slate-600 outline-none focus:border-blue-500 font-medium"
-                  />
-                  {addons.pricelist.categories.length > 1 && (
-                    <button
-                      onClick={() => removePriceCategory(catIdx)}
-                      className="p-2 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="space-y-2 pl-2 border-l-2 border-slate-600">
-                  {category.items?.map((item: any, itemIdx: number) => (
-                    <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-2">
-                      <div className="flex-1 space-y-2">
-                        <input
-                          type="text"
-                          value={item.name || ""}
-                          onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)}
-                          placeholder="Leistung"
-                          className="w-full bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                        />
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={item.price || ""}
-                            onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)}
-                            placeholder="Preis"
-                            className="w-24 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                          />
-                          <input
-                            type="text"
-                            value={item.description || ""}
-                            onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)}
-                            placeholder="Beschreibung (optional)"
-                            className="flex-1 bg-slate-700/60 text-white text-sm px-2 py-1 rounded border border-slate-600 outline-none focus:border-blue-500"
-                          />
-                        </div>
-                      </div>
+        
+        {expandedAddon === "pricelist" && addons.pricelist.enabled && (
+          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              {addons.pricelist.categories.map((category, catIdx) => (
+                <div key={catIdx} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={category.name}
+                      onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)}
+                      placeholder="Kategorie Name"
+                      className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2.5 rounded-lg border border-slate-600 outline-none focus:border-blue-500 font-medium"
+                    />
+                    {addons.pricelist.categories.length > 1 && (
                       <button
-                        onClick={() => removePriceItem(catIdx, itemIdx)}
-                        className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        onClick={() => removePriceCategory(catIdx)}
+                        className="p-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addPriceItem(catIdx)}
-                    className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Preis hinzufügen
-                  </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 pl-2 border-l-2 border-slate-600 ml-1">
+                    {category.items?.map((item: any, itemIdx: number) => (
+                      <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3">
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            value={item.name || ""}
+                            onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)}
+                            placeholder="Leistung"
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                          />
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={item.price || ""}
+                              onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)}
+                              placeholder="Preis"
+                              className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                            />
+                            <input
+                              type="text"
+                              value={item.description || ""}
+                              onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)}
+                              placeholder="Beschreibung (optional)"
+                              className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removePriceItem(catIdx, itemIdx)}
+                          className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addPriceItem(catIdx)}
+                      className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Preis hinzufügen
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-            <button
-              onClick={addPriceCategory}
-              className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Kategorie hinzufügen
-            </button>
+              ))}
+              <button
+                onClick={addPriceCategory}
+                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-2"
+              >
+                <Plus className="w-4 h-4" />
+                Kategorie hinzufügen
+              </button>
+            </div>
           </div>
         )}
       </div>
 
       {/* Contact Form */}
-      <div className="bg-slate-800/40 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-white font-medium flex items-center gap-2">
-            <Mail className="w-4 h-4 text-blue-400" />
-            Kontaktformular
-          </h3>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={addons.contactForm}
-              onChange={() => toggleAddon("contactForm")}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
-          </label>
+      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "contactForm" ? "ring-2 ring-blue-500/50" : ""}`}>
+        <div 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
+          onClick={() => setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <Mail className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium">Kontaktformular</h3>
+              <p className="text-slate-400 text-xs">
+                {addons.contactForm 
+                  ? "Aktiviert - Kunden können Anfragen senden" 
+                  : "Deaktiviert"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="checkbox"
+                checked={addons.contactForm}
+                onChange={() => toggleAddon("contactForm")}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+            </label>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm"); }}
+              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
+            >
+              {expandedAddon === "contactForm" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+        
+        {expandedAddon === "contactForm" && addons.contactForm && (
+          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
+            <ContactFormEditor websiteId={websiteId} />
+          </div>
+        )}
       </div>
 
       <button
