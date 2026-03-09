@@ -37,15 +37,22 @@ export function registerAdminAuthRoutes(app: Express) {
         role: "admin",
         lastSignedIn: new Date(),
       });
+      console.log("[AdminAuth] User upserted");
 
       const sessionToken = await sdk.createSessionToken(ADMIN_OPEN_ID, {
         name: "Admin",
         expiresInMs: ONE_YEAR_MS,
       });
+      console.log("[AdminAuth] Session token created");
 
       const cookieOptions = getSessionCookieOptions(req);
+      console.log("[AdminAuth] Cookie options:", cookieOptions);
+
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      console.log("[AdminAuth] Cookie set");
+
       res.json({ ok: true });
+      console.log("[AdminAuth] Response sent");
     } catch (error) {
       console.error("[AdminAuth] Login failed", error);
       res.status(500).json({ error: "Login fehlgeschlagen." });
