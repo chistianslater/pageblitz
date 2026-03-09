@@ -2844,6 +2844,234 @@ Kontext: ${input.context}`,
         return { success: true, regenerated: false };
       }),
 
+    // Get onboarding data for a website (for dashboard editing)
+    getOnboardingData: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Verify ownership
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        return onboarding;
+      }),
+
+    // Update services for a website
+    updateServices: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        services: z.array(z.object({
+          title: z.string(),
+          description: z.string().optional(),
+        })),
+        usp: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const website = owned.website;
+
+        // Update onboarding data
+        await updateOnboarding(input.websiteId, {
+          topServices: input.services,
+          usp: input.usp,
+          updatedAt: Date.now(),
+        });
+
+        // Update websiteData sections
+        const websiteData = (website.websiteData as any) || {};
+        if (Array.isArray(websiteData.sections)) {
+          websiteData.sections = websiteData.sections.map((s: any) => {
+            if (s.type === "services" || s.type === "features") {
+              return {
+                ...s,
+                items: input.services.map((svc: any) => ({
+                  title: svc.title,
+                  description: svc.description || "",
+                  icon: "Sparkles",
+                })),
+              };
+            }
+            if (s.type === "hero" && input.usp) {
+              return { ...s, usp: input.usp };
+            }
+            return s;
+          });
+
+          // Add services section if it doesn't exist
+          const hasServicesSection = websiteData.sections.some((s: any) => s.type === "services" || s.type === "features");
+          if (!hasServicesSection && input.services.length > 0) {
+            websiteData.sections.push({
+              type: "services",
+              headline: "Unsere Leistungen",
+              items: input.services.map((svc: any) => ({
+                title: svc.title,
+                description: svc.description || "",
+                icon: "Sparkles",
+              })),
+            });
+          }
+        }
+
+        await updateWebsite(input.websiteId, { websiteData });
+        return { success: true };
+      }),
+
+    // Update design settings (colors, fonts)
+    updateDesign: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        colorScheme: z.object({
+          primary: z.string().optional(),
+          secondary: z.string().optional(),
+          accent: z.string().optional(),
+          background: z.string().optional(),
+          surface: z.string().optional(),
+          text: z.string().optional(),
+        }).optional(),
+        designTokens: z.object({
+          headlineFont: z.string().optional(),
+          bodyFont: z.string().optional(),
+          headlineSize: z.string().optional(),
+          borderRadius: z.string().optional(),
+          shadowStyle: z.string().optional(),
+          sectionSpacing: z.string().optional(),
+          buttonStyle: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const website = owned.website;
+        const updateData: any = {};
+
+        // Update color scheme
+        if (input.colorScheme) {
+          const currentScheme = (website.colorScheme as any) || {};
+          updateData.colorScheme = { ...currentScheme, ...input.colorScheme };
+
+          // Also update onboarding
+          await updateOnboarding(input.websiteId, {
+            brandColor: input.colorScheme.primary,
+            brandSecondaryColor: input.colorScheme.secondary,
+            updatedAt: Date.now(),
+          });
+        }
+
+        // Update design tokens in websiteData
+        if (input.designTokens) {
+          const websiteData = (website.websiteData as any) || {};
+          websiteData.designTokens = {
+            ...(websiteData.designTokens || {}),
+            ...input.designTokens,
+          };
+          updateData.websiteData = websiteData;
+
+          // Update fonts in onboarding
+          await updateOnboarding(input.websiteId, {
+            headlineFont: input.designTokens.headlineFont,
+            headlineSize: input.designTokens.headlineSize,
+            updatedAt: Date.now(),
+          });
+        }
+
+        await updateWebsite(input.websiteId, updateData);
+        return { success: true };
+      }),
+
+    // Update add-ons (gallery, menu, pricelist, contact form)
+    updateAddons: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        addOns: z.object({
+          gallery: z.object({ enabled: z.boolean(), photos: z.array(z.string()).optional() }).optional(),
+          menu: z.object({ enabled: z.boolean(), items: z.array(z.any()).optional() }).optional(),
+          pricelist: z.object({ enabled: z.boolean(), items: z.array(z.any()).optional() }).optional(),
+          contactForm: z.boolean().optional(),
+        }),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const website = owned.website;
+
+        // Update onboarding with add-on settings
+        await updateOnboarding(input.websiteId, {
+          addOnGallery: input.addOns.gallery?.enabled,
+          addOnMenu: input.addOns.menu?.enabled,
+          addOnPricelist: input.addOns.pricelist?.enabled,
+          addOnContactForm: input.addOns.contactForm,
+          updatedAt: Date.now(),
+        });
+
+        // Update websiteData sections based on add-ons
+        const websiteData = (website.websiteData as any) || {};
+        let sections = Array.isArray(websiteData.sections) ? websiteData.sections : [];
+
+        // Handle gallery
+        if (input.addOns.gallery?.enabled) {
+          const hasGallery = sections.some((s: any) => s.type === "gallery");
+          if (!hasGallery) {
+            sections.push({
+              type: "gallery",
+              headline: "Galerie",
+              photos: input.addOns.gallery.photos || [],
+            });
+          } else {
+            sections = sections.map((s: any) => {
+              if (s.type === "gallery") {
+                return { ...s, photos: input.addOns.gallery?.photos || s.photos };
+              }
+              return s;
+            });
+          }
+        } else if (input.addOns.gallery?.enabled === false) {
+          sections = sections.filter((s: any) => s.type !== "gallery");
+        }
+
+        // Handle menu
+        if (input.addOns.menu?.enabled) {
+          const hasMenu = sections.some((s: any) => s.type === "menu");
+          if (!hasMenu) {
+            sections.push({
+              type: "menu",
+              headline: "Speisekarte",
+              items: input.addOns.menu.items || [],
+            });
+          }
+        } else if (input.addOns.menu?.enabled === false) {
+          sections = sections.filter((s: any) => s.type !== "menu");
+        }
+
+        // Handle pricelist
+        if (input.addOns.pricelist?.enabled) {
+          const hasPricelist = sections.some((s: any) => s.type === "pricelist");
+          if (!hasPricelist) {
+            sections.push({
+              type: "pricelist",
+              headline: "Preise",
+              items: input.addOns.pricelist.items || [],
+            });
+          }
+        } else if (input.addOns.pricelist?.enabled === false) {
+          sections = sections.filter((s: any) => s.type !== "pricelist");
+        }
+
+        websiteData.sections = sections;
+        await updateWebsite(input.websiteId, { websiteData });
+        return { success: true };
+      }),
+
     setWebsiteActive: adminProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
