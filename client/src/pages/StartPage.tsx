@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2, Mail, Lock } from "lucide-react";
+import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 // Detect whether a URL looks like a Google Maps / share link
 function isGoogleLink(url: string): boolean {
@@ -20,8 +21,17 @@ function isValidEmail(email: string): boolean {
 type Step = "email" | "choice" | "gmb";
 
 export default function StartPage() {
+  const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<Step>("email");
   const [customerEmail, setCustomerEmail] = useState("");
+
+  // If user is logged in, pre-fill email and skip to choice step
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      setCustomerEmail(user.email);
+      setStep("choice");
+    }
+  }, [isAuthenticated, user]);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [gmbUrl, setGmbUrl] = useState("");
   const [resolvedInfo, setResolvedInfo] = useState<{
@@ -186,53 +196,89 @@ export default function StartPage() {
                 <Mail className="w-5 h-5 text-indigo-400" />
               </div>
               <div>
-                <h1 className="text-white text-xl font-bold leading-tight">Deine E-Mail-Adresse</h1>
-                <p className="text-slate-400 text-xs mt-0.5">Damit wir dir deine Website zusenden können</p>
+                <h1 className="text-white text-xl font-bold leading-tight">
+                  {isAuthenticated ? "E-Mail aus deinem Account" : "Deine E-Mail-Adresse"}
+                </h1>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  {isAuthenticated
+                    ? "Angemeldet als " + user?.email
+                    : "Damit wir dir deine Website zusenden können"}
+                </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div>
-                <Input
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => {
-                    setCustomerEmail(e.target.value);
-                    if (emailError && isValidEmail(e.target.value.trim())) setEmailError(null);
-                  }}
-                  onKeyDown={(e) => e.key === "Enter" && handleEmailNext()}
-                  placeholder="max@beispiel.de"
-                  autoFocus
-                  className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 text-base ${emailError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-                />
-                {emailError ? (
-                  <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {emailError}
-                  </p>
-                ) : (
-                  <p className="text-slate-500 text-xs mt-1.5 flex items-center gap-1">
-                    <Lock className="w-3 h-3" /> Kein Spam – nur dein Website-Link und wichtige Updates.
-                  </p>
-                )}
-              </div>
+              {isAuthenticated ? (
+                // Logged in user: show pre-filled email and continue button
+                <>
+                  <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
+                    <User className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-300 text-sm">{user?.email}</span>
+                  </div>
+                  <Button
+                    onClick={handleEmailNext}
+                    disabled={isCapturing}
+                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-base"
+                  >
+                    {isCapturing ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Wird gespeichert…
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        Weiter
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                // Guest user: show email input
+                <>
+                  <div>
+                    <Input
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => {
+                        setCustomerEmail(e.target.value);
+                        if (emailError && isValidEmail(e.target.value.trim())) setEmailError(null);
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && handleEmailNext()}
+                      placeholder="max@beispiel.de"
+                      autoFocus
+                      className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 text-base ${emailError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                    />
+                    {emailError ? (
+                      <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> {emailError}
+                      </p>
+                    ) : (
+                      <p className="text-slate-500 text-xs mt-1.5 flex items-center gap-1">
+                        <Lock className="w-3 h-3" /> Kein Spam – nur dein Website-Link und wichtige Updates.
+                      </p>
+                    )}
+                  </div>
 
-              <Button
-                onClick={handleEmailNext}
-                disabled={!customerEmail.trim() || isCapturing}
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-base"
-              >
-                {isCapturing ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Wird gespeichert…
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    Weiter
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                )}
-              </Button>
+                  <Button
+                    onClick={handleEmailNext}
+                    disabled={!customerEmail.trim() || isCapturing}
+                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-base"
+                  >
+                    {isCapturing ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Wird gespeichert…
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        Weiter
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Trust signals */}
@@ -256,12 +302,14 @@ export default function StartPage() {
         {/* ── Step 2: Choice ── */}
         {step === "choice" && (
           <>
-            <button
-              onClick={() => setStep("email")}
-              className="text-slate-400 hover:text-white text-sm mb-5 flex items-center gap-1 transition-colors"
-            >
-              ← Zurück
-            </button>
+            {!isAuthenticated && (
+              <button
+                onClick={() => setStep("email")}
+                className="text-slate-400 hover:text-white text-sm mb-5 flex items-center gap-1 transition-colors"
+              >
+                ← Zurück
+              </button>
+            )}
 
             <h1 className="text-white text-2xl font-bold mb-1 text-center">
               Wie möchtest du starten?
@@ -273,7 +321,7 @@ export default function StartPage() {
             {/* Confirmed email badge */}
             <div className="flex items-center gap-2 mb-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
               <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-emerald-300 text-sm">{customerEmail}</span>
+              <span className="text-emerald-300 text-sm">{customerEmail || user?.email}</span>
             </div>
 
             <div className="space-y-3">
