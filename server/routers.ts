@@ -3034,7 +3034,7 @@ Kontext: ${input.context}`,
             type: z.enum(["text", "email", "textarea", "select"]),
             required: z.boolean(),
             options: z.array(z.string()).optional(),
-          })).optional(),
+          })).optional().nullable(),
         }),
       }))
       .mutation(async ({ ctx, input }) => {

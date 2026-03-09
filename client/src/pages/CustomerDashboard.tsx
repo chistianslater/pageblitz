@@ -749,7 +749,12 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       ) as any[],
     },
     contactForm: onboarding?.addOnContactForm || false,
-    contactFormFields: contactFormFields as FormField[] | undefined,
+    contactFormFields: (contactFormFields as FormField[] | undefined) || [
+      { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+      { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+      { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+      { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+    ],
   });
 
   const [uploading, setUploading] = useState(false);
@@ -775,7 +780,12 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
         pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
-        contactFormFields: addons.contactFormFields,
+        contactFormFields: addons.contactFormFields || [
+          { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+          { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+          { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+          { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+        ],
       },
     });
     setSaving(false);
