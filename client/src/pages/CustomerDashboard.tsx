@@ -953,375 +953,434 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   };
 
   return (
-    <div className="space-y-4">
-      {/* Gallery */}
-      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "gallery" ? "ring-2 ring-blue-500/50" : ""}`}>
-        <div 
-          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
-          onClick={() => setExpandedAddon(expandedAddon === "gallery" ? null : "gallery")}
+    <div className="space-y-6">
+      {/* Section Header */}
+      <div className="flex items-center justify-between">
+        <p className="text-slate-400 text-sm">
+          Aktiviere Features für deine Website. Klicke auf ein aktiviertes Add-on, um es zu bearbeiten.
+        </p>
+        <button
+          onClick={handleSave}
+          disabled={saving || uploading}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
-              <Image className="w-5 h-5 text-pink-400" />
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+          {saving ? "Speichern..." : "Änderungen speichern"}
+        </button>
+      </div>
+
+      {/* Gallery */}
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.gallery.enabled ? (expandedAddon === "gallery" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        {/* Card Header */}
+        <div className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0">
+              <Image className="w-6 h-6 text-pink-400" />
             </div>
-            <div>
-              <h3 className="text-white font-medium">Bildergalerie</h3>
-              <p className="text-slate-400 text-xs">
-                {addons.gallery.enabled 
-                  ? `${addons.gallery.photos.length} Bilder` 
-                  : "Deaktiviert"}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-white font-semibold">Bildergalerie</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">
+                  +3,90 €/Mon
+                </span>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Präsentiere deine Arbeiten und Projekte in einer ansprechenden Galerie. 
+                {addons.gallery.enabled && addons.gallery.photos.length > 0 && (
+                  <span className="text-pink-400 ml-1">{addons.gallery.photos.length} Bilder hochgeladen</span>
+                )}
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            {/* Toggle Switch */}
+            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
               <input
                 type="checkbox"
                 checked={addons.gallery.enabled}
                 onChange={() => toggleAddon("gallery")}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500" />
             </label>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "gallery" ? null : "gallery"); }}
-              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
-            >
-              {expandedAddon === "gallery" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
           </div>
         </div>
-        
-        {expandedAddon === "gallery" && addons.gallery.enabled && (
-          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <div className="space-y-4 max-h-[700px] overflow-y-auto">
-              {addons.gallery.photos.length > 0 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {addons.gallery.photos.map((photo, idx) => (
-                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
-                      <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        onClick={() => removeGalleryPhoto(idx)}
-                        className="absolute top-1 right-1 p-1.5 rounded bg-red-600/90 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <label className={`flex items-center gap-2 justify-center text-sm text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl px-4 py-6 cursor-pointer transition-colors ${uploading ? "opacity-50" : ""}`}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={uploading}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) addGalleryPhoto(file);
-                  }}
-                />
-                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
-                {uploading ? "Wird hochgeladen..." : "Bild hochladen"}
-              </label>
-            </div>
+
+        {/* Expandable Content */}
+        {addons.gallery.enabled && (
+          <div className="border-t border-slate-700/50">
+            <button
+              onClick={() => setExpandedAddon(expandedAddon === "gallery" ? null : "gallery")}
+              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                {expandedAddon === "gallery" ? "Weniger anzeigen" : "Bilder verwalten"}
+              </span>
+              {expandedAddon === "gallery" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {expandedAddon === "gallery" && (
+              <div className="p-5 pt-0 space-y-4">
+                {addons.gallery.photos.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {addons.gallery.photos.map((photo, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
+                        <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
+                        <button
+                          onClick={() => removeGalleryPhoto(idx)}
+                          className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) addGalleryPhoto(file);
+                    }}
+                  />
+                  <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
+                    {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
+                  </div>
+                  <div className="text-center">
+                    <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
+                    <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
+                  </div>
+                </label>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Menu */}
-      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "menu" ? "ring-2 ring-blue-500/50" : ""}`}>
-        <div 
-          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
-          onClick={() => setExpandedAddon(expandedAddon === "menu" ? null : "menu")}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-amber-400" />
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.menu.enabled ? (expandedAddon === "menu" ? "border-amber-500/50 ring-1 ring-amber-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        <div className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-6 h-6 text-amber-400" />
             </div>
-            <div>
-              <h3 className="text-white font-medium">Speisekarte</h3>
-              <p className="text-slate-400 text-xs">
-                {addons.menu.enabled 
-                  ? `${addons.menu.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Gerichte in ${addons.menu.categories.length} Kategorien` 
-                  : "Deaktiviert"}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-white font-semibold">Speisekarte</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
+                  +3,90 €/Mon
+                </span>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Ideal für Restaurants, Cafés und Bäckereien. Präsentiere deine Gerichte mit Preisen und Beschreibungen.
+                {addons.menu.enabled && (
+                  <span className="text-amber-400 ml-1">
+                    {addons.menu.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Gerichte
+                  </span>
+                )}
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
               <input
                 type="checkbox"
                 checked={addons.menu.enabled}
                 onChange={() => toggleAddon("menu")}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500" />
             </label>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "menu" ? null : "menu"); }}
-              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
-            >
-              {expandedAddon === "menu" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
           </div>
         </div>
-        
-        {expandedAddon === "menu" && addons.menu.enabled && (
-          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <div className="space-y-4 max-h-[700px] overflow-y-auto">
-              {addons.menu.categories.map((category, catIdx) => (
-                <div key={catIdx} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={category.name}
-                      onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)}
-                      placeholder="Kategorie Name"
-                      className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2.5 rounded-lg border border-slate-600 outline-none focus:border-blue-500 font-medium"
-                    />
-                    {addons.menu.categories.length > 1 && (
-                      <button
-                        onClick={() => removeMenuCategory(catIdx)}
-                        className="p-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
 
-                  <div className="space-y-2 pl-2 border-l-2 border-slate-600 ml-1">
-                    {category.items?.map((item: any, itemIdx: number) => (
-                      <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3">
-                        <div className="flex-1 space-y-2">
-                          <input
-                            type="text"
-                            value={item.name || ""}
-                            onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)}
-                            placeholder="Gerichtname"
-                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
-                          />
-                          <input
-                            type="text"
-                            value={item.description || ""}
-                            onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)}
-                            placeholder="Beschreibung"
-                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
-                          />
-                          <input
-                            type="text"
-                            value={item.price || ""}
-                            onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)}
-                            placeholder="Preis"
-                            className="w-32 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
-                          />
-                        </div>
+        {addons.menu.enabled && (
+          <div className="border-t border-slate-700/50">
+            <button
+              onClick={() => setExpandedAddon(expandedAddon === "menu" ? null : "menu")}
+              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                {expandedAddon === "menu" ? "Weniger anzeigen" : "Speisekarte bearbeiten"}
+              </span>
+              {expandedAddon === "menu" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {expandedAddon === "menu" && (
+              <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
+                {addons.menu.categories.map((category, catIdx) => (
+                  <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
+                      <input
+                        type="text"
+                        value={category.name}
+                        onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)}
+                        placeholder="Kategorie Name (z.B. Hauptgerichte)"
+                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500 font-medium"
+                      />
+                      {addons.menu.categories.length > 1 && (
                         <button
-                          onClick={() => removeMenuItem(catIdx, itemIdx)}
-                          className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          onClick={() => removeMenuCategory(catIdx)}
+                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={() => addMenuItem(catIdx)}
-                      className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Gericht hinzufügen
-                    </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
+                      {category.items?.map((item: any, itemIdx: number) => (
+                        <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={item.name || ""}
+                                onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)}
+                                placeholder="Gerichtname"
+                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
+                              />
+                              <input
+                                type="text"
+                                value={item.price || ""}
+                                onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)}
+                                placeholder="Preis (z.B. 12,90 €)"
+                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              value={item.description || ""}
+                              onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)}
+                              placeholder="Beschreibung (optional)"
+                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
+                            />
+                          </div>
+                          <button
+                            onClick={() => removeMenuItem(catIdx, itemIdx)}
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => addMenuItem(catIdx)}
+                        className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Gericht hinzufügen
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-              <button
-                onClick={addMenuCategory}
-                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-2"
-              >
-                <Plus className="w-4 h-4" />
-                Kategorie hinzufügen
-              </button>
-            </div>
+                ))}
+                <button
+                  onClick={addMenuCategory}
+                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
+                >
+                  <Plus className="w-4 h-4" />
+                  Neue Kategorie hinzufügen
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Pricelist */}
-      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "pricelist" ? "ring-2 ring-blue-500/50" : ""}`}>
-        <div 
-          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
-          onClick={() => setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist")}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <LayoutGrid className="w-5 h-5 text-emerald-400" />
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.pricelist.enabled ? (expandedAddon === "pricelist" ? "border-emerald-500/50 ring-1 ring-emerald-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        <div className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0">
+              <LayoutGrid className="w-6 h-6 text-emerald-400" />
             </div>
-            <div>
-              <h3 className="text-white font-medium">Preisliste</h3>
-              <p className="text-slate-400 text-xs">
-                {addons.pricelist.enabled 
-                  ? `${addons.pricelist.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Preise in ${addons.pricelist.categories.length} Kategorien` 
-                  : "Deaktiviert"}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-white font-semibold">Preisliste</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
+                  +3,90 €/Mon
+                </span>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Zeige deine Leistungen mit Preisen übersichtlich an. Perfekt für Friseure, Beauty-Studios und Dienstleister.
+                {addons.pricelist.enabled && (
+                  <span className="text-emerald-400 ml-1">
+                    {addons.pricelist.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Preise
+                  </span>
+                )}
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
               <input
                 type="checkbox"
                 checked={addons.pricelist.enabled}
                 onChange={() => toggleAddon("pricelist")}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500" />
             </label>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist"); }}
-              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
-            >
-              {expandedAddon === "pricelist" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
           </div>
         </div>
-        
-        {expandedAddon === "pricelist" && addons.pricelist.enabled && (
-          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <div className="space-y-4 max-h-[700px] overflow-y-auto">
-              {addons.pricelist.categories.map((category, catIdx) => (
-                <div key={catIdx} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={category.name}
-                      onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)}
-                      placeholder="Kategorie Name"
-                      className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2.5 rounded-lg border border-slate-600 outline-none focus:border-blue-500 font-medium"
-                    />
-                    {addons.pricelist.categories.length > 1 && (
-                      <button
-                        onClick={() => removePriceCategory(catIdx)}
-                        className="p-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
 
-                  <div className="space-y-2 pl-2 border-l-2 border-slate-600 ml-1">
-                    {category.items?.map((item: any, itemIdx: number) => (
-                      <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3">
-                        <div className="flex-1 space-y-2">
-                          <input
-                            type="text"
-                            value={item.name || ""}
-                            onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)}
-                            placeholder="Leistung"
-                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
-                          />
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={item.price || ""}
-                              onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)}
-                              placeholder="Preis"
-                              className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
-                            />
+        {addons.pricelist.enabled && (
+          <div className="border-t border-slate-700/50">
+            <button
+              onClick={() => setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist")}
+              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                {expandedAddon === "pricelist" ? "Weniger anzeigen" : "Preisliste bearbeiten"}
+              </span>
+              {expandedAddon === "pricelist" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {expandedAddon === "pricelist" && (
+              <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
+                {addons.pricelist.categories.map((category, catIdx) => (
+                  <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
+                      <input
+                        type="text"
+                        value={category.name}
+                        onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)}
+                        placeholder="Kategorie Name (z.B. Damen)"
+                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500 font-medium"
+                      />
+                      {addons.pricelist.categories.length > 1 && (
+                        <button
+                          onClick={() => removePriceCategory(catIdx)}
+                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
+                      {category.items?.map((item: any, itemIdx: number) => (
+                        <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={item.name || ""}
+                                onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)}
+                                placeholder="Leistung"
+                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
+                              />
+                              <input
+                                type="text"
+                                value={item.price || ""}
+                                onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)}
+                                placeholder="Preis"
+                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
+                              />
+                            </div>
                             <input
                               type="text"
                               value={item.description || ""}
                               onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)}
                               placeholder="Beschreibung (optional)"
-                              className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
+                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
                             />
                           </div>
+                          <button
+                            onClick={() => removePriceItem(catIdx, itemIdx)}
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => removePriceItem(catIdx, itemIdx)}
-                          className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={() => addPriceItem(catIdx)}
-                      className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Preis hinzufügen
-                    </button>
+                      ))}
+                      <button
+                        onClick={() => addPriceItem(catIdx)}
+                        className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Preis hinzufügen
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-              <button
-                onClick={addPriceCategory}
-                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-2"
-              >
-                <Plus className="w-4 h-4" />
-                Kategorie hinzufügen
-              </button>
-            </div>
+                ))}
+                <button
+                  onClick={addPriceCategory}
+                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
+                >
+                  <Plus className="w-4 h-4" />
+                  Neue Kategorie hinzufügen
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Contact Form */}
-      <div className={`bg-slate-800/40 rounded-xl overflow-hidden transition-all duration-300 ${expandedAddon === "contactForm" ? "ring-2 ring-blue-500/50" : ""}`}>
-        <div 
-          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-700/40 transition-colors"
-          onClick={() => setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm")}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Mail className="w-5 h-5 text-blue-400" />
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.contactForm ? (expandedAddon === "contactForm" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
+        <div className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-6 h-6 text-blue-400" />
             </div>
-            <div>
-              <h3 className="text-white font-medium">Kontaktformular</h3>
-              <p className="text-slate-400 text-xs">
-                {addons.contactForm 
-                  ? "Aktiviert - Kunden können Anfragen senden" 
-                  : "Deaktiviert"}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-white font-semibold">Kontaktformular</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">
+                  +3,90 €/Mon
+                </span>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Ermögliche Besuchern, direkt über deine Website Anfragen zu senden. 
+                {addons.contactForm && (
+                  <span className="text-blue-400 ml-1">
+                    {addons.contactFormFields?.length || 4} Felder konfiguriert
+                  </span>
+                )}
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
               <input
                 type="checkbox"
                 checked={addons.contactForm}
                 onChange={() => toggleAddon("contactForm")}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500" />
             </label>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm"); }}
-              className="p-1 rounded-lg hover:bg-slate-600 text-slate-400 hover:text-white transition-colors"
-            >
-              {expandedAddon === "contactForm" ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
           </div>
         </div>
-        
-        {expandedAddon === "contactForm" && addons.contactForm && (
-          <div className="px-4 pb-4 border-t border-slate-700/50 pt-4">
-            <ContactFormEditor
-              websiteId={websiteId}
-              initialFields={addons.contactFormFields}
-              onSave={handleSaveContactFormFields}
-            />
+
+        {addons.contactForm && (
+          <div className="border-t border-slate-700/50">
+            <button
+              onClick={() => setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm")}
+              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                {expandedAddon === "contactForm" ? "Weniger anzeigen" : "Formularfelder bearbeiten"}
+              </span>
+              {expandedAddon === "contactForm" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {expandedAddon === "contactForm" && (
+              <div className="p-5 pt-2">
+                <ContactFormEditor
+                  websiteId={websiteId}
+                  initialFields={addons.contactFormFields}
+                  onSave={handleSaveContactFormFields}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      <button
-        onClick={handleSave}
-        disabled={saving || uploading}
-        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
-      >
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-        Add-ons speichern
-      </button>
     </div>
   );
 }
