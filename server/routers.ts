@@ -3000,8 +3000,16 @@ Kontext: ${input.context}`,
         const owned = rows.find((r) => r.website.id === input.websiteId);
         if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
 
-        const result = await uploadPhoto(input.imageData, input.mimeType, input.websiteId, Date.now());
-        return { url: result.url };
+        try {
+          const result = await uploadPhoto(input.imageData, input.mimeType, input.websiteId, Date.now());
+          return { url: result.url };
+        } catch (error: any) {
+          console.error("Gallery upload error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Bild-Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler"),
+          });
+        }
       }),
 
     // Update add-ons (gallery, menu, pricelist, contact form)

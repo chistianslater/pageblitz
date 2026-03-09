@@ -840,11 +840,16 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           });
           toast.success("Bild hochgeladen");
         }
-      } catch {
-        toast.error("Upload fehlgeschlagen");
+      } catch (error: any) {
+        console.error("Upload error:", error);
+        toast.error("Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler"));
       } finally {
         setUploading(false);
       }
+    };
+    reader.onerror = () => {
+      toast.error("Fehler beim Lesen der Datei");
+      setUploading(false);
     };
     reader.readAsDataURL(file);
   };
