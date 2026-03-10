@@ -15,7 +15,7 @@ export interface IndustryImageSet {
 export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   // ── Hair & Beauty ──────────────────────────────────
   friseur: {
-    keywords: ["friseur", "hair", "salon", "barber", "beauty", "hairdresser", "coiffeur"],
+    keywords: ["friseur", "hair", "salon", "barber", "beauty", "hairdresser", "coiffeur", "frisör", "hairstylist", "nail", "lash", "brow", "manicure", "pedicure"],
     hero: [
       "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1400&q=85&auto=format&fit=crop",
@@ -28,9 +28,10 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80&auto=format&fit=crop",
     ],
   },
+
   // ── Restaurant & Food ──────────────────────────────
   restaurant: {
-    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch", "taverne", "ristorante", "trattoria", "italienisch", "italien", "pizzeria", "pizza", "genuss", "aroma", "lecker", "speisen", "küchenchef", "koch", "tafel", "buffet", "catering", "bistro", "café", "delivery", "lieferservice", "speiselokal", "gasthof", "bewirtung", "essen auf rädern", "mahlzeit", "meal"],
+    keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch", "taverne", "ristorante", "trattoria", "italienisch", "italien", "pizzeria", "pizza", "genuss", "aroma", "lecker", "speisen", "küchenchef", "koch", "tafel", "buffet", "catering", "bistro", "delivery", "lieferservice", "speiselokal", "gasthof", "bewirtung", "essen auf rädern", "mahlzeit", "meal"],
     hero: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop",
@@ -44,9 +45,26 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&auto=format&fit=crop",
     ],
   },
+
+  // ── Café & Coffee ──────────────────────────────────
+  cafe: {
+    keywords: ["café", "cafe", "kaffee", "kaffeehaus", "kaffeebar", "coffeeshop", "coffee shop", "kaffeerösterei", "rösterei", "barista", "espresso", "espressobar", "cappuccino"],
+    hero: [
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
   // ── Pizzeria & Italian ──────────────────────────────
   pizza: {
-    keywords: ["pizza", "pizzeria", "pizze", "napoli", "italienisch", "italien", "italian", "pasta", "trattoria", "osteria", "pizzaservice", "ristorante", "italy", "teig", "ofen", "amaro", "amareo", "bella", "mamma", "italy", "basilikum", "mozzarella"],
+    keywords: ["pizza", "pizzeria", "pizze", "napoli", "italian", "pasta", "osteria", "pizzaservice", "italy", "basilikum", "mozzarella"],
     hero: [
       "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1574129624162-fa167303c403?w=1400&q=85&auto=format&fit=crop",
@@ -58,6 +76,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=800&q=80&auto=format&fit=crop",
     ],
   },
+
   // ── Bar & Tapas ────────────────────────────────────
   bar: {
     keywords: ["bar", "tapas", "cocktail", "lounge", "pub", "kneipe", "weinbar", "wein", "bier", "brauerei", "brewery", "nightlife", "nachtleben", "aperitivo", "tapasbar"],
@@ -72,6 +91,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=800&q=80&auto=format&fit=crop",
     ],
   },
+
   // ── Bauunternehmen & Handwerk ───────────────────────
   handwerk: {
     keywords: ["handwerk", "bau", "elektriker", "klempner", "maler", "schreiner", "tischler", "zimmerer", "dachdecker", "sanitär", "heizung", "installation", "craft", "construction", "renovierung", "fliesenleger", "bauunternehmen", "baufirma", "hochbau", "tiefbau", "rohbau"],
@@ -87,6 +107,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&auto=format&fit=crop",
     ],
   },
+
   // ── Fitness & Sport ────────────────────────────────
   fitness: {
     keywords: ["fitness", "gym", "sport", "training", "yoga", "pilates", "crossfit", "personal trainer", "gesundheit"],
@@ -101,20 +122,55 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80&auto=format&fit=crop",
     ],
   },
-  // ── Medizin & Beratung ─────────────────────────────
-  medizin: {
-    keywords: ["arzt", "zahnarzt", "praxis", "medizin", "gesundheit", "klinik", "physiotherapie", "therapie", "apotheke", "doctor", "dental", "medical", "rechtsanwalt", "anwalt", "steuerberater", "beratung", "consulting", "kanzlei", "law", "legal"],
+
+  // ── Rechtsanwalt & Kanzlei ─────────────────────────
+  // NOTE: Dedicated legal images – no longer mixed with medical
+  legal: {
+    keywords: ["rechtsanwalt", "anwalt", "kanzlei", "law", "legal", "attorney", "lawyer", "steuerberater", "notar", "notariat", "anwaltskanzlei", "rechtsbüro", "steuerberatung", "steuerrecht", "kanzleiname"],
     hero: [
-      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1479142506502-19b3a3b7ff33?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80&auto=format&fit=crop",
     ],
   },
+
+  // ── Medizin & Gesundheit ───────────────────────────
+  // NOTE: Keywords strictly medical only – legal terms moved to `legal` category
+  medizin: {
+    keywords: ["arzt", "zahnarzt", "praxis", "medizin", "gesundheit", "klinik", "physiotherapie", "therapie", "apotheke", "doctor", "dental", "medical", "heilpraktiker", "osteopath", "chiropractor", "orthopäde", "gynäkologie", "kardiologie", "neurologie", "psychiatrie", "psychologie", "dermatologie"],
+    hero: [
+      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Unternehmensberatung & Consulting ──────────────
+  beratung: {
+    keywords: ["unternehmensberatung", "consulting", "management consulting", "business consulting", "beratung", "strategie", "unternehmensberater", "wirtschaftsberatung", "versicherung", "finanzberatung", "finanz"],
+    hero: [
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
   // ── Immobilien ─────────────────────────────────────
   immobilien: {
     keywords: ["immobilien", "makler", "real estate", "wohnung", "haus", "miete", "kauf", "property"],
@@ -129,6 +185,83 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&auto=format&fit=crop",
     ],
   },
+
+  // ── Auto & Kfz ─────────────────────────────────────
+  automotive: {
+    keywords: ["auto", "kfz", "car", "garage", "werkstatt", "mechanic", "karosserie", "tuning", "fahrzeug", "vehicle", "motorrad", "motorcycle", "reifenservice", "autowerkstatt", "kfz-werkstatt"],
+    hero: [
+      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Tech & Digital ─────────────────────────────────
+  tech: {
+    keywords: ["tech", "software", "digital", "agency", "agentur", "web", "app", "it", "computer", "marketing", "design", "media", "kreativ", "startup", "developer", "programm", "it-beratung", "webdesign", "webentwicklung", "app-entwicklung"],
+    hero: [
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Garten & Natur ─────────────────────────────────
+  nature: {
+    keywords: ["garten", "garden", "florist", "blumen", "flower", "pflanze", "plant", "bio", "organic", "öko", "eco", "natur", "nachhaltig", "sustainable", "landscaping", "landscape", "lawn", "baumschule", "gärtnerei", "gartengestaltung", "gartenarbeit"],
+    hero: [
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1416339306562-f3d12fefd36f?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Bildung & Coaching ─────────────────────────────
+  education: {
+    keywords: ["schule", "school", "bildung", "education", "coaching", "coach", "nachhilfe", "tutor", "kurs", "course", "akademie", "academy", "seminar", "workshop", "weiterbildung", "training", "fahrschule", "musikschule", "sprachschule", "kinderbetreuung"],
+    hero: [
+      "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1510531704581-5b2870972060?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1510531704581-5b2870972060?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Hotel & Gastgewerbe ────────────────────────────
+  hospitality: {
+    keywords: ["hotel", "pension", "hostel", "airbnb", "unterkunft", "accommodation", "resort", "motel", "bed and breakfast", "boutique hotel", "gasthof", "herberge"],
+    hero: [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
   // ── Default / Neutral Fallback ─────────────────────
   default: {
     keywords: [],
@@ -186,6 +319,11 @@ export const INDUSTRY_COLORS: Record<string, any[]> = {
     // Soft teal & warm white - Healing, calm
     { primary: "#5a8a8a", secondary: "#8ab5b5", accent: "#e8f4f4", background: "#fafdfd", surface: "#f0f7f7", text: "#2d4a4a", textLight: "#5a7a7a", gradient: "linear-gradient(135deg, #5a8a8a 0%, #8ab5b5 100%)" },
   ],
+  // Alias for industryKey "medical"
+  medical: [
+    { primary: "#64748b", secondary: "#94a3b8", accent: "#e8ded4", background: "#ffffff", surface: "#f8fafc", text: "#334155", textLight: "#64748b", gradient: "linear-gradient(135deg, #64748b 0%, #94a3b8 100%)" },
+    { primary: "#5a8a8a", secondary: "#8ab5b5", accent: "#e8f4f4", background: "#fafdfd", surface: "#f0f7f7", text: "#2d4a4a", textLight: "#5a7a7a", gradient: "linear-gradient(135deg, #5a8a8a 0%, #8ab5b5 100%)" },
+  ],
   immobilien: [
     // Rich navy & warm gold - Premium properties
     { primary: "#1e3a5f", secondary: "#c9a227", accent: "#f5f3f0", background: "#ffffff", surface: "#f8f9fa", text: "#1a1a1a", textLight: "#6b7280", gradient: "linear-gradient(135deg, #1e3a5f 0%, #c9a227 100%)" },
@@ -198,11 +336,25 @@ export const INDUSTRY_COLORS: Record<string, any[]> = {
     // Charcoal & soft gold - Sophisticated advisory
     { primary: "#3d3d3d", secondary: "#c4a882", accent: "#f5f3f0", background: "#fdfcfb", surface: "#f8f6f3", text: "#1a1a1a", textLight: "#6b6b6b", gradient: "linear-gradient(135deg, #3d3d3d 0%, #c4a882 100%)" },
   ],
+  // ── NEW: Rechtsanwalt & Kanzlei ─────────────────────
+  legal: [
+    // Deep navy & warm gold - Authoritative, trustworthy law firm
+    { primary: "#1e2d3d", secondary: "#c9a227", accent: "#f5f3f0", background: "#fdfcfb", surface: "#f8f6f3", text: "#1a1a1a", textLight: "#6b7280", gradient: "linear-gradient(135deg, #1e2d3d 0%, #c9a227 100%)" },
+    // Rich charcoal & warm brass - Sophisticated, established
+    { primary: "#2d3748", secondary: "#9a7b4f", accent: "#f0ece4", background: "#fafaf8", surface: "#f5f2ec", text: "#1a1a1a", textLight: "#6b6b6b", gradient: "linear-gradient(135deg, #2d3748 0%, #9a7b4f 100%)" },
+  ],
   auto: [
     // Deep charcoal & silver - Premium automotive
     { primary: "#2d2d2d", secondary: "#9ca3af", accent: "#e5e7eb", background: "#ffffff", surface: "#f3f4f6", text: "#1a1a1a", textLight: "#6b7280", gradient: "linear-gradient(135deg, #2d2d2d 0%, #9ca3af 100%)" },
     // Navy & soft copper - Classic elegance
     { primary: "#1e3a5f", secondary: "#bfa880", accent: "#f5f3f0", background: "#faf8f5", surface: "#f5f0e8", text: "#1a1a1a", textLight: "#6b7280", gradient: "linear-gradient(135deg, #1e3a5f 0%, #bfa880 100%)" },
+  ],
+  // ── NEW: Auto & Werkstatt ───────────────────────────
+  automotive: [
+    // Dark anthracite & silver - Precision engineering
+    { primary: "#1a1a2e", secondary: "#9ca3af", accent: "#e5e7eb", background: "#ffffff", surface: "#f3f4f6", text: "#1a1a1a", textLight: "#6b7280", gradient: "linear-gradient(135deg, #1a1a2e 0%, #9ca3af 100%)" },
+    // Slate & copper - Classic craftsmanship
+    { primary: "#374151", secondary: "#b87333", accent: "#e8ded4", background: "#faf8f5", surface: "#f5f0e8", text: "#1a1a1a", textLight: "#6b6b6b", gradient: "linear-gradient(135deg, #374151 0%, #b87333 100%)" },
   ],
   cafe: [
     // Warm brown & cream - Cozy coffeehouse
@@ -216,11 +368,39 @@ export const INDUSTRY_COLORS: Record<string, any[]> = {
     // Deep teal & cream - Boutique elegance
     { primary: "#2d4a4a", secondary: "#5a8a8a", accent: "#e8ded4", background: "#fafdfd", surface: "#f0f7f7", text: "#1a2d2d", textLight: "#5a7a7a", gradient: "linear-gradient(135deg, #2d4a4a 0%, #5a8a8a 100%)" },
   ],
+  // ── NEW: Hotel & Gastgewerbe ────────────────────────
+  hospitality: [
+    // Deep champagne & forest green - Luxury boutique hotel
+    { primary: "#2d4a3e", secondary: "#c9a227", accent: "#f5f3f0", background: "#fdfcfb", surface: "#f8f6f3", text: "#1a1a1a", textLight: "#6b7280", gradient: "linear-gradient(135deg, #2d4a3e 0%, #c9a227 100%)" },
+    // Warm ivory & deep teal - Elegant hospitality
+    { primary: "#1f3d3d", secondary: "#8ab5b5", accent: "#e8f4f4", background: "#fafdfd", surface: "#f0f7f7", text: "#1a2d2d", textLight: "#5a7a7a", gradient: "linear-gradient(135deg, #1f3d3d 0%, #8ab5b5 100%)" },
+  ],
   bauunternehmen: [
     // Steel & warm brass - Construction excellence
     { primary: "#4a5568", secondary: "#bfa880", accent: "#e2e8f0", background: "#ffffff", surface: "#f7fafc", text: "#1a202c", textLight: "#718096", gradient: "linear-gradient(135deg, #4a5568 0%, #bfa880 100%)" },
     // Charcoal & copper - Industrial modern
     { primary: "#3d3d3d", secondary: "#b87333", accent: "#e8ded4", background: "#faf8f5", surface: "#f5f0e8", text: "#1a1a1a", textLight: "#6b6b6b", gradient: "linear-gradient(135deg, #3d3d3d 0%, #b87333 100%)" },
+  ],
+  // ── NEW: Tech & Digitalagentur ──────────────────────
+  tech: [
+    // Dark slate & electric blue - Digital innovation
+    { primary: "#1e293b", secondary: "#3b82f6", accent: "#e0f2fe", background: "#ffffff", surface: "#f8fafc", text: "#0f172a", textLight: "#64748b", gradient: "linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)" },
+    // Charcoal & teal - Modern agency
+    { primary: "#1f2937", secondary: "#0d9488", accent: "#ccfbf1", background: "#fafafa", surface: "#f4f4f5", text: "#111827", textLight: "#6b7280", gradient: "linear-gradient(135deg, #1f2937 0%, #0d9488 100%)" },
+  ],
+  // ── NEW: Garten & Natur ─────────────────────────────
+  nature: [
+    // Forest green & warm cream - Natural, sustainable
+    { primary: "#2d5016", secondary: "#6b7c3f", accent: "#f0f4e8", background: "#fafaf5", surface: "#f2f5eb", text: "#1a2a0a", textLight: "#5a6b3a", gradient: "linear-gradient(135deg, #2d5016 0%, #6b7c3f 100%)" },
+    // Sage & warm sand - Organic, earthy
+    { primary: "#5c6b3a", secondary: "#9a8b6a", accent: "#e8e4d0", background: "#faf9f4", surface: "#f0ece0", text: "#2a2a18", textLight: "#6b6b4a", gradient: "linear-gradient(135deg, #5c6b3a 0%, #9a8b6a 100%)" },
+  ],
+  // ── NEW: Bildung & Coaching ─────────────────────────
+  education: [
+    // Deep navy & bright sky - Competence, knowledge
+    { primary: "#1e3a5f", secondary: "#3b82f6", accent: "#dbeafe", background: "#ffffff", surface: "#f0f7ff", text: "#1e293b", textLight: "#64748b", gradient: "linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%)" },
+    // Warm charcoal & amber - Approachable, inspiring
+    { primary: "#3d3d3d", secondary: "#d97706", accent: "#fef3c7", background: "#fffdf5", surface: "#fdf8ed", text: "#1a1a1a", textLight: "#6b6b6b", gradient: "linear-gradient(135deg, #3d3d3d 0%, #d97706 100%)" },
   ],
   default: [
     // Classic slate & warm gold - Universal elegance
@@ -237,17 +417,17 @@ export const INDUSTRY_COLORS: Record<string, any[]> = {
  */
 export function getGalleryImages(category: string, _businessName: string = ""): string[] {
   const normalizedCategory = category.toLowerCase().trim();
-  
+
   // Sortiere Keys nach Priorität: längere/spezifischere Keywords zuerst
   const sortedKeys = Object.keys(INDUSTRY_IMAGES).sort((a, b) => {
     const keywordsA = (INDUSTRY_IMAGES[a] as IndustryImageSet).keywords;
     const keywordsB = (INDUSTRY_IMAGES[b] as IndustryImageSet).keywords;
     // Durchschnittliche Keyword-Länge als Prioritätsmaßstab
-    const avgLenA = keywordsA.reduce((sum, kw) => sum + kw.length, 0) / keywordsA.length;
-    const avgLenB = keywordsB.reduce((sum, kw) => sum + kw.length, 0) / keywordsB.length;
+    const avgLenA = keywordsA.length > 0 ? keywordsA.reduce((sum, kw) => sum + kw.length, 0) / keywordsA.length : 0;
+    const avgLenB = keywordsB.length > 0 ? keywordsB.reduce((sum, kw) => sum + kw.length, 0) / keywordsB.length : 0;
     return avgLenB - avgLenA; // Längere zuerst
   });
-  
+
   // 1. Versuche: Exaktes Match (category enthält Keyword komplett)
   for (const key of sortedKeys) {
     const kws = (INDUSTRY_IMAGES[key] as IndustryImageSet).keywords;
@@ -264,7 +444,7 @@ export function getGalleryImages(category: string, _businessName: string = ""): 
       return imageSet?.gallery || imageSet?.hero?.slice(0, 2) || [];
     }
   }
-  
+
   // Fallback zu default
   const defaultSet = INDUSTRY_IMAGES.default as IndustryImageSet;
   return defaultSet?.gallery || defaultSet?.hero?.slice(0, 2) || [];
