@@ -453,7 +453,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto">
             <h2 className={`text-3xl md:text-4xl text-center ${textMain}`} style={{ ...hs, ...textMainStyle }}>
-              {process?.headline || "So einfach geht's"}
+              {process?.headline || "In 3 Schritten zu Ihrem Ziel"}
             </h2>
           </Skeleton>
           <div className="grid md:grid-cols-3 gap-8 md:gap-12 mt-16">
@@ -485,7 +485,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
       <div className="max-w-4xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-12">
           <h2 className={`text-3xl md:text-4xl text-center mb-0 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
-            {process?.headline || "Der Ablauf"}
+            {process?.headline || "Ihr Weg zu uns"}
           </h2>
         </Skeleton>
         <div className="relative">
@@ -1085,7 +1085,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
-  const aboutHeadline = about?.headline || 'Unser Handwerk';
+  const aboutHeadline = about?.headline || 'Warum Kunden uns vertrauen';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Space Grotesk', Impact, 'Arial Narrow', sans-serif");
@@ -1163,7 +1163,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin buchen';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
-  const aboutHeadline = about?.headline || 'Unsere Philosophie';
+  const aboutHeadline = about?.headline || 'Ihr Wohlbefinden, unser Versprechen';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', 'Garamond', Georgia, serif");
@@ -1251,7 +1251,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
-  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutHeadline = about?.headline || 'In besten Händen bei uns';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Outfit', 'Helvetica Neue', sans-serif");
@@ -1329,7 +1329,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
-  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutHeadline = about?.headline || 'Handwerk, das für sich spricht';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Playfair Display', Georgia, serif");
@@ -1406,7 +1406,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Training buchen';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
-  const aboutHeadline = about?.headline || 'Unsere Mission';
+  const aboutHeadline = about?.headline || 'Ihr Ziel. Unser Antrieb.';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Bebas Neue', Impact, 'Arial Narrow', sans-serif");
@@ -1454,7 +1454,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Das sagen unsere Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
       <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
@@ -1484,7 +1484,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Reservieren';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
-  const aboutHeadline = about?.headline || 'Unsere Philosophie';
+  const aboutHeadline = about?.headline || 'Leidenschaft auf jedem Teller';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Fraunces', Georgia, serif");
@@ -1562,7 +1562,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
-  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutHeadline = about?.headline || 'Qualität ohne Kompromisse';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Playfair Display', Georgia, serif");
@@ -1611,7 +1611,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Exzellenz" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Stimmen unserer Kunden" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
       <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
 
@@ -1642,7 +1642,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const services = sec(websiteData, 'services')?.items || [];
   const heroCta = hero?.ctaText || 'Projekt starten';
   const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
-  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutHeadline = about?.headline || 'Ihr Partner für digitalen Erfolg';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Clash Display', 'Syne', sans-serif");
@@ -1720,7 +1720,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const services = sec(websiteData, 'services')?.items || [];
   const heroCta = hero?.ctaText || 'Beratung anfragen';
   const heroHeadline = hero?.headline || websiteData.tagline || '';
-  const aboutHeadline = about?.headline || 'Unsere Philosophie';
+  const aboutHeadline = about?.headline || 'Natürlich gut. Nachhaltig besser.';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', Georgia, serif");
@@ -1808,7 +1808,7 @@ export function PremiumLayoutV2({
   const hl = splitHeadline(
     hero?.headline || websiteData.tagline || websiteData.businessName || ''
   );
-  const aboutHeadline = about?.headline || 'Expertise';
+  const aboutHeadline = about?.headline || 'Erfahrung, die Sie voranbringt';
   const aboutContent = about?.content || websiteData.description || '';
   const footerText =
     websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
@@ -1913,7 +1913,7 @@ export function PremiumLayoutV2({
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
           <div>
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
-              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: safeCs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Exzellenz & Strategie</span>
+              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: safeCs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Ihr vertrauensvoller Partner</span>
               <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }}>{aboutHeadline}</h2>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-24">

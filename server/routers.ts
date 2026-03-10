@@ -3642,40 +3642,69 @@ Kontext: ${input.context}`,
 
         const { businessName, businessCategory } = input;
 
-        // Build context-aware prompt for initial content + services
-        const prompt = `Erstelle professionelle Website-Texte und Leistungen für ein Unternehmen.
+        // Build StoryBrand-aligned prompt for all website content
+        const prompt = `Du bist ein Experte für das StoryBrand-Framework von Donald Miller und erstellst Website-Texte für deutsche Kleinunternehmen.
+
+Das StoryBrand-Prinzip: Der KUNDE ist der Held – nicht das Unternehmen. Das Unternehmen ist der GUIDE, der dem Kunden hilft, sein Ziel zu erreichen und sein Problem zu lösen.
 
 Unternehmensname: ${businessName}
 Branche/Kategorie: ${businessCategory}
 
-Generiere folgende Inhalte im JSON-Format:
-1. "headline": Eine überzeugende Hauptüberschrift (max. 8 Wörter) für die Hero-Section
-2. "tagline": Ein knackiger Slogan/Untertitel (max. 12 Wörter)  
-3. "description": Eine kurze Beschreibung (2-3 Sätze) für die Über-uns-Section
-4. "services": Ein Array mit 3-5 typischen Leistungen für diese Branche. Jede Leistung mit "title" (kurzer Titel, 2-4 Wörter) und "description" (1-2 Sätze Beschreibung)
+Erstelle folgende Website-Texte strikt nach StoryBrand:
 
-WICHTIG: Die Leistungen sollen typisch für die Branche "${businessCategory}" sein. Keine generischen Platzhalter wie "Service 1", "Service 2".
+1. "headline": Die Hero-Hauptüberschrift. Formuliere sie AUS KUNDENSICHT: Was ist das Ergebnis/Ziel, das der Kunde erreichen will? (max. 7 Wörter, kein "Wir"-Anfang, kein Unternehmensname)
+   Beispiele guter Headlines: "Endlich eine Website, die Kunden bringt" / "Ihr Recht. Klar und konsequent durchgesetzt." / "Traumküche nach Maß – pünktlich und sauber"
 
-Die Texte sollen:
-- Professionell und modern klingen
-- Zur Branche passen (Fachbegriffe verwenden wo angemessen)
-- Kunden ansprechen und Vertrauen aufbauen
-- Konkret und spezifisch sein (nicht generisch)
+2. "tagline": Ein Untertitel, der das Kundenproblem oder den Hauptnutzen auf den Punkt bringt. (max. 15 Wörter)
+   Formulierung: Konkret, nutzenorientiert, spricht das tägliche Problem des Kunden an.
 
-Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
+3. "aboutHeadline": Headline für die "Über uns"-Sektion. Positioniert das Unternehmen als kompetenten, empathischen GUIDE – nicht als Selbstdarstellung. (max. 6 Wörter)
+   Beispiele: "Wir kennen Ihre Herausforderung" / "Seit 20 Jahren Ihr Partner" / "Handwerk, das für sich spricht"
+
+4. "description": Text für die About-Sektion (3-4 Sätze). Struktur PFLICHT:
+   Satz 1: Empathie – zeige, dass du das Problem des Kunden verstehst.
+   Satz 2: Kompetenz/Autorität – kurzer Beweis (Jahre Erfahrung, Anzahl Kunden, Zertifizierung etc.).
+   Satz 3-4: Versprechen – was passiert konkret, wenn der Kunde mit euch arbeitet?
+
+5. "processHeadline": Headline für den 3-Schritte-Plan. Kurz, einladend, leicht. (max. 5 Wörter)
+   Beispiele: "In 3 Schritten zum Ziel" / "So einfach starten Sie" / "Ihr Weg zu uns"
+
+6. "processSteps": Array mit GENAU 3 Schritten. Jeder Schritt aus KUNDENPERSPEKTIVE formuliert – was TUT der Kunde, was BEKOMMT er?
+   Format: { "title": "Kurzer Schritttitel (2-3 Wörter)", "description": "Was passiert in diesem Schritt für den Kunden? (1 Satz, max. 12 Wörter)" }
+   Schritt 1: Erster, einfacher Kontaktschritt (niedrige Hemmschwelle)
+   Schritt 2: Was das Unternehmen für den Kunden erarbeitet/plant
+   Schritt 3: Das Ergebnis – was der Kunde in Händen hält / erlebt
+
+7. "services": Array mit 3-5 Leistungen. Jede Leistung BENEFIT-FIRST: Erst was der Kunde gewinnt, dann wie.
+   Format: { "title": "Leistungsname (2-4 Wörter)", "description": "Nutzen für den Kunden zuerst, dann Beschreibung. (1-2 Sätze)" }
+   KEINE generischen Titel wie "Beratung", "Service", "Leistung 1".
+
+WICHTIGE REGELN:
+- Nie "Wir sind", "Unser Team", "Wir bieten" als Satzanfang in Headlines
+- Immer konkret und branchenspezifisch für "${businessCategory}"
+- Deutsch, professionell, keine Anglizismen außer Fachbegriffe
+- Keine Ausrufezeichen in Headlines
+
+Antworte AUSSCHLIESSLICH mit validem JSON:
 {
   "headline": "...",
   "tagline": "...",
+  "aboutHeadline": "...",
   "description": "...",
-  "services": [
+  "processHeadline": "...",
+  "processSteps": [
     { "title": "...", "description": "..." },
+    { "title": "...", "description": "..." },
+    { "title": "...", "description": "..." }
+  ],
+  "services": [
     { "title": "...", "description": "..." }
   ]
 }`;
 
         const response = await invokeLLM({
           messages: [
-            { role: "system", content: "Du bist ein professioneller Werbetexter für deutsche Unternehmenswebsites. Antworte AUSSCHLIESSLICH mit validem JSON." },
+            { role: "system", content: "Du bist ein Conversion-Texter, der das StoryBrand-Framework von Donald Miller beherrscht. Du schreibst deutsche Website-Texte, die Kunden als Helden positionieren und das Unternehmen als kompetenten Guide. Antworte AUSSCHLIESSLICH mit validem JSON." },
             { role: "user", content: prompt },
           ],
           response_format: { type: "json_object" },
@@ -3686,10 +3715,13 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "LLM hat keinen Inhalt zurückgegeben" });
         }
 
-        let generatedContent: { 
-          headline?: string; 
-          tagline?: string; 
+        let generatedContent: {
+          headline?: string;
+          tagline?: string;
+          aboutHeadline?: string;
           description?: string;
+          processHeadline?: string;
+          processSteps?: Array<{ title: string; description: string }>;
           services?: Array<{ title: string; description: string }>;
         };
         try {
@@ -3699,16 +3731,23 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "LLM hat kein valides JSON zurückgegeben" });
         }
 
-        // Update websiteData with generated content + services
+        // Update websiteData with StoryBrand-aligned content
         const currentWebsiteData = (website.websiteData || {}) as Record<string, any>;
-        
-        // Format services for the services/features section
+
+        // Format services (benefit-first)
         const generatedServices = generatedContent.services?.slice(0, 5).map((svc: any) => ({
           title: svc.title || "Leistung",
           description: svc.description || "Professionelle Ausführung",
-          icon: null, // Icons can be auto-assigned by the layout
+          icon: null,
         })) || [];
-        
+
+        // Format process steps (customer-outcome-oriented)
+        const generatedProcessSteps = generatedContent.processSteps?.slice(0, 3).map((step: any, i: number) => ({
+          step: String(i + 1),
+          title: step.title || ["Kontakt", "Beratung", "Ergebnis"][i],
+          description: step.description || "",
+        })) || null;
+
         const updatedWebsiteData = {
           ...currentWebsiteData,
           businessName,
@@ -3719,22 +3758,29 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
             if (section.type === "hero") {
               return {
                 ...section,
-                headline: generatedContent.headline || section.headline,
-                subheadline: generatedContent.tagline || section.subheadline,
+                headline:    generatedContent.headline    || section.headline,
+                subheadline: generatedContent.tagline     || section.subheadline,
+                ctaText:     section.ctaText, // preserve existing CTA
               };
             }
             if (section.type === "about") {
               return {
                 ...section,
-                headline: generatedContent.headline ? `Über ${businessName}` : section.headline,
-                content: generatedContent.description || section.content,
+                headline: generatedContent.aboutHeadline || section.headline,
+                content:  generatedContent.description   || section.content,
               };
             }
             if ((section.type === "services" || section.type === "features") && generatedServices.length > 0) {
               return {
                 ...section,
-                headline: section.headline || `Unsere Leistungen`,
                 items: generatedServices,
+              };
+            }
+            if (section.type === "process" && generatedProcessSteps) {
+              return {
+                ...section,
+                headline: generatedContent.processHeadline || section.headline,
+                items: generatedProcessSteps,
               };
             }
             return section;
@@ -3745,10 +3791,13 @@ Antworte AUSSCHLIESSLICH mit validem JSON in diesem Format:
 
         return {
           success: true,
-          headline: generatedContent.headline,
-          tagline: generatedContent.tagline,
-          description: generatedContent.description,
-          services: generatedServices,
+          headline:       generatedContent.headline,
+          tagline:        generatedContent.tagline,
+          aboutHeadline:  generatedContent.aboutHeadline,
+          description:    generatedContent.description,
+          processHeadline: generatedContent.processHeadline,
+          processSteps:   generatedProcessSteps,
+          services:       generatedServices,
         };
       }),
   }),
