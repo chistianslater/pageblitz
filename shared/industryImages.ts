@@ -449,3 +449,102 @@ export function getGalleryImages(category: string, _businessName: string = ""): 
   const defaultSet = INDUSTRY_IMAGES.default as IndustryImageSet;
   return defaultSet?.gallery || defaultSet?.hero?.slice(0, 2) || [];
 }
+
+// ── Client-seitige Hilfsfunktionen für Kaskaden-Updates ─────────────────────
+
+/**
+ * Findet das passende IndustryImageSet für eine Kategorie (client-seitig nutzbar).
+ * Interne Hilfsfunktion – nicht exportiert.
+ */
+function resolveImageSet(category: string, businessName: string = ""): IndustryImageSet {
+  const normalizedCombined = `${category} ${businessName}`.toLowerCase().trim();
+
+  // Sortiere nach Priorität: längere/spezifischere Keywords zuerst
+  const sortedKeys = Object.keys(INDUSTRY_IMAGES).sort((a, b) => {
+    const kA = (INDUSTRY_IMAGES[a] as IndustryImageSet).keywords;
+    const kB = (INDUSTRY_IMAGES[b] as IndustryImageSet).keywords;
+    const avgA = kA.length > 0 ? kA.reduce((s, k) => s + k.length, 0) / kA.length : 0;
+    const avgB = kB.length > 0 ? kB.reduce((s, k) => s + k.length, 0) / kB.length : 0;
+    return avgB - avgA;
+  });
+
+  for (const key of sortedKeys) {
+    const kws = (INDUSTRY_IMAGES[key] as IndustryImageSet).keywords;
+    if (kws.some((kw: string) => {
+      const n = kw.toLowerCase();
+      return normalizedCombined === n || normalizedCombined.includes(n) || n.includes(normalizedCombined);
+    })) {
+      return INDUSTRY_IMAGES[key] as IndustryImageSet;
+    }
+  }
+
+  return INDUSTRY_IMAGES.default as IndustryImageSet;
+}
+
+/**
+ * Gibt eine deterministische Hero-Bild-URL für eine Branche zurück (client-seitig).
+ * Gleiche Logik wie die Server-Version in server/industryImages.ts.
+ */
+export function getHeroImageUrl(category: string, businessName: string = ""): string {
+  const imageSet = resolveImageSet(category, businessName);
+  const heroes = imageSet.hero;
+  let hash = 0;
+  for (let i = 0; i < businessName.length; i++) {
+    hash = ((hash << 5) - hash) + businessName.charCodeAt(i);
+    hash |= 0;
+  }
+  return heroes[Math.abs(hash) % heroes.length];
+}
+
+/**
+ * Gibt eine deterministische About-Bild-URL für eine Branche zurück (client-seitig).
+ * Wählt bewusst ein anderes Foto als getHeroImageUrl, damit Hero & About nie identisch sind.
+ */
+export function getAboutImageUrl(category: string, businessName: string = ""): string {
+  const imageSet = resolveImageSet(category, businessName);
+  const heroes = imageSet.hero;
+  let hash = 0;
+  for (let i = 0; i < businessName.length; i++) {
+    hash = ((hash << 5) - hash) + businessName.charCodeAt(i);
+    hash |= 0;
+  }
+  // +1 offset damit Hero und About nie dasselbe Foto zeigen
+  return heroes[(Math.abs(hash) + 1) % heroes.length];
+}
+
+/**
+ * Gibt die rohe Farb-Palette für eine Branche zurück (client-seitig, ohne withOnColors).
+ * Nützlich wenn OnboardingChat.tsx client-seitig das Farbschema aktualisieren muss.
+ */
+export function getRawIndustryColors(category: string, businessName: string = ""): Record<string, string> {
+  const normalizedCombined = `${category} ${businessName}`.toLowerCase().trim();
+
+  // Suche den passenden INDUSTRY_COLORS-Key über INDUSTRY_IMAGES-Keywords
+  const sortedKeys = Object.keys(INDUSTRY_IMAGES).sort((a, b) => {
+    const kA = (INDUSTRY_IMAGES[a] as IndustryImageSet).keywords;
+    const kB = (INDUSTRY_IMAGES[b] as IndustryImageSet).keywords;
+    const avgA = kA.length > 0 ? kA.reduce((s, k) => s + k.length, 0) / kA.length : 0;
+    const avgB = kB.length > 0 ? kB.reduce((s, k) => s + k.length, 0) / kB.length : 0;
+    return avgB - avgA;
+  });
+
+  let colorKey = "default";
+  for (const key of sortedKeys) {
+    const kws = (INDUSTRY_IMAGES[key] as IndustryImageSet).keywords;
+    if (kws.some((kw: string) => {
+      const n = kw.toLowerCase();
+      return normalizedCombined === n || normalizedCombined.includes(n) || n.includes(normalizedCombined);
+    })) {
+      colorKey = key;
+      break;
+    }
+  }
+
+  const palettes = INDUSTRY_COLORS[colorKey] || INDUSTRY_COLORS.default;
+  let hash = 0;
+  for (let i = 0; i < businessName.length; i++) {
+    hash = ((hash << 5) - hash) + businessName.charCodeAt(i);
+    hash |= 0;
+  }
+  return palettes[Math.abs(hash) % palettes.length];
+}

@@ -10,7 +10,7 @@ import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
 import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
-import { getGalleryImages } from "@shared/industryImages";
+import { getGalleryImages, getHeroImageUrl, getAboutImageUrl, getRawIndustryColors } from "@shared/industryImages";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -641,6 +641,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewInnerRef = useRef<HTMLDivElement>(null);
+
+  // Refs für Kaskaden-Update bei Branchen-Änderung
+  const prevCategoryRef = useRef<string>('');
+  const contentPhaseRef = useRef<'skeleton' | 'colors' | 'images' | 'texts' | 'complete'>('skeleton');
 
   // Auto-scroll preview to current section
   useEffect(() => {
@@ -1536,6 +1540,67 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [data.businessCategory, data.businessName, websiteId, business?.placeId, contentPhase,
       isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
+
+  // Halte contentPhaseRef synchron (damit Kaskaden-useEffect ohne Dependency-Array darauf zugreifen kann)
+  useEffect(() => { contentPhaseRef.current = contentPhase; }, [contentPhase]);
+
+  // ── Kaskaden-Update bei Branchen-Änderung ──────────────────────────────
+  useEffect(() => {
+    const prev = prevCategoryRef.current;
+    const next = data.businessCategory;
+    prevCategoryRef.current = next;
+
+    // Nicht auslösen bei Erstbefüllung oder wenn sich nichts geändert hat
+    if (!prev || !next || prev === next) return;
+
+    // Nur nach abgeschlossenem Onboarding-Initial-Flow
+    if (contentPhaseRef.current !== 'complete') return;
+
+    // 1. Fotos aktualisieren (nur Stock-Fotos ersetzen – hochgeladene Nutzerfotos bleiben)
+    const isStockHero = !data.heroPhotoUrl || data.heroPhotoUrl.includes('unsplash.com');
+    const isStockAbout = !data.aboutPhotoUrl || data.aboutPhotoUrl.includes('unsplash.com');
+
+    setData(prev => ({
+      ...prev,
+      ...(isStockHero  ? { heroPhotoUrl:  getHeroImageUrl(next, data.businessName)  } : {}),
+      ...(isStockAbout ? { aboutPhotoUrl: getAboutImageUrl(next, data.businessName) } : {}),
+    }));
+
+    // 2. Farbschema zurücksetzen
+    const rawColors = getRawIndustryColors(next, data.businessName);
+    const newColorScheme = withOnColors(rawColors as any);
+    setData(prev => ({ ...prev, colorScheme: newColorScheme }));
+
+    // 3. Bot-Nachricht mit kleiner Verzögerung (damit "Gespeichert"-Meldung zuerst erscheint)
+    setTimeout(() => {
+      addBotMessage(`✨ Website wird auf "${next}" aktualisiert – neue Fotos & Texte werden geladen...`);
+    }, 700);
+
+    // 4. KI-Texte neu generieren
+    if (websiteId) {
+      generateInitialContentMutation.mutateAsync({
+        websiteId,
+        businessName: data.businessName,
+        businessCategory: next,
+      }).then((result) => {
+        if (result.success) {
+          setData(prev => ({
+            ...prev,
+            tagline:     result.tagline     || prev.tagline,
+            description: result.description || prev.description,
+            topServices: result.services?.map((svc: any) => ({
+              title:       svc.title       || '',
+              description: svc.description || '',
+            })) || prev.topServices,
+          }));
+          setTimeout(() => { refetchSiteData(); }, 300);
+        }
+      }).catch((err) => {
+        console.error("Cascade content regeneration failed:", err);
+        // Kein Toast – alte Texte bleiben stillschweigend erhalten
+      });
+    }
+  }, [data.businessCategory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── AI text generation ──────────────────────────────────────────────────
   const generateWithAI = async (field: keyof OnboardingData) => {
