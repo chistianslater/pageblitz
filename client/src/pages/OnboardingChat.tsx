@@ -637,6 +637,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [inPlaceEditValue, setInPlaceEditValue] = useState("");
   const [showIndividualColors, setShowIndividualColors] = useState(false);
   const [previewScrollTop, setPreviewScrollTop] = useState(0);
+  const [previewNotification, setPreviewNotification] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1571,10 +1572,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const newColorScheme = withOnColors(rawColors as any);
     setData(prev => ({ ...prev, colorScheme: newColorScheme }));
 
-    // 3. Bot-Nachricht mit kleiner Verzögerung (damit "Gespeichert"-Meldung zuerst erscheint)
-    setTimeout(() => {
-      addBotMessage(`✨ Website wird auf "${next}" aktualisiert – neue Fotos & Texte werden geladen...`);
-    }, 700);
+    // 3. Preview-Toast (kein Bot-Message – stört den laufenden Chat-Flow nicht)
+    setPreviewNotification(`✨ Wird auf „${next}" aktualisiert...`);
+    setTimeout(() => setPreviewNotification(null), 4000);
 
     // 4. KI-Texte neu generieren
     if (websiteId) {
@@ -4373,6 +4373,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             >
               {/* Crossfade wrapper: placeholder fades out, skeleton template fades in */}
               <div className="relative">
+                {/* Branchen-Update Toast – erscheint über dem Preview, stört Chat-Flow nicht */}
+                {previewNotification && (
+                  <div
+                    className="absolute top-4 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 rounded-full bg-violet-600/90 px-4 py-2 text-[11px] font-medium text-white shadow-lg backdrop-blur-sm pointer-events-none"
+                    style={{ animation: 'fadeInDown 0.25s ease' }}
+                  >
+                    {previewNotification}
+                  </div>
+                )}
                 {/* White wireframe placeholder – fades out when category is chosen */}
                 <div
                   className="absolute inset-0 z-10 w-full bg-white overflow-hidden"
