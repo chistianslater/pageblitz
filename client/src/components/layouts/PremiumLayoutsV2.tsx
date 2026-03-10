@@ -72,10 +72,10 @@ const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 
 const getSectionHeadlineSize = (headlineSize: string = 'large', type: 'services' | 'about' | 'testimonials' | 'contact' = 'services') => {
   const sizes = {
     large: {
-      services: 'clamp(2rem, 4vw, 3rem)',
-      about: 'clamp(1.8rem, 3.5vw, 2.5rem)',
-      testimonials: 'clamp(1.8rem, 3.5vw, 2.5rem)',
-      contact: 'clamp(1.8rem, 3.5vw, 2.5rem)',
+      services: 'clamp(2.4rem, 5vw, 3.8rem)',
+      about: 'clamp(2.1rem, 4vw, 3.2rem)',
+      testimonials: 'clamp(2rem, 3.8vw, 3rem)',
+      contact: 'clamp(2rem, 3.8vw, 3rem)',
     },
     medium: {
       services: 'clamp(1.75rem, 3.5vw, 2.5rem)',
@@ -144,7 +144,9 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 1 }}
       >
         <Skeleton isLoading={isLoading} className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
-          <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+          <div className="photo-frame w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+          </div>
         </Skeleton>
         <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl blur-3xl opacity-20" style={{ backgroundColor: primaryColor }} />
       </motion.div>
@@ -183,7 +185,9 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           </button>
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-[3rem] overflow-hidden shadow-2xl">
-          <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+          <div className="photo-frame w-full h-full rounded-[3rem] overflow-hidden">
+            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+          </div>
         </Skeleton>
       </motion.div>
     </section>
@@ -243,8 +247,8 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           viewport={{ once: true }}
           transition={{ duration: 1, delay: 0.2 }}
         >
-          <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl rotate-3 scale-110">
-            <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
+          <div className="photo-frame aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl rotate-3 scale-110">
+            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
           </div>
           <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full border-4 border-dashed border-neutral-200 animate-spin-slow" />
         </motion.div>
@@ -280,7 +284,9 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-16 md:mb-20">
           <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
-            Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
+            {servicesSection?.headline
+              ? <>{servicesSection.headline}</>
+              : <>Unsere <span style={{ color: safeCs.primary }}>Leistungen</span></>}
           </h2>
         </Skeleton>
         <div className="grid md:grid-cols-3 gap-6 md:gap-8 gap-y-10 md:gap-y-12">
@@ -324,7 +330,9 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-8">
           <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
-              Exzellente<br /><span style={{ color: safeCs.primary }}>Services</span>
+              {servicesSection?.headline
+                ? <>{servicesSection.headline}</>
+                : <>Exzellente<br /><span style={{ color: safeCs.primary }}>Services</span></>}
             </h2>
           </Skeleton>
           <div className="h-px flex-1 hidden md:block mb-4" style={{ backgroundColor: dividerColor }} />
@@ -365,12 +373,14 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
           transition={{ duration: 1 }}
         >
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
-            <img src={aboutImg} className="w-full h-full object-cover" alt="" />
+            <div className="photo-frame aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
+              <img src={aboutImg} className="photo-editorial w-full h-full object-cover" alt="" />
+            </div>
           </Skeleton>
         </motion.div>
         <div>
           <Skeleton isLoading={isLoading} className="w-full h-36 mb-8">
-            <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: safeCs.primary }}>// Über uns</span>
+            <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: safeCs.primary }}>Über uns</span>
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase mb-8">
               {aboutHeadline}
             </h2>
@@ -414,7 +424,9 @@ function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
           transition={{ duration: 1 }}
         >
           <Skeleton isLoading={isLoading} className="aspect-square rounded-full overflow-hidden shadow-2xl border-8 border-white/5">
-            <img src={aboutImg} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
+            <div className="photo-frame photo-frame-dark aspect-square rounded-full overflow-hidden">
+              <img src={aboutImg} className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
+            </div>
           </Skeleton>
           <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full border-4 border-white/10 flex items-center justify-center backdrop-blur-xl">
             <Award size={48} className="text-white/20" />
@@ -1871,7 +1883,7 @@ export function PremiumLayoutV2({
         {/* Right: image panel */}
         <div className="relative min-h-[60vh] overflow-hidden">
           <Skeleton isLoading={isLoading} className="absolute inset-0">
-            <img src={heroImageUrl} className="absolute inset-0 w-full h-full object-cover" alt="" />
+            <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/10" />
           </Skeleton>
         </div>
@@ -1921,7 +1933,7 @@ export function PremiumLayoutV2({
             </Skeleton>
           </div>
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl shadow-2xl overflow-hidden">
-            <img src={aboutImg} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
+            <img src={aboutImg} className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
           </Skeleton>
         </div>
       </section>
