@@ -34,7 +34,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     keywords: ["restaurant", "gastro", "gastronomie", "essen", "küche", "speise", "sushi", "burger", "steakhouse", "grill", "wirtshaus", "gasthaus", "food", "imbiss", "steak", "lunch", "mittagstisch", "taverne", "ristorante", "trattoria", "italienisch", "italien", "pizzeria", "pizza", "genuss", "aroma", "lecker", "speisen", "küchenchef", "koch", "tafel", "buffet", "catering", "bistro", "delivery", "lieferservice", "speiselokal", "gasthof", "bewirtung", "essen auf rädern", "mahlzeit", "meal"],
     hero: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1555939594-58d7cb561404?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1400&q=85&auto=format&fit=crop",
     ],
@@ -81,9 +81,9 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   bar: {
     keywords: ["bar", "tapas", "cocktail", "lounge", "pub", "kneipe", "weinbar", "wein", "bier", "brauerei", "brewery", "nightlife", "nachtleben", "aperitivo", "tapasbar"],
     hero: [
-      "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1514432324607-2e467f4af445?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80&auto=format&fit=crop",
@@ -96,15 +96,15 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   handwerk: {
     keywords: ["handwerk", "bau", "elektriker", "klempner", "maler", "schreiner", "tischler", "zimmerer", "dachdecker", "sanitär", "heizung", "installation", "craft", "construction", "renovierung", "fliesenleger", "bauunternehmen", "baufirma", "hochbau", "tiefbau", "rohbau"],
     hero: [
-      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584622674529-47cadf5f1eeb?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584622674529-47cadf5f1eeb?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
     ],
   },
 
@@ -128,14 +128,14 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   legal: {
     keywords: ["rechtsanwalt", "anwalt", "kanzlei", "law", "legal", "attorney", "lawyer", "steuerberater", "notar", "notariat", "anwaltskanzlei", "rechtsbüro", "steuerberatung", "steuerrecht", "kanzleiname"],
     hero: [
-      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1479142506502-19b3a3b7ff33?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80&auto=format&fit=crop",
     ],
   },
 
@@ -144,13 +144,13 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   medizin: {
     keywords: ["arzt", "zahnarzt", "praxis", "medizin", "gesundheit", "klinik", "physiotherapie", "therapie", "apotheke", "doctor", "dental", "medical", "heilpraktiker", "osteopath", "chiropractor", "orthopäde", "gynäkologie", "kardiologie", "neurologie", "psychiatrie", "psychologie", "dermatologie"],
     hero: [
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631217314831-c6227db76b6e?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631217314831-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80&auto=format&fit=crop",
     ],
@@ -190,15 +190,15 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   automotive: {
     keywords: ["auto", "kfz", "car", "garage", "werkstatt", "mechanic", "karosserie", "tuning", "fahrzeug", "vehicle", "motorrad", "motorcycle", "reifenservice", "autowerkstatt", "kfz-werkstatt"],
     hero: [
-      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1487622914050-2dcc6b9995cc?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1537984822441-cff330075342?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1487622914050-2dcc6b9995cc?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1537984822441-cff330075342?w=800&q=80&auto=format&fit=crop",
     ],
   },
 
@@ -221,9 +221,9 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   nature: {
     keywords: ["garten", "garden", "florist", "blumen", "flower", "pflanze", "plant", "bio", "organic", "öko", "eco", "natur", "nachhaltig", "sustainable", "landscaping", "landscape", "lawn", "baumschule", "gärtnerei", "gartengestaltung", "gartenarbeit"],
     hero: [
+      "https://images.unsplash.com/photo-1466781783364-f716f4a00f30?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1416339306562-f3d12fefd36f?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop",
@@ -251,11 +251,12 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   hospitality: {
     keywords: ["hotel", "pension", "hostel", "airbnb", "unterkunft", "accommodation", "resort", "motel", "bed and breakfast", "boutique hotel", "gasthof", "herberge"],
     hero: [
+      "https://images.unsplash.com/photo-1582719471537-41efb92911d3?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
+      "https://images.unsplash.com/photo-1582719471537-41efb92911d3?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80&auto=format&fit=crop",
