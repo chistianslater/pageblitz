@@ -505,31 +505,40 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
           <div className="space-y-16">
             {items.map((item: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-32">
-                <motion.div 
-                  className={`flex items-start gap-8 md:gap-0 ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+                <motion.div
+                  className="flex items-start md:flex-row"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                 >
-                  <div className="w-full md:w-1/2 md:px-12 flex flex-col items-start md:items-end text-left md:text-right">
-                    {i % 2 === 0 ? (
+                  {/* Desktop left slot: content for even steps, empty placeholder for odd */}
+                  <div className={`hidden md:flex md:w-1/2 md:px-12 flex-col ${i % 2 === 0 ? 'items-end text-right' : ''}`}>
+                    {i % 2 === 0 && (
                       <>
                         <h3 className={`text-xl font-bold mb-2 ${textMain}`} style={hs}>{item.title}</h3>
                         <p className={`text-sm ${textSub}`}>{item.description}</p>
                       </>
-                    ) : null}
+                    )}
                   </div>
-                  <div className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0 shadow-lg"
+                  {/* Circle – lines up with the vertical timeline on desktop, left-edge on mobile */}
+                  <div className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0 shadow-lg mr-5 md:mr-0"
                     style={{ backgroundColor: safeCs.primary }}>
                     {item.step}
                   </div>
-                  <div className="w-full md:w-1/2 md:px-12">
-                    {i % 2 !== 0 ? (
-                      <>
+                  {/* Right slot: content for odd on desktop; all steps on mobile */}
+                  <div className="flex-1 md:w-1/2 md:px-12">
+                    {/* Mobile: always show */}
+                    <div className="md:hidden">
+                      <h3 className={`text-xl font-bold mb-2 ${textMain}`} style={hs}>{item.title}</h3>
+                      <p className={`text-sm ${textSub}`}>{item.description}</p>
+                    </div>
+                    {/* Desktop: only for odd steps */}
+                    {i % 2 !== 0 && (
+                      <div className="hidden md:block">
                         <h3 className={`text-xl font-bold mb-2 ${textMain}`} style={hs}>{item.title}</h3>
                         <p className={`text-sm ${textSub}`}>{item.description}</p>
-                      </>
-                    ) : null}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </Skeleton>
@@ -726,7 +735,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
     <section id="kontakt" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bgClass} ${topBorder}`} style={{ ...bgStyle, ...topBorderStyle, fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-16">
-          <h2 className={`mb-16 ${textMain}`} style={{ ...hs, ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'contact') }}>Kontakt</h2>
+          <h2 className={`mb-16 text-center ${textMain}`} style={{ ...hs, ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'contact') }}>Kontakt</h2>
         </Skeleton>
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="space-y-6">

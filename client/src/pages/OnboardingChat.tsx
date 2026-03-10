@@ -1100,15 +1100,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return name ? ["Ja, stimmt!"] : [];
         case "tagline":
           return [
-            `Qualität, die bleibt – seit ${new Date().getFullYear() - 10}`,
-            "Ihr Partner für perfekte Ergebnisse",
-            "Schnell. Zuverlässig. Fair.",
+            "Damit Sie sich keine Sorgen mehr machen müssen.",
+            "Ihr Problem gelöst. Ihr Ziel erreicht.",
+            "Schnell. Zuverlässig. Damit Sie sich aufs Wesentliche konzentrieren.",
           ];
         case "usp":
           return [
-            "Kostenloser Vor-Ort-Termin innerhalb 24h",
-            "Über 15 Jahre Erfahrung in der Region",
-            "Festpreisgarantie – keine versteckten Kosten",
+            "Kostenloser Vor-Ort-Termin – damit Sie sofort wissen, woran Sie sind",
+            "Festpreisgarantie – kein Stress mit unerwarteten Rechnungen",
+            "24h-Erreichbarkeit, weil Probleme keine Bürozeiten kennen",
           ];
         case "targetAudience":
           return [

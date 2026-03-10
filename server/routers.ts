@@ -2211,23 +2211,23 @@ Antworte NUR mit validem JSON:
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
         
         const prompts: Record<string, string> = {
-          tagline: `Erstelle einen kurzen, einprägsamen deutschen Slogan (max. 8 Wörter) für dieses Unternehmen. Nur den Slogan, keine Anführungszeichen, keine Erklärung.
+          tagline: `Erstelle einen kurzen, einprägsamen deutschen Slogan (max. 8 Wörter) nach dem StoryBrand-Prinzip. Der Slogan beschreibt, was der KUNDE erreicht oder gewinnt – nicht was das Unternehmen ist. Beispiel: "Damit Sie sich keine Sorgen mehr machen müssen." Nur den Slogan, keine Anführungszeichen, keine Erklärung.
 
 Kontext: ${input.context}`,
-          description: `Schreibe eine professionelle deutsche Unternehmensbeschreibung (2-3 Sätze, ca. 80-120 Wörter) für dieses Unternehmen. Direkt, überzeugend, ohne Floskeln.
+          description: `Schreibe eine deutsche Website-Beschreibung (2-3 Sätze, ca. 80-120 Wörter) nach dem StoryBrand-Prinzip: 1) Benenne das Problem des Kunden. 2) Positioniere das Unternehmen als Guide der hilft. 3) Beschreibe das Ergebnis für den Kunden. Nie "Wir sind Experten" – stattdessen "Sie bekommen / erreichen...". Keine Floskeln.
 
 Kontext: ${input.context}`,
-          usp: `Was ist das Alleinstellungsmerkmal (USP) dieses Unternehmens? Formuliere es in einem prägnanten deutschen Satz (max. 15 Wörter). Nur den USP, keine Erklärung.
+          usp: `Was ist das wichtigste Versprechen an den Kunden? Formuliere es als Kundennutzen in einem prägnanten deutschen Satz (max. 15 Wörter) – welches Problem wird gelöst, welches Ergebnis wird erreicht? Nicht "Wir haben 15 Jahre Erfahrung" sondern "Damit Sie [Ergebnis] erreichen". Nur den USP, keine Erklärung.
 
 Kontext: ${input.context}`,
-          targetAudience: `Beschreibe die ideale Zielgruppe für dieses Unternehmen in 1-2 deutschen Sätzen. Konkret und spezifisch.
+          targetAudience: `Beschreibe die ideale Zielgruppe für dieses Unternehmen in 1-2 deutschen Sätzen. Konkret und spezifisch – welche Menschen mit welchem Problem oder Wunsch.
 
 Kontext: ${input.context}`,
         };
-        
+
         const response = await invokeLLM({
           messages: [
-            { role: "system", content: "Du bist ein professioneller Texter für lokale Unternehmen in Deutschland. Schreibe immer auf Deutsch. Sei prägnant, authentisch und vermeide Marketingfloskeln." },
+            { role: "system", content: "Du bist ein professioneller Texter für lokale Unternehmen in Deutschland, der das StoryBrand-Framework von Donald Miller beherrscht. Grundprinzip: Der KUNDE ist der Held – nicht das Unternehmen. Das Unternehmen ist der Guide, der dem Kunden hilft, sein Problem zu lösen. Schreibe immer auf Deutsch. Outcome-fokussiert, nie company-centric." },
             { role: "user", content: prompts[input.field] },
           ],
         });
@@ -2248,8 +2248,8 @@ Kontext: ${input.context}`,
 
         const response = await invokeLLM({
           messages: [
-            { role: "system", content: "Du bist ein Experte für lokale Unternehmenswebsites in Deutschland. Antworte immer mit validem JSON." },
-            { role: "user", content: `Schlage 6 verschiedene, typische Leistungen für dieses Unternehmen vor. Achte auf eine gute Mischung aus Standard-Dienstleistungen und spezielleren Angeboten. Gib nur ein JSON-Array zurück, kein Markdown, keine Erklärung.\n\nFormat: [{\"title\": \"Leistungsname\", \"description\": \"Kurze Beschreibung (max 12 Wörter)\"}]\n\nKontext: ${input.context}` },
+            { role: "system", content: "Du bist ein Experte für lokale Unternehmenswebsites in Deutschland, der das StoryBrand-Framework beherrscht. Leistungen werden als Lösungen für Kundenprobleme formuliert – outcome-focused. Der Titel nennt die Leistung, die Beschreibung nennt den Kundennutzen (was der Kunde erreicht/gewinnt). Antworte immer mit validem JSON." },
+            { role: "user", content: `Schlage 6 verschiedene, typische Leistungen für dieses Unternehmen vor. Jede Leistung: Titel = klare Bezeichnung der Leistung, Beschreibung = was der Kunde dadurch gewinnt/erreicht (max 12 Wörter, Kundenperspektive). Gib nur ein JSON-Array zurück, kein Markdown, keine Erklärung.\n\nFormat: [{\"title\": \"Leistungsname\", \"description\": \"Was der Kunde dadurch gewinnt (max 12 Wörter)\"}]\n\nKontext: ${input.context}` },
           ],
           response_format: {
             type: "json_schema",
