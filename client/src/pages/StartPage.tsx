@@ -3,14 +3,9 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Share2, Mail, Lock, User } from "lucide-react";
+import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
-
-// Detect whether a URL looks like a Google Maps / share link
-function isGoogleLink(url: string): boolean {
-  return /share\.google\/|maps\.app\.goo\.gl\/|google\.com\/maps\/|maps\.google\.com\//.test(url);
-}
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -33,7 +28,10 @@ export default function StartPage() {
     }
   }, [isAuthenticated, user]);
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [gmbUrl, setGmbUrl] = useState("");
+  const [gmbSearchQuery, setGmbSearchQuery] = useState("");
+  const [gmbSearchRegion, setGmbSearchRegion] = useState("");
+  const [gmbSearchResults, setGmbSearchResults] = useState<Array<{ placeId: string; name: string; address: string; phone: string | null; rating: number | null; reviewCount: number; category: string; website: string | null }>>([]);
+  const [gmbSearchLoading, setGmbSearchLoading] = useState(false);
   const [resolvedInfo, setResolvedInfo] = useState<{
     businessName: string | null;
     placeId: string | null;
@@ -45,7 +43,6 @@ export default function StartPage() {
     rating: string | null;
     reviewCount: number | null;
   } | null>(null);
-  const [resolveError, setResolveError] = useState<string | null>(null);
   const [capturedLeadId, setCapturedLeadId] = useState<number | null>(null);
   const [, navigate] = useLocation();
 
@@ -60,32 +57,7 @@ export default function StartPage() {
     },
   });
 
-  const resolveMutation = trpc.selfService.resolveLink.useMutation({
-    onSuccess: (data) => {
-      if (data.resolved && data.businessName) {
-        setResolvedInfo({
-          businessName: data.businessName,
-          placeId: data.placeId ?? null,
-          address: (data as any).address ?? null,
-          phone: (data as any).phone ?? null,
-          category: (data as any).category ?? null,
-          reviews: (data as any).reviews || [],
-          openingHours: (data as any).openingHours || [],
-          rating: (data as any).rating ? String((data as any).rating) : null,
-          reviewCount: (data as any).reviewCount || null,
-        });
-        setResolveError(null);
-        toast.success(`"${data.businessName}" gefunden!`);
-      } else {
-        setResolveError("Link konnte nicht aufgelöst werden. Du kannst trotzdem fortfahren.");
-        toast.error("Link konnte nicht aufgelöst werden");
-      }
-    },
-    onError: (err) => {
-      setResolveError("Fehler beim Abrufen der Daten. Du kannst trotzdem fortfahren.");
-      toast.error("Fehler: " + err.message);
-    },
-  });
+  const gmbSearchPublicMutation = trpc.search.gmbSearchPublic.useMutation();
 
   const startMutation = trpc.selfService.start.useMutation({
     onSuccess: (data) => {
@@ -97,7 +69,7 @@ export default function StartPage() {
     },
   });
 
-  const isLoading = resolveMutation.isPending || startMutation.isPending;
+  const isLoading = startMutation.isPending;
   const isCapturing = captureEmailMutation.isPending;
 
    // ── Step 1: E-Mail ──────────────────────────────
@@ -116,14 +88,22 @@ export default function StartPage() {
     startMutation.mutate({ customerEmail: customerEmail.trim(), source: "external" });
   };
 
-  // ── Step 3: GMB ─────────────────────────────────────
-  const handleResolveAndStart = () => {
-    const url = gmbUrl.trim();
-    if (!url) { toast.error("Bitte gib einen Link ein"); return; }
-    if (isGoogleLink(url)) {
-      resolveMutation.mutate({ url });
-    } else {
-      startMutation.mutate({ gmbUrl: url, customerEmail: customerEmail.trim(), source: "external" });
+  // ── Step 3: GMB Search ──────────────────────────────
+  const handleGmbSearch = async () => {
+    const q = gmbSearchQuery.trim();
+    if (!q) return;
+    setGmbSearchLoading(true);
+    setGmbSearchResults([]);
+    setResolvedInfo(null);
+    try {
+      const res = await gmbSearchPublicMutation.mutateAsync({
+        query: q,
+        region: gmbSearchRegion.trim() || undefined,
+      });
+      setGmbSearchResults(res.results);
+      if (res.results.length === 0) toast.info("Keine Ergebnisse – versuche es mit einem anderen Begriff.");
+    } finally {
+      setGmbSearchLoading(false);
     }
   };
 
@@ -389,108 +369,133 @@ export default function StartPage() {
           </>
         )}
 
-        {/* ── Step 3: GMB ── */}
+        {/* ── Step 3: GMB Search ── */}
         {step === "gmb" && (
           <>
             <button
-              onClick={() => { setStep("choice"); setResolvedInfo(null); setResolveError(null); }}
+              onClick={() => { setStep("choice"); setResolvedInfo(null); setGmbSearchResults([]); setGmbSearchQuery(""); }}
               className="text-slate-400 hover:text-white text-sm mb-5 flex items-center gap-1 transition-colors"
             >
               ← Zurück
             </button>
 
-            <h1 className="text-white text-2xl font-bold mb-2">
-              Google My Business Link
+            <h1 className="text-white text-2xl font-bold mb-1">
+              Dein Unternehmen bei Google
             </h1>
-            <p className="text-slate-400 text-sm mb-1">
-              Öffne Google Maps, suche dein Unternehmen und tippe auf <strong className="text-slate-300">„Teilen"</strong> – dann den Link hier einfügen.
+            <p className="text-slate-400 text-sm mb-5">
+              Suche deinen Betrieb – wir übernehmen alle Infos automatisch.
             </p>
 
-            <div className="mb-5 p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-start gap-2">
-              <Share2 className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
-              <p className="text-indigo-300 text-xs leading-relaxed">
-                Alle Link-Formate werden unterstützt:<br />
-                <span className="text-indigo-400 font-mono">share.google/…</span> · <span className="text-indigo-400 font-mono">maps.app.goo.gl/…</span> · <span className="text-indigo-400 font-mono">google.com/maps/place/…</span>
-              </p>
-            </div>
-
             <div className="space-y-4">
-              <Input
-                value={gmbUrl}
-                onChange={(e) => { setGmbUrl(e.target.value); setResolvedInfo(null); setResolveError(null); }}
-                placeholder="https://share.google/…"
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
-                onKeyDown={(e) => e.key === "Enter" && gmbUrl.trim() && !isLoading && handleResolveAndStart()}
-                disabled={isLoading}
-                autoFocus
-              />
+              {/* Search inputs */}
+              <div className="flex gap-2">
+                <Input
+                  autoFocus
+                  value={gmbSearchQuery}
+                  onChange={(e) => { setGmbSearchQuery(e.target.value); setGmbSearchResults([]); setResolvedInfo(null); }}
+                  onKeyDown={(e) => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
+                  placeholder="Unternehmensname"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
+                  disabled={gmbSearchLoading || isLoading}
+                />
+                <Input
+                  value={gmbSearchRegion}
+                  onChange={(e) => setGmbSearchRegion(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
+                  placeholder="Stadt"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-32"
+                  disabled={gmbSearchLoading || isLoading}
+                />
+                <Button
+                  onClick={handleGmbSearch}
+                  disabled={!gmbSearchQuery.trim() || gmbSearchLoading || isLoading}
+                  className="h-12 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl"
+                >
+                  {gmbSearchLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  )}
+                </Button>
+              </div>
 
-              {/* Resolved info card */}
-              {resolvedInfo && resolvedInfo.businessName && (
+              {/* Search results */}
+              {gmbSearchResults.length > 0 && !resolvedInfo && (
+                <div className="space-y-2">
+                  <p className="text-slate-400 text-xs">{gmbSearchResults.length} Ergebnis{gmbSearchResults.length !== 1 ? "se" : ""} gefunden:</p>
+                  {gmbSearchResults.map((result) => (
+                    <button
+                      key={result.placeId}
+                      disabled={isLoading}
+                      onClick={() => {
+                        setResolvedInfo({
+                          businessName: result.name,
+                          placeId: result.placeId,
+                          address: result.address,
+                          phone: result.phone,
+                          category: result.category,
+                          reviews: [],
+                          openingHours: [],
+                          rating: result.rating ? String(result.rating) : null,
+                          reviewCount: result.reviewCount,
+                        });
+                        setGmbSearchResults([]);
+                      }}
+                      className="w-full flex items-start gap-3 p-3 rounded-xl border border-slate-600/50 bg-slate-700/40 hover:border-indigo-500/60 hover:bg-indigo-500/10 transition-all text-left"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{result.name}</p>
+                        <p className="text-xs text-slate-400 truncate">{result.address.split(",").slice(0, 2).join(",")}</p>
+                        {result.rating && (
+                          <p className="text-xs text-amber-400 mt-0.5">★ {result.rating.toFixed(1)} ({result.reviewCount} Bewertungen)</p>
+                        )}
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* No results */}
+              {!gmbSearchLoading && gmbSearchResults.length === 0 && gmbSearchPublicMutation.isSuccess && !resolvedInfo && (
+                <div className="p-3 rounded-lg bg-amber-900/30 border border-amber-700/50 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-amber-400 text-sm">Kein Treffer – versuche einen anderen Begriff oder ergänze die Stadt.</p>
+                </div>
+              )}
+
+              {/* Selected business confirmation */}
+              {resolvedInfo && (
                 <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-400 text-sm font-semibold">Unternehmen gefunden!</span>
+                    <span className="text-emerald-400 text-sm font-semibold">Unternehmen ausgewählt</span>
+                    <button onClick={() => { setResolvedInfo(null); }} className="ml-auto text-slate-500 hover:text-slate-300 text-xs">Ändern</button>
                   </div>
-                  <p className="text-white font-semibold text-base">{resolvedInfo.businessName}</p>
-                  {resolvedInfo.address && <p className="text-slate-400 text-xs mt-1">{resolvedInfo.address}</p>}
-                  {resolvedInfo.phone && <p className="text-slate-400 text-xs">{resolvedInfo.phone}</p>}
+                  <p className="text-white font-semibold">{resolvedInfo.businessName}</p>
+                  {resolvedInfo.address && <p className="text-slate-400 text-xs mt-0.5">{resolvedInfo.address.split(",").slice(0, 2).join(",")}</p>}
                 </div>
               )}
 
-              {/* Error */}
-              {resolveError && (
-                <div className="p-3 rounded-lg bg-amber-900/30 border border-amber-700/50 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-amber-400 text-sm">{resolveError}</p>
-                    <button
-                      onClick={() => startMutation.mutate({ gmbUrl: gmbUrl.trim(), customerEmail: customerEmail.trim(), source: "external" })}
-                      disabled={startMutation.isPending}
-                      className="text-amber-300 text-xs underline mt-2 hover:text-amber-200"
-                    >
-                      Trotzdem ohne Daten fortfahren →
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Main CTA */}
-              {resolvedInfo ? (
-                <Button
-                  onClick={handleStartWithResolved}
-                  disabled={isLoading}
-                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl"
-                >
-                  {startMutation.isPending ? (
-                    <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Wird vorbereitet...</div>
-                  ) : (
-                    <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" />Mit diesen Daten starten</div>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleResolveAndStart}
-                  disabled={!gmbUrl.trim() || isLoading}
-                  className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      {resolveMutation.isPending ? "Daten werden abgerufen…" : "Wird vorbereitet…"}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" />Jetzt starten</div>
-                  )}
-                </Button>
-              )}
+              {/* CTA */}
+              <Button
+                onClick={handleStartWithResolved}
+                disabled={!resolvedInfo || isLoading}
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold rounded-xl"
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Wird vorbereitet…</div>
+                ) : (
+                  <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" />Jetzt starten</div>
+                )}
+              </Button>
 
               <button
                 onClick={handleManualStart}
                 disabled={isLoading}
                 className="w-full text-slate-400 hover:text-white text-sm transition-colors py-2"
               >
-                Ohne GMB-Link fortfahren →
+                Mein Unternehmen ist nicht dabei – manuell eingeben →
               </button>
             </div>
           </>
