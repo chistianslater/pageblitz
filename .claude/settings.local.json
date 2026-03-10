@@ -11,7 +11,13 @@
       "Bash(rsync -avz --delete dist/ root@76.13.147.95:/root/pageblitz/dist/)",
       "Bash(ssh root@76.13.147.95 \"pm2 restart pageblitz --silent\")",
       "Bash(ssh root@76.13.147.95 \"pm2 restart pageblitz --silent && sleep 1 && echo ''restarted''\")",
-      "Bash(ssh root@76.13.147.95 \"pm2 logs pageblitz --lines 30 --nostream 2>/dev/null || pm2 logs pageblitz --lines 30\")"
+      "Bash(ssh root@76.13.147.95 \"pm2 logs pageblitz --lines 30 --nostream 2>/dev/null || pm2 logs pageblitz --lines 30\")",
+      "Bash(xargs ls -la)",
+      "WebFetch(domain:images.unsplash.com)",
+      "WebSearch",
+      "WebFetch(domain:unsplash.com)",
+      "Bash(npx tsc --noEmit --project tsconfig.json)",
+      "Bash(node --experimental-strip-types -e \":*)"
     ]
   }
 }
