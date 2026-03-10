@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,154 @@ function isValidEmail(email: string): boolean {
 // Step 1 → 2 → 3
 // "email" → "choice" → "gmb" | "manual"
 type Step = "email" | "choice" | "gmb";
+
+// ── GMB Tutorial Animation ──────────────────────────────────
+const GMB_STEPS = [
+  {
+    label: "Google Maps öffnen",
+    sub: "maps.google.com aufrufen oder App öffnen",
+  },
+  {
+    label: "Dein Unternehmen suchen",
+    sub: "Namen in die Suche eingeben & antippen",
+  },
+  {
+    label: "\u201eTeilen\u201c \u2192 Link kopieren",
+    sub: "Link kopieren und hier oben einfügen",
+  },
+];
+
+function GmbTutorialAnimation() {
+  const [active, setActive] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => setActive(s => (s + 1) % 3), 2800);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, []);
+
+  return (
+    <div className="mb-5 rounded-xl bg-slate-800/50 border border-slate-700/40 p-4 overflow-hidden">
+      {/* Progress dots */}
+      <div className="flex gap-1.5 mb-4">
+        {[0, 1, 2].map(i => (
+          <button
+            key={i}
+            onClick={() => { setActive(i); if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = setInterval(() => setActive(s => (s + 1) % 3), 2800); } }}
+            className={`flex-1 h-0.5 rounded-full transition-all duration-500 ${i === active ? "bg-indigo-400" : i < active ? "bg-indigo-700" : "bg-slate-700"}`}
+          />
+        ))}
+      </div>
+
+      <div className="flex gap-4 items-center">
+        {/* Phone mockup */}
+        <div className="flex-shrink-0 w-[72px] h-[120px] rounded-[14px] border-2 border-slate-600 bg-slate-950 overflow-hidden shadow-lg shadow-black/40">
+          {/* Notch */}
+          <div className="h-3 bg-slate-900 flex items-center justify-center">
+            <div className="w-8 h-1 rounded-full bg-slate-700" />
+          </div>
+          {/* Screen */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.25 }}
+              className="px-1.5 pt-1 space-y-1.5"
+            >
+              {active === 0 && (
+                /* Maps screen */
+                <>
+                  <div className="flex items-center gap-0.5 h-3 rounded bg-slate-800 border border-slate-700 px-1">
+                    <div className="w-2 h-1.5 rounded-full bg-indigo-500/70" />
+                    <div className="flex-1 h-1 rounded bg-slate-700" />
+                  </div>
+                  <div className="w-full h-[68px] rounded bg-slate-800/80 relative overflow-hidden">
+                    {/* Grid lines */}
+                    <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+                      <line x1="33%" y1="0" x2="33%" y2="100%" stroke="#6366f1" strokeWidth="0.5" />
+                      <line x1="66%" y1="0" x2="66%" y2="100%" stroke="#6366f1" strokeWidth="0.5" />
+                      <line x1="0" y1="33%" x2="100%" y2="33%" stroke="#6366f1" strokeWidth="0.5" />
+                      <line x1="0" y1="66%" x2="100%" y2="66%" stroke="#6366f1" strokeWidth="0.5" />
+                    </svg>
+                    {/* Pin */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        animate={{ scale: [1, 1.3, 1] }}
+                        transition={{ duration: 1.2, repeat: Infinity }}
+                        className="w-3.5 h-3.5 rounded-full bg-indigo-500 shadow-md shadow-indigo-500/60"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+              {active === 1 && (
+                /* Business listing */
+                <>
+                  <div className="flex items-center gap-0.5 h-3 rounded bg-emerald-900/40 border border-emerald-600/40 px-1">
+                    <div className="flex-1 h-1 rounded bg-emerald-500/60" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="h-2 w-full rounded bg-slate-400/30" />
+                    <div className="h-1.5 w-3/4 rounded bg-slate-600/60" />
+                    <div className="h-1.5 w-1/2 rounded bg-slate-600/40" />
+                  </div>
+                  <div className="flex gap-1 pt-0.5">
+                    {["Anruf", "Web", "Teilen"].map((_, i) => (
+                      <div key={i} className={`flex-1 h-[18px] rounded text-[4px] flex items-center justify-center font-medium ${i === 2 ? "bg-indigo-500/40 border border-indigo-400/60 text-indigo-300" : "bg-slate-700/60 border border-slate-600/50 text-slate-500"}`}>
+                        {i === 2 ? "Teilen" : ""}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {active === 2 && (
+                /* Share sheet */
+                <>
+                  <div className="h-2 w-full rounded bg-slate-700/60" />
+                  <div className="h-1.5 w-3/4 rounded bg-slate-700/40" />
+                  <div className="mt-1 space-y-1">
+                    <motion.div
+                      animate={{ opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                      className="h-[22px] rounded-lg bg-indigo-500/30 border border-indigo-400/60 flex items-center justify-center"
+                    >
+                      <span className="text-[5px] text-indigo-300 font-bold tracking-wide">LINK KOPIEREN</span>
+                    </motion.div>
+                    <div className="h-[16px] rounded bg-slate-700/40 border border-slate-700" />
+                    <div className="h-[16px] rounded bg-slate-700/40 border border-slate-700" />
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Step text */}
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] text-slate-500 mb-1 font-mono">Schritt {active + 1} / 3</div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -4 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="text-sm font-semibold text-white leading-snug mb-1">
+                {GMB_STEPS[active].label}
+              </div>
+              <div className="text-xs text-slate-400 leading-relaxed">
+                {GMB_STEPS[active].sub}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function StartPage() {
   const { user, isAuthenticated } = useAuth();
@@ -398,6 +547,8 @@ export default function StartPage() {
             >
               ← Zurück
             </button>
+
+            <GmbTutorialAnimation />
 
             <h1 className="text-white text-2xl font-bold mb-2">
               Google My Business Link
