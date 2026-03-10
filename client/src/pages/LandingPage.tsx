@@ -15,12 +15,11 @@ import {
   Star,
   ShieldCheck,
   ChevronRight,
-  Play,
-  ExternalLink,
-  ArrowUpRight,
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
@@ -152,6 +151,79 @@ const Navbar = () => {
         )}
       </AnimatePresence>
     </>
+  );
+};
+
+const FAQ_ITEMS = [
+  {
+    q: "Brauche ich technische Kenntnisse?",
+    a: "Nein. Pageblitz ist für Menschen ohne IT-Kenntnisse gemacht. Du beantwortest ein paar Fragen über dein Unternehmen – den Rest erledigt die KI.",
+  },
+  {
+    q: "Was passiert nach den 7 Tagen?",
+    a: "Nach dem kostenlosen Testzeitraum kostet Pageblitz 19,90€/Monat. Du wirst vorher per E-Mail erinnert. Wenn du nicht weiter machen möchtest, kannst du einfach kündigen.",
+  },
+  {
+    q: "Kann ich meine eigene Domain verwenden?",
+    a: "Ja. Du kannst deine bestehende Domain in wenigen Klicks verbinden. Alternativ bekommst du eine kostenlose Subdomain (deinname.pageblitz.de).",
+  },
+  {
+    q: "Kann ich die Texte und Bilder später ändern?",
+    a: "Ja, jederzeit. Schreib einfach im Chat was du ändern möchtest – z.B. \"Ändere die Headline auf...' oder 'Füge diese Leistung hinzu'. Keine Programmierkenntnisse nötig.",
+  },
+  {
+    q: "Wie sieht meine Website aus?",
+    a: "Pageblitz erstellt eine moderne, mobiloptimierte Website passend zu deiner Branche. Du kannst die Farben, Schriften und Layouts anpassen. Scroll nach oben und sieh dir die Beispiele an.",
+  },
+  {
+    q: "Wie läuft die Kündigung ab?",
+    a: "Ganz einfach: Schreibe uns eine E-Mail oder kündige direkt in deinem Account. Keine Mindestlaufzeiten, keine Kündigungsgebühren.",
+  },
+];
+
+const FaqSection = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  return (
+    <section className="py-24 border-y border-white/5">
+      <div className="max-w-2xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">FAQ</h2>
+          <h3 className="text-3xl font-semibold text-white tracking-tight">Häufige Fragen</h3>
+        </div>
+        <div className="space-y-2">
+          {FAQ_ITEMS.map((item, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden"
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between px-6 py-5 text-left"
+              >
+                <span className="text-white font-medium text-sm">{item.q}</span>
+                {openIndex === i
+                  ? <ChevronUp className="w-4 h-4 text-white/40 shrink-0 ml-4" />
+                  : <ChevronDown className="w-4 h-4 text-white/40 shrink-0 ml-4" />
+                }
+              </button>
+              <AnimatePresence initial={false}>
+                {openIndex === i && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <p className="px-6 pb-5 text-white/50 text-sm leading-relaxed">{item.a}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
 
@@ -1264,21 +1336,20 @@ export default function LandingPage() {
                   transition={{ duration: 0.6 }}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-sm mb-8"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Jetzt mit GMB-Integration</span>
-                  <ArrowRight className="w-3 h-3 ml-1" />
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Webagentur kostet 3.000€+ – Pageblitz ab 19,90€/Monat</span>
                 </motion.div>
 
-                <motion.h1 
+                <motion.h1
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.1 }}
                   className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 leading-[1.1]"
                 >
-                  <span className="text-white">Websites die sich</span>
+                  <span className="text-white">Deine professionelle</span>
                   <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400">
-                    selbst erstellen.
+                    Website in 3 Minuten.
                   </span>
                 </motion.h1>
 
@@ -1288,8 +1359,8 @@ export default function LandingPage() {
                   transition={{ duration: 0.6, delay: 0.2 }}
                   className="text-lg text-white/60 max-w-lg mb-8 leading-relaxed"
                 >
-                  Keine Templates. Kein Drag-and-Drop. Nur dein Google My Business Link 
-                  und 3 Minuten Zeit. Die KI erledigt den Rest.
+                  Kein Webdesigner. Kein Monatelanges Warten. Kein 4-stelliges Budget.
+                  Pageblitz erstellt deine Website automatisch – du musst nur dein Business beschreiben.
                 </motion.p>
 
                 <motion.div
@@ -1298,45 +1369,43 @@ export default function LandingPage() {
                   transition={{ duration: 0.6, delay: 0.3 }}
                   className="flex flex-col sm:flex-row gap-4"
                 >
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     onClick={() => navigate("/start")}
                     className="bg-white text-black hover:bg-white/90 rounded-full h-14 px-8 text-base font-medium shadow-xl shadow-white/20 group"
                   >
-                    Kostenlos starten
+                    Jetzt kostenlos testen
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
-                  <Button 
+                  <Button
                     variant="ghost"
                     size="lg"
+                    onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
                     className="text-white/80 hover:text-white hover:bg-white/10 rounded-full h-14 px-8 text-base border border-white/20 backdrop-blur-sm"
                   >
-                    <Play className="mr-2 w-4 h-4" />
-                    Demo ansehen
+                    Beispiele ansehen
+                    <ChevronDown className="ml-2 w-4 h-4" />
                   </Button>
                 </motion.div>
 
-                {/* Trust badges */}
+                {/* Trust signal */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex items-center gap-6 mt-10 pt-6 border-t border-white/10"
+                  className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-10 pt-6 border-t border-white/10"
                 >
-                  <div className="flex -space-x-2">
-                    {[1,2,3,4].map((i) => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-white/20 border-2 border-[#0a0a0a] flex items-center justify-center text-xs text-white/80">
-                        {String.fromCharCode(64 + i)}
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    <span>7 Tage kostenlos</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <span className="text-white/60 text-sm">4.9 von 5 Sternen</span>
+                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    <span>Keine Kreditkarte nötig</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    <span>Monatlich kündbar</span>
                   </div>
                 </motion.div>
               </div>
@@ -1367,7 +1436,7 @@ export default function LandingPage() {
               { value: "1,200+", label: "Websites erstellt" },
               { value: "3 Min.", label: "Durchschnittliche Zeit" },
               { value: "85%", label: "SEO-Performance" },
-              { value: "39€", label: "Pro Monat" },
+              { value: "19,90€", label: "Pro Monat" },
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -1385,72 +1454,158 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Für wen? Section - light break in the dark layout */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 tracking-tight mb-4">
+              Für wen ist Pageblitz?
+            </h2>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">
+              Für alle, die Kunden über das Internet gewinnen wollen – ohne IT-Kenntnisse.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {[
+              { emoji: "🔧", label: "Handwerker" },
+              { emoji: "✂️", label: "Friseure" },
+              { emoji: "🍽️", label: "Restaurants" },
+              { emoji: "🏥", label: "Ärzte & Therapeuten" },
+              { emoji: "💅", label: "Beauty & Wellness" },
+              { emoji: "🏋️", label: "Fitnessstudios" },
+              { emoji: "⚖️", label: "Anwälte & Berater" },
+              { emoji: "📐", label: "Architekten" },
+              { emoji: "🌸", label: "Einzelhandel" },
+              { emoji: "🐾", label: "Tierärzte" },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 border border-gray-100 transition-colors cursor-default"
+              >
+                <span className="text-3xl">{item.emoji}</span>
+                <span className="text-gray-700 text-sm font-medium text-center">{item.label}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-400 text-sm mb-6">… und viele mehr. Wenn du ein lokales Unternehmen hast, ist Pageblitz für dich.</p>
+            <Button
+              size="lg"
+              onClick={() => navigate("/start")}
+              className="bg-gray-900 text-white hover:bg-gray-800 rounded-full h-12 px-8 text-sm font-medium"
+            >
+              Meine Website erstellen
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Website Showcase Gallery */}
-      <WebsiteShowcase />
+      <div id="showcase">
+        <WebsiteShowcase />
+      </div>
+
+      {/* CTA after Showcase */}
+      <section className="py-16 border-y border-white/5 bg-white/[0.02]">
+        <div className="max-w-2xl mx-auto px-6 text-center">
+          <p className="text-white/60 text-lg mb-6">
+            Gefällt dir, was du siehst? Erstelle jetzt deine eigene Website – in 3 Minuten, kostenlos.
+          </p>
+          <Button
+            size="lg"
+            onClick={() => navigate("/start")}
+            className="bg-white text-black hover:bg-white/90 rounded-full h-12 px-8 text-sm font-medium group"
+          >
+            Website jetzt erstellen
+            <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Button>
+          <p className="text-white/30 text-xs mt-3">7 Tage kostenlos · Keine Kreditkarte nötig</p>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section id="features" className="py-32 relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-20">
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4"
             >
-              Funktionen
+              Warum Pageblitz?
             </motion.h2>
-            <motion.h3 
+            <motion.h3
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
               className="text-3xl md:text-5xl font-semibold text-white tracking-tight"
             >
-              Alles was du brauchst.<br />Nichts was du nicht brauchst.
+              Alles dabei.<br />Sofort einsatzbereit.
             </motion.h3>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FeatureCard 
-              icon={Rocket} 
-              title="KI-gestützte Erstellung"
-              description="Keine leeren Seiten. Unsere KI generiert sofort vollständige Texte, Struktur und Bildvorschläge basierend auf deinem Unternehmen."
+            <FeatureCard
+              icon={Rocket}
+              title="Sofort fertige Texte"
+              description="Keine leere Seite, kein Copy-Paste. Die KI schreibt deine Leistungsbeschreibungen, Über-uns-Texte und Seitentitel – passend zu deiner Branche."
               index={0}
             />
-            <FeatureCard 
-              icon={Clock} 
+            <FeatureCard
+              icon={Clock}
               title="In 3 Minuten online"
-              description="Vom Google Link zur fertigen Website. Keine Wartezeiten, keine technische Einrichtung. Sofort einsatzbereit."
+              description="Gib deinen Google My Business Link ein – und 3 Minuten später hat dein Business einen professionellen Webauftritt. Kein Warten, keine Einrichtung."
               index={1}
             />
-            <FeatureCard 
-              icon={Smartphone} 
-              title="Perfekt für Mobilgeräte"
-              description="Über 70% deiner Kunden kommen mobil. Jede Pageblitz Website ist automatisch für alle Bildschirme optimiert."
+            <FeatureCard
+              icon={Smartphone}
+              title="Sieht auf jedem Handy gut aus"
+              description="Über 70% deiner Kunden googeln dich am Smartphone. Deine Website passt sich automatisch an – ohne dass du etwas tun musst."
               index={2}
             />
-            <FeatureCard 
-              icon={Search} 
-              title="SEO-optimiert"
-              description="Technisch sauberer Code, schnelle Ladezeiten und strukturierte Daten. Damit deine Kunden dich auch finden."
+            <FeatureCard
+              icon={Search}
+              title="Wird bei Google gefunden"
+              description="SEO-optimierter Code, strukturierte Daten und schnelle Ladezeiten – damit neue Kunden dich über Google entdecken, nicht nur Bestandskunden."
               index={3}
             />
-            <FeatureCard 
-              icon={ShieldCheck} 
-              title="Rechtssicher"
-              description="DSGVO-konforme Cookie-Banner, automatisch generierte Impressen und Datenschutzseiten, die auf dem aktuellen Stand gehalten werden."
+            <FeatureCard
+              icon={ShieldCheck}
+              title="Kein Anwalt nötig"
+              description="Impressum, Datenschutzerklärung und DSGVO-konforme Cookie-Banner werden automatisch generiert und aktuell gehalten."
               index={4}
             />
-            <FeatureCard 
-              icon={Globe} 
-              title="Eigene Domain"
-              description="Nutze deine eigene Domain oder eine kostenlose pageblitz.de Subdomain. SSL-Zertifikat inklusive."
+            <FeatureCard
+              icon={Globe}
+              title="Deine eigene Domain"
+              description="Verbinde deine bestehende Domain oder nutze eine kostenlose .pageblitz.de Subdomain. SSL-Zertifikat und Hosting sind inklusive."
               index={5}
             />
           </div>
         </div>
       </section>
+
+      {/* CTA after Features */}
+      <div className="text-center pb-20">
+        <Button
+          size="lg"
+          onClick={() => navigate("/start")}
+          className="bg-white text-black hover:bg-white/90 rounded-full h-12 px-8 text-sm font-medium group"
+        >
+          Jetzt kostenlos starten
+          <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </Button>
+        <p className="text-white/30 text-xs mt-3">7 Tage kostenlos · Monatlich kündbar</p>
+      </div>
 
       {/* How it Works - Minimalist */}
       <section className="py-32 border-y border-white/5 bg-white/[0.02]">
@@ -1480,20 +1635,118 @@ export default function LandingPage() {
 
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl" />
-              <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-white/5 p-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&auto=format&fit=crop" 
-                  alt="Dashboard Interface"
-                  className="rounded-2xl opacity-90"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+              <div className="relative rounded-3xl border border-white/10 bg-white/5 p-8 space-y-4">
+                {/* Mini preview cards for each step */}
+                {[
+                  { icon: "🔗", label: "Link eingefügt", sub: "google.com/maps/..." },
+                  { icon: "🤖", label: "KI analysiert", sub: "Texte & Bilder werden generiert..." },
+                  { icon: "✏️", label: "Anpassen im Chat", sub: "Farbe auf Marineblau ändern..." },
+                  { icon: "🚀", label: "Live!", sub: "meinbusiness.pageblitz.de" },
+                ].map((s, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.15 }}
+                    className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/5"
+                  >
+                    <span className="text-2xl">{s.icon}</span>
+                    <div>
+                      <div className="text-white text-sm font-medium">{s.label}</div>
+                      <div className="text-white/40 text-xs font-mono mt-0.5">{s.sub}</div>
+                    </div>
+                    {i < 3 && (
+                      <div className="ml-auto text-white/20 text-xs">→</div>
+                    )}
+                    {i === 3 && (
+                      <div className="ml-auto">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                          Online
+                        </span>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section - Clean */}
+      {/* Testimonials - light section to break dark monotony */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <div className="flex justify-center mb-3">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 tracking-tight mb-3">
+              Was Kunden sagen
+            </h2>
+            <p className="text-gray-500">Echte Unternehmer. Echte Ergebnisse.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "Markus H.",
+                role: "Elektroinstallateur, Hannover",
+                initials: "MH",
+                color: "bg-blue-100 text-blue-700",
+                text: "Ich hab keine Ahnung von Websites. Hab meinen Google-Link eingegeben und 5 Minuten später war meine Seite fertig. Sieht aus wie von einem Profi gemacht. Meine Kunden fragen, wer das designt hat.",
+                stars: 5,
+              },
+              {
+                name: "Sabine K.",
+                role: "Friseursalon Elegance, München",
+                initials: "SK",
+                color: "bg-rose-100 text-rose-700",
+                text: "Früher hatte ich nur eine veraltete Website von 2018. Jetzt habe ich etwas Modernes, das auch auf dem Handy gut aussieht. Ich bekomme deutlich mehr Anfragen über die Seite als vorher.",
+                stars: 5,
+              },
+              {
+                name: "Thorsten B.",
+                role: "Steuerberater, Hamburg",
+                initials: "TB",
+                color: "bg-emerald-100 text-emerald-700",
+                text: "Als Steuerberater weiß ich, was professionelles Webdesign kostet – schnell 3.000€ oder mehr. Für 19,90€ im Monat bekomme ich ein vergleichbares Ergebnis. Die Entscheidung war wirklich leicht.",
+                stars: 5,
+              },
+            ].map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-gray-50 rounded-2xl p-7 border border-gray-100 flex flex-col gap-4"
+              >
+                <div className="flex gap-1">
+                  {[...Array(t.stars)].map((_, j) => (
+                    <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 leading-relaxed text-sm flex-1">"{t.text}"</p>
+                <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${t.color}`}>
+                    {t.initials}
+                  </div>
+                  <div>
+                    <div className="text-gray-900 text-sm font-semibold">{t.name}</div>
+                    <div className="text-gray-400 text-xs">{t.role}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section - with comparison */}
       <section id="pricing" className="py-32">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -1501,15 +1754,16 @@ export default function LandingPage() {
             <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Ein Preis. Alles inklusive.</h3>
           </div>
 
-          <div className="max-w-lg mx-auto">
+          <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto items-start">
+            {/* Pricing card */}
             <div className="relative p-1 rounded-3xl bg-gradient-to-b from-white/20 to-white/5">
               <div className="bg-[#0a0a0a] rounded-[22px] p-10 border border-white/10">
                 <div className="text-center mb-10">
                   <div className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium mb-6">
                     Pageblitz Pro
                   </div>
-                  <div className="flex items-baseline justify-center gap-2 mb-4">
-                    <span className="text-6xl font-semibold text-white tracking-tight">39€</span>
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="text-6xl font-semibold text-white tracking-tight">19,90€</span>
                     <span className="text-white/40">/Monat</span>
                   </div>
                   <p className="text-white/40 text-sm">Monatlich kündbar. Keine versteckten Kosten.</p>
@@ -1520,48 +1774,88 @@ export default function LandingPage() {
                     "KI-generierte Website",
                     "Eigene Domain inklusive",
                     "SSL-Zertifikat",
-                    "DSGVO-konformer Datenschutz",
+                    "DSGVO-konformer Datenschutz & Impressum",
                     "Premium Cloud Hosting",
+                    "Änderungen jederzeit per Chat",
                     "Chat-Support",
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-white/40" />
+                      <CheckCircle2 className="w-5 h-5 text-green-400/70 shrink-0" />
                       <span className="text-white/70 text-sm">{feature}</span>
                     </div>
                   ))}
                 </div>
 
-                <Button 
+                <Button
                   onClick={() => navigate("/start")}
                   className="w-full bg-white text-black hover:bg-white/90 rounded-full h-14 text-base font-medium"
                 >
-                  Jetzt starten
+                  7 Tage kostenlos testen
                 </Button>
-                <p className="text-center text-white/30 text-xs mt-4">14 Tage kostenlos testen</p>
+                <p className="text-center text-white/30 text-xs mt-4">Keine Kreditkarte nötig · Jederzeit kündbar</p>
+              </div>
+            </div>
+
+            {/* Comparison table */}
+            <div className="space-y-4">
+              <h4 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-6">Pageblitz vs. Webagentur</h4>
+              <div className="rounded-2xl border border-white/10 overflow-hidden">
+                <div className="grid grid-cols-3 bg-white/5 px-4 py-3 text-xs font-medium text-white/40 uppercase tracking-wider">
+                  <div></div>
+                  <div className="text-center">Webagentur</div>
+                  <div className="text-center text-white/80">Pageblitz</div>
+                </div>
+                {[
+                  { label: "Einmalkosten", agency: "2.000–8.000€", us: "0€" },
+                  { label: "Wartezeit", agency: "4–12 Wochen", us: "3 Minuten" },
+                  { label: "Monatl. Kosten", agency: "0–80€ Hosting", us: "19,90€" },
+                  { label: "Änderungen", agency: "Stundenabrechnung", us: "Inklusive" },
+                  { label: "Vertragslaufzeit", agency: "Oft 12 Monate", us: "Monatlich" },
+                  { label: "Technikkenntnisse", agency: "Nein", us: "Nein" },
+                ].map((row, i) => (
+                  <div key={i} className={`grid grid-cols-3 px-4 py-4 text-sm border-t border-white/5 ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}>
+                    <div className="text-white/50">{row.label}</div>
+                    <div className="text-center text-white/40">{row.agency}</div>
+                    <div className="text-center text-green-400 font-medium">{row.us}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* FAQ */}
+      <FaqSection />
+
       {/* Final CTA */}
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-4xl md:text-6xl font-semibold text-white mb-8 tracking-tight">
-            Bereit für deine<br />neue Website?
+          <p className="text-white/40 text-sm font-medium uppercase tracking-widest mb-6">Jetzt loslegen</p>
+          <h2 className="text-4xl md:text-5xl font-semibold text-white mb-6 tracking-tight">
+            Deine Website wartet.<br />Starte heute kostenlos.
           </h2>
-          <p className="text-lg text-white/50 mb-10 max-w-xl mx-auto">
-            Überlass die Technik uns. Konzentrier dich auf dein Business.
+          <p className="text-lg text-white/50 mb-10 max-w-lg mx-auto leading-relaxed">
+            Kein Webdesigner. Kein technisches Wissen. Nur dein Unternehmen –
+            professionell online in 3 Minuten.
           </p>
-          <Button 
+          <Button
             size="lg"
             onClick={() => navigate("/start")}
-            className="bg-white text-black hover:bg-white/90 rounded-full h-16 px-12 text-lg font-medium shadow-xl shadow-white/10"
+            className="bg-white text-black hover:bg-white/90 rounded-full h-16 px-12 text-lg font-medium shadow-xl shadow-white/10 group"
           >
-            Kostenlos starten
-            <ArrowRight className="ml-2 w-5 h-5" />
+            Jetzt kostenlos testen
+            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
+          <div className="flex flex-wrap justify-center gap-6 mt-8">
+            {["7 Tage kostenlos", "Keine Kreditkarte", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
+              <div key={t} className="flex items-center gap-2 text-white/40 text-sm">
+                <CheckCircle2 className="w-4 h-4 text-green-400/60" />
+                {t}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
