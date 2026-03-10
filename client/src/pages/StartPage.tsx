@@ -110,7 +110,6 @@ export default function StartPage() {
   const handleStartWithResolved = () => {
     if (!resolvedInfo) return;
     startMutation.mutate({
-      gmbUrl: gmbUrl.trim(),
       businessName: resolvedInfo.businessName || undefined,
       placeId: resolvedInfo.placeId || undefined,
       address: resolvedInfo.address || undefined,
