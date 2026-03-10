@@ -376,6 +376,7 @@ interface OnboardingData {
 
 type ChatStep =
   | "welcome"
+  | "gmbSearch"
   | "businessCategory"
   | "businessName"
   | "tagline"
@@ -422,6 +423,7 @@ const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 const COLOR_SCHEMES = PREDEFINED_COLOR_SCHEMES;
 
 const STEP_ORDER: ChatStep[] = [
+  "gmbSearch",         // 0. Google-Suche (optional, zum Auto-Befüllen)
   "businessCategory",  // 1. Branche erfassen (für Bilder/Farben)
   "businessName",      // 2. Unternehmensname erfassen
   "brandLogo",         // 3. Logo / Schriftart für Logo
@@ -453,6 +455,7 @@ const STEP_ORDER: ChatStep[] = [
 
 const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   welcome: null,
+  gmbSearch: null,
   businessCategory: "hero",
   colorScheme: "hero",
   brandColor: "hero",
@@ -594,7 +597,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert))
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Only show alert after user has started entering data (after welcome/email step)
-      const earlySteps: ChatStep[] = ["welcome", "email", "businessCategory"];
+      const earlySteps: ChatStep[] = ["welcome", "email", "gmbSearch", "businessCategory"];
       const isEarlyStep = earlySteps.includes(currentStep);
       // Don't show for authenticated users with email
       if (!isGeneratingInitialWebsite && !isEarlyStep && currentStep !== "checkout" && currentStep !== "preview" && !hasUserEmail) {
@@ -629,6 +632,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [currentStep, showExitIntent, showExitConfirmation, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [gmbSearchQuery, setGmbSearchQuery] = useState("");
+  const [gmbSearchRegion, setGmbSearchRegion] = useState("");
+  const [gmbSearchResults, setGmbSearchResults] = useState<Array<{ placeId: string; name: string; address: string; phone: string | null; rating: number | null; reviewCount: number; category: string; website: string | null }>>([]);
+  const [gmbSearchLoading, setGmbSearchLoading] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set<string>());
   const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
@@ -901,6 +908,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [existingOnboarding, currentStep, websiteId, websiteIdProp]);
 
   // ── tRPC mutations ──────────────────────────────────────────────────────
+  const gmbSearchPublicMutation = trpc.search.gmbSearchPublic.useMutation();
   const saveStepMutation = trpc.onboarding.saveStep.useMutation();
   const completeMutation = trpc.onboarding.complete.useMutation();
   const checkoutMutation = trpc.checkout.createSession.useMutation();
@@ -1085,6 +1093,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     (step: ChatStep): string[] => {
       const name = data.businessName || business?.name || "";
       switch (step) {
+        case "gmbSearch":
+          return [];
         case "businessCategory":
           return [
             "Restaurant",
@@ -1168,6 +1178,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     (step: ChatStep): string => {
       const name = data.businessName || business?.name || "dein Unternehmen";
       switch (step) {
+        case "gmbSearch":
+          return `Hallo! 👋 Lass uns kurz schauen, ob dein Unternehmen schon bei **Google** gefunden wird – dann kann ich alle Infos automatisch übernehmen.\n\nEinfach den Unternehmensnamen eingeben und optional die Stadt:`;
         case "businessCategory":
           return `Hallo! Bevor wir starten – welche **Branche** ist dein Unternehmen?\n\nBeispiel: Restaurant, Friseur, Bauunternehmen, Fitness-Studio, Anwaltskanzlei, etc.\n\nDas hilft mir, deine Website perfekt auf deine Branche abzustimmen!`;
         case "welcome":
@@ -1430,8 +1442,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             800
           );
         } else {
-          setCurrentStep("businessCategory");
-          await addBotMessage(getStepPrompt("businessCategory"), 800);
+          setCurrentStep("gmbSearch");
+          await addBotMessage(getStepPrompt("gmbSearch"), 800);
         }
       };
       initChat();
@@ -1724,7 +1736,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
     const val = value !== undefined ? value.trim() : inputValue.trim();
     const isExplicitEmpty = value === "";
-    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat"].includes(currentStep)) return;
+    if (!val && !isExplicitEmpty && !["gmbSearch", "addons", "subpages", "preview", "checkout", "legalVat"].includes(currentStep)) return;
 
     setInputValue("");
 
@@ -1733,6 +1745,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     try {
       switch (currentStep) {
+        case "gmbSearch": {
+          // User skipped the GMB search – proceed to businessCategory
+          addUserMessage("Ich suche manuell weiter.");
+          break;
+        }
         case "businessName": {
           const confirmationPattern = /^(ja|j|yes|y|yep|yup|stimmt|ok|okay|klar)$/i;
           if (val && confirmationPattern.test(val.trim())) {
@@ -2719,6 +2736,163 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     Weiter <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
+            </motion.div>
+          )}
+
+          {currentStep === "gmbSearch" && (
+            <motion.div
+              key="gmbSearch-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              {/* Search inputs */}
+              <div className="flex gap-2">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Unternehmensname"
+                  value={gmbSearchQuery}
+                  onChange={(e) => setGmbSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && gmbSearchQuery.trim()) {
+                      e.preventDefault();
+                      (async () => {
+                        setGmbSearchLoading(true);
+                        setGmbSearchResults([]);
+                        try {
+                          const res = await gmbSearchPublicMutation.mutateAsync({
+                            query: gmbSearchQuery.trim(),
+                            region: gmbSearchRegion.trim() || undefined,
+                          });
+                          setGmbSearchResults(res.results);
+                        } finally {
+                          setGmbSearchLoading(false);
+                        }
+                      })();
+                    }
+                  }}
+                  className="flex-1 bg-slate-700/60 border border-slate-600/50 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500/60"
+                />
+                <input
+                  type="text"
+                  placeholder="Stadt (optional)"
+                  value={gmbSearchRegion}
+                  onChange={(e) => setGmbSearchRegion(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && gmbSearchQuery.trim()) {
+                      e.preventDefault();
+                      (async () => {
+                        setGmbSearchLoading(true);
+                        setGmbSearchResults([]);
+                        try {
+                          const res = await gmbSearchPublicMutation.mutateAsync({
+                            query: gmbSearchQuery.trim(),
+                            region: gmbSearchRegion.trim() || undefined,
+                          });
+                          setGmbSearchResults(res.results);
+                        } finally {
+                          setGmbSearchLoading(false);
+                        }
+                      })();
+                    }
+                  }}
+                  className="w-32 bg-slate-700/60 border border-slate-600/50 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500/60"
+                />
+                <button
+                  disabled={!gmbSearchQuery.trim() || gmbSearchLoading}
+                  onClick={async () => {
+                    if (!gmbSearchQuery.trim() || gmbSearchLoading) return;
+                    setGmbSearchLoading(true);
+                    setGmbSearchResults([]);
+                    try {
+                      const res = await gmbSearchPublicMutation.mutateAsync({
+                        query: gmbSearchQuery.trim(),
+                        region: gmbSearchRegion.trim() || undefined,
+                      });
+                      setGmbSearchResults(res.results);
+                    } finally {
+                      setGmbSearchLoading(false);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm px-3 py-2 rounded-xl transition-colors"
+                >
+                  {gmbSearchLoading ? (
+                    <span className="flex gap-0.5 items-center h-4">
+                      {[0, 1, 2].map((i) => (
+                        <span key={i} className="w-1 h-1 rounded-full bg-white animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                      ))}
+                    </span>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  )}
+                </button>
+              </div>
+
+              {/* Results */}
+              {gmbSearchResults.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-400">{gmbSearchResults.length} Ergebnis{gmbSearchResults.length !== 1 ? "se" : ""} gefunden:</p>
+                  {gmbSearchResults.map((result) => (
+                    <button
+                      key={result.placeId}
+                      onClick={async () => {
+                        const translatedCategory = translateGmbCategory(result.category);
+                        // Parse address
+                        const parts = result.address.split(",");
+                        const street = parts[0]?.trim() || "";
+                        const cityPart = parts[1]?.trim() || "";
+                        const zipCityMatch = cityPart.match(/^(\d{5})\s+(.+)$/);
+                        const legalZip = zipCityMatch?.[1] || "";
+                        const legalCity = zipCityMatch?.[2] || cityPart;
+                        setData((prev) => ({
+                          ...prev,
+                          businessCategory: translatedCategory,
+                          businessName: result.name,
+                          legalPhone: result.phone || prev.legalPhone,
+                          legalStreet: street || prev.legalStreet,
+                          legalZip: legalZip || prev.legalZip,
+                          legalCity: legalCity || prev.legalCity,
+                        }));
+                        addUserMessage(`✓ ${result.name}${cityPart ? `, ${cityPart}` : ""}`);
+                        await addBotMessage(
+                          `Super! Ich habe **${result.name}** gefunden ✅\n\nBranche erkannt: **${translatedCategory}**\n\nDeine Google-Infos wurden übernommen – lass uns deine Website fertigstellen!`,
+                          600
+                        );
+                        await advanceToStep("brandLogo");
+                      }}
+                      className="w-full flex items-start gap-3 p-3 rounded-xl border border-slate-600/50 bg-slate-700/40 hover:border-blue-500/60 hover:bg-blue-600/10 transition-all text-left"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{result.name}</p>
+                        <p className="text-xs text-slate-400 truncate">{result.address.split(",").slice(0, 2).join(",")}</p>
+                        {result.rating && (
+                          <p className="text-xs text-amber-400 mt-0.5">★ {result.rating.toFixed(1)} ({result.reviewCount} Bewertungen)</p>
+                        )}
+                      </div>
+                      <svg className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* No results hint */}
+              {!gmbSearchLoading && gmbSearchResults.length === 0 && gmbSearchPublicMutation.isSuccess && (
+                <p className="text-xs text-slate-400">Kein Treffer – versuche es mit einem anderen Begriff oder gib die Stadt an.</p>
+              )}
+
+              {/* Skip */}
+              <button
+                onClick={async () => {
+                  addUserMessage("Ohne Google-Suche weitermachen");
+                  await advanceToStep("businessCategory");
+                }}
+                className="text-xs text-slate-500 hover:text-slate-300 transition-colors underline underline-offset-2"
+              >
+                Mein Unternehmen ist nicht dabei – manuell eingeben
+              </button>
             </motion.div>
           )}
 

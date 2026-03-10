@@ -1260,6 +1260,57 @@ export const appRouter = router({
         return { results: filtered, total: filtered.length };
       }),
 
+    // User-facing GMB search (no admin required)
+    gmbSearchPublic: publicProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        region: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const searchQuery = input.region
+          ? `${input.query} in ${input.region}`
+          : input.query;
+        const placesResult = await makeRequest<PlacesSearchResult>(
+          "/maps/api/place/textsearch/json",
+          { query: searchQuery, language: "de" }
+        );
+        if (placesResult.status !== "OK" || !placesResult.results?.length) {
+          return { results: [], total: 0 };
+        }
+        const detailedResults = [];
+        const limitedResults = placesResult.results.slice(0, 5);
+        for (const place of limitedResults) {
+          try {
+            const details = await makeRequest<PlaceDetailsResult>(
+              "/maps/api/place/details/json",
+              { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types", language: "de" }
+            );
+            const category = extractGmbCategory(place.types) || input.query;
+            detailedResults.push({
+              placeId: place.place_id,
+              name: details.result?.name || place.name,
+              address: details.result?.formatted_address || place.formatted_address,
+              phone: details.result?.formatted_phone_number || null,
+              website: details.result?.website || null,
+              rating: details.result?.rating || place.rating || null,
+              reviewCount: details.result?.user_ratings_total || place.user_ratings_total || 0,
+              category,
+            });
+          } catch {
+            detailedResults.push({
+              placeId: place.place_id,
+              name: place.name,
+              address: place.formatted_address,
+              phone: null, website: null,
+              rating: place.rating || null,
+              reviewCount: place.user_ratings_total || 0,
+              category: extractGmbCategory(place.types) || input.query,
+            });
+          }
+        }
+        return { results: detailedResults, total: detailedResults.length };
+      }),
+
     // New: Analyze a specific website for age and quality
     analyzeWebsite: adminProcedure
       .input(z.object({ businessId: z.number() }))
