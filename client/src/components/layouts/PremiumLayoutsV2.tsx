@@ -501,18 +501,19 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
           </h2>
         </Skeleton>
         <div className="relative">
-          <div className="absolute left-[27px] md:left-1/2 top-0 bottom-0 w-0.5 bg-neutral-200" />
+          {/* Line centered at 50% (-translate-x-1/2 shifts line's center to 50%) */}
+          <div className="absolute left-[35px] md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5 bg-neutral-200" />
           <div className="space-y-16">
             {items.map((item: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-32">
                 <motion.div
-                  className="flex items-start md:flex-row"
+                  className="flex items-start"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                 >
-                  {/* Desktop left slot: content for even steps, empty placeholder for odd */}
-                  <div className={`hidden md:flex md:w-1/2 md:px-12 flex-col ${i % 2 === 0 ? 'items-end text-right' : ''}`}>
+                  {/* Desktop left slot – flex-1 so circle center lands at exactly 50% */}
+                  <div className={`hidden md:flex flex-1 pr-12 flex-col ${i % 2 === 0 ? 'items-end text-right' : ''}`}>
                     {i % 2 === 0 && (
                       <>
                         <h3 className={`text-xl font-bold mb-2 ${textMain}`} style={hs}>{item.title}</h3>
@@ -520,19 +521,19 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                       </>
                     )}
                   </div>
-                  {/* Circle – lines up with the vertical timeline on desktop, left-edge on mobile */}
+                  {/* Circle – shrink-0 so both flex-1 halves are equal → center at 50% */}
                   <div className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0 shadow-lg mr-5 md:mr-0"
                     style={{ backgroundColor: safeCs.primary }}>
                     {item.step}
                   </div>
-                  {/* Right slot: content for odd on desktop; all steps on mobile */}
-                  <div className="flex-1 md:w-1/2 md:px-12">
+                  {/* Right slot – flex-1: fills remaining space on mobile + equal half on desktop */}
+                  <div className="flex-1 md:pl-12">
                     {/* Mobile: always show */}
                     <div className="md:hidden">
                       <h3 className={`text-xl font-bold mb-2 ${textMain}`} style={hs}>{item.title}</h3>
                       <p className={`text-sm ${textSub}`}>{item.description}</p>
                     </div>
-                    {/* Desktop: only for odd steps */}
+                    {/* Desktop: only odd steps */}
                     {i % 2 !== 0 && (
                       <div className="hidden md:block">
                         <h3 className={`text-xl font-bold mb-2 ${textMain}`} style={hs}>{item.title}</h3>
