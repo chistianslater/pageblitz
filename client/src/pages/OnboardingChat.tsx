@@ -4395,66 +4395,121 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       </div>
 
       {/* Exit intent modal */}
-      {showExitIntent && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="bg-gradient-to-br from-blue-600 to-violet-700 p-8 text-center relative overflow-hidden">
-              {/* Decorative background circle */}
-              <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-              <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
-              
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
-                  <Clock className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Warte kurz! ⚡</h2>
-                <p className="text-blue-100 text-sm font-medium leading-relaxed">
-                  Deine Website ist nur noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
-                </p>
-              </div>
-            </div>
-            
-            <div className="p-8 space-y-6">
-              <div className="space-y-4">
-                <p className="text-slate-300 text-sm leading-relaxed text-center">
-                  Hinterlasse deine E-Mail-Adresse, damit wir deinen Bearbeitungsstand speichern können und du später weitermachen kannst.
-                </p>
-                
-                <div className="space-y-3">
-                  <input
-                    type="email"
-                    placeholder="deine@email.de"
-                    value={data.email}
-                    onChange={(e) => setData(p => ({ ...p, email: e.target.value }))}
-                    className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500"
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!data.email || !data.email.includes("@")) {
-                        toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
-                        return;
-                      }
-                      await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
-                      toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
-                      setShowExitIntent(false);
-                    }}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
-                  >
-                    Fortschritt speichern & weiter
-                  </button>
-                </div>
-              </div>
-              
-              <button
-                onClick={() => setShowExitIntent(false)}
-                className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
-              >
-                Doch nicht schließen
-              </button>
+      {showExitIntent && (() => {
+        const knownEmail = data.email || data.legalEmail;
+        return (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+
+              {knownEmail ? (
+                /* ── Saved-state: email already known ── */
+                <>
+                  <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 text-center relative overflow-hidden">
+                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-emerald-400/20 rounded-full blur-xl" />
+                    <div className="relative z-10">
+                      <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
+                        <CheckCircle className="w-8 h-8 text-white" />
+                      </div>
+                      <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Fortschritt gespeichert ✓</h2>
+                      <p className="text-emerald-100 text-sm font-medium leading-relaxed">
+                        Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-8 space-y-5">
+                    <p className="text-slate-300 text-sm leading-relaxed text-center">
+                      Du kannst jederzeit weitermachen – wir haben alles gespeichert.
+                    </p>
+
+                    {/* Email badge */}
+                    <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mb-0.5">Gespeichert unter</p>
+                        <p className="text-emerald-200 text-sm font-medium truncate">{knownEmail}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setShowExitIntent(false)}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
+                    >
+                      Weiter bearbeiten
+                    </button>
+
+                    <button
+                      onClick={() => { setShowExitIntent(false); window.close?.(); }}
+                      className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
+                    >
+                      Trotzdem schließen
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* ── Capture-state: no email yet ── */
+                <>
+                  <div className="bg-gradient-to-br from-blue-600 to-violet-700 p-8 text-center relative overflow-hidden">
+                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
+                    <div className="relative z-10">
+                      <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
+                        <Clock className="w-8 h-8 text-white" />
+                      </div>
+                      <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Warte kurz! ⚡</h2>
+                      <p className="text-blue-100 text-sm font-medium leading-relaxed">
+                        Deine Website ist nur noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-8 space-y-6">
+                    <div className="space-y-4">
+                      <p className="text-slate-300 text-sm leading-relaxed text-center">
+                        Hinterlasse deine E-Mail-Adresse, damit wir deinen Bearbeitungsstand speichern können und du später weitermachen kannst.
+                      </p>
+                      <div className="space-y-3">
+                        <input
+                          type="email"
+                          placeholder="deine@email.de"
+                          value={data.email}
+                          onChange={(e) => setData(p => ({ ...p, email: e.target.value }))}
+                          className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!data.email || !data.email.includes("@")) {
+                              toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
+                              return;
+                            }
+                            await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
+                            toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
+                            setShowExitIntent(false);
+                          }}
+                          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                        >
+                          Fortschritt speichern & weiter
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setShowExitIntent(false)}
+                      className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
+                    >
+                      Doch nicht schließen
+                    </button>
+                  </div>
+                </>
+              )}
+
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Exit confirmation modal for logged-in users */}
       {showExitConfirmation && (

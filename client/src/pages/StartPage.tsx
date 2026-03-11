@@ -390,82 +390,87 @@ export default function StartPage() {
             </p>
 
             <div className="space-y-4">
-              {/* Search inputs */}
-              <div className="flex gap-2">
+              {/* Search inputs – stacked vertically */}
+              <div className="flex flex-col gap-2">
+                {/* Row 1: Unternehmensname */}
                 <Input
                   autoFocus
                   value={gmbSearchQuery}
                   onChange={(e) => { setGmbSearchQuery(e.target.value); setGmbSearchResults([]); setResolvedInfo(null); }}
                   onKeyDown={(e) => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
                   placeholder="Unternehmensname"
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-full"
                   disabled={gmbSearchLoading || isLoading}
                 />
-                <div className="relative w-32">
-                  <Input
-                    value={gmbSearchRegion}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setGmbSearchRegion(val);
-                      setShowCitySuggestions(true);
-                      if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
-                      if (val.trim().length >= 2) {
-                        cityDebounceRef.current = setTimeout(async () => {
-                          try {
-                            const res = await autocompleteCityMutation.mutateAsync({ input: val.trim() });
-                            setCitySuggestions(res.suggestions);
-                          } catch { /* ignore */ }
-                        }, 300);
-                      } else {
-                        setCitySuggestions([]);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !gmbSearchLoading) {
-                        setShowCitySuggestions(false);
-                        handleGmbSearch();
-                      }
-                      if (e.key === "Escape") setShowCitySuggestions(false);
-                    }}
-                    onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
-                    onFocus={() => citysuggestions.length > 0 && setShowCitySuggestions(true)}
-                    placeholder="Stadt"
-                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-full"
-                    disabled={gmbSearchLoading || isLoading}
-                  />
-                  {showCitySuggestions && citysuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-slate-800 border border-slate-600 rounded-xl shadow-xl overflow-hidden">
-                      {citysuggestions.map((s) => (
-                        <button
-                          key={s.placeId}
-                          type="button"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => {
-                            // Extract just the city name (first part before comma)
-                            const cityName = s.label.split(",")[0].trim();
-                            setGmbSearchRegion(cityName);
-                            setCitySuggestions([]);
-                            setShowCitySuggestions(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition-colors truncate"
-                        >
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+
+                {/* Row 2: Stadt + Suche-Button */}
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      value={gmbSearchRegion}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setGmbSearchRegion(val);
+                        setShowCitySuggestions(true);
+                        if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
+                        if (val.trim().length >= 2) {
+                          cityDebounceRef.current = setTimeout(async () => {
+                            try {
+                              const res = await autocompleteCityMutation.mutateAsync({ input: val.trim() });
+                              setCitySuggestions(res.suggestions);
+                            } catch { /* ignore */ }
+                          }, 300);
+                        } else {
+                          setCitySuggestions([]);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !gmbSearchLoading) {
+                          setShowCitySuggestions(false);
+                          handleGmbSearch();
+                        }
+                        if (e.key === "Escape") setShowCitySuggestions(false);
+                      }}
+                      onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
+                      onFocus={() => citysuggestions.length > 0 && setShowCitySuggestions(true)}
+                      placeholder="Stadt (optional)"
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-full"
+                      disabled={gmbSearchLoading || isLoading}
+                    />
+                    {/* Autocomplete dropdown – full width under city field */}
+                    {showCitySuggestions && citysuggestions.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-slate-800 border border-slate-600 rounded-xl shadow-xl overflow-hidden">
+                        {citysuggestions.map((s) => (
+                          <button
+                            key={s.placeId}
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              const cityName = s.label.split(",")[0].trim();
+                              setGmbSearchRegion(cityName);
+                              setCitySuggestions([]);
+                              setShowCitySuggestions(false);
+                            }}
+                            className="w-full text-left px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
+                          >
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    onClick={handleGmbSearch}
+                    disabled={!gmbSearchQuery.trim() || gmbSearchLoading || isLoading}
+                    className="h-12 px-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex-shrink-0"
+                  >
+                    {gmbSearchLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    )}
+                  </Button>
                 </div>
-                <Button
-                  onClick={handleGmbSearch}
-                  disabled={!gmbSearchQuery.trim() || gmbSearchLoading || isLoading}
-                  className="h-12 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl"
-                >
-                  {gmbSearchLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  )}
-                </Button>
               </div>
 
               {/* Search results */}
