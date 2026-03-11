@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -635,6 +635,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set<string>());
+  // Section reordering (drag & drop in hideSections step)
+  const [sectionOrder, setSectionOrder] = useState<string[]>([]);
+  const [draggedSectionIdx, setDraggedSectionIdx] = useState<number | null>(null);
   const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
   const [quickReplySelected, setQuickReplySelected] = useState(false);
   const [inPlaceEditId, setInPlaceEditId] = useState<string | null>(null);
@@ -2102,6 +2105,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       });
     }
 
+    // Apply custom section order from hideSections drag-and-drop step
+    // Hero always stays first; non-hero sections are sorted by sectionOrder.
+    if (sectionOrder.length > 0) {
+      const heroSec = patched.sections.find((s: any) => s.type === "hero");
+      const others  = patched.sections.filter((s: any) => s.type !== "hero");
+      others.sort((a: any, b: any) => {
+        const ai = sectionOrder.indexOf(a.type);
+        const bi = sectionOrder.indexOf(b.type);
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      });
+      patched.sections = heroSec ? [heroSec, ...others] : others;
+    }
+
     // Patch colorScheme override
     if (data.colorScheme) {
       (patched as any)._colorSchemeOverride = data.colorScheme;
@@ -2156,7 +2172,43 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.addOnPricelistData,
     data.contactFormFields,
     hiddenSections,
+    sectionOrder,
   ]);
+
+  // ── Section list for hideSections drag-and-drop step ────────────────────
+  const SECTION_LABELS: Record<string, { label: string; emoji: string }> = {
+    about:        { label: "Über uns",              emoji: "👤" },
+    services:     { label: "Leistungen",            emoji: "🔧" },
+    testimonials: { label: "Kundenstimmen",         emoji: "⭐" },
+    gallery:      { label: "Bildergalerie",         emoji: "🖼️" },
+    contact:      { label: "Kontaktbereich",        emoji: "📬" },
+    cta:          { label: "Direktkontakt-Banner",  emoji: "🎯" },
+    features:     { label: "Vorteile",              emoji: "✅" },
+    team:         { label: "Team",                  emoji: "👥" },
+    faq:          { label: "FAQ",                   emoji: "❓" },
+    menu:         { label: "Speisekarte",           emoji: "📖" },
+    pricelist:    { label: "Preisliste",            emoji: "🏷️" },
+  };
+
+  const allSectionsForHideStep = useMemo(() => {
+    const base = siteData?.website?.websiteData as any;
+    const fromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
+    const list = [...fromBase];
+    if (data.addOnMenu     && !list.some(s => s.type === "menu"))      list.push({ type: "menu" });
+    if (data.addOnPricelist && !list.some(s => s.type === "pricelist")) list.push({ type: "pricelist" });
+    if (data.addOnGallery  && !list.some(s => s.type === "gallery"))   list.push({ type: "gallery" });
+    if (!list.some(s => s.type === "contact"))                          list.push({ type: "contact" });
+    const full = list.map((s: any) => ({ type: s.type, ...(SECTION_LABELS[s.type] ?? { label: s.type, emoji: "📄" }) }));
+    return Array.from(new Map(full.map(s => [s.type, s])).values());
+  }, [siteData?.website?.websiteData, data.addOnMenu, data.addOnPricelist, data.addOnGallery]);
+
+  // Initialise sectionOrder once when the hideSections step first appears
+  useEffect(() => {
+    if (currentStep === "hideSections" && sectionOrder.length === 0 && allSectionsForHideStep.length > 0) {
+      setSectionOrder(allSectionsForHideStep.map(s => s.type));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, allSectionsForHideStep.length]);
 
   // ── Price calculation ───────────────────────────────────────────────────
   const BASE_PRICE_INTRO = 19.90;  // First month intro offer (19,90 €)
@@ -3981,82 +4033,93 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-2"
             >
+                {/* Build the display list from sectionOrder (or fallback to allSectionsForHideStep) */}
                 {(() => {
-                  const base = siteData?.website?.websiteData as any;
-                  const sectionsFromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
-                  
-                  // Add dynamic sections if they are active in data
-                  const sectionsToShow = [...sectionsFromBase];
-                  if (data.addOnMenu && !sectionsToShow.some(s => s.type === "menu")) {
-                    sectionsToShow.push({ type: "menu" });
-                  }
-                  if (data.addOnPricelist && !sectionsToShow.some(s => s.type === "pricelist")) {
-                    sectionsToShow.push({ type: "pricelist" });
-                  }
-                  if (data.addOnGallery && !sectionsToShow.some(s => s.type === "gallery")) {
-                    sectionsToShow.push({ type: "gallery" });
-                  }
-                  if (!sectionsToShow.some(s => s.type === "contact")) {
-                    sectionsToShow.push({ type: "contact" });
-                  }
+                  const displaySections = sectionOrder.length > 0
+                    ? sectionOrder
+                        .map(type => allSectionsForHideStep.find(s => s.type === type))
+                        .filter((s): s is NonNullable<typeof s> => Boolean(s))
+                    : allSectionsForHideStep;
 
-                  const allSectionsFull: Array<{ type: string; label: string; emoji: string }> = sectionsToShow
-                    .map((s: any) => {
-                      const labels: Record<string, { label: string; emoji: string }> = {
-                        about: { label: "Über uns", emoji: "👤" },
-                        services: { label: "Leistungen", emoji: "🔧" },
-                        testimonials: { label: "Kundenstimmen", emoji: "⭐" },
-                        gallery: { label: "Bildergalerie", emoji: "🖼️" },
-                        contact: { label: "Kontaktbereich", emoji: "📬" },
-                        cta: { label: "Direktkontakt-Banner", emoji: "🎯" },
-                        features: { label: "Vorteile", emoji: "✅" },
-                        team: { label: "Team", emoji: "👥" },
-                        faq: { label: "FAQ", emoji: "❓" },
-                        menu: { label: "Speisekarte", emoji: "📖" },
-                        pricelist: { label: "Preisliste", emoji: "🏷️" },
-                      };
-                      return { type: s.type, ...(labels[s.type] || { label: s.type, emoji: "📄" }) };
-                    });
-
-                  // Unique by type to avoid duplicates in the UI
-                  const allSections = Array.from(new Map(allSectionsFull.map(s => [s.type, s])).values());
+                  const handleDragStart = (idx: number) => setDraggedSectionIdx(idx);
+                  const handleDragOver  = (e: React.DragEvent, idx: number) => {
+                    e.preventDefault();
+                    if (draggedSectionIdx === null || draggedSectionIdx === idx) return;
+                    const next    = [...sectionOrder];
+                    const dragged = next[draggedSectionIdx];
+                    next.splice(draggedSectionIdx, 1);
+                    next.splice(idx, 0, dragged);
+                    setSectionOrder(next);
+                    setDraggedSectionIdx(idx);
+                  };
+                  const handleDragEnd = () => setDraggedSectionIdx(null);
 
                   return (
                     <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {allSections.map((sec) => {
-                          const isHidden = hiddenSections.has(sec.type);
+                      {/* Sortable + toggleable section list */}
+                      <div className="space-y-1.5">
+                        {displaySections.map((sec, idx) => {
+                          const isHidden    = hiddenSections.has(sec.type);
+                          const isDragging  = draggedSectionIdx === idx;
                           return (
-                            <button
+                            <div
                               key={sec.type}
-                              onClick={() => {
-                                setHiddenSections((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(sec.type)) next.delete(sec.type);
-                                  else next.add(sec.type);
-                                  return next;
-                                });
-                              }}
-                              className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all text-left ${
-                                isHidden
-                                  ? "border-slate-700 bg-slate-800/40 text-slate-500 opacity-60"
+                              draggable
+                              onDragStart={() => handleDragStart(idx)}
+                              onDragOver={(e) => handleDragOver(e, idx)}
+                              onDragEnd={handleDragEnd}
+                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all select-none ${
+                                isDragging
+                                  ? "opacity-40 border-blue-500/60 bg-blue-500/10 scale-[0.98]"
+                                  : isHidden
+                                  ? "border-slate-700 bg-slate-800/40 text-slate-500"
                                   : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
                               }`}
                             >
-                              <div className={`w-4 h-4 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border ${isHidden ? 'border-slate-600 bg-slate-700' : 'border-emerald-500 bg-emerald-500'}`}>
+                              {/* Drag handle */}
+                              <GripVertical className="w-4 h-4 text-slate-500 cursor-grab active:cursor-grabbing flex-shrink-0" />
+                              {/* Emoji */}
+                              <span className="flex-shrink-0 text-base leading-none">{sec.emoji}</span>
+                              {/* Label */}
+                              <span className={`flex-1 leading-tight ${isHidden ? "line-through text-slate-600" : ""}`}>
+                                {sec.label}
+                              </span>
+                              {/* Visibility toggle */}
+                              <button
+                                onClick={() =>
+                                  setHiddenSections((prev) => {
+                                    const next = new Set(prev);
+                                    if (next.has(sec.type)) next.delete(sec.type);
+                                    else next.add(sec.type);
+                                    return next;
+                                  })
+                                }
+                                className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+                                  isHidden
+                                    ? "border-slate-600 bg-slate-700 hover:border-slate-500"
+                                    : "border-emerald-500 bg-emerald-500 hover:bg-emerald-400"
+                                }`}
+                              >
                                 {!isHidden && <Check className="w-3 h-3 text-white" />}
-                              </div>
-                              <span className="flex-shrink-0">{sec.emoji}</span>
-                              <span className={`flex-1 leading-tight ${isHidden ? "line-through" : ""}`}>{sec.label}</span>
-                            </button>
+                              </button>
+                            </div>
                           );
                         })}
                       </div>
-                      {hiddenSections.size > 0 && (
-                        <p className="text-xs text-amber-400/80 mt-1">
-                          {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – du kannst sie jederzeit wieder aktivieren.
+
+                      {/* Hints */}
+                      <div className="space-y-1 mt-2">
+                        <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                          <GripVertical className="w-3 h-3 flex-shrink-0" />
+                          Reihenfolge per Drag &amp; Drop ändern – oder später im Dashboard
                         </p>
-                      )}
+                        {hiddenSections.size > 0 && (
+                          <p className="text-xs text-amber-400/80">
+                            {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – jederzeit wieder aktivierbar.
+                          </p>
+                        )}
+                      </div>
+
                       <button
                         disabled={isTyping}
                         onClick={async () => {
