@@ -451,6 +451,8 @@ const STEP_ORDER: ChatStep[] = [
   "checkout",
 ];
 
+// Maps each onboarding step to the section ID used in the layout components.
+// Layout IDs come from PremiumLayoutsV2.tsx: hero, leistungen, ueber-uns, kontakt, galerie, speisekarte, preise
 const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   welcome: null,
   businessCategory: "hero",
@@ -458,26 +460,26 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   brandColor: "hero",
   brandSecondaryColor: "hero",
   heroPhoto: "hero",
-  aboutPhoto: "about",
-  brandLogo: "header",
+  aboutPhoto: "ueber-uns",
+  brandLogo: "hero",
   headlineFont: "hero",
   headlineSize: "hero",
-  businessName: "header",
+  businessName: "hero",
   tagline: "hero",
-  description: "hero",
-  usp: "features",
-  services: "services",
-  targetAudience: "cta",
-  legalOwner: "footer",
-  legalStreet: "footer",
-  legalZipCity: "footer",
-  legalEmail: "footer",
-  legalPhone: "footer",
-  legalVat: "footer",
+  description: "ueber-uns",
+  usp: "leistungen",
+  services: "leistungen",
+  targetAudience: "kontakt",
+  legalOwner: null,
+  legalStreet: null,
+  legalZipCity: null,
+  legalEmail: null,
+  legalPhone: null,
+  legalVat: null,
   addons: null,
-  editMenu: "menu",
-  editPricelist: "pricelist",
-  editGallery: "gallery",
+  editMenu: "speisekarte",
+  editPricelist: "preise",
+  editGallery: "galerie",
   subpages: null,
   email: null,
   hideSections: null,
@@ -652,26 +654,29 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const sectionId = STEP_TO_SECTION_ID[currentStep];
     if (!sectionId || !previewInnerRef.current) return;
 
-    const element = previewInnerRef.current.querySelector(`[data-section="${sectionId}"]`);
+    // Try id selector first (PremiumLayoutsV2 uses id="hero", id="leistungen" etc.),
+    // fall back to data-section attribute for any future components that use it.
+    const element = previewInnerRef.current.querySelector(`#${sectionId}`) ||
+                    previewInnerRef.current.querySelector(`[data-section="${sectionId}"]`);
     if (!element) return;
 
-    const el = previewInnerRef.current;
-    const elementTop = (element as HTMLElement).offsetTop;
+    const container = previewInnerRef.current;
     const viewportHeight = 1280 * 0.62;
-    
-    // Calculate max scroll and cap targetScroll to avoid white space at bottom
-    const maxScroll = Math.max(0, el.scrollHeight - viewportHeight);
-    const targetScroll = Math.max(0, Math.min(elementTop - viewportHeight / 3, maxScroll));
 
-    // Animate via transition
-    el.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+    // Walk up offsetParent chain to get total offset from the container div,
+    // because offsetTop alone only reaches the nearest positioned ancestor.
+    let elementTop = 0;
+    let el: HTMLElement | null = element as HTMLElement;
+    while (el && el !== container) {
+      elementTop += el.offsetTop;
+      el = el.offsetParent as HTMLElement | null;
+    }
+
+    // Cap to avoid white space at the bottom
+    const maxScroll = Math.max(0, container.scrollHeight - viewportHeight);
+    const targetScroll = Math.max(0, Math.min(elementTop - viewportHeight * 0.25, maxScroll));
+
     setPreviewScrollTop(targetScroll);
-
-    const timer = setTimeout(() => {
-      el.style.transition = "";
-    }, 600);
-
-    return () => clearTimeout(timer);
   }, [currentStep]);
 
   // ── Onboarding data ─────────────────────────────────────────────────────
