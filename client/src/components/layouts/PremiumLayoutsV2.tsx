@@ -1981,38 +1981,74 @@ function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, hea
 
   if (items.length === 0) return null;
 
-  // Dynamic colors based on dark mode
   const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : 'bg-neutral-50';
+  const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : '';
   const bgStyle = dark
     ? { backgroundColor: safeCs.darkBackground || '#0a0a0a' }
     : { backgroundColor: safeCs.surface || '#fafafa' };
 
+  // Number of masonry columns based on gallery size
+  const cols = items.length <= 3 ? 2 : items.length <= 8 ? 3 : 4;
+
+  // Loading skeleton: show uniform placeholder tiles
+  if (isLoading) {
+    return (
+      <section id="galerie" className={`py-16 px-6 scroll-mt-20 ${bgClass}`} style={bgStyle}>
+        <div className="max-w-6xl mx-auto">
+          <div className="w-48 h-8 rounded-lg bg-current opacity-10 mb-8" />
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+            {Array.from({ length: Math.min(items.length || 6, 9) }).map((_, i) => (
+              <div key={i} className="rounded-lg bg-current opacity-[0.07]" style={{ aspectRatio: i % 3 === 0 ? '4/5' : i % 3 === 1 ? '3/4' : '1/1', minHeight: 120 }} />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section id="galerie" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bgClass}`} style={bgStyle}>
-      <div className="max-w-7xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
-            {headline}
-          </h2>
-        </Skeleton>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {items.map((item: any, i: number) => (
-            <Skeleton key={i} isLoading={isLoading} className="aspect-square">
-              <div className="relative overflow-hidden rounded-xl group">
+    <section id="galerie" className={`py-16 px-6 scroll-mt-20 ${bgClass}`} style={bgStyle}>
+      <div className="max-w-6xl mx-auto">
+        {/* Headline */}
+        <h2 className="mb-8" style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
+          {headline}
+        </h2>
+
+        {/* CSS Columns masonry – images stack naturally without forced aspect-ratio */}
+        <div
+          style={{
+            columnCount: cols,
+            columnGap: '6px',
+          }}
+        >
+          {items.map((item: any, i: number) => {
+            const src = item.imageUrl || item;
+            const alt = item.title || `Bild ${i + 1}`;
+            return (
+              <div
+                key={i}
+                className="relative overflow-hidden rounded-lg group cursor-pointer"
+                style={{ breakInside: 'avoid', marginBottom: '6px', display: 'block' }}
+              >
                 <img
-                  src={item.imageUrl || item}
-                  alt={item.title || `Bild ${i + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  src={src}
+                  alt={alt}
+                  className="w-full block object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                 />
+                {/* Hover overlay with title */}
                 {item.title && (
-                  <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-sm font-medium">{item.title}</p>
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                    <span className="text-white text-xs font-medium leading-tight">{item.title}</span>
                   </div>
                 )}
+                {/* Subtle index badge for better orientation */}
+                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-white text-[9px] font-bold">{i + 1}</span>
+                </div>
               </div>
-            </Skeleton>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
