@@ -592,17 +592,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Check if user has email (either from auth or from data)
     const hasUserEmail = !!(isAuthenticated && user?.email);
 
-    // Standard beforeunload alert (browser default)
-    // KEIN Alert während isGeneratingInitialWebsite true ist (damit Reload funktioniert))
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Only show alert after user has started entering data (after welcome/email step)
-      const earlySteps: ChatStep[] = ["welcome", "email", "businessCategory"];
-      const isEarlyStep = earlySteps.includes(currentStep);
-      // Don't show for authenticated users with email
-      if (!isGeneratingInitialWebsite && !isEarlyStep && currentStep !== "checkout" && currentStep !== "preview" && !hasUserEmail) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
+    // Kein beforeunload-Dialog mehr – Daten werden automatisch mit trySaveStep
+    // gespeichert, der User kann jederzeit zurückkehren. Der Exit-Intent-Dialog
+    // (Maus verlässt Fenster) übernimmt diese Aufgabe.
+    const handleBeforeUnload = (_e: BeforeUnloadEvent) => {
+      // intentionally left blank – no native browser dialog
     };
 
     // Exit intent (mouse leaves window upwards)
@@ -1446,12 +1440,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             800
           );
         } else if (source === "external" && (business as any)?.category) {
-          // GMB user: auto-confirm the category and skip to businessName
+          // GMB user: pre-select the category but let the user confirm or change it
           const translatedCategory = translateGmbCategory((business as any).category);
           setData((p) => ({ ...p, businessCategory: translatedCategory }));
-          setCurrentStep("businessName");
+          setCurrentStep("businessCategory");
           await addBotMessage(
-            `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\n${getStepPrompt("businessName")}`,
+            `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`,
             800
           );
         } else {
@@ -4621,11 +4615,27 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
   const [isUploading, setIsUploading] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
+  const gmbInitializedRef = useRef(false);
 
   const { data: suggestionsData, isLoading: isLoadingSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
     { category: industry },
     { enabled: !!industry }
   );
+
+  const { data: gmbData } = trpc.onboarding.getGmbPhotos.useQuery(
+    { websiteId: parseInt(websiteId || "0") },
+    { enabled: !!websiteId && websiteId !== "0", staleTime: Infinity }
+  );
+  const gmbPhotos = (gmbData?.photos || []).filter(url => !brokenImages.has(url));
+
+  // Pre-select all GMB photos when the gallery is still empty
+  useEffect(() => {
+    if (gmbInitializedRef.current) return;
+    if (!gmbData?.photos?.length) return;
+    if (selectedPhotos.length > 0) { gmbInitializedRef.current = true; return; }
+    gmbInitializedRef.current = true;
+    onUpdate(gmbData.photos.slice(0, 12));
+  }, [gmbData]);
 
   const photos = suggestionsData?.suggestions || [];
 
@@ -4643,7 +4653,43 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
 
   return (
     <div className="space-y-4">
-      {/* Photo grid */}
+      {/* GMB photo section */}
+      {gmbPhotos.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Deine Google-Fotos</p>
+          <div className="grid grid-cols-3 gap-2">
+            {gmbPhotos.map((url, idx) => (
+              <button
+                key={url + idx}
+                onClick={() => togglePhoto(url)}
+                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                  selectedPhotos.includes(url) ? "border-blue-500 ring-2 ring-blue-500/20" : "border-transparent hover:border-slate-500"
+                }`}
+              >
+                <img
+                  src={url}
+                  alt={`Google Foto ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={() => setBrokenImages(prev => new Set(prev).add(url))}
+                />
+                {selectedPhotos.includes(url) && (
+                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  </div>
+                )}
+                <div className="absolute bottom-1 left-1 bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5 text-[8px] text-white/80">
+                  GMB
+                </div>
+              </button>
+            ))}
+          </div>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider pt-1">Oder Stockfoto wählen</p>
+        </div>
+      )}
+
+      {/* Stock photo grid */}
       <div className="grid grid-cols-3 gap-2">
         {isLoadingSuggestions ? (
           <div className="col-span-3 py-10 flex flex-col items-center justify-center gap-3 bg-slate-800/30 rounded-xl border border-slate-700/30">
@@ -4683,7 +4729,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
       {/* Upload option */}
       <div className="border-t border-slate-700 pt-3">
         <div className="flex flex-wrap gap-2 mb-3">
-          {selectedPhotos.filter(url => !photos.some(p => p.url === url)).map((url, i) => (
+          {selectedPhotos.filter(url => !photos.some(p => p.url === url) && !gmbPhotos.includes(url)).map((url, i) => (
             <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-blue-500 group">
               <img src={url} alt="" className="w-full h-full object-cover" />
               <button 

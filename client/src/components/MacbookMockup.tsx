@@ -1,4 +1,4 @@
-import { ReactNode, useRef, useState, useEffect, useCallback } from "react";
+import { ReactNode, useRef, useState, useEffect, useLayoutEffect } from "react";
 
 interface Props {
   children: ReactNode;
@@ -14,35 +14,51 @@ const SCROLL_TRANSITION = "transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)";
  * MacBook-style browser mockup.
  * - Renders the site at DESKTOP_WIDTH (1280px) and scales it down proportionally
  *   via ResizeObserver so the user always sees the full desktop view.
- * - Scroll wheel events on the outer container are forwarded to the inner
- *   scaled div so the user can scroll through the page.
+ * - Wheel events are handled imperatively (direct DOM mutation, zero React state
+ *   updates) so scrolling is always butter-smooth without re-render jank.
+ * - Programmatic scroll (externalScrollTop from step changes) uses CSS transition.
  */
 const DESKTOP_WIDTH = 1280;
 // Visible viewport height as a fraction of desktop width (≈ 16:10)
 const ASPECT_RATIO = 0.62;
 
-export default function MacbookMockup({ children, label, innerRef: propsInnerRef, externalScrollTop, onScrollChange }: Props) {
+export default function MacbookMockup({ children, label, innerRef: propsInnerRef, externalScrollTop }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  const [internalScrollTop, setInternalScrollTop] = useState(0);
-  // true while a programmatic (step-change) scroll animation is running
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-  const autoScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Mirror scale in a ref so the wheel handler always has the latest value
+  // without capturing a stale closure.
+  const scaleRef = useRef(1);
+  // Current scroll offset tracked imperatively – no state = no re-render on wheel
+  const scrollTopRef = useRef(0);
 
-  // Sync internal state with external prop and trigger smooth transition
+  const viewportH = Math.round(DESKTOP_WIDTH * ASPECT_RATIO);
+  const scaledH = Math.round(viewportH * scale);
+
+
+  // Programmatic scroll (step changes) → smooth animation, then clear transition
   useEffect(() => {
-    if (externalScrollTop !== undefined) {
-      setInternalScrollTop(externalScrollTop);
-      setIsAutoScrolling(true);
-      if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
-      // Match the CSS transition duration (650ms)
-      autoScrollTimerRef.current = setTimeout(() => setIsAutoScrolling(false), 700);
-    }
+    if (externalScrollTop === undefined) return;
+    const inner = innerRef.current;
+    if (!inner) return;
+    inner.style.transition = SCROLL_TRANSITION;
+    inner.style.transform = `scale(${scaleRef.current}) translateY(-${externalScrollTop}px)`;
+    scrollTopRef.current = externalScrollTop;
+    // Remove transition after animation so the next wheel event is instant
+    const id = setTimeout(() => {
+      if (innerRef.current) innerRef.current.style.transition = "none";
+    }, 700);
+    return () => clearTimeout(id);
   }, [externalScrollTop]);
 
-  const scrollTop = externalScrollTop !== undefined ? externalScrollTop : internalScrollTop;
-  const setScrollTop = onScrollChange || setInternalScrollTop;
+  // When scale changes (window resize), re-apply transform synchronously before paint
+  useLayoutEffect(() => {
+    scaleRef.current = scale;
+    const inner = innerRef.current;
+    if (!inner) return;
+    inner.style.transition = "none";
+    inner.style.transform = `scale(${scale}) translateY(-${scrollTopRef.current}px)`;
+  }, [scale]);
 
   // Measure container width and compute scale
   useEffect(() => {
@@ -56,22 +72,29 @@ export default function MacbookMockup({ children, label, innerRef: propsInnerRef
     return () => ro.disconnect();
   }, []);
 
-  const viewportH = Math.round(DESKTOP_WIDTH * ASPECT_RATIO);
-  const scaledH = Math.round(viewportH * scale);
-
-  // Forward wheel events: divide delta by scale so 1px of wheel = 1px of real scroll
-  const handleWheel = useCallback(
-    (e: React.WheelEvent<HTMLDivElement>) => {
+  // Native wheel listener with { passive: false } so preventDefault() actually works.
+  // React's synthetic onWheel uses event delegation which may be passive in some browsers,
+  // causing a 1-2s lag before the browser lets JS control the scroll.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const inner = innerRef.current;
       if (!inner) return;
-      // inner.scrollHeight is in unscaled (DESKTOP_WIDTH) pixels
-      // The visible viewport in unscaled pixels is viewportH
       const maxScroll = Math.max(0, inner.scrollHeight - viewportH);
-      setScrollTop((prev) => Math.max(0, Math.min(prev + e.deltaY / scale, maxScroll)));
-    },
-    [scale, viewportH]
-  );
+      const newScrollTop = Math.max(
+        0,
+        Math.min(scrollTopRef.current + e.deltaY / scaleRef.current, maxScroll)
+      );
+      // Clear any lingering programmatic transition before updating
+      inner.style.transition = "none";
+      inner.style.transform = `scale(${scaleRef.current}) translateY(-${newScrollTop}px)`;
+      scrollTopRef.current = newScrollTop;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [viewportH]);
 
   return (
     <div className="flex flex-col w-full select-none px-8 py-10">
@@ -152,14 +175,13 @@ export default function MacbookMockup({ children, label, innerRef: propsInnerRef
           {/*
            * Scaled viewport:
            * - Outer div: measured by ResizeObserver, clips to scaledH
-           * - Wheel handler: intercepts scroll and updates scrollTop state
-           * - Inner div: full DESKTOP_WIDTH, translated by -scrollTop (unscaled)
+           * - Wheel handler: direct DOM transform update (no React state)
+           * - Inner div: full DESKTOP_WIDTH; transform managed imperatively
            */}
           <div
             ref={containerRef}
             className="w-full overflow-hidden cursor-ns-resize"
             style={{ height: `${scaledH}px`, background: "#fff" }}
-            onWheel={handleWheel}
           >
             <div
               ref={(el) => {
@@ -169,9 +191,10 @@ export default function MacbookMockup({ children, label, innerRef: propsInnerRef
               style={{
                 width: `${DESKTOP_WIDTH}px`,
                 transformOrigin: "top left",
-                transform: `scale(${scale}) translateY(-${scrollTop}px)`,
-                // Smooth transition only during programmatic auto-scroll (not wheel)
-                transition: isAutoScrolling ? SCROLL_TRANSITION : undefined,
+                // NOTE: transform is NOT set here – it is managed entirely by
+                // applyTransform() so React never overwrites the scroll position
+                // on re-renders.  useLayoutEffect sets it synchronously on mount
+                // and on scale changes, so there is no visible flash.
                 pointerEvents: "none",
               }}
             >
