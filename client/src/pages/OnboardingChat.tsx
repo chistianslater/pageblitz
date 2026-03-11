@@ -638,6 +638,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [showIndividualColors, setShowIndividualColors] = useState(false);
   const [previewScrollTop, setPreviewScrollTop] = useState(0);
   const [previewNotification, setPreviewNotification] = useState<string | null>(null);
+  const [showFullPreview, setShowFullPreview] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1273,7 +1274,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "email":
           return `Fast fertig! 🎊 An welche E-Mail-Adresse sollen wir deine Website-Infos und die Freischalt-Bestätigung schicken?`;
         case "preview":
-          return `🎉 **Deine Website ist fertig personalisiert!**\n\nSchau dir unten die Vorschau an – das ist deine echte Website mit deinen echten Daten. Wenn alles passt, kannst du sie freischalten!\n\n*💡 Keine Sorge: Fotos, Texte, Farben – alles kann nach der Freischaltung jederzeit geändert werden. Du bist nicht festgelegt!*`;
+          return `🎉 **Deine Website ist fertig personalisiert!**\n\nSchau dir die Vorschau rechts an – das ist deine echte Website mit deinen echten Daten. Klicke auf **„Vollbild-Vorschau öffnen"**, um alle Funktionen zu testen!\n\n*💡 Keine Sorge: Fotos, Texte, Farben – alles kann nach der Freischaltung jederzeit geändert werden. Du bist nicht festgelegt!*`;
         case "checkout":
           return `Bereit zum Freischalten? 🚀 Wähle dein Paket und starte durch!`;
         default:
@@ -2184,6 +2185,39 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
+
+      {/* ── Fullscreen preview overlay ──────────────────────────────────── */}
+      {showFullPreview && previewToken && (
+        <div className="fixed inset-0 z-[9999] flex flex-col bg-black">
+          {/* Browser chrome bar */}
+          <div className="flex items-center gap-3 px-4 h-11 bg-slate-900 border-b border-slate-700 flex-shrink-0">
+            <div className="flex gap-1.5 flex-shrink-0">
+              <div className="w-3 h-3 rounded-full bg-red-500/80" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+              <div className="w-3 h-3 rounded-full bg-green-500/80" />
+            </div>
+            <div className="flex-1 flex items-center gap-2 px-3 py-1 rounded-md text-xs text-slate-400 bg-slate-800 border border-slate-700 mx-3 min-w-0">
+              <svg className="w-3 h-3 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span className="truncate">pageblitz.de/preview/{previewToken}</span>
+            </div>
+            <button
+              onClick={() => setShowFullPreview(false)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex-shrink-0"
+            >
+              <X className="w-3 h-3" /> Schließen
+            </button>
+          </div>
+          {/* Full-page iframe – completely interactive */}
+          <iframe
+            src={`https://pageblitz.de/preview/${previewToken}`}
+            className="flex-1 w-full border-0"
+            title="Website Vollbild-Vorschau"
+          />
+        </div>
+      )}
+
       {/* FOMO Header */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
         <Clock className="w-4 h-4 flex-shrink-0" />
@@ -4032,17 +4066,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -20 }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9"
+              className="ml-9 space-y-3"
             >
+              {/* Fullscreen interactive preview */}
+              {previewToken && (
                 <button
-                  onClick={async () => {
-                    addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
-                    await advanceToStep("checkout");
-                  }}
-                  className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                  onClick={() => setShowFullPreview(true)}
+                  className="w-full border border-slate-500/60 hover:border-blue-500/60 hover:bg-blue-500/10 text-slate-300 hover:text-white font-medium px-5 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
-                  <Zap className="w-4 h-4" /> Website freischalten
+                  <Monitor className="w-4 h-4" /> Vollbild-Vorschau öffnen
                 </button>
+              )}
+              <button
+                onClick={async () => {
+                  addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+                  await advanceToStep("checkout");
+                }}
+                className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+              >
+                <Zap className="w-4 h-4" /> Website freischalten
+              </button>
             </motion.div>
           )}
 
