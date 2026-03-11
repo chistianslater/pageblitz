@@ -562,7 +562,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasCustomerEmail = !!(siteData?.website as any)?.customerEmail;
 
     return STEP_ORDER.filter((step) => {
-      if (step === "aboutPhoto") return hasAbout && layoutHasAboutImage;
+      // Show aboutPhoto for any layout that visually supports an about image.
+      // Don't gate on hasAbout (section presence in DB): the siteData may not
+      // yet be loaded when dynamicStepOrder is first computed, leading to the
+      // step being silently skipped on initial render.
+      if (step === "aboutPhoto") return layoutHasAboutImage;
       if (step === "editMenu") return _addOnMenu;
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
@@ -2061,8 +2065,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Add or update Gallery section if active
     if (data.addOnGallery && !hiddenSections.has("gallery")) {
-      // Use selected images if available, otherwise fall back to industry-themed curated images
-      const fallbackImages = getGalleryImages(data.businessCategory, data.businessName);
+      // Priority: user-selected images → GMB photos → stock fallback
+      const gmbFallback = earlyGmbData?.photos?.length ? earlyGmbData.photos : null;
+      const fallbackImages = gmbFallback || getGalleryImages(data.businessCategory, data.businessName);
       const galleryImages = data.addOnGalleryData.images.length > 0
         ? data.addOnGalleryData.images
         : fallbackImages;

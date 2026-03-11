@@ -623,6 +623,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
   const locked = websiteData?.addOnContactForm === false;
+  const { datenschutzHref } = useLegalLinks();
 
   // Get form fields from websiteData or use defaults
   const formFields = websiteData?.contactFormFields || DEFAULT_CONTACT_FORM_FIELDS;
@@ -855,7 +856,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                     </div>
                     <p className={`text-xs leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>
                       Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
-                      <a href="#datenschutz" className="underline underline-offset-2" style={{ color: safeCs.primary }}>Datenschutzerklärung</a> zu.
+                      <a href={datenschutzHref} className="underline underline-offset-2" style={{ color: safeCs.primary }}>Datenschutzerklärung</a> zu.
                     </p>
                   </div>
                   <button type="submit" className="w-full hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}>
@@ -1022,9 +1023,33 @@ interface FooterProps {
   showBorder?: boolean;
 }
 
+/** Extracts the site slug from the current URL so legal page links work on
+ *  /site/:slug pages. Falls back to '#' in onboarding preview mode. */
+function useLegalLinks() {
+  const slug = typeof window !== 'undefined'
+    ? window.location.pathname.match(/\/site\/([^/]+)/)?.[1] ?? null
+    : null;
+  return {
+    impressumHref: slug ? `/site/${slug}/impressum` : '#',
+    datenschutzHref: slug ? `/site/${slug}/datenschutz` : '#',
+  };
+}
+
+/** Inline legal-links block used by the Elegant layout's custom footer. */
+function ElegantFooterLegalLinks() {
+  const { impressumHref, datenschutzHref } = useLegalLinks();
+  return (
+    <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
+      <a href={impressumHref} className="hover:text-white transition-colors">Impressum</a>
+      <a href={datenschutzHref} className="hover:text-white transition-colors">Datenschutz</a>
+    </div>
+  );
+}
+
 function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'default', logoStyle = {}, showBorder = true }: FooterProps) {
   // Use dynamic colors from colorScheme
   const safeCs = cs || {};
+  const { impressumHref, datenschutzHref } = useLegalLinks();
   const bgClass = safeCs.darkBackground ? '' : 'bg-neutral-900';
   const bgStyle = { backgroundColor: safeCs.darkBackground || '#171717' };
   const textMain = safeCs.lightText ? '' : 'text-white';
@@ -1064,8 +1089,8 @@ function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'defa
           <FooterContact websiteData={websiteData} textClass="" />
         </ul>
         <div className="flex gap-6 text-xs uppercase tracking-widest shrink-0" style={textSubtleStyle}>
-          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': safeCs.primary } as React.CSSProperties}>Impressum</a>
-          <a href="#" className="hover:opacity-100 transition-opacity" style={{ '--hover-color': safeCs.primary } as React.CSSProperties}>Datenschutz</a>
+          <a href={impressumHref} className="hover:opacity-100 transition-opacity" style={{ '--hover-color': safeCs.primary } as React.CSSProperties}>Impressum</a>
+          <a href={datenschutzHref} className="hover:opacity-100 transition-opacity" style={{ '--hover-color': safeCs.primary } as React.CSSProperties}>Datenschutz</a>
         </div>
       </div>
     </footer>
@@ -1238,10 +1263,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
           <ul className="space-y-1 text-sm text-white/50 text-center">
             <FooterContact websiteData={websiteData} textClass="text-white/50" />
           </ul>
-          <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
-            <a href="#" className="hover:text-white transition-colors">Impressum</a>
-            <a href="#" className="hover:text-white transition-colors">Datenschutz</a>
-          </div>
+          <ElegantFooterLegalLinks />
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/10">
           <p className="text-white/20 text-xs text-center break-words">{footerText}</p>
@@ -2082,7 +2104,7 @@ function MenuSection({ websiteData, cs, isLoading, displayFont, bodyFont, headli
           {Object.entries(grouped).map(([category, categoryItems]: [string, any]) => (
             <div key={category}>
               <Skeleton isLoading={isLoading} className="w-48 h-8 mb-6">
-                <h3 style={{ fontFamily: displayFont, fontWeight: 600, color: safeCs.primary }} className="text-xl uppercase tracking-wide border-b-2 pb-2" style={{ borderColor: safeCs.primary }}>
+                <h3 style={{ fontFamily: displayFont, fontWeight: 600, color: safeCs.primary, borderColor: safeCs.primary }} className="text-xl uppercase tracking-wide border-b-2 pb-2">
                   {category}
                 </h3>
               </Skeleton>

@@ -93,6 +93,7 @@ export function generateImpressum(data: LegalData): string {
 
 export function generateDatenschutz(data: LegalData): string {
   const country = data.legalCountry || "Deutschland";
+  const date = new Date().toLocaleDateString("de-DE");
 
   return `
 <!DOCTYPE html>
@@ -106,58 +107,90 @@ export function generateDatenschutz(data: LegalData): string {
     h1 { font-size: 2rem; margin-bottom: 0.5rem; }
     h2 { font-size: 1.25rem; margin-top: 2rem; margin-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
     h3 { font-size: 1rem; margin-top: 1.5rem; font-weight: 600; }
-    p { margin: 0.5rem 0; }
+    p, li { margin: 0.5rem 0; }
+    ul { padding-left: 1.5rem; }
     a { color: #2563eb; }
     .back-link { display: inline-block; margin-bottom: 2rem; color: #6b7280; text-decoration: none; font-size: 0.875rem; }
     .back-link:hover { color: #1a1a1a; }
+    .highlight { background: #f8fafc; border-left: 3px solid #3b82f6; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
   </style>
 </head>
 <body>
   <a href="javascript:history.back()" class="back-link">← Zurück zur Website</a>
   <h1>Datenschutzerklärung</h1>
 
-  <h2>1. Datenschutz auf einen Blick</h2>
-  <h3>Allgemeine Hinweise</h3>
-  <p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.</p>
+  <h2>1. Verantwortliche Stelle</h2>
+  <p>Verantwortlich für die Datenverarbeitung auf dieser Website im Sinne der DSGVO ist:</p>
+  <div class="highlight">
+    <strong>${data.businessName}</strong><br>
+    ${data.legalOwner}<br>
+    ${data.legalStreet}<br>
+    ${data.legalZip} ${data.legalCity}<br>
+    ${country}<br>
+    ${data.legalPhone ? `Telefon: ${data.legalPhone}<br>` : ""}
+    E-Mail: <a href="mailto:${data.legalEmail}">${data.legalEmail}</a>
+  </div>
 
-  <h3>Datenerfassung auf dieser Website</h3>
-  <p><strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong></p>
-  <p>Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Abschnitt „Hinweis zur Verantwortlichen Stelle" in dieser Datenschutzerklärung entnehmen.</p>
+  <h2>2. Allgemeines zur Datenverarbeitung</h2>
+  <h3>Umfang der Verarbeitung personenbezogener Daten</h3>
+  <p>Wir verarbeiten personenbezogene Daten unserer Nutzer grundsätzlich nur, soweit dies zur Bereitstellung einer funktionsfähigen Website sowie unserer Inhalte und Leistungen erforderlich ist. Die Verarbeitung personenbezogener Daten erfolgt regelmäßig nur nach Einwilligung des Nutzers oder wenn die Verarbeitung durch gesetzliche Vorschriften erlaubt ist.</p>
 
-  <h2>2. Hosting</h2>
-  <p>Diese Website wird extern gehostet. Die personenbezogenen Daten, die auf dieser Website erfasst werden, werden auf den Servern des Hosters gespeichert.</p>
+  <h3>Rechtsgrundlagen</h3>
+  <p>Soweit wir für Verarbeitungsvorgänge personenbezogener Daten eine Einwilligung einholen, dient Art. 6 Abs. 1 lit. a DSGVO als Rechtsgrundlage. Bei der Verarbeitung zur Erfüllung eines Vertrags oder zur Durchführung vorvertraglicher Maßnahmen gilt Art. 6 Abs. 1 lit. b DSGVO. Für gesetzlich vorgeschriebene Verarbeitungen gilt Art. 6 Abs. 1 lit. c DSGVO. Zur Wahrung berechtigter Interessen gilt Art. 6 Abs. 1 lit. f DSGVO.</p>
 
-  <h2>3. Allgemeine Hinweise und Pflichtinformationen</h2>
-  <h3>Datenschutz</h3>
-  <p>Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung.</p>
+  <h3>Datenlöschung und Speicherdauer</h3>
+  <p>Die personenbezogenen Daten der betroffenen Person werden gelöscht oder gesperrt, sobald der Zweck der Speicherung entfällt. Eine Speicherung kann darüber hinaus erfolgen, wenn dies durch den europäischen oder nationalen Gesetzgeber in unionsrechtlichen Verordnungen, Gesetzen oder sonstigen Vorschriften vorgesehen wurde. Eine Sperrung oder Löschung der Daten erfolgt auch dann, wenn eine durch die genannten Normen vorgeschriebene Speicherfrist abläuft.</p>
 
-  <h3>Hinweis zur verantwortlichen Stelle</h3>
-  <p>Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:</p>
-  <p><strong>${data.businessName}</strong><br>
-  ${data.legalOwner}<br>
-  ${data.legalStreet}<br>
-  ${data.legalZip} ${data.legalCity}<br>
-  ${country}</p>
-  ${data.legalPhone ? `<p>Telefon: ${data.legalPhone}</p>` : ""}
-  <p>E-Mail: <a href="mailto:${data.legalEmail}">${data.legalEmail}</a></p>
-
-  <h3>Speicherdauer</h3>
-  <p>Soweit innerhalb dieser Datenschutzerklärung keine speziellere Speicherdauer genannt wurde, verbleiben Ihre personenbezogenen Daten bei uns, bis der Zweck für die Datenverarbeitung entfällt.</p>
-
-  <h3>Ihre Rechte</h3>
-  <p>Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen.</p>
+  <h2>3. Hosting</h2>
+  <p>Diese Website wird auf Servern in der Europäischen Union gehostet. Der Hostingdienstleister verarbeitet Zugriffsdaten (sog. Server-Log-Dateien) ausschließlich zur Sicherstellung des technischen Betriebs der Website.</p>
+  <p><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der sicheren und störungsfreien Bereitstellung der Website).</p>
 
   <h2>4. Datenerfassung auf dieser Website</h2>
-  <h3>Cookies</h3>
-  <p>Diese Website verwendet Cookies. Cookies sind kleine Textdateien, die Ihr Webbrowser auf Ihrem Endgerät speichert. Cookies helfen uns, unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen.</p>
 
   <h3>Server-Log-Dateien</h3>
-  <p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log-Dateien, die Ihr Browser automatisch an uns übermittelt. Dies sind: Browsertyp und Browserversion, verwendetes Betriebssystem, Referrer URL, Hostname des zugreifenden Rechners, Uhrzeit der Serveranfrage, IP-Adresse.</p>
+  <p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log-Dateien, die Ihr Browser automatisch übermittelt. Dies sind:</p>
+  <ul>
+    <li>Browsertyp und Browserversion</li>
+    <li>Verwendetes Betriebssystem</li>
+    <li>Referrer URL</li>
+    <li>Hostname des zugreifenden Rechners</li>
+    <li>Uhrzeit der Serveranfrage</li>
+    <li>IP-Adresse (anonymisiert)</li>
+  </ul>
+  <p>Diese Daten werden nicht mit anderen Datenquellen zusammengeführt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.</p>
 
-  <h2>5. Kontaktformular</h2>
-  <p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert.</p>
+  <h3>Cookies</h3>
+  <p>Diese Website verwendet ausschließlich technisch notwendige Cookies, die für den Betrieb der Website erforderlich sind. Es werden keine Tracking- oder Werbe-Cookies eingesetzt. Notwendige Cookies werden auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO gesetzt.</p>
 
-  <p><em>Stand: ${new Date().toLocaleDateString("de-DE")}</em></p>
+  ${data.legalPhone || data.legalEmail ? `
+  <h3>Kontaktformular und Kontaktaufnahme</h3>
+  <p>Wenn Sie uns per Kontaktformular oder E-Mail Anfragen zukommen lassen, werden Ihre Angaben inklusive der von Ihnen angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Rückfragen gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
+  <p>Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt, oder auf Grundlage unserer berechtigten Interessen (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden gelöscht, sobald sie für die Erreichung des Zweckes ihrer Erhebung nicht mehr erforderlich sind, spätestens jedoch nach 6 Monaten.</p>
+  ` : ""}
+
+  <h2>5. Google Maps</h2>
+  <p>Diese Website nutzt über einen Link den Kartendienst Google Maps der Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland. Wenn Sie auf den Adresslink klicken, werden Sie zu Google Maps weitergeleitet. Dabei kann Google Daten über Ihre Nutzung verarbeiten. Weitere Informationen finden Sie in der Datenschutzerklärung von Google: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">https://policies.google.com/privacy</a>.</p>
+
+  <h2>6. Ihre Rechte als betroffene Person</h2>
+  <p>Sie haben gegenüber uns folgende Rechte hinsichtlich der Sie betreffenden personenbezogenen Daten:</p>
+  <ul>
+    <li><strong>Auskunftsrecht</strong> (Art. 15 DSGVO): Sie können jederzeit Auskunft über die bei uns gespeicherten Daten anfordern.</li>
+    <li><strong>Recht auf Berichtigung</strong> (Art. 16 DSGVO): Sie können die Berichtigung unrichtiger Daten verlangen.</li>
+    <li><strong>Recht auf Löschung</strong> (Art. 17 DSGVO): Sie können die Löschung Ihrer Daten verlangen, sofern kein gesetzlicher Grund zur weiteren Speicherung besteht.</li>
+    <li><strong>Recht auf Einschränkung der Verarbeitung</strong> (Art. 18 DSGVO): Sie können die Einschränkung der Verarbeitung verlangen.</li>
+    <li><strong>Recht auf Datenübertragbarkeit</strong> (Art. 20 DSGVO): Sie können die Übertragung Ihrer Daten in einem maschinenlesbaren Format verlangen.</li>
+    <li><strong>Widerspruchsrecht</strong> (Art. 21 DSGVO): Sie können der Verarbeitung Ihrer Daten auf Basis berechtigter Interessen widersprechen.</li>
+    <li><strong>Widerruf der Einwilligung</strong> (Art. 7 Abs. 3 DSGVO): Sofern die Verarbeitung auf einer Einwilligung beruht, können Sie diese jederzeit widerrufen.</li>
+  </ul>
+  <p>Zur Ausübung dieser Rechte wenden Sie sich bitte an: <a href="mailto:${data.legalEmail}">${data.legalEmail}</a></p>
+
+  <h2>7. Beschwerderecht bei der Aufsichtsbehörde</h2>
+  <p>Sie haben gemäß Art. 77 DSGVO das Recht, sich bei einer Datenschutz-Aufsichtsbehörde über die Verarbeitung Ihrer personenbezogenen Daten zu beschweren. Die für uns zuständige Aufsichtsbehörde richtet sich nach dem Bundesland des Unternehmenssitzes. Eine Liste der Aufsichtsbehörden finden Sie unter: <a href="https://www.bfdi.bund.de/DE/Infothek/Anschriften_Links/anschriften_links-node.html" target="_blank" rel="noopener">www.bfdi.bund.de</a>.</p>
+
+  <h2>8. Datensicherheit</h2>
+  <p>Diese Website nutzt aus Sicherheitsgründen eine SSL- bzw. TLS-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von „http://" auf „https://" wechselt und an dem Schloss-Symbol in der Browserzeile. Wenn die SSL- bzw. TLS-Verschlüsselung aktiviert ist, können die Daten, die Sie an uns übermitteln, nicht von Dritten mitgelesen werden.</p>
+
+  <p style="margin-top: 2rem; font-size: 0.875rem; color: #6b7280;"><em>Stand: ${date}</em></p>
 </body>
 </html>
 `.trim();

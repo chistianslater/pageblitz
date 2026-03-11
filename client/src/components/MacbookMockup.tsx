@@ -190,6 +190,10 @@ export default function MacbookMockup({ children, label, innerRef: propsInnerRef
               }}
               style={{
                 width: `${DESKTOP_WIDTH}px`,
+                // position:relative makes this div the offsetParent boundary so
+                // the auto-scroll offsetTop traversal in OnboardingChat terminates
+                // here and computes the correct scroll target.
+                position: "relative",
                 transformOrigin: "top left",
                 // NOTE: transform is NOT set here – it is managed entirely by
                 // applyTransform() so React never overwrites the scroll position
