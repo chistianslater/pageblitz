@@ -887,15 +887,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
 
-  // ── Save current step to localStorage whenever it changes ───────────────
-  useEffect(() => {
-    if (currentStep === 'welcome') return; // Don't save initial state
-
-    const effectiveWebsiteId = websiteIdProp || websiteId;
-    if (effectiveWebsiteId && currentStep) {
-      localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, currentStep);
-    }
-  }, [currentStep, websiteId, websiteIdProp]);
+  // ── Stable localStorage key – available immediately from props (no async) ──
+  // For /preview/TOKEN/onboarding: uses previewToken (always present, no waiting for siteData)
+  // For /website/ID/onboarding:    uses websiteIdProp (always present)
+  // This replaces the old approach of using the async `websiteId` from siteData.
+  const onboardingStorageKey = previewToken
+    ? `onboarding_step_token_${previewToken}`
+    : websiteIdProp
+    ? `onboarding_step_${websiteIdProp}`
+    : null;
 
   // ── Resume from database when onboarding data loads ────────────────────
   // This effect runs when onboarding data is loaded from the server
@@ -904,11 +904,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Only proceed if we have onboarding data and are still at welcome step
     if (!existingOnboarding || currentStep !== 'welcome') return;
 
-    const effectiveWebsiteId = websiteIdProp || websiteId;
-
     // First check localStorage (takes precedence)
-    const savedStep = effectiveWebsiteId
-      ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+    const savedStep = onboardingStorageKey
+      ? localStorage.getItem(onboardingStorageKey)
       : null;
 
     if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
@@ -925,13 +923,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
           setCurrentStep(targetStep);
           // Also save to localStorage for next time
-          if (effectiveWebsiteId) {
-            localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+          if (onboardingStorageKey) {
+            localStorage.setItem(onboardingStorageKey, targetStep);
           }
         }
       }
     }
-  }, [existingOnboarding, currentStep, websiteId, websiteIdProp]);
+  }, [existingOnboarding, currentStep, onboardingStorageKey]);
 
   // ── tRPC mutations ──────────────────────────────────────────────────────
   const saveStepMutation = trpc.onboarding.saveStep.useMutation();
@@ -1026,17 +1024,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [siteData?.website?.websiteData, initialized]);
 
   // ── Persist current step across page reloads ────────────────────────────
-  const stepStorageKey = websiteIdProp ? `onboarding_step_${websiteIdProp}` : null;
-
   // Save step whenever it changes
   useEffect(() => {
-    if (!stepStorageKey) return;
+    if (!onboardingStorageKey) return;
     if (currentStep === 'checkout' || currentStep === 'preview') {
-      localStorage.removeItem(stepStorageKey);
+      localStorage.removeItem(onboardingStorageKey);
     } else if (currentStep !== 'welcome') {
-      localStorage.setItem(stepStorageKey, currentStep);
+      localStorage.setItem(onboardingStorageKey, currentStep);
     }
-  }, [currentStep, stepStorageKey]);
+  }, [currentStep, onboardingStorageKey]);
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
@@ -1419,10 +1415,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
         }
 
-        // Resume from saved step - check localStorage first, then database
-        const effectiveWebsiteId = websiteIdProp || websiteId;
-        const savedStep = effectiveWebsiteId
-          ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+        // Resume from saved step - check localStorage first (stable key, no async), then database
+        const savedStep = onboardingStorageKey
+          ? localStorage.getItem(onboardingStorageKey)
           : null;
 
         if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
@@ -1441,8 +1436,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
               setCurrentStep(targetStep);
               // Also save to localStorage for next time
-              if (effectiveWebsiteId) {
-                localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+              if (onboardingStorageKey) {
+                localStorage.setItem(onboardingStorageKey, targetStep);
               }
               return;
             }
@@ -1473,7 +1468,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       };
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, websiteIdProp]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, onboardingStorageKey]);
 
   // ── Progressive content revelation based on user input ─────────
   
