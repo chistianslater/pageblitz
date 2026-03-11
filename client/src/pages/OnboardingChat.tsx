@@ -747,6 +747,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     { enabled: !!websiteId }
   );
 
+  // Fetch GMB photos early so the preview shows real business photos immediately,
+  // not stock placeholders. Only runs for GMB businesses (real placeId).
+  const { data: earlyGmbData } = trpc.onboarding.getGmbPhotos.useQuery(
+    { websiteId: websiteId! },
+    { enabled: !!websiteId, staleTime: Infinity }
+  );
+
+  // Pre-fill hero/about photos with GMB photos as soon as they're available,
+  // so the preview shows real business images from the start.
+  // The user can still swap them at the heroPhoto/aboutPhoto step.
+  useEffect(() => {
+    const photos = earlyGmbData?.photos;
+    if (!photos || photos.length === 0) return;
+    setData(prev => ({
+      ...prev,
+      heroPhotoUrl:  prev.heroPhotoUrl  || photos[0],
+      aboutPhotoUrl: prev.aboutPhotoUrl || photos[1] || photos[0],
+    }));
+  }, [earlyGmbData]);
+
   // Load existing onboarding data when available
   useEffect(() => {
     if (!existingOnboarding) return;

@@ -8,6 +8,8 @@ interface Props {
   onScrollChange?: React.Dispatch<React.SetStateAction<number>>;
 }
 
+const SCROLL_TRANSITION = "transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)";
+
 /**
  * MacBook-style browser mockup.
  * - Renders the site at DESKTOP_WIDTH (1280px) and scales it down proportionally
@@ -24,11 +26,18 @@ export default function MacbookMockup({ children, label, innerRef: propsInnerRef
   const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [internalScrollTop, setInternalScrollTop] = useState(0);
+  // true while a programmatic (step-change) scroll animation is running
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const autoScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sync internal state with external prop if provided
+  // Sync internal state with external prop and trigger smooth transition
   useEffect(() => {
     if (externalScrollTop !== undefined) {
       setInternalScrollTop(externalScrollTop);
+      setIsAutoScrolling(true);
+      if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current);
+      // Match the CSS transition duration (650ms)
+      autoScrollTimerRef.current = setTimeout(() => setIsAutoScrolling(false), 700);
     }
   }, [externalScrollTop]);
 
@@ -161,6 +170,8 @@ export default function MacbookMockup({ children, label, innerRef: propsInnerRef
                 width: `${DESKTOP_WIDTH}px`,
                 transformOrigin: "top left",
                 transform: `scale(${scale}) translateY(-${scrollTop}px)`,
+                // Smooth transition only during programmatic auto-scroll (not wheel)
+                transition: isAutoScrolling ? SCROLL_TRANSITION : undefined,
                 pointerEvents: "none",
               }}
             >
