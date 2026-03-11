@@ -523,8 +523,9 @@ function buildEnhancedPrompt(opts: {
   templateStyleDesc: string;
   hoursText: string;
   isRegenerate?: boolean;
+  addressingMode?: string; // "du" | "Sie"
 }): string {
-  const { business, category, industryContext, layoutStyle, colorScheme, hoursText, isRegenerate } = opts;
+  const { business, category, industryContext, layoutStyle, colorScheme, hoursText, isRegenerate, addressingMode } = opts;
   const archetype = DESIGN_ARCHETYPES[layoutStyle] || DESIGN_ARCHETYPES["modern"];
   const year = new Date().getFullYear();
 
@@ -546,7 +547,8 @@ REGELN:
 2. KEINE generischen Phrasen wie "Ihr Partner für..."
 3. Der KUNDE ist der Held, ${business.name} ist der Guide
 4. Authentische deutsche Kundennamen in Testimonials
-${isRegenerate ? "5. ANDERE Perspektive als zuvor wählen" : ""}
+5. ANREDE: ${addressingMode === 'Sie' ? 'Besucher IMMER siezen – "Wir helfen Ihnen", "Ihre Website", "Sie profitieren" – KEIN "du/dein/dir"' : 'Besucher IMMER duzen – "Wir helfen dir", "deine Website", "du profitierst" – KEIN "Sie/Ihnen/Ihr"'}
+${isRegenerate ? "6. ANDERE Perspektive als zuvor wählen" : ""}
 
 JSON-AUSGABE:
 {
@@ -936,15 +938,19 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       hoursText = (business.openingHours as string[]).join("\n");
     }
 
-    const prompt = buildEnhancedPrompt({ 
-      business: { ...business, openingHours: business.openingHours as string[] | null }, 
-      category, 
-      industryContext, 
-      personalityHint, 
-      layoutStyle, 
-      colorScheme, 
-      templateStyleDesc, 
-      hoursText 
+    const onboarding = await getOnboardingByWebsiteId(websiteId);
+    const addressingMode = (onboarding as any)?.addressingMode || 'du';
+
+    const prompt = buildEnhancedPrompt({
+      business: { ...business, openingHours: business.openingHours as string[] | null },
+      category,
+      industryContext,
+      personalityHint,
+      layoutStyle,
+      colorScheme,
+      templateStyleDesc,
+      hoursText,
+      addressingMode,
     });
 
     // Progress: 50% - Starting AI generation

@@ -364,6 +364,7 @@ interface OnboardingData {
   addOnMenuData: { headline?: string; categories: MenuCategory[] };
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
   addOnPricelistData: { headline?: string; categories: PriceListCategory[] };
+  addressingMode: 'du' | 'Sie'; // Besucher duzen oder siezen
   subPages: SubPage[];
   email: string; // for FOMO reminder
   topServicesSkipped?: boolean;
@@ -403,6 +404,7 @@ type ChatStep =
   | "editGallery"
   | "subpages"
   | "email"
+  | "addressingMode"
   | "hideSections"
   | "preview"
   | "checkout";
@@ -424,7 +426,8 @@ const COLOR_SCHEMES = PREDEFINED_COLOR_SCHEMES;
 const STEP_ORDER: ChatStep[] = [
   "businessCategory",  // 1. Branche erfassen (für Bilder/Farben)
   "businessName",      // 2. Unternehmensname erfassen
-  "brandLogo",         // 3. Logo / Schriftart für Logo
+  "addressingMode",    // 3. Besucher duzen oder siezen
+  "brandLogo",         // 4. Logo / Schriftart für Logo
   "colorScheme",       // 4. Farben
   "heroPhoto",         // 5. Hauptbild
   "aboutPhoto",        // 6. Über-uns-Bild
@@ -465,6 +468,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   headlineFont: "hero",
   headlineSize: "hero",
   businessName: "hero",
+  addressingMode: null,
   tagline: "hero",
   description: "ueber-uns",
   usp: "leistungen",
@@ -703,7 +707,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     brandLogo: "",
     headlineFont: "",
     headlineSize: "large", // Default: extra groß
-    addOnContactForm: true,
+    addressingMode: 'du',
+  addOnContactForm: true,
     contactFormFields: [
       { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
       { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
@@ -795,6 +800,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       brandColor: (existingOnboarding as any).brandColor || p.brandColor,
       brandSecondaryColor: (existingOnboarding as any).brandSecondaryColor || p.brandSecondaryColor,
       headlineFont: existingOnboarding.headlineFont || p.headlineFont,
+      addressingMode: ((existingOnboarding as any).addressingMode as 'du' | 'Sie') || p.addressingMode,
       // Photos
       logoUrl: (existingOnboarding as any).logoUrl || p.logoUrl,
       heroPhotoUrl: existingOnboarding.heroPhotoUrl || p.heroPhotoUrl,
@@ -1117,6 +1123,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           ];
         case "businessName":
           return name ? ["Ja, stimmt!"] : [];
+        case "addressingMode":
+          return [];
         case "tagline":
           return [
             "Damit Sie sich keine Sorgen mehr machen müssen.",
@@ -1193,6 +1201,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Hey! 👋 Ich bin dein persönlicher Website-Assistent. Ich helfe dir in wenigen Minuten, deine Website mit echten Infos zu befüllen – damit sie nicht mehr generisch klingt, sondern wirklich nach **${name}** aussieht.\n\nKlingt gut? Dann lass uns starten! 🚀`;
         case "businessName":
           return `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName || "noch keinen Namen"}** vorausgefüllt – stimmt das so?`;
+        case "addressingMode":
+          return `Kurze Frage zur Sprache deiner Website: Sollen deine Besucher **geduzt** oder **gesiezt** werden?\n\n*Das beeinflusst alle Texte – von Überschriften bis zu Call-to-Actions.*`;
         case "tagline":
           return `Super! Jetzt brauchen wir einen knackigen Slogan für **${data.businessName}** – einen Satz, der sofort klar macht, was ihr macht und warum ihr besonders seid.\n\nBeispiel: *"Qualität, die bleibt – seit 1998"* oder *"Ihr Dach in besten Händen"*\n\nOder soll ich dir einen Vorschlag machen? 💡\n\n*💡 Keine Sorge: Du kannst alle Texte später jederzeit ändern.*`;
         case "description":
@@ -1879,6 +1889,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             setData((p) => ({ ...p, businessCategory: val }));
             await trySaveStep(stepIdx, { businessCategory: val });
           }
+          break;
+        case "addressingMode":
+          // val is "du" or "Sie" – handled by button clicks in the step UI
           break;
         case "colorScheme":
         case "brandLogo":
@@ -2988,6 +3001,59 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await goToNextStep();
                 }}
               />
+            </motion.div>
+          )}
+
+          {currentStep === "addressingMode" && (
+            <motion.div
+              key="addressingMode-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              {/* Du */}
+              <button
+                onClick={async () => {
+                  addUserMessage("Duzen – \"du\" 👋");
+                  setData((p) => ({ ...p, addressingMode: 'du' }));
+                  const idx = dynamicStepOrder.indexOf("addressingMode");
+                  await trySaveStep(idx, { addressingMode: 'du' });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-blue-500/60 hover:bg-blue-500/10 transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-xl flex-shrink-0">
+                  👋
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">Du – informell</div>
+                  <div className="text-slate-400 text-xs mt-0.5">„Wir helfen <span className="text-blue-400">dir</span>" · modern, direkt, nahbar</div>
+                  <div className="text-slate-500 text-[10px] mt-1">Passt gut zu: Restaurants, Friseure, Fitnessstudios, Shops, Startups</div>
+                </div>
+              </button>
+
+              {/* Sie */}
+              <button
+                onClick={async () => {
+                  addUserMessage("Siezen – \"Sie\" 🤝");
+                  setData((p) => ({ ...p, addressingMode: 'Sie' }));
+                  const idx = dynamicStepOrder.indexOf("addressingMode");
+                  await trySaveStep(idx, { addressingMode: 'Sie' });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">
+                  🤝
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">Sie – formell</div>
+                  <div className="text-slate-400 text-xs mt-0.5">„Wir helfen <span className="text-emerald-400">Ihnen</span>" · professionell, seriös, vertrauensvoll</div>
+                  <div className="text-slate-500 text-[10px] mt-1">Passt gut zu: Anwälte, Steuerberater, Ärzte, Immobilien, Handwerk</div>
+                </div>
+              </button>
             </motion.div>
           )}
 
