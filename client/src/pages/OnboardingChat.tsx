@@ -2192,7 +2192,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
 
       {/* ── Fullscreen preview overlay ──────────────────────────────────── */}
-      {showFullPreview && previewToken && (
+      {showFullPreview && liveWebsiteData && colorScheme && (
         <div className="fixed inset-0 z-[9999] flex flex-col bg-black">
           {/* Browser chrome bar */}
           <div className="flex items-center gap-3 px-4 h-11 bg-slate-900 border-b border-slate-700 flex-shrink-0">
@@ -2205,7 +2205,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <svg className="w-3 h-3 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              <span className="truncate">pageblitz.de/preview/{previewToken}</span>
+              <span className="truncate">
+                {previewToken ? `pageblitz.de/preview/${previewToken}` : "deine-website.pageblitz.de"}
+              </span>
             </div>
             <button
               onClick={() => setShowFullPreview(false)}
@@ -2214,12 +2216,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <X className="w-3 h-3" /> Schließen
             </button>
           </div>
-          {/* Full-page iframe – completely interactive */}
-          <iframe
-            src={`https://pageblitz.de/preview/${previewToken}`}
-            className="flex-1 w-full border-0"
-            title="Website Vollbild-Vorschau"
-          />
+          {/* Scrollable website – renders the same live data as the right-side preview
+              so all active add-ons (gallery, contact form, …) are always visible */}
+          <div className="flex-1 overflow-auto bg-white">
+            <WebsiteRenderer
+              websiteData={liveWebsiteData}
+              businessCategory={data.businessCategory || (business as any)?.category || undefined}
+              colorScheme={{ ...colorScheme, ...data.colorScheme } as any}
+              heroImageUrl={data.heroPhotoUrl || heroImageUrl}
+              aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
+              layoutStyle={layoutStyle}
+              headlineFontOverride={data.headlineFont || undefined}
+              headlineSize={data.headlineSize}
+              isLoading={false}
+            />
+          </div>
         </div>
       )}
 
@@ -4237,11 +4248,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <Sparkles className="w-4 h-4 text-violet-300" />
                       )}
                     </button>
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 pointer-events-none opacity-0 group-hover/ai:opacity-100 transition-opacity duration-200 z-20">
+                    {/* Tooltip – anchored to left edge so it never overflows off-screen */}
+                    <div className="absolute bottom-full left-0 mb-2 w-48 pointer-events-none opacity-0 group-hover/ai:opacity-100 transition-opacity duration-200 z-20">
                       <div className="bg-violet-900/95 border border-violet-500/50 text-violet-100 text-xs px-3 py-2 rounded-lg shadow-lg text-center leading-snug">
                         ✨ Automatisch von KI<br/>generieren lassen
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-violet-900/95" />
+                        {/* Arrow points to the button center (~left-5 ≈ 20px = half of w-10 button) */}
+                        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-violet-900/95" />
                       </div>
                     </div>
                   </div>
