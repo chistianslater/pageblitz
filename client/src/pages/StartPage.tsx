@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,9 @@ export default function StartPage() {
   const [gmbSearchRegion, setGmbSearchRegion] = useState("");
   const [gmbSearchResults, setGmbSearchResults] = useState<Array<{ placeId: string; name: string; address: string; phone: string | null; rating: number | null; reviewCount: number; category: string; website: string | null }>>([]);
   const [gmbSearchLoading, setGmbSearchLoading] = useState(false);
+  const [citysuggestions, setCitySuggestions] = useState<Array<{ label: string; placeId: string }>>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const cityDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [resolvedInfo, setResolvedInfo] = useState<{
     businessName: string | null;
     placeId: string | null;
@@ -58,6 +61,7 @@ export default function StartPage() {
   });
 
   const gmbSearchPublicMutation = trpc.search.gmbSearchPublic.useMutation();
+  const autocompleteCityMutation = trpc.search.autocompleteCity.useMutation();
 
   const startMutation = trpc.selfService.start.useMutation({
     onSuccess: (data) => {
@@ -397,14 +401,60 @@ export default function StartPage() {
                   className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
                   disabled={gmbSearchLoading || isLoading}
                 />
-                <Input
-                  value={gmbSearchRegion}
-                  onChange={(e) => setGmbSearchRegion(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
-                  placeholder="Stadt"
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-32"
-                  disabled={gmbSearchLoading || isLoading}
-                />
+                <div className="relative w-32">
+                  <Input
+                    value={gmbSearchRegion}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setGmbSearchRegion(val);
+                      setShowCitySuggestions(true);
+                      if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
+                      if (val.trim().length >= 2) {
+                        cityDebounceRef.current = setTimeout(async () => {
+                          try {
+                            const res = await autocompleteCityMutation.mutateAsync({ input: val.trim() });
+                            setCitySuggestions(res.suggestions);
+                          } catch { /* ignore */ }
+                        }, 300);
+                      } else {
+                        setCitySuggestions([]);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !gmbSearchLoading) {
+                        setShowCitySuggestions(false);
+                        handleGmbSearch();
+                      }
+                      if (e.key === "Escape") setShowCitySuggestions(false);
+                    }}
+                    onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
+                    onFocus={() => citysuggestions.length > 0 && setShowCitySuggestions(true)}
+                    placeholder="Stadt"
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-full"
+                    disabled={gmbSearchLoading || isLoading}
+                  />
+                  {showCitySuggestions && citysuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-slate-800 border border-slate-600 rounded-xl shadow-xl overflow-hidden">
+                      {citysuggestions.map((s) => (
+                        <button
+                          key={s.placeId}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            // Extract just the city name (first part before comma)
+                            const cityName = s.label.split(",")[0].trim();
+                            setGmbSearchRegion(cityName);
+                            setCitySuggestions([]);
+                            setShowCitySuggestions(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition-colors truncate"
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <Button
                   onClick={handleGmbSearch}
                   disabled={!gmbSearchQuery.trim() || gmbSearchLoading || isLoading}

@@ -7,7 +7,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
-import { translateGmbCategory } from "@shared/gmbCategories";
+import { translateGmbCategory, CATEGORY_GROUPS } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
 import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
 import { getGalleryImages, getHeroImageUrl, getAboutImageUrl, getRawIndustryColors } from "@shared/industryImages";
@@ -1557,9 +1557,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Nur nach abgeschlossenem Onboarding-Initial-Flow
     if (contentPhaseRef.current !== 'complete') return;
 
-    // 1. Fotos aktualisieren (nur Stock-Fotos ersetzen – hochgeladene Nutzerfotos bleiben)
-    const isStockHero = !data.heroPhotoUrl || data.heroPhotoUrl.includes('unsplash.com');
-    const isStockAbout = !data.aboutPhotoUrl || data.aboutPhotoUrl.includes('unsplash.com');
+    // 1. Fotos aktualisieren (nur explizite Unsplash-Stock-Fotos ersetzen)
+    // Leere URLs bleiben leer → HeroPhotoStep wählt später das erste GMB-Foto automatisch
+    // GMB-Fotos (lh3.googleusercontent.com, maps.googleapis.com) und eigene Uploads bleiben erhalten
+    const isStockHero = !!data.heroPhotoUrl && data.heroPhotoUrl.includes('unsplash.com');
+    const isStockAbout = !!data.aboutPhotoUrl && data.aboutPhotoUrl.includes('unsplash.com');
 
     setData(prev => ({
       ...prev,
@@ -2230,43 +2232,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       {msg.step === "businessCategory" ? (
                         <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-blue-500">
                           <p className="text-slate-300 text-xs">Branche wählen:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {[
-                              { label: "Restaurant", icon: "🍽️" },
-                              { label: "Bar / Tapas", icon: "🍷" },
-                              { label: "Café / Bistro", icon: "☕" },
-                              { label: "Bäckerei", icon: "🥐" },
-                              { label: "Friseur", icon: "✂️" },
-                              { label: "Beauty / Kosmetik", icon: "💅" },
-                              { label: "Bauunternehmen", icon: "🏗️" },
-                              { label: "Handwerk", icon: "🔧" },
-                              { label: "Fitness-Studio", icon: "💪" },
-                              { label: "Arzt / Zahnarzt", icon: "🏥" },
-                              { label: "Rechtsanwalt", icon: "⚖️" },
-                              { label: "Immobilien", icon: "🏠" },
-                              { label: "IT / Software", icon: "💻" },
-                              { label: "Fotografie", icon: "📷" },
-                              { label: "Autowerkstatt", icon: "🚗" },
-                              { label: "Hotel / Pension", icon: "🏨" },
-                            ].map(({ label, icon }) => (
-                              <button
-                                key={label}
-                                onClick={() => {
-                                  setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: label } : m));
-                                  setData((p) => ({ ...p, businessCategory: label }));
-                                  setInPlaceEditId(null);
-                                }}
-                                className={`flex items-center gap-1.5 text-sm border px-3 py-2 rounded-xl transition-all ${
-                                  inPlaceEditValue === label
-                                    ? "bg-blue-600/40 border-blue-500/60 text-white"
-                                    : "bg-slate-600/60 hover:bg-blue-600/40 border-slate-500/50 hover:border-blue-500/60 text-slate-200 hover:text-white"
-                                }`}
-                              >
-                                <span>{icon}</span>
-                                <span>{label}</span>
-                              </button>
-                            ))}
-                          </div>
+                          <CategoryPicker
+                            selected={inPlaceEditValue}
+                            onSelect={(cat) => {
+                              setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: cat } : m));
+                              setData((p) => ({ ...p, businessCategory: cat }));
+                              setInPlaceEditId(null);
+                            }}
+                          />
                           <button
                             onClick={() => setInPlaceEditId(null)}
                             className="self-start px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
@@ -2731,79 +2704,27 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-3"
             >
-              <p className="text-xs text-slate-400">Branche auswählen:</p>
-              <div className="flex flex-wrap gap-2">
-                  {[
-                    { label: "Restaurant", icon: "🍽️" },
-                    { label: "Bar / Tapas", icon: "🍷" },
-                    { label: "Café / Bistro", icon: "☕" },
-                    { label: "Bäckerei", icon: "🥐" },
-                    { label: "Friseur", icon: "✂️" },
-                    { label: "Beauty / Kosmetik", icon: "💅" },
-                    { label: "Bauunternehmen", icon: "🏗️" },
-                    { label: "Handwerk", icon: "🔧" },
-                    { label: "Fitness-Studio", icon: "💪" },
-                    { label: "Arzt / Zahnarzt", icon: "🏥" },
-                    { label: "Rechtsanwalt", icon: "⚖️" },
-                    { label: "Immobilien", icon: "🏠" },
-                    { label: "IT / Software", icon: "💻" },
-                    { label: "Fotografie", icon: "📷" },
-                    { label: "Autowerkstatt", icon: "🚗" },
-                    { label: "Hotel / Pension", icon: "🏨" },
-                  ].map(({ label, icon }) => (
-                    <button
-                      key={label}
-                      onClick={() => handleSubmit(label)}
-                      className={`flex items-center gap-1.5 text-sm border px-3 py-2 rounded-xl transition-all ${
-                        data.businessCategory === label
-                          ? "bg-blue-600/40 border-blue-500/60 text-white"
-                          : "bg-slate-700/60 hover:bg-blue-600/40 border-slate-600/50 hover:border-blue-500/60 text-slate-200 hover:text-white"
-                      }`}
-                    >
-                      <span>{icon}</span>
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </div>
-                {/* Free-text input for custom category */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Andere Branche eintippen…"
-                    className="flex-1 bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-blue-500/60 focus:bg-blue-600/10 transition-all"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
-                        handleSubmit((e.target as HTMLInputElement).value.trim());
-                      }
-                    }}
-                  />
+              {/* GMB pre-selected category banner */}
+              {data.businessCategory && (
+                <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2">
+                  <span className="text-emerald-400 text-xs">✓ Aus Google My Business:</span>
+                  <span className="text-emerald-200 text-sm font-medium">{data.businessCategory}</span>
                   <button
-                    className="bg-slate-600 hover:bg-slate-500 text-white text-sm px-3 py-2 rounded-xl transition-colors flex-shrink-0"
-                    onClick={(e) => {
-                      const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
-                      if (input?.value.trim()) handleSubmit(input.value.trim());
+                    onClick={async () => {
+                      addUserMessage(`Branche: ${data.businessCategory} ✓`);
+                      await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
+                      await goToNextStep();
                     }}
+                    className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
                   >
-                    OK
+                    Übernehmen
                   </button>
                 </div>
-                {/* Show GMB category as pre-selected if available - positioned under the buttons */}
-                {data.businessCategory && (
-                  <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2 mt-4">
-                    <span className="text-emerald-400 text-xs">✓ Aus Google My Business:</span>
-                    <span className="text-emerald-200 text-sm font-medium">{data.businessCategory}</span>
-                    <button
-                      onClick={async () => {
-                        addUserMessage(`Branche: ${data.businessCategory} ✓`);
-                        await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
-                        await goToNextStep();
-                      }}
-                      className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
-                    >
-                      Übernehmen
-                    </button>
-                  </div>
-                )}
+              )}
+              <CategoryPicker
+                selected={data.businessCategory}
+                onSelect={(cat) => handleSubmit(cat)}
+              />
             </motion.div>
           )}
 
@@ -4753,6 +4674,98 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
 }
 
 // ── HeroPhotoStep ─────────────────────────────────────────────────────────────
+
+// ── CategoryPicker ─────────────────────────────────────────────────────────
+function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (cat: string) => void }) {
+  const [search, setSearch] = useState("");
+
+  const filtered = search.trim()
+    ? CATEGORY_GROUPS.flatMap((g) =>
+        g.categories.filter((c) => c.toLowerCase().includes(search.toLowerCase()))
+      )
+    : null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Search field */}
+      <div className="relative">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Branche suchen oder eintippen…"
+          className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-blue-500/60 focus:bg-blue-600/10 transition-all"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            aria-label="Suche löschen"
+          >✕</button>
+        )}
+      </div>
+
+      {/* Filtered flat list */}
+      {filtered !== null ? (
+        <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
+          {filtered.length === 0 ? (
+            <div className="px-3 py-3 flex items-center justify-between gap-2">
+              <span className="text-slate-400 text-sm">Keine Treffer – Branche trotzdem übernehmen?</span>
+              <button
+                onClick={() => onSelect(search.trim())}
+                className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+              >
+                Übernehmen
+              </button>
+            </div>
+          ) : (
+            filtered.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => onSelect(cat)}
+                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                  selected === cat
+                    ? "bg-blue-600/30 text-white"
+                    : "text-slate-200 hover:bg-slate-700/60 hover:text-white"
+                }`}
+              >
+                {cat}
+              </button>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Grouped list (no search active) */
+        <div className="max-h-64 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
+          {CATEGORY_GROUPS.map((group) => (
+            <details key={group.group} className="group">
+              <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors text-xs font-semibold uppercase tracking-wide">
+                <span>{group.icon}</span>
+                <span className="flex-1">{group.group}</span>
+                <span className="text-slate-500 group-open:rotate-90 transition-transform text-[10px]">▶</span>
+              </summary>
+              <div className="flex flex-wrap gap-1.5 px-3 pb-2 pt-1">
+                {group.categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => onSelect(cat)}
+                    className={`text-xs border px-2.5 py-1.5 rounded-lg transition-all ${
+                      selected === cat
+                        ? "bg-blue-600/40 border-blue-500/60 text-white"
+                        : "bg-slate-700/60 hover:bg-blue-600/30 border-slate-600/50 hover:border-blue-500/50 text-slate-200 hover:text-white"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface HeroPhotoStepProps {
   businessCategory: string;

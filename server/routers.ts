@@ -1311,6 +1311,28 @@ export const appRouter = router({
         return { results: detailedResults, total: detailedResults.length };
       }),
 
+    // City autocomplete for StartPage – server-side to keep API key private
+    autocompleteCity: publicProcedure
+      .input(z.object({ input: z.string().min(2) }))
+      .mutation(async ({ input }) => {
+        const result = await makeRequest<{ status: string; predictions: Array<{ description: string; place_id: string }> }>(
+          "/maps/api/place/autocomplete/json",
+          {
+            input: input.input,
+            types: "(cities)",
+            language: "de",
+            components: "country:de|country:at|country:ch",
+          }
+        );
+        if (result.status !== "OK" || !result.predictions?.length) return { suggestions: [] };
+        return {
+          suggestions: result.predictions.slice(0, 6).map((p) => ({
+            label: p.description,
+            placeId: p.place_id,
+          })),
+        };
+      }),
+
     // New: Analyze a specific website for age and quality
     analyzeWebsite: adminProcedure
       .input(z.object({ businessId: z.number() }))

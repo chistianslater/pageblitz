@@ -243,6 +243,139 @@ const GMB_CATEGORY_MAP: Record<string, string> = {
 };
 
 /**
+ * Structured category groups for the Onboarding category picker.
+ * Categories are in German (as displayed to the user).
+ */
+export const CATEGORY_GROUPS: Array<{ group: string; icon: string; categories: string[] }> = [
+  {
+    group: "Gastronomie & Food",
+    icon: "🍽️",
+    categories: [
+      "Restaurant", "Italienisches Restaurant", "Chinesisches Restaurant", "Japanisches Restaurant",
+      "Mexikanisches Restaurant", "Indisches Restaurant", "Thailändisches Restaurant",
+      "Griechisches Restaurant", "Türkisches Restaurant", "Vietnamesisches Restaurant",
+      "Französisches Restaurant", "Amerikanisches Restaurant", "Sushi-Restaurant", "Pizzeria",
+      "Fast-Food-Restaurant", "Burger-Restaurant", "Steakhouse", "Fischrestaurant",
+      "Vegetarisches Restaurant", "Veganes Restaurant", "Café", "Bäckerei", "Konditorei",
+      "Eisdiele", "Bar", "Kneipe", "Weinbar", "Cocktailbar", "Nachtclub", "Brauerei",
+      "Catering", "Lieferservice", "Abholservice", "Bistro", "Tapas-Bar", "Kantine",
+      "Diner", "Imbiss", "Pizzaservice",
+    ],
+  },
+  {
+    group: "Beauty & Wellness",
+    icon: "💅",
+    categories: [
+      "Friseursalon", "Friseur", "Barbershop", "Beautysalon", "Beauty-Center",
+      "Hautpflege-Klinik", "Nagelstudio", "Spa", "Day Spa", "Massagepraxis",
+      "Massage", "Tattoostudio", "Piercingstudio", "Sonnenstudio", "Augenbrauen-Studio",
+      "Wimpernstudio", "Kosmetikgeschäft", "Kosmetik", "Kosmetikerin", "Waxing-Studio",
+      "Wellness-Center", "Wellness", "Heilpraktiker", "Yogazentrum", "Pilates",
+    ],
+  },
+  {
+    group: "Gesundheit & Medizin",
+    icon: "🏥",
+    categories: [
+      "Arzt", "Allgemeinarzt", "Zahnarzt", "Zahnarztpraxis", "Kieferorthopäde",
+      "Physiotherapeut", "Chiropraktiker", "Optiker", "Apotheke", "Krankenhaus",
+      "Klinik", "Arztpraxis", "Psychologe", "Therapeut", "Tierarzt",
+      "Tierarztpraxis", "Ernährungsberater",
+    ],
+  },
+  {
+    group: "Fitness & Sport",
+    icon: "💪",
+    categories: [
+      "Fitnessstudio", "Personal Trainer", "Yogastudio", "Pilates-Studio",
+      "Kampfsportschule", "Tanzschule", "Schwimmbad", "Sportverein",
+      "Golfclub", "Tennisclub", "CrossFit-Studio", "Boxstudio",
+    ],
+  },
+  {
+    group: "Handwerk & Bau",
+    icon: "🔧",
+    categories: [
+      "Bauunternehmen", "Generalunternehmer", "Elektriker", "Klempner",
+      "Dachdecker", "Dachdeckerbetrieb", "Maler", "Malerbetrieb",
+      "Schreiner", "Bodenleger", "Fliesenleger", "Gartenbauer",
+      "Gartengestaltung", "Heizungsbauer", "Heizung & Klima", "Dämmtechnik",
+      "Fensterbauer", "Schlüsseldienst", "Umzugsunternehmen",
+      "Reinigungsservice", "Gebäudereinigung",
+    ],
+  },
+  {
+    group: "Auto & Mobilität",
+    icon: "🚗",
+    categories: [
+      "Autowerkstatt", "Autohaus", "Gebrauchtwagenhändler",
+      "Autowaschanlage", "Reifenservice", "Karosseriebau", "Motorradhändler",
+    ],
+  },
+  {
+    group: "Recht & Finanzen",
+    icon: "⚖️",
+    categories: [
+      "Rechtsanwalt", "Anwaltskanzlei", "Notar", "Steuerberater",
+      "Steuerberatung", "Finanzberater", "Versicherungsagentur",
+      "Bank", "Kreditgenossenschaft",
+    ],
+  },
+  {
+    group: "Immobilien & Architektur",
+    icon: "🏠",
+    categories: [
+      "Immobilienmakler", "Hausverwaltung", "Architekt", "Innenarchitekt",
+    ],
+  },
+  {
+    group: "IT & Marketing",
+    icon: "💻",
+    categories: [
+      "Softwareunternehmen", "IT-Dienstleister", "Computerreparatur",
+      "Webdesign-Agentur", "Marketingagentur", "Werbeagentur",
+      "Grafikdesigner", "Fotograf", "Fotostudio", "Videoproduktion",
+    ],
+  },
+  {
+    group: "Bildung & Weiterbildung",
+    icon: "🎓",
+    categories: [
+      "Schule", "Nachhilfe", "Sprachschule", "Fahrschule",
+      "Musikschule", "Kunstschule", "Kindergarten", "Kindertagesstätte",
+    ],
+  },
+  {
+    group: "Hotel & Veranstaltungen",
+    icon: "🏨",
+    categories: [
+      "Hotel", "Motel", "Pension", "Gästehaus", "Hostel",
+      "Ferienwohnung", "Resort", "Veranstaltungsort", "Hochzeitslocation",
+    ],
+  },
+  {
+    group: "Einzelhandel",
+    icon: "🛍️",
+    categories: [
+      "Bekleidungsgeschäft", "Schuhgeschäft", "Juwelier", "Buchhandlung",
+      "Elektronikgeschäft", "Möbelgeschäft", "Haushaltswarengeschäft",
+      "Supermarkt", "Lebensmittelgeschäft", "Metzgerei", "Blumengeschäft",
+      "Tierhandlung", "Spielzeuggeschäft", "Sportgeschäft",
+      "Baumarkt", "Gartencenter",
+    ],
+  },
+  {
+    group: "Sonstige Dienstleistungen",
+    icon: "🛎️",
+    categories: [
+      "Reisebüro", "Eventplaner", "Hochzeitsplaner", "Bestattungsunternehmen",
+      "Wäscherei", "Reinigung", "Schneider", "Druckerei",
+      "Kurierdienst", "Lagerhaus",
+    ],
+  },
+];
+
+/**
  * Translates a GMB category string to German.
  * Handles both human-readable ("Hair care") and machine-format ("hair_care") strings.
  * Falls back to the original string if no translation is found.
