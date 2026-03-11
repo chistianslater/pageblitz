@@ -7,7 +7,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  Phone, Star, Shield, Zap,
+  Phone, Star, Zap,
   Award, Clock, MapPin, Utensils, Flower,
   Dumbbell, Target, Gem, Ruler,
   Sparkles, Heart, ArrowRight, Leaf
@@ -738,7 +738,9 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-16">
           <h2 className={`mb-16 text-center ${textMain}`} style={{ ...hs, ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'contact') }}>Kontakt</h2>
         </Skeleton>
-        <div className="grid md:grid-cols-2 gap-12 items-start">
+        {/* When form is disabled: single centered info column; when enabled: 2-column grid with form */}
+        <div className={locked ? 'max-w-xl mx-auto' : 'grid md:grid-cols-2 gap-12 items-start'}>
+          {/* Left / only column: contact info items */}
           <div className="space-y-6">
             {(address || isLoading) && (
               <Skeleton isLoading={isLoading} className="w-full h-20">
@@ -798,84 +800,71 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
               </Skeleton>
             )}
           </div>
-          <div className="relative">
-            <div className={`border ${cardBgClass} ${border} ${locked ? 'opacity-40 blur-[2px] pointer-events-none select-none' : ''}`}
-              style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius, padding: '1.5rem' }}>
-              <form className="space-y-4" onSubmit={e => e.preventDefault()}>
-                {formFields.map((field: any) => (
-                  <div key={field.id}>
-                    <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>
-                      {field.label}
-                      {field.required && <span style={{ color: safeCs.primary }}>*</span>}
-                    </label>
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        rows={4}
-                        placeholder={field.placeholder}
-                        required={field.required}
-                        style={{ ...inputStyle, resize: 'none' as const, minHeight: '100px' }}
-                        className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                        onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
-                        onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
-                      />
-                    ) : field.type === 'select' ? (
-                      <select
-                        required={field.required}
-                        style={inputStyle}
-                        className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all cursor-pointer"
-                        onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
-                        onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
-                      >
-                        <option value="">{field.placeholder || 'Bitte wählen...'}</option>
-                        {field.options?.map((option: string, idx: number) => (
-                          <option key={idx} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type={field.type}
-                        placeholder={field.placeholder}
-                        required={field.required}
-                        style={inputStyle}
-                        className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
-                        onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
-                        onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
-                      />
-                    )}
+
+          {/* Right column: contact form – only rendered when the add-on is active */}
+          {!locked && (
+            <div className="relative">
+              <div className={`border ${cardBgClass} ${border}`}
+                style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius, padding: '1.5rem' }}>
+                <form className="space-y-4" onSubmit={e => e.preventDefault()}>
+                  {formFields.map((field: any) => (
+                    <div key={field.id}>
+                      <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>
+                        {field.label}
+                        {field.required && <span style={{ color: safeCs.primary }}>*</span>}
+                      </label>
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          rows={4}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          style={{ ...inputStyle, resize: 'none' as const, minHeight: '100px' }}
+                          className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
+                          onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
+                          onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
+                        />
+                      ) : field.type === 'select' ? (
+                        <select
+                          required={field.required}
+                          style={inputStyle}
+                          className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all cursor-pointer"
+                          onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
+                          onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
+                        >
+                          <option value="">{field.placeholder || 'Bitte wählen...'}</option>
+                          {field.options?.map((option: string, idx: number) => (
+                            <option key={idx} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          style={inputStyle}
+                          className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all"
+                          onFocus={(e) => e.currentTarget.style.borderColor = safeCs.primary}
+                          onBlur={(e) => e.currentTarget.style.borderColor = borderColor}
+                        />
+                      )}
+                    </div>
+                  ))}
+                  <div className="flex items-start gap-2.5 pt-1">
+                    <div className="mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center"
+                      style={{ borderRadius: config.inputRadius, borderColor: inputPlaceholder, backgroundColor: inputBg }}>
+                    </div>
+                    <p className={`text-xs leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>
+                      Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
+                      <a href="#datenschutz" className="underline underline-offset-2" style={{ color: safeCs.primary }}>Datenschutzerklärung</a> zu.
+                    </p>
                   </div>
-                ))}
-                <div className="flex items-start gap-2.5 pt-1">
-                  <div className="mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center"
-                    style={{ borderRadius: config.inputRadius, borderColor: inputPlaceholder, backgroundColor: inputBg }}>
-                  </div>
-                  <p className={`text-xs leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>
-                    Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
-                    <a href="#datenschutz" className="underline underline-offset-2" style={{ color: safeCs.primary }}>Datenschutzerklärung</a> zu.
-                  </p>
-                </div>
-                <button type="submit" className="w-full hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}>
-                  Nachricht senden
-                </button>
-              </form>
-            </div>
-            {locked && (
-              <div className="absolute inset-0 flex items-start justify-center pt-20">
-                <div className={`${cardBgClass} border ${border} shadow-lg px-6 py-5 text-center max-w-xs w-full`}
-                  style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius }}>
-                  <div className="w-12 h-12 flex items-center justify-center mx-auto mb-3"
-                    style={{ borderRadius: config.iconRadius, backgroundColor: dark ? (safeCs.darkSurface || '#374151') : '#f3f4f6' }}>
-                    <Shield size={22} style={{ color: dark ? (safeCs.lightTextMuted || '#9ca3af') : '#6b7280' }} />
-                  </div>
-                  <p className={`font-bold text-sm mb-1 ${textMain}`} style={{ ...hs, ...textMainStyle }}>Kontaktformular</p>
-                  <p className={`text-xs mb-1 ${textSub}`} style={textSubStyle}>Erhalte direkte Kundenanfragen über deine Website.</p>
-                  <p className="text-xs font-semibold mb-4" style={{ color: safeCs.primary }}>Ab 4,90 € / Monat</p>
-                  <button className="w-full text-xs hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}>
-                    Freischalten
+                  <button type="submit" className="w-full hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}>
+                    Nachricht senden
                   </button>
-                </div>
+                </form>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

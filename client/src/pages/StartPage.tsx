@@ -489,7 +489,7 @@ export default function StartPage() {
                           phone: result.phone,
                           category: result.category,
                           reviews: [],
-                          openingHours: [],
+                          openingHours: result.openingHours || [],
                           rating: result.rating ? String(result.rating) : null,
                           reviewCount: result.reviewCount,
                         });
