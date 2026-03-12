@@ -180,13 +180,13 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         <div className="flex flex-wrap items-center gap-4 mt-2">
           <Skeleton isLoading={isLoading} className="w-44 h-14">
             <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
+              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-36 h-14">
             <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
-              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
+              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
               Mehr erfahren
             </button>
           </Skeleton>
@@ -268,13 +268,13 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
           <Skeleton isLoading={isLoading} className="w-44 h-14">
             <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
+              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-36 h-14">
             <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
-              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
+              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
               Mehr erfahren
             </button>
           </Skeleton>
@@ -357,13 +357,13 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             <div className="flex flex-wrap gap-4">
               <Skeleton isLoading={isLoading} className="w-44 h-14">
                 <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-                  className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
+                  className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="w-36 h-14">
                 <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
-                  className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity">
+                  className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
                   Mehr erfahren
                 </button>
               </Skeleton>
@@ -2015,7 +2015,7 @@ export function PremiumLayoutV2({
               <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
-              <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em', color: safeCs.onPrimary || '#ffffff' }} className="px-10 py-4 text-sm uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform">{heroCta}</button>
+              <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em', color: safeCs.onPrimary || '#ffffff' }} className="px-10 py-4 text-xs uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
             </Skeleton>
           </div>
         </div>
