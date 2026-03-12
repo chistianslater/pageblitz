@@ -2380,6 +2380,8 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
   return (
     <div style={{ fontFamily: BODY, backgroundColor: '#FDFBF7', color: textColor }} className="overflow-hidden">
+      {/* Paper grain texture — very subtle, like handmade paper */}
+      <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23grain)' opacity='0.055'/%3E%3C/svg%3E")` }} />
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FDFBF7]/95 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
@@ -2568,6 +2570,8 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
   return (
     <div style={{ fontFamily: BODY, backgroundColor: '#ffffff', color: textColor }} className="overflow-hidden">
+      {/* Dot grid texture — subtle architect paper feel */}
+      <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `radial-gradient(rgba(15, 30, 60, 0.048) 1px, transparent 1px)`, backgroundSize: '22px 22px' }} />
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/95 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
