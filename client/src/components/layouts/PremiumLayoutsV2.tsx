@@ -112,7 +112,7 @@ const getBodyTextMultiplier = (headlineSize: string = 'large'): number => {
 // ── HERO VARIANTS ───────────────────────────────────────────────
 
 /** Eyebrow pill badge shown above the hero headline */
-function HeroBadge({ text, cs, dark }: { text: string; cs: any; dark: boolean }) {
+function HeroBadge({ text, cs, dark, centered = false }: { text: string; cs: any; dark: boolean; centered?: boolean }) {
   const bg    = dark ? 'rgba(255,255,255,0.08)' : `${cs.primary}18`;
   const border = dark ? 'rgba(255,255,255,0.18)' : `${cs.primary}40`;
   const color  = dark ? '#ffffff' : cs.primary;
@@ -121,7 +121,7 @@ function HeroBadge({ text, cs, dark }: { text: string; cs: any; dark: boolean })
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] mb-8 self-start"
+      className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] mb-8 ${centered ? 'self-center' : 'self-start'}`}
       style={{ backgroundColor: bg, border: `1px solid ${border}`, color }}
     >
       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
@@ -271,7 +271,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 0.8 }}
         className="flex flex-col items-center relative z-10"
       >
-        {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
+        {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} centered={true} />}
 
         {/* Thin accent line: editorial divider between badge and headline */}
         {!isLoading && (
