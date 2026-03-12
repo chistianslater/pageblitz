@@ -1513,7 +1513,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em', color: safeCs.onPrimary || '#ffffff' }} className="px-7 py-2.5 text-sm uppercase">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em', color: safeCs.onPrimary || '#ffffff' }} className="px-7 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1591,7 +1591,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.12em', fontSize: '1.05rem', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-2.5 uppercase">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1669,7 +1669,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-sm rounded-full">{heroCta}</button>
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
