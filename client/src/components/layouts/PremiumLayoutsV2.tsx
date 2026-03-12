@@ -178,13 +178,13 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         </Skeleton>
 
         <div className="flex flex-wrap items-center gap-4 mt-2">
-          <Skeleton isLoading={isLoading} className="w-44 h-14">
+          <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
             <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
               className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-36 h-14">
+          <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
             <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
               className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
               Mehr erfahren
@@ -266,13 +266,13 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         {/* CTA row */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-          <Skeleton isLoading={isLoading} className="w-44 h-14">
+          <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
             <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
               className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-36 h-14">
+          <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
             <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
               className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
               Mehr erfahren
@@ -355,13 +355,13 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               </p>
             </Skeleton>
             <div className="flex flex-wrap gap-4">
-              <Skeleton isLoading={isLoading} className="w-44 h-14">
+              <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
                 <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
                   className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
-              <Skeleton isLoading={isLoading} className="w-36 h-14">
+              <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
                 <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
                   className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
                   Mehr erfahren
@@ -1022,7 +1022,7 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
     return (
       <section className={`py-24 md:py-32 px-6 ${bg}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
-          <Skeleton isLoading={isLoading} className="w-80 h-16 mx-auto mb-20">
+          <Skeleton isLoading={isLoading} className="max-w-2xl mx-auto mb-20">
             <div className="text-center mb-20">
               <span className={`text-xs font-bold uppercase tracking-[0.3em] block mb-4 ${dark ? (safeCs.lightTextMuted ? '' : 'text-white/40') : 'opacity-40'}`} style={dark ? { color: safeCs.lightTextMuted || 'rgba(255,255,255,0.4)' } : undefined}>Kundenstimmen</span>
               <h2 className={`${textMain} ${serif ? "font-serif italic font-light" : "font-black text-center"}`} style={{ ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'testimonials') }}>
@@ -2355,6 +2355,383 @@ function DynamicAddonSections({ websiteData, cs, isLoading, displayFont, bodyFon
 }
 
 // ================================================================
+// EDEN LAYOUT — Warm, persönlich, modern-organisch
+// Für Coaches, Therapeuten, Fotografen, Personal Services
+// ================================================================
+
+export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'DM Serif Display', Georgia, serif");
+  const BODY = "'DM Sans', 'Inter', sans-serif";
+  const primaryColor = safeCs.primary || '#3b82f6';
+  const accentColor = safeCs.accent || safeCs.secondary || primaryColor;
+  const textColor = safeCs.text || '#1a1a1a';
+  const textMuted = safeCs.textLight || '#6b7280';
+
+  const hero = sec(websiteData, 'hero');
+  const about = sec(websiteData, 'about');
+  const services = sec(websiteData, 'services')?.items || [];
+  const heroCta = hero?.ctaText || 'Termin buchen';
+  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent = about?.content || websiteData.description || '';
+  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const badgeText = websiteData.businessCategory ? `• ${websiteData.businessCategory}` : (websiteData.businessName || '');
+
+  return (
+    <div style={{ fontFamily: BODY, backgroundColor: '#FDFBF7', color: textColor }} className="overflow-hidden">
+      {/* NAV */}
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FDFBF7]/95 backdrop-blur-md border-b border-neutral-100">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: DISPLAY, fontSize: '1.25rem', fontWeight: 400, fontStyle: 'italic' }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-neutral-700" />
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
+          <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+        </Skeleton>
+      </nav>
+
+      {/* HERO */}
+      <section id="hero" className="min-h-screen grid lg:grid-cols-[55%_45%] pt-20 overflow-hidden">
+        {/* LEFT: Text */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9 }}
+          className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24"
+        >
+          {!isLoading && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 self-start"
+              style={{ backgroundColor: primaryColor + '15', border: `1px solid ${primaryColor}30` }}>
+              <span className="text-xs font-medium uppercase tracking-widest" style={{ color: primaryColor }}>{badgeText}</span>
+            </motion.div>
+          )}
+
+          <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-6">
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 5.5rem)'), color: textColor }}
+              className="mb-0">
+              {hl.main}<br />
+              <span style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                {hl.last}
+              </span>
+            </h1>
+          </Skeleton>
+
+          <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-10">
+            <p style={{ fontFamily: BODY, color: textMuted, fontStyle: 'italic' }} className="text-lg leading-relaxed max-w-sm mb-0">
+              {hero?.subheadline || websiteData.tagline}
+            </p>
+          </Skeleton>
+
+          <div className="flex flex-wrap gap-4">
+            <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
+              <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }}
+                className="px-8 py-4 text-xs uppercase tracking-widest rounded-full shadow-xl hover:scale-105 transition-transform whitespace-nowrap">
+                {heroCta}
+              </button>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
+              <button style={{ fontFamily: BODY, color: textMuted, borderColor: primaryColor + '50' }}
+                className="px-7 py-4 text-xs uppercase tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+                Mehr erfahren
+              </button>
+            </Skeleton>
+          </div>
+        </motion.div>
+
+        {/* RIGHT: Two overlapping image cards */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, delay: 0.2 }}
+          className="relative flex items-center justify-center py-16 lg:py-0 min-h-[60vw] lg:min-h-0"
+        >
+          <Skeleton isLoading={isLoading} className="w-[200px] h-[270px] absolute top-1/2 left-1/3 -translate-y-1/2">
+            <div className="absolute" style={{ width: '220px', height: '290px', top: '50%', left: '50%', transform: 'translate(-60%, -55%) rotate(-3deg)', boxShadow: '0 25px 60px -10px rgba(0,0,0,0.25)', borderRadius: '20px', overflow: 'hidden' }}>
+              <img src={heroImageUrl} className="w-full h-full object-cover object-top" alt="" />
+            </div>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-[170px] h-[170px] absolute bottom-1/4 right-1/4">
+            <div className="absolute" style={{ width: '180px', height: '180px', top: '55%', left: '52%', transform: 'translate(-20%, -20%) rotate(2.5deg)', boxShadow: '0 20px 50px -8px rgba(0,0,0,0.2)', borderRadius: '16px', overflow: 'hidden', border: `4px solid white` }}>
+              <img src={heroImageUrl} className="w-full h-full object-cover object-center" alt="" />
+            </div>
+          </Skeleton>
+          {/* Decorative blob */}
+          {!isLoading && <div className="absolute inset-0 -z-10 opacity-30 pointer-events-none" style={{ background: `radial-gradient(ellipse at 60% 50%, ${primaryColor}25 0%, transparent 70%)` }} />}
+        </motion.div>
+      </section>
+
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+
+      {/* SERVICES */}
+      {services.length > 0 && (
+        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <Skeleton isLoading={isLoading} className="w-full max-w-md min-h-[5rem] mb-16">
+              <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, fontStyle: 'italic', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="mb-0">
+                Meine <span style={{ color: primaryColor }}>Leistungen</span>
+              </h2>
+            </Skeleton>
+            <div className="grid md:grid-cols-3 gap-6">
+              {services.map((service: any, i: number) => (
+                <Skeleton key={i} isLoading={isLoading} className="h-56">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1, duration: 0.5 }}
+                    className="p-8 rounded-2xl bg-[#FDFBF7] hover:shadow-lg transition-all duration-300 border border-neutral-100"
+                    style={{ borderLeft: `3px solid ${primaryColor}` }}
+                  >
+                    <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: primaryColor, fontFamily: BODY }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </p>
+                    <h3 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: '1.3rem', lineHeight: 1.2, color: textColor }} className="mb-3">{service.title}</h3>
+                    <p style={{ fontFamily: BODY, color: textMuted, fontSize: '0.9rem' }} className="leading-relaxed">{service.description}</p>
+                  </motion.div>
+                </Skeleton>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* PROCESS */}
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontStyle: 'italic', fontWeight: 400 }} />
+
+      {/* ABOUT */}
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <Skeleton isLoading={isLoading} className="w-full min-h-[8rem] mb-8">
+              <blockquote style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', lineHeight: 1.3, color: textColor }} className="mb-0">
+                "{aboutHeadline}"
+              </blockquote>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-full min-h-[5rem]">
+              <p style={{ fontFamily: BODY, color: textMuted, lineHeight: 1.8 }} className="text-base">{aboutContent}</p>
+            </Skeleton>
+          </div>
+          <Skeleton isLoading={isLoading} className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
+            <img src={(websiteData as any).aboutImageUrl || heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+          </Skeleton>
+        </div>
+      </section>
+
+      <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontStyle: 'italic', fontWeight: 400 }} template="warm" headlineSize={headlineSize} />
+
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={safeCs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="elegant"
+        logoStyle={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
+        showBorder={false}
+      />
+    </div>
+  );
+}
+
+// ================================================================
+// APEX LAYOUT — Autoritär, präzise, professionell
+// Für Unternehmensberatung, IT, Recht, Architektur, B2B
+// ================================================================
+
+export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'Bebas Neue', Impact, sans-serif");
+  const BODY = "'Inter', system-ui, sans-serif";
+  const primaryColor = safeCs.primary || '#3b82f6';
+  const accentColor = safeCs.accent || safeCs.secondary || primaryColor;
+  const textColor = safeCs.text || '#111827';
+  const textMuted = safeCs.textLight || '#6b7280';
+
+  const hero = sec(websiteData, 'hero');
+  const about = sec(websiteData, 'about');
+  const services = sec(websiteData, 'services')?.items || [];
+  const heroCta = hero?.ctaText || 'Beratung anfragen';
+  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent = about?.content || websiteData.description || '';
+  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const badgeText = websiteData.businessCategory ? websiteData.businessCategory : (websiteData.businessName || '');
+
+  return (
+    <div style={{ fontFamily: BODY, backgroundColor: '#ffffff', color: textColor }} className="overflow-hidden">
+      {/* NAV */}
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/95 backdrop-blur-md border-b border-neutral-100">
+        <Skeleton isLoading={isLoading} className="max-w-[40%] h-8">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: DISPLAY, fontSize: '1.4rem', letterSpacing: '0.08em' }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-neutral-700" />
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+          <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
+        </Skeleton>
+      </nav>
+
+      {/* HERO */}
+      <section id="hero" className="min-h-screen grid lg:grid-cols-[55%_45%] pt-20 overflow-hidden">
+        {/* LEFT: Text */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24"
+        >
+          {/* Badge */}
+          {!isLoading && (
+            <div className="inline-flex items-center gap-2 self-start mb-6">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
+              <span className="text-xs uppercase tracking-[0.25em] font-semibold" style={{ color: primaryColor }}>{badgeText}</span>
+            </div>
+          )}
+
+          {/* Top accent line */}
+          {!isLoading && <div className="w-full h-px mb-6" style={{ backgroundColor: primaryColor, opacity: 0.3 }} />}
+
+          <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-4">
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 0.95, letterSpacing: '0.03em', fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7vw, 7.5rem)'), color: textColor }}
+              className="uppercase mb-0">
+              {hl.main}<br />
+              <span style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                {hl.last}
+              </span>
+            </h1>
+          </Skeleton>
+
+          {/* Bottom accent line */}
+          {!isLoading && <div className="w-full h-px mb-8" style={{ backgroundColor: primaryColor, opacity: 0.3 }} />}
+
+          <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3rem] mb-10">
+            <p style={{ fontFamily: BODY, color: textMuted, fontSize: '1rem' }} className="leading-relaxed max-w-md mb-0">
+              {hero?.subheadline || websiteData.tagline}
+            </p>
+          </Skeleton>
+
+          <div className="flex flex-wrap gap-4">
+            <Skeleton isLoading={isLoading} className="min-w-[160px] h-12">
+              <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }}
+                className="px-8 py-3 text-xs uppercase tracking-wider shadow-xl hover:scale-105 transition-transform whitespace-nowrap">
+                {heroCta}
+              </button>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="min-w-[130px] h-12">
+              <button style={{ fontFamily: BODY, color: textMuted, borderColor: `${primaryColor}50` }}
+                className="px-7 py-3 text-xs uppercase tracking-wider border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+                Mehr erfahren
+              </button>
+            </Skeleton>
+          </div>
+        </motion.div>
+
+        {/* RIGHT: Image */}
+        <motion.div
+          initial={{ opacity: 0, scale: 1.02 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.0 }}
+          className="relative flex items-center justify-center p-8 lg:p-12 min-h-[60vw] lg:min-h-0"
+        >
+          <Skeleton isLoading={isLoading} className="w-full h-full rounded-2xl overflow-hidden">
+            <div className="relative w-full h-full min-h-[50vw] lg:min-h-0" style={{ aspectRatio: '4/3' }}>
+              <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover rounded-2xl" alt="" />
+              {/* Primary color corner accent */}
+              {!isLoading && <div className="absolute top-0 left-0 w-12 h-12 rounded-tl-2xl" style={{ backgroundColor: primaryColor }} />}
+            </div>
+          </Skeleton>
+        </motion.div>
+      </section>
+
+      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+
+      {/* SERVICES — Numbered ruled list */}
+      {services.length > 0 && (
+        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+          <div className="max-w-7xl mx-auto">
+            <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[5rem] mb-16">
+              <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.05em', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
+                Unsere <span style={{ color: primaryColor }}>Leistungen</span>
+              </h2>
+            </Skeleton>
+            <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
+              {services.map((service: any, i: number) => (
+                <Skeleton key={i} isLoading={isLoading} className="py-8 min-h-[5rem]">
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.08, duration: 0.5 }}
+                    className="grid lg:grid-cols-[80px_1fr_2fr] gap-4 items-start py-8"
+                  >
+                    <span style={{ fontFamily: DISPLAY, fontSize: '2.5rem', fontWeight: 400, color: primaryColor, letterSpacing: '0.05em', lineHeight: 1 }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 style={{ fontFamily: BODY, fontWeight: 700, fontSize: '1.1rem', color: textColor }} className="leading-tight pt-1">{service.title}</h3>
+                    <p style={{ fontFamily: BODY, color: textMuted, fontSize: '0.9rem' }} className="leading-relaxed pt-1">{service.description}</p>
+                  </motion.div>
+                </Skeleton>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* PROCESS */}
+      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight: 400, letterSpacing: '0.05em' }} />
+
+      {/* ABOUT */}
+      <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+          <div>
+            {!isLoading && <div className="w-12 h-0.5 mb-8" style={{ backgroundColor: primaryColor }} />}
+            <Skeleton isLoading={isLoading} className="w-full min-h-[6rem] mb-6">
+              <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.04em', fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
+                {aboutHeadline}
+              </h2>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-full min-h-[5rem]">
+              <p style={{ fontFamily: BODY, color: textMuted, lineHeight: 1.8 }} className="text-base">{aboutContent}</p>
+            </Skeleton>
+          </div>
+          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
+            <img src={(websiteData as any).aboutImageUrl || heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+          </Skeleton>
+        </div>
+      </section>
+
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" dark={false} variant={1} />
+
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight: 400, letterSpacing: '0.05em' }} template="luxury" headlineSize={headlineSize} />
+
+      <DynamicFooter
+        websiteData={websiteData}
+        cs={safeCs}
+        isLoading={isLoading}
+        footerText={footerText}
+        variant="minimal"
+        logoStyle={{ fontFamily: DISPLAY, fontSize: '1.3rem', letterSpacing: '0.1em' }}
+        showBorder={true}
+      />
+    </div>
+  );
+}
+
+// ================================================================
 // INDUSTRY MAPPING & LAYOUT ENGINE
 // ================================================================
 
@@ -2369,6 +2746,8 @@ export const getLayoutKeyByIndustry = (category: string = "") => {
   if (cat.includes('auto') || cat.includes('fahrzeug') || cat.includes('immobilien') || cat.includes('schmuck')) return 'LUXURY';
   if (cat.includes('agentur') || cat.includes('it') || cat.includes('marketing') || cat.includes('software')) return 'MODERN';
   if (cat.includes('natur') || cat.includes('bio') || cat.includes('garten') || cat.includes('florist')) return 'NATURAL';
+  if (cat.includes('coach') || cat.includes('yoga') || cat.includes('ernährung') || cat.includes('fotograf') || cat.includes('massage') || cat.includes('heilpraktik')) return 'EDEN';
+  if (cat.includes('beratung') || cat.includes('recht') || cat.includes('steuer') || cat.includes('finanz') || cat.includes('architekt') || cat.includes('ingenieur')) return 'APEX';
   return 'PREMIUM';
 };
 
@@ -2378,7 +2757,7 @@ export const LayoutEngine = ({ gmbData, websiteData, isLoading }: any) => {
     BOLD: BoldLayoutV2, ELEGANT: ElegantLayoutV2, CLEAN: CleanLayoutV2,
     CRAFT: CraftLayoutV2, DYNAMIC: DynamicLayoutV2, FRESH: FreshLayoutV2,
     LUXURY: LuxuryLayoutV2, MODERN: ModernLayoutV2, NATURAL: NaturalLayoutV2,
-    PREMIUM: PremiumLayoutV2
+    PREMIUM: PremiumLayoutV2, EDEN: EdenLayoutV2, APEX: ApexLayoutV2
   };
   const SelectedLayout = layouts[layoutKey] || PremiumLayoutV2;
   return (

@@ -8,7 +8,7 @@ import { useRoute, useLocation } from "wouter";
 import {
   BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
   DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
-  NaturalLayoutV2, PremiumLayoutV2,
+  NaturalLayoutV2, PremiumLayoutV2, EdenLayoutV2, ApexLayoutV2,
 } from "@/components/layouts/PremiumLayoutsV2";
 import { PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
 import { withOnColors } from "@shared/layoutConfig";
@@ -122,6 +122,16 @@ const MOCK: Record<string, any> = {
     ["M&A Advisory", "Diskreter Begleiter bei Unternehmenstransaktionen – von der Due Diligence bis zum Closing."],
     ["Executive Coaching", "Individuelle Führungskräfteentwicklung für Top-Manager und Geschäftsführer."],
   ], "Unsere Expertise"),
+  EDEN: genericMock("Clara Müller Coaching", "Dein Leben. Deine Kraft. Dein Weg.", "Erstgespräch buchen", [
+    ["Life Coaching", "Persönliche Begleitung auf Ihrem Weg zu mehr Klarheit, Balance und Erfüllung im Alltag."],
+    ["Ernährungsberatung", "Individuelle Ernährungskonzepte, die zu Ihrem Körper und Ihrem Leben passen – keine Verbote, nur echte Veränderung."],
+    ["Entspannungs- & Atemkurse", "Ganzheitliche Übungen und Techniken für mehr innere Ruhe und nachhaltige Stressreduktion."],
+  ], "Über Clara"),
+  APEX: genericMock("Brandt & Partner Rechtsanwälte", "Ihr Recht. Klar vertreten.", "Beratung anfragen", [
+    ["Unternehmensrecht", "Gründung, Verträge, M&A – wir begleiten Ihr Unternehmen juristisch auf jedem Schritt."],
+    ["Arbeitsrecht", "Professionelle Vertretung für Arbeitgeber und Arbeitnehmer in allen arbeitsrechtlichen Fragen."],
+    ["Immobilienrecht", "Von der Due Diligence bis zur Beurkundung – umfassende rechtliche Begleitung bei Immobilientransaktionen."],
+  ], "Die Kanzlei"),
 };
 
 const LAYOUTS: Record<string, { component: React.ComponentType<any>; label: string; heroImage: string }> = {
@@ -135,6 +145,8 @@ const LAYOUTS: Record<string, { component: React.ComponentType<any>; label: stri
   MODERN:  { component: ModernLayoutV2,  label: "Modern – IT & Agentur",         heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop" },
   NATURAL: { component: NaturalLayoutV2, label: "Natural – Bio & Natur",         heroImage: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=80&fit=crop" },
   PREMIUM: { component: PremiumLayoutV2, label: "Premium – Business & Consulting", heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop" },
+  EDEN:    { component: EdenLayoutV2,    label: "Eden – Coaching & Personal Services", heroImage: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=1600&q=80&fit=crop" },
+  APEX:    { component: ApexLayoutV2,    label: "Apex – Beratung & B2B Profis",  heroImage: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1600&q=80&fit=crop" },
 };
 
 export default function LayoutPreviewStandalone() {
