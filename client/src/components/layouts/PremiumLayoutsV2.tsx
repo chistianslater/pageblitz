@@ -105,14 +105,38 @@ const getBodyTextMultiplier = (headlineSize: string = 'large'): number => {
 
 // ── HERO VARIANTS ───────────────────────────────────────────────
 
+/** Eyebrow pill badge shown above the hero headline */
+function HeroBadge({ text, cs, dark }: { text: string; cs: any; dark: boolean }) {
+  const bg    = dark ? 'rgba(255,255,255,0.08)' : `${cs.primary}18`;
+  const border = dark ? 'rgba(255,255,255,0.18)' : `${cs.primary}40`;
+  const color  = dark ? '#ffffff' : cs.primary;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] mb-8 self-start"
+      style={{ backgroundColor: bg, border: `1px solid ${border}`, color }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+      {text}
+    </motion.div>
+  );
+}
+
 function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
-  // Dynamic text colors based on dark mode
-  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
+  const textColor    = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
+
   return (
-    <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] pb-20 items-center gap-12 max-w-7xl mx-auto px-6">
+    <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] pb-20 items-center gap-12 max-w-7xl mx-auto px-6 relative overflow-hidden">
+      {/* Depth blob */}
+      <div className="absolute -top-20 -right-40 w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.07] pointer-events-none" style={{ backgroundColor: primaryColor }} />
+
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
@@ -120,22 +144,40 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 0.8 }}
         className="flex flex-col items-start text-left relative z-10"
       >
+        {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
+
         <Skeleton isLoading={isLoading} className="w-full min-h-[16rem] mb-8">
           <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)'), color: textColor }} className="uppercase drop-shadow-xl mb-0">
-            {hl.main}<br /><span style={{ color: primaryColor }}>{hl.last}</span>
+            {hl.main}<br />
+            <span style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>{hl.last}</span>
           </h1>
         </Skeleton>
+
         <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-12">
           <p style={{ fontFamily: bodyFont, borderColor: primaryColor, color: textMuted }} className="text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mt-4">
-          <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-12 py-5 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
-            {heroCta}
-          </button>
-        </Skeleton>
+
+        <div className="flex flex-wrap items-center gap-4 mt-4">
+          <Skeleton isLoading={isLoading} className="w-44 h-14">
+            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-36 h-14">
+            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }} className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
+              Mehr erfahren
+            </button>
+          </Skeleton>
+        </div>
       </motion.div>
+
       <motion.div
         className="relative aspect-square"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -148,6 +190,21 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
           </div>
         </Skeleton>
+        {/* Floating trust card */}
+        {!isLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+            className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-2xl hidden sm:block"
+          >
+            <div className="flex items-center gap-1 mb-1">
+              {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-sm leading-none">★</span>)}
+              <span className="text-xs font-bold text-neutral-800 ml-1">4.9</span>
+            </div>
+            <p className="text-[10px] text-neutral-500 font-medium leading-tight">Kundenbewertung · Verifiziert</p>
+          </motion.div>
+        )}
         <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl blur-3xl opacity-20" style={{ backgroundColor: primaryColor }} />
       </motion.div>
     </section>
@@ -157,38 +214,78 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
-  // Dynamic text colors based on dark mode
-  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
+  const textColor    = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
+
   return (
-    <section id="hero" className="pt-40 pb-32 text-center px-6 max-w-5xl mx-auto">
+    <section id="hero" className="pt-40 pb-32 text-center px-6 max-w-5xl mx-auto relative overflow-hidden">
+      {/* Background orbs */}
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px] opacity-[0.08] pointer-events-none" style={{ backgroundColor: primaryColor }} />
+      <div className="absolute bottom-16 left-0 w-[300px] h-[300px] rounded-full blur-[100px] opacity-[0.06] pointer-events-none" style={{ backgroundColor: accentColor }} />
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="flex flex-col items-center"
+        className="flex flex-col items-center relative z-10"
       >
+        {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
+
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[11rem] mb-12">
           <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)'), color: textColor }} className="uppercase drop-shadow-xl mb-0">
-            {hl.main} <span style={{ color: primaryColor }}>{hl.last}</span>
+            {hl.main}{' '}
+            <span style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>{hl.last}</span>
           </h1>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-16">
+
+        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-12">
           <p style={{ fontFamily: bodyFont, color: textMuted }} className="text-xl max-w-2xl mx-auto italic drop-shadow-lg mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-48 h-14 mx-auto mt-4 mb-20">
-          <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-12 py-5 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
-            {heroCta}
-          </button>
-        </Skeleton>
-        <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-[3rem] overflow-hidden shadow-2xl">
-          <div className="photo-frame w-full h-full rounded-[3rem] overflow-hidden">
-            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
-          </div>
-        </Skeleton>
+
+        {/* CTA row */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-20">
+          <Skeleton isLoading={isLoading} className="w-44 h-14">
+            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-36 h-14">
+            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }} className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
+              Mehr erfahren
+            </button>
+          </Skeleton>
+        </div>
+
+        {/* Hero image with floating badge */}
+        <div className="relative w-full">
+          <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-[3rem] overflow-hidden shadow-2xl">
+            <div className="photo-frame w-full h-full rounded-[3rem] overflow-hidden">
+              <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+            </div>
+          </Skeleton>
+          {/* Floating rotated badge – top-right corner */}
+          {!isLoading && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="absolute -top-4 right-4 sm:-right-4 rotate-6 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-xl hidden sm:block"
+              style={{ backgroundColor: primaryColor, color: cs?.onPrimary || '#fff' }}
+            >
+              ✓ Top Betrieb
+            </motion.div>
+          )}
+        </div>
       </motion.div>
     </section>
   );
@@ -197,19 +294,20 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
-  // Dynamic text colors based on dark mode
-  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.7)') : (safeCs.textLight || '#737373');
-  // Background gradient based on dark mode
-  const bgGradient = dark
+  const textColor    = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.7)') : (safeCs.textLight || '#737373');
+  const bgGradient   = dark
     ? 'bg-gradient-to-r from-black via-black/90 to-black/70'
     : 'bg-gradient-to-r from-white via-white/90 to-white/70';
+  const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
+
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden pb-12">
       <div className="absolute inset-0 z-0">
-        <img src={heroImageUrl} className="w-full h-full object-cover opacity-10 grayscale" alt="" />
+        <img src={heroImageUrl} className="w-full h-full object-cover opacity-[0.14] grayscale" alt="" />
         <div className={`absolute inset-0 ${bgGradient}`} />
       </div>
+
       <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-[60%_40%] items-center gap-12">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -218,28 +316,50 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           transition={{ duration: 0.8 }}
           className="flex flex-col items-start relative z-10"
         >
+          {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
+
           <Skeleton isLoading={isLoading} className="w-full min-h-[18rem] mb-12">
             <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)'), color: textColor }} className="uppercase tracking-tighter drop-shadow-2xl mb-0">
               {hl.main}<br />
-              <span className="relative inline-block">
+              <span className="relative inline-block pb-3">
                 {hl.last}
-                <div className="absolute -bottom-2 left-0 w-full h-4 opacity-30" style={{ backgroundColor: primaryColor }} />
+                {/* Animated SVG wave underline */}
+                <svg className="absolute -bottom-1 left-0 w-full overflow-visible" style={{ height: '10px' }} viewBox="0 0 200 10" preserveAspectRatio="none">
+                  <motion.path
+                    d="M0 6 Q50 2 100 7 Q150 12 200 6"
+                    fill="none"
+                    strokeWidth="3"
+                    stroke={primaryColor}
+                    strokeOpacity="0.55"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.0, delay: 0.7, ease: 'easeOut' }}
+                  />
+                </svg>
               </span>
             </h1>
           </Skeleton>
+
           <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
             <p style={{ fontFamily: bodyFont, color: textMuted }} className="text-2xl font-light leading-relaxed drop-shadow-lg mb-0">
               {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
-          <div className="flex flex-wrap gap-6 mt-10">
-            <Skeleton isLoading={isLoading} className="w-48 h-14">
-              <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-12 py-5 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
+
+          <div className="flex flex-wrap gap-4 mt-10">
+            <Skeleton isLoading={isLoading} className="w-44 h-14">
+              <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
                 {heroCta}
+              </button>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-36 h-14">
+              <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }} className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity">
+                Mehr erfahren
               </button>
             </Skeleton>
           </div>
         </motion.div>
+
         <motion.div
           className="hidden lg:block relative"
           initial={{ opacity: 0, x: 50 }}
@@ -251,6 +371,21 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
           </div>
           <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full border-4 border-dashed border-neutral-200 animate-spin-slow" />
+          {/* Floating rating card */}
+          {!isLoading && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 1.1 }}
+              className="absolute -bottom-6 -left-6 bg-white rounded-2xl px-4 py-3 shadow-2xl z-20"
+            >
+              <div className="flex items-center gap-0.5 mb-1">
+                {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-xs leading-none">★</span>)}
+                <span className="text-xs font-bold text-neutral-800 ml-1.5">4.9</span>
+              </div>
+              <p className="text-[10px] text-neutral-500 leading-tight font-medium">Kundenbewertung</p>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>
