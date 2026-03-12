@@ -43,9 +43,17 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, isLoading =
             </span>
           )}
           <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 md:mb-8 uppercase leading-[0.9]">
-              Handcrafted <br/> Engineering
-            </h1>
+            {(() => {
+              const text = websiteData.tagline || websiteData.businessName || 'Handwerk Qualität';
+              const words = text.split(' ');
+              const mid = Math.ceil(words.length / 2);
+              return (
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 md:mb-8 uppercase leading-[0.9]">
+                  {words.slice(0, mid).join(' ') || 'Handwerk'}<br/>
+                  {words.slice(mid).join(' ') || 'Qualität'}
+                </h1>
+              );
+            })()}
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-full h-16 mb-8">
             <p className="text-lg md:text-xl text-neutral-400 mb-8 md:mb-12 max-w-md">

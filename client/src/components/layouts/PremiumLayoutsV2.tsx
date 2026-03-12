@@ -47,21 +47,27 @@ const splitHeadline = (text: string) => {
 const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 'clamp(3rem, 8vw, 7rem)') => {
   const sizeMap: Record<string, Record<string, string>> = {
     large: {
-      'clamp(3rem, 8vw, 7rem)': 'clamp(3rem, 8vw, 7rem)',     // HeroVariantA
-      'clamp(3.5rem, 9vw, 8rem)': 'clamp(3.5rem, 9vw, 8rem)', // HeroVariantB
-      'clamp(4rem, 12vw, 10rem)': 'clamp(4rem, 12vw, 10rem)', // HeroVariantC
+      'clamp(3rem, 8vw, 7rem)': 'clamp(3rem, 8vw, 7rem)',
+      'clamp(3.5rem, 7.5vw, 8rem)': 'clamp(3.5rem, 7.5vw, 8rem)',   // HeroVariantA new
+      'clamp(3.5rem, 9vw, 8rem)': 'clamp(3.5rem, 9vw, 8rem)',
+      'clamp(4rem, 12vw, 10rem)': 'clamp(4rem, 12vw, 10rem)',         // HeroVariantC
+      'clamp(4.5rem, 11vw, 10rem)': 'clamp(4.5rem, 11vw, 10rem)',     // HeroVariantB new
       'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.8rem, 5.5vw, 5.5rem)', // Premium
     },
     medium: {
       'clamp(3rem, 8vw, 7rem)': 'clamp(2.5rem, 6vw, 5rem)',
+      'clamp(3.5rem, 7.5vw, 8rem)': 'clamp(2.8rem, 5.8vw, 6rem)',
       'clamp(3.5rem, 9vw, 8rem)': 'clamp(3rem, 7vw, 6rem)',
       'clamp(4rem, 12vw, 10rem)': 'clamp(3.2rem, 9vw, 7rem)',
+      'clamp(4.5rem, 11vw, 10rem)': 'clamp(3.5rem, 8.5vw, 7.5rem)',
       'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.4rem, 4.5vw, 4.5rem)',
     },
     small: {
       'clamp(3rem, 8vw, 7rem)': 'clamp(2rem, 5vw, 4rem)',
+      'clamp(3.5rem, 7.5vw, 8rem)': 'clamp(2.2rem, 4.5vw, 4.5rem)',
       'clamp(3.5rem, 9vw, 8rem)': 'clamp(2.5rem, 6vw, 5rem)',
       'clamp(4rem, 12vw, 10rem)': 'clamp(2.8rem, 8vw, 6rem)',
+      'clamp(4.5rem, 11vw, 10rem)': 'clamp(2.8rem, 7vw, 6rem)',
       'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2rem, 4vw, 3.5rem)',
     },
   };
@@ -133,70 +139,104 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="min-h-[90vh] grid lg:grid-cols-2 pt-[100px] pb-20 items-center gap-12 max-w-7xl mx-auto px-6 relative overflow-hidden">
-      {/* Depth blob */}
-      <div className="absolute -top-20 -right-40 w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.07] pointer-events-none" style={{ backgroundColor: primaryColor }} />
-
+    <section id="hero" className="grid lg:grid-cols-[45%_55%] min-h-screen overflow-hidden">
+      {/* LEFT: Text Panel */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="flex flex-col items-start text-left relative z-10"
+        className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0"
       >
+        {/* Left edge accent line */}
+        {!isLoading && (
+          <div className="absolute left-0 top-1/4 bottom-1/4 w-0.5 rounded-full hidden lg:block"
+            style={{ backgroundColor: primaryColor, opacity: 0.35 }} />
+        )}
+        {/* Subtle background depth blob */}
+        <div className="absolute -top-20 right-0 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.07] pointer-events-none"
+          style={{ backgroundColor: primaryColor }} />
+
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
-        <Skeleton isLoading={isLoading} className="w-full min-h-[16rem] mb-8">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 8vw, 7rem)'), color: textColor }} className="uppercase drop-shadow-xl mb-0">
+        <Skeleton isLoading={isLoading} className="w-full min-h-[14rem] mb-6">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7.5vw, 8rem)'), color: textColor }}
+            className="uppercase tracking-tight mb-0">
             {hl.main}<br />
             <span style={{
               background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>{hl.last}</span>
           </h1>
         </Skeleton>
 
-        <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-12">
-          <p style={{ fontFamily: bodyFont, borderColor: primaryColor, color: textMuted }} className="text-xl leading-relaxed max-w-lg border-l-4 pl-6 drop-shadow-lg mb-0">
+        {/* Stats strip between headline and subheadline */}
+        {!isLoading && (
+          <div className="grid grid-cols-3 gap-6 py-6 my-6 border-y"
+            style={{ borderColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}>
+            {[
+              { val: '100%', label: 'Zufriedene Kunden' },
+              { val: '5★', label: 'Bewertung' },
+              { val: '24h', label: 'Reaktionszeit' },
+            ].map((s, i) => (
+              <div key={i}>
+                <p className="text-xl font-black leading-none" style={{ color: primaryColor, fontFamily: displayFont }}>{s.val}</p>
+                <p className="text-[10px] uppercase tracking-widest mt-1 opacity-40" style={{ fontFamily: bodyFont, color: textColor }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-8">
+          <p style={{ fontFamily: bodyFont, color: textMuted }}
+            className="text-lg leading-relaxed max-w-sm mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
 
-        <div className="flex flex-wrap items-center gap-4 mt-4">
+        <div className="flex flex-wrap items-center gap-4 mt-2">
           <Skeleton isLoading={isLoading} className="w-44 h-14">
-            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
+            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
+              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-36 h-14">
-            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }} className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
+            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
+              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
               Mehr erfahren
             </button>
           </Skeleton>
         </div>
       </motion.div>
 
+      {/* RIGHT: Full-height image (no aspect ratio constraint) */}
       <motion.div
-        className="relative aspect-square"
-        initial={{ opacity: 0, scale: 0.9 }}
+        className="relative min-h-[55vw] lg:min-h-screen overflow-hidden"
+        initial={{ opacity: 0, scale: 1.05 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 1.2 }}
       >
-        <Skeleton isLoading={isLoading} className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
-          <div className="photo-frame w-full h-full rounded-2xl overflow-hidden shadow-2xl">
-            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
-          </div>
+        <Skeleton isLoading={isLoading} className="absolute inset-0">
+          <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
+          {/* Gradient blend at left edge for seamless column transition */}
+          <div className="absolute inset-y-0 left-0 w-16 pointer-events-none"
+            style={{ backgroundImage: dark ? 'linear-gradient(to right, rgba(10,10,10,0.6), transparent)' : 'linear-gradient(to right, rgba(248,249,250,0.5), transparent)' }} />
         </Skeleton>
+
+        {/* Primary color block — top-left corner accent */}
+        {!isLoading && (
+          <div className="absolute top-0 left-0 w-14 h-14 hidden lg:block" style={{ backgroundColor: primaryColor }} />
+        )}
+
         {/* Floating trust card */}
         {!isLoading && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.9 }}
-            className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-2xl hidden sm:block"
+            className="absolute bottom-8 left-6 bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-2xl hidden sm:block"
           >
             <div className="flex items-center gap-1 mb-1">
               {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-sm leading-none">★</span>)}
@@ -205,7 +245,6 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             <p className="text-[10px] text-neutral-500 font-medium leading-tight">Kundenbewertung · Verifiziert</p>
           </motion.div>
         )}
-        <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl blur-3xl opacity-20" style={{ backgroundColor: primaryColor }} />
       </motion.div>
     </section>
   );
@@ -220,10 +259,10 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="pt-40 pb-32 text-center px-6 max-w-5xl mx-auto relative overflow-hidden">
-      {/* Background orbs */}
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px] opacity-[0.08] pointer-events-none" style={{ backgroundColor: primaryColor }} />
-      <div className="absolute bottom-16 left-0 w-[300px] h-[300px] rounded-full blur-[100px] opacity-[0.06] pointer-events-none" style={{ backgroundColor: accentColor }} />
+    <section id="hero" className="pt-28 md:pt-36 pb-16 md:pb-24 text-center px-6 max-w-7xl mx-auto relative overflow-hidden">
+      {/* Background orbs: more visible */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[120px] opacity-[0.12] pointer-events-none" style={{ backgroundColor: primaryColor }} />
+      <div className="absolute bottom-20 left-0 w-[450px] h-[450px] rounded-full blur-[100px] opacity-[0.08] pointer-events-none" style={{ backgroundColor: accentColor }} />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -234,57 +273,68 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
       >
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
-        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[11rem] mb-12">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 800, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 9vw, 8rem)'), color: textColor }} className="uppercase drop-shadow-xl mb-0">
-            {hl.main}{' '}
+        {/* Thin accent line: editorial divider between badge and headline */}
+        {!isLoading && (
+          <div className="w-16 h-px mb-8" style={{ backgroundColor: primaryColor }} />
+        )}
+
+        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[12rem] mb-10">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.92, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4.5rem, 11vw, 10rem)'), color: textColor }}
+            className="uppercase tracking-tight mb-0">
+            {hl.main}<br />
             <span style={{
               background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>{hl.last}</span>
           </h1>
         </Skeleton>
 
-        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-12">
-          <p style={{ fontFamily: bodyFont, color: textMuted }} className="text-xl max-w-2xl mx-auto italic drop-shadow-lg mb-0">
+        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-10">
+          <p style={{ fontFamily: bodyFont, color: textMuted }}
+            className="text-xl max-w-2xl mx-auto italic leading-relaxed mb-0">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
 
         {/* CTA row */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-20">
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
           <Skeleton isLoading={isLoading} className="w-44 h-14">
-            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
+            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
+              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-36 h-14">
-            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }} className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
+            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
+              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity">
               Mehr erfahren
             </button>
           </Skeleton>
         </div>
 
-        {/* Hero image with floating badge */}
+        {/* Image with integrated glassmorphism stats bar */}
         <div className="relative w-full">
-          <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-[3rem] overflow-hidden shadow-2xl">
-            <div className="photo-frame w-full h-full rounded-[3rem] overflow-hidden">
+          <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative w-full h-full">
               <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+              {/* Stats overlay bar at bottom of image */}
+              {!isLoading && (
+                <div className="absolute bottom-0 left-0 right-0 backdrop-blur-md bg-black/25 px-8 py-5 flex justify-around items-center">
+                  {[
+                    { val: '100%', label: 'Zufriedenheit' },
+                    { val: '5★', label: 'Bewertung' },
+                    { val: '24h', label: 'Reaktion' },
+                    { val: '10+', label: 'Jahre' },
+                  ].map((s, i) => (
+                    <div key={i} className="text-center">
+                      <p className="text-white font-black text-xl leading-none">{s.val}</p>
+                      <p className="text-white/60 text-[10px] uppercase tracking-widest mt-1">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </Skeleton>
-          {/* Floating rotated badge – top-right corner */}
-          {!isLoading && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.9 }}
-              className="absolute -top-4 right-4 sm:-right-4 rotate-6 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-xl hidden sm:block"
-              style={{ backgroundColor: primaryColor, color: cs?.onPrimary || '#fff' }}
-            >
-              ✓ Top Betrieb
-            </motion.div>
-          )}
         </div>
       </motion.div>
     </section>
@@ -294,45 +344,51 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroImageUrl, heroCta, hl, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
+  const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
   const textColor    = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.7)') : (safeCs.textLight || '#737373');
+  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.65)') : (safeCs.textLight || '#737373');
   const bgGradient   = dark
-    ? 'bg-gradient-to-r from-black via-black/90 to-black/70'
-    : 'bg-gradient-to-r from-white via-white/90 to-white/70';
+    ? 'bg-gradient-to-br from-black/80 via-black/60 to-black/30'
+    : 'bg-gradient-to-br from-white/85 via-white/65 to-white/25';
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="min-h-screen flex items-center relative overflow-hidden pb-12">
+    <section id="hero" className="min-h-screen flex items-center relative overflow-hidden py-28 lg:py-32">
+      {/* Full-bleed background — dramatically more visible */}
       <div className="absolute inset-0 z-0">
-        <img src={heroImageUrl} className="w-full h-full object-cover opacity-[0.14] grayscale" alt="" />
+        <img src={heroImageUrl} className="w-full h-full object-cover" style={{ opacity: 0.38 }} alt="" />
         <div className={`absolute inset-0 ${bgGradient}`} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-[60%_40%] items-center gap-12">
+      {/* Content: full max-width */}
+      <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-col items-start relative z-10"
+          transition={{ duration: 0.9 }}
         >
           {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
-          <Skeleton isLoading={isLoading} className="w-full min-h-[18rem] mb-12">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)'), color: textColor }} className="uppercase tracking-tighter drop-shadow-2xl mb-0">
+          <Skeleton isLoading={isLoading} className="w-full min-h-[20rem] mb-12">
+            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)'), color: textColor }}
+              className="uppercase tracking-tighter mb-0">
               {hl.main}<br />
-              <span className="relative inline-block pb-3">
+              <span
+                className="relative inline-block pb-4"
+                style={{
+                  background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                }}
+              >
                 {hl.last}
                 {/* Animated SVG wave underline */}
                 <svg className="absolute -bottom-1 left-0 w-full overflow-visible" style={{ height: '10px' }} viewBox="0 0 200 10" preserveAspectRatio="none">
                   <motion.path
                     d="M0 6 Q50 2 100 7 Q150 12 200 6"
-                    fill="none"
-                    strokeWidth="3"
-                    stroke={primaryColor}
-                    strokeOpacity="0.55"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
+                    fill="none" strokeWidth="3"
+                    stroke={primaryColor} strokeOpacity="0.4"
+                    initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
                     transition={{ duration: 1.0, delay: 0.7, ease: 'easeOut' }}
                   />
                 </svg>
@@ -340,52 +396,49 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             </h1>
           </Skeleton>
 
-          <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
-            <p style={{ fontFamily: bodyFont, color: textMuted }} className="text-2xl font-light leading-relaxed drop-shadow-lg mb-0">
-              {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
-            </p>
-          </Skeleton>
-
-          <div className="flex flex-wrap gap-4 mt-10">
-            <Skeleton isLoading={isLoading} className="w-44 h-14">
-              <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: cs?.onPrimary || '#ffffff' }} className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
-                {heroCta}
-              </button>
-            </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-36 h-14">
-              <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }} className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity">
-                Mehr erfahren
-              </button>
-            </Skeleton>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="hidden lg:block relative"
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 0.2 }}
-        >
-          <div className="photo-frame aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl rotate-3 scale-110">
-            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
-          </div>
-          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full border-4 border-dashed border-neutral-200 animate-spin-slow" />
-          {/* Floating rating card */}
-          {!isLoading && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 1.1 }}
-              className="absolute -bottom-6 -left-6 bg-white rounded-2xl px-4 py-3 shadow-2xl z-20"
-            >
-              <div className="flex items-center gap-0.5 mb-1">
-                {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-xs leading-none">★</span>)}
-                <span className="text-xs font-bold text-neutral-800 ml-1.5">4.9</span>
+          {/* Lower section: two columns on desktop */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-end">
+            {/* Left: subheadline + CTAs */}
+            <div>
+              <Skeleton isLoading={isLoading} className="w-full min-h-[5rem] mb-10">
+                <p style={{ fontFamily: bodyFont, color: textMuted, borderLeft: `3px solid ${primaryColor}` }}
+                  className="text-xl lg:text-2xl font-light leading-relaxed pl-6 max-w-lg mb-0">
+                  {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
+                </p>
+              </Skeleton>
+              <div className="flex flex-wrap gap-4">
+                <Skeleton isLoading={isLoading} className="w-44 h-14">
+                  <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
+                    className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
+                    {heroCta}
+                  </button>
+                </Skeleton>
+                <Skeleton isLoading={isLoading} className="w-36 h-14">
+                  <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
+                    className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity">
+                    Mehr erfahren
+                  </button>
+                </Skeleton>
               </div>
-              <p className="text-[10px] text-neutral-500 leading-tight font-medium">Kundenbewertung</p>
-            </motion.div>
-          )}
+            </div>
+
+            {/* Right: Stats 2×2 grid — desktop only */}
+            {!isLoading && (
+              <div className="hidden lg:grid grid-cols-2 gap-8">
+                {[
+                  { val: '100%', label: 'Zufriedene Kunden' },
+                  { val: '5★', label: 'Bewertung' },
+                  { val: '24h', label: 'Reaktionszeit' },
+                  { val: '10+', label: 'Jahre Erfahrung' },
+                ].map((s, i) => (
+                  <div key={i} className="border-t pt-4" style={{ borderColor: dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)' }}>
+                    <p className="text-3xl font-black leading-none" style={{ color: primaryColor, fontFamily: displayFont }}>{s.val}</p>
+                    <p className="text-[11px] uppercase tracking-widest mt-2 opacity-50" style={{ color: textColor, fontFamily: bodyFont }}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </motion.div>
       </div>
     </section>

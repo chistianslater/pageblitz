@@ -38,10 +38,19 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, isLoading =
               </span>
             )}
             <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-8">
-              <h1 className="text-[10vw] md:text-[7vw] font-black uppercase leading-[0.9] tracking-tighter mb-8 md:mb-10">
-                Institutional <br/>
-                <span className="italic font-serif font-light text-slate-500">Security</span>
-              </h1>
+              {(() => {
+                const text = websiteData.tagline || websiteData.businessName || 'Vertrauen & Expertise';
+                const words = text.split(' ');
+                const mid = Math.ceil(words.length / 2);
+                const line1 = words.slice(0, mid).join(' ');
+                const line2 = words.slice(mid).join(' ') || words[0];
+                return (
+                  <h1 className="text-[10vw] md:text-[7vw] font-black uppercase leading-[0.9] tracking-tighter mb-8 md:mb-10">
+                    {line1}<br/>
+                    <span className="italic font-serif font-light text-slate-500">{line2}</span>
+                  </h1>
+                );
+              })()}
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-8">
               <p className="text-base md:text-lg text-slate-500 mb-8 md:mb-10 max-w-lg">

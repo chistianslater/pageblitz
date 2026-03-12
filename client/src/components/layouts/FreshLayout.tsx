@@ -46,18 +46,27 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, isLoading =
             </span>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-full h-20 md:h-32 mb-10">
-            <h1 className="font-serif text-[8vw] md:text-[7vw] leading-none mb-10 md:mb-16 italic">
-              Authentic Flavors.{' '}
-              <br/>
-              <span style={{
-                background: `linear-gradient(135deg, ${cs.primary} 0%, ${(cs as any).accent || (cs as any).secondary || cs.primary} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>
-                Modern Spirit.
-              </span>
-            </h1>
+            {(() => {
+              const text = websiteData.tagline || websiteData.businessName || 'Täglich Frisch';
+              const words = text.split(' ');
+              const mid = Math.ceil(words.length / 2);
+              const line1 = words.slice(0, mid).join(' ');
+              const line2 = words.slice(mid).join(' ') || text;
+              return (
+                <h1 className="font-serif text-[8vw] md:text-[7vw] leading-none mb-10 md:mb-16 italic">
+                  {line1}.{' '}
+                  <br/>
+                  <span style={{
+                    background: `linear-gradient(135deg, ${cs.primary} 0%, ${(cs as any).accent || (cs as any).secondary || cs.primary} 100%)`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>
+                    {line2}
+                  </span>
+                </h1>
+              );
+            })()}
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-full max-w-3xl aspect-video rounded-[2rem] mx-auto">
             <div className="relative inline-block group">
