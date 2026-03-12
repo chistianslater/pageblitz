@@ -48,27 +48,27 @@ const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 
   const sizeMap: Record<string, Record<string, string>> = {
     large: {
       'clamp(3rem, 8vw, 7rem)': 'clamp(3rem, 8vw, 7rem)',
-      'clamp(3.5rem, 7.5vw, 8rem)': 'clamp(3.5rem, 7.5vw, 8rem)',   // HeroVariantA new
       'clamp(3.5rem, 9vw, 8rem)': 'clamp(3.5rem, 9vw, 8rem)',
-      'clamp(4rem, 12vw, 10rem)': 'clamp(4rem, 12vw, 10rem)',         // HeroVariantC
-      'clamp(4.5rem, 11vw, 10rem)': 'clamp(4.5rem, 11vw, 10rem)',     // HeroVariantB new
       'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.8rem, 5.5vw, 5.5rem)', // Premium
+      'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(2.5rem, 3.5vw, 4.5rem)', // HeroVariantA
+      'clamp(3rem, 5vw, 6rem)':        'clamp(3rem, 5vw, 6rem)',        // HeroVariantB
+      'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(2.8rem, 4.5vw, 6rem)',   // HeroVariantC
     },
     medium: {
       'clamp(3rem, 8vw, 7rem)': 'clamp(2.5rem, 6vw, 5rem)',
-      'clamp(3.5rem, 7.5vw, 8rem)': 'clamp(2.8rem, 5.8vw, 6rem)',
       'clamp(3.5rem, 9vw, 8rem)': 'clamp(3rem, 7vw, 6rem)',
-      'clamp(4rem, 12vw, 10rem)': 'clamp(3.2rem, 9vw, 7rem)',
-      'clamp(4.5rem, 11vw, 10rem)': 'clamp(3.5rem, 8.5vw, 7.5rem)',
       'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.4rem, 4.5vw, 4.5rem)',
+      'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(2rem, 2.8vw, 3.5rem)',
+      'clamp(3rem, 5vw, 6rem)':        'clamp(2.4rem, 4vw, 5rem)',
+      'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(2.2rem, 3.5vw, 4.5rem)',
     },
     small: {
       'clamp(3rem, 8vw, 7rem)': 'clamp(2rem, 5vw, 4rem)',
-      'clamp(3.5rem, 7.5vw, 8rem)': 'clamp(2.2rem, 4.5vw, 4.5rem)',
       'clamp(3.5rem, 9vw, 8rem)': 'clamp(2.5rem, 6vw, 5rem)',
-      'clamp(4rem, 12vw, 10rem)': 'clamp(2.8rem, 8vw, 6rem)',
-      'clamp(4.5rem, 11vw, 10rem)': 'clamp(2.8rem, 7vw, 6rem)',
       'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2rem, 4vw, 3.5rem)',
+      'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(1.8rem, 2.2vw, 2.8rem)',
+      'clamp(3rem, 5vw, 6rem)':        'clamp(2rem, 3.2vw, 4rem)',
+      'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(1.8rem, 2.8vw, 3.8rem)',
     },
   };
   return sizeMap[headlineSize]?.[baseSize] || baseSize;
@@ -139,14 +139,14 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="grid lg:grid-cols-[45%_55%] min-h-screen overflow-hidden">
+    <section id="hero" className="grid lg:grid-cols-[45%_55%] min-h-screen">
       {/* LEFT: Text Panel */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0"
+        className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0 overflow-hidden"
       >
         {/* Left edge accent line */}
         {!isLoading && (
@@ -159,8 +159,8 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
-        <Skeleton isLoading={isLoading} className="w-full min-h-[14rem] mb-6">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7.5vw, 8rem)'), color: textColor }}
+        <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-6">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.5rem, 3.5vw, 4.5rem)'), color: textColor }}
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
             <span style={{
@@ -169,23 +169,6 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             }}>{hl.last}</span>
           </h1>
         </Skeleton>
-
-        {/* Stats strip between headline and subheadline */}
-        {!isLoading && (
-          <div className="grid grid-cols-3 gap-6 py-6 my-6 border-y"
-            style={{ borderColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}>
-            {[
-              { val: '100%', label: 'Zufriedene Kunden' },
-              { val: '5★', label: 'Bewertung' },
-              { val: '24h', label: 'Reaktionszeit' },
-            ].map((s, i) => (
-              <div key={i}>
-                <p className="text-xl font-black leading-none" style={{ color: primaryColor, fontFamily: displayFont }}>{s.val}</p>
-                <p className="text-[10px] uppercase tracking-widest mt-1 opacity-40" style={{ fontFamily: bodyFont, color: textColor }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-        )}
 
         <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-8">
           <p style={{ fontFamily: bodyFont, color: textMuted }}
@@ -230,21 +213,6 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           <div className="absolute top-0 left-0 w-14 h-14 hidden lg:block" style={{ backgroundColor: primaryColor }} />
         )}
 
-        {/* Floating trust card */}
-        {!isLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.9 }}
-            className="absolute bottom-8 left-6 bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-2xl hidden sm:block"
-          >
-            <div className="flex items-center gap-1 mb-1">
-              {[1,2,3,4,5].map(i => <span key={i} className="text-yellow-400 text-sm leading-none">★</span>)}
-              <span className="text-xs font-bold text-neutral-800 ml-1">4.9</span>
-            </div>
-            <p className="text-[10px] text-neutral-500 font-medium leading-tight">Kundenbewertung · Verifiziert</p>
-          </motion.div>
-        )}
       </motion.div>
     </section>
   );
@@ -278,8 +246,8 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           <div className="w-16 h-px mb-8" style={{ backgroundColor: primaryColor }} />
         )}
 
-        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[12rem] mb-10">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.92, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4.5rem, 11vw, 10rem)'), color: textColor }}
+        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[8rem] mb-10">
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.92, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
             <span style={{
@@ -312,28 +280,10 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           </Skeleton>
         </div>
 
-        {/* Image with integrated glassmorphism stats bar */}
+        {/* Hero image */}
         <div className="relative w-full">
           <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl">
-            <div className="relative w-full h-full">
-              <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
-              {/* Stats overlay bar at bottom of image */}
-              {!isLoading && (
-                <div className="absolute bottom-0 left-0 right-0 backdrop-blur-md bg-black/25 px-8 py-5 flex justify-around items-center">
-                  {[
-                    { val: '100%', label: 'Zufriedenheit' },
-                    { val: '5★', label: 'Bewertung' },
-                    { val: '24h', label: 'Reaktion' },
-                    { val: '10+', label: 'Jahre' },
-                  ].map((s, i) => (
-                    <div key={i} className="text-center">
-                      <p className="text-white font-black text-xl leading-none">{s.val}</p>
-                      <p className="text-white/60 text-[10px] uppercase tracking-widest mt-1">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
           </Skeleton>
         </div>
       </motion.div>
@@ -370,9 +320,9 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         >
           {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
-          <Skeleton isLoading={isLoading} className="w-full min-h-[20rem] mb-12">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(4rem, 12vw, 10rem)'), color: textColor }}
-              className="uppercase tracking-tighter mb-0">
+          <Skeleton isLoading={isLoading} className="w-full min-h-[12rem] mb-8">
+            <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor }}
+              className="uppercase tracking-tight mb-0">
               {hl.main}<br />
               <span
                 className="relative inline-block pb-4"
@@ -396,48 +346,28 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             </h1>
           </Skeleton>
 
-          {/* Lower section: two columns on desktop */}
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-end">
-            {/* Left: subheadline + CTAs */}
-            <div>
-              <Skeleton isLoading={isLoading} className="w-full min-h-[5rem] mb-10">
-                <p style={{ fontFamily: bodyFont, color: textMuted, borderLeft: `3px solid ${primaryColor}` }}
-                  className="text-xl lg:text-2xl font-light leading-relaxed pl-6 max-w-lg mb-0">
-                  {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
-                </p>
+          {/* Lower section: subheadline + CTAs */}
+          <div className="max-w-2xl">
+            <Skeleton isLoading={isLoading} className="w-full min-h-[5rem] mb-8">
+              <p style={{ fontFamily: bodyFont, color: textMuted, borderLeft: `3px solid ${primaryColor}` }}
+                className="text-lg lg:text-xl font-light leading-relaxed pl-6 mb-0">
+                {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
+              </p>
+            </Skeleton>
+            <div className="flex flex-wrap gap-4">
+              <Skeleton isLoading={isLoading} className="w-44 h-14">
+                <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
+                  className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
+                  {heroCta}
+                </button>
               </Skeleton>
-              <div className="flex flex-wrap gap-4">
-                <Skeleton isLoading={isLoading} className="w-44 h-14">
-                  <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-                    className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform">
-                    {heroCta}
-                  </button>
-                </Skeleton>
-                <Skeleton isLoading={isLoading} className="w-36 h-14">
-                  <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
-                    className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity">
-                    Mehr erfahren
-                  </button>
-                </Skeleton>
-              </div>
+              <Skeleton isLoading={isLoading} className="w-36 h-14">
+                <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
+                  className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity">
+                  Mehr erfahren
+                </button>
+              </Skeleton>
             </div>
-
-            {/* Right: Stats 2×2 grid — desktop only */}
-            {!isLoading && (
-              <div className="hidden lg:grid grid-cols-2 gap-8">
-                {[
-                  { val: '100%', label: 'Zufriedene Kunden' },
-                  { val: '5★', label: 'Bewertung' },
-                  { val: '24h', label: 'Reaktionszeit' },
-                  { val: '10+', label: 'Jahre Erfahrung' },
-                ].map((s, i) => (
-                  <div key={i} className="border-t pt-4" style={{ borderColor: dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)' }}>
-                    <p className="text-3xl font-black leading-none" style={{ color: primaryColor, fontFamily: displayFont }}>{s.val}</p>
-                    <p className="text-[11px] uppercase tracking-widest mt-2 opacity-50" style={{ color: textColor, fontFamily: bodyFont }}>{s.label}</p>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </motion.div>
       </div>
@@ -2065,8 +1995,8 @@ export function PremiumLayoutV2({
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-44 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-sm uppercase tracking-wider">{heroCta}</button>
+        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
