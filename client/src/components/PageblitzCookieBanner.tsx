@@ -47,6 +47,21 @@ export default function PageblitzCookieBanner() {
     }
   }, []);
 
+  // Kann von außen via window.dispatchEvent(new Event('pageblitz:open-cookie-settings')) geöffnet werden
+  useEffect(() => {
+    const handler = () => {
+      const stored = getStoredConsent();
+      if (stored) {
+        setAnalytics(stored.analytics);
+        setMarketing(stored.marketing);
+      }
+      setExpanded(true);
+      setVisible(true);
+    };
+    window.addEventListener("pageblitz:open-cookie-settings", handler);
+    return () => window.removeEventListener("pageblitz:open-cookie-settings", handler);
+  }, []);
+
   if (!visible) return null;
 
   const handleAcceptAll = () => {

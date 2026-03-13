@@ -2036,6 +2036,12 @@ export default function LandingPage() {
           <div className="flex gap-6 text-sm">
             <a href="/impressum" className="text-white/40 hover:text-white/80 transition-colors">Impressum</a>
             <a href="/datenschutz" className="text-white/40 hover:text-white/80 transition-colors">Datenschutz</a>
+            <button
+              onClick={() => window.dispatchEvent(new Event("pageblitz:open-cookie-settings"))}
+              className="text-white/40 hover:text-white/80 transition-colors cursor-pointer bg-transparent border-none p-0"
+            >
+              Cookie Einstellungen
+            </button>
           </div>
         </div>
       </footer>
