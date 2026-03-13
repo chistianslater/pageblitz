@@ -17,7 +17,23 @@
       "WebSearch",
       "WebFetch(domain:unsplash.com)",
       "Bash(npx tsc --noEmit --project tsconfig.json)",
-      "Bash(node --experimental-strip-types -e \":*)"
+      "Bash(node --experimental-strip-types -e \":*)",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"cd /root/pageblitz && git fetch origin && git reset --hard origin/main && npm run build && pm2 restart pageblitz\")",
+      "Bash(npx vite build --mode development)",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"cd /root/pageblitz && git fetch origin && git reset --hard origin/main && npm run build && pm2 restart pageblitz && echo ''✅ Deploy erfolgreich''\")",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"cd /root/pageblitz && git fetch origin && git reset --hard origin/main && npm run build && pm2 restart pageblitz && echo ''✅ Deploy OK''\")",
+      "WebFetch(domain:supahero.io)",
+      "Bash(brew install gh)",
+      "Bash(/opt/homebrew/bin/gh auth status)",
+      "Read(//Users/christianniessing/.config/gh/**)",
+      "Bash(security find-internet-password -s github.com)",
+      "Bash(security find-internet-password -s github.com -w)",
+      "Bash(/opt/homebrew/bin/gh auth login --with-token)",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"grep -n ''grain\\\\|dot grid\\\\|fractalNoise'' /root/pageblitz/client/src/components/layouts/PremiumLayoutsV2.tsx 2>/dev/null | head -5 || echo ''File not found on server''\")",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"cd /root/pageblitz && git log --oneline -5\")",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"cd /root/pageblitz && git fetch origin && git reset --hard origin/main && npm run build 2>&1 | tail -8 && pm2 restart pageblitz\")",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"cd /root/pageblitz && git fetch origin && git reset --hard origin/main && npm run build 2>&1 | tail -6 && pm2 restart pageblitz\")",
+      "Bash(ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95 \"cd /root/pageblitz && git fetch origin && git reset --hard origin/main && npm run build 2>&1 | tail -4 && pm2 restart pageblitz\")"
     ]
   }
 }

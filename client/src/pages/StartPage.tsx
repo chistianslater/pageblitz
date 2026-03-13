@@ -450,6 +450,9 @@ export default function StartPage() {
                               setGmbSearchRegion(cityName);
                               setCitySuggestions([]);
                               setShowCitySuggestions(false);
+                              if (gmbSearchQuery.trim() && !gmbSearchLoading) {
+                                handleGmbSearch();
+                              }
                             }}
                             className="w-full text-left px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
                           >

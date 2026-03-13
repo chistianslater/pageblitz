@@ -2261,6 +2261,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       (patched as any).aboutImageUrl = data.aboutPhotoUrl;
     }
 
+    // Expose slug for legal links (Impressum/Datenschutz) in live preview
+    const slug = siteData?.website?.slug;
+    if (slug) {
+      (patched as any)._slug = slug;
+    }
+
     return patched;
   }, [
     siteData?.website?.websiteData,
@@ -2283,6 +2289,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.contactFormFields,
     hiddenSections,
     sectionOrder,
+    siteData?.website?.slug,
   ]);
 
   // ── Section list for hideSections drag-and-drop step ────────────────────

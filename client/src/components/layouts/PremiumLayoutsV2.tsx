@@ -22,7 +22,7 @@ const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean,
   return (
     <div className={className}>
       {isLoading ? (
-        <div className="bg-neutral-200 animate-pulse rounded-lg overflow-hidden w-full h-full">
+        <div className="bg-neutral-200 animate-pulse rounded-lg overflow-hidden w-full h-full" style={{ minHeight: 'inherit' }}>
           <div className="opacity-0 pointer-events-none">{children}</div>
         </div>
       ) : (
@@ -490,8 +490,8 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
           {services.map((service: any, i: number) => {
             const ServiceIcon = serviceIconSet[i % serviceIconSet.length] as any;
             return (
-              <Skeleton key={i} isLoading={isLoading} className="h-72">
-                <div className={`p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass} h-full`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
+              <Skeleton key={i} isLoading={isLoading} className="min-h-[18rem]">
+                <div className={`p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass}`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
                   <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
                     <ServiceIcon size={28} style={{ color: safeCs.primary }} />
                   </div>
@@ -540,7 +540,7 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
         </div>
         <div style={{ borderTop: `1px solid ${dividerColor}` }}>
           {services.map((service: any, i: number) => (
-            <Skeleton key={i} isLoading={isLoading} className="h-40">
+            <Skeleton key={i} isLoading={isLoading} className="min-h-[8rem]">
               <div className="py-8 flex flex-col md:flex-row md:items-center gap-8 group px-4 transition-colors" style={{ borderBottom: `1px solid ${dividerColor}`, '--hover-bg': hoverBgColor } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverBgColor }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}>
                 <span style={{ fontFamily: displayFont, fontWeight: 900, color: safeCs.primary }} className="text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
                 <div className="flex-1">
@@ -828,7 +828,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
   const locked = websiteData?.addOnContactForm === false;
-  const { datenschutzHref } = useLegalLinks();
+  const { datenschutzHref } = useLegalLinks(websiteData);
 
   // Get form fields from websiteData or use defaults
   const formFields = websiteData?.contactFormFields || DEFAULT_CONTACT_FORM_FIELDS;
@@ -1230,10 +1230,11 @@ interface FooterProps {
 
 /** Extracts the site slug from the current URL so legal page links work on
  *  /site/:slug pages. Falls back to '#' in onboarding preview mode. */
-function useLegalLinks() {
-  const slug = typeof window !== 'undefined'
+function useLegalLinks(websiteData?: any) {
+  const slugFromPath = typeof window !== 'undefined'
     ? window.location.pathname.match(/\/site\/([^/]+)/)?.[1] ?? null
     : null;
+  const slug = slugFromPath ?? (websiteData as any)?._slug ?? null;
   return {
     impressumHref: slug ? `/site/${slug}/impressum` : '#',
     datenschutzHref: slug ? `/site/${slug}/datenschutz` : '#',
@@ -1241,8 +1242,8 @@ function useLegalLinks() {
 }
 
 /** Inline legal-links block used by the Elegant layout's custom footer. */
-function ElegantFooterLegalLinks() {
-  const { impressumHref, datenschutzHref } = useLegalLinks();
+function ElegantFooterLegalLinks({ websiteData }: { websiteData?: any }) {
+  const { impressumHref, datenschutzHref } = useLegalLinks(websiteData);
   return (
     <div className="flex gap-6 text-white/30 text-xs uppercase tracking-widest shrink-0">
       <a href={impressumHref} className="hover:text-white transition-colors">Impressum</a>
@@ -1254,7 +1255,7 @@ function ElegantFooterLegalLinks() {
 function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'default', logoStyle = {}, showBorder = true }: FooterProps) {
   // Use dynamic colors from colorScheme
   const safeCs = cs || {};
-  const { impressumHref, datenschutzHref } = useLegalLinks();
+  const { impressumHref, datenschutzHref } = useLegalLinks(websiteData);
   const bgClass = safeCs.darkBackground ? '' : 'bg-neutral-900';
   const bgStyle = { backgroundColor: safeCs.darkBackground || '#171717' };
   const textMain = safeCs.lightText ? '' : 'text-white';
@@ -1498,7 +1499,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
           <ul className="space-y-1 text-sm text-white/50 text-center">
             <FooterContact websiteData={websiteData} textClass="text-white/50" />
           </ul>
-          <ElegantFooterLegalLinks />
+          <ElegantFooterLegalLinks websiteData={websiteData} />
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/10">
           <p className="text-white/20 text-xs text-center break-words">{footerText}</p>
@@ -2272,7 +2273,7 @@ export function PremiumLayoutV2({
               </Skeleton>
               <div className="grid md:grid-cols-3 gap-8">
                 {services.map((service: any, i: number) => (
-                  <Skeleton key={i} isLoading={isLoading} className="h-72">
+                  <Skeleton key={i} isLoading={isLoading} className="min-h-[18rem]">
                     <div className="p-10 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col justify-between" style={{ borderTop: `4px solid ${safeCs.primary}` }}>
                       <div>
                         <Target size={28} style={{ color: safeCs.primary }} className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity" />
