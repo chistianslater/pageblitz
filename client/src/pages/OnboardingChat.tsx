@@ -981,12 +981,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     return false;
   });
 
-  // Progressive reveal: hero area clears after businessName is confirmed.
-  // On resume: skip overlay if we're past the 'colors' phase (user already confirmed name).
+  // Progressive reveal: hero area clears after Du/Sie is confirmed.
+  // Uses its own localStorage key so GMB users (who reach 'complete' quickly) don't get
+  // heroRevealed=true before they've actually answered the addressing mode question.
   const [heroRevealed, setHeroRevealed] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
-      return saved !== null && saved !== 'skeleton' && saved !== 'colors';
+      return localStorage.getItem(`heroRevealed_${previewToken || websiteIdProp}`) === 'true';
     }
     return false;
   });
@@ -1576,6 +1576,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         websiteId,
         businessName: data.businessName,
         businessCategory: data.businessCategory,
+        addressingMode: (data.addressingMode as 'du' | 'Sie') || 'du',
       }).then((result) => {
         if (result.success) {
           // Update local data state with generated content + services
@@ -3167,10 +3168,38 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'du' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'du' });
-                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; generation starts now
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; save to own key
                   setHeroRevealed(true);
+                  localStorage.setItem(`heroRevealed_${previewToken || websiteIdProp}`, 'true');
                   const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
-                  if (_isGmb) setTimeout(() => setContentRevealed(true), 1000);
+                  if (_isGmb) {
+                    // GMB: regenerate text with the chosen addressing mode
+                    if (websiteId) {
+                      setIsGeneratingInitialContent(true);
+                      generateInitialContentMutation.mutateAsync({
+                        websiteId,
+                        businessName: data.businessName,
+                        businessCategory: data.businessCategory,
+                        addressingMode: 'du',
+                      }).then((result) => {
+                        if (result.success) {
+                          setData(prev => ({
+                            ...prev,
+                            tagline: result.tagline || prev.tagline,
+                            description: result.description || prev.description,
+                            topServices: result.services?.map((s: any) => ({
+                              title: s.title, description: s.description,
+                            })) || prev.topServices,
+                          }));
+                        }
+                      }).catch(console.error).finally(() => {
+                        setIsGeneratingInitialContent(false);
+                        setTimeout(() => setContentRevealed(true), 600);
+                      });
+                    } else {
+                      setTimeout(() => setContentRevealed(true), 1000);
+                    }
+                  }
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-blue-500/60 hover:bg-blue-500/10 transition-all text-left group"
@@ -3192,10 +3221,38 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'Sie' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'Sie' });
-                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; generation starts now
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; save to own key
                   setHeroRevealed(true);
+                  localStorage.setItem(`heroRevealed_${previewToken || websiteIdProp}`, 'true');
                   const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
-                  if (_isGmb) setTimeout(() => setContentRevealed(true), 1000);
+                  if (_isGmb) {
+                    // GMB: regenerate text with the chosen addressing mode
+                    if (websiteId) {
+                      setIsGeneratingInitialContent(true);
+                      generateInitialContentMutation.mutateAsync({
+                        websiteId,
+                        businessName: data.businessName,
+                        businessCategory: data.businessCategory,
+                        addressingMode: 'Sie',
+                      }).then((result) => {
+                        if (result.success) {
+                          setData(prev => ({
+                            ...prev,
+                            tagline: result.tagline || prev.tagline,
+                            description: result.description || prev.description,
+                            topServices: result.services?.map((s: any) => ({
+                              title: s.title, description: s.description,
+                            })) || prev.topServices,
+                          }));
+                        }
+                      }).catch(console.error).finally(() => {
+                        setIsGeneratingInitialContent(false);
+                        setTimeout(() => setContentRevealed(true), 600);
+                      });
+                    } else {
+                      setTimeout(() => setContentRevealed(true), 1000);
+                    }
+                  }
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all text-left group"
@@ -4639,7 +4696,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     layoutStyle={layoutStyle}
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
-                    isLoading={isGeneratingInitialContent || contentPhase === 'colors' || contentPhase === 'images'}
+                    isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}
                   />
 
                   {/* ── Magic progressive reveal overlays ─────────────────────────────

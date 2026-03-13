@@ -10,7 +10,10 @@ import {
   Phone, Star, Zap,
   Award, Clock, MapPin, Utensils, Flower,
   Dumbbell, Target, Gem, Ruler,
-  Sparkles, Heart, ArrowRight, Leaf
+  Sparkles, Heart, ArrowRight, Leaf,
+  Scissors, ChefHat, Home, Shield, Wrench, Hammer,
+  TrendingUp, Briefcase, Coffee, Car, Lightbulb,
+  ShoppingBag, GraduationCap, Building, Camera, Music, Palette,
 } from 'lucide-react';
 import { getVariantIndex } from '../../lib/layoutUtils';
 
@@ -28,6 +31,55 @@ const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean,
     </div>
   );
 };
+
+// ── CATEGORY ICON SETS ──────────────────────────────────────────
+// Maps business category keywords to curated icon sets.
+// Service cards cycle through the set so each card gets a distinct icon.
+type LucideIcon = React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>;
+const CATEGORY_ICON_SETS: Record<string, LucideIcon[]> = {
+  'restaurant':   [Utensils, ChefHat, Coffee, Star, Award],
+  'café':         [Coffee, ChefHat, Utensils, Sparkles, Heart],
+  'cafe':         [Coffee, ChefHat, Utensils, Sparkles, Heart],
+  'bäckerei':     [ChefHat, Coffee, Star, Heart, Award],
+  'friseur':      [Scissors, Sparkles, Star, Gem, Heart],
+  'beauty':       [Sparkles, Scissors, Gem, Heart, Star],
+  'kosmetik':     [Sparkles, Gem, Scissors, Heart, Star],
+  'nagel':        [Sparkles, Gem, Heart, Scissors, Star],
+  'bau':          [Hammer, Ruler, Home, Shield, Wrench],
+  'handwerk':     [Wrench, Hammer, Ruler, Shield, Star],
+  'sanitär':      [Wrench, Home, Shield, Star, Hammer],
+  'elektro':      [Zap, Wrench, Shield, Home, Star],
+  'fitness':      [Dumbbell, Target, Zap, Heart, TrendingUp],
+  'sport':        [Target, Dumbbell, Zap, Star, Award],
+  'yoga':         [Heart, Leaf, Target, Sparkles, Dumbbell],
+  'gesundheit':   [Heart, Shield, Leaf, Star, Award],
+  'medizin':      [Heart, Shield, Star, Award, Leaf],
+  'arzt':         [Heart, Shield, Award, Star, Leaf],
+  'immobilien':   [Home, Building, MapPin, TrendingUp, Gem],
+  'beratung':     [TrendingUp, Briefcase, Target, Lightbulb, Award],
+  'recht':        [Briefcase, Shield, Award, Star, Target],
+  'steuer':       [Briefcase, TrendingUp, Shield, Award, Star],
+  'hotel':        [Star, Home, Coffee, Gem, Award],
+  'mode':         [ShoppingBag, Sparkles, Gem, Heart, Star],
+  'einzelhandel': [ShoppingBag, Star, Gem, Award, Heart],
+  'blumen':       [Flower, Leaf, Heart, Sparkles, Star],
+  'garten':       [Leaf, Flower, Hammer, Ruler, Star],
+  'auto':         [Car, Wrench, Shield, Star, Award],
+  'fahrrad':      [Car, Wrench, Shield, Target, Star],
+  'bildung':      [GraduationCap, Star, Target, Award, Lightbulb],
+  'foto':         [Camera, Star, Sparkles, Gem, Award],
+  'musik':        [Music, Star, Heart, Sparkles, Award],
+  'design':       [Palette, Sparkles, Gem, Star, Award],
+  'reinigung':    [Sparkles, Home, Shield, Star, Award],
+  'transport':    [Car, Shield, Star, Award, Target],
+};
+const DEFAULT_ICONS: LucideIcon[] = [Star, Award, Shield, Target, Gem];
+
+function getCategoryIconSet(businessCategory?: string): LucideIcon[] {
+  const cat = (businessCategory || '').toLowerCase();
+  const matchedKey = Object.keys(CATEGORY_ICON_SETS).find(k => cat.includes(k));
+  return matchedKey ? CATEGORY_ICON_SETS[matchedKey] : DEFAULT_ICONS;
+}
 
 // ── DATA HELPERS ────────────────────────────────────────────────
 const sec = (websiteData: any, type: string) =>
@@ -397,6 +449,7 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
     ? { backgroundColor: safeCs.darkSurface || '#1a1a1a' }
     : { backgroundColor: safeCs.surface || '#ffffff' };
   const cardBorderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+  const serviceIconSet = getCategoryIconSet(websiteData?.businessCategory);
   return (
     <section id="leistungen" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
@@ -408,17 +461,20 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
           </h2>
         </Skeleton>
         <div className="grid md:grid-cols-3 gap-6 md:gap-8 gap-y-10 md:gap-y-12">
-          {services.map((service: any, i: number) => (
-            <Skeleton key={i} isLoading={isLoading} className="h-72">
-              <div className={`p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass} h-full`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
-                <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
-                  <Zap size={28} style={{ color: safeCs.primary }} />
+          {services.map((service: any, i: number) => {
+            const ServiceIcon = serviceIconSet[i % serviceIconSet.length] as any;
+            return (
+              <Skeleton key={i} isLoading={isLoading} className="h-72">
+                <div className={`p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass} h-full`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
+                  <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
+                    <ServiceIcon size={28} style={{ color: safeCs.primary }} />
+                  </div>
+                  <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-4">{service.title}</h3>
+                  <p style={{ fontFamily: bodyFont, color: textMuted }} className="leading-relaxed">{service.description}</p>
                 </div>
-                <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-4">{service.title}</h3>
-                <p style={{ fontFamily: bodyFont, color: textMuted }} className="leading-relaxed">{service.description}</p>
-              </div>
-            </Skeleton>
-          ))}
+              </Skeleton>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -514,7 +570,7 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   );
 }
 
-function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize, businessCategory }: any) {
   // Don't render if no about content
   if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
@@ -546,9 +602,14 @@ function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
               <img src={aboutImg} className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
             </div>
           </Skeleton>
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full border-4 border-white/10 flex items-center justify-center backdrop-blur-xl">
-            <Award size={48} className="text-white/20" />
-          </div>
+          {(() => {
+            const DecoIcon = getCategoryIconSet(businessCategory)[0] as any;
+            return (
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full border-4 border-white/10 flex items-center justify-center backdrop-blur-xl">
+                <DecoIcon size={48} className="text-white/20" />
+              </div>
+            );
+          })()}
         </motion.div>
       </div>
     </section>
@@ -1285,7 +1346,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
@@ -1363,7 +1424,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
@@ -1448,7 +1509,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
 
@@ -1525,7 +1586,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
@@ -1603,7 +1664,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Das sagen unsere Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
 
@@ -1681,7 +1742,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
@@ -1760,7 +1821,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Stimmen unserer Kunden" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 
@@ -1838,7 +1899,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
 
@@ -1918,7 +1979,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} />
+      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
 

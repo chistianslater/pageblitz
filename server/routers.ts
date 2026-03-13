@@ -3711,6 +3711,7 @@ Kontext: ${input.context}`,
         websiteId: z.number(),
         businessName: z.string(),
         businessCategory: z.string(),
+        addressingMode: z.enum(['du', 'Sie']).optional().default('du'),
       }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
@@ -3719,7 +3720,7 @@ Kontext: ${input.context}`,
         const business = await getBusinessById(website.businessId);
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
 
-        const { businessName, businessCategory } = input;
+        const { businessName, businessCategory, addressingMode } = input;
 
         // Build StoryBrand-aligned prompt for all website content
         const prompt = `Du bist ein Experte für das StoryBrand-Framework von Donald Miller und erstellst Website-Texte für deutsche Kleinunternehmen.
@@ -3728,6 +3729,7 @@ Das StoryBrand-Prinzip: Der KUNDE ist der Held – nicht das Unternehmen. Das Un
 
 Unternehmensname: ${businessName}
 Branche/Kategorie: ${businessCategory}
+Anrede: ${addressingMode === 'Sie' ? 'Besucher IMMER siezen – also "Sie", "Ihnen", "Ihr" verwenden. Niemals "du", "dir", "dein".' : 'Besucher IMMER duzen – also "du", "dir", "dein" verwenden. Niemals "Sie", "Ihnen", "Ihr".'}
 
 Erstelle folgende Website-Texte strikt nach StoryBrand:
 
