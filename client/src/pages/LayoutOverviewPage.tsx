@@ -1,5 +1,5 @@
 /**
- * Admin: Layout Overview – zeigt alle 10 Premium-Layouts als anklickbare Karten.
+ * Admin: Layout Overview – zeigt alle 12 Premium-Layouts als anklickbare Karten.
  * Jede Karte öffnet die Vollansicht in einem neuen Tab.
  */
 
@@ -120,6 +120,30 @@ const LAYOUTS = [
     accent: "#C9A43A",
     description: "Autorität & Klasse – dunkles Navy-Panel links, weißes Bild-Panel rechts.",
   },
+  {
+    key: "EDEN",
+    label: "Eden",
+    industry: "Coaching & Personal Services",
+    headline: "DM Serif Display 400 italic",
+    body: "DM Sans 400",
+    bg: "#FDFBF7",
+    text: "#2A2820",
+    accent: "#6B7D5E",
+    description: "Warm & persönlich – Paper-Grain-Textur, organische Karten-Overlaps, Serif-Kursiv-Typografie.",
+    badge: "Neu",
+  },
+  {
+    key: "APEX",
+    label: "Apex",
+    industry: "Beratung & B2B",
+    headline: "Bebas Neue",
+    body: "Inter 400",
+    bg: "#FFFFFF",
+    text: "#0F1E3C",
+    accent: "#C9A43A",
+    description: "Autoritär & präzise – Dot-Grid-Textur (Architektenpapier), nummerierte Services, Uppercase-Typografie.",
+    badge: "Neu",
+  },
 ];
 
 export default function LayoutOverviewPage() {
@@ -134,7 +158,7 @@ export default function LayoutOverviewPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight mb-1">Layout Vorschau</h1>
-        <p className="text-muted-foreground text-sm">Alle 10 Premium-Layouts mit Mock-Daten. Klicke auf "Vorschau öffnen" um das Layout im Vollbild zu sehen.</p>
+        <p className="text-muted-foreground text-sm">Alle 12 Premium-Layouts mit Mock-Daten. Klicke auf "Vorschau öffnen" um das Layout im Vollbild zu sehen.</p>
       </div>
 
       {/* Color scheme switcher */}
@@ -187,6 +211,9 @@ export default function LayoutOverviewPage() {
             <div className="p-4 flex flex-col flex-1">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <Badge variant="secondary" className="text-xs font-medium">{layout.industry}</Badge>
+                {(layout as any).badge && (
+                  <Badge className="text-xs font-semibold bg-indigo-600 text-white border-0">{(layout as any).badge}</Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">{layout.description}</p>
 

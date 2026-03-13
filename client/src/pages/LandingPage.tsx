@@ -26,7 +26,7 @@ import { BackgroundGradientAnimation } from "@/components/ui/background-gradient
 import {
   BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
   DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
-  NaturalLayoutV2, PremiumLayoutV2
+  NaturalLayoutV2, PremiumLayoutV2, EdenLayoutV2, ApexLayoutV2,
 } from "@/components/layouts/PremiumLayoutsV2";
 import { PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
 import type { ColorScheme } from "@shared/types";
@@ -509,6 +509,8 @@ const LAYOUT_COMPONENTS = {
   Modern: ModernLayoutV2,
   Natural: NaturalLayoutV2,
   Premium: PremiumLayoutV2,
+  Eden: EdenLayoutV2,
+  Apex: ApexLayoutV2,
 };
 
 // Layout configurations matching the layout-preview pages exactly
@@ -868,6 +870,69 @@ const LAYOUT_CONFIG: Record<string, {
       ],
     },
   },
+  Eden: {
+    label: "Coaching & Therapie",
+    scheme: "eden",
+    heroImage: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Laura Hoffmann Coaching",
+      tagline: "Dein Weg zu mehr Leichtigkeit",
+      googleRating: 4.9,
+      googleReviewCount: 84,
+      businessCategory: "Life Coaching",
+      sections: [
+        { type: "hero", headline: "Endlich ankommen – in dir selbst", subheadline: "Ich begleite dich auf dem Weg zu mehr Klarheit, innerer Stärke und einem Leben, das sich wirklich gut anfühlt.", ctaText: "Erstgespräch buchen" },
+        { type: "services", headline: "Meine Angebote", items: [
+          { title: "1:1 Coaching", description: "Individuelle Begleitung in persönlichen Sitzungen – für nachhaltige Veränderung auf allen Ebenen." },
+          { title: "Online-Kurse", description: "Strukturierte Programme, die du in deinem eigenen Tempo durcharbeiten kannst – flexibel und tiefgreifend." },
+          { title: "Gruppenworkshops", description: "Gemeinsam wachsen in einem sicheren Rahmen mit gleichgesinnten Menschen." },
+        ]},
+        { type: "about", headline: "Über mich", content: "Ich bin Laura, zertifizierter Life Coach mit über 10 Jahren Erfahrung. Mein Ansatz verbindet systemisches Coaching mit achtsamkeitsbasierten Methoden – für echte, spürbare Veränderung." },
+        { type: "contact", items: [
+          { icon: "MapPin", description: "München, Bayern" },
+          { icon: "Mail", description: "hello@laurahoffmann.de" },
+          { icon: "Phone", description: "+49 89 123 456 78" },
+        ]},
+        { type: "testimonials", headline: "Stimmen meiner Klienten", items: [
+          { author: "Sophie K.", rating: 5, description: "Laura hat mir geholfen, endlich loszulassen. Ich fühle mich freier als je zuvor. Absolut empfehlenswert!" },
+          { author: "Markus T.", rating: 5, description: "Professionell, einfühlsam und effektiv. In nur 3 Monaten haben sich mein Leben und mein Mindset grundlegend verändert." },
+          { author: "Jana M.", rating: 5, description: "Die beste Investition, die ich je in mich gemacht habe. Danke, Laura!" },
+        ]},
+      ],
+    },
+  },
+  Apex: {
+    label: "Unternehmensberatung",
+    scheme: "apex",
+    heroImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Brenner & Partner",
+      tagline: "Strategie. Präzision. Ergebnis.",
+      googleRating: 4.8,
+      googleReviewCount: 56,
+      businessCategory: "Unternehmensberatung",
+      sections: [
+        { type: "hero", headline: "Komplexe Probleme. Klare Lösungen.", subheadline: "Wir beraten mittelständische Unternehmen bei strategischen Transformationen, Prozessoptimierungen und digitalem Wandel – messbar, nachhaltig, präzise.", ctaText: "Beratung anfragen" },
+        { type: "services", headline: "Leistungen", items: [
+          { title: "Strategieberatung", description: "Von der Marktanalyse bis zur Umsetzung: Wir entwickeln mit Ihnen eine Strategie, die trägt." },
+          { title: "Prozessoptimierung", description: "Wir identifizieren Ineffizienzen und schaffen schlanke, skalierbare Abläufe für nachhaltiges Wachstum." },
+          { title: "Digitale Transformation", description: "Technologie als Hebel – wir begleiten Ihr Unternehmen sicher durch den digitalen Wandel." },
+        ]},
+        { type: "about", headline: "Über uns", content: "Brenner & Partner steht seit 2008 für analytische Präzision und strategische Klarheit. Unser Team aus 12 Senior-Beratern hat über 200 Projekte in 15 Branchen erfolgreich abgeschlossen." },
+        { type: "contact", items: [
+          { icon: "MapPin", description: "Frankfurt am Main" },
+          { icon: "Mail", description: "kontakt@brenner-partner.de" },
+          { icon: "Phone", description: "+49 69 876 543 21" },
+          { icon: "Clock", description: "Mo–Fr: 08:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Referenzen", items: [
+          { author: "CFO, Mittelstand AG", rating: 5, description: "Die Zusammenarbeit mit Brenner & Partner hat unsere Rentabilität in 18 Monaten um 22 % gesteigert." },
+          { author: "CEO, Tech GmbH", rating: 5, description: "Klare Analyse, umsetzbare Empfehlungen. Kein Berater-Blabla – nur Ergebnisse." },
+          { author: "GF, Produktion KG", rating: 5, description: "Höchste Professionalität und tiefes Branchenverständnis. Uneingeschränkte Empfehlung." },
+        ]},
+      ],
+    },
+  },
 };
 
 // Extended color schemes with all 10 unique palettes
@@ -993,6 +1058,28 @@ const EXTENDED_COLOR_SCHEMES: Record<string, ColorScheme> = {
     textLight: "#9f1239",
     onPrimary: "#ffffff",
   },
+  // 12. Warm Sage - Eden (Coaching)
+  eden: {
+    primary: "#6B7D5E",
+    secondary: "#3D4A35",
+    accent: "#C4956A",
+    background: "#FDFBF7",
+    surface: "#F5F0E8",
+    text: "#2A2820",
+    textLight: "#7A7465",
+    onPrimary: "#ffffff",
+  },
+  // 13. Navy Precision - Apex (Consulting)
+  apex: {
+    primary: "#0F1E3C",
+    secondary: "#1B2D50",
+    accent: "#C9A43A",
+    background: "#ffffff",
+    surface: "#F7F9FC",
+    text: "#0F1E3C",
+    textLight: "#4A5568",
+    onPrimary: "#ffffff",
+  },
 };
 
 // Get color scheme from extended list
@@ -1000,19 +1087,27 @@ const getColorScheme = (schemeId: string): ColorScheme => {
   return EXTENDED_COLOR_SCHEMES[schemeId] || EXTENDED_COLOR_SCHEMES["trust"];
 };
 
-// Website examples - all 10 layouts
-const websiteExamples = [
-  { layout: "Bold" as const },
-  { layout: "Elegant" as const },
-  { layout: "Clean" as const },
-  { layout: "Craft" as const },
-  { layout: "Dynamic" as const },
-  { layout: "Fresh" as const },
-  { layout: "Luxury" as const },
-  { layout: "Modern" as const },
-  { layout: "Natural" as const },
-  { layout: "Premium" as const },
+// All available layouts (12 total – incl. EDEN & APEX)
+const ALL_WEBSITE_EXAMPLES: Array<{ layout: keyof typeof LAYOUT_COMPONENTS }> = [
+  { layout: "Bold" },
+  { layout: "Elegant" },
+  { layout: "Clean" },
+  { layout: "Craft" },
+  { layout: "Dynamic" },
+  { layout: "Fresh" },
+  { layout: "Luxury" },
+  { layout: "Modern" },
+  { layout: "Natural" },
+  { layout: "Premium" },
+  { layout: "Eden" },
+  { layout: "Apex" },
 ];
+
+/** Pick 5 random layouts from the full pool (stable per page-load) */
+function pickRandom5(): Array<{ layout: keyof typeof LAYOUT_COMPONENTS }> {
+  const shuffled = [...ALL_WEBSITE_EXAMPLES].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 5);
+}
 
 // Live Preview Component with Autoscroll
 interface LivePreviewCardProps {
@@ -1176,6 +1271,8 @@ const WebsiteShowcase = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  // Stable random selection of 5 layouts per page-load
+  const [websiteExamples] = useState(() => pickRandom5());
 
   const checkScroll = () => {
     if (scrollRef.current) {
