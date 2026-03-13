@@ -560,7 +560,7 @@ export default function StartPage() {
       </div>
 
       <p className="text-slate-600 text-xs mt-8 text-center">
-        Kein Konto erforderlich · 7 Tage kostenlos · ab 19,90 €/Monat
+        7 Tage gratis · danach 19,90 €/Monat · Jederzeit kündbar
       </p>
     </div>
   );

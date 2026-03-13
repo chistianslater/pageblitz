@@ -1471,7 +1471,7 @@ export default function LandingPage() {
                     onClick={() => navigate("/start")}
                     className="bg-white text-black hover:bg-white/90 rounded-full h-14 px-8 text-base font-medium shadow-xl shadow-white/20 group"
                   >
-                    Jetzt kostenlos testen
+                    7 Tage gratis testen
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button
@@ -1494,11 +1494,11 @@ export default function LandingPage() {
                 >
                   <div className="flex items-center gap-2 text-white/50 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
-                    <span>7 Tage kostenlos</span>
+                    <span>7 Tage gratis</span>
                   </div>
                   <div className="flex items-center gap-2 text-white/50 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
-                    <span>Keine Kreditkarte nötig</span>
+                    <span>Danach 19,90 €/Monat</span>
                   </div>
                   <div className="flex items-center gap-2 text-white/50 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
@@ -1613,7 +1613,7 @@ export default function LandingPage() {
       <section className="py-16 border-y border-white/5 bg-white/[0.02]">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <p className="text-white/60 text-lg mb-6">
-            Gefällt dir, was du siehst? Erstelle jetzt deine eigene Website – in 3 Minuten, kostenlos.
+            Gefällt dir, was du siehst? Erstelle jetzt deine eigene Website – in 3 Minuten.
           </p>
           <Button
             size="lg"
@@ -1623,7 +1623,7 @@ export default function LandingPage() {
             Website jetzt erstellen
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <p className="text-white/30 text-xs mt-3">7 Tage kostenlos · Keine Kreditkarte nötig</p>
+          <p className="text-white/30 text-xs mt-3">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
         </div>
       </section>
 
@@ -1698,10 +1698,10 @@ export default function LandingPage() {
           onClick={() => navigate("/start")}
           className="bg-white text-black hover:bg-white/90 rounded-full h-12 px-8 text-sm font-medium group"
         >
-          Jetzt kostenlos starten
+          Jetzt starten
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Button>
-        <p className="text-white/30 text-xs mt-3">7 Tage kostenlos · Monatlich kündbar</p>
+        <p className="text-white/30 text-xs mt-3">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
       </div>
 
       {/* How it Works - Minimalist */}
@@ -1887,9 +1887,9 @@ export default function LandingPage() {
                   onClick={() => navigate("/start")}
                   className="w-full bg-white text-black hover:bg-white/90 rounded-full h-14 text-base font-medium"
                 >
-                  7 Tage kostenlos testen
+                  7 Tage gratis starten
                 </Button>
-                <p className="text-center text-white/30 text-xs mt-4">Keine Kreditkarte nötig · Jederzeit kündbar</p>
+                <p className="text-center text-white/30 text-xs mt-4">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
               </div>
             </div>
 
@@ -1942,11 +1942,11 @@ export default function LandingPage() {
             onClick={() => navigate("/start")}
             className="bg-white text-black hover:bg-white/90 rounded-full h-16 px-12 text-lg font-medium shadow-xl shadow-white/10 group"
           >
-            Jetzt kostenlos testen
+            7 Tage gratis testen
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
           <div className="flex flex-wrap justify-center gap-6 mt-8">
-            {["7 Tage kostenlos", "Keine Kreditkarte", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
+            {["7 Tage gratis", "Danach 19,90 €/Mo.", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
               <div key={t} className="flex items-center gap-2 text-white/40 text-sm">
                 <CheckCircle2 className="w-4 h-4 text-green-400/60" />
                 {t}
