@@ -95,6 +95,25 @@ const splitHeadline = (text: string) => {
   return { main: words.slice(0, -1).join(' '), last: words[words.length - 1] };
 };
 
+/**
+ * Ensures a text color is readable on a given background.
+ * Prevents white text on light backgrounds and black text on dark backgrounds.
+ */
+function safeTextForBg(color: string | undefined, onLightBg: boolean): string {
+  const fallback = onLightBg ? '#171717' : '#ffffff';
+  if (!color) return fallback;
+  // Transparent white (e.g. rgba(255,255,255,0.6)) is invisible on light bg
+  if (onLightBg && color.startsWith('rgba(255')) return '#6b7280';
+  if (!color.startsWith('#') || color.length < 7) return fallback;
+  const r = parseInt(color.slice(1, 3), 16);
+  const g = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  if (onLightBg && lum > 0.75) return fallback;
+  if (!onLightBg && lum < 0.25) return fallback;
+  return color;
+}
+
 /** Calculate font size based on headlineSize preference */
 const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 'clamp(3rem, 8vw, 7rem)') => {
   const sizeMap: Record<string, Record<string, string>> = {
@@ -186,8 +205,8 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
   const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
-  const textColor    = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const textColor    = dark ? (safeCs.lightText || '#ffffff') : safeTextForBg(safeCs.text, true);
+  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : safeTextForBg(safeCs.textLight, true);
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
@@ -215,11 +234,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.5rem, 3.5vw, 4.5rem)'), color: textColor }}
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
-            <span style={{
-              display: 'inline-block',
-              background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>{hl.last}</span>
+            <span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
         </Skeleton>
 
@@ -275,8 +290,8 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
   const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
-  const textColor    = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : (safeCs.textLight || '#737373');
+  const textColor    = dark ? (safeCs.lightText || '#ffffff') : safeTextForBg(safeCs.text, true);
+  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : safeTextForBg(safeCs.textLight, true);
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
@@ -303,11 +318,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
-            <span style={{
-              display: 'inline-block',
-              background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>{hl.last}</span>
+            <span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
         </Skeleton>
 
@@ -349,8 +360,8 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const safeCs = cs || {};
   const primaryColor = safeCs.primary || '#3b82f6';
   const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
-  const textColor    = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
-  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.65)') : (safeCs.textLight || '#737373');
+  const textColor    = dark ? (safeCs.lightText || '#ffffff') : safeTextForBg(safeCs.text, true);
+  const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.65)') : safeTextForBg(safeCs.textLight, true);
   const bgGradient   = dark
     ? 'bg-gradient-to-br from-black/80 via-black/60 to-black/30'
     : 'bg-gradient-to-br from-white/85 via-white/65 to-white/25';
@@ -380,10 +391,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
               {hl.main}<br />
               <span
                 className="relative inline-block pb-4"
-                style={{
-                  background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                }}
+                style={{ color: primaryColor }}
               >
                 {hl.last}
                 {/* Animated SVG wave underline */}
@@ -2428,8 +2436,8 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const BODY = "'DM Sans', 'Inter', sans-serif";
   const primaryColor = safeCs.primary || '#3b82f6';
   const accentColor = safeCs.accent || safeCs.secondary || primaryColor;
-  const textColor = safeCs.text || '#1a1a1a';
-  const textMuted = safeCs.textLight || '#6b7280';
+  const textColor = safeTextForBg(safeCs.text || '#1a1a1a', true);
+  const textMuted = safeTextForBg(safeCs.textLight || '#6b7280', true);
 
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
@@ -2480,7 +2488,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 5.5rem)'), color: textColor }}
               className="mb-0">
               {hl.main}<br />
-              <span style={{ display: 'inline-block', background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              <span style={{ color: primaryColor }}>
                 {hl.last}
               </span>
             </h1>
@@ -2618,8 +2626,8 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const BODY = "'Inter', system-ui, sans-serif";
   const primaryColor = safeCs.primary || '#3b82f6';
   const accentColor = safeCs.accent || safeCs.secondary || primaryColor;
-  const textColor = safeCs.text || '#111827';
-  const textMuted = safeCs.textLight || '#6b7280';
+  const textColor = safeTextForBg(safeCs.text || '#111827', true);
+  const textMuted = safeTextForBg(safeCs.textLight || '#6b7280', true);
 
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
@@ -2673,7 +2681,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.0, letterSpacing: '0.03em', fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7vw, 7.5rem)'), color: textColor }}
               className="uppercase mb-0">
               {hl.main}<br />
-              <span style={{ display: 'inline-block', background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              <span style={{ color: primaryColor }}>
                 {hl.last}
               </span>
             </h1>

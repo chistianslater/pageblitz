@@ -56,12 +56,7 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, isLoading =
                 <h1 className="font-serif text-[8vw] md:text-[7vw] leading-none mb-10 md:mb-16 italic">
                   {line1}.{' '}
                   <br/>
-                  <span style={{
-                    background: `linear-gradient(135deg, ${cs.primary} 0%, ${(cs as any).accent || (cs as any).secondary || cs.primary} 100%)`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}>
+                  <span style={{ color: cs.primary }}>
                     {line2}
                   </span>
                 </h1>
