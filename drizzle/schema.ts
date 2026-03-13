@@ -75,6 +75,8 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   captureStatus: mysqlEnum("captureStatus", ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]).default("email_captured"),
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
+  // Umami Analytics
+  umamiWebsiteId: varchar("umamiWebsiteId", { length: 100 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

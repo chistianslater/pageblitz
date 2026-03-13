@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { useParams } from "wouter";
+import { useEffect } from "react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import CookieBanner from "@/components/CookieBanner";
 import { Loader2, AlertCircle } from "lucide-react";
@@ -41,7 +42,21 @@ export default function SitePage() {
   const colorScheme = data.website.colorScheme as ColorScheme;
   const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
   const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
+  const umamiWebsiteId = (data.website as any).umamiWebsiteId as string | null | undefined;
   const business = data.business;
+
+  // Inject Umami tracking script – cookieless, no consent required (DSGVO-compliant)
+  useEffect(() => {
+    if (!umamiWebsiteId) return;
+    if (document.getElementById("pb-umami-script")) return;
+    const s = document.createElement("script");
+    s.id = "pb-umami-script";
+    s.async = true;
+    s.defer = true;
+    s.src = "https://analytics.pageblitz.de/script.js";
+    s.setAttribute("data-website-id", umamiWebsiteId);
+    document.head.appendChild(s);
+  }, [umamiWebsiteId]);
 
   return (
     <>

@@ -32,6 +32,7 @@ import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
+import { registerUmamiWebsite, getUmamiStats } from "./umami";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
 import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
@@ -2721,20 +2722,28 @@ Kontext: ${input.context}`,
         if (onboarding.heroPhotoUrl) websiteUpdateData.heroImageUrl = onboarding.heroPhotoUrl;
         if (onboarding.aboutPhotoUrl) websiteUpdateData.aboutImageUrl = onboarding.aboutPhotoUrl;
         await updateWebsite(input.websiteId, websiteUpdateData);
-        
+
+        // Register in Umami Analytics (non-critical, fire-and-forget)
+        const domain = website.slug + ".pageblitz.de";
+        registerUmamiWebsite(website.slug, domain)
+          .then((umamiId) => {
+            if (umamiId) updateWebsite(input.websiteId, { umamiWebsiteId: umamiId });
+          })
+          .catch(() => { /* non-critical */ });
+
         // Mark onboarding as completed
         await updateOnboarding(input.websiteId, {
           status: "completed",
           completedAt: Date.now(),
           updatedAt: Date.now(),
         });
-        
+
         // Notify owner
         await notifyOwner({
           title: "Onboarding abgeschlossen",
           content: `Website ${website.slug} wurde durch Onboarding aktiviert.`,
         });
-        
+
         return { success: true };
       }),
     
@@ -3960,6 +3969,18 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           processSteps:   generatedProcessSteps,
           services:       generatedServices,
         };
+      }),
+
+    getAnalytics: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const umamiWebsiteId = (owned.website as any).umamiWebsiteId as string | null | undefined;
+        if (!umamiWebsiteId) return null;
+        const stats = await getUmamiStats(umamiWebsiteId);
+        return stats;
       }),
   }),
 

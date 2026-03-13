@@ -3,12 +3,12 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics";
 
 interface SectionConfig {
   type: string;
@@ -1733,6 +1733,12 @@ export default function CustomerDashboard() {
     },
   });
 
+  const activeWebsiteId = myWebsites?.[0]?.website.id;
+  const { data: analyticsStats, isLoading: analyticsLoading } = trpc.customer.getAnalytics.useQuery(
+    { websiteId: selectedWebsiteId || activeWebsiteId || 0 },
+    { enabled: !!(selectedWebsiteId || activeWebsiteId) && activeTab === "analytics" }
+  );
+
   const handleUpdate = () => {
     refetch();
     setPreviewKey((k) => k + 1);
@@ -1804,6 +1810,7 @@ export default function CustomerDashboard() {
     { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
+    { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
 
   return (
@@ -2195,6 +2202,51 @@ export default function CustomerDashboard() {
                 Vollständiges Onboarding öffnen
               </a>
             </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6">
+            {analyticsLoading ? (
+              <div className="flex items-center justify-center h-40">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+              </div>
+            ) : analyticsStats ? (
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: "Seitenaufrufe", value: analyticsStats.pageviews.toLocaleString("de-DE"), icon: <MousePointerClick className="w-5 h-5 text-blue-400" />, color: "text-blue-400" },
+                    { label: "Besucher", value: analyticsStats.visitors.toLocaleString("de-DE"), icon: <Users className="w-5 h-5 text-violet-400" />, color: "text-violet-400" },
+                    { label: "Absprungrate", value: `${analyticsStats.bounceRate} %`, icon: <BarChart2 className="w-5 h-5 text-amber-400" />, color: "text-amber-400" },
+                    { label: "Ø Verweildauer", value: `${Math.floor(analyticsStats.avgDuration / 60)}:${String(analyticsStats.avgDuration % 60).padStart(2, "0")} Min`, icon: <Clock className="w-5 h-5 text-green-400" />, color: "text-green-400" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        {stat.icon}
+                        <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">{stat.label}</span>
+                      </div>
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-slate-500 text-xs mt-1">Letzte 30 Tage</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                  <p className="text-slate-400 text-sm">
+                    Diese Statistiken werden von <span className="text-white font-medium">Umami Analytics</span> erfasst –
+                    cookielos, DSGVO-konform, keine persönlichen Daten.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+                <BarChart2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-white font-semibold mb-2">Noch keine Statistiken verfügbar</h3>
+                <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  Analytics werden aktiviert, sobald deine Website live ist und die ersten Besucher kommen.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
