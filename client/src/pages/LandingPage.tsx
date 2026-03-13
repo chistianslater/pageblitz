@@ -1445,7 +1445,10 @@ export default function LandingPage() {
                 >
                   <span className="text-white">Deine professionelle</span>
                   <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400">
+                  <span
+                    className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400"
+                    style={{ backgroundSize: '200% 200%', animation: 'gradient-text-shimmer 8s ease infinite' }}
+                  >
                     Website in 3 Minuten.
                   </span>
                 </motion.h1>
@@ -1516,7 +1519,10 @@ export default function LandingPage() {
               >
                 <div className="relative">
                   {/* Glow behind the browser */}
-                  <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-blue-500/20 blur-3xl rounded-full" />
+                  <div
+                    className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-blue-500/20 blur-3xl rounded-full pointer-events-none"
+                    style={{ animation: 'gradient-orb-drift 14s ease-in-out infinite' }}
+                  />
                   <GhostWebsiteCreation />
                 </div>
               </motion.div>
@@ -1526,8 +1532,17 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="py-20 border-y border-white/5 relative overflow-hidden">
+        {/* Animated gradient orbs */}
+        <div
+          className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/8 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'gradient-orb-drift 18s ease-in-out infinite' }}
+        />
+        <div
+          className="absolute -right-40 top-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500/6 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'gradient-orb-drift-alt 22s ease-in-out infinite' }}
+        />
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
               { value: "1,200+", label: "Websites erstellt" },
@@ -1731,7 +1746,10 @@ export default function LandingPage() {
             </div>
 
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl" />
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl pointer-events-none"
+                style={{ animation: 'gradient-orb-drift-alt 16s ease-in-out infinite' }}
+              />
               <div className="relative rounded-3xl border border-white/10 bg-white/5 p-8 space-y-4">
                 {/* Mini preview cards for each step */}
                 {[
@@ -1844,8 +1862,17 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section - with comparison */}
-      <section id="pricing" className="py-32">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="pricing" className="py-32 relative overflow-hidden">
+        {/* Animated gradient orbs */}
+        <div
+          className="absolute -left-48 top-1/3 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'gradient-orb-drift 20s ease-in-out infinite' }}
+        />
+        <div
+          className="absolute -right-48 bottom-1/3 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'gradient-orb-drift-alt 24s ease-in-out infinite' }}
+        />
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Preise</h2>
             <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Ein Preis. Alles inklusive.</h3>
@@ -1928,6 +1955,15 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
+        {/* Animated gradient orbs */}
+        <div
+          className="absolute left-1/4 -top-20 w-[600px] h-[600px] -translate-x-1/2 bg-indigo-500/8 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'gradient-orb-drift 22s ease-in-out infinite' }}
+        />
+        <div
+          className="absolute right-1/4 -bottom-20 w-[500px] h-[500px] translate-x-1/2 bg-purple-500/6 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'gradient-orb-drift-alt 18s ease-in-out infinite' }}
+        />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <p className="text-white/40 text-sm font-medium uppercase tracking-widest mb-6">Jetzt loslegen</p>
           <h2 className="text-4xl md:text-5xl font-semibold text-white mb-6 tracking-tight">
