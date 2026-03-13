@@ -216,6 +216,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
             <span style={{
+              display: 'inline-block',
               background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>{hl.last}</span>
@@ -303,6 +304,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
             <span style={{
+              display: 'inline-block',
               background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>{hl.last}</span>
@@ -2478,7 +2480,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 5.5rem)'), color: textColor }}
               className="mb-0">
               {hl.main}<br />
-              <span style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              <span style={{ display: 'inline-block', background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 {hl.last}
               </span>
             </h1>
@@ -2671,7 +2673,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 0.95, letterSpacing: '0.03em', fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7vw, 7.5rem)'), color: textColor }}
               className="uppercase mb-0">
               {hl.main}<br />
-              <span style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              <span style={{ display: 'inline-block', background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 {hl.last}
               </span>
             </h1>

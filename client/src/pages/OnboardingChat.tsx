@@ -982,14 +982,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   });
 
   // Progressive reveal: hero area clears after Du/Sie is confirmed.
-  // Uses its own localStorage key so GMB users (who reach 'complete' quickly) don't get
-  // heroRevealed=true before they've actually answered the addressing mode question.
-  const [heroRevealed, setHeroRevealed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(`heroRevealed_${previewToken || websiteIdProp}`) === 'true';
-    }
-    return false;
-  });
+  // Always starts as false – no localStorage, so overlay is always present on every page load
+  // until the user explicitly selects Du or Sie in the current session.
+  const [heroRevealed, setHeroRevealed] = useState(false);
 
   // Progressive reveal: lower content area clears after text generation finishes.
   // On resume: skip overlay only if fully complete.
@@ -3168,9 +3163,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'du' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'du' });
-                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; save to own key
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
                   setHeroRevealed(true);
-                  localStorage.setItem(`heroRevealed_${previewToken || websiteIdProp}`, 'true');
                   const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
                   if (_isGmb) {
                     // GMB: regenerate text with the chosen addressing mode
@@ -3221,9 +3215,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'Sie' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'Sie' });
-                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; save to own key
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
                   setHeroRevealed(true);
-                  localStorage.setItem(`heroRevealed_${previewToken || websiteIdProp}`, 'true');
                   const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
                   if (_isGmb) {
                     // GMB: regenerate text with the chosen addressing mode
