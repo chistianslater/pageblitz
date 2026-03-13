@@ -1,8 +1,11 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
+import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PageblitzCookieBanner from "./components/PageblitzCookieBanner";
+import { initConsent } from "./lib/consent";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardLayout from "./components/DashboardLayout";
 import LandingPage from "./pages/LandingPage";
@@ -86,13 +89,38 @@ function Router() {
   );
 }
 
+/**
+ * Lädt ggf. bereits erteilte Tracking-Einwilligungen beim App-Start
+ * und blendet den Cookie-Banner auf PageBlitz-eigenen Seiten ein.
+ * Auf Kunden-Websites (/site/:slug) wird der Banner nicht gezeigt –
+ * dort hat der Betreiber seinen eigenen CookieBanner.
+ */
+function AppContent() {
+  const [location] = useLocation();
+
+  // Bestehende Einwilligung beim ersten Render nachladen
+  useEffect(() => {
+    initConsent();
+  }, []);
+
+  // Kunden-Website-Routen: kein PageBlitz-Banner
+  const isCustomerSite = location.startsWith("/site/");
+
+  return (
+    <>
+      <Router />
+      {!isCustomerSite && <PageblitzCookieBanner />}
+    </>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <AppContent />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
