@@ -558,7 +558,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const websiteDataRaw = siteData?.website?.websiteData as any;
     const sections = websiteDataRaw?.sections || [];
     const hasAbout = sections.some((s: any) => s.type === "about");
-    const layoutHasAboutImage = !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
+    // For non-GMB users the initial generation runs with empty category → random layout
+    // from the "general" pool (may include layouts without about-image like "trust").
+    // Since the real layout is re-assigned on final generation, always show aboutPhoto
+    // for non-GMB users regardless of the preliminary layoutStyle.
+    const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
+    const layoutHasAboutImage = !isGmbFlow || !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
     const hasCustomerEmail = !!(siteData?.website as any)?.customerEmail;
 
     return STEP_ORDER.filter((step) => {
@@ -4016,7 +4021,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
-          {currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
+          {currentStep === "legalOwner" && business && business.placeId && !business.placeId.startsWith("self-") && (business.address || business.phone || business.email) && (
             <motion.div
               key="legalOwner-gmb-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}

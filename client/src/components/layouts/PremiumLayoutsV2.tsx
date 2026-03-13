@@ -212,7 +212,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
         <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-6">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.5rem, 3.5vw, 4.5rem)'), color: textColor }}
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.5rem, 3.5vw, 4.5rem)'), color: textColor }}
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
             <span style={{
@@ -300,7 +300,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         )}
 
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[8rem] mb-10">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 0.92, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
             className="uppercase tracking-tight mb-0">
             {hl.main}<br />
             <span style={{
@@ -375,7 +375,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
           <Skeleton isLoading={isLoading} className="w-full min-h-[12rem] mb-8">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 0.95, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor }}
+            <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 1.0, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor }}
               className="uppercase tracking-tight mb-0">
               {hl.main}<br />
               <span
@@ -2670,7 +2670,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           {!isLoading && <div className="w-full h-px mb-6" style={{ backgroundColor: primaryColor, opacity: 0.3 }} />}
 
           <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-4">
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 0.95, letterSpacing: '0.03em', fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7vw, 7.5rem)'), color: textColor }}
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.0, letterSpacing: '0.03em', fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7vw, 7.5rem)'), color: textColor }}
               className="uppercase mb-0">
               {hl.main}<br />
               <span style={{ display: 'inline-block', background: `linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
