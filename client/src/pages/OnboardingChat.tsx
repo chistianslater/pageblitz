@@ -594,6 +594,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  // Only show exit-intent overlay once per session (not on every upward mouse move)
+  const exitIntentShownRef = useRef(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
 
   useEffect(() => {
@@ -607,14 +609,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // intentionally left blank – no native browser dialog
     };
 
-    // Exit intent (mouse leaves window upwards)
+    // Exit intent (mouse leaves window upwards) – shows at most once per session
     const handleMouseOut = (e: MouseEvent) => {
-      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview") {
-        if (hasUserEmail && !showExitConfirmation) {
-          // Show confirmation for logged-in users
+      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && !exitIntentShownRef.current) {
+        exitIntentShownRef.current = true;
+        if (hasUserEmail) {
           setShowExitConfirmation(true);
-        } else if (!hasUserEmail && !showExitIntent) {
-          // Show email capture for guests
+        } else {
           setShowExitIntent(true);
         }
       }
@@ -630,7 +631,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       }
     };
-  }, [currentStep, showExitIntent, showExitConfirmation, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
+  }, [currentStep, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -4785,13 +4786,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     >
                       Weiter bearbeiten
                     </button>
-
-                    <button
-                      onClick={() => { setShowExitIntent(false); window.close?.(); }}
-                      className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
-                    >
-                      Trotzdem schließen
-                    </button>
                   </div>
                 </>
               ) : (
@@ -4910,14 +4904,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 </button>
 
                 <button
-                  onClick={() => {
-                    setShowExitConfirmation(false);
-                    // Allow user to leave
-                    window.removeEventListener('beforeunload', () => {});
-                  }}
+                  onClick={() => setShowExitConfirmation(false)}
                   className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors py-2"
                 >
-                  Trotzdem verlassen
+                  Schließen
                 </button>
               </div>
             </div>
