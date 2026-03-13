@@ -59,6 +59,25 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
 }
 
+/**
+ * Converts an array of DayHours objects into a human-readable opening hours string.
+ * Consecutive days with identical times are grouped (e.g. "Montag – Freitag: 09:00 – 18:00 Uhr").
+ */
+function formatOpeningHoursText(hours: Array<{ day: string; open: boolean; from: string; to: string }>): string {
+  const open = hours.filter(h => h.open);
+  if (open.length === 0) return '';
+  const lines: string[] = [];
+  let i = 0;
+  while (i < open.length) {
+    let j = i;
+    while (j + 1 < open.length && open[j + 1].from === open[i].from && open[j + 1].to === open[i].to) j++;
+    const range = i === j ? open[i].day : `${open[i].day} – ${open[j].day}`;
+    lines.push(`${range}: ${open[i].from} – ${open[i].to} Uhr`);
+    i = j + 1;
+  }
+  return lines.join('\n');
+}
+
 // Generic Google Places types that apply to virtually every business – not useful as category
 const GENERIC_GMB_TYPES = new Set([
   "establishment", "point_of_interest", "local_business", "store", "food",
@@ -2580,11 +2599,51 @@ Kontext: ${input.context}`,
           photoUrls: onboarding.photoUrls,
         });
         
+        // Inject contact items from manual onboarding data (phone, email, address, opening hours)
+        const contactItems: Array<{ title: string; description: string; icon: string }> = [];
+        if (onboarding.legalPhone)
+          contactItems.push({ title: 'Telefon', description: onboarding.legalPhone, icon: 'Phone' });
+        if (onboarding.legalEmail)
+          contactItems.push({ title: 'E-Mail', description: onboarding.legalEmail, icon: 'Mail' });
+        const addrParts = [
+          onboarding.legalStreet,
+          `${onboarding.legalZip || ''} ${onboarding.legalCity || ''}`.trim(),
+        ].filter(Boolean);
+        const addrStr = addrParts.join(', ');
+        if (addrStr)
+          contactItems.push({ title: 'Adresse', description: addrStr, icon: 'MapPin' });
+        const ohRaw = (onboarding as any).openingHours;
+        if (ohRaw && Array.isArray(ohRaw) && ohRaw.length > 0) {
+          const ohText = formatOpeningHoursText(ohRaw);
+          if (ohText) contactItems.push({ title: 'Öffnungszeiten', description: ohText, icon: 'Clock' });
+        }
+        if (contactItems.length > 0 && patchedData && (patchedData as any).sections) {
+          (patchedData as any).sections = (patchedData as any).sections.filter((s: any) => s.type !== 'contact');
+          (patchedData as any).sections.push({
+            type: 'contact',
+            headline: 'Kontakt',
+            items: contactItems,
+            content: 'Wir freuen uns auf Ihre Nachricht.',
+            ctaText: 'Nachricht senden',
+          });
+        }
+
         // Also update the business category in the business table if it changed
         if ((onboarding as any).businessCategory && website.businessId) {
           try {
             await updateBusiness(website.businessId, { category: (onboarding as any).businessCategory });
           } catch { /* non-critical */ }
+        }
+
+        // Sync phone/address/opening hours back to business table for future regenerations
+        if (website.businessId) {
+          const bizUpd: Record<string, any> = {};
+          if (onboarding.legalPhone) bizUpd.phone = onboarding.legalPhone;
+          if (addrStr) bizUpd.address = addrStr;
+          if (ohRaw) bizUpd.openingHours = ohRaw;
+          if (Object.keys(bizUpd).length > 0) {
+            try { await updateBusiness(website.businessId, bizUpd); } catch { /* non-critical */ }
+          }
         }
         
         // Generate legal pages if legal data is present

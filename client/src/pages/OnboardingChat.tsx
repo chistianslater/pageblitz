@@ -335,6 +335,15 @@ interface PriceListCategory {
   items: PriceListItem[];
 }
 
+interface DayHours {
+  day: string;
+  open: boolean;
+  from: string;
+  to: string;
+}
+
+const WEEKDAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+
 interface OnboardingData {
   businessCategory: string;
   businessName: string;
@@ -349,6 +358,7 @@ interface OnboardingData {
   legalCity: string;
   legalEmail: string;
   legalPhone: string;
+  openingHours: DayHours[] | null;
   legalVatId: string;
   colorScheme: ColorScheme;
   heroPhotoUrl: string; // selected or uploaded hero photo URL
@@ -389,6 +399,7 @@ type ChatStep =
   | "legalZipCity"
   | "legalEmail"
   | "legalPhone"
+  | "openingHours"
   | "legalVat"
   | "colorScheme"
   | "brandColor"
@@ -442,6 +453,7 @@ const STEP_ORDER: ChatStep[] = [
   "legalZipCity",
   "legalEmail",
   "legalPhone",
+  "openingHours",
   "legalVat",
   "addons",
   "editMenu",
@@ -479,6 +491,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   legalZipCity: null,
   legalEmail: null,
   legalPhone: null,
+  openingHours: "kontakt",
   legalVat: null,
   addons: null,
   editMenu: "speisekarte",
@@ -576,6 +589,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
       if (step === "email") return !hasCustomerEmail; // Skip email step if already provided
+      // Opening hours only for manual onboarding (GMB already has hours from Google)
+      if (step === "openingHours") return !isGmbFlow;
       return true;
     });
   }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
@@ -645,6 +660,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [sectionOrder, setSectionOrder] = useState<string[]>([]);
   const [draggedSectionIdx, setDraggedSectionIdx] = useState<number | null>(null);
   const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
+  // Opening hours widget state
+  const [hoursState, setHoursState] = useState<DayHours[]>(() =>
+    WEEKDAYS.map((day, i) => ({ day, open: i < 5, from: "09:00", to: "18:00" }))
+  );
   const [quickReplySelected, setQuickReplySelected] = useState(false);
   const [inPlaceEditId, setInPlaceEditId] = useState<string | null>(null);
   const [inPlaceEditValue, setInPlaceEditValue] = useState("");
@@ -660,6 +679,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // Refs für Kaskaden-Update bei Branchen-Änderung
   const prevCategoryRef = useRef<string>('');
   const contentPhaseRef = useRef<'skeleton' | 'colors' | 'images' | 'texts' | 'complete'>('skeleton');
+  // Guard: Phase-2 KI-Textgenerierung nur einmal ausführen (verhindert Re-Trigger bei State-Changes)
+  const contentGenerationAttemptedRef = useRef(false);
 
   // Auto-scroll preview to current section
   useEffect(() => {
@@ -706,6 +727,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalCity: "",
     legalEmail: "",
     legalPhone: "",
+    openingHours: null,
     legalVatId: "",
     colorScheme: withOnColors({
       primary: "#3B82F6",
@@ -1220,6 +1242,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         case "legalPhone":
           return data.legalPhone ? [data.legalPhone] : (business?.phone ? [business.phone] : []);
+        case "openingHours":
+          return ["Überspringen"];
         case "email":
           return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         default:
@@ -1279,6 +1303,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
         case "legalPhone":
           return `Welche **Telefonnummer** soll im Impressum und auf der Website stehen?\n\nBeispiel: *+49 2871 123456*`;
+        case "openingHours":
+          return `Zu welchen Zeiten bist du für Kunden erreichbar? 🕐\n\nGib deine Öffnungszeiten ein oder überspringe diesen Schritt – du kannst sie jederzeit später im Dashboard anpassen.`;
         case "legalVat":
           return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach "Nein" oder lass das Feld leer.`;
         case "hideSections":
@@ -1572,13 +1598,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // This ensures Du/Sie preference is captured before text generation starts.
     if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && contentPhase === 'images' &&
         heroRevealed &&
-        !isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
-      
+        !isGeneratingInitialContent && !generateInitialContentMutation.isPending &&
+        !contentGenerationAttemptedRef.current) {
+
+      // Guard against double-trigger (state changes can re-fire this effect)
+      contentGenerationAttemptedRef.current = true;
+
       setContentPhase('texts');
       localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'texts');
       setIsGeneratingInitialContent(true);
       localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
-      
+
       generateInitialContentMutation.mutateAsync({
         websiteId,
         businessName: data.businessName,
@@ -1596,14 +1626,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               description: svc.description,
             })) || prev.topServices,
           }));
-          
+
           toast.success("Website-Texte & Leistungen wurden generiert!", { duration: 2000 });
 
           // Mark as complete + progressive reveal: lower content area now visible
           setContentPhase('complete');
           localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
           setContentRevealed(true);
-          
+
           // Refetch to update preview
           setTimeout(() => {
             refetchSiteData();
@@ -1611,6 +1641,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }).catch((err) => {
         console.error("Initial content generation failed:", err);
+        // Recover gracefully: show website as-is, don't leave stuck skeleton
+        setContentPhase('complete');
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+        setContentRevealed(true);
+        toast.error("Texte konnten nicht generiert werden. Du kannst sie später bearbeiten.", { duration: 4000 });
       }).finally(() => {
         setIsGeneratingInitialContent(false);
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
@@ -1812,7 +1847,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
     const val = value !== undefined ? value.trim() : inputValue.trim();
     const isExplicitEmpty = value === "";
-    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat"].includes(currentStep)) return;
+    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat", "openingHours"].includes(currentStep)) return;
 
     setInputValue("");
 
@@ -1899,6 +1934,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           addUserMessage(phoneVal);
           setData((p) => ({ ...p, legalPhone: phoneVal }));
           await trySaveStep(stepIdx, { legalPhone: phoneVal });
+          break;
+        }
+        case "openingHours": {
+          // Handled exclusively via the UI widget (Übernehmen/Überspringen buttons)
+          // Text "Überspringen" from quickReply skips without saving
+          addUserMessage("Überspringen");
+          setData((p) => ({ ...p, openingHours: null }));
+          await trySaveStep(stepIdx, { openingHours: null });
           break;
         }
         case "legalVat": {
@@ -4139,6 +4182,105 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
+          {currentStep === "openingHours" && (
+            <motion.div
+              key="openingHours-step"
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.97 }}
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              {/* Quick-select buttons */}
+              <div className="flex flex-wrap gap-2 mb-1">
+                {[
+                  { label: "Mo – Fr", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 5 }))) },
+                  { label: "Mo – Sa", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 6 }))) },
+                  { label: "Täglich", action: () => setHoursState(h => h.map(d => ({ ...d, open: true }))) },
+                  { label: "Alle gleiche Zeit", action: () => {
+                    const first = hoursState.find(d => d.open);
+                    if (!first) return;
+                    setHoursState(h => h.map(d => d.open ? { ...d, from: first.from, to: first.to } : d));
+                  }},
+                ].map(({ label, action }) => (
+                  <button key={label} onClick={action}
+                    className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 border border-white/10 transition-colors">
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 7-day grid */}
+              <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden divide-y divide-white/5">
+                {hoursState.map((dh, i) => (
+                  <div key={dh.day} className="flex items-center gap-3 px-3 py-2.5">
+                    {/* Toggle */}
+                    <button
+                      onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, open: !d.open } : d))}
+                      className={`w-9 h-5 rounded-full flex-shrink-0 transition-colors relative ${dh.open ? 'bg-emerald-500' : 'bg-white/20'}`}
+                    >
+                      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${dh.open ? 'left-4' : 'left-0.5'}`} />
+                    </button>
+                    {/* Day name */}
+                    <span className={`text-sm w-24 flex-shrink-0 ${dh.open ? 'text-white' : 'text-slate-500'}`}>
+                      {dh.day.slice(0, 2)}
+                    </span>
+                    {dh.open ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          type="time"
+                          value={dh.from}
+                          onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from: e.target.value } : d))}
+                          className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-24 focus:outline-none focus:border-blue-400"
+                        />
+                        <span className="text-slate-500 text-xs">–</span>
+                        <input
+                          type="time"
+                          value={dh.to}
+                          onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to: e.target.value } : d))}
+                          className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-24 focus:outline-none focus:border-blue-400"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-500 flex-1">Geschlossen</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={async () => {
+                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
+                    const saved = hoursState;
+                    addUserMessage(`${saved.filter(d => d.open).length} Tage eingetragen`);
+                    setData(p => ({ ...p, openingHours: saved }));
+                    await trySaveStep(stepIdx, { openingHours: saved });
+                    const next = dynamicStepOrder[stepIdx + 1];
+                    if (next) await advanceToStep(next);
+                  }}
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors"
+                >
+                  Übernehmen ✓
+                </button>
+                <button
+                  onClick={async () => {
+                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
+                    addUserMessage("Überspringen");
+                    setData(p => ({ ...p, openingHours: null }));
+                    await trySaveStep(stepIdx, { openingHours: null });
+                    const next = dynamicStepOrder[stepIdx + 1];
+                    if (next) await advanceToStep(next);
+                  }}
+                  className="px-5 py-2.5 bg-white/10 hover:bg-white/15 text-slate-300 text-sm rounded-xl transition-colors border border-white/10"
+                >
+                  Überspringen
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {currentStep === "hideSections" && (
             <motion.div
               key="hideSections-step"
@@ -4384,7 +4526,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         <div ref={messagesEndRef} />
         </div>
         {/* Input area – sticky at bottom */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory"].includes(currentStep) && (
+          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (

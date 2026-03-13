@@ -128,6 +128,7 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   legalCountry: varchar("legalCountry", { length: 100 }).default("Deutschland"),
   legalEmail: varchar("legalEmail", { length: 255 }),
   legalPhone: varchar("legalPhone", { length: 100 }),
+  openingHours: json("openingHours"), // DayHours[] – { day, open, from, to }
   legalVatId: varchar("legalVatId", { length: 100 }),
   legalRegister: varchar("legalRegister", { length: 255 }),
   legalRegisterCourt: varchar("legalRegisterCourt", { length: 255 }),
