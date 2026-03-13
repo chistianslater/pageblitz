@@ -981,6 +981,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     return false;
   });
 
+  // Progressive reveal: hero area clears after businessName is confirmed.
+  // On resume: skip overlay if we're past the 'colors' phase (user already confirmed name).
+  const [heroRevealed, setHeroRevealed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return saved !== null && saved !== 'skeleton' && saved !== 'colors';
+    }
+    return false;
+  });
+
+  // Progressive reveal: lower content area clears after text generation finishes.
+  // On resume: skip overlay only if fully complete.
+  const [contentRevealed, setContentRevealed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return saved === 'complete';
+    }
+    return false;
+  });
+
 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
   useEffect(() => {
@@ -1568,10 +1588,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }));
           
           toast.success("Website-Texte & Leistungen wurden generiert!", { duration: 2000 });
-          
-          // Mark as complete
+
+          // Mark as complete + progressive reveal: lower content area now visible
           setContentPhase('complete');
           localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+          setContentRevealed(true);
           
           // Refetch to update preview
           setTimeout(() => {
@@ -1802,6 +1823,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           } else {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
             await trySaveStep(stepIdx, { businessName: data.businessName });
+          }
+          // Progressive reveal: hero area becomes visible after businessName confirmed
+          setHeroRevealed(true);
+          // For GMB (website already generated): also reveal content shortly after
+          const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
+          if (isGmbFlow) {
+            setTimeout(() => setContentRevealed(true), 900);
           }
           break;
         }
@@ -2868,6 +2896,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={async () => {
                       addUserMessage(`Branche: ${data.businessCategory} ✓`);
                       await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
+                      setCategoryConfirmed(true);
                       await goToNextStep();
                     }}
                     className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
@@ -4592,7 +4621,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Website – fades in when category is entered; skeleton mode prevents flash */}
                 <div style={{
                   opacity: contentPhase === 'skeleton' ? 0 : 1,
-                  transition: 'opacity 0.45s ease',
+                  transition: 'opacity 0.6s ease',
+                  position: 'relative',
                 }}>
                   <WebsiteRenderer
                     websiteData={liveWebsiteData}
@@ -4607,6 +4637,39 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
                     isLoading={isGeneratingInitialContent || contentPhase === 'colors' || contentPhase === 'images'}
+                  />
+
+                  {/* ── Magic progressive reveal overlays ─────────────────────────────
+                      These "fog of war" layers lift one by one as the user fills in info,
+                      creating the feeling that the website is being built before their eyes.
+                  ─────────────────────────────────────────────────────────────────────── */}
+
+                  {/* Layer 1: Full overlay – clears after businessName confirmed (hero reveal) */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(135deg, rgba(8,12,35,0.72) 0%, rgba(12,18,50,0.65) 100%)',
+                      opacity: heroRevealed ? 0 : 1,
+                      transition: 'opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1)',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                    }}
+                  />
+
+                  {/* Layer 2: Lower content overlay – clears after text generation complete */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      top: '38%', left: 0, right: 0, bottom: 0,
+                      background: 'linear-gradient(to bottom, rgba(8,12,35,0) 0%, rgba(8,12,35,0.68) 18%, rgba(8,12,35,0.68) 100%)',
+                      opacity: contentRevealed ? 0 : 1,
+                      transition: 'opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.45s',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                    }}
                   />
                 </div>
               </div>
