@@ -28,7 +28,7 @@ export default function PremiumLayout({ websiteData, cs, heroImageUrl, isLoading
     <div className="bg-white">
       {/* Hero Section */}
       <section className="min-h-screen grid lg:grid-cols-12">
-        <div className="lg:col-span-5 bg-neutral-900 text-white p-8 md:p-12 lg:p-24 flex flex-col justify-center relative overflow-hidden">
+        <div className="lg:col-span-5 bg-neutral-900 text-white p-8 md:p-12 lg:p-24 flex flex-col justify-center relative overflow-hidden z-[1]">
           <div 
             className="absolute inset-0 opacity-10 pointer-events-none" 
             style={{ 

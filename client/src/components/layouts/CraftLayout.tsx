@@ -30,8 +30,8 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, isLoading =
   return (
     <div className="bg-[#f2f2f2] text-neutral-800">
       {/* Hero Section */}
-      <section className="grid lg:grid-cols-2 min-h-screen">
-        <div className="p-6 md:p-12 lg:p-24 flex flex-col justify-center bg-white">
+      <section className="grid lg:grid-cols-2 min-h-screen overflow-hidden">
+        <div className="relative p-6 md:p-12 lg:p-24 flex flex-col justify-center bg-white z-[1]">
             {/* Eyebrow badge */}
           {!isLoading && (
             <span

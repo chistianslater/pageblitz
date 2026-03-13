@@ -191,14 +191,14 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="grid lg:grid-cols-[45%_55%] min-h-screen">
+    <section id="hero" className="grid lg:grid-cols-[45%_55%] min-h-screen overflow-hidden">
       {/* LEFT: Text Panel */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0 overflow-hidden"
+        className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0 z-[1]"
       >
         {/* Left edge accent line */}
         {!isLoading && (
@@ -2466,7 +2466,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9 }}
-          className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24"
+          className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24 z-[1]"
         >
           {!isLoading && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
@@ -2656,7 +2656,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24"
+          className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24 z-[1]"
         >
           {/* Badge */}
           {!isLoading && (

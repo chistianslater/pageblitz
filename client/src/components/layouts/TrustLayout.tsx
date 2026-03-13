@@ -29,7 +29,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, isLoading =
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center py-16 md:py-20 px-4 md:px-6">
         <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-8 md:gap-16 items-center">
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 relative z-[1]">
             {/* Eyebrow badge */}
             {!isLoading && (
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] mb-8 self-start border border-slate-900/20 bg-slate-900/05 text-slate-700">
