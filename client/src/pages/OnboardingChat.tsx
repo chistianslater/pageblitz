@@ -1152,8 +1152,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Handwerk",
             "Bar/Tapas",
           ];
-        case "businessName":
-          return name ? ["Ja, stimmt!"] : [];
+        case "businessName": {
+          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          return isGmb && name ? ["Ja, stimmt!"] : [];
+        }
         case "addressingMode":
           return [];
         case "tagline":
@@ -1219,7 +1221,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return [];
       }
     },
-    [data.businessName, data.businessCategory, data.legalEmail, business?.name, business?.address, business?.email]
+    [data.businessName, data.businessCategory, data.legalEmail, business?.name, business?.address, business?.email, business?.placeId]
   );
   // ── Step promptss ────────────────────────────────────────────────────────
   const getStepPrompt = useCallback(
@@ -1230,8 +1232,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Hallo! Bevor wir starten – welche **Branche** ist dein Unternehmen?\n\nBeispiel: Restaurant, Friseur, Bauunternehmen, Fitness-Studio, Anwaltskanzlei, etc.\n\nDas hilft mir, deine Website perfekt auf deine Branche abzustimmen!`;
         case "welcome":
           return `Hey! 👋 Ich bin dein persönlicher Website-Assistent. Ich helfe dir in wenigen Minuten, deine Website mit echten Infos zu befüllen – damit sie nicht mehr generisch klingt, sondern wirklich nach **${name}** aussieht.\n\nKlingt gut? Dann lass uns starten! 🚀`;
-        case "businessName":
-          return `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName || "noch keinen Namen"}** vorausgefüllt – stimmt das so?`;
+        case "businessName": {
+          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          return isGmb && data.businessName
+            ? `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName}** vorausgefüllt – stimmt das so?`
+            : `Wie lautet der offizielle Name deines Unternehmens?`;
+        }
         case "addressingMode":
           return `Kurze Frage zur Sprache deiner Website: Sollen deine Besucher **geduzt** oder **gesiezt** werden?\n\n*Das beeinflusst alle Texte – von Überschriften bis zu Call-to-Actions.*`;
         case "tagline":
@@ -1311,7 +1317,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return "Nächster Schritt...";
       }
     },
-    [data.businessName, business?.name, data.headlineFont]
+    [data.businessName, business?.name, business?.placeId, data.headlineFont]
   );
 
   // ── Initialize chat ─────────────────────────────────────────────────────
