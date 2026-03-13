@@ -96,9 +96,9 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button 
+            <Button
               variant="ghost"
-              onClick={() => navigate("/start")}
+              onClick={() => navigate("/login")}
               className="text-white/70 hover:text-white hover:bg-white/5 text-sm"
             >
               Anmelden
