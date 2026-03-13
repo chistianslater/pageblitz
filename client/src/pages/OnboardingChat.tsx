@@ -4005,6 +4005,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-4"
             >
+              {/* Coming Soon overlay wrapper */}
+              <div className="relative rounded-2xl overflow-hidden">
+                {/* Blurred content behind overlay */}
+                <div className="select-none pointer-events-none opacity-40 blur-[1px]">
               {/* Info Card */}
                 <div className="bg-blue-600/10 border border-blue-500/30 rounded-2xl p-4 space-y-2">
                   <div className="flex items-start gap-3">
@@ -4061,28 +4065,42 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
                 <div className="flex flex-col gap-3 pt-1">
                   <button
-                    onClick={() => setData((p) => ({ ...p, subPages: [...p.subPages, { id: genId(), name: "", description: "" }] }))}
-                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl border border-slate-600 transition-colors"
+                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 text-slate-300 py-2.5 rounded-xl border border-slate-600"
                   >
                     <Plus className="w-3.5 h-3.5" /> Neue Unterseite hinzufügen <span className="text-blue-400 font-bold">(+9,90 €)</span>
                   </button>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      disabled={isTyping}
-                      onClick={async () => {
-                        if (isTyping) return;
-                        const validPages = data.subPages.filter((p) => p.name.trim());
-                        addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
-                        await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: validPages.map((p) => p.name) });
-                        await goToNextStep();
-                      }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
-                    >
-                      {data.subPages.length > 0 ? "Speichern & weiter" : "Überspringen & weiter"} <ChevronRight className="w-4 h-4" />
-                    </button>
+                </div>
+                </div>{/* end blurred content */}
+
+                {/* Coming Soon overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-[2px] rounded-2xl z-10">
+                  <div className="flex flex-col items-center gap-3 text-center px-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/40">
+                      <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                      <span className="text-indigo-300 text-xs font-semibold uppercase tracking-widest">Coming Soon</span>
+                    </div>
+                    <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+                      Unterseiten sind in Kürze verfügbar. Wir arbeiten daran!
+                    </p>
                   </div>
                 </div>
+              </div>{/* end relative wrapper */}
+
+              {/* Action button – outside overlay so it always works */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    addUserMessage("Keine Unterseiten");
+                    await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: [] });
+                    await goToNextStep();
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </motion.div>
           )}
 

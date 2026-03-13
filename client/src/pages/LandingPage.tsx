@@ -161,7 +161,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Was passiert nach den 7 Tagen?",
-    a: "Nach dem kostenlosen Testzeitraum kostet Pageblitz 19,90€/Monat. Du wirst vorher per E-Mail erinnert. Wenn du nicht weiter machen möchtest, kannst du einfach kündigen.",
+    a: "Nach dem kostenlosen Testzeitraum kostet Pageblitz 19,90 €/Monat bei jährlicher Zahlung oder 24,90 €/Monat bei monatlicher Zahlung. Du wirst vorher per E-Mail erinnert. Wenn du nicht weiter machen möchtest, kannst du einfach kündigen.",
   },
   {
     q: "Kann ich meine eigene Domain verwenden?",
@@ -1381,6 +1381,7 @@ export default function LandingPage() {
   const [, navigate] = useLocation();
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+  const [billingYearly, setBillingYearly] = useState(true);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans">
@@ -1434,7 +1435,7 @@ export default function LandingPage() {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-sm mb-8"
                 >
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span>Webagentur kostet 3.000€+ – Pageblitz ab 19,90€/Monat</span>
+                  <span>Webagentur kostet 3.000€+ – Pageblitz ab 19,90 €/Monat</span>
                 </motion.div>
 
                 <motion.h1
@@ -1878,19 +1879,43 @@ export default function LandingPage() {
             <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Ein Preis. Alles inklusive.</h3>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto items-start">
+          <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
             {/* Pricing card */}
             <div className="relative p-1 rounded-3xl bg-gradient-to-b from-white/20 to-white/5">
-              <div className="bg-[#0a0a0a] rounded-[22px] p-10 border border-white/10">
+              <div className="bg-[#0a0a0a] rounded-[22px] p-10 border border-white/10 h-full flex flex-col">
                 <div className="text-center mb-10">
-                  <div className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium mb-6">
+                  <div className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium mb-5">
                     Pageblitz Pro
                   </div>
+                  {/* Billing toggle */}
+                  <div className="flex items-center justify-center mb-5">
+                    <div className="flex p-0.5 rounded-full bg-white/5 border border-white/10">
+                      <button
+                        onClick={() => setBillingYearly(true)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? 'bg-white text-black' : 'text-white/50 hover:text-white/70'}`}
+                      >
+                        Jährlich
+                      </button>
+                      <button
+                        onClick={() => setBillingYearly(false)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? 'bg-white text-black' : 'text-white/50 hover:text-white/70'}`}
+                      >
+                        Monatlich
+                      </button>
+                    </div>
+                    {billingYearly && (
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 text-[10px] font-medium whitespace-nowrap">
+                        2 Monate gratis
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-6xl font-semibold text-white tracking-tight">19,90€</span>
+                    <span className="text-6xl font-semibold text-white tracking-tight">{billingYearly ? '19,90€' : '24,90€'}</span>
                     <span className="text-white/40">/Monat</span>
                   </div>
-                  <p className="text-white/40 text-sm">Monatlich kündbar. Keine versteckten Kosten.</p>
+                  <p className="text-white/40 text-sm">
+                    {billingYearly ? 'Jährliche Abrechnung · Jederzeit kündbar.' : 'Monatliche Abrechnung · Jederzeit kündbar.'}
+                  </p>
                 </div>
 
                 <div className="space-y-4 mb-10">
@@ -1912,29 +1937,32 @@ export default function LandingPage() {
 
                 <Button
                   onClick={() => navigate("/start")}
-                  className="w-full bg-white text-black hover:bg-white/90 rounded-full h-14 text-base font-medium"
+                  className="w-full bg-white text-black hover:bg-white/90 rounded-full h-14 text-base font-medium mt-auto"
                 >
                   7 Tage gratis starten
                 </Button>
-                <p className="text-center text-white/30 text-xs mt-4">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
+                <p className="text-center text-white/30 text-xs mt-4">
+                  7 Tage gratis · danach {billingYearly ? '19,90 €/Mo. (jährlich)' : '24,90 €/Mo.'} · Jederzeit kündbar
+                </p>
               </div>
             </div>
 
             {/* Comparison table */}
-            <div className="space-y-4">
+            <div className="flex flex-col h-full space-y-4">
               <h4 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-6">Pageblitz vs. Webagentur</h4>
-              <div className="rounded-2xl border border-white/10 overflow-hidden">
+              <div className="rounded-2xl border border-white/10 overflow-hidden flex-1 flex flex-col">
                 <div className="grid grid-cols-3 bg-white/5 px-4 py-3 text-xs font-medium text-white/40 uppercase tracking-wider">
                   <div></div>
                   <div className="text-center">Webagentur</div>
                   <div className="text-center text-white/80">Pageblitz</div>
                 </div>
+                <div className="flex-1">
                 {[
                   { label: "Einmalkosten", agency: "2.000–8.000€", us: "0€" },
                   { label: "Wartezeit", agency: "4–12 Wochen", us: "3 Minuten" },
-                  { label: "Monatl. Kosten", agency: "0–80€ Hosting", us: "19,90€" },
+                  { label: "Monatl. Kosten", agency: "0–80€ Hosting", us: billingYearly ? "19,90€" : "24,90€" },
                   { label: "Änderungen", agency: "Stundenabrechnung", us: "Inklusive" },
-                  { label: "Vertragslaufzeit", agency: "Oft 12 Monate", us: "Monatlich" },
+                  { label: "Vertragslaufzeit", agency: "Oft 12 Monate", us: billingYearly ? "Jährlich" : "Monatlich" },
                   { label: "Technikkenntnisse", agency: "Nein", us: "Nein" },
                 ].map((row, i) => (
                   <div key={i} className={`grid grid-cols-3 px-4 py-4 text-sm border-t border-white/5 ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}>
@@ -1943,6 +1971,7 @@ export default function LandingPage() {
                     <div className="text-center text-green-400 font-medium">{row.us}</div>
                   </div>
                 ))}
+                </div>
               </div>
             </div>
           </div>
@@ -1982,7 +2011,7 @@ export default function LandingPage() {
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
           <div className="flex flex-wrap justify-center gap-6 mt-8">
-            {["7 Tage gratis", "Danach 19,90 €/Mo.", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
+            {["7 Tage gratis", "Ab 19,90 €/Mo.", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
               <div key={t} className="flex items-center gap-2 text-white/40 text-sm">
                 <CheckCircle2 className="w-4 h-4 text-green-400/60" />
                 {t}
