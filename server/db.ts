@@ -9,6 +9,7 @@ import {
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
   generationJobs, InsertGenerationJob, GenerationJob,
+  contactSubmissions, InsertContactSubmission, ContactSubmission,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -556,4 +557,47 @@ export async function updateGenerationJob(id: number, data: Partial<InsertGenera
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(generationJobs).set(data).where(eq(generationJobs.id, id));
+}
+
+// ── Contact Submissions ────────────────────────────────
+export async function createContactSubmission(data: InsertContactSubmission): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(contactSubmissions).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getContactSubmissionsByWebsiteId(websiteId: number): Promise<ContactSubmission[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(contactSubmissions)
+    .where(eq(contactSubmissions.websiteId, websiteId))
+    .orderBy(desc(contactSubmissions.createdAt));
+}
+
+export async function countUnreadSubmissions(websiteId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(contactSubmissions)
+    .where(and(eq(contactSubmissions.websiteId, websiteId), sql`readAt IS NULL`));
+  return Number(result[0]?.count ?? 0);
+}
+
+export async function markSubmissionRead(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(contactSubmissions)
+    .set({ readAt: new Date() })
+    .where(eq(contactSubmissions.id, id));
+}
+
+export async function countRecentSubmissionsByIp(ip: string, sinceMs: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - sinceMs);
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(contactSubmissions)
+    .where(and(eq(contactSubmissions.ipAddress, ip), sql`createdAt > ${since}`));
+  return Number(result[0]?.count ?? 0);
 }

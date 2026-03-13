@@ -1879,9 +1879,9 @@ export default function LandingPage() {
             <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Ein Preis. Alles inklusive.</h3>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+          <div className="flex justify-center">
             {/* Pricing card */}
-            <div className="relative p-1 rounded-3xl bg-gradient-to-b from-white/20 to-white/5">
+            <div className="relative p-1 rounded-3xl bg-gradient-to-b from-white/20 to-white/5 w-full max-w-md">
               <div className="bg-[#0a0a0a] rounded-[22px] p-10 border border-white/10 h-full flex flex-col">
                 <div className="text-center mb-10">
                   <div className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium mb-5">
@@ -1947,32 +1947,61 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Comparison table */}
-            <div className="flex flex-col h-full space-y-4">
-              <h4 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-6">Pageblitz vs. Webagentur</h4>
-              <div className="rounded-2xl border border-white/10 overflow-hidden flex-1 flex flex-col">
-                <div className="grid grid-cols-3 bg-white/5 px-4 py-3 text-xs font-medium text-white/40 uppercase tracking-wider">
-                  <div></div>
-                  <div className="text-center">Webagentur</div>
-                  <div className="text-center text-white/80">Pageblitz</div>
-                </div>
-                <div className="flex-1">
-                {[
-                  { label: "Einmalkosten", agency: "2.000–8.000€", us: "0€" },
-                  { label: "Wartezeit", agency: "4–12 Wochen", us: "3 Minuten" },
-                  { label: "Monatl. Kosten", agency: "0–80€ Hosting", us: billingYearly ? "19,90€" : "24,90€" },
-                  { label: "Änderungen", agency: "Stundenabrechnung", us: "Inklusive" },
-                  { label: "Vertragslaufzeit", agency: "Oft 12 Monate", us: billingYearly ? "Jährlich" : "Monatlich" },
-                  { label: "Technikkenntnisse", agency: "Nein", us: "Nein" },
-                ].map((row, i) => (
-                  <div key={i} className={`grid grid-cols-3 px-4 py-4 text-sm border-t border-white/5 ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}>
-                    <div className="text-white/50">{row.label}</div>
-                    <div className="text-center text-white/40">{row.agency}</div>
-                    <div className="text-center text-green-400 font-medium">{row.us}</div>
-                  </div>
-                ))}
-                </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Section – Pageblitz vs. Webagentur */}
+      <section className="py-24 relative">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Vergleich</h2>
+            <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Pageblitz vs. Webagentur</h3>
+            <p className="text-white/40 mt-4 text-base">Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen.</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 overflow-hidden">
+            {/* Header */}
+            <div className="grid grid-cols-3 bg-white/5 px-8 py-5">
+              <div className="text-white/40 text-sm font-medium uppercase tracking-wider"></div>
+              <div className="text-center">
+                <span className="text-white/50 text-base font-medium">Webagentur</span>
               </div>
+              <div className="text-center">
+                <span className="text-white text-base font-semibold">Pageblitz ✦</span>
+              </div>
+            </div>
+            {/* Rows */}
+            {[
+              { label: "Einmalige Kosten", agency: "2.000 – 8.000 €", us: "0 €", highlight: true },
+              { label: "Zeit bis zur fertigen Website", agency: "4 – 12 Wochen", us: "3 Minuten", highlight: false },
+              { label: "Monatliche Kosten", agency: "50 – 150 € Hosting & Wartung", us: billingYearly ? "19,90 €" : "24,90 €", highlight: true },
+              { label: "Änderungen & Updates", agency: "Stundenabrechnung (~80 €/h)", us: "Inklusive", highlight: false },
+              { label: "Vertragslaufzeit", agency: "Oft 12–24 Monate", us: billingYearly ? "1 Jahr, jederzeit kündbar" : "Monatlich kündbar", highlight: true },
+              { label: "Technisches Know-how nötig", agency: "Nein (aber Briefing-Aufwand)", us: "Nein", highlight: false },
+              { label: "DSGVO & Impressum", agency: "Meist kostenpflichtig extra", us: "Automatisch inklusive", highlight: true },
+              { label: "SSL & Hosting", agency: "Oft extra berechnet", us: "Inklusive", highlight: false },
+            ].map((row, i) => (
+              <div
+                key={i}
+                className={`grid grid-cols-3 px-8 py-5 border-t border-white/5 ${i % 2 !== 0 ? 'bg-white/[0.015]' : ''}`}
+              >
+                <div className="text-white/60 text-sm font-medium self-center">{row.label}</div>
+                <div className="text-center text-white/35 text-sm self-center">{row.agency}</div>
+                <div className="text-center text-green-400 text-sm font-semibold self-center">{row.us}</div>
+              </div>
+            ))}
+            {/* Footer CTA */}
+            <div className="bg-white/[0.03] border-t border-white/10 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-white/50 text-sm">
+                Ersparnis im ersten Jahr: <span className="text-white font-semibold">bis zu 8.000 €</span>
+              </p>
+              <button
+                onClick={() => navigate("/start")}
+                className="flex items-center gap-2 bg-white text-black text-sm font-medium px-6 py-2.5 rounded-full hover:bg-white/90 transition-colors whitespace-nowrap"
+              >
+                Jetzt kostenlos starten
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

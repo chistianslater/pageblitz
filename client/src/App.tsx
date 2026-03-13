@@ -60,9 +60,9 @@ function Router() {
       <Route path="/datenschutz" component={PageblitzDatenschutz} />
       <Route path="/start" component={StartPage} />
       <Route path="/preview/:token" component={PreviewPage} />
-      <Route path="/site/:slug" component={SitePage} />
-      <Route path="/site/:slug/impressum" component={LegalPage} />
-      <Route path="/site/:slug/datenschutz" component={LegalPage} />
+      <Route path="/site/:slug">{(params) => <SitePage key={params.slug} />}</Route>
+      <Route path="/site/:slug/impressum">{(params) => <LegalPage key={params.slug} />}</Route>
+      <Route path="/site/:slug/datenschutz">{(params) => <LegalPage key={params.slug} />}</Route>
       <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
       <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
       <Route path="/my-website">

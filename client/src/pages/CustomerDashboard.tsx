@@ -8,7 +8,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions";
 
 interface SectionConfig {
   type: string;
@@ -1739,6 +1739,15 @@ export default function CustomerDashboard() {
     { enabled: !!(selectedWebsiteId || activeWebsiteId) && activeTab === "analytics" }
   );
 
+  const { data: submissionsData, isLoading: submissionsLoading, refetch: refetchSubmissions } = trpc.customer.getSubmissions.useQuery(
+    { websiteId: selectedWebsiteId || activeWebsiteId || 0 },
+    { enabled: !!(selectedWebsiteId || activeWebsiteId) }
+  );
+
+  const markReadMutation = trpc.customer.markSubmissionRead.useMutation({
+    onSuccess: () => refetchSubmissions(),
+  });
+
   const handleUpdate = () => {
     refetch();
     setPreviewKey((k) => k + 1);
@@ -1804,12 +1813,15 @@ export default function CustomerDashboard() {
     });
   };
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  const unreadCount = submissionsData?.unreadCount ?? 0;
+
+  const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
     { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
+    { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
     { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
 
@@ -1870,7 +1882,7 @@ export default function CustomerDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === tab.id
                     ? "text-blue-400 border-blue-400 bg-blue-500/10"
                     : "text-slate-400 border-transparent hover:text-white hover:bg-slate-800/50"
@@ -1878,6 +1890,11 @@ export default function CustomerDashboard() {
               >
                 {tab.icon}
                 {tab.label}
+                {tab.badge && tab.badge > 0 ? (
+                  <span className="ml-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
+                    {tab.badge > 99 ? "99+" : tab.badge}
+                  </span>
+                ) : null}
               </button>
             ))}
           </div>
@@ -2245,6 +2262,101 @@ export default function CustomerDashboard() {
                 <p className="text-slate-400 text-sm max-w-sm mx-auto">
                   Analytics werden aktiviert, sobald deine Website live ist und die ersten Besucher kommen.
                 </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Submissions (Anfragen) Tab */}
+        {activeTab === "submissions" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-white text-lg font-semibold">Kontaktanfragen</h2>
+                <p className="text-slate-400 text-sm mt-0.5">
+                  {submissionsData?.submissions.length ?? 0} Anfragen gesamt
+                  {unreadCount > 0 && <span className="ml-2 text-rose-400 font-medium">· {unreadCount} ungelesen</span>}
+                </p>
+              </div>
+            </div>
+
+            {submissionsLoading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+              </div>
+            ) : !submissionsData?.submissions.length ? (
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-12 text-center">
+                <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-white font-semibold mb-2">Noch keine Anfragen</h3>
+                <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {submissionsData.submissions.map((sub) => {
+                  const isUnread = !sub.readAt;
+                  return (
+                    <div
+                      key={sub.id}
+                      className={`bg-slate-800/60 border rounded-2xl p-5 transition-colors ${
+                        isUnread ? "border-blue-500/40 bg-slate-800/80" : "border-slate-700/50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1">
+                            {isUnread && (
+                              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                            )}
+                            <span className="text-white font-semibold truncate">{sub.name}</span>
+                            <span className="text-slate-400 text-xs shrink-0">
+                              {new Date(sub.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-3 mb-3">
+                            <a
+                              href={`mailto:${sub.email}`}
+                              className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              {sub.email}
+                            </a>
+                            {sub.phone && (
+                              <a
+                                href={`tel:${sub.phone}`}
+                                className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                                {sub.phone}
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
+                            {sub.message}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          <a
+                            href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
+                            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            <Mail className="w-3 h-3" />
+                            Antworten
+                          </a>
+                          {isUnread && (
+                            <button
+                              onClick={() => markReadMutation.mutate({ submissionId: sub.id })}
+                              className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
+                            >
+                              Als gelesen markieren
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

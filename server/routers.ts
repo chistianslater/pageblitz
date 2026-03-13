@@ -18,6 +18,8 @@ import {
   getLeadFunnelStats, listExternalLeads, countExternalLeads,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
   updateUser, getUserByOpenId,
+  createContactSubmission, getContactSubmissionsByWebsiteId, countUnreadSubmissions,
+  markSubmissionRead, countRecentSubmissionsByIp,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
@@ -3981,6 +3983,115 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
         if (!umamiWebsiteId) return null;
         const stats = await getUmamiStats(umamiWebsiteId);
         return stats;
+      }),
+
+    getSubmissions: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const submissions = await getContactSubmissionsByWebsiteId(input.websiteId);
+        const unreadCount = await countUnreadSubmissions(input.websiteId);
+        return { submissions, unreadCount };
+      }),
+
+    markSubmissionRead: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await markSubmissionRead(input.submissionId);
+        return { success: true };
+      }),
+  }),
+
+  // ── Public: Contact Form ──────────────────────────────────────
+  contact: router({
+    submit: publicProcedure
+      .input(z.object({
+        slug: z.string(),
+        name: z.string().min(1).max(255),
+        email: z.string().email().max(320),
+        phone: z.string().max(50).optional(),
+        message: z.string().min(1).max(5000),
+        customFields: z.record(z.string()).optional(),
+        // Honeypot: filled by bots, must be empty for humans
+        website_url: z.string().max(0).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Honeypot check – bots fill this field
+        if (input.website_url && input.website_url.length > 0) {
+          return { success: true }; // silently ignore
+        }
+
+        // Look up website by slug
+        const website = await getWebsiteBySlug(input.slug);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+
+        // IP-based rate limiting: max 5 submissions per IP per hour
+        const ip = (ctx as any).req?.ip
+          || (ctx as any).req?.headers?.["x-forwarded-for"]?.split(",")[0]?.trim()
+          || "unknown";
+        const recentCount = await countRecentSubmissionsByIp(ip, 60 * 60 * 1000);
+        if (recentCount >= 5) {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Zu viele Anfragen. Bitte versuche es später erneut." });
+        }
+
+        // Save to DB
+        await createContactSubmission({
+          websiteId: website.id,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          message: input.message,
+          customFields: input.customFields ?? {},
+          ipAddress: ip,
+        });
+
+        // Send email notification to business owner
+        const business = website.businessId ? await getBusinessById(website.businessId) : null;
+        const recipientEmail = business?.email;
+
+        if (recipientEmail) {
+          const { sendEmail } = await import("./_core/email");
+          const businessName = business?.name ?? website.slug;
+          await sendEmail({
+            to: recipientEmail,
+            from: `Pageblitz Kontaktformular <kontakt@pageblitz.de>`,
+            subject: `Neue Kontaktanfrage – ${businessName}`,
+            html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f5; margin: 0; padding: 32px 16px;">
+  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div style="background: #18181b; padding: 28px 32px;">
+      <p style="color: #a1a1aa; font-size: 12px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.08em;">Neue Kontaktanfrage</p>
+      <h1 style="color: #ffffff; font-size: 22px; font-weight: 600; margin: 0;">${businessName}</h1>
+    </div>
+    <div style="padding: 32px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px; width: 30%;">Name</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px; font-weight: 500;">${input.name}</td></tr>
+        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">E-Mail</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;"><a href="mailto:${input.email}" style="color: #6366f1; font-size: 14px; text-decoration: none;">${input.email}</a></td></tr>
+        ${input.phone ? `<tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">Telefon</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px;">${input.phone}</td></tr>` : ""}
+      </table>
+      <div style="margin-top: 24px; background: #f9f9f9; border-radius: 8px; padding: 20px;">
+        <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.06em;">Nachricht</p>
+        <p style="color: #18181b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${input.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+      </div>
+      <div style="margin-top: 24px; text-align: center;">
+        <a href="mailto:${input.email}?subject=Re: Kontaktanfrage" style="display: inline-block; background: #18181b; color: #fff; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 8px;">Direkt antworten</a>
+      </div>
+    </div>
+    <div style="padding: 20px 32px; border-top: 1px solid #f0f0f0; text-align: center;">
+      <p style="color: #a1a1aa; font-size: 12px; margin: 0;">Gesendet via <a href="https://pageblitz.de" style="color: #6366f1; text-decoration: none;">pageblitz.de</a></p>
+    </div>
+  </div>
+</body>
+</html>`,
+          }).catch(() => { /* non-critical */ });
+        }
+
+        return { success: true };
       }),
   }),
 

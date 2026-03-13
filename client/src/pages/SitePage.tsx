@@ -11,11 +11,12 @@ export default function SitePage() {
   const params = useParams<{ slug: string }>();
 
   const { data, isLoading, error } = trpc.website.get.useQuery(
-    { slug: params.slug },
-    { enabled: !!params.slug }
+    { slug: params.slug ?? "" },
+    { enabled: !!params.slug, staleTime: 0, refetchOnMount: "always" }
   );
 
-  if (isLoading) {
+  // Also show spinner while slug isn't resolved yet (wouter params timing)
+  if (!params.slug || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
