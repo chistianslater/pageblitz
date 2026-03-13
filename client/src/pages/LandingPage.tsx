@@ -1921,7 +1921,7 @@ export default function LandingPage() {
                 <div className="space-y-4 mb-10">
                   {[
                     "KI-generierte Website",
-                    "Eigene Domain inklusive",
+                    "Eigene Domain nutzbar (Add-on)",
                     "SSL-Zertifikat",
                     "DSGVO-konformer Datenschutz & Impressum",
                     "Premium Cloud Hosting",

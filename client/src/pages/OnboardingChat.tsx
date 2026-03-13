@@ -1977,13 +1977,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           // For admin-generated websites: save as customerEmail in DB + set captureStatus
           const isAdminSite = siteData?.website?.source === "admin";
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
-          if (isAdminSite && !alreadyHasEmail && websiteId) {
+          // Only do the "capture email → businessCategory" flow when user is at the
+          // BEGINNING of the onboarding (businessCategory not yet set).
+          // If they've already gone through all content steps, go to the normal next step.
+          const isAtStart = !data.businessCategory;
+          if (isAdminSite && !alreadyHasEmail && websiteId && isAtStart) {
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val },
               {
                 onSuccess: async () => {
                   toast.success("E-Mail gespeichert! ✅");
-                  // Advance to businessCategory instead of the normal next step
+                  // Advance to businessCategory (user is starting the flow)
                   await advanceToStep("businessCategory");
                 },
                 onError: () => {

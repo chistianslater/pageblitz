@@ -2620,7 +2620,9 @@ Kontext: ${input.context}`,
           const ohText = formatOpeningHoursText(ohRaw);
           if (ohText) contactItems.push({ title: 'Öffnungszeiten', description: ohText, icon: 'Clock' });
         }
-        if (contactItems.length > 0 && patchedData && (patchedData as any).sections) {
+        if (contactItems.length > 0 && patchedData) {
+          // Ensure sections array exists (some non-GMB websites might not have one yet)
+          if (!(patchedData as any).sections) (patchedData as any).sections = [];
           (patchedData as any).sections = (patchedData as any).sections.filter((s: any) => s.type !== 'contact');
           (patchedData as any).sections.push({
             type: 'contact',
@@ -3985,6 +3987,19 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
         return stats;
       }),
 
+    updateContactEmail: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        contactEmail: z.string().email().max(320).or(z.literal("")),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        await updateWebsite(input.websiteId, { contactEmail: input.contactEmail || null } as any);
+        return { success: true };
+      }),
+
     getSubmissions: protectedProcedure
       .input(z.object({ websiteId: z.number() }))
       .query(async ({ ctx, input }) => {
@@ -4049,7 +4064,8 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
 
         // Send email notification to business owner
         const business = website.businessId ? await getBusinessById(website.businessId) : null;
-        const recipientEmail = business?.email;
+        // contactEmail on website overrides business.email
+        const recipientEmail = (website as any).contactEmail || business?.email;
 
         if (recipientEmail) {
           const { sendEmail } = await import("./_core/email");

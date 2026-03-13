@@ -1748,6 +1748,12 @@ export default function CustomerDashboard() {
     onSuccess: () => refetchSubmissions(),
   });
 
+  const [contactEmailInput, setContactEmailInput] = useState("");
+  const [contactEmailSaved, setContactEmailSaved] = useState(false);
+  const updateContactEmailMutation = trpc.customer.updateContactEmail.useMutation({
+    onSuccess: () => { setContactEmailSaved(true); setTimeout(() => setContactEmailSaved(false), 2500); refetch(); },
+  });
+
   const handleUpdate = () => {
     refetch();
     setPreviewKey((k) => k + 1);
@@ -1805,6 +1811,11 @@ export default function CustomerDashboard() {
   const { website, business } = selectedEntry;
   const websiteData = website.websiteData as WebsiteData | undefined;
   const colorScheme = website.colorScheme as ColorScheme | undefined;
+  // Sync contactEmail from loaded website data (when website changes or tab mounts)
+  const storedContactEmail = (website as any).contactEmail as string | null | undefined;
+  useEffect(() => {
+    setContactEmailInput(storedContactEmail ?? "");
+  }, [storedContactEmail]);
 
   const makeUpdater = (field: string) => async (value: string) => {
     await updateMutation.mutateAsync({
@@ -2270,13 +2281,31 @@ export default function CustomerDashboard() {
         {/* Submissions (Anfragen) Tab */}
         {activeTab === "submissions" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-white text-lg font-semibold">Kontaktanfragen</h2>
                 <p className="text-slate-400 text-sm mt-0.5">
                   {submissionsData?.submissions.length ?? 0} Anfragen gesamt
                   {unreadCount > 0 && <span className="ml-2 text-rose-400 font-medium">· {unreadCount} ungelesen</span>}
                 </p>
+              </div>
+              {/* Custom recipient email */}
+              <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
+                <Mail className="w-4 h-4 text-slate-500 shrink-0" />
+                <input
+                  type="email"
+                  value={contactEmailInput}
+                  onChange={(e) => setContactEmailInput(e.target.value)}
+                  placeholder={business?.email || "Empfänger-E-Mail eintragen..."}
+                  className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-52"
+                />
+                <button
+                  onClick={() => updateContactEmailMutation.mutate({ websiteId: website.id, contactEmail: contactEmailInput })}
+                  disabled={updateContactEmailMutation.isPending}
+                  className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+                >
+                  {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
+                </button>
               </div>
             </div>
 
