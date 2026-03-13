@@ -900,6 +900,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }));
     }
+
+    // Restore section order and visibility from hideSections step
+    const rawSectionOrder = (existingOnboarding as any).sectionOrder;
+    if (Array.isArray(rawSectionOrder) && rawSectionOrder.length > 0) {
+      setSectionOrder(rawSectionOrder);
+    }
+    const rawHiddenSections = (existingOnboarding as any).hiddenSections;
+    if (Array.isArray(rawHiddenSections) && rawHiddenSections.length > 0) {
+      setHiddenSections(new Set<string>(rawHiddenSections));
+    }
   }, [existingOnboarding]);
 
   // Synchronize add-on states with data to ensure edit steps appear when selected in real-time
@@ -2211,6 +2221,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
       });
       patched.sections = heroSec ? [heroSec, ...others] : others;
+    }
+
+    // Expose section order to layout components for CSS ordering
+    if (sectionOrder.length > 0) {
+      (patched as any)._sectionOrder = [...sectionOrder];
     }
 
     // Patch colorScheme override
@@ -4383,6 +4398,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           if (isTyping) return;
                           const hidden = Array.from(hiddenSections);
                           addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
+                          // Persist section order + hidden sections to DB (non-blocking)
+                          const stepIdx = dynamicStepOrder.indexOf("hideSections");
+                          trySaveStep(stepIdx, {
+                            sectionOrder: sectionOrder.length > 0 ? [...sectionOrder] : [],
+                            hiddenSections: hidden,
+                          });
                           await advanceToStep("preview");
                         }}
                         className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"

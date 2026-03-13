@@ -148,6 +148,9 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
+  // Section visibility & order (from hideSections drag-and-drop step)
+  sectionOrder: json("sectionOrder"), // string[] – user's custom section order
+  hiddenSections: json("hiddenSections"), // string[] – sections hidden by user
   completedAt: bigint("completedAt", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),

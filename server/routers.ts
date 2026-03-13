@@ -2628,6 +2628,27 @@ Kontext: ${input.context}`,
           });
         }
 
+        // Apply user's section order and hidden sections from hideSections step
+        const savedSectionOrder: string[] | undefined = (onboarding as any).sectionOrder;
+        const savedHiddenSections: string[] | undefined = (onboarding as any).hiddenSections;
+        if (patchedData && (patchedData as any).sections) {
+          let secs = (patchedData as any).sections;
+          if (savedHiddenSections && savedHiddenSections.length > 0) {
+            secs = secs.filter((s: any) => !savedHiddenSections.includes(s.type));
+          }
+          if (savedSectionOrder && savedSectionOrder.length > 0) {
+            const heroSec = secs.find((s: any) => s.type === 'hero');
+            const others = secs.filter((s: any) => s.type !== 'hero');
+            others.sort((a: any, b: any) => {
+              const ai = savedSectionOrder.indexOf(a.type);
+              const bi = savedSectionOrder.indexOf(b.type);
+              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            });
+            secs = heroSec ? [heroSec, ...others] : others;
+          }
+          (patchedData as any).sections = secs;
+        }
+
         // Also update the business category in the business table if it changed
         if ((onboarding as any).businessCategory && website.businessId) {
           try {

@@ -180,6 +180,22 @@ const getBodyTextMultiplier = (headlineSize: string = 'large'): number => {
   return multipliers[headlineSize as keyof typeof multipliers] || 1;
 };
 
+// ── Section order helper (for drag-and-drop reordering in preview) ──────────
+function getSecOrder(websiteData: any, type: string, fallback: number): number {
+  const order: string[] | undefined = (websiteData as any)?._sectionOrder;
+  if (!order || order.length === 0) return fallback;
+  const idx = order.indexOf(type);
+  return idx === -1 ? fallback : (idx + 1) * 10;
+}
+
+function getAddonOrder(websiteData: any): number {
+  return Math.min(
+    getSecOrder(websiteData, 'gallery', 51),
+    getSecOrder(websiteData, 'menu', 52),
+    getSecOrder(websiteData, 'pricelist', 53)
+  );
+}
+
 // ── HERO VARIANTS ───────────────────────────────────────────────
 
 /** Eyebrow pill badge shown above the hero headline */
@@ -1335,7 +1351,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/10" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -1350,29 +1366,45 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Kundenstimmen" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="default"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem', textTransform: 'uppercase' }}
-        showBorder={true}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="default"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.1rem', textTransform: 'uppercase' }}
+          showBorder={true}
+        />
+      </div>
     </div>
   );
 }
@@ -1413,7 +1445,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-[#FFFDFB] overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-[#FFFDFB] overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -1428,21 +1460,35 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Klientinnen sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="elegant" headlineSize={headlineSize} />
+      </div>
 
-      <footer className="py-12 px-8 bg-[#1A1511] text-white">
+      <footer style={{ order: 9999 }} className="py-12 px-8 bg-[#1A1511] text-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="md:max-w-[280px] lg:max-w-[320px] text-center md:text-left">
             <Skeleton isLoading={isLoading} className="w-full h-8">
@@ -1497,7 +1543,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -1513,29 +1559,45 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Patienten sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="clean" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="elegant"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1rem' }}
-        showBorder={false}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="elegant"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 500, fontSize: '1rem' }}
+          showBorder={false}
+        />
+      </div>
     </div>
   );
 }
@@ -1575,7 +1637,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524' }} className="bg-[#F2EBD9] overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column' }} className="bg-[#F2EBD9] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F2EBD9]/90 backdrop-blur-sm border-b border-neutral-300/50">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -1590,29 +1652,45 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="craft" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="default"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.2rem' }}
-        showBorder={false}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="default"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.2rem' }}
+          showBorder={false}
+        />
+      </div>
     </div>
   );
 }
@@ -1653,7 +1731,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-sm border-b border-white/10" style={{ backgroundColor: darkBg + 'e6' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -1668,29 +1746,45 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Das sagen unsere Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Das sagen unsere Kunden" dark={true} variant={testimonialsIdx} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="bold" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="default"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.4rem', letterSpacing: '0.06em' }}
-        showBorder={true}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="default"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.4rem', letterSpacing: '0.06em' }}
+          showBorder={true}
+        />
+      </div>
     </div>
   );
 }
@@ -1731,7 +1825,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524' }} className="bg-[#FBF7F0] overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column' }} className="bg-[#FBF7F0] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FBF7F0]/90 backdrop-blur-sm border-b border-neutral-200/60">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -1746,29 +1840,45 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Gäste sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="elegant"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }}
-        showBorder={false}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="elegant"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontWeight: 300, fontSize: '1.3rem' }}
+          showBorder={false}
+        />
+      </div>
     </div>
   );
 }
@@ -1810,7 +1920,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: darkBg }} className="text-white overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-md border-b border-white/5" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -1825,29 +1935,45 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Stimmen unserer Kunden" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Stimmen unserer Kunden" dark={true} variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="centered"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
-        showBorder={true}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="centered"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
+          showBorder={true}
+        />
+      </div>
     </div>
   );
 }
@@ -1888,7 +2014,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -1903,29 +2029,45 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={false} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="modern" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="modern"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }}
-        showBorder={false}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="modern"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.01em' }}
+          showBorder={false}
+        />
+      </div>
     </div>
   );
 }
@@ -1967,7 +2109,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
+    <div style={{ fontFamily: BODY, display: 'flex', flexDirection: 'column' }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -1983,29 +2125,45 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
-      <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} variant={processIdx} />
+      </div>
 
-      <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <About aboutHeadline={aboutHeadline} aboutContent={aboutContent} aboutImg={aboutImg} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} businessCategory={websiteData?.businessCategory} />
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" variant={testimonialsIdx} serif={true} headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={cs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="fresh" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={cs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="elegant"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem' }}
-        showBorder={false}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={cs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="elegant"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem' }}
+          showBorder={false}
+        />
+      </div>
     </div>
   );
 }
@@ -2058,7 +2216,7 @@ export function PremiumLayoutV2({
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717' }} className="bg-white overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
@@ -2099,70 +2257,86 @@ export function PremiumLayoutV2({
         </div>
       </section>
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
-      {services.length > 0 && (
-        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
-          <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[6rem] mb-24">
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="mb-0">
-                Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
-              </h2>
-            </Skeleton>
-            <div className="grid md:grid-cols-3 gap-8">
-              {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="h-72">
-                  <div className="p-10 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col justify-between" style={{ borderTop: `4px solid ${safeCs.primary}` }}>
-                    <div>
-                      <Target size={28} style={{ color: safeCs.primary }} className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity" />
-                      <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: '1.6rem', lineHeight: 1.2 }} className="mb-4">{service.title}</h3>
-                      <p style={{ fontFamily: BODY, fontWeight: 400, fontSize: '0.9rem' }} className="text-neutral-500 leading-relaxed">{service.description}</p>
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        {services.length > 0 && (
+          <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
+            <div className="max-w-7xl mx-auto">
+              <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[6rem] mb-24">
+                <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="mb-0">
+                  Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
+                </h2>
+              </Skeleton>
+              <div className="grid md:grid-cols-3 gap-8">
+                {services.map((service: any, i: number) => (
+                  <Skeleton key={i} isLoading={isLoading} className="h-72">
+                    <div className="p-10 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col justify-between" style={{ borderTop: `4px solid ${safeCs.primary}` }}>
+                      <div>
+                        <Target size={28} style={{ color: safeCs.primary }} className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: '1.6rem', lineHeight: 1.2 }} className="mb-4">{service.title}</h3>
+                        <p style={{ fontFamily: BODY, fontWeight: 400, fontSize: '0.9rem' }} className="text-neutral-500 leading-relaxed">{service.description}</p>
+                      </div>
+                      <div className="mt-8 flex items-center gap-3 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" style={{ color: safeCs.primary }}>
+                        <span>Mehr erfahren</span><ArrowRight size={14} />
+                      </div>
                     </div>
-                    <div className="mt-8 flex items-center gap-3 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" style={{ color: safeCs.primary }}>
-                      <span>Mehr erfahren</span><ArrowRight size={14} />
-                    </div>
-                  </div>
-                </Skeleton>
-              ))}
+                  </Skeleton>
+                ))}
+              </div>
             </div>
+          </section>
+        )}
+      </div>
+
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      </div>
+
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-[#F7F9FC] scroll-mt-20">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
+            <div>
+              <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
+                <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: safeCs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Ihr vertrauensvoller Partner</span>
+                <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }}>{aboutHeadline}</h2>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full h-24">
+                <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.8, fontSize: '1.125rem' }} className="text-neutral-600">{aboutContent}</p>
+              </Skeleton>
+            </div>
+            <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl shadow-2xl overflow-hidden">
+              <img src={aboutImg} className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
+            </Skeleton>
           </div>
         </section>
-      )}
+      </div>
 
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
+      </div>
 
-      <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-[#F7F9FC] scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
-              <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: safeCs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Ihr vertrauensvoller Partner</span>
-              <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }}>{aboutHeadline}</h2>
-            </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-full h-24">
-              <p style={{ fontFamily: BODY, fontWeight: 400, lineHeight: 1.8, fontSize: '1.125rem' }} className="text-neutral-600">{aboutContent}</p>
-            </Skeleton>
-          </div>
-          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl shadow-2xl overflow-hidden">
-            <img src={aboutImg} className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
-          </Skeleton>
-        </div>
-      </section>
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={false} heading="Was Kunden sagen" />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
-
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={HL} template="luxury" headlineSize={headlineSize} />
-
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="elegant"
-        logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
-        showBorder={false}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="elegant"
+          logoStyle={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
+          showBorder={false}
+        />
+      </div>
     </div>
   );
 }
@@ -2178,6 +2352,7 @@ function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, hea
   const gallery = sec(websiteData, 'gallery');
   const items = gallery?.items || [];
   const headline = gallery?.headline || 'Unsere Galerie';
+  const [lightboxSrc, setLightboxSrc] = React.useState<string | null>(null);
 
   if (items.length === 0) return null;
 
@@ -2223,11 +2398,12 @@ function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, hea
         >
           {items.map((item: any, i: number) => {
             const src = item.imageUrl || item;
-            const alt = item.title || `Bild ${i + 1}`;
+            const alt = `Galerie-Bild ${i + 1}`;
             return (
               <div
                 key={i}
-                className="relative overflow-hidden rounded-lg group cursor-pointer"
+                onClick={() => setLightboxSrc(src)}
+                className="relative overflow-hidden rounded-lg group cursor-zoom-in"
                 style={{ breakInside: 'avoid', marginBottom: '6px', display: 'block' }}
               >
                 <img
@@ -2236,19 +2412,36 @@ function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, hea
                   className="w-full block object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
-                {/* Hover overlay with title */}
-                {item.title && (
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                    <span className="text-white text-xs font-medium leading-tight">{item.title}</span>
+                {/* Subtle zoom icon on hover – no text */}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
                   </div>
-                )}
-                {/* Subtle index badge for better orientation */}
-                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-white text-[9px] font-bold">{i + 1}</span>
                 </div>
               </div>
             );
           })}
+
+          {/* Lightbox */}
+          {lightboxSrc && (
+            <div
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+              onClick={() => setLightboxSrc(null)}
+            >
+              <button
+                onClick={() => setLightboxSrc(null)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+              <img
+                src={lightboxSrc}
+                alt="Vollbild"
+                className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -2450,7 +2643,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const badgeText = websiteData.businessCategory ? `• ${websiteData.businessCategory}` : (websiteData.businessName || '');
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: '#FDFBF7', color: textColor }} className="overflow-hidden">
+    <div style={{ fontFamily: BODY, backgroundColor: '#FDFBF7', color: textColor, display: 'flex', flexDirection: 'column' }} className="overflow-hidden">
       {/* Paper grain texture — like handmade paper */}
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23grain)' opacity='0.09'/%3E%3C/svg%3E")` }} />
       {/* NAV */}
@@ -2539,78 +2732,94 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </motion.div>
       </section>
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
       {/* SERVICES */}
-      {services.length > 0 && (
-        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-full max-w-md min-h-[5rem] mb-16">
-              <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, fontStyle: 'italic', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="mb-0">
-                Meine <span style={{ color: primaryColor }}>Leistungen</span>
-              </h2>
-            </Skeleton>
-            <div className="grid md:grid-cols-3 gap-6">
-              {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="h-56">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1, duration: 0.5 }}
-                    className="p-8 rounded-2xl bg-[#FDFBF7] hover:shadow-lg transition-all duration-300 border border-neutral-100"
-                    style={{ borderLeft: `3px solid ${primaryColor}` }}
-                  >
-                    <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: primaryColor, fontFamily: BODY }}>
-                      {String(i + 1).padStart(2, '0')}
-                    </p>
-                    <h3 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: '1.3rem', lineHeight: 1.2, color: textColor }} className="mb-3">{service.title}</h3>
-                    <p style={{ fontFamily: BODY, color: textMuted, fontSize: '0.9rem' }} className="leading-relaxed">{service.description}</p>
-                  </motion.div>
-                </Skeleton>
-              ))}
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        {services.length > 0 && (
+          <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-white">
+            <div className="max-w-7xl mx-auto">
+              <Skeleton isLoading={isLoading} className="w-full max-w-md min-h-[5rem] mb-16">
+                <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, fontStyle: 'italic', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="mb-0">
+                  Meine <span style={{ color: primaryColor }}>Leistungen</span>
+                </h2>
+              </Skeleton>
+              <div className="grid md:grid-cols-3 gap-6">
+                {services.map((service: any, i: number) => (
+                  <Skeleton key={i} isLoading={isLoading} className="h-56">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1, duration: 0.5 }}
+                      className="p-8 rounded-2xl bg-[#FDFBF7] hover:shadow-lg transition-all duration-300 border border-neutral-100"
+                      style={{ borderLeft: `3px solid ${primaryColor}` }}
+                    >
+                      <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: primaryColor, fontFamily: BODY }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </p>
+                      <h3 style={{ fontFamily: DISPLAY, fontWeight: 400, fontSize: '1.3rem', lineHeight: 1.2, color: textColor }} className="mb-3">{service.title}</h3>
+                      <p style={{ fontFamily: BODY, color: textMuted, fontSize: '0.9rem' }} className="leading-relaxed">{service.description}</p>
+                    </motion.div>
+                  </Skeleton>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </div>
 
       {/* PROCESS */}
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontStyle: 'italic', fontWeight: 400 }} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontStyle: 'italic', fontWeight: 400 }} />
+      </div>
 
       {/* ABOUT */}
-      <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <Skeleton isLoading={isLoading} className="w-full min-h-[8rem] mb-8">
-              <blockquote style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', lineHeight: 1.3, color: textColor }} className="mb-0">
-                "{aboutHeadline}"
-              </blockquote>
-            </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-full min-h-[5rem]">
-              <p style={{ fontFamily: BODY, color: textMuted, lineHeight: 1.8 }} className="text-base">{aboutContent}</p>
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <Skeleton isLoading={isLoading} className="w-full min-h-[8rem] mb-8">
+                <blockquote style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', lineHeight: 1.3, color: textColor }} className="mb-0">
+                  "{aboutHeadline}"
+                </blockquote>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full min-h-[5rem]">
+                <p style={{ fontFamily: BODY, color: textMuted, lineHeight: 1.8 }} className="text-base">{aboutContent}</p>
+              </Skeleton>
+            </div>
+            <Skeleton isLoading={isLoading} className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
+              <img src={(websiteData as any).aboutImageUrl || heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
             </Skeleton>
           </div>
-          <Skeleton isLoading={isLoading} className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
-            <img src={(websiteData as any).aboutImageUrl || heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
-          </Skeleton>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsLight websiteData={websiteData} cs={safeCs} isLoading={isLoading} serif={true} heading="Was Kunden sagen" />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontStyle: 'italic', fontWeight: 400 }} template="warm" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontStyle: 'italic', fontWeight: 400 }} template="warm" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="elegant"
-        logoStyle={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
-        showBorder={false}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="elegant"
+          logoStyle={{ fontFamily: DISPLAY, fontStyle: 'italic', fontSize: '1.2rem', fontWeight: 400 }}
+          showBorder={false}
+        />
+      </div>
     </div>
   );
 }
@@ -2640,7 +2849,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const badgeText = websiteData.businessCategory ? websiteData.businessCategory : (websiteData.businessName || '');
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: '#ffffff', color: textColor }} className="overflow-hidden">
+    <div style={{ fontFamily: BODY, backgroundColor: '#ffffff', color: textColor, display: 'flex', flexDirection: 'column' }} className="overflow-hidden">
       {/* Dot grid texture — architect paper feel */}
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `radial-gradient(rgba(15, 30, 60, 0.07) 1px, transparent 1px)`, backgroundSize: '22px 22px' }} />
       {/* NAV */}
@@ -2730,78 +2939,94 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </motion.div>
       </section>
 
-      <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      <div style={{ order: 1 }}>
+        <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} />
+      </div>
 
       {/* SERVICES — Numbered ruled list */}
-      {services.length > 0 && (
-        <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
-          <div className="max-w-7xl mx-auto">
-            <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[5rem] mb-16">
-              <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.05em', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
-                Unsere <span style={{ color: primaryColor }}>Leistungen</span>
-              </h2>
-            </Skeleton>
-            <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
-              {services.map((service: any, i: number) => (
-                <Skeleton key={i} isLoading={isLoading} className="py-8 min-h-[5rem]">
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08, duration: 0.5 }}
-                    className="grid lg:grid-cols-[80px_1fr_2fr] gap-4 items-start py-8"
-                  >
-                    <span style={{ fontFamily: DISPLAY, fontSize: '2.5rem', fontWeight: 400, color: primaryColor, letterSpacing: '0.05em', lineHeight: 1 }}>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <h3 style={{ fontFamily: BODY, fontWeight: 700, fontSize: '1.1rem', color: textColor }} className="leading-tight pt-1">{service.title}</h3>
-                    <p style={{ fontFamily: BODY, color: textMuted, fontSize: '0.9rem' }} className="leading-relaxed pt-1">{service.description}</p>
-                  </motion.div>
-                </Skeleton>
-              ))}
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+        {services.length > 0 && (
+          <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+            <div className="max-w-7xl mx-auto">
+              <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[5rem] mb-16">
+                <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.05em', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
+                  Unsere <span style={{ color: primaryColor }}>Leistungen</span>
+                </h2>
+              </Skeleton>
+              <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
+                {services.map((service: any, i: number) => (
+                  <Skeleton key={i} isLoading={isLoading} className="py-8 min-h-[5rem]">
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.08, duration: 0.5 }}
+                      className="grid lg:grid-cols-[80px_1fr_2fr] gap-4 items-start py-8"
+                    >
+                      <span style={{ fontFamily: DISPLAY, fontSize: '2.5rem', fontWeight: 400, color: primaryColor, letterSpacing: '0.05em', lineHeight: 1 }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <h3 style={{ fontFamily: BODY, fontWeight: 700, fontSize: '1.1rem', color: textColor }} className="leading-tight pt-1">{service.title}</h3>
+                      <p style={{ fontFamily: BODY, color: textMuted, fontSize: '0.9rem' }} className="leading-relaxed pt-1">{service.description}</p>
+                    </motion.div>
+                  </Skeleton>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </div>
 
       {/* PROCESS */}
-      <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight: 400, letterSpacing: '0.05em' }} />
+      <div style={{ order: getSecOrder(websiteData, 'services', 20) + 1 }}>
+        <ProcessSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight: 400, letterSpacing: '0.05em' }} />
+      </div>
 
       {/* ABOUT */}
-      <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-          <div>
-            {!isLoading && <div className="w-12 h-0.5 mb-8" style={{ backgroundColor: primaryColor }} />}
-            <Skeleton isLoading={isLoading} className="w-full min-h-[6rem] mb-6">
-              <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.04em', fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
-                {aboutHeadline}
-              </h2>
-            </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-full min-h-[5rem]">
-              <p style={{ fontFamily: BODY, color: textMuted, lineHeight: 1.8 }} className="text-base">{aboutContent}</p>
+      <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
+        <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+            <div>
+              {!isLoading && <div className="w-12 h-0.5 mb-8" style={{ backgroundColor: primaryColor }} />}
+              <Skeleton isLoading={isLoading} className="w-full min-h-[6rem] mb-6">
+                <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.04em', fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
+                  {aboutHeadline}
+                </h2>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="w-full min-h-[5rem]">
+                <p style={{ fontFamily: BODY, color: textMuted, lineHeight: 1.8 }} className="text-base">{aboutContent}</p>
+              </Skeleton>
+            </div>
+            <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
+              <img src={(websiteData as any).aboutImageUrl || heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
             </Skeleton>
           </div>
-          <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-            <img src={(websiteData as any).aboutImageUrl || heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
-          </Skeleton>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" dark={false} variant={1} />
+      <div style={{ order: getSecOrder(websiteData, 'testimonials', 40) }}>
+        <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading="Was Kunden sagen" dark={false} variant={1} />
+      </div>
 
-      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <div style={{ order: getAddonOrder(websiteData) }}>
+        <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      </div>
 
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight: 400, letterSpacing: '0.05em' }} template="luxury" headlineSize={headlineSize} />
+      <div style={{ order: getSecOrder(websiteData, 'contact', 60) }}>
+        <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight: 400, letterSpacing: '0.05em' }} template="luxury" headlineSize={headlineSize} />
+      </div>
 
-      <DynamicFooter
-        websiteData={websiteData}
-        cs={safeCs}
-        isLoading={isLoading}
-        footerText={footerText}
-        variant="minimal"
-        logoStyle={{ fontFamily: DISPLAY, fontSize: '1.3rem', letterSpacing: '0.1em' }}
-        showBorder={true}
-      />
+      <div style={{ order: 9999 }}>
+        <DynamicFooter
+          websiteData={websiteData}
+          cs={safeCs}
+          isLoading={isLoading}
+          footerText={footerText}
+          variant="minimal"
+          logoStyle={{ fontFamily: DISPLAY, fontSize: '1.3rem', letterSpacing: '0.1em' }}
+          showBorder={true}
+        />
+      </div>
     </div>
   );
 }
