@@ -25,6 +25,8 @@ import LayoutOverviewPage from "./pages/LayoutOverviewPage";
 import LayoutPreviewStandalone from "./pages/LayoutPreviewStandalone";
 import LoginPage from "./pages/LoginPage";
 import CustomerLoginPage from "./pages/CustomerLoginPage";
+import PageblitzImpressum from "./pages/PageblitzImpressum";
+import PageblitzDatenschutz from "./pages/PageblitzDatenschutz";
 import { AdminRoute, CustomerRoute } from "./components/ProtectedRoute";
 
 function AdminRouter() {
@@ -51,6 +53,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/impressum" component={PageblitzImpressum} />
+      <Route path="/datenschutz" component={PageblitzDatenschutz} />
       <Route path="/start" component={StartPage} />
       <Route path="/preview/:token" component={PreviewPage} />
       <Route path="/site/:slug" component={SitePage} />

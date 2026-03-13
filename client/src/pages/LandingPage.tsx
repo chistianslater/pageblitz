@@ -1969,8 +1969,8 @@ export default function LandingPage() {
             © 2026 Pageblitz. Alle Rechte vorbehalten.
           </div>
           <div className="flex gap-6 text-sm">
-            <a href="#" className="text-white/40 hover:text-white/80 transition-colors">Impressum</a>
-            <a href="#" className="text-white/40 hover:text-white/80 transition-colors">Datenschutz</a>
+            <a href="/impressum" className="text-white/40 hover:text-white/80 transition-colors">Impressum</a>
+            <a href="/datenschutz" className="text-white/40 hover:text-white/80 transition-colors">Datenschutz</a>
           </div>
         </div>
       </footer>
