@@ -1974,9 +1974,9 @@ export default function LandingPage() {
             {[
               { label: "Einmalige Kosten", agency: "2.000 – 8.000 €", us: "0 €", highlight: true },
               { label: "Zeit bis zur fertigen Website", agency: "4 – 12 Wochen", us: "3 Minuten", highlight: false },
-              { label: "Monatliche Kosten", agency: "50 – 150 € Hosting & Wartung", us: billingYearly ? "19,90 €" : "24,90 €", highlight: true },
+              { label: "Monatliche Kosten", agency: "50 – 150 € Hosting & Wartung", us: billingYearly ? "19,90 €*" : "24,90 €", highlight: true },
               { label: "Änderungen & Updates", agency: "Stundenabrechnung (~80 €/h)", us: "Inklusive", highlight: false },
-              { label: "Vertragslaufzeit", agency: "Oft 12–24 Monate", us: billingYearly ? "1 Jahr, jederzeit kündbar" : "Monatlich kündbar", highlight: true },
+              { label: "Vertragslaufzeit", agency: "Oft 12–24 Monate", us: billingYearly ? "1 Monat" : "Monatlich kündbar", highlight: true },
               { label: "Technisches Know-how nötig", agency: "Nein (aber Briefing-Aufwand)", us: "Nein", highlight: false },
               { label: "DSGVO & Impressum", agency: "Meist kostenpflichtig extra", us: "Automatisch inklusive", highlight: true },
               { label: "SSL & Hosting", agency: "Oft extra berechnet", us: "Inklusive", highlight: false },
@@ -1994,6 +1994,7 @@ export default function LandingPage() {
             <div className="bg-white/[0.03] border-t border-white/10 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-white/50 text-sm">
                 Ersparnis im ersten Jahr: <span className="text-white font-semibold">bis zu 8.000 €</span>
+                {billingYearly && <span className="block text-white/30 text-xs mt-1">* bei jährlicher Zahlung · 24,90 €/Mo. bei monatlicher Abrechnung</span>}
               </p>
               <button
                 onClick={() => navigate("/start")}
