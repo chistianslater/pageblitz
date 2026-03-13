@@ -53,7 +53,7 @@ export default function PageblitzDatenschutz() {
                 Telefon: <a href="tel:+4928713492100" className="text-blue-400 hover:text-blue-300 transition-colors">+49 2871 349 2100</a>
               </p>
               <p>
-                E-Mail: <a href="mailto:kontakt@schauundhorch.de" className="text-blue-400 hover:text-blue-300 transition-colors">kontakt@schauundhorch.de</a>
+                E-Mail: <a href="mailto:hello@pageblitz.de" className="text-blue-400 hover:text-blue-300 transition-colors">hello@pageblitz.de</a>
               </p>
             </div>
           </section>
@@ -361,8 +361,8 @@ export default function PageblitzDatenschutz() {
             </ul>
             <p className="mt-3 text-sm">
               Zur Ausübung Ihrer Rechte wenden Sie sich bitte an:{" "}
-              <a href="mailto:kontakt@schauundhorch.de" className="text-blue-400 hover:text-blue-300 transition-colors">
-                kontakt@schauundhorch.de
+              <a href="mailto:hello@pageblitz.de" className="text-blue-400 hover:text-blue-300 transition-colors">
+                hello@pageblitz.de
               </a>
             </p>
           </section>
