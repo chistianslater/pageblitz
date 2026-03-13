@@ -970,6 +970,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     return 'skeleton';
   });
 
+  // Tracks whether the user has explicitly confirmed their business category.
+  // Only after confirmation do we reveal the actual website (exit skeleton phase).
+  // On resume: if contentPhase was already past skeleton, treat category as confirmed.
+  const [categoryConfirmed, setCategoryConfirmed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return saved !== null && saved !== 'skeleton';
+    }
+    return false;
+  });
+
 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
   useEffect(() => {
@@ -1439,6 +1450,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               if (onboardingStorageKey) {
                 localStorage.setItem(onboardingStorageKey, targetStep);
               }
+              await addBotMessage(getStepPrompt(targetStep), 800);
               return;
             }
           }
@@ -1472,10 +1484,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Progressive content revelation based on user input ─────────
   
-  // Phase 1: When businessCategory is entered -> show colors
+  // Phase 1: When businessCategory is explicitly confirmed by user -> show colors
+  // Uses categoryConfirmed (not data.businessCategory) to avoid revealing the website
+  // before the user has answered the category question (prevents premature skeleton exit
+  // when businessCategory is pre-filled from GMB data or existingOnboarding).
   useEffect(() => {
-    const hasCategory = !!data.businessCategory?.trim();
-    if (hasCategory && contentPhase === 'skeleton') {
+    if (categoryConfirmed && contentPhase === 'skeleton') {
       setContentPhase('colors');
       localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'colors');
       
@@ -1518,7 +1532,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, nextPhase);
       }, 500);
     }
-  }, [data.businessCategory, contentPhase, previewToken, websiteIdProp]);
+  }, [categoryConfirmed, contentPhase, data.businessCategory, previewToken, websiteIdProp]);
   
   // Phase 2: When both category AND name are entered -> generate texts
   useEffect(() => {
@@ -1700,6 +1714,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
 
+      // Synchronously update localStorage to avoid race condition on quick page refresh
+      if (onboardingStorageKey) {
+        if (nextStep === 'checkout' || nextStep === 'preview') {
+          localStorage.removeItem(onboardingStorageKey);
+        } else {
+          localStorage.setItem(onboardingStorageKey, nextStep);
+        }
+      }
+
       // If this step has a section divider, inject it as a special message type
       const divider = SECTION_DIVIDERS[nextStep];
       if (divider) {
@@ -1720,7 +1743,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }, 900);
     },
-    [addBotMessage, getStepPrompt, SECTION_DIVIDERS]
+    [addBotMessage, getStepPrompt, SECTION_DIVIDERS, onboardingStorageKey]
   );
 
   const goToNextStep = useCallback(async () => {
@@ -1771,12 +1794,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const confirmationPattern = /^(ja|j|yes|y|yep|yup|stimmt|ok|okay|klar)$/i;
           if (val && confirmationPattern.test(val.trim())) {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
+            await trySaveStep(stepIdx, { businessName: data.businessName });
           } else if (val) {
             addUserMessage(val);
             setData((p) => ({ ...p, businessName: val }));
             await trySaveStep(stepIdx, { businessName: val });
           } else {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
+            await trySaveStep(stepIdx, { businessName: data.businessName });
           }
           break;
         }
@@ -1891,6 +1916,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             addUserMessage(val);
             setData((p) => ({ ...p, businessCategory: val }));
             await trySaveStep(stepIdx, { businessCategory: val });
+            setCategoryConfirmed(true); // Triggers contentPhase skeleton → colors transition
           }
           break;
         case "addressingMode":
