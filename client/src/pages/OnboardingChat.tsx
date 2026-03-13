@@ -1561,8 +1561,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasWebsiteId = !!websiteId;
     const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
     
-    // Only proceed if we're at images phase (colors+images ready) and have name
+    // Only proceed if we're at images phase AND addressingMode was confirmed (heroRevealed).
+    // This ensures Du/Sie preference is captured before text generation starts.
     if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && contentPhase === 'images' &&
+        heroRevealed &&
         !isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
       
       setContentPhase('texts');
@@ -1607,7 +1609,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       });
     }
   }, [data.businessCategory, data.businessName, websiteId, business?.placeId, contentPhase,
-      isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
+      heroRevealed, isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
 
   // Halte contentPhaseRef synchron (damit Kaskaden-useEffect ohne Dependency-Array darauf zugreifen kann)
   useEffect(() => { contentPhaseRef.current = contentPhase; }, [contentPhase]);
@@ -1823,13 +1825,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           } else {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
             await trySaveStep(stepIdx, { businessName: data.businessName });
-          }
-          // Progressive reveal: hero area becomes visible after businessName confirmed
-          setHeroRevealed(true);
-          // For GMB (website already generated): also reveal content shortly after
-          const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
-          if (isGmbFlow) {
-            setTimeout(() => setContentRevealed(true), 900);
           }
           break;
         }
@@ -3172,6 +3167,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'du' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'du' });
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; generation starts now
+                  setHeroRevealed(true);
+                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
+                  if (_isGmb) setTimeout(() => setContentRevealed(true), 1000);
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-blue-500/60 hover:bg-blue-500/10 transition-all text-left group"
@@ -3193,6 +3192,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'Sie' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'Sie' });
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice; generation starts now
+                  setHeroRevealed(true);
+                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
+                  if (_isGmb) setTimeout(() => setContentRevealed(true), 1000);
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all text-left group"
