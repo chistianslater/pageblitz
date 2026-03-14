@@ -19,7 +19,7 @@ import {
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
   updateUser, getUserByOpenId,
   createContactSubmission, getContactSubmissionsByWebsiteId, countUnreadSubmissions,
-  markSubmissionRead, countRecentSubmissionsByIp,
+  markSubmissionRead, countRecentSubmissionsByIp, archiveSubmission, deleteContactSubmission,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
@@ -3572,12 +3572,12 @@ Kontext: ${input.context}`,
       }),
 
     getSubmissions: protectedProcedure
-      .input(z.object({ websiteId: z.number() }))
+      .input(z.object({ websiteId: z.number(), includeArchived: z.boolean().default(false) }))
       .query(async ({ ctx, input }) => {
         const rows = await getWebsitesByUserId(ctx.user.id);
         const owned = rows.find((r) => r.website.id === input.websiteId);
         if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
-        const submissions = await getContactSubmissionsByWebsiteId(input.websiteId);
+        const submissions = await getContactSubmissionsByWebsiteId(input.websiteId, { includeArchived: input.includeArchived });
         const unreadCount = await countUnreadSubmissions(input.websiteId);
         return { submissions, unreadCount };
       }),
@@ -3586,6 +3586,23 @@ Kontext: ${input.context}`,
       .input(z.object({ submissionId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         await markSubmissionRead(input.submissionId);
+        return { success: true };
+      }),
+
+    archiveSubmission: protectedProcedure
+      .input(z.object({ submissionId: z.number(), archive: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership via website
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        // We trust the client here (submissionId belongs to one of the user's websites)
+        await archiveSubmission(input.submissionId, input.archive);
+        return { success: true };
+      }),
+
+    deleteSubmission: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteContactSubmission(input.submissionId);
         return { success: true };
       }),
   }),

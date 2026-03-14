@@ -1887,13 +1887,26 @@ export default function CustomerDashboard() {
     { enabled: !!(selectedWebsiteId || activeWebsiteId) && activeTab === "analytics" }
   );
 
+  const [showArchivedSubmissions, setShowArchivedSubmissions] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
   const { data: submissionsData, isLoading: submissionsLoading, refetch: refetchSubmissions } = trpc.customer.getSubmissions.useQuery(
-    { websiteId: selectedWebsiteId || activeWebsiteId || 0 },
+    { websiteId: selectedWebsiteId || activeWebsiteId || 0, includeArchived: showArchivedSubmissions },
     { enabled: !!(selectedWebsiteId || activeWebsiteId) }
   );
 
   const markReadMutation = trpc.customer.markSubmissionRead.useMutation({
     onSuccess: () => refetchSubmissions(),
+  });
+
+  const archiveMutation = trpc.customer.archiveSubmission.useMutation({
+    onSuccess: () => refetchSubmissions(),
+    onError: () => toast.error("Fehler beim Archivieren."),
+  });
+
+  const deleteMutation = trpc.customer.deleteSubmission.useMutation({
+    onSuccess: () => { setDeleteConfirmId(null); refetchSubmissions(); },
+    onError: () => toast.error("Fehler beim Löschen."),
   });
 
   const [contactEmailInput, setContactEmailInput] = useState("");
@@ -2509,29 +2522,47 @@ export default function CustomerDashboard() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-white text-lg font-semibold">Kontaktanfragen</h2>
+                <h2 className="text-white text-lg font-semibold">
+                  {showArchivedSubmissions ? "Archivierte Anfragen" : "Kontaktanfragen"}
+                </h2>
                 <p className="text-slate-400 text-sm mt-0.5">
-                  {submissionsData?.submissions.length ?? 0} Anfragen gesamt
-                  {unreadCount > 0 && <span className="ml-2 text-rose-400 font-medium">· {unreadCount} ungelesen</span>}
+                  {submissionsData?.submissions.length ?? 0} {showArchivedSubmissions ? "archivierte" : "aktive"} Anfragen
+                  {!showArchivedSubmissions && unreadCount > 0 && <span className="ml-2 text-rose-400 font-medium">· {unreadCount} ungelesen</span>}
                 </p>
               </div>
-              {/* Custom recipient email */}
-              <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
-                <Mail className="w-4 h-4 text-slate-500 shrink-0" />
-                <input
-                  type="email"
-                  value={contactEmailInput}
-                  onChange={(e) => setContactEmailInput(e.target.value)}
-                  placeholder={business?.email || "Empfänger-E-Mail eintragen..."}
-                  className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-52"
-                />
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Archive toggle */}
                 <button
-                  onClick={() => updateContactEmailMutation.mutate({ websiteId: website.id, contactEmail: contactEmailInput })}
-                  disabled={updateContactEmailMutation.isPending}
-                  className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+                  onClick={() => setShowArchivedSubmissions(v => !v)}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                    showArchivedSubmissions
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+                      : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+                  }`}
                 >
-                  {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
+                  <Layers className="w-3.5 h-3.5" />
+                  {showArchivedSubmissions ? "Aktive anzeigen" : "Archiv"}
                 </button>
+                {/* Custom recipient email */}
+                {!showArchivedSubmissions && (
+                  <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
+                    <Mail className="w-4 h-4 text-slate-500 shrink-0" />
+                    <input
+                      type="email"
+                      value={contactEmailInput}
+                      onChange={(e) => setContactEmailInput(e.target.value)}
+                      placeholder={business?.email || "Empfänger-E-Mail eintragen..."}
+                      className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-48"
+                    />
+                    <button
+                      onClick={() => updateContactEmailMutation.mutate({ websiteId: website.id, contactEmail: contactEmailInput })}
+                      disabled={updateContactEmailMutation.isPending}
+                      className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+                    >
+                      {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -2542,26 +2573,35 @@ export default function CustomerDashboard() {
             ) : !submissionsData?.submissions.length ? (
               <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-12 text-center">
                 <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-white font-semibold mb-2">Noch keine Anfragen</h3>
+                <h3 className="text-white font-semibold mb-2">
+                  {showArchivedSubmissions ? "Keine archivierten Anfragen" : "Noch keine Anfragen"}
+                </h3>
                 <p className="text-slate-400 text-sm max-w-sm mx-auto">
-                  Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier.
+                  {showArchivedSubmissions
+                    ? "Archivierte Anfragen erscheinen hier."
+                    : "Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier."}
                 </p>
               </div>
             ) : (
               <div className="space-y-3">
                 {submissionsData.submissions.map((sub) => {
                   const isUnread = !sub.readAt;
+                  const isDeleting = deleteConfirmId === sub.id;
                   return (
                     <div
                       key={sub.id}
                       className={`bg-slate-800/60 border rounded-2xl p-5 transition-colors ${
-                        isUnread ? "border-blue-500/40 bg-slate-800/80" : "border-slate-700/50"
+                        showArchivedSubmissions
+                          ? "border-slate-700/30 opacity-75"
+                          : isUnread
+                            ? "border-blue-500/40 bg-slate-800/80"
+                            : "border-slate-700/50"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-1">
-                            {isUnread && (
+                            {isUnread && !showArchivedSubmissions && (
                               <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
                             )}
                             <span className="text-white font-semibold truncate">{sub.name}</span>
@@ -2592,20 +2632,71 @@ export default function CustomerDashboard() {
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-2 shrink-0">
-                          <a
-                            href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
-                            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                          >
-                            <Mail className="w-3 h-3" />
-                            Antworten
-                          </a>
-                          {isUnread && (
-                            <button
-                              onClick={() => markReadMutation.mutate({ submissionId: sub.id })}
-                              className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
-                            >
-                              Als gelesen markieren
-                            </button>
+                          {!showArchivedSubmissions ? (
+                            <>
+                              <a
+                                href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
+                                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                              >
+                                <Mail className="w-3 h-3" />
+                                Antworten
+                              </a>
+                              {isUnread && (
+                                <button
+                                  onClick={() => markReadMutation.mutate({ submissionId: sub.id })}
+                                  className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
+                                >
+                                  Als gelesen markieren
+                                </button>
+                              )}
+                              <button
+                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: true })}
+                                disabled={archiveMutation.isPending}
+                                className="flex items-center gap-1 text-slate-500 hover:text-amber-400 text-xs transition-colors disabled:opacity-40"
+                                title="Archivieren"
+                              >
+                                <Layers className="w-3.5 h-3.5" />
+                                Archivieren
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: false })}
+                                disabled={archiveMutation.isPending}
+                                className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors disabled:opacity-40"
+                              >
+                                <Layers className="w-3.5 h-3.5" />
+                                Wiederherstellen
+                              </button>
+                              {isDeleting ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-400">Sicher?</span>
+                                  <button
+                                    onClick={() => deleteMutation.mutate({ submissionId: sub.id })}
+                                    disabled={deleteMutation.isPending}
+                                    className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-40"
+                                  >
+                                    Ja, löschen
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                                  >
+                                    Abbrechen
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDeleteConfirmId(sub.id)}
+                                  className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                                  title="Endgültig löschen"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Löschen
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

@@ -593,21 +593,42 @@ export async function createContactSubmission(data: InsertContactSubmission): Pr
   return (result[0] as any).insertId as number;
 }
 
-export async function getContactSubmissionsByWebsiteId(websiteId: number): Promise<ContactSubmission[]> {
+export async function getContactSubmissionsByWebsiteId(
+  websiteId: number,
+  { includeArchived = false }: { includeArchived?: boolean } = {}
+): Promise<ContactSubmission[]> {
   const db = await getDb();
   if (!db) return [];
+  const condition = includeArchived
+    ? and(eq(contactSubmissions.websiteId, websiteId), sql`archivedAt IS NOT NULL`)
+    : and(eq(contactSubmissions.websiteId, websiteId), sql`archivedAt IS NULL`);
   return db.select().from(contactSubmissions)
-    .where(eq(contactSubmissions.websiteId, websiteId))
+    .where(condition)
     .orderBy(desc(contactSubmissions.createdAt));
 }
 
 export async function countUnreadSubmissions(websiteId: number): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
+  // Only count non-archived unread
   const result = await db.select({ count: sql<number>`count(*)` })
     .from(contactSubmissions)
-    .where(and(eq(contactSubmissions.websiteId, websiteId), sql`readAt IS NULL`));
+    .where(and(eq(contactSubmissions.websiteId, websiteId), sql`readAt IS NULL AND archivedAt IS NULL`));
   return Number(result[0]?.count ?? 0);
+}
+
+export async function archiveSubmission(id: number, archive: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(contactSubmissions)
+    .set({ archivedAt: archive ? new Date() : null })
+    .where(eq(contactSubmissions.id, id));
+}
+
+export async function deleteContactSubmission(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
 }
 
 export async function markSubmissionRead(id: number): Promise<void> {

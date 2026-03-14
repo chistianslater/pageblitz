@@ -234,6 +234,7 @@ export const contactSubmissions = mysqlTable("contact_submissions", {
   customFields: json("customFields"), // { [fieldId]: value } – flexible extra fields
   ipAddress: varchar("ipAddress", { length: 45 }), // for rate limiting
   readAt: timestamp("readAt"),
+  archivedAt: timestamp("archivedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
