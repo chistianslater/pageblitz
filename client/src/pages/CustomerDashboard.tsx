@@ -772,9 +772,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
-  // Stable ref so the autosave effect doesn't re-fire when tRPC recreates the mutation object
-  const updateAddonsRef = useRef(updateAddons);
-  useEffect(() => { updateAddonsRef.current = updateAddons; });
+  // Stable ref — initialized null here, assigned after updateAddons is declared below
+  const updateAddonsRef = useRef<any>(null);
 
   const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
     onSuccess: (_, variables) => {
@@ -829,6 +828,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
       toast.error("Speichern fehlgeschlagen");
     },
   });
+  // Keep ref in sync on every render — safe since refs are just mutable containers
+  updateAddonsRef.current = updateAddons;
 
   // Auto-save effect - watches for changes in addons
   useEffect(() => {
