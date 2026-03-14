@@ -117,7 +117,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             </button>
             <Button
               onClick={() => navigate("/start")}
-              className="bg-white text-black hover:bg-white/90 rounded-full px-5 h-10 text-sm font-medium shadow-lg shadow-white/10"
+              className={`rounded-full px-5 h-10 text-sm font-medium transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-lg shadow-violet-950/25"}`}
             >
               Website erstellen
             </Button>
