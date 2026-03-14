@@ -1629,15 +1629,13 @@ export default function LandingPage() {
                     7 Tage gratis testen
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="lg"
+                  <button
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`rounded-full h-14 px-8 text-base transition-all duration-300 ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-700 font-medium border border-violet-300 hover:border-violet-500 hover:text-violet-950 bg-transparent hover:bg-transparent"}`}
+                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-700 font-medium border border-violet-300 hover:border-violet-500 hover:text-violet-950 bg-transparent"}`}
                   >
                     Beispiele ansehen
                     <ChevronDown className="ml-2 w-4 h-4" />
-                  </Button>
+                  </button>
                 </motion.div>
 
                 {/* Trust signal */}
