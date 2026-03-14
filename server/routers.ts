@@ -3461,7 +3461,8 @@ Kontext: ${input.context}`,
         const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
         if (stripeSubscriptionId) {
           // Add item to existing Stripe subscription (charges proration immediately)
-          await stripe.subscriptionItems.create({
+          // Use stripeCompat (2024-04-10) — newer API renamed price_data.product_data
+          await stripeCompat.subscriptionItems.create({
             subscription: stripeSubscriptionId,
             price_data: {
               currency: "eur",
