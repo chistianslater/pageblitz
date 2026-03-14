@@ -1759,6 +1759,13 @@ export default function CustomerDashboard() {
     setPreviewKey((k) => k + 1);
   };
 
+  // ── useEffect MUSS vor allen Early-Returns stehen (Rules of Hooks) ───────
+  const _selectedEntry = myWebsites?.find((e) => e.website.id === selectedWebsiteId) || myWebsites?.[0];
+  const storedContactEmailEarly = (_selectedEntry?.website as any)?.contactEmail as string | null | undefined;
+  useEffect(() => {
+    setContactEmailInput(storedContactEmailEarly ?? "");
+  }, [storedContactEmailEarly]);
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -1811,11 +1818,8 @@ export default function CustomerDashboard() {
   const { website, business } = selectedEntry;
   const websiteData = website.websiteData as WebsiteData | undefined;
   const colorScheme = website.colorScheme as ColorScheme | undefined;
-  // Sync contactEmail from loaded website data (when website changes or tab mounts)
+  // Sync contactEmail – useEffect is above early returns to satisfy Rules of Hooks
   const storedContactEmail = (website as any).contactEmail as string | null | undefined;
-  useEffect(() => {
-    setContactEmailInput(storedContactEmail ?? "");
-  }, [storedContactEmail]);
 
   const makeUpdater = (field: string) => async (value: string) => {
     await updateMutation.mutateAsync({
