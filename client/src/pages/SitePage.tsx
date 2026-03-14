@@ -30,6 +30,13 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     document.head.appendChild(s);
   }, [umamiWebsiteId]);
 
+  // Redirect if the slug was a former (old preview) slug
+  useEffect(() => {
+    if (data?.redirectToSlug) {
+      window.location.replace(`/site/${data.redirectToSlug}`);
+    }
+  }, [data?.redirectToSlug]);
+
   // Also show spinner while slug isn't resolved yet (wouter params timing)
   if (!effectiveSlug || isLoading) {
     return (

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import {
   upsertBusiness, getBusinessById, listBusinesses, countBusinesses, updateBusiness,
-  createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByToken, getWebsiteByBusinessId,
+  createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
   listWebsites, countWebsites, updateWebsite,
   createOutreachEmail, listOutreachEmails, countOutreachEmails,
   getDashboardStats,
@@ -1944,18 +1944,29 @@ export const appRouter = router({
       .input(z.object({ id: z.number().optional(), slug: z.string().optional(), token: z.string().optional() }))
       .query(async ({ input }) => {
         let website;
+        let redirectToSlug: string | null = null;
         if (input.id) website = await getWebsiteById(input.id);
-        else if (input.slug) website = await getWebsiteBySlug(input.slug);
+        else if (input.slug) {
+          website = await getWebsiteBySlug(input.slug);
+          // Fallback: look up by former slug so old preview-* URLs redirect to the new slug
+          if (!website) {
+            const byFormer = await getWebsiteByFormerSlug(input.slug);
+            if (byFormer) {
+              website = byFormer;
+              redirectToSlug = byFormer.slug;
+            }
+          }
+        }
         else if (input.token) website = await getWebsiteByToken(input.token);
         if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
         const business = await getBusinessById(website.businessId);
-        
+
         // Inject ID into websiteData for stable randomization seed in frontend
         if (website.websiteData) {
           (website.websiteData as any).id = website.id;
         }
-        
-        return { website, business };
+
+        return { website, business, redirectToSlug };
       }),
 
     updateStatus: adminProcedure
@@ -2911,12 +2922,18 @@ Kontext: ${input.context}`,
       }))
       .mutation(async ({ input, ctx }) => {
         const rows = await getWebsitesByUserId(ctx.user.id);
-        if (!rows.find(r => r.website.id === input.websiteId))
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row)
           throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
         const existing = await getWebsiteBySlug(input.slug);
         if (existing && existing.id !== input.websiteId)
           throw new TRPCError({ code: "CONFLICT", message: "Diese Adresse ist bereits vergeben" });
-        await updateWebsite(input.websiteId, { slug: input.slug });
+        // Preserve the old slug so old URLs can redirect
+        const oldSlug = row.website.slug;
+        await updateWebsite(input.websiteId, {
+          slug: input.slug,
+          ...(oldSlug !== input.slug ? { formerSlug: oldSlug } : {}),
+        });
         return { success: true };
       }),
 

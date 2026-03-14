@@ -77,6 +77,8 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
   // Contact form: custom recipient email (overrides business.email if set)
   contactEmail: varchar("contactEmail", { length: 320 }),
+  // Former slug — set when the user changes their slug so old URLs can redirect
+  formerSlug: varchar("formerSlug", { length: 255 }),
   // Umami Analytics
   umamiWebsiteId: varchar("umamiWebsiteId", { length: 100 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

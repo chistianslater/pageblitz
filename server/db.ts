@@ -158,6 +158,13 @@ export async function getWebsiteBySlug(slug: string) {
   return result[0];
 }
 
+export async function getWebsiteByFormerSlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(generatedWebsites).where(eq(generatedWebsites.formerSlug, slug)).limit(1);
+  return result[0];
+}
+
 export async function getWebsiteByToken(token: string) {
   const db = await getDb();
   if (!db) return undefined;

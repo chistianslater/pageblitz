@@ -4,7 +4,8 @@
  * No more generic AI aesthetics – each layout has a unique typographic identity.
  */
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { trpc } from '@/lib/trpc';
 import { motion } from 'framer-motion';
 import {
   Phone, Star, Zap,
@@ -833,6 +834,38 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   // Get form fields from websiteData or use defaults
   const formFields = websiteData?.contactFormFields || DEFAULT_CONTACT_FORM_FIELDS;
 
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submitMutation = trpc.contact.submit.useMutation({
+    onSuccess: () => { setSubmitted(true); setSubmitError(null); },
+    onError: (err: any) => { setSubmitError(err.message || "Fehler beim Senden. Bitte versuche es erneut."); },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!websiteData?.slug) return;
+    const fd = new FormData(e.currentTarget);
+    const name = (fd.get('name') || '').toString();
+    const email = (fd.get('email') || '').toString();
+    const phone = (fd.get('phone') || '').toString() || undefined;
+    const message = (fd.get('message') || '').toString();
+    const customFields: Record<string, string> = {};
+    fd.forEach((val, key) => {
+      if (!['name', 'email', 'phone', 'message', 'privacy'].includes(key)) {
+        customFields[key] = val.toString();
+      }
+    });
+    submitMutation.mutate({
+      slug: websiteData.slug,
+      name,
+      email,
+      ...(phone ? { phone } : {}),
+      message,
+      ...(Object.keys(customFields).length ? { customFields } : {}),
+    });
+  };
+
   // Use dynamic colors from colorScheme if available, fallback to defaults
   const safeCs = cs || {};
   const textMain = dark ? (safeCs.lightText ? '' : 'text-white') : (safeCs.text ? '' : 'text-neutral-900');
@@ -1012,7 +1045,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
             <div className="relative">
               <div className={`border ${cardBgClass} ${border}`}
                 style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius, padding: '1.5rem' }}>
-                <form className="space-y-4" onSubmit={e => e.preventDefault()}>
+                <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
                   {formFields.map((field: any) => (
                     <div key={field.id}>
                       <label className={`block mb-1.5 ${textSub}`} style={{ ...labelStyle, ...textSubStyle }}>
@@ -1021,6 +1054,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                       </label>
                       {field.type === 'textarea' ? (
                         <textarea
+                          name={field.id}
                           rows={4}
                           placeholder={field.placeholder}
                           required={field.required}
@@ -1031,6 +1065,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                         />
                       ) : field.type === 'select' ? (
                         <select
+                          name={field.id}
                           required={field.required}
                           style={inputStyle}
                           className="focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all cursor-pointer"
@@ -1044,6 +1079,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                         </select>
                       ) : (
                         <input
+                          name={field.id}
                           type={field.type}
                           placeholder={field.placeholder}
                           required={field.required}
@@ -1055,19 +1091,39 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                       )}
                     </div>
                   ))}
-                  <div className="flex items-start gap-2.5 pt-1">
-                    <div className="mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center"
-                      style={{ borderRadius: config.inputRadius, borderColor: inputPlaceholder, backgroundColor: inputBg }}>
-                    </div>
-                    <p className={`text-xs leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>
+                  <label className="flex items-start gap-2.5 pt-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="privacy"
+                      required
+                      className="mt-0.5 shrink-0 w-4 h-4 cursor-pointer"
+                      style={{ accentColor: safeCs.primary }}
+                    />
+                    <span className={`text-xs leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>
                       Ich stimme der Verarbeitung meiner Daten gemäß der{' '}
                       <a href={datenschutzHref} className="underline underline-offset-2" style={{ color: safeCs.primary }}>Datenschutzerklärung</a> zu.
-                    </p>
-                  </div>
-                  <button type="submit" className="w-full hover:opacity-90 transition-opacity" style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}>
-                    Nachricht senden
+                    </span>
+                  </label>
+                  {submitError && (
+                    <p className="text-red-400 text-sm">{submitError}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={submitMutation.isPending}
+                    className="w-full hover:opacity-90 transition-opacity disabled:opacity-60"
+                    style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}
+                  >
+                    {submitMutation.isPending ? "Wird gesendet…" : "Nachricht senden"}
                   </button>
                 </form>
+                {submitted && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
+                    style={{ ...cardBgStyle, borderRadius: config.cardRadius }}>
+                    <div className="text-4xl mb-4">✓</div>
+                    <p className={`text-lg font-semibold mb-2 ${textMain}`} style={textMainStyle}>Nachricht gesendet!</p>
+                    <p className={`text-sm ${textSub}`} style={textSubStyle}>Vielen Dank. Wir melden uns so schnell wie möglich bei Ihnen.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
