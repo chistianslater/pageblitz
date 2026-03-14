@@ -1437,21 +1437,31 @@ export default function LandingPage() {
 
       {/* Hero Section with Animated Gradient Background */}
       <section className="relative min-h-screen">
-        {/* Background Animation - Full screen */}
+        {/* Background Animation - Cross-fades between dark and light */}
         <div className="absolute inset-0 h-screen">
-          <BackgroundGradientAnimation 
-            containerClassName="absolute inset-0"
-            gradientBackgroundStart="rgb(10, 10, 15)"
-            gradientBackgroundEnd="rgb(15, 15, 25)"
-            firstColor="59, 130, 246"
-            secondColor="147, 51, 234"
-            thirdColor="99, 102, 241"
-            fourthColor="79, 70, 229"
-            fifthColor="139, 92, 246"
-            pointerColor="99, 102, 241"
-            size="70%"
-            interactive={true}
-          />
+          {/* Dark animated gradient */}
+          <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+            <BackgroundGradientAnimation
+              containerClassName="absolute inset-0"
+              gradientBackgroundStart="rgb(10, 10, 15)"
+              gradientBackgroundEnd="rgb(15, 15, 25)"
+              firstColor="59, 130, 246"
+              secondColor="147, 51, 234"
+              thirdColor="99, 102, 241"
+              fourthColor="79, 70, 229"
+              fifthColor="139, 92, 246"
+              pointerColor="99, 102, 241"
+              size="70%"
+              interactive={true}
+            />
+          </div>
+          {/* Light gradient for light mode */}
+          <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50" />
+            <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-300/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-300/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-indigo-300/15 rounded-full blur-[80px] pointer-events-none" />
+          </div>
         </div>
         
         {/* Content Layer - Two Column Layout */}
@@ -1464,7 +1474,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-sm mb-8"
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border text-sm mb-8 transition-colors duration-500 ${isDark ? "bg-white/10 border-white/20 text-white/80" : "bg-indigo-100/80 border-indigo-200 text-indigo-800"}`}
                 >
                   <Sparkles className="w-4 h-4 text-amber-400" />
                   <span>Webagentur kostet 3.000€+ – Pageblitz ab 19,90 €/Monat</span>
@@ -1514,7 +1524,7 @@ export default function LandingPage() {
                     variant="ghost"
                     size="lg"
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-white/80 hover:text-white hover:bg-white/10 rounded-full h-14 px-8 text-base border border-white/20 backdrop-blur-sm"
+                    className={`rounded-full h-14 px-8 text-base backdrop-blur-sm transition-colors duration-500 ${isDark ? "text-white/80 hover:text-white hover:bg-white/10 border border-white/20" : "text-indigo-700 hover:text-indigo-900 hover:bg-indigo-100/60 border border-indigo-200"}`}
                   >
                     Beispiele ansehen
                     <ChevronDown className="ml-2 w-4 h-4" />
