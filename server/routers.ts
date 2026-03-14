@@ -2262,6 +2262,9 @@ Antworte NUR mit validem JSON:
               quantity: 1,
             },
           ],
+          subscription_data: {
+            trial_period_days: 7,
+          },
           success_url: `${origin}/my-website?checkout=success`,
           cancel_url:  `${origin}/start`,
           metadata: {

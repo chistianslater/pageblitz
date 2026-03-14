@@ -181,7 +181,7 @@ export default function AccountPage() {
   // Get subscription info from first website (if any)
   const subscription = myWebsites?.[0]?.subscription;
   const website = myWebsites?.[0]?.website;
-  const hasActiveSubscription = subscription?.status === "active";
+  const hasActiveSubscription = subscription?.status === "active" || subscription?.status === "trialing";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">

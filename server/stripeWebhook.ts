@@ -103,12 +103,21 @@ export function registerStripeWebhook(app: Express) {
               }
             }
 
+            // Determine actual status from Stripe (trial vs. immediately active)
+            let subStatus: "active" | "trialing" = "active";
+            if (subscriptionId) {
+              try {
+                const stripeSub = await stripeCompat.subscriptions.retrieve(subscriptionId);
+                if ((stripeSub as any).status === "trialing") subStatus = "trialing";
+              } catch (_) {}
+            }
+
             await createSubscription({
               websiteId,
               userId,
               stripeSubscriptionId: subscriptionId,
               stripeCustomerId: typeof session.customer === "string" ? session.customer : null,
-              status: "active",
+              status: subStatus,
               plan: "base",
               billingInterval,
               addOns,
@@ -155,6 +164,7 @@ export function registerStripeWebhook(app: Express) {
             const sub = await getSubscriptionByStripeId(subscription.id);
             if (sub) {
               const newStatus = subscription.status === "active" ? "active"
+                : subscription.status === "trialing" ? "trialing"
                 : subscription.status === "past_due" ? "past_due"
                 : "canceled";
               // current_period_end not available in newer API — fetch via compat client
