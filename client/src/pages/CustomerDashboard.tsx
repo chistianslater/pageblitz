@@ -1789,6 +1789,8 @@ export default function CustomerDashboard() {
   );
   const [setupStepIdx, setSetupStepIdx] = useState(0);
   const [slugInput, setSlugInput] = useState("");
+  const [legalOwnerInput, setLegalOwnerInput] = useState("");
+  const [legalEmailInput2, setLegalEmailInput2] = useState("");
 
   const _activeWebsiteIdForSetup = _selectedEntry?.website.id ?? 0;
   const updateSlugMutation = trpc.customer.updateSlug.useMutation({
@@ -1796,6 +1798,9 @@ export default function CustomerDashboard() {
   });
   const setLiveMutation = trpc.customer.setLive.useMutation({
     onSuccess: () => { refetch(); setSetupOpen(false); },
+  });
+  const generateLegalMutation = trpc.customer.generateLegalPages.useMutation({
+    onSuccess: () => { refetch(); },
   });
   const { data: slugCheck, isFetching: slugChecking } = trpc.customer.checkSlugAvailability.useQuery(
     { slug: slugInput, websiteId: _activeWebsiteIdForSetup },
@@ -1861,8 +1866,9 @@ export default function CustomerDashboard() {
   const addOns = (subscription?.addOns ?? {}) as Record<string, boolean>;
   const slugDone  = !website.slug.startsWith("preview-");
   const emailDone = !addOns.contactForm || !!(website as any).contactEmail;
+  const legalDone = !!(website.websiteData as any)?.impressumHtml && !!(website.websiteData as any)?.datenschutzHtml;
   const liveDone  = website.status === "active";
-  const allDone   = slugDone && emailDone && liveDone;
+  const allDone   = slugDone && emailDone && legalDone && liveDone;
 
   // Initialise slugInput when setupOpen opens for step 0
   function slugifyFE(text: string): string {
@@ -1955,13 +1961,14 @@ export default function CustomerDashboard() {
               <span className="text-white text-xs font-semibold">Website einrichten</span>
             </div>
             <div className="w-px h-4 bg-blue-400/30" />
-            <StepChip done={slugDone} label="Subdomain" onClick={() => openSetupStep(0)} />
+            <StepChip done={slugDone}  label="Subdomain"   onClick={() => openSetupStep(0)} />
             {addOns.contactForm && (
               <StepChip done={emailDone} label="Kontakt-E-Mail" onClick={() => openSetupStep(1)} />
             )}
-            <StepChip done={liveDone} label="Live schalten" onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)} />
+            <StepChip done={legalDone} label="Impressum & Datenschutz" onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)} />
+            <StepChip done={liveDone}  label="Live schalten" onClick={() => openSetupStep(addOns.contactForm ? 3 : 2)} />
             <button
-              onClick={() => openSetupStep(slugDone ? (addOns.contactForm && !emailDone ? 1 : addOns.contactForm ? 2 : 1) : 0)}
+              onClick={() => openSetupStep(!slugDone ? 0 : (addOns.contactForm && !emailDone) ? 1 : !legalDone ? (addOns.contactForm ? 2 : 1) : (addOns.contactForm ? 3 : 2))}
               className="ml-auto text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
             >
               Einrichten →
@@ -2486,7 +2493,7 @@ export default function CustomerDashboard() {
               <div>
                 <h2 className="text-white font-bold text-lg">Website einrichten</h2>
                 <p className="text-slate-400 text-sm mt-0.5">
-                  Schritt {setupStepIdx + 1} von {addOns.contactForm ? 4 : 3}
+                  Schritt {setupStepIdx + 1} von {addOns.contactForm ? 5 : 4}
                 </p>
               </div>
               <button
@@ -2618,7 +2625,7 @@ export default function CustomerDashboard() {
                 <p className="text-slate-400 text-xs text-center">DNS-Änderungen können bis zu 24h dauern</p>
                 <div className="flex gap-3 pt-2">
                   <button
-                    onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 3)}
+                    onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 2)}
                     className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
                   >
                     Weiter →
@@ -2627,8 +2634,86 @@ export default function CustomerDashboard() {
               </div>
             )}
 
-            {/* Step 3 – Live schalten */}
-            {setupStepIdx === 3 && (
+            {/* Step 3 (contactForm) / Step 2 (no contactForm) – Impressum & Datenschutz */}
+            {setupStepIdx === (addOns.contactForm ? 3 : 2) && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-3">📋</div>
+                  <h3 className="text-white font-semibold text-lg">Impressum & Datenschutz</h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Gesetzlich vorgeschrieben. Gib den Namen des Inhabers an – dauert 30 Sekunden.
+                  </p>
+                </div>
+                {legalDone ? (
+                  <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+                    <span className="text-emerald-400 text-xl">✓</span>
+                    <div>
+                      <p className="text-emerald-400 text-sm font-medium">Impressum & Datenschutz generiert</p>
+                      <p className="text-slate-400 text-xs mt-0.5">Erreichbar unter /impressum und /datenschutz</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Vor- und Nachname des Inhabers *</label>
+                      <input
+                        type="text"
+                        value={legalOwnerInput}
+                        onChange={(e) => setLegalOwnerInput(e.target.value)}
+                        placeholder="Max Mustermann"
+                        className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Impressum-E-Mail *</label>
+                      <input
+                        type="email"
+                        value={legalEmailInput2}
+                        onChange={(e) => setLegalEmailInput2(e.target.value)}
+                        placeholder="info@beispiel.de"
+                        className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      />
+                    </div>
+                    {generateLegalMutation.isError && (
+                      <p className="text-red-400 text-xs">{generateLegalMutation.error?.message || "Fehler beim Generieren"}</p>
+                    )}
+                  </div>
+                )}
+                <div className="flex gap-3 pt-2">
+                  {!legalDone && (
+                    <button
+                      disabled={
+                        legalOwnerInput.trim().split(/\s+/).length < 2 ||
+                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(legalEmailInput2) ||
+                        generateLegalMutation.isPending
+                      }
+                      onClick={async () => {
+                        await generateLegalMutation.mutateAsync({
+                          websiteId: website.id,
+                          legalOwner: legalOwnerInput.trim(),
+                          legalEmail: legalEmailInput2.trim(),
+                        });
+                      }}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                    >
+                      {generateLegalMutation.isPending ? "Generiere..." : "Generieren →"}
+                    </button>
+                  )}
+                  {legalDone && (
+                    <button
+                      onClick={() => setSetupStepIdx(addOns.contactForm ? 4 : 3)}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                    >
+                      Weiter →
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Final Step – Live schalten */}
+            {setupStepIdx === (addOns.contactForm ? 4 : 3) && (
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">🚀</div>
@@ -2640,22 +2725,27 @@ export default function CustomerDashboard() {
                     {website.slug}.pageblitz.de
                   </p>
                 </div>
-                {/* Completed steps summary */}
                 <div className="space-y-2">
                   {[
-                    { label: "Subdomain", done: slugDone },
+                    { label: "Subdomain",              done: slugDone  },
                     ...(addOns.contactForm ? [{ label: "Kontakt-E-Mail", done: emailDone }] : []),
+                    { label: "Impressum & Datenschutz", done: legalDone },
                   ].map(({ label, done }) => (
-                    <div key={label} className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-slate-400"}`}>
-                      <span>{done ? "✓" : "○"}</span>
+                    <div key={label} className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-amber-400"}`}>
+                      <span>{done ? "✓" : "⚠"}</span>
                       <span>{label}</span>
                     </div>
                   ))}
                 </div>
+                {!legalDone && (
+                  <p className="text-amber-400 text-xs text-center bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
+                    ⚠ Impressum & Datenschutz fehlen noch – bitte erst generieren (vorheriger Schritt)
+                  </p>
+                )}
                 <button
-                  disabled={setLiveMutation.isPending}
+                  disabled={setLiveMutation.isPending || !legalDone}
                   onClick={() => setLiveMutation.mutateAsync({ websiteId: website.id })}
-                  className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 text-white transition-all shadow-lg shadow-emerald-900/30"
+                  className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-lg shadow-emerald-900/30"
                 >
                   {setLiveMutation.isPending ? "Wird live geschaltet..." : "⚡ Website jetzt live schalten"}
                 </button>
@@ -2664,7 +2754,7 @@ export default function CustomerDashboard() {
 
             {/* Step-Dots */}
             <div className="flex justify-center gap-2 pb-4">
-              {Array.from({ length: addOns.contactForm ? 4 : 3 }).map((_, i) => (
+              {Array.from({ length: addOns.contactForm ? 5 : 4 }).map((_, i) => (
                 <div key={i} className={`w-2 h-2 rounded-full transition-all ${
                   i === setupStepIdx ? "bg-blue-400 w-4" : i < setupStepIdx ? "bg-emerald-400" : "bg-slate-600"
                 }`} />

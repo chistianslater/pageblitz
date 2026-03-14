@@ -1220,10 +1220,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Privat- und Gewerbekunden",
           ];
         case "legalOwner": {
-          // Suggest owner name from GMB if available (business name as fallback hint)
-          const suggestions: string[] = [];
-          if (business?.name) suggestions.push(business.name);
-          return suggestions;
+          // Do NOT suggest business name – legalOwner must be a real person's full name
+          return [];
         }
         case "legalStreet": {
           // Extract street from GMB address (format: "Straße 12, PLZ Stadt, Land")

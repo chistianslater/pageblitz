@@ -2912,6 +2912,57 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    /** Saves legal owner/email to onboarding and generates Impressum + Datenschutz */
+    generateLegalPages: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        legalOwner: z.string().min(2),
+        legalEmail: z.string().email(),
+        legalStreet: z.string().optional(),
+        legalZip: z.string().optional(),
+        legalCity: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        // Save legal data to onboarding
+        await updateOnboarding(input.websiteId, {
+          legalOwner: input.legalOwner,
+          legalEmail: input.legalEmail,
+          ...(input.legalStreet ? { legalStreet: input.legalStreet } : {}),
+          ...(input.legalZip    ? { legalZip:    input.legalZip    } : {}),
+          ...(input.legalCity   ? { legalCity:   input.legalCity   } : {}),
+        });
+
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+
+        const legalData = {
+          businessName: (website.websiteData as any)?.businessName || onboarding?.businessName || "Unternehmen",
+          legalOwner: input.legalOwner,
+          legalStreet: input.legalStreet || onboarding?.legalStreet || "",
+          legalZip:    input.legalZip    || onboarding?.legalZip    || "",
+          legalCity:   input.legalCity   || onboarding?.legalCity   || "",
+          legalCountry: "Deutschland",
+          legalEmail: input.legalEmail,
+          legalPhone:  onboarding?.legalPhone  || undefined,
+          legalVatId:  onboarding?.legalVatId  || undefined,
+        };
+
+        const impressumHtml    = generateImpressum(legalData);
+        const datenschutzHtml  = generateDatenschutz(legalData);
+        const websiteData      = (website.websiteData as any) || {};
+
+        await updateWebsite(input.websiteId, {
+          websiteData: { ...websiteData, impressumHtml, datenschutzHtml, hasLegalPages: true },
+        });
+
+        return { success: true };
+      }),
+
     updateWebsiteContent: protectedProcedure
       .input(z.object({
         websiteId: z.number(),
