@@ -58,16 +58,17 @@ export function registerStripeWebhook(app: Express) {
             const website = await getWebsiteById(websiteId);
             if (!website) break;
 
-            // Parse addOns from metadata
+            // Parse addOns and billingInterval from metadata
             const rawAddOns = session.metadata?.addOns ? JSON.parse(session.metadata.addOns) : {};
+            const billingInterval: "monthly" | "yearly" =
+              session.metadata?.billingInterval === "monthly" ? "monthly" : "yearly";
+
+            // Normalize addOns – support both old and new format
             const addOns = {
-              subpages: rawAddOns.subpages || 0,
-              features: {
-                gallery: rawAddOns.features?.gallery || rawAddOns.gallery || false,
-                contactForm: rawAddOns.features?.contactForm || rawAddOns.contactForm || false,
-                menu: rawAddOns.features?.menu || false,
-                pricelist: rawAddOns.features?.pricelist || false,
-              }
+              contactForm: rawAddOns.contactForm ?? rawAddOns.features?.contactForm ?? false,
+              gallery:     rawAddOns.gallery     ?? rawAddOns.features?.gallery     ?? false,
+              menu:        rawAddOns.menu        ?? rawAddOns.features?.menu        ?? false,
+              pricelist:   rawAddOns.pricelist   ?? rawAddOns.features?.pricelist   ?? false,
             };
 
             // Create subscription record
@@ -83,6 +84,7 @@ export function registerStripeWebhook(app: Express) {
               stripeCustomerId: typeof session.customer === "string" ? session.customer : null,
               status: "active",
               plan: "base",
+              billingInterval,
               addOns,
               createdAt: Date.now(),
               updatedAt: Date.now(),

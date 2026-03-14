@@ -42,18 +42,20 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 const PRICING = {
-  base: { amount: 1990, currency: "eur", interval: "month" as const },      // 19,90 €/Monat
-  feature: { amount: 390, currency: "eur", interval: "month" as const },     // 3,90 € pro Extra-Feature
-  subpage: { amount: 250, currency: "eur", interval: "month" as const },     // 2,50 € pro Extra-Unterseite
+  base: {
+    monthly: 2490,  // 24,90 €/Monat (monatliche Abrechnung)
+    yearly:  1990,  // 19,90 €/Monat (jährliche Abrechnung, monatlich abgebucht)
+  },
+  addon: 390,       // 3,90 € pro Add-on (unabhängig vom Billing-Interval)
 } as const;
 
-// Feature-Typen für Stripe Checkout
-type FeatureType = "gallery" | "contactForm" | "menu" | "pricelist";
-const FEATURE_NAMES: Record<FeatureType, string> = {
-  gallery: "Bildergalerie",
+// Add-on-Typen für Stripe Checkout (Extra-Seite folgt später zu 6,90 €)
+type AddOnKey = "contactForm" | "gallery" | "menu" | "pricelist";
+const ADDON_NAMES: Record<AddOnKey, string> = {
   contactForm: "Kontaktformular",
-  menu: "Speisekarte",
-  pricelist: "Preisliste",
+  gallery:     "Bildergalerie",
+  menu:        "Speisekarte",
+  pricelist:   "Preisliste",
 };
 
 function slugify(text: string): string {
@@ -2215,49 +2217,31 @@ Antworte NUR mit validem JSON:
   checkout: router({
     createSession: publicProcedure
       .input(z.object({
-        websiteId: z.number(),
+        websiteId:       z.number(),
+        billingInterval: z.enum(["monthly", "yearly"]).default("yearly"),
         addOns: z.object({
-          subpages: z.number().default(0),
-          features: z.object({
-            gallery: z.boolean().default(false),
-            contactForm: z.boolean().default(false),
-            menu: z.boolean().default(false),
-            pricelist: z.boolean().default(false),
-          }).default({}),
-        }).default({ subpages: 0, features: {} }),
+          contactForm: z.boolean().default(false),
+          gallery:     z.boolean().default(false),
+          menu:        z.boolean().default(false),
+          pricelist:   z.boolean().default(false),
+        }).default({}),
       }))
       .mutation(async ({ input, ctx }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
 
-        let totalAmount = PRICING.base.amount;
-        const addOnsList: string[] = [];
-        const featureCount = Object.values(input.addOns.features).filter(Boolean).length;
+        const baseAmount  = PRICING.base[input.billingInterval];
+        const activeAddOns = (Object.entries(input.addOns) as [AddOnKey, boolean][]).filter(([, v]) => v);
+        const totalAmount  = baseAmount + activeAddOns.length * PRICING.addon;
 
-        // Unterseiten berechnen (2,50 € pro Stück)
-        if (input.addOns.subpages > 0) {
-          totalAmount += input.addOns.subpages * PRICING.subpage.amount;
-          addOnsList.push(`${input.addOns.subpages}x Unterseite`);
-        }
+        const basePriceStr  = (baseAmount / 100).toFixed(2).replace(".", ",");
+        const intervalLabel = input.billingInterval === "yearly" ? "Jahresabo" : "monatlich";
+        const description   = [
+          `${basePriceStr} €/Mo Basis (${intervalLabel})`,
+          ...activeAddOns.map(([k]) => ADDON_NAMES[k]),
+        ].join(" + ");
 
-        // Features berechnen (3,90 € pro Feature)
-        if (featureCount > 0) {
-          totalAmount += featureCount * PRICING.feature.amount;
-
-          // Feature-Namen sammeln
-          (Object.entries(input.addOns.features) as [FeatureType, boolean][])
-            .filter(([, enabled]) => enabled)
-            .forEach(([type]) => addOnsList.push(FEATURE_NAMES[type]));
-        }
-
-        // Beschreibung erstellen
-        const basePrice = (PRICING.base.amount / 100).toFixed(2).replace('.', ',');
-        const descriptionParts = [`${basePrice} €/Monat Basis`];
-        if (addOnsList.length > 0) {
-          descriptionParts.push(addOnsList.join(', '));
-        }
-        const totalPrice = (totalAmount / 100).toFixed(2).replace('.', ',');
-
+        const origin = ctx.req.headers.origin || "https://pageblitz.de";
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
           mode: "subscription",
@@ -2267,27 +2251,28 @@ Antworte NUR mit validem JSON:
               price_data: {
                 currency: "eur",
                 product_data: {
-                  name: `Pageblitz Website - ${website.businessName || website.slug}`,
-                  description: descriptionParts.join(' + '),
+                  name: `Pageblitz – ${website.businessName || website.slug}`,
+                  description,
                 },
                 unit_amount: totalAmount,
-                recurring: { interval: "month", interval_count: 1 },
+                recurring: { interval: "month" },
               },
               quantity: 1,
             },
           ],
-          success_url: `${ctx.req.headers.origin}/websites/${website.id}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${ctx.req.headers.origin}/admin/websites`,
+          success_url: `${origin}/websites/${website.id}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url:  `${origin}/start`,
           metadata: {
-            websiteId: website.id.toString(),
-            userId: ctx.user?.id.toString() || "anonymous",
-            addOns: JSON.stringify(input.addOns),
-            totalAmount: totalAmount.toString(),
+            websiteId:       website.id.toString(),
+            userId:          ctx.user?.id?.toString() || "0",
+            billingInterval: input.billingInterval,
+            addOns:          JSON.stringify(input.addOns),
+            totalAmount:     totalAmount.toString(),
           },
         });
 
         if (!session.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Stripe session URL not generated" });
-        return { url: session.url, sessionId: session.id, totalAmount, addOnsList };
+        return { url: session.url, sessionId: session.id, totalAmount, addOnsList: activeAddOns.map(([k]) => ADDON_NAMES[k]) };
       }),
   }),
   

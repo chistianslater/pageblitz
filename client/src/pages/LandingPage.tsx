@@ -116,7 +116,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
               <LogIn className="w-4 h-4" />
             </button>
             <Button
-              onClick={() => navigate("/start")}
+              onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
               className={`btn-shimmer rounded-full px-5 h-10 text-sm font-medium transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-lg shadow-violet-950/25"}`}
             >
               Website erstellen
@@ -162,7 +162,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
                 </a>
               ))}
               <Button
-                onClick={() => { setMobileMenuOpen(false); navigate("/start"); }}
+                onClick={() => { setMobileMenuOpen(false); navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`); }}
                 className="bg-white text-black hover:bg-white/90 rounded-full mt-6 h-14 text-lg font-medium"
               >
                 Website erstellen
@@ -1624,7 +1624,7 @@ export default function LandingPage() {
                 >
                   <Button
                     size="lg"
-                    onClick={() => navigate("/start")}
+                    onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
                     className={`btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/20" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/30"}`}
                   >
                     7 Tage gratis testen
@@ -1764,7 +1764,7 @@ export default function LandingPage() {
             </p>
             <Button
               size="lg"
-              onClick={() => navigate("/start")}
+              onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
               className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-colors duration-500 ${
                 isDark
                   ? "bg-white text-black hover:bg-white/90"
@@ -1791,7 +1791,7 @@ export default function LandingPage() {
           </p>
           <Button
             size="lg"
-            onClick={() => navigate("/start")}
+            onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
             className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
           >
             Website jetzt erstellen
@@ -1840,7 +1840,7 @@ export default function LandingPage() {
       <div className="text-center pb-20">
         <Button
           size="lg"
-          onClick={() => navigate("/start")}
+          onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
           className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
         >
           Jetzt starten
@@ -1923,7 +1923,7 @@ export default function LandingPage() {
                   transition={{ delay: 0.65, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate("/start")}
+                  onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
                   className="btn-shimmer w-full flex items-center justify-between bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/25 rounded-xl p-4 transition-all duration-300 cursor-pointer group"
                 >
                   <div className="flex items-center gap-4">
@@ -2108,7 +2108,7 @@ export default function LandingPage() {
                 </div>
 
                 <Button
-                  onClick={() => navigate("/start")}
+                  onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
                   className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
                 >
                   7 Tage gratis starten
@@ -2169,7 +2169,7 @@ export default function LandingPage() {
                 {billingYearly && <span className={`block text-xs mt-1 ${isDark ? "text-white/30" : "text-gray-400"}`}>* bei jährlicher Zahlung · 24,90 €/Mo. bei monatlicher Abrechnung</span>}
               </p>
               <button
-                onClick={() => navigate("/start")}
+                onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
                 className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
               >
                 Jetzt kostenlos starten
@@ -2235,7 +2235,7 @@ export default function LandingPage() {
             />
             <Button
               size="lg"
-              onClick={() => navigate("/start")}
+              onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
               className={`btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/25"}`}
             >
               7 Tage gratis testen

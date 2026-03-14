@@ -538,6 +538,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
 
+  // Billing interval – read from URL param (passed from LandingPage), default: yearly
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(() => {
+    const param = new URLSearchParams(window.location.search).get("billing");
+    return param === "monthly" ? "monthly" : "yearly";
+  });
+
   // ── Website data ────────────────────────────────────────────────────────
   const { data: siteData, isLoading: siteLoading, error: siteError, refetch: refetchSiteData } = trpc.website.get.useQuery(
     { token: previewToken, id: websiteIdProp },
@@ -2073,12 +2079,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Then create checkout session
       const session = await checkoutMutation.mutateAsync({
         websiteId,
+        billingInterval,
         addOns: {
-          subpages: data.subPages.filter((p) => p.name.trim()).length,
-          features: {
-            gallery: data.addOnGallery,
-            contactForm: data.addOnContactForm,
-          },
+          contactForm: data.addOnContactForm,
+          gallery:     data.addOnGallery,
+          menu:        _addOnMenu,
+          pricelist:   _addOnPricelist,
         },
       });
       window.open(session.url, "_blank");
@@ -2332,19 +2338,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [currentStep, allSectionsForHideStep.length]);
 
   // ── Price calculation ───────────────────────────────────────────────────
-  const BASE_PRICE_INTRO = 19.90;  // First month intro offer (19,90 €)
-  const BASE_PRICE_REGULAR = 19.90; // Regular monthly price (19,90 €)
-  const FEATURE_PRICE = 3.90;       // Per feature (3,90 €)
-  const SUBPAGE_PRICE = 2.50;       // Per subpage (2,50 €)
+  const BASE_PRICE_MONTHLY = 24.90; // 24,90 €/Monat (monatliche Abrechnung)
+  const BASE_PRICE_YEARLY  = 19.90; // 19,90 €/Monat (jährliche Abrechnung)
+  const ADDON_PRICE = 3.90;         // 3,90 € pro Add-on
 
-  const totalPrice = (isFirstMonth = false) => {
-    let price = isFirstMonth ? BASE_PRICE_INTRO : BASE_PRICE_REGULAR;
-    if (data.addOnContactForm) price += FEATURE_PRICE;
-    if (data.addOnGallery) price += FEATURE_PRICE;
-    if (data.addOnMenu) price += FEATURE_PRICE;
-    if (data.addOnPricelist) price += FEATURE_PRICE;
-    price += data.subPages.filter(p => p.name).length * SUBPAGE_PRICE;
-    return price.toFixed(2);
+  const totalPrice = () => {
+    const base  = billingInterval === "yearly" ? BASE_PRICE_YEARLY : BASE_PRICE_MONTHLY;
+    let addons  = 0;
+    if (data.addOnContactForm) addons += ADDON_PRICE;
+    if (data.addOnGallery)     addons += ADDON_PRICE;
+    if (_addOnMenu)            addons += ADDON_PRICE;
+    if (_addOnPricelist)       addons += ADDON_PRICE;
+    return (base + addons).toFixed(2).replace(".", ",");
   };
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -4484,63 +4489,74 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-3"
             >
+                {/* Billing interval toggle */}
+                <div className="flex rounded-xl overflow-hidden border border-slate-600 mb-1">
+                  <button
+                    onClick={() => setBillingInterval("yearly")}
+                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                      billingInterval === "yearly"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    Jährlich · <span className="font-bold">19,90 €</span>/Mo
+                    {billingInterval === "yearly" && (
+                      <span className="ml-1.5 text-xs bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded-full">2 Monate gratis</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setBillingInterval("monthly")}
+                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                      billingInterval === "monthly"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    Monatlich · <span className="font-bold">24,90 €</span>/Mo
+                  </button>
+                </div>
+
                 <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
-                  {/* Intro offer banner */}
-                  <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-3 py-2 mb-2">
-                    <p className="text-xs font-semibold text-amber-300">🎉 Einführungsangebot: Erster Monat nur 39€!</p>
-                  </div>
-                  
-                  {/* First month pricing */}
+                  {/* Line items */}
                   <div className="space-y-2 pb-2 border-b border-slate-600">
-                    <p className="text-xs text-slate-400 font-medium">1. Monat:</p>
                     <div className="flex justify-between text-sm text-slate-300">
                       <span>Basis-Website</span>
-                      <span className="text-amber-400 font-semibold">39,00 €</span>
-                    </div>
-                  </div>
-                  
-                  {/* Regular pricing */}
-                  <div className="space-y-2 pt-2">
-                    <p className="text-xs text-slate-400 font-medium">Ab 2. Monat:</p>
-                    <div className="flex justify-between text-sm text-slate-300">
-                      <span>Basis-Website</span>
-                      <span>79,00 €/Monat</span>
+                      <span>{billingInterval === "yearly" ? "19,90" : "24,90"} €/Monat</span>
                     </div>
                     {data.addOnContactForm && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Kontaktformular</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Kontaktformular</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
                     {data.addOnGallery && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Bildergalerie</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Bildergalerie</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.addOnMenu && (
+                    {_addOnMenu && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Speisekarte</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Speisekarte</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.addOnPricelist && (
+                    {_addOnPricelist && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Preisliste</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Preisliste</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.subPages.filter((p) => p.name).map((page) => (
-                      <div key={page.id} className="flex justify-between text-sm text-slate-300">
-                        <span>Unterseite: {page.name}</span>
-                        <span>+9,90 €/Monat</span>
-                      </div>
-                    ))}
-                    <div className="border-t border-slate-600 pt-2 flex justify-between font-bold text-white">
-                      <span>Gesamt ab Monat 2</span>
-                      <span>{totalPrice(false)} €/Monat</span>
-                    </div>
                   </div>
+                  <div className="pt-1 flex justify-between font-bold text-white text-base">
+                    <span>Gesamt</span>
+                    <span>{totalPrice()} €/Monat</span>
+                  </div>
+                  <p className="text-xs text-slate-500 pt-0.5">
+                    {billingInterval === "yearly"
+                      ? "Jährliche Abrechnung · monatlich abbuchbar · Jederzeit kündbar"
+                      : "Monatliche Abrechnung · Jederzeit kündbar"}
+                  </p>
                 </div>
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <div
@@ -4563,10 +4579,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {completeMutation.isPending || checkoutMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <>\n                      <Zap className="w-5 h-5" /> Jetzt für {totalPrice(true)} € freischalten (1. Monat)\n                    </>                 )}
+                    <><Zap className="w-5 h-5" /> Jetzt für {totalPrice()} €/Mo freischalten</>
+                  )}
                 </button>
                 <p className="text-center text-xs text-slate-500">
-                  Monatlich kündbar • Keine Einrichtungsgebühr • SSL inklusive
+                  7 Tage gratis testen • Keine Einrichtungsgebühr • SSL inklusive
                 </p>
             </motion.div>
           )}
