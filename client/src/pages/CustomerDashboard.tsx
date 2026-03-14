@@ -1927,7 +1927,7 @@ export default function CustomerDashboard() {
           <StatusBadge status={website.status} />
           {website.status === "active" && (
             <a
-              href={`/site/${website.slug}`}
+              href={`https://${website.slug}.pageblitz.de`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-xl transition-colors"
@@ -1946,34 +1946,25 @@ export default function CustomerDashboard() {
         </div>
       </header>
 
-      {/* ── Setup-Checkliste Banner ── */}
+      {/* ── Setup-Checkliste Banner (sticky, direkt unter dem Header) ── */}
       {!allDone && !setupOpen && (
-        <div className="bg-blue-950/60 border-b border-blue-500/20 px-4 py-2.5">
-          <div className="max-w-7xl mx-auto flex items-center gap-3 flex-wrap">
-            <span className="text-blue-300 text-xs font-semibold tracking-wide uppercase">Setup</span>
-            <div className="w-px h-4 bg-blue-500/30" />
-            <StepChip
-              done={slugDone}
-              label="Subdomain wählen"
-              onClick={() => openSetupStep(0)}
-            />
+        <div className="sticky top-[65px] z-10 bg-gradient-to-r from-blue-900/95 to-indigo-900/95 backdrop-blur-sm border-b border-blue-500/30 shadow-lg shadow-blue-950/20">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 mr-1">
+              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-white text-xs font-semibold">Website einrichten</span>
+            </div>
+            <div className="w-px h-4 bg-blue-400/30" />
+            <StepChip done={slugDone} label="Subdomain" onClick={() => openSetupStep(0)} />
             {addOns.contactForm && (
-              <StepChip
-                done={emailDone}
-                label="Kontakt-E-Mail"
-                onClick={() => openSetupStep(1)}
-              />
+              <StepChip done={emailDone} label="Kontakt-E-Mail" onClick={() => openSetupStep(1)} />
             )}
-            <StepChip
-              done={liveDone}
-              label="Live schalten"
-              onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)}
-            />
+            <StepChip done={liveDone} label="Live schalten" onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)} />
             <button
               onClick={() => openSetupStep(slugDone ? (addOns.contactForm && !emailDone ? 1 : addOns.contactForm ? 2 : 1) : 0)}
-              className="ml-auto text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2"
+              className="ml-auto text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
             >
-              Setup öffnen →
+              Einrichten →
             </button>
           </div>
         </div>
