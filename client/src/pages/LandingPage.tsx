@@ -22,6 +22,7 @@ import {
   ChevronUp,
   Sun,
   Moon,
+  LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
@@ -106,13 +107,14 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <Button
-              variant="ghost"
+            {/* Login icon */}
+            <button
               onClick={() => navigate("/login")}
-              className="text-white/70 hover:text-white hover:bg-white/5 text-sm"
+              title="Anmelden"
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
             >
-              Anmelden
-            </Button>
+              <LogIn className="w-4 h-4" />
+            </button>
             <Button
               onClick={() => navigate("/start")}
               className="bg-white text-black hover:bg-white/90 rounded-full px-5 h-10 text-sm font-medium shadow-lg shadow-white/10"
@@ -1515,7 +1517,7 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     onClick={() => navigate("/start")}
-                    className="bg-white text-black hover:bg-white/90 rounded-full h-14 px-8 text-base font-medium shadow-xl shadow-white/20 group"
+                    className={`rounded-full h-14 px-8 text-base font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/20" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/30"}`}
                   >
                     7 Tage gratis testen
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -1664,7 +1666,7 @@ export default function LandingPage() {
               className={`rounded-full h-12 px-8 text-sm font-medium transition-colors duration-500 ${
                 isDark
                   ? "bg-white text-black hover:bg-white/90"
-                  : "bg-gray-900 text-white hover:bg-gray-800"
+                  : "bg-violet-950 text-white hover:bg-violet-900"
               }`}
             >
               Meine Website erstellen
@@ -1688,7 +1690,7 @@ export default function LandingPage() {
           <Button
             size="lg"
             onClick={() => navigate("/start")}
-            className="bg-white text-black hover:bg-white/90 rounded-full h-12 px-8 text-sm font-medium group"
+            className={`rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
           >
             Website jetzt erstellen
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -1950,24 +1952,24 @@ export default function LandingPage() {
 
           <div className="flex justify-center">
             {/* Pricing card */}
-            <div className="relative p-1 rounded-3xl bg-gradient-to-b from-white/20 to-white/5 w-full max-w-md">
-              <div className="bg-[#0a0a0a] rounded-[22px] p-10 border border-white/10 h-full flex flex-col">
+            <div className={`relative p-1 rounded-3xl w-full max-w-md transition-colors duration-500 ${isDark ? "bg-gradient-to-b from-white/20 to-white/5" : "bg-gradient-to-b from-violet-200/60 to-violet-100/30"}`}>
+              <div className={`rounded-[22px] p-10 border h-full flex flex-col transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-violet-200/60"}`}>
                 <div className="text-center mb-10">
-                  <div className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/60 text-xs font-medium mb-5">
+                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-5 transition-colors duration-500 ${isDark ? "bg-white/10 text-white/60" : "bg-violet-100 text-violet-700"}`}>
                     Pageblitz Pro
                   </div>
                   {/* Billing toggle */}
                   <div className="flex items-center justify-center mb-5">
-                    <div className="flex p-0.5 rounded-full bg-white/5 border border-white/10">
+                    <div className={`flex p-0.5 rounded-full border transition-colors duration-500 ${isDark ? "bg-white/5 border-white/10" : "bg-gray-100 border-gray-200"}`}>
                       <button
                         onClick={() => setBillingYearly(true)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? 'bg-white text-black' : 'text-white/50 hover:text-white/70'}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? (isDark ? 'bg-white text-black' : 'bg-violet-950 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Jährlich
                       </button>
                       <button
                         onClick={() => setBillingYearly(false)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? 'bg-white text-black' : 'text-white/50 hover:text-white/70'}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? (isDark ? 'bg-white text-black' : 'bg-violet-950 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Monatlich
                       </button>
@@ -1979,7 +1981,7 @@ export default function LandingPage() {
                     )}
                   </div>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-6xl font-semibold text-white tracking-tight">{billingYearly ? '19,90€' : '24,90€'}</span>
+                    <span className={`text-6xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{billingYearly ? '19,90€' : '24,90€'}</span>
                     <span className="text-white/40">/Monat</span>
                   </div>
                   <p className="text-white/40 text-sm">
@@ -1998,7 +2000,7 @@ export default function LandingPage() {
                     "Chat-Support",
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-400/70 shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-green-500/80 shrink-0" />
                       <span className="text-white/70 text-sm">{feature}</span>
                     </div>
                   ))}
@@ -2006,7 +2008,7 @@ export default function LandingPage() {
 
                 <Button
                   onClick={() => navigate("/start")}
-                  className="w-full bg-white text-black hover:bg-white/90 rounded-full h-14 text-base font-medium mt-auto"
+                  className={`w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
                 >
                   7 Tage gratis starten
                 </Button>
@@ -2028,46 +2030,46 @@ export default function LandingPage() {
             <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Pageblitz vs. Webagentur</h3>
             <p className="text-white/40 mt-4 text-base">Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen.</p>
           </div>
-          <div className="rounded-2xl border border-white/10 overflow-hidden">
+          <div className={`rounded-2xl border overflow-hidden transition-colors duration-500 ${isDark ? "border-white/10" : "border-gray-200"}`}>
             {/* Header */}
-            <div className="grid grid-cols-3 bg-white/5 px-8 py-5">
+            <div className={`grid grid-cols-3 px-8 py-5 transition-colors duration-500 ${isDark ? "bg-white/5" : "bg-gray-50"}`}>
               <div className="text-white/40 text-sm font-medium uppercase tracking-wider"></div>
               <div className="text-center">
-                <span className="text-white/50 text-base font-medium">Webagentur</span>
+                <span className={`text-base font-medium transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-400"}`}>Webagentur</span>
               </div>
               <div className="text-center">
-                <span className="text-white text-base font-semibold">Pageblitz ✦</span>
+                <span className={`text-base font-semibold transition-colors duration-500 ${isDark ? "text-white" : "text-violet-950"}`}>Pageblitz ✦</span>
               </div>
             </div>
             {/* Rows */}
             {[
-              { label: "Einmalige Kosten", agency: "2.000 – 8.000 €", us: "0 €", highlight: true },
-              { label: "Zeit bis zur fertigen Website", agency: "4 – 12 Wochen", us: "3 Minuten", highlight: false },
-              { label: "Monatliche Kosten", agency: "50 – 150 € Hosting & Wartung", us: billingYearly ? "19,90 €*" : "24,90 €", highlight: true },
-              { label: "Änderungen & Updates", agency: "Stundenabrechnung (~80 €/h)", us: "Inklusive", highlight: false },
-              { label: "Vertragslaufzeit", agency: "Oft 12–24 Monate", us: billingYearly ? "1 Monat" : "Monatlich kündbar", highlight: true },
-              { label: "Technisches Know-how nötig", agency: "Nein (aber Briefing-Aufwand)", us: "Nein", highlight: false },
-              { label: "DSGVO & Impressum", agency: "Meist kostenpflichtig extra", us: "Automatisch inklusive", highlight: true },
-              { label: "SSL & Hosting", agency: "Oft extra berechnet", us: "Inklusive", highlight: false },
+              { label: "Einmalige Kosten", agency: "2.000 – 8.000 €", us: "0 €" },
+              { label: "Zeit bis zur fertigen Website", agency: "4 – 12 Wochen", us: "3 Minuten" },
+              { label: "Monatliche Kosten", agency: "50 – 150 € Hosting & Wartung", us: billingYearly ? "19,90 €*" : "24,90 €" },
+              { label: "Änderungen & Updates", agency: "Stundenabrechnung (~80 €/h)", us: "Inklusive" },
+              { label: "Vertragslaufzeit", agency: "Oft 12–24 Monate", us: billingYearly ? "1 Monat" : "Monatlich kündbar" },
+              { label: "Technisches Know-how nötig", agency: "Nein (aber Briefing-Aufwand)", us: "Nein" },
+              { label: "DSGVO & Impressum", agency: "Meist kostenpflichtig extra", us: "Automatisch inklusive" },
+              { label: "SSL & Hosting", agency: "Oft extra berechnet", us: "Inklusive" },
             ].map((row, i) => (
               <div
                 key={i}
-                className={`grid grid-cols-3 px-8 py-5 border-t border-white/5 ${i % 2 !== 0 ? 'bg-white/[0.015]' : ''}`}
+                className={`grid grid-cols-3 px-8 py-5 border-t transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-100"} ${i % 2 !== 0 ? (isDark ? 'bg-white/[0.015]' : 'bg-gray-50/60') : ''}`}
               >
-                <div className="text-white/60 text-sm font-medium self-center">{row.label}</div>
-                <div className="text-center text-white/35 text-sm self-center">{row.agency}</div>
-                <div className="text-center text-green-400 text-sm font-semibold self-center">{row.us}</div>
+                <div className={`text-sm font-medium self-center transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-700"}`}>{row.label}</div>
+                <div className={`text-center text-sm self-center transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-400"}`}>{row.agency}</div>
+                <div className={`text-center text-sm font-semibold self-center transition-colors duration-500 ${isDark ? "text-green-400" : "text-violet-700"}`}>{row.us}</div>
               </div>
             ))}
             {/* Footer CTA */}
-            <div className="bg-white/[0.03] border-t border-white/10 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-white/50 text-sm">
-                Ersparnis im ersten Jahr: <span className="text-white font-semibold">bis zu 8.000 €</span>
-                {billingYearly && <span className="block text-white/30 text-xs mt-1">* bei jährlicher Zahlung · 24,90 €/Mo. bei monatlicher Abrechnung</span>}
+            <div className={`border-t px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-violet-50/50 border-violet-100"}`}>
+              <p className={`text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}>
+                Ersparnis im ersten Jahr: <span className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>bis zu 8.000 €</span>
+                {billingYearly && <span className={`block text-xs mt-1 ${isDark ? "text-white/30" : "text-gray-400"}`}>* bei jährlicher Zahlung · 24,90 €/Mo. bei monatlicher Abrechnung</span>}
               </p>
               <button
                 onClick={() => navigate("/start")}
-                className="flex items-center gap-2 bg-white text-black text-sm font-medium px-6 py-2.5 rounded-full hover:bg-white/90 transition-colors whitespace-nowrap"
+                className={`flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
               >
                 Jetzt kostenlos starten
                 <ArrowRight className="w-4 h-4" />
@@ -2104,7 +2106,7 @@ export default function LandingPage() {
           <Button
             size="lg"
             onClick={() => navigate("/start")}
-            className="bg-white text-black hover:bg-white/90 rounded-full h-16 px-12 text-lg font-medium shadow-xl shadow-white/10 group"
+            className={`rounded-full h-16 px-12 text-lg font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/25"}`}
           >
             7 Tage gratis testen
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
