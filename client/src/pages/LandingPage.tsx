@@ -20,6 +20,8 @@ import {
   ChevronLeft,
   ChevronDown,
   ChevronUp,
+  Sun,
+  Moon,
   LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,7 +45,7 @@ const GradientOrb = ({ className, delay = 0 }: { className?: string; delay?: num
   />
 );
 
-const Navbar = ({ isDark }: { isDark: boolean }) => {
+const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [, navigate] = useLocation();
@@ -97,6 +99,14 @@ const Navbar = ({ isDark }: { isDark: boolean }) => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            {/* Light/Dark toggle */}
+            <button
+              onClick={onToggle}
+              title={isDark ? "Light Mode" : "Dark Mode"}
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             {/* Login icon */}
             <button
               onClick={() => navigate("/login")}
@@ -114,6 +124,13 @@ const Navbar = ({ isDark }: { isDark: boolean }) => {
           </div>
 
           <div className="md:hidden flex items-center gap-2">
+            {/* Mobile theme toggle */}
+            <button
+              onClick={onToggle}
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 text-white/60 transition-all duration-300"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <button
               className="text-white p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -1478,7 +1495,17 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   const [billingYearly, setBillingYearly] = useState(true);
-  const isDark = true;
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("lp-theme");
+      return stored !== "light"; // dark unless user explicitly chose light
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("lp-theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
   return (
     <div
@@ -1491,7 +1518,7 @@ export default function LandingPage() {
         style={{ scaleX: smoothProgress }}
       />
 
-      <Navbar isDark={isDark} />
+      <Navbar isDark={isDark} onToggle={() => setIsDark((v) => !v)} />
 
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
