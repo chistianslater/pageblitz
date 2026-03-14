@@ -1633,7 +1633,7 @@ export default function LandingPage() {
                     variant="ghost"
                     size="lg"
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`rounded-full h-14 px-8 text-base transition-all duration-300 ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-800 font-medium border border-violet-300 hover:border-violet-500 hover:bg-violet-50 hover:text-violet-950 bg-white/60 backdrop-blur-sm"}`}
+                    className={`rounded-full h-14 px-8 text-base transition-all duration-300 ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-700 font-medium border border-violet-300 hover:border-violet-500 hover:text-violet-950 bg-transparent hover:bg-transparent"}`}
                   >
                     Beispiele ansehen
                     <ChevronDown className="ml-2 w-4 h-4" />
