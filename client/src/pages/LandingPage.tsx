@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useInView, useMotionValue } from "framer-motion";
 import { useLocation } from "wouter";
 import {
   Zap,
@@ -117,7 +117,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             </button>
             <Button
               onClick={() => navigate("/start")}
-              className={`rounded-full px-5 h-10 text-sm font-medium transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-lg shadow-violet-950/25"}`}
+              className={`btn-shimmer rounded-full px-5 h-10 text-sm font-medium transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-lg shadow-violet-950/25"}`}
             >
               Website erstellen
             </Button>
@@ -248,32 +248,116 @@ const FaqSection = () => {
   );
 };
 
-const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-50px" }}
-    transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    className={`group relative p-8 rounded-3xl border transition-all duration-500 ${
-      isDark
-        ? "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
-        : "bg-white border-gray-100 hover:border-violet-200 hover:shadow-sm hover:shadow-violet-100"
-    }`}
-  >
-    <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity ${isDark ? "bg-gradient-to-b from-white/[0.02] to-transparent" : "bg-gradient-to-b from-violet-50/40 to-transparent"}`} />
-    <div className="relative z-10">
-      <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ${
-        isDark
-          ? "bg-white/5 border-white/10"
-          : "bg-violet-100 border-violet-200"
-      }`}>
-        <Icon className={`w-5 h-5 ${isDark ? "text-white/70" : "text-violet-600"}`} />
+// --- Stats with Count-Up ---
+
+interface StatDef {
+  target: number | null;
+  format?: (n: number) => string;
+  display?: string;
+  label: string;
+}
+const STATS: StatDef[] = [
+  {
+    target: 1200,
+    format: (n) => n >= 1000 ? `${Math.floor(n / 1000)},${String(n % 1000).padStart(3, "0")}+` : `${n}+`,
+    label: "Websites erstellt",
+  },
+  { target: null, display: "3 Min.", label: "Durchschnittliche Zeit" },
+  { target: 85, format: (n) => `${n}%`, label: "SEO-Performance" },
+  { target: null, display: "19,90€", label: "Pro Monat" },
+];
+
+const StatItem = ({ stat, index }: { stat: StatDef; index: number }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!isInView || stat.target === null) return;
+    const duration = 1600;
+    const startTime = performance.now();
+    const target = stat.target;
+    const update = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(2, -10 * progress); // easeOutExpo
+      setCount(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(update);
+      else setCount(target);
+    };
+    requestAnimationFrame(update);
+  }, [isInView]);
+
+  const displayValue =
+    stat.target !== null ? stat.format!(count) : stat.display!;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+      className="text-center md:text-left"
+    >
+      <div className="text-3xl md:text-4xl font-semibold text-white mb-2 tracking-tight tabular-nums">
+        {displayValue}
       </div>
-      <h3 className={`text-lg font-semibold mb-3 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{title}</h3>
-      <p className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>{description}</p>
-    </div>
-  </motion.div>
-);
+      <div className="text-white/40 text-sm">{stat.label}</div>
+    </motion.div>
+  );
+};
+
+// --- Feature Cards with Mouse-Tracking 3D Tilt ---
+
+const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const rotateX = useTransform(mouseY, [-80, 80], [5, -5]);
+  const rotateY = useTransform(mouseX, [-80, 80], [-5, 5]);
+  const springCfg = { stiffness: 180, damping: 22 };
+  const rotXSpring = useSpring(rotateX, springCfg);
+  const rotYSpring = useSpring(rotateY, springCfg);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left - rect.width / 2);
+    mouseY.set(e.clientY - rect.top - rect.height / 2);
+  };
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      style={{ rotateX: rotXSpring, rotateY: rotYSpring, transformPerspective: 1000 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={`group relative p-8 rounded-3xl border cursor-default transition-all duration-500 ${
+        isDark
+          ? "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
+          : "bg-white border-gray-100 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/60"
+      }`}
+    >
+      <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isDark ? "bg-gradient-to-b from-white/[0.02] to-transparent" : "bg-gradient-to-b from-violet-50/40 to-transparent"}`} />
+      <div className="relative z-10">
+        <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ${
+          isDark
+            ? "bg-white/5 border-white/10"
+            : "bg-violet-100 border-violet-200"
+        }`}>
+          <Icon className={`w-5 h-5 ${isDark ? "text-white/70" : "text-violet-600"}`} />
+        </div>
+        <h3 className={`text-lg font-semibold mb-3 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{title}</h3>
+        <p className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>{description}</p>
+      </div>
+    </motion.div>
+  );
+};
 
 const GhostWebsiteCreation = () => {
   const loopDuration = 8;
@@ -1427,6 +1511,12 @@ export default function LandingPage() {
       className="lp-root min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans"
       data-lp-theme={isDark ? "dark" : "light"}
     >
+      {/* Scroll Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-400 z-[200] origin-left pointer-events-none"
+        style={{ scaleX: smoothProgress }}
+      />
+
       <Navbar isDark={isDark} onToggle={() => setIsDark((v) => !v)} />
 
       {/* Background Effects */}
@@ -1490,21 +1580,30 @@ export default function LandingPage() {
                   <span>Webagentur kostet 3.000€+ – Pageblitz ab 19,90 €/Monat</span>
                 </motion.div>
 
-                <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.1 }}
-                  className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 leading-[1.1]"
-                >
-                  <span className="text-white">Deine professionelle</span>
-                  <br />
-                  <span
-                    className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400"
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 leading-[1.1]">
+                  <span className="block">
+                    {["Deine", "professionelle"].map((word, i) => (
+                      <motion.span
+                        key={i}
+                        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        transition={{ duration: 0.65, delay: 0.08 + i * 0.14, ease: [0.16, 1, 0.3, 1] }}
+                        className="text-white inline-block mr-3"
+                      >
+                        {word}
+                      </motion.span>
+                    ))}
+                  </span>
+                  <motion.span
+                    initial={{ opacity: 0, y: 32, filter: "blur(16px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{ duration: 0.9, delay: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 block"
                     style={{ backgroundSize: '200% 200%', animation: 'gradient-text-shimmer 8s ease infinite' }}
                   >
                     Website in 3 Minuten.
-                  </span>
-                </motion.h1>
+                  </motion.span>
+                </h1>
 
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -1525,7 +1624,7 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     onClick={() => navigate("/start")}
-                    className={`rounded-full h-14 px-8 text-base font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/20" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/30"}`}
+                    className={`btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/20" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/30"}`}
                   >
                     7 Tage gratis testen
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -1597,23 +1696,8 @@ export default function LandingPage() {
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            {[
-              { value: "1,200+", label: "Websites erstellt" },
-              { value: "3 Min.", label: "Durchschnittliche Zeit" },
-              { value: "85%", label: "SEO-Performance" },
-              { value: "19,90€", label: "Pro Monat" },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center md:text-left"
-              >
-                <div className="text-3xl md:text-4xl font-semibold text-white mb-2 tracking-tight">{stat.value}</div>
-                <div className="text-white/40 text-sm">{stat.label}</div>
-              </motion.div>
+            {STATS.map((stat, i) => (
+              <StatItem key={i} stat={stat} index={i} />
             ))}
           </div>
         </div>
@@ -1649,14 +1733,25 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{
+                  scale: 1.07,
+                  y: -6,
+                  transition: { type: "spring", stiffness: 380, damping: 18 },
+                }}
                 className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-colors duration-500 cursor-default ${
                   isDark
                     ? "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/20"
                     : "bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 border-gray-100"
                 }`}
               >
-                <span className="text-3xl">{item.emoji}</span>
+                <motion.span
+                  className="text-3xl"
+                  whileHover={{ scale: 1.2, rotate: [-4, 4, -2, 0] }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {item.emoji}
+                </motion.span>
                 <span className={`text-sm font-medium text-center transition-colors duration-500 ${isDark ? "text-white/70" : "text-gray-700"}`}>
                   {item.label}
                 </span>
@@ -1671,7 +1766,7 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={() => navigate("/start")}
-              className={`rounded-full h-12 px-8 text-sm font-medium transition-colors duration-500 ${
+              className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-colors duration-500 ${
                 isDark
                   ? "bg-white text-black hover:bg-white/90"
                   : "bg-violet-950 text-white hover:bg-violet-900"
@@ -1698,7 +1793,7 @@ export default function LandingPage() {
           <Button
             size="lg"
             onClick={() => navigate("/start")}
-            className={`rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+            className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
           >
             Website jetzt erstellen
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -1712,18 +1807,19 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-20">
             <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -20, filter: "blur(6px)" }}
+              whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
               viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4"
             >
               Warum Pageblitz?
             </motion.h2>
             <motion.h3
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.12, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
               className="text-3xl md:text-5xl font-semibold text-white tracking-tight"
             >
               Alles dabei.<br />Sofort einsatzbereit.
@@ -1746,7 +1842,7 @@ export default function LandingPage() {
         <Button
           size="lg"
           onClick={() => navigate("/start")}
-          className={`rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
         >
           Jetzt starten
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -1834,9 +1930,15 @@ export default function LandingPage() {
                 <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
               ))}
             </div>
-            <h2 className={`text-3xl md:text-4xl font-semibold tracking-tight mb-3 transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>
+            <motion.h2
+              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className={`text-3xl md:text-4xl font-semibold tracking-tight mb-3 transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
+            >
               Was Kunden sagen
-            </h2>
+            </motion.h2>
             <p className={`transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
               Echte Unternehmer. Echte Ergebnisse.
             </p>
@@ -1874,14 +1976,15 @@ export default function LandingPage() {
             ].map((t, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                initial={{ opacity: 0, y: 32, scale: 0.95, filter: "blur(6px)" }}
+                whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.12, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -4, transition: { duration: 0.3 } }}
                 className={`rounded-2xl p-7 border flex flex-col gap-4 transition-colors duration-500 ${
                   isDark
-                    ? "bg-white/[0.03] border-white/10"
-                    : "bg-gray-50 border-gray-100"
+                    ? "bg-white/[0.03] border-white/10 hover:border-white/20"
+                    : "bg-gray-50 border-gray-100 hover:border-gray-200 hover:shadow-md"
                 }`}
               >
                 <div className="flex gap-1">
@@ -1986,7 +2089,7 @@ export default function LandingPage() {
 
                 <Button
                   onClick={() => navigate("/start")}
-                  className={`w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
                 >
                   7 Tage gratis starten
                 </Button>
@@ -2047,7 +2150,7 @@ export default function LandingPage() {
               </p>
               <button
                 onClick={() => navigate("/start")}
-                className={`flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
               >
                 Jetzt kostenlos starten
                 <ArrowRight className="w-4 h-4" />
@@ -2073,22 +2176,52 @@ export default function LandingPage() {
           style={{ animation: 'gradient-orb-drift-alt 18s ease-in-out infinite' }}
         />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <p className="text-white/40 text-sm font-medium uppercase tracking-widest mb-6">Jetzt loslegen</p>
-          <h2 className="text-4xl md:text-5xl font-semibold text-white mb-6 tracking-tight">
+          <motion.p
+            initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-white/40 text-sm font-medium uppercase tracking-widest mb-6"
+          >
+            Jetzt loslegen
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 28, filter: "blur(12px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl md:text-5xl font-semibold text-white mb-6 tracking-tight"
+          >
             Deine Website wartet.<br />Starte heute kostenlos.
-          </h2>
-          <p className="text-lg text-white/50 mb-10 max-w-lg mx-auto leading-relaxed">
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.22, duration: 0.6 }}
+            className="text-lg text-white/50 mb-10 max-w-lg mx-auto leading-relaxed"
+          >
             Kein Webdesigner. Kein technisches Wissen. Nur dein Unternehmen –
             professionell online in 3 Minuten.
-          </p>
-          <Button
-            size="lg"
-            onClick={() => navigate("/start")}
-            className={`rounded-full h-16 px-12 text-lg font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/25"}`}
-          >
-            7 Tage gratis testen
-            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          </motion.p>
+          <div className="relative inline-flex justify-center">
+            {/* Pulsing glow ring */}
+            <motion.div
+              animate={{ scale: [1, 1.18, 1], opacity: [0.25, 0.55, 0.25] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className={`absolute inset-0 rounded-full blur-2xl pointer-events-none ${
+                isDark ? "bg-white/20" : "bg-violet-500/35"
+              }`}
+            />
+            <Button
+              size="lg"
+              onClick={() => navigate("/start")}
+              className={`btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/25"}`}
+            >
+              7 Tage gratis testen
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
           <div className="flex flex-wrap justify-center gap-6 mt-8">
             {["7 Tage gratis", "Ab 19,90 €/Mo.", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
               <div key={t} className="flex items-center gap-2 text-white/40 text-sm">

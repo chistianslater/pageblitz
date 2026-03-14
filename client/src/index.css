@@ -412,3 +412,34 @@ html {
 [data-lp-theme="light"] .bg-\[\#0a0a0a\]               { background-color: #f3f4f6; transition: background-color 0.5s ease; }
 [data-lp-theme="light"] .bg-\[\#0a0a0a\]\/95           { background-color: rgba(243,244,246,0.97); transition: background-color 0.5s ease; }
 .aspect-square-sm { aspect-ratio: 1 / 1; }
+
+/* ── Button Shimmer / Highlight Sweep ──────────────────────────────────── */
+/* Works on both dark (white) and violet buttons — uses a blue-tinted shimmer
+   that is visible as a bright sweep on dark violet and as a cool shine on white */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(180, 195, 255, 0.38) 50%,
+    transparent 80%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-shimmer:hover::before {
+  animation: btn-shine 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes btn-shine {
+  from { left: -80%; }
+  to   { left: 130%; }
+}
