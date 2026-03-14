@@ -794,36 +794,21 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     },
   });
 
+  const ADDON_LABELS: Record<string, { name: string; icon: string; color: string }> = {
+    gallery:     { name: "Bildergalerie",   icon: "🖼️",  color: "text-pink-300" },
+    menu:        { name: "Speisekarte",     icon: "🍽️",  color: "text-amber-300" },
+    pricelist:   { name: "Preisliste",      icon: "💶",  color: "text-emerald-300" },
+    contactForm: { name: "Kontaktformular", icon: "✉️",  color: "text-blue-300" },
+  };
+
   const renderAddonLock = (addonKey: "gallery" | "menu" | "pricelist" | "contactForm") => (
-    <div className="flex items-center gap-2 flex-shrink-0">
-      {confirmAddon === addonKey ? (
-        <>
-          <button
-            onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey })}
-            disabled={purchaseAddonMutation.isPending}
-            className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap"
-          >
-            {purchaseAddonMutation.isPending
-              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              : "+3,90 €/Mon ✓"}
-          </button>
-          <button
-            onClick={() => setConfirmAddon(null)}
-            className="text-slate-400 hover:text-white transition-colors p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </>
-      ) : (
-        <button
-          onClick={() => setConfirmAddon(addonKey)}
-          className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
-        >
-          <Lock className="w-3 h-3" />
-          Freischalten
-        </button>
-      )}
-    </div>
+    <button
+      onClick={() => setConfirmAddon(addonKey)}
+      className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex-shrink-0"
+    >
+      <Lock className="w-3 h-3" />
+      Freischalten
+    </button>
   );
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
@@ -1554,6 +1539,51 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
           </div>
         )}
       </div>
+
+      {/* ── Add-on Kauf-Bestätigung Modal ── */}
+      {confirmAddon && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                  {ADDON_LABELS[confirmAddon]?.icon}
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                  <p className={`text-sm font-medium ${ADDON_LABELS[confirmAddon]?.color}`}>
+                    {ADDON_LABELS[confirmAddon]?.name}
+                  </p>
+                </div>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed mb-1">
+                <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+              </p>
+              <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmAddon(null)}
+                  disabled={purchaseAddonMutation.isPending}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: confirmAddon as any })}
+                  disabled={purchaseAddonMutation.isPending}
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {purchaseAddonMutation.isPending
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</>
+                    : "Jetzt freischalten"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
