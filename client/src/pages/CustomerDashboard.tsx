@@ -411,7 +411,14 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
 
   const updateField = (idx: number, updates: Partial<FormField>) => {
     const newFields = [...fields];
-    newFields[idx] = { ...newFields[idx], ...updates };
+    const updated = { ...newFields[idx], ...updates };
+    // When type is changed to "email", auto-set id to "email" so form submission works.
+    // Only do this if no other field already uses id "email".
+    if (updates.type === 'email' && updated.id !== 'email') {
+      const alreadyHasEmail = fields.some((f, i) => i !== idx && f.id === 'email');
+      if (!alreadyHasEmail) updated.id = 'email';
+    }
+    newFields[idx] = updated;
     setFields(newFields);
   };
 

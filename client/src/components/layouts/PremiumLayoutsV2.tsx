@@ -831,8 +831,18 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const locked = websiteData?.addOnContactForm === false;
   const { datenschutzHref } = useLegalLinks(websiteData);
 
-  // Get form fields from websiteData or use defaults
-  const formFields = websiteData?.contactFormFields || DEFAULT_CONTACT_FORM_FIELDS;
+  // Get form fields from websiteData or use defaults.
+  // Always ensure an email field is present – inject one after "name" if missing.
+  const rawFields: any[] = websiteData?.contactFormFields || DEFAULT_CONTACT_FORM_FIELDS;
+  const hasEmailField = rawFields.some((f: any) => f.type === 'email' || f.id === 'email');
+  const formFields: any[] = hasEmailField
+    ? rawFields
+    : (() => {
+        const nameIdx = rawFields.findIndex((f: any) => f.id === 'name');
+        const insertAt = nameIdx >= 0 ? nameIdx + 1 : 1;
+        const emailDefault = { id: 'email', label: 'E-Mail', placeholder: 'max@beispiel.de', type: 'email', required: true };
+        return [...rawFields.slice(0, insertAt), emailDefault, ...rawFields.slice(insertAt)];
+      })();
 
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -866,12 +876,17 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
     if (!websiteData?.slug) return;
     const fd = new FormData(e.currentTarget);
     const name = (fd.get('name') || '').toString();
-    const email = (fd.get('email') || '').toString();
+    // Find the actual email field – its id may differ from "email" (e.g. "field_1710234567890")
+    const emailField = formFields.find((f: any) => f.type === 'email' || f.id === 'email');
+    const emailFieldId = emailField?.id ?? 'email';
+    const email = (fd.get(emailFieldId) || '').toString();
     const phone = (fd.get('phone') || '').toString() || undefined;
     const message = (fd.get('message') || '').toString();
+    // Exclude the standard fields (and the actual email field id) from customFields
+    const specialKeys = new Set(['name', emailFieldId, 'phone', 'message', 'privacy']);
     const customFields: Record<string, string> = {};
     fd.forEach((val, key) => {
-      if (!['name', 'email', 'phone', 'message', 'privacy'].includes(key)) {
+      if (!specialKeys.has(key)) {
         customFields[key] = val.toString();
       }
     });
