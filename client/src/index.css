@@ -363,4 +363,41 @@ html {
 /* Aspect-ratio Hilfskonstanten */
 .aspect-hero    { aspect-ratio: 16 / 10; }
 .aspect-about   { aspect-ratio: 4  /  5; }
+
+/* ── Landing Page Light/Dark Mode ──────────────────────────────────────── */
+
+/* Root transition – only colour properties so framer-motion is unaffected */
+.lp-root {
+  transition:
+    background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    color             0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light-mode root */
+[data-lp-theme="light"].lp-root { background-color: #f3f4f6; color: #111827; }
+
+/* ── Text ── */
+[data-lp-theme="light"] .text-white            { color: #111827;              transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/60        { color: rgba(17,24,39,0.68);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/50        { color: rgba(17,24,39,0.58);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/40        { color: rgba(17,24,39,0.48);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/30        { color: rgba(17,24,39,0.35);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/20        { color: rgba(17,24,39,0.22);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .hover\:text-white:hover { color: #111827; }
+
+/* ── Borders ── */
+[data-lp-theme="light"] .border-white\/5  { border-color: rgba(0,0,0,0.06);  transition: border-color 0.5s ease; }
+[data-lp-theme="light"] .border-white\/8  { border-color: rgba(0,0,0,0.08);  transition: border-color 0.5s ease; }
+[data-lp-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.09);  transition: border-color 0.5s ease; }
+[data-lp-theme="light"] .border-white\/20 { border-color: rgba(0,0,0,0.12);  transition: border-color 0.5s ease; }
+
+/* ── Backgrounds ── */
+[data-lp-theme="light"] .bg-white\/\[0\.02\]            { background-color: rgba(0,0,0,0.025); transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-white\/\[0\.03\]            { background-color: rgba(0,0,0,0.03);  transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-white\/5                    { background-color: rgba(0,0,0,0.04);  transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-white\/10                   { background-color: rgba(0,0,0,0.06);  transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .hover\:bg-white\/5:hover       { background-color: rgba(0,0,0,0.04); }
+[data-lp-theme="light"] .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(0,0,0,0.04); }
+[data-lp-theme="light"] .bg-\[\#0a0a0a\]               { background-color: #f3f4f6; transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-\[\#0a0a0a\]\/95           { background-color: rgba(243,244,246,0.97); transition: background-color 0.5s ease; }
 .aspect-square-sm { aspect-ratio: 1 / 1; }

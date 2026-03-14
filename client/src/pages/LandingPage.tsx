@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import { useLocation } from "wouter";
-import { 
-  Zap, 
-  Globe, 
-  MousePointer2, 
-  Sparkles, 
-  Rocket, 
-  CheckCircle2, 
-  ArrowRight, 
-  Search, 
-  Smartphone, 
-  Clock, 
+import {
+  Zap,
+  Globe,
+  MousePointer2,
+  Sparkles,
+  Rocket,
+  CheckCircle2,
+  ArrowRight,
+  Search,
+  Smartphone,
+  Clock,
   Star,
   ShieldCheck,
   ChevronRight,
@@ -20,6 +20,8 @@ import {
   ChevronLeft,
   ChevronDown,
   ChevronUp,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
@@ -42,7 +44,7 @@ const GradientOrb = ({ className, delay = 0 }: { className?: string; delay?: num
   />
 );
 
-const Navbar = () => {
+const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [, navigate] = useLocation();
@@ -66,13 +68,13 @@ const Navbar = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled 
-            ? "bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 py-4" 
+          isScrolled
+            ? `${isDark ? "bg-[#0a0a0a]/80" : "bg-white/90"} backdrop-blur-xl border-b border-white/5 py-4`
             : "bg-transparent py-6"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <motion.div 
+          <motion.div
             className="flex items-center gap-2.5 cursor-pointer group"
             onClick={() => navigate("/")}
             whileHover={{ scale: 1.02 }}
@@ -82,7 +84,7 @@ const Navbar = () => {
             </div>
             <span className="text-white font-semibold text-lg tracking-tight">Pageblitz</span>
           </motion.div>
-          
+
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <a
@@ -96,6 +98,14 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            {/* Light/Dark toggle */}
+            <button
+              onClick={onToggle}
+              title={isDark ? "Light Mode" : "Dark Mode"}
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <Button
               variant="ghost"
               onClick={() => navigate("/login")}
@@ -103,7 +113,7 @@ const Navbar = () => {
             >
               Anmelden
             </Button>
-            <Button 
+            <Button
               onClick={() => navigate("/start")}
               className="bg-white text-black hover:bg-white/90 rounded-full px-5 h-10 text-sm font-medium shadow-lg shadow-white/10"
             >
@@ -111,12 +121,21 @@ const Navbar = () => {
             </Button>
           </div>
 
-          <button 
-            className="md:hidden text-white p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            {/* Mobile theme toggle */}
+            <button
+              onClick={onToggle}
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 text-white/60 transition-all duration-300"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
+              className="text-white p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </motion.nav>
 
@@ -127,7 +146,7 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl pt-24 px-6 md:hidden"
+            className={`fixed inset-0 z-40 ${isDark ? "bg-[#0a0a0a]/95" : "bg-white/97"} backdrop-blur-xl pt-24 px-6 md:hidden`}
           >
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
@@ -140,7 +159,7 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <Button 
+              <Button
                 onClick={() => { setMobileMenuOpen(false); navigate("/start"); }}
                 className="bg-white text-black hover:bg-white/90 rounded-full mt-6 h-14 text-lg font-medium"
               >
@@ -1382,10 +1401,23 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   const [billingYearly, setBillingYearly] = useState(true);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("lp-theme") !== "light";
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("lp-theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans">
-      <Navbar />
+    <div
+      className="lp-root min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans"
+      data-lp-theme={isDark ? "dark" : "light"}
+    >
+      <Navbar isDark={isDark} onToggle={() => setIsDark((v) => !v)} />
 
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -1567,14 +1599,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Für wen? Section - light break in the dark layout */}
-      <section className="py-24 bg-white">
+      {/* Für wen? Section */}
+      <section className={`py-24 transition-colors duration-500 ${isDark ? "border-t border-white/5" : "bg-white"}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 tracking-tight mb-4">
+            <h2 className={`text-3xl md:text-4xl font-semibold tracking-tight mb-4 transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>
               Für wen ist Pageblitz?
             </h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">
+            <p className={`text-lg max-w-xl mx-auto transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
               Für alle, die Kunden über das Internet gewinnen wollen – ohne IT-Kenntnisse.
             </p>
           </div>
@@ -1598,20 +1630,32 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 border border-gray-100 transition-colors cursor-default"
+                className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-colors duration-500 cursor-default ${
+                  isDark
+                    ? "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/20"
+                    : "bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 border-gray-100"
+                }`}
               >
                 <span className="text-3xl">{item.emoji}</span>
-                <span className="text-gray-700 text-sm font-medium text-center">{item.label}</span>
+                <span className={`text-sm font-medium text-center transition-colors duration-500 ${isDark ? "text-white/70" : "text-gray-700"}`}>
+                  {item.label}
+                </span>
               </motion.div>
             ))}
           </div>
 
           <div className="text-center mt-12">
-            <p className="text-gray-400 text-sm mb-6">… und viele mehr. Wenn du ein lokales Unternehmen hast, ist Pageblitz für dich.</p>
+            <p className={`text-sm mb-6 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>
+              … und viele mehr. Wenn du ein lokales Unternehmen hast, ist Pageblitz für dich.
+            </p>
             <Button
               size="lg"
               onClick={() => navigate("/start")}
-              className="bg-gray-900 text-white hover:bg-gray-800 rounded-full h-12 px-8 text-sm font-medium"
+              className={`rounded-full h-12 px-8 text-sm font-medium transition-colors duration-500 ${
+                isDark
+                  ? "bg-white text-black hover:bg-white/90"
+                  : "bg-gray-900 text-white hover:bg-gray-800"
+              }`}
             >
               Meine Website erstellen
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -1791,8 +1835,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials - light section to break dark monotony */}
-      <section className="py-24 bg-white">
+      {/* Testimonials */}
+      <section className={`py-24 transition-colors duration-500 ${isDark ? "border-t border-white/5" : "bg-white"}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-14">
             <div className="flex justify-center mb-3">
@@ -1800,10 +1844,12 @@ export default function LandingPage() {
                 <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
               ))}
             </div>
-            <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 tracking-tight mb-3">
+            <h2 className={`text-3xl md:text-4xl font-semibold tracking-tight mb-3 transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>
               Was Kunden sagen
             </h2>
-            <p className="text-gray-500">Echte Unternehmer. Echte Ergebnisse.</p>
+            <p className={`transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
+              Echte Unternehmer. Echte Ergebnisse.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -1813,6 +1859,7 @@ export default function LandingPage() {
                 role: "Elektroinstallateur, Hannover",
                 initials: "MH",
                 color: "bg-blue-100 text-blue-700",
+                darkColor: "bg-blue-500/20 text-blue-300",
                 text: "Ich hab keine Ahnung von Websites. Hab meinen Google-Link eingegeben und 5 Minuten später war meine Seite fertig. Sieht aus wie von einem Profi gemacht. Meine Kunden fragen, wer das designt hat.",
                 stars: 5,
               },
@@ -1821,6 +1868,7 @@ export default function LandingPage() {
                 role: "Friseursalon Elegance, München",
                 initials: "SK",
                 color: "bg-rose-100 text-rose-700",
+                darkColor: "bg-rose-500/20 text-rose-300",
                 text: "Früher hatte ich nur eine veraltete Website von 2018. Jetzt habe ich etwas Modernes, das auch auf dem Handy gut aussieht. Ich bekomme deutlich mehr Anfragen über die Seite als vorher.",
                 stars: 5,
               },
@@ -1829,6 +1877,7 @@ export default function LandingPage() {
                 role: "Steuerberater, Hamburg",
                 initials: "TB",
                 color: "bg-emerald-100 text-emerald-700",
+                darkColor: "bg-emerald-500/20 text-emerald-300",
                 text: "Als Steuerberater weiß ich, was professionelles Webdesign kostet – schnell 3.000€ oder mehr. Für 19,90€ im Monat bekomme ich ein vergleichbares Ergebnis. Die Entscheidung war wirklich leicht.",
                 stars: 5,
               },
@@ -1839,21 +1888,31 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-gray-50 rounded-2xl p-7 border border-gray-100 flex flex-col gap-4"
+                className={`rounded-2xl p-7 border flex flex-col gap-4 transition-colors duration-500 ${
+                  isDark
+                    ? "bg-white/[0.03] border-white/10"
+                    : "bg-gray-50 border-gray-100"
+                }`}
               >
                 <div className="flex gap-1">
                   {[...Array(t.stars)].map((_, j) => (
                     <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-gray-700 leading-relaxed text-sm flex-1">"{t.text}"</p>
-                <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${t.color}`}>
+                <p className={`leading-relaxed text-sm flex-1 transition-colors duration-500 ${isDark ? "text-white/70" : "text-gray-700"}`}>
+                  "{t.text}"
+                </p>
+                <div className={`flex items-center gap-3 pt-2 border-t transition-colors duration-500 ${isDark ? "border-white/10" : "border-gray-200"}`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-colors duration-500 ${isDark ? t.darkColor : t.color}`}>
                     {t.initials}
                   </div>
                   <div>
-                    <div className="text-gray-900 text-sm font-semibold">{t.name}</div>
-                    <div className="text-gray-400 text-xs">{t.role}</div>
+                    <div className={`text-sm font-semibold transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      {t.name}
+                    </div>
+                    <div className={`text-xs transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>
+                      {t.role}
+                    </div>
                   </div>
                 </div>
               </motion.div>
