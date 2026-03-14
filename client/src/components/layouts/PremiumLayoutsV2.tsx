@@ -1229,8 +1229,16 @@ interface FooterProps {
 }
 
 /** Extracts the site slug from the current URL so legal page links work on
- *  /site/:slug pages. Falls back to '#' in onboarding preview mode. */
+ *  /site/:slug pages, subdomain pages (schau-horch.pageblitz.de), and
+ *  falls back to '#' in onboarding preview mode. */
 function useLegalLinks(websiteData?: any) {
+  // On customer subdomains (e.g. schau-horch.pageblitz.de) use root-relative paths
+  const isCustomerSubdomain = typeof window !== 'undefined' &&
+    /^[a-z0-9][a-z0-9-]*\.pageblitz\.de$/.test(window.location.hostname) &&
+    !/^(www|analytics|admin|api|mail|ftp)\.pageblitz\.de$/.test(window.location.hostname);
+  if (isCustomerSubdomain) {
+    return { impressumHref: '/impressum', datenschutzHref: '/datenschutz' };
+  }
   const slugFromPath = typeof window !== 'undefined'
     ? window.location.pathname.match(/\/site\/([^/]+)/)?.[1] ?? null
     : null;

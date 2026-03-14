@@ -97,8 +97,8 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
               )}
               {isRegenerating ? "Wird regeneriert..." : "Seite jetzt generieren"}
             </button>
-            <a 
-              href={`/site/${slug}`} 
+            <a
+              href={/^[a-z0-9][a-z0-9-]*\.pageblitz\.de$/.test(window.location.hostname) ? '/' : `/site/${slug}`}
               className="text-blue-600 hover:underline text-sm"
             >
               ← Zurück zur Website
