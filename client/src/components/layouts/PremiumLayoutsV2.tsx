@@ -839,7 +839,26 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const formRef = useRef<HTMLFormElement>(null);
   const submitMutation = trpc.contact.submit.useMutation({
     onSuccess: () => { setSubmitted(true); setSubmitError(null); },
-    onError: (err: any) => { setSubmitError(err.message || "Fehler beim Senden. Bitte versuche es erneut."); },
+    onError: (err: any) => {
+      // tRPC wraps Zod issues as JSON in err.message — parse into friendly German messages
+      try {
+        const issues: Array<{ path?: string[]; format?: string; code?: string; message?: string }> = JSON.parse(err.message);
+        const fieldMessages: Record<string, string> = {
+          name: "Bitte gib deinen Namen ein.",
+          email: "Bitte gib eine gültige E-Mail-Adresse ein.",
+          message: "Bitte gib eine Nachricht ein.",
+          phone: "Bitte gib eine gültige Telefonnummer ein.",
+        };
+        const msg = issues
+          .map(i => fieldMessages[(i.path?.[0] ?? '')] ?? i.message ?? "Ungültige Eingabe.")
+          .join(" ");
+        setSubmitError(msg || "Fehler beim Senden. Bitte überprüfe deine Eingaben.");
+      } catch {
+        setSubmitError(err.message?.includes("TOO_MANY_REQUESTS")
+          ? "Zu viele Anfragen. Bitte versuche es später erneut."
+          : "Fehler beim Senden. Bitte versuche es erneut.");
+      }
+    },
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
