@@ -248,21 +248,29 @@ const FaqSection = () => {
   );
 };
 
-const FeatureCard = ({ icon: Icon, title, description, index }: any) => (
+const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 30 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-50px" }}
     transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    className="group relative p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500"
+    className={`group relative p-8 rounded-3xl border transition-all duration-500 ${
+      isDark
+        ? "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
+        : "bg-white border-gray-100 hover:border-violet-200 hover:shadow-sm hover:shadow-violet-100"
+    }`}
   >
-    <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity ${isDark ? "bg-gradient-to-b from-white/[0.02] to-transparent" : "bg-gradient-to-b from-violet-50/40 to-transparent"}`} />
     <div className="relative z-10">
-      <div className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-        <Icon className="w-5 h-5 text-white/70" />
+      <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ${
+        isDark
+          ? "bg-white/5 border-white/10"
+          : "bg-violet-100 border-violet-200"
+      }`}>
+        <Icon className={`w-5 h-5 ${isDark ? "text-white/70" : "text-violet-600"}`} />
       </div>
-      <h3 className="text-white text-lg font-semibold mb-3 tracking-tight">{title}</h3>
-      <p className="text-white/50 text-sm leading-relaxed">{description}</p>
+      <h3 className={`text-lg font-semibold mb-3 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{title}</h3>
+      <p className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>{description}</p>
     </div>
   </motion.div>
 );
@@ -1526,7 +1534,7 @@ export default function LandingPage() {
                     variant="ghost"
                     size="lg"
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`rounded-full h-14 px-8 text-base backdrop-blur-sm transition-colors duration-500 ${isDark ? "text-white/80 hover:text-white hover:bg-white/10 border border-white/20" : "text-indigo-700 hover:text-indigo-900 hover:bg-indigo-100/60 border border-indigo-200"}`}
+                    className={`rounded-full h-14 px-8 text-base transition-all duration-300 ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-800 font-medium border border-violet-300 hover:border-violet-500 hover:bg-violet-50 hover:text-violet-950 bg-white/60 backdrop-blur-sm"}`}
                   >
                     Beispiele ansehen
                     <ChevronDown className="ml-2 w-4 h-4" />
@@ -1723,42 +1731,12 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FeatureCard
-              icon={Rocket}
-              title="Sofort fertige Texte"
-              description="Keine leere Seite, kein Copy-Paste. Die KI schreibt deine Leistungsbeschreibungen, Über-uns-Texte und Seitentitel – passend zu deiner Branche."
-              index={0}
-            />
-            <FeatureCard
-              icon={Clock}
-              title="In 3 Minuten online"
-              description="Gib deinen Google My Business Link ein – und 3 Minuten später hat dein Business einen professionellen Webauftritt. Kein Warten, keine Einrichtung."
-              index={1}
-            />
-            <FeatureCard
-              icon={Smartphone}
-              title="Sieht auf jedem Handy gut aus"
-              description="Über 70% deiner Kunden googeln dich am Smartphone. Deine Website passt sich automatisch an – ohne dass du etwas tun musst."
-              index={2}
-            />
-            <FeatureCard
-              icon={Search}
-              title="Wird bei Google gefunden"
-              description="SEO-optimierter Code, strukturierte Daten und schnelle Ladezeiten – damit neue Kunden dich über Google entdecken, nicht nur Bestandskunden."
-              index={3}
-            />
-            <FeatureCard
-              icon={ShieldCheck}
-              title="Kein Anwalt nötig"
-              description="Impressum, Datenschutzerklärung und DSGVO-konforme Cookie-Banner werden automatisch generiert und aktuell gehalten."
-              index={4}
-            />
-            <FeatureCard
-              icon={Globe}
-              title="Deine eigene Domain"
-              description="Verbinde deine bestehende Domain oder nutze eine kostenlose .pageblitz.de Subdomain. SSL-Zertifikat und Hosting sind inklusive."
-              index={5}
-            />
+            <FeatureCard icon={Rocket} title="Sofort fertige Texte" description="Keine leere Seite, kein Copy-Paste. Die KI schreibt deine Leistungsbeschreibungen, Über-uns-Texte und Seitentitel – passend zu deiner Branche." index={0} isDark={isDark} />
+            <FeatureCard icon={Clock} title="In 3 Minuten online" description="Gib deinen Google My Business Link ein – und 3 Minuten später hat dein Business einen professionellen Webauftritt. Kein Warten, keine Einrichtung." index={1} isDark={isDark} />
+            <FeatureCard icon={Smartphone} title="Sieht auf jedem Handy gut aus" description="Über 70% deiner Kunden googeln dich am Smartphone. Deine Website passt sich automatisch an – ohne dass du etwas tun musst." index={2} isDark={isDark} />
+            <FeatureCard icon={Search} title="Wird bei Google gefunden" description="SEO-optimierter Code, strukturierte Daten und schnelle Ladezeiten – damit neue Kunden dich über Google entdecken, nicht nur Bestandskunden." index={3} isDark={isDark} />
+            <FeatureCard icon={ShieldCheck} title="Kein Anwalt nötig" description="Impressum, Datenschutzerklärung und DSGVO-konforme Cookie-Banner werden automatisch generiert und aktuell gehalten." index={4} isDark={isDark} />
+            <FeatureCard icon={Globe} title="Deine eigene Domain" description="Verbinde deine bestehende Domain oder nutze eine kostenlose .pageblitz.de Subdomain. SSL-Zertifikat und Hosting sind inklusive." index={5} isDark={isDark} />
           </div>
         </div>
       </section>
@@ -1768,7 +1746,7 @@ export default function LandingPage() {
         <Button
           size="lg"
           onClick={() => navigate("/start")}
-          className="bg-white text-black hover:bg-white/90 rounded-full h-12 px-8 text-sm font-medium group"
+          className={`rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
         >
           Jetzt starten
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
