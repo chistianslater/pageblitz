@@ -11,31 +11,19 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
-  ChevronRight,
   ArrowLeft,
   Loader2,
   Shield,
-  Bell,
   Globe,
   Zap,
   Package,
-  X,
   ExternalLink,
   Trash2,
+  Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import type { Addon } from "@shared/types";
-
-const AVAILABLE_ADDONS: Addon[] = [
-  { id: "contact-form", name: "Kontaktformular", description: "Professionelles Kontaktformular mit E-Mail-Benachrichtigung", price: 49, icon: "MessageSquare", enabled: false },
-  { id: "ai-chat", name: "KI-Chat", description: "Intelligenter Chatbot für automatische Kundenanfragen", price: 99, icon: "Bot", enabled: false },
-  { id: "booking", name: "Terminbuchung", description: "Online-Terminbuchungssystem für Ihre Kunden", price: 79, icon: "Calendar", enabled: false },
-  { id: "custom-domain", name: "Eigene Domain", description: "Verbinden Sie Ihre eigene Domain", price: 29, icon: "Globe", enabled: false },
-  { id: "gallery", name: "Bildergalerie", description: "Erweiterte Bildergalerie mit bis zu 12 Bildern", price: 39, icon: "Image", enabled: false },
-  { id: "pricelist", name: "Preisliste", description: "Detaillierte Preislisten mit Kategorien", price: 39, icon: "List", enabled: false },
-];
 
 // ── Components ───────────────────────────────────────────
 
@@ -117,6 +105,15 @@ export default function AccountPage() {
     },
     onError: (error) => {
       setPasswordError(error.message || "Fehler beim Ändern des Passworts");
+    },
+  });
+
+  const billingPortalMutation = trpc.customer.createBillingPortalSession.useMutation({
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+    onError: (error) => {
+      toast.error(error.message || "Fehler beim Öffnen des Kundenportals");
     },
   });
 
@@ -214,7 +211,7 @@ export default function AccountPage() {
             {/* User Card */}
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-6">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-16 h-16 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
                   {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div>
@@ -230,6 +227,14 @@ export default function AccountPage() {
 
             {/* Navigation */}
             <nav className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => navigate("/my-website")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-300 hover:bg-slate-700/50 transition-colors"
+              >
+                <Monitor className="w-5 h-5" />
+                <span className="font-medium">Meine Website</span>
+              </button>
+              <div className="border-t border-slate-700/50" />
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
@@ -436,7 +441,7 @@ export default function AccountPage() {
                           Website öffnen
                         </Button>
                         <Button
-                          onClick={() => navigate(`/websites/${website?.id}/onboarding`)}
+                          onClick={() => navigate("/my-website")}
                           variant="outline"
                           className="border-slate-600 text-slate-300 hover:bg-slate-700"
                         >
@@ -447,9 +452,14 @@ export default function AccountPage() {
                           <Button
                             variant="outline"
                             className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                            onClick={() => toast.info("Kündigung über Stripe Portal")}
+                            disabled={billingPortalMutation.isPending}
+                            onClick={() => billingPortalMutation.mutate({ websiteId: website!.id })}
                           >
-                            <Trash2 className="w-4 h-4 mr-2" />
+                            {billingPortalMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 mr-2" />
+                            )}
                             Kündigen
                           </Button>
                         )}
@@ -458,37 +468,6 @@ export default function AccountPage() {
                   )}
                 </Section>
 
-                {/* Available Add-ons */}
-                <Section title="Verfügbare Erweiterungen" icon={<Package className="w-5 h-5 text-blue-400" />}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {AVAILABLE_ADDONS.map((addon) => (
-                      <div
-                        key={addon.id}
-                        className="bg-slate-700/40 border border-slate-600/50 rounded-xl p-4 hover:border-blue-500/50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-white font-medium">{addon.name}</h4>
-                          <span className="text-emerald-400 font-semibold text-sm">
-                            +{addon.price.toFixed(2)} €
-                          </span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-3">{addon.description}</p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full border-slate-600 text-slate-300 hover:bg-blue-600/20 hover:border-blue-500/50"
-                          onClick={() => toast.info("Erweiterung wird über Stripe hinzugefügt...")}
-                        >
-                          Hinzufügen
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-slate-500 text-xs mt-4">
-                    * Erweiterungen können jederzeit hinzugefügt oder entfernt werden.
-                    Die Abrechnung erfolgt über Stripe.
-                  </p>
-                </Section>
               </>
             )}
 

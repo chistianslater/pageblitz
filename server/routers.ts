@@ -12,7 +12,7 @@ import {
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
-  createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
+  createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId, updateSubscription,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
   getLeadFunnelStats, listExternalLeads, countExternalLeads,
@@ -2866,10 +2866,21 @@ Kontext: ${input.context}`,
     getMyWebsites: protectedProcedure.query(async ({ ctx }) => {
       const userId = ctx.user.id;
       const rows = await getWebsitesByUserId(userId);
-      // Enrich with business data
+      // Enrich with business data + auto-sync currentPeriodEnd from Stripe if missing
       const results = await Promise.all(
         rows.map(async (row) => {
           const business = await getBusinessById(row.website.businessId);
+          // Fetch currentPeriodEnd from Stripe if not yet stored
+          if (row.subscription && !row.subscription.currentPeriodEnd && row.subscription.stripeSubscriptionId) {
+            try {
+              const stripeSub = await stripe.subscriptions.retrieve(row.subscription.stripeSubscriptionId);
+              const periodEnd = stripeSub.current_period_end;
+              await updateSubscription(row.subscription.id, { currentPeriodEnd: periodEnd, updatedAt: Date.now() });
+              (row.subscription as any).currentPeriodEnd = periodEnd;
+            } catch (e) {
+              console.warn("[getMyWebsites] Could not fetch Stripe subscription period:", e);
+            }
+          }
           return { website: row.website, subscription: row.subscription, business };
         })
       );
@@ -3427,6 +3438,22 @@ Kontext: ${input.context}`,
           await updateWebsite(input.websiteId, { websiteData });
         }
         return { success: true };
+      }),
+
+    createBillingPortalSession: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find((r) => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN" });
+        const stripeCustomerId = row.subscription?.stripeCustomerId;
+        if (!stripeCustomerId) throw new TRPCError({ code: "NOT_FOUND", message: "Kein Stripe-Kundenkonto gefunden. Bitte kontaktiere den Support." });
+        const origin = ctx.req.headers.origin || "https://pageblitz.de";
+        const session = await stripe.billingPortal.sessions.create({
+          customer: stripeCustomerId,
+          return_url: `${origin}/my-account`,
+        });
+        return { url: session.url };
       }),
 
     setWebsiteActive: adminProcedure

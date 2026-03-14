@@ -77,6 +77,17 @@ export function registerStripeWebhook(app: Express) {
               ? session.subscription
               : (session.subscription as any)?.id || null;
 
+            // Fetch currentPeriodEnd from Stripe subscription
+            let currentPeriodEnd: number | undefined;
+            if (subscriptionId) {
+              try {
+                const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
+                currentPeriodEnd = stripeSub.current_period_end;
+              } catch (e) {
+                console.warn("[Webhook] Could not fetch subscription period end:", e);
+              }
+            }
+
             // Resolve userId: prefer metadata, fallback to customer_email lookup
             let userId = parseInt(session.metadata?.userId || "0") || 0;
             if (userId === 0 && session.customer_email) {
@@ -96,6 +107,7 @@ export function registerStripeWebhook(app: Express) {
               plan: "base",
               billingInterval,
               addOns,
+              currentPeriodEnd,
               createdAt: Date.now(),
               updatedAt: Date.now(),
             });
@@ -140,7 +152,11 @@ export function registerStripeWebhook(app: Express) {
               const newStatus = subscription.status === "active" ? "active"
                 : subscription.status === "past_due" ? "past_due"
                 : "canceled";
-              await updateSubscription(sub.id, { status: newStatus, updatedAt: Date.now() });
+              await updateSubscription(sub.id, {
+                status: newStatus,
+                currentPeriodEnd: subscription.current_period_end,
+                updatedAt: Date.now(),
+              });
               if (newStatus === "active") {
                 await updateWebsite(sub.websiteId, { status: "active" });
               }
