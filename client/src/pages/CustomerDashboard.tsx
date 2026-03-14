@@ -409,6 +409,14 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
     setFields(fields.filter((_, i) => i !== idx));
   };
 
+  const moveField = (idx: number, direction: "up" | "down") => {
+    const newFields = [...fields];
+    const swapWith = direction === "up" ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= newFields.length) return;
+    [newFields[idx], newFields[swapWith]] = [newFields[swapWith], newFields[idx]];
+    setFields(newFields);
+  };
+
   const updateField = (idx: number, updates: Partial<FormField>) => {
     const newFields = [...fields];
     const updated = { ...newFields[idx], ...updates };
@@ -448,6 +456,25 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
         {fields.map((field, idx) => (
           <div key={field.id} className="bg-slate-800/60 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
+              {/* Up / Down reorder buttons */}
+              <div className="flex flex-col gap-0.5">
+                <button
+                  onClick={() => moveField(idx, "up")}
+                  disabled={idx === 0}
+                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-20"
+                  title="Nach oben"
+                >
+                  <ChevronUp className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => moveField(idx, "down")}
+                  disabled={idx === fields.length - 1}
+                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-20"
+                  title="Nach unten"
+                >
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </div>
               <span className="text-slate-500 text-xs font-mono">#{idx + 1}</span>
               <input
                 type="text"

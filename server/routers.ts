@@ -4235,6 +4235,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           await sendEmail({
             to: recipientEmail,
             from: `Pageblitz Kontaktformular <kontakt@pageblitz.de>`,
+            replyTo: input.email, // Business owner hits "Reply" → antwort geht direkt an Besucher
             subject: `Neue Kontaktanfrage – ${businessName}`,
             html: `
 <!DOCTYPE html>

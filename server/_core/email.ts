@@ -19,12 +19,14 @@ export async function sendEmail({
   html,
   text,
   from = ENV.resendFromEmail,
+  replyTo,
 }: {
   to: string;
   subject: string;
   html: string;
   text?: string;
   from?: string;
+  replyTo?: string;
 }): Promise<{ success: boolean; error?: string; id?: string }> {
   if (!resend) {
     console.warn("[Email] Resend not configured - email not sent");
@@ -38,6 +40,7 @@ export async function sendEmail({
       subject,
       html,
       text: text || html.replace(/<[^>]*>/g, ""), // Strip HTML tags for text version
+      ...(replyTo ? { reply_to: replyTo } : {}),
     });
 
     if (error) {

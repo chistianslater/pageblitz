@@ -819,8 +819,9 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
 // ── CONTACT SECTION ───────────────────────────────────────────────
 // Default form fields if none configured
 const DEFAULT_CONTACT_FORM_FIELDS = [
-  { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-  { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+  { id: "name",    label: "Name",      placeholder: "Max Mustermann",  type: "text",     required: true },
+  { id: "email",   label: "E-Mail",    placeholder: "max@beispiel.de", type: "email",    required: true },
+  { id: "subject", label: "Betreff",   placeholder: "Ihr Anliegen",    type: "text",     required: true },
   { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht…", type: "textarea", required: true },
 ];
 
