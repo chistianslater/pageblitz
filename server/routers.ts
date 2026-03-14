@@ -3545,6 +3545,49 @@ Kontext: ${input.context}`,
         await updateWebsite(input.websiteId, { status: "active" });
         return { success: true };
       }),
+
+    getAnalytics: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const umamiWebsiteId = (owned.website as any).umamiWebsiteId as string | null | undefined;
+        if (!umamiWebsiteId) return null;
+        const stats = await getUmamiStats(umamiWebsiteId);
+        return stats;
+      }),
+
+    updateContactEmail: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        contactEmail: z.string().email().max(320).or(z.literal("")),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        await updateWebsite(input.websiteId, { contactEmail: input.contactEmail || null } as any);
+        return { success: true };
+      }),
+
+    getSubmissions: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const submissions = await getContactSubmissionsByWebsiteId(input.websiteId);
+        const unreadCount = await countUnreadSubmissions(input.websiteId);
+        return { submissions, unreadCount };
+      }),
+
+    markSubmissionRead: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await markSubmissionRead(input.submissionId);
+        return { success: true };
+      }),
   }),
 
   selfService: router({
@@ -4136,50 +4179,6 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           services:       generatedServices,
         };
       }),
-
-    getAnalytics: protectedProcedure
-      .input(z.object({ websiteId: z.number() }))
-      .query(async ({ ctx, input }) => {
-        const rows = await getWebsitesByUserId(ctx.user.id);
-        const owned = rows.find((r) => r.website.id === input.websiteId);
-        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
-        const umamiWebsiteId = (owned.website as any).umamiWebsiteId as string | null | undefined;
-        if (!umamiWebsiteId) return null;
-        const stats = await getUmamiStats(umamiWebsiteId);
-        return stats;
-      }),
-
-    updateContactEmail: protectedProcedure
-      .input(z.object({
-        websiteId: z.number(),
-        contactEmail: z.string().email().max(320).or(z.literal("")),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const rows = await getWebsitesByUserId(ctx.user.id);
-        const owned = rows.find((r) => r.website.id === input.websiteId);
-        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
-        await updateWebsite(input.websiteId, { contactEmail: input.contactEmail || null } as any);
-        return { success: true };
-      }),
-
-    getSubmissions: protectedProcedure
-      .input(z.object({ websiteId: z.number() }))
-      .query(async ({ ctx, input }) => {
-        const rows = await getWebsitesByUserId(ctx.user.id);
-        const owned = rows.find((r) => r.website.id === input.websiteId);
-        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
-        const submissions = await getContactSubmissionsByWebsiteId(input.websiteId);
-        const unreadCount = await countUnreadSubmissions(input.websiteId);
-        return { submissions, unreadCount };
-      }),
-
-    markSubmissionRead: protectedProcedure
-      .input(z.object({ submissionId: z.number() }))
-      .mutation(async ({ ctx, input }) => {
-        await markSubmissionRead(input.submissionId);
-        return { success: true };
-      }),
-  }),
 
   // ── Public: Contact Form ──────────────────────────────────────
   contact: router({
