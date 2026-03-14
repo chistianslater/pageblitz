@@ -1913,6 +1913,27 @@ export default function LandingPage() {
                     )}
                   </motion.div>
                 ))}
+
+                {/* Full-width CTA */}
+                <motion.button
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.65, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/start")}
+                  className="btn-shimmer w-full flex items-center justify-between bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/25 rounded-xl p-4 transition-all duration-300 cursor-pointer group"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-2xl">⚡</span>
+                    <div className="text-left">
+                      <div className="text-white text-sm font-medium">Jetzt kostenlos starten</div>
+                      <div className="text-white/40 text-xs font-mono mt-0.5">7 Tage gratis · keine Kreditkarte</div>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all duration-200" />
+                </motion.button>
               </div>
             </div>
           </div>
