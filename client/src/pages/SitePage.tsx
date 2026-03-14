@@ -15,6 +15,20 @@ export default function SitePage() {
     { enabled: !!params.slug, staleTime: 0, refetchOnMount: "always" }
   );
 
+  // ── useEffect MUSS vor allen Early-Returns stehen (Rules of Hooks) ───────
+  const umamiWebsiteId = (data?.website as any)?.umamiWebsiteId as string | null | undefined;
+  useEffect(() => {
+    if (!umamiWebsiteId) return;
+    if (document.getElementById("pb-umami-script")) return;
+    const s = document.createElement("script");
+    s.id = "pb-umami-script";
+    s.async = true;
+    s.defer = true;
+    s.src = "https://analytics.pageblitz.de/script.js";
+    s.setAttribute("data-website-id", umamiWebsiteId);
+    document.head.appendChild(s);
+  }, [umamiWebsiteId]);
+
   // Also show spinner while slug isn't resolved yet (wouter params timing)
   if (!params.slug || isLoading) {
     return (
@@ -43,21 +57,7 @@ export default function SitePage() {
   const colorScheme = data.website.colorScheme as ColorScheme;
   const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
   const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
-  const umamiWebsiteId = (data.website as any).umamiWebsiteId as string | null | undefined;
   const business = data.business;
-
-  // Inject Umami tracking script – cookieless, no consent required (DSGVO-compliant)
-  useEffect(() => {
-    if (!umamiWebsiteId) return;
-    if (document.getElementById("pb-umami-script")) return;
-    const s = document.createElement("script");
-    s.id = "pb-umami-script";
-    s.async = true;
-    s.defer = true;
-    s.src = "https://analytics.pageblitz.de/script.js";
-    s.setAttribute("data-website-id", umamiWebsiteId);
-    document.head.appendChild(s);
-  }, [umamiWebsiteId]);
 
   return (
     <>
