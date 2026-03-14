@@ -40,6 +40,8 @@ import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CO
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+// Compat client with older API — current_period_end not in 2026-02-25.clover
+const stripeCompat = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-04-10" as any });
 
 const PRICING = {
   base: {
@@ -2870,13 +2872,15 @@ Kontext: ${input.context}`,
       const results = await Promise.all(
         rows.map(async (row) => {
           const business = await getBusinessById(row.website.businessId);
-          // Fetch currentPeriodEnd from Stripe if not yet stored
+          // Fetch currentPeriodEnd from Stripe if not yet stored (use compat client)
           if (row.subscription && !row.subscription.currentPeriodEnd && row.subscription.stripeSubscriptionId) {
             try {
-              const stripeSub = await stripe.subscriptions.retrieve(row.subscription.stripeSubscriptionId);
-              const periodEnd = stripeSub.current_period_end;
-              await updateSubscription(row.subscription.id, { currentPeriodEnd: periodEnd, updatedAt: Date.now() });
-              (row.subscription as any).currentPeriodEnd = periodEnd;
+              const stripeSub = await stripeCompat.subscriptions.retrieve(row.subscription.stripeSubscriptionId);
+              const periodEnd = (stripeSub as any).current_period_end as number | undefined;
+              if (periodEnd) {
+                await updateSubscription(row.subscription.id, { currentPeriodEnd: periodEnd, updatedAt: Date.now() });
+                (row.subscription as any).currentPeriodEnd = periodEnd;
+              }
             } catch (e) {
               console.warn("[getMyWebsites] Could not fetch Stripe subscription period:", e);
             }

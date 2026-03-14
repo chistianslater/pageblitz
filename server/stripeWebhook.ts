@@ -19,6 +19,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-02-25.clover",
 });
 
+// Separate client with older API version for subscription data that needs current_period_end
+const stripeCompat = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2024-04-10" as any,
+});
+
 export function registerStripeWebhook(app: Express) {
   // MUST use express.raw() BEFORE express.json() for signature verification
   app.post(
@@ -77,12 +82,12 @@ export function registerStripeWebhook(app: Express) {
               ? session.subscription
               : (session.subscription as any)?.id || null;
 
-            // Fetch currentPeriodEnd from Stripe subscription
+            // Fetch currentPeriodEnd from Stripe subscription (use compat client for period fields)
             let currentPeriodEnd: number | undefined;
             if (subscriptionId) {
               try {
-                const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
-                currentPeriodEnd = stripeSub.current_period_end;
+                const stripeSub = await stripeCompat.subscriptions.retrieve(subscriptionId);
+                currentPeriodEnd = (stripeSub as any).current_period_end;
               } catch (e) {
                 console.warn("[Webhook] Could not fetch subscription period end:", e);
               }
@@ -152,9 +157,15 @@ export function registerStripeWebhook(app: Express) {
               const newStatus = subscription.status === "active" ? "active"
                 : subscription.status === "past_due" ? "past_due"
                 : "canceled";
+              // current_period_end not available in newer API — fetch via compat client
+              let periodEnd: number | undefined;
+              try {
+                const freshSub = await stripeCompat.subscriptions.retrieve(subscription.id);
+                periodEnd = (freshSub as any).current_period_end;
+              } catch (_) {}
               await updateSubscription(sub.id, {
                 status: newStatus,
-                currentPeriodEnd: subscription.current_period_end,
+                ...(periodEnd ? { currentPeriodEnd: periodEnd } : {}),
                 updatedAt: Date.now(),
               });
               if (newStatus === "active") {
