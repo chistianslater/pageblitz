@@ -1935,6 +1935,7 @@ export default function CustomerDashboard() {
   );
   const [setupStepIdx, setSetupStepIdx] = useState(0);
   const [slugInput, setSlugInput] = useState("");
+  const [showDomainHint, setShowDomainHint] = useState(false);
   const [legalOwnerInput, setLegalOwnerInput] = useState("");
   const [legalEmailInput2, setLegalEmailInput2] = useState("");
 
@@ -2718,7 +2719,7 @@ export default function CustomerDashboard() {
               <div>
                 <h2 className="text-white font-bold text-lg">Website einrichten</h2>
                 <p className="text-slate-400 text-sm mt-0.5">
-                  Schritt {setupStepIdx + 1} von {addOns.contactForm ? 5 : 4}
+                  Schritt {setupStepIdx + 1} von {addOns.contactForm ? 4 : 3}
                 </p>
               </div>
               <button
@@ -2774,12 +2775,39 @@ export default function CustomerDashboard() {
                     disabled={!slugCheck?.available || slugInput.length < 3 || updateSlugMutation.isPending}
                     onClick={async () => {
                       await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: slugInput });
-                      setSetupStepIdx(addOns.contactForm ? 1 : 2);
+                      setSetupStepIdx(1);
                     }}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
                   >
                     {updateSlugMutation.isPending ? "Speichern..." : "Übernehmen →"}
                   </button>
+                </div>
+                {/* Eigene Domain – subtiler Accordion-Hinweis */}
+                <div className="border-t border-slate-700/50 pt-3 mt-1">
+                  <button
+                    onClick={() => setShowDomainHint(v => !v)}
+                    className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors w-full text-left"
+                  >
+                    <span>🔗</span>
+                    <span>Du hast bereits eine Domain? So verbindest du sie</span>
+                    <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${showDomainHint ? "rotate-180" : ""}`} />
+                  </button>
+                  {showDomainHint && (
+                    <div className="mt-3 bg-slate-900 rounded-xl p-4 space-y-2">
+                      <p className="text-slate-300 text-xs font-medium mb-2">CNAME-Eintrag bei deinem DNS-Anbieter setzen:</p>
+                      {[
+                        { label: "Typ",  value: "CNAME" },
+                        { label: "Name", value: "www" },
+                        { label: "Ziel", value: "pageblitz.de" },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-1.5">
+                          <span className="text-slate-400 text-xs">{label}</span>
+                          <span className="text-white text-xs font-mono">{value}</span>
+                        </div>
+                      ))}
+                      <p className="text-slate-500 text-xs text-center pt-1">DNS-Änderungen können bis zu 24h dauern</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -2817,7 +2845,6 @@ export default function CustomerDashboard() {
                   <button
                     disabled={updateContactEmailMutation.isPending}
                     onClick={async () => {
-                      // Read from ref first (bypasses all state timing issues), then state fallback
                       const val = contactEmailRef.current?.value || contactEmailInput;
                       if (!val.trim()) {
                         toast.error("Bitte eine E-Mail-Adresse eingeben.");
@@ -2826,7 +2853,7 @@ export default function CustomerDashboard() {
                       try {
                         await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: val.trim() });
                         setContactEmailInput(val.trim());
-                        setSetupStepIdx(addOns.contactForm ? 2 : 1);
+                        setSetupStepIdx(2);
                       } catch { /* onError handler shows toast */ }
                     }}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
@@ -2837,43 +2864,8 @@ export default function CustomerDashboard() {
               </div>
             )}
 
-            {/* Step 2 – Eigene Domain (optional) */}
-            {setupStepIdx === 2 && (
-              <div className="p-6 space-y-4">
-                <div className="text-center mb-6">
-                  <div className="text-4xl mb-3">🔗</div>
-                  <h3 className="text-white font-semibold text-lg">Eigene Domain verbinden</h3>
-                  <p className="text-slate-400 text-sm mt-1">Optional: Verbinde deine eigene Domain (z.B. www.mein-unternehmen.de).</p>
-                </div>
-                <div className="bg-slate-900 rounded-xl p-4 space-y-3">
-                  <p className="text-slate-300 text-sm font-medium">CNAME-Eintrag bei deinem DNS-Anbieter:</p>
-                  <div className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2">
-                    <span className="text-slate-400 text-xs">Typ</span>
-                    <span className="text-white text-xs font-mono">CNAME</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2">
-                    <span className="text-slate-400 text-xs">Name</span>
-                    <span className="text-white text-xs font-mono">www</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2">
-                    <span className="text-slate-400 text-xs">Ziel</span>
-                    <span className="text-white text-xs font-mono">pageblitz.de</span>
-                  </div>
-                </div>
-                <p className="text-slate-400 text-xs text-center">DNS-Änderungen können bis zu 24h dauern</p>
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 2)}
-                    className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
-                  >
-                    Weiter →
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3 (contactForm) / Step 2 (no contactForm) – Impressum & Datenschutz */}
-            {setupStepIdx === (addOns.contactForm ? 3 : 2) && (
+            {/* Step 2 (contactForm) / Step 1 (no contactForm) – Impressum & Datenschutz */}
+            {setupStepIdx === (addOns.contactForm ? 2 : 1) && (
               <div className="p-6 space-y-4">
                 <div className="text-center mb-4">
                   <div className="text-4xl mb-3">📋</div>
@@ -2940,7 +2932,7 @@ export default function CustomerDashboard() {
                   )}
                   {legalDone && (
                     <button
-                      onClick={() => setSetupStepIdx(addOns.contactForm ? 4 : 3)}
+                      onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 2)}
                       className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
                     >
                       Weiter →
@@ -2951,7 +2943,7 @@ export default function CustomerDashboard() {
             )}
 
             {/* Final Step – Live schalten */}
-            {setupStepIdx === (addOns.contactForm ? 4 : 3) && (
+            {setupStepIdx === (addOns.contactForm ? 3 : 2) && (
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">🚀</div>
@@ -2992,7 +2984,7 @@ export default function CustomerDashboard() {
 
             {/* Step-Dots */}
             <div className="flex justify-center gap-2 pb-4">
-              {Array.from({ length: addOns.contactForm ? 5 : 4 }).map((_, i) => (
+              {Array.from({ length: addOns.contactForm ? 4 : 3 }).map((_, i) => (
                 <div key={i} className={`w-2 h-2 rounded-full transition-all ${
                   i === setupStepIdx ? "bg-blue-400 w-4" : i < setupStepIdx ? "bg-emerald-400" : "bg-slate-600"
                 }`} />
