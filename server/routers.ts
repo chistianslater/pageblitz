@@ -2875,6 +2875,43 @@ Kontext: ${input.context}`,
       );
       return results;
     }),
+
+    // ── Setup-Flow ──────────────────────────────────────
+    checkSlugAvailability: publicProcedure
+      .input(z.object({ slug: z.string(), websiteId: z.number() }))
+      .query(async ({ input }) => {
+        if (input.slug.length < 3) return { available: false };
+        const existing = await getWebsiteBySlug(input.slug);
+        const available = !existing || existing.id === input.websiteId;
+        return { available };
+      }),
+
+    updateSlug: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        slug: z.string().min(3).max(60).regex(/^[a-z0-9-]+$/, "Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        const existing = await getWebsiteBySlug(input.slug);
+        if (existing && existing.id !== input.websiteId)
+          throw new TRPCError({ code: "CONFLICT", message: "Diese Adresse ist bereits vergeben" });
+        await updateWebsite(input.websiteId, { slug: input.slug });
+        return { success: true };
+      }),
+
+    setLive: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        await updateWebsite(input.websiteId, { status: "active" });
+        return { success: true };
+      }),
+
     updateWebsiteContent: protectedProcedure
       .input(z.object({
         websiteId: z.number(),

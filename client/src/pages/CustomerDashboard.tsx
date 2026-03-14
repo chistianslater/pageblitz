@@ -1709,6 +1709,23 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
   );
 }
 
+// ── Setup Step Chip ───────────────────────────────────
+function StepChip({ done, label, onClick }: { done: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={done ? undefined : onClick}
+      disabled={done}
+      className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+        done
+          ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10 cursor-default"
+          : "border-blue-400/40 text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
+      }`}
+    >
+      {done ? "✓" : "○"} {label}
+    </button>
+  );
+}
+
 // ── Main Component ────────────────────────────────────
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -1759,12 +1776,31 @@ export default function CustomerDashboard() {
     setPreviewKey((k) => k + 1);
   };
 
-  // ── useEffect MUSS vor allen Early-Returns stehen (Rules of Hooks) ───────
+  // ── useEffect + Setup-Hooks MÜSSEN vor allen Early-Returns stehen ───────
   const _selectedEntry = myWebsites?.find((e) => e.website.id === selectedWebsiteId) || myWebsites?.[0];
   const storedContactEmailEarly = (_selectedEntry?.website as any)?.contactEmail as string | null | undefined;
   useEffect(() => {
     setContactEmailInput(storedContactEmailEarly ?? "");
   }, [storedContactEmailEarly]);
+
+  // ── Setup-Flow State ──────────────────────────────────────────────────────
+  const [setupOpen, setSetupOpen] = useState(() =>
+    new URLSearchParams(window.location.search).get("checkout") === "success"
+  );
+  const [setupStepIdx, setSetupStepIdx] = useState(0);
+  const [slugInput, setSlugInput] = useState("");
+
+  const _activeWebsiteIdForSetup = _selectedEntry?.website.id ?? 0;
+  const updateSlugMutation = trpc.customer.updateSlug.useMutation({
+    onSuccess: () => { refetch(); },
+  });
+  const setLiveMutation = trpc.customer.setLive.useMutation({
+    onSuccess: () => { refetch(); setSetupOpen(false); },
+  });
+  const { data: slugCheck, isFetching: slugChecking } = trpc.customer.checkSlugAvailability.useQuery(
+    { slug: slugInput, websiteId: _activeWebsiteIdForSetup },
+    { enabled: slugInput.length >= 3 }
+  );
 
   if (authLoading || isLoading) {
     return (
@@ -1815,11 +1851,32 @@ export default function CustomerDashboard() {
   }
 
   const selectedEntry = myWebsites.find((e) => e.website.id === selectedWebsiteId) || myWebsites[0];
-  const { website, business } = selectedEntry;
+  const { website, business, subscription } = selectedEntry;
   const websiteData = website.websiteData as WebsiteData | undefined;
   const colorScheme = website.colorScheme as ColorScheme | undefined;
   // Sync contactEmail – useEffect is above early returns to satisfy Rules of Hooks
   const storedContactEmail = (website as any).contactEmail as string | null | undefined;
+
+  // ── Setup-Flow Status ─────────────────────────────────
+  const addOns = (subscription?.addOns ?? {}) as Record<string, boolean>;
+  const slugDone  = !website.slug.startsWith("preview-");
+  const emailDone = !addOns.contactForm || !!(website as any).contactEmail;
+  const liveDone  = website.status === "active";
+  const allDone   = slugDone && emailDone && liveDone;
+
+  // Initialise slugInput when setupOpen opens for step 0
+  function slugifyFE(text: string): string {
+    return text.toLowerCase()
+      .replace(/[äöüß]/g, (m) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  }
+  const suggestedSlug = slugifyFE(business?.name || "");
+
+  const openSetupStep = (idx: number) => {
+    if (idx === 0 && !slugInput) setSlugInput(suggestedSlug);
+    setSetupStepIdx(idx);
+    setSetupOpen(true);
+  };
 
   const makeUpdater = (field: string) => async (value: string) => {
     await updateMutation.mutateAsync({
@@ -1888,6 +1945,39 @@ export default function CustomerDashboard() {
           </a>
         </div>
       </header>
+
+      {/* ── Setup-Checkliste Banner ── */}
+      {!allDone && !setupOpen && (
+        <div className="bg-blue-950/60 border-b border-blue-500/20 px-4 py-2.5">
+          <div className="max-w-7xl mx-auto flex items-center gap-3 flex-wrap">
+            <span className="text-blue-300 text-xs font-semibold tracking-wide uppercase">Setup</span>
+            <div className="w-px h-4 bg-blue-500/30" />
+            <StepChip
+              done={slugDone}
+              label="Subdomain wählen"
+              onClick={() => openSetupStep(0)}
+            />
+            {addOns.contactForm && (
+              <StepChip
+                done={emailDone}
+                label="Kontakt-E-Mail"
+                onClick={() => openSetupStep(1)}
+              />
+            )}
+            <StepChip
+              done={liveDone}
+              label="Live schalten"
+              onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)}
+            />
+            <button
+              onClick={() => openSetupStep(slugDone ? (addOns.contactForm && !emailDone ? 1 : addOns.contactForm ? 2 : 1) : 0)}
+              className="ml-auto text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2"
+            >
+              Setup öffnen →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="border-b border-slate-700/50 bg-slate-900/50">
@@ -2395,6 +2485,203 @@ export default function CustomerDashboard() {
           </div>
         )}
       </div>
+
+      {/* ── Setup-Modal ── */}
+      {setupOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+              <div>
+                <h2 className="text-white font-bold text-lg">Website einrichten</h2>
+                <p className="text-slate-400 text-sm mt-0.5">
+                  Schritt {setupStepIdx + 1} von {addOns.contactForm ? 4 : 3}
+                </p>
+              </div>
+              <button
+                onClick={() => setSetupOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Step 0 – Subdomain wählen */}
+            {setupStepIdx === 0 && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">🌐</div>
+                  <h3 className="text-white font-semibold text-lg">Deine Website-Adresse</h3>
+                  <p className="text-slate-400 text-sm mt-1">Wähle eine einfache, einprägsame Adresse für deine Website.</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain</label>
+                  <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                    <input
+                      type="text"
+                      value={slugInput}
+                      onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""))}
+                      placeholder={suggestedSlug || "mein-unternehmen"}
+                      className="flex-1 bg-transparent text-white outline-none text-sm"
+                      autoFocus
+                    />
+                    <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
+                  </div>
+                  {slugInput.length >= 3 && (
+                    <p className={`text-xs flex items-center gap-1.5 ${
+                      slugChecking ? "text-slate-400" :
+                      slugCheck?.available ? "text-emerald-400" : "text-red-400"
+                    }`}>
+                      {slugChecking ? "⏳ Prüfe Verfügbarkeit..." :
+                       slugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben – anderen Namen wählen"}
+                    </p>
+                  )}
+                  {slugInput.length > 0 && slugInput.length < 3 && (
+                    <p className="text-xs text-slate-400">Mindestens 3 Zeichen</p>
+                  )}
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setSetupOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                  >
+                    Später
+                  </button>
+                  <button
+                    disabled={!slugCheck?.available || slugInput.length < 3 || updateSlugMutation.isPending}
+                    onClick={async () => {
+                      await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: slugInput });
+                      setSetupStepIdx(addOns.contactForm ? 1 : 2);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                  >
+                    {updateSlugMutation.isPending ? "Speichern..." : "Übernehmen →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 1 – Kontakt-E-Mail (nur wenn contactForm Add-on) */}
+            {setupStepIdx === 1 && addOns.contactForm && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">📧</div>
+                  <h3 className="text-white font-semibold text-lg">Kontaktformular-E-Mail</h3>
+                  <p className="text-slate-400 text-sm mt-1">Wohin sollen Kundenanfragen aus deinem Kontaktformular gesendet werden?</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Empfänger-E-Mail</label>
+                  <input
+                    type="email"
+                    value={contactEmailInput}
+                    onChange={(e) => setContactEmailInput(e.target.value)}
+                    placeholder="deine@email.de"
+                    className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setSetupStepIdx(2)}
+                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                  >
+                    Überspringen
+                  </button>
+                  <button
+                    disabled={!contactEmailInput || updateContactEmailMutation.isPending}
+                    onClick={async () => {
+                      await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: contactEmailInput });
+                      setSetupStepIdx(2);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                  >
+                    {updateContactEmailMutation.isPending ? "Speichern..." : "Speichern →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 – Eigene Domain (optional) */}
+            {setupStepIdx === 2 && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">🔗</div>
+                  <h3 className="text-white font-semibold text-lg">Eigene Domain verbinden</h3>
+                  <p className="text-slate-400 text-sm mt-1">Optional: Verbinde deine eigene Domain (z.B. www.mein-unternehmen.de).</p>
+                </div>
+                <div className="bg-slate-900 rounded-xl p-4 space-y-3">
+                  <p className="text-slate-300 text-sm font-medium">CNAME-Eintrag bei deinem DNS-Anbieter:</p>
+                  <div className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2">
+                    <span className="text-slate-400 text-xs">Typ</span>
+                    <span className="text-white text-xs font-mono">CNAME</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2">
+                    <span className="text-slate-400 text-xs">Name</span>
+                    <span className="text-white text-xs font-mono">www</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2">
+                    <span className="text-slate-400 text-xs">Ziel</span>
+                    <span className="text-white text-xs font-mono">pageblitz.de</span>
+                  </div>
+                </div>
+                <p className="text-slate-400 text-xs text-center">DNS-Änderungen können bis zu 24h dauern</p>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 3)}
+                    className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                  >
+                    Weiter →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3 – Live schalten */}
+            {setupStepIdx === 3 && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">🚀</div>
+                  <h3 className="text-white font-semibold text-lg">Deine Website ist bereit!</h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Schalte deine Website jetzt live. Sie wird öffentlich erreichbar unter:
+                  </p>
+                  <p className="text-blue-400 text-sm font-mono mt-2">
+                    {website.slug}.pageblitz.de
+                  </p>
+                </div>
+                {/* Completed steps summary */}
+                <div className="space-y-2">
+                  {[
+                    { label: "Subdomain", done: slugDone },
+                    ...(addOns.contactForm ? [{ label: "Kontakt-E-Mail", done: emailDone }] : []),
+                  ].map(({ label, done }) => (
+                    <div key={label} className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-slate-400"}`}>
+                      <span>{done ? "✓" : "○"}</span>
+                      <span>{label}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  disabled={setLiveMutation.isPending}
+                  onClick={() => setLiveMutation.mutateAsync({ websiteId: website.id })}
+                  className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 text-white transition-all shadow-lg shadow-emerald-900/30"
+                >
+                  {setLiveMutation.isPending ? "Wird live geschaltet..." : "⚡ Website jetzt live schalten"}
+                </button>
+              </div>
+            )}
+
+            {/* Step-Dots */}
+            <div className="flex justify-center gap-2 pb-4">
+              {Array.from({ length: addOns.contactForm ? 4 : 3 }).map((_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full transition-all ${
+                  i === setupStepIdx ? "bg-blue-400 w-4" : i < setupStepIdx ? "bg-emerald-400" : "bg-slate-600"
+                }`} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
