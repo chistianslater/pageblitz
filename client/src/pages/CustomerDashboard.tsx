@@ -1864,8 +1864,10 @@ export default function CustomerDashboard() {
 
   const [contactEmailInput, setContactEmailInput] = useState("");
   const [contactEmailSaved, setContactEmailSaved] = useState(false);
+  const contactEmailRef = useRef<HTMLInputElement>(null);
   const updateContactEmailMutation = trpc.customer.updateContactEmail.useMutation({
     onSuccess: () => { setContactEmailSaved(true); setTimeout(() => setContactEmailSaved(false), 2500); refetch(); },
+    onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
   });
 
   const handleUpdate = () => {
@@ -2668,12 +2670,14 @@ export default function CustomerDashboard() {
                 <div className="space-y-2">
                   <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Empfänger-E-Mail</label>
                   <input
+                    ref={contactEmailRef}
                     type="email"
-                    value={contactEmailInput}
+                    defaultValue={contactEmailInput}
                     onChange={(e) => setContactEmailInput(e.target.value)}
                     onInput={(e) => setContactEmailInput((e.target as HTMLInputElement).value)}
                     placeholder="deine@email.de"
                     className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                    autoComplete="off"
                     autoFocus
                     id="setup-contact-email"
                   />
@@ -2688,12 +2692,17 @@ export default function CustomerDashboard() {
                   <button
                     disabled={updateContactEmailMutation.isPending}
                     onClick={async () => {
-                      // Read directly from DOM to catch password-manager autofills
-                      const val = (document.getElementById("setup-contact-email") as HTMLInputElement)?.value || contactEmailInput;
-                      if (!val) return;
-                      await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: val });
-                      setContactEmailInput(val);
-                      setSetupStepIdx(2);
+                      // Read from ref first (bypasses all state timing issues), then state fallback
+                      const val = contactEmailRef.current?.value || contactEmailInput;
+                      if (!val.trim()) {
+                        toast.error("Bitte eine E-Mail-Adresse eingeben.");
+                        return;
+                      }
+                      try {
+                        await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: val.trim() });
+                        setContactEmailInput(val.trim());
+                        setSetupStepIdx(addOns.contactForm ? 2 : 1);
+                      } catch { /* onError handler shows toast */ }
                     }}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
                   >

@@ -4190,7 +4190,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
         email: z.string().email().max(320),
         phone: z.string().max(50).optional(),
         message: z.string().min(1).max(5000),
-        customFields: z.record(z.string()).optional(),
+        customFields: z.record(z.string(), z.string()).optional(),
         // Honeypot: filled by bots, must be empty for humans
         website_url: z.string().max(0).optional(),
       }))
