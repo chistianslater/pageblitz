@@ -772,6 +772,9 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
+  // Stable ref so the autosave effect doesn't re-fire when tRPC recreates the mutation object
+  const updateAddonsRef = useRef(updateAddons);
+  useEffect(() => { updateAddonsRef.current = updateAddons; });
 
   const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
     onSuccess: (_, variables) => {
@@ -846,7 +849,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     autoSaveTimeoutRef.current = setTimeout(() => {
       setSaveStatus("saving");
       setSaving(true);
-      updateAddons.mutate({
+      updateAddonsRef.current.mutate({
         websiteId,
         addOns: {
           gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
@@ -869,7 +872,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [addons, websiteId, updateAddons]);
+  }, [addons, websiteId]); // updateAddons intentionally excluded — stable via ref
 
   const handleSave = async () => {
     setSaving(true);

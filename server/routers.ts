@@ -3460,16 +3460,19 @@ Kontext: ${input.context}`,
 
         const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
         if (stripeSubscriptionId) {
-          // Add item to existing Stripe subscription (charges proration immediately)
-          // Use stripeCompat (2024-04-10) — newer API renamed price_data.product_data
-          await stripeCompat.subscriptionItems.create({
+          // Step 1: create a standalone price with inline product (prices.create supports
+          // product_data across all API versions; subscriptionItems.create does not)
+          const price = await stripe.prices.create({
+            currency: "eur",
+            unit_amount: PRICING.addon,
+            recurring: { interval: "month" },
+            product_data: { name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}` },
+          } as any);
+
+          // Step 2: add the price to the existing subscription (proration charged immediately)
+          await stripe.subscriptionItems.create({
             subscription: stripeSubscriptionId,
-            price_data: {
-              currency: "eur",
-              product_data: { name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}` },
-              unit_amount: PRICING.addon,
-              recurring: { interval: "month" },
-            },
+            price: price.id,
             quantity: 1,
             proration_behavior: "create_prorations",
           } as any);
