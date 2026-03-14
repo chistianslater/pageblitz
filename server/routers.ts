@@ -2251,7 +2251,7 @@ Antworte NUR mit validem JSON:
               price_data: {
                 currency: "eur",
                 product_data: {
-                  name: `Pageblitz – ${website.businessName || website.slug}`,
+                  name: `Pageblitz – ${website.businessName || (website.websiteData as any)?.businessName || "Deine Website"}`,
                   description,
                 },
                 unit_amount: totalAmount,
@@ -2260,7 +2260,7 @@ Antworte NUR mit validem JSON:
               quantity: 1,
             },
           ],
-          success_url: `${origin}/websites/${website.id}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+          success_url: `${origin}/my-website?checkout=success`,
           cancel_url:  `${origin}/start`,
           metadata: {
             websiteId:       website.id.toString(),
