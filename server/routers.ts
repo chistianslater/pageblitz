@@ -4179,6 +4179,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           services:       generatedServices,
         };
       }),
+  }),
 
   // ── Public: Contact Form ──────────────────────────────────────
   contact: router({
