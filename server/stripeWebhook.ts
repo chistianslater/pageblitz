@@ -12,6 +12,7 @@ import {
   createSubscription,
   updateSubscription,
   getSubscriptionByStripeId,
+  getUserByEmail,
 } from "./db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -76,7 +77,16 @@ export function registerStripeWebhook(app: Express) {
               ? session.subscription
               : (session.subscription as any)?.id || null;
 
-            const userId = parseInt(session.metadata?.userId || "0") || 0;
+            // Resolve userId: prefer metadata, fallback to customer_email lookup
+            let userId = parseInt(session.metadata?.userId || "0") || 0;
+            if (userId === 0 && session.customer_email) {
+              const userByEmail = await getUserByEmail(session.customer_email);
+              if (userByEmail) {
+                userId = userByEmail.id;
+                console.log(`[Webhook] Resolved userId ${userId} from customer_email ${session.customer_email}`);
+              }
+            }
+
             await createSubscription({
               websiteId,
               userId,

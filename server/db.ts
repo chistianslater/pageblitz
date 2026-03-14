@@ -542,7 +542,8 @@ export async function getWebsitesByUserId(userId: number) {
     })
     .from(subscriptions)
     .innerJoin(generatedWebsites, eq(subscriptions.websiteId, generatedWebsites.id))
-    .where(eq(subscriptions.userId, userId));
+    // Exclude "incomplete" subscriptions (checkout started but never paid)
+    .where(and(eq(subscriptions.userId, userId), sql`${subscriptions.status} != 'incomplete'`));
   return rows;
 }
 
