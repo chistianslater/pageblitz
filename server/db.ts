@@ -234,6 +234,24 @@ export async function updateWebsite(id: number, data: Partial<InsertGeneratedWeb
   await db.update(generatedWebsites).set(data).where(eq(generatedWebsites.id, id));
 }
 
+/** Returns website + its business in a single call – used by server-side SEO meta injection */
+export async function getWebsiteBySlugWithBusiness(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const websites = await db.select().from(generatedWebsites).where(eq(generatedWebsites.slug, slug)).limit(1);
+  if (!websites[0]) return undefined;
+  const website = websites[0];
+  const businessResult = await db.select().from(businesses).where(eq(businesses.id, website.businessId)).limit(1);
+  return { website, business: businessResult[0] ?? null };
+}
+
+/** Returns slugs of all active websites – used for sitemap.xml generation */
+export async function listActiveWebsites(): Promise<Array<{ slug: string }>> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ slug: generatedWebsites.slug }).from(generatedWebsites).where(eq(generatedWebsites.status, "active"));
+}
+
 // ── Outreach Emails ────────────────────────────────────
 export async function createOutreachEmail(data: InsertOutreachEmail) {
   const db = await getDb();
