@@ -565,6 +565,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
   const business = siteData?.business;
+  // Hide FOMO banner once checkout is completed (sold = paid, active = live)
+  const isPaid = siteData?.website?.status === "sold" || siteData?.website?.status === "active";
 
   // ── Dynamic step order based on layout and websiteData ──────────────────
   // These mirror data.addOn* but are declared before `data` to avoid
@@ -2410,14 +2412,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         </div>
       )}
 
-      {/* FOMO Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
-        <Clock className="w-4 h-4 flex-shrink-0" />
-        <span>
-          ⚡ Diese Website ist noch{" "}
-          <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
-        </span>
-      </div>
+      {/* FOMO Header – only shown before payment */}
+      {!isPaid && (
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
+          <Clock className="w-4 h-4 flex-shrink-0" />
+          <span>
+            ⚡ Diese Website ist noch{" "}
+            <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
+          </span>
+        </div>
+      )}
 
       {/* Main layout */}
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
@@ -4976,9 +4980,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <CheckCircle className="w-8 h-8 text-white" />
                       </div>
                       <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Fortschritt gespeichert ✓</h2>
-                      <p className="text-emerald-100 text-sm font-medium leading-relaxed">
-                        Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
-                      </p>
+                      {!isPaid && (
+                        <p className="text-emerald-100 text-sm font-medium leading-relaxed">
+                          Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
+                        </p>
+                      )}
                     </div>
                   </div>
 
