@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -710,9 +710,10 @@ interface AddonsEditorProps {
   website: any;
   onboarding: any;
   onUpdate: () => void;
+  purchasedAddOns: Record<string, boolean>;
 }
 
-function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditorProps) {
+function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOns }: AddonsEditorProps) {
   const websiteData = (website.websiteData as WebsiteData) || {};
 
   // Get existing data from website sections
@@ -768,8 +769,62 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [expandedAddon, setExpandedAddon] = useState<string | null>(null);
+  const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
+
+  const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
+    onSuccess: (_, variables) => {
+      const key = variables.addonKey;
+      if (key === "contactForm") {
+        setAddons(prev => ({ ...prev, contactForm: true }));
+      } else {
+        setAddons(prev => ({
+          ...prev,
+          [key]: { ...(prev as any)[key], enabled: true },
+        }));
+      }
+      setConfirmAddon(null);
+      onUpdate();
+      toast.success("Add-on freigeschaltet! 🎉");
+    },
+    onError: (err: any) => {
+      toast.error("Freischalten fehlgeschlagen: " + err.message);
+      setConfirmAddon(null);
+    },
+  });
+
+  const renderAddonLock = (addonKey: "gallery" | "menu" | "pricelist" | "contactForm") => (
+    <div className="flex items-center gap-2 flex-shrink-0">
+      {confirmAddon === addonKey ? (
+        <>
+          <button
+            onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey })}
+            disabled={purchaseAddonMutation.isPending}
+            className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap"
+          >
+            {purchaseAddonMutation.isPending
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : "+3,90 €/Mon ✓"}
+          </button>
+          <button
+            onClick={() => setConfirmAddon(null)}
+            className="text-slate-400 hover:text-white transition-colors p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={() => setConfirmAddon(addonKey)}
+          className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+        >
+          <Lock className="w-3 h-3" />
+          Freischalten
+        </button>
+      )}
+    </div>
+  );
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
@@ -1101,16 +1156,18 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            {/* Toggle Switch */}
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.gallery.enabled}
-                onChange={() => toggleAddon("gallery")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500" />
-            </label>
+            {/* Toggle Switch / Paywall */}
+            {!purchasedAddOns["gallery"] ? renderAddonLock("gallery") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.gallery.enabled}
+                  onChange={() => toggleAddon("gallery")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -1194,15 +1251,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.menu.enabled}
-                onChange={() => toggleAddon("menu")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500" />
-            </label>
+            {!purchasedAddOns["menu"] ? renderAddonLock("menu") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.menu.enabled}
+                  onChange={() => toggleAddon("menu")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -1324,15 +1383,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.pricelist.enabled}
-                onChange={() => toggleAddon("pricelist")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500" />
-            </label>
+            {!purchasedAddOns["pricelist"] ? renderAddonLock("pricelist") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.pricelist.enabled}
+                  onChange={() => toggleAddon("pricelist")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -1454,15 +1515,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.contactForm}
-                onChange={() => toggleAddon("contactForm")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500" />
-            </label>
+            {!purchasedAddOns["contactForm"] ? renderAddonLock("contactForm") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.contactForm}
+                  onChange={() => toggleAddon("contactForm")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -2304,6 +2367,7 @@ export default function CustomerDashboard() {
                 website={website}
                 onboarding={onboardingData}
                 onUpdate={handleUpdate}
+                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
               />
             </div>
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">

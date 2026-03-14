@@ -3447,6 +3447,40 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    purchaseAddon: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        addonKey: z.enum(["contactForm", "gallery", "menu", "pricelist"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN" });
+        if (!row.subscription) throw new TRPCError({ code: "NOT_FOUND", message: "Kein aktives Abonnement gefunden." });
+
+        const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
+        if (stripeSubscriptionId) {
+          // Add item to existing Stripe subscription (charges proration immediately)
+          await stripe.subscriptionItems.create({
+            subscription: stripeSubscriptionId,
+            price_data: {
+              currency: "eur",
+              product_data: { name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}` },
+              unit_amount: PRICING.addon,
+              recurring: { interval: "month" },
+            },
+            quantity: 1,
+            proration_behavior: "create_prorations",
+          } as any);
+        }
+
+        // Update addOns record in DB
+        const currentAddOns = (row.subscription.addOns as Record<string, boolean>) || {};
+        const newAddOns = { ...currentAddOns, [input.addonKey]: true };
+        await updateSubscription(row.subscription.id, { addOns: newAddOns, updatedAt: Date.now() });
+        return { success: true };
+      }),
+
     createBillingPortalSession: protectedProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input, ctx }) => {
