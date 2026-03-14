@@ -52,7 +52,30 @@ function AdminRouter() {
   );
 }
 
+// Reserved subdomains that should NOT be treated as customer sites
+const RESERVED_SUBDOMAINS = ["www", "api", "analytics", "admin", "mail", "ftp"];
+
+function getCustomerSubdomain(): string | null {
+  const hostname = window.location.hostname;
+  const match = hostname.match(/^([a-z0-9][a-z0-9-]*)\.pageblitz\.de$/);
+  if (!match) return null;
+  const sub = match[1];
+  return RESERVED_SUBDOMAINS.includes(sub) ? null : sub;
+}
+
 function Router() {
+  // Subdomain routing: schau-horch.pageblitz.de → render site directly
+  const customerSlug = getCustomerSubdomain();
+  if (customerSlug) {
+    return (
+      <Switch>
+        <Route path="/impressum">{() => <LegalPage forceSlug={customerSlug} />}</Route>
+        <Route path="/datenschutz">{() => <LegalPage forceSlug={customerSlug} />}</Route>
+        <Route>{() => <SitePage forceSlug={customerSlug} />}</Route>
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
@@ -103,8 +126,8 @@ function AppContent() {
     initConsent();
   }, []);
 
-  // Kunden-Website-Routen: kein PageBlitz-Banner
-  const isCustomerSite = location.startsWith("/site/");
+  // Kunden-Website-Routen: kein PageBlitz-Banner (auch bei Subdomain-Zugriff)
+  const isCustomerSite = location.startsWith("/site/") || !!getCustomerSubdomain();
 
   return (
     <>

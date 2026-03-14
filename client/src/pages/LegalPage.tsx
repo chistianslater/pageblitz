@@ -4,10 +4,10 @@ import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export default function LegalPage() {
+export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const [location] = useLocation();
   const params = useParams<{ slug: string }>();
-  const slug = params.slug;
+  const slug = forceSlug ?? params.slug;
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const isImpressum = location.endsWith("/impressum");

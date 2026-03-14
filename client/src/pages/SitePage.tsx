@@ -7,12 +7,13 @@ import { Loader2, AlertCircle } from "lucide-react";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 
-export default function SitePage() {
+export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   const params = useParams<{ slug: string }>();
+  const effectiveSlug = forceSlug ?? params.slug ?? "";
 
   const { data, isLoading, error } = trpc.website.get.useQuery(
-    { slug: params.slug ?? "" },
-    { enabled: !!params.slug, staleTime: 0, refetchOnMount: "always" }
+    { slug: effectiveSlug },
+    { enabled: !!effectiveSlug, staleTime: 0, refetchOnMount: "always" }
   );
 
   // ── useEffect MUSS vor allen Early-Returns stehen (Rules of Hooks) ───────
@@ -30,7 +31,7 @@ export default function SitePage() {
   }, [umamiWebsiteId]);
 
   // Also show spinner while slug isn't resolved yet (wouter params timing)
-  if (!params.slug || isLoading) {
+  if (!effectiveSlug || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
@@ -70,9 +71,9 @@ export default function SitePage() {
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
         openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
-        slug={params.slug}
+        slug={effectiveSlug}
       />
-      <CookieBanner slug={params.slug} primaryColor={colorScheme.primary} />
+      <CookieBanner slug={effectiveSlug} primaryColor={colorScheme.primary} />
     </>
   );
 }
