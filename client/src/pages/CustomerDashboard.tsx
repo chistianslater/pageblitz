@@ -2671,9 +2671,11 @@ export default function CustomerDashboard() {
                     type="email"
                     value={contactEmailInput}
                     onChange={(e) => setContactEmailInput(e.target.value)}
+                    onInput={(e) => setContactEmailInput((e.target as HTMLInputElement).value)}
                     placeholder="deine@email.de"
                     className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
                     autoFocus
+                    id="setup-contact-email"
                   />
                 </div>
                 <div className="flex gap-3 pt-2">
@@ -2684,9 +2686,13 @@ export default function CustomerDashboard() {
                     Überspringen
                   </button>
                   <button
-                    disabled={!contactEmailInput || updateContactEmailMutation.isPending}
+                    disabled={updateContactEmailMutation.isPending}
                     onClick={async () => {
-                      await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: contactEmailInput });
+                      // Read directly from DOM to catch password-manager autofills
+                      const val = (document.getElementById("setup-contact-email") as HTMLInputElement)?.value || contactEmailInput;
+                      if (!val) return;
+                      await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: val });
+                      setContactEmailInput(val);
                       setSetupStepIdx(2);
                     }}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
