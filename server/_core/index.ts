@@ -164,7 +164,12 @@ async function startServer() {
     <link rel="canonical" href="https://pageblitz.de/site/${slug}">
     ${schemaTag}`;
 
-        const html = fs.readFileSync(indexHtmlPath, "utf-8").replace("</head>", `${metaTags}\n  </head>`);
+        const html = fs.readFileSync(indexHtmlPath, "utf-8")
+          // Remove default title, description and canonical so injected ones take sole precedence
+          .replace(/<title>[^<]*<\/title>/, "")
+          .replace(/<meta name="description"[^>]*>/i, "")
+          .replace(/<link rel="canonical"[^>]*>/i, "")
+          .replace("</head>", `${metaTags}\n  </head>`);
         res.type("text/html").send(html);
       } catch (err) {
         console.error("[SEO] meta injection error:", err);
