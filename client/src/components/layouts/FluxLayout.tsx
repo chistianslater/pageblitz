@@ -146,7 +146,7 @@ export default function FluxLayout({ websiteData, cs, heroImageUrl, isLoading = 
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <span className="font-bold text-xl tracking-tight">
-            {websiteData.businessName}
+            {websiteData?.businessName}
           </span>
           <div className="flex items-center gap-6">
             <a href="#menu" className="text-sm text-white/60 hover:text-white transition-colors hidden md:block">Menü</a>
@@ -176,7 +176,7 @@ export default function FluxLayout({ websiteData, cs, heroImageUrl, isLoading = 
           <Skeleton isLoading={isLoading} className="absolute inset-0">
             <img
               src={heroImageUrl}
-              alt={websiteData.businessName}
+                alt={websiteData?.businessName}
               className="w-full h-full object-cover"
             />
           </Skeleton>
@@ -202,21 +202,21 @@ export default function FluxLayout({ websiteData, cs, heroImageUrl, isLoading = 
                     color: gold 
                   }}
                 >
-                  {websiteData.businessCategory || 'Restaurant & Bar'}
+                  {websiteData?.businessCategory || 'Restaurant & Bar'}
                 </span>
               </Skeleton>
 
               <Skeleton isLoading={isLoading} className="w-full max-w-3xl h-32 mb-6">
                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] mb-6">
                   <GlowingText color={gold}>
-                    {websiteData.tagline || websiteData.businessName || 'Ein Abend zum Genießen'}
+                    {websiteData?.tagline || websiteData?.businessName || 'Ein Abend zum Genießen'}
                   </GlowingText>
                 </h1>
               </Skeleton>
 
               <Skeleton isLoading={isLoading} className="w-full max-w-xl h-16">
                 <p className="text-lg md:text-xl text-white/60 max-w-xl mb-8">
-                  {websiteData.description || 'Erleben Sie exzellente Küche, erstklassige Getränke und einzigartige Atmosphäre.'}
+                  {websiteData?.description || 'Erleben Sie exzellente Küche, erstklassige Getränke und einzigartige Atmosphäre.'}
                 </p>
               </Skeleton>
 
@@ -438,7 +438,7 @@ export default function FluxLayout({ websiteData, cs, heroImageUrl, isLoading = 
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
-              <h3 className="font-bold text-lg mb-4">{websiteData.businessName}</h3>
+              <h3 className="font-bold text-lg mb-4">{websiteData?.businessName}</h3>
               <p className="text-sm text-white/40">
                 Einzigartige Momente, unvergessliche Erlebnisse.
               </p>
@@ -476,7 +476,7 @@ export default function FluxLayout({ websiteData, cs, heroImageUrl, isLoading = 
           </div>
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-white/30">
-              © {new Date().getFullYear()} {websiteData.businessName}. Alle Rechte vorbehalten.
+              © {new Date().getFullYear()} {websiteData?.businessName}. Alle Rechte vorbehalten.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-sm text-white/30 hover:text-white transition-colors">Impressum</a>

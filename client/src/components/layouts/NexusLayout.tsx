@@ -135,7 +135,7 @@ export default function NexusLayout({ websiteData, cs, heroImageUrl, isLoading =
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="font-semibold text-lg tracking-tight">{websiteData.businessName}</span>
+          <span className="font-semibold text-lg tracking-tight">{websiteData?.businessName}</span>
           <button
             className="px-6 py-2.5 rounded-full text-sm font-medium text-white transition-all hover:scale-105"
             style={{ backgroundColor: primaryColor }}
@@ -152,14 +152,14 @@ export default function NexusLayout({ websiteData, cs, heroImageUrl, isLoading =
             <Skeleton isLoading={isLoading} className="w-full max-w-4xl h-24 mx-auto mb-6">
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.03em] leading-[0.95]">
                 <KineticText 
-                  text={websiteData.tagline || websiteData.businessName || 'Excellence Delivered'} 
+                  text={websiteData?.tagline || websiteData?.businessName || 'Excellence Delivered'} 
                   delay={0.2}
                 />
               </h1>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full max-w-xl h-16 mx-auto">
               <p className="text-xl text-neutral-500 max-w-xl mx-auto leading-relaxed">
-                {websiteData.description || 'Strategie, Design und Technologie vereint zu außergewöhnlichen Ergebnissen.'}
+                {websiteData?.description || 'Strategie, Design und Technologie vereint zu außergewöhnlichen Ergebnissen.'}
               </p>
             </Skeleton>
           </div>
@@ -178,10 +178,10 @@ export default function NexusLayout({ websiteData, cs, heroImageUrl, isLoading =
                     <span className="uppercase tracking-widest text-xs font-semibold">Featured</span>
                   </div>
                   <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                    {websiteData.sections?.find(s => s.type === 'hero')?.headline || 'Innovation trifft Exzellenz'}
+                    {websiteData?.sections?.find(s => s.type === 'hero')?.headline || 'Innovation trifft Exzellenz'}
                   </h2>
                   <p className="text-white/70 max-w-sm">
-                    {websiteData.sections?.find(s => s.type === 'hero')?.subheadline || 'Entdecken Sie, wie wir Unternehmen transformieren.'}
+                    {websiteData?.sections?.find(s => s.type === 'hero')?.subheadline || 'Entdecken Sie, wie wir Unternehmen transformieren.'}
                   </p>
                 </div>
                 <button className="group flex items-center gap-2 text-white font-medium hover:gap-3 transition-all">
@@ -334,7 +334,7 @@ export default function NexusLayout({ websiteData, cs, heroImageUrl, isLoading =
       <footer className="py-12 px-6 border-t border-neutral-100">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-neutral-500 text-sm">
-            © {new Date().getFullYear()} {websiteData.businessName}. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} {websiteData?.businessName}. Alle Rechte vorbehalten.
           </span>
           <div className="flex gap-6">
             <a href="#" className="text-neutral-400 hover:text-neutral-600 transition-colors text-sm">Impressum</a>

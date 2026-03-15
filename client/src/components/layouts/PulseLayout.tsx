@@ -164,7 +164,7 @@ export default function PulseLayout({ websiteData, cs, heroImageUrl, isLoading =
             <div className="w-10 h-10 rounded-xl neu-raised flex items-center justify-center">
               <Activity className="w-5 h-5" style={{ color: sageGreen }} />
             </div>
-            <span className="font-bold text-lg">{websiteData.businessName}</span>
+            <span className="font-bold text-lg">{websiteData?.businessName}</span>
           </div>
           <button className="neu-raised px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:shadow-lg active:shadow-inner">
             Termin buchen
@@ -182,20 +182,20 @@ export default function PulseLayout({ websiteData, cs, heroImageUrl, isLoading =
                 <div className="inline-flex items-center gap-2 neu-pressed px-4 py-2 rounded-xl">
                   <Zap className="w-4 h-4" style={{ color: sageGreen }} />
                   <span className="text-sm font-semibold" style={{ color: sageGreen }}>
-                    {websiteData.businessCategory || 'Health & Fitness'}
+                    {websiteData?.businessCategory || 'Health & Fitness'}
                   </span>
                 </div>
               </Skeleton>
 
               <Skeleton isLoading={isLoading} className="w-full h-40 mb-6">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                  {websiteData.tagline || websiteData.businessName || 'Erreichen Sie Ihre Ziele'}
+                  {websiteData?.tagline || websiteData?.businessName || 'Erreichen Sie Ihre Ziele'}
                 </h1>
               </Skeleton>
 
               <Skeleton isLoading={isLoading} className="w-full h-24 mb-8">
                 <p className="text-lg text-gray-600 leading-relaxed">
-                  {websiteData.description || 'Professionelle Betreuung für Ihre Gesundheit und Fitness. Mit maßgeschneiderten Plänen und persönlicher Unterstützung.'}
+                  {websiteData?.description || 'Professionelle Betreuung für Ihre Gesundheit und Fitness. Mit maßgeschneiderten Plänen und persönlicher Unterstützung.'}
                 </p>
               </Skeleton>
 
@@ -388,7 +388,7 @@ export default function PulseLayout({ websiteData, cs, heroImageUrl, isLoading =
                   >
                     <Activity className="w-5 h-5" style={{ color: sageGreen }} />
                   </div>
-                  <span className="font-bold text-lg">{websiteData.businessName}</span>
+                  <span className="font-bold text-lg">{websiteData?.businessName}</span>
                 </div>
                 <p className="text-sm text-gray-500">
                   Professionelle Betreuung für Ihre Gesundheit und Fitness.
@@ -413,7 +413,7 @@ export default function PulseLayout({ websiteData, cs, heroImageUrl, isLoading =
             </div>
             <div className="pt-8 border-t border-gray-300 text-center">
               <p className="text-sm text-gray-500">
-                © {new Date().getFullYear()} {websiteData.businessName}. Alle Rechte vorbehalten.
+                © {new Date().getFullYear()} {websiteData?.businessName}. Alle Rechte vorbehalten.
               </p>
             </div>
           </div>

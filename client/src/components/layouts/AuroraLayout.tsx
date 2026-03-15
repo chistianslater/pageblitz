@@ -169,7 +169,7 @@ export default function AuroraLayout({ websiteData, cs, heroImageUrl, isLoading 
               >
                 <Zap className="w-5 h-5" style={{ color: primaryColor }} />
               </div>
-              <span className="font-semibold text-lg tracking-tight">{websiteData.businessName}</span>
+              <span className="font-semibold text-lg tracking-tight">{websiteData?.businessName || 'Unternehmen'}</span>
             </div>
             <div className="hidden md:flex items-center gap-6">
               <a href="#services" className="text-sm text-white/60 hover:text-white transition-colors">Leistungen</a>
@@ -195,14 +195,14 @@ export default function AuroraLayout({ websiteData, cs, heroImageUrl, isLoading 
                 style={{ backgroundColor: `${primaryColor}20`, color: primaryColor, border: `1px solid ${primaryColor}40` }}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                {websiteData.businessCategory || 'Tech & Innovation'}
+                {websiteData?.businessCategory || 'Tech & Innovation'}
               </div>
             </Skeleton>
 
             <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
                 {(() => {
-                  const text = websiteData.tagline || websiteData.businessName || 'Innovation Powered';
+                  const text = websiteData?.tagline || websiteData?.businessName || 'Innovation Powered';
                   const words = text.split(' ');
                   const mid = Math.ceil(words.length / 2);
                   return (
@@ -218,7 +218,7 @@ export default function AuroraLayout({ websiteData, cs, heroImageUrl, isLoading 
 
             <Skeleton isLoading={isLoading} className="w-full h-20 mb-8">
               <p className="text-lg text-white/60 max-w-lg leading-relaxed">
-                {websiteData.description || 'Wir entwickeln digitale Lösungen, die Ihr Unternehmen auf das nächste Level bringen. Mit modernster Technologie und kreativem Design.'}
+                {websiteData?.description || 'Wir entwickeln digitale Lösungen, die Ihr Unternehmen auf das nächste Level bringen. Mit modernster Technologie und kreativem Design.'}
               </p>
             </Skeleton>
 

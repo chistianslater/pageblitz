@@ -148,7 +148,7 @@ export default function ClayLayout({ websiteData, cs, heroImageUrl, isLoading = 
             >
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-xl text-neutral-800">{websiteData.businessName}</span>
+            <span className="font-bold text-xl text-neutral-800">{websiteData?.businessName}</span>
           </div>
           <button
             className="clay-card px-6 py-3 rounded-2xl font-semibold text-sm text-neutral-700 hover:text-neutral-900 transition-colors"
@@ -171,7 +171,7 @@ export default function ClayLayout({ websiteData, cs, heroImageUrl, isLoading = 
                   transition={{ delay: 0.2 }}
                   className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-800 leading-tight mb-6"
                 >
-                  {websiteData.tagline || websiteData.businessName || 'Mit Herz & Verstand'}
+                  {websiteData?.tagline || websiteData?.businessName || 'Mit Herz & Verstand'}
                 </motion.h1>
               </Skeleton>
 
@@ -182,7 +182,7 @@ export default function ClayLayout({ websiteData, cs, heroImageUrl, isLoading = 
                   transition={{ delay: 0.3 }}
                   className="text-lg text-neutral-600 leading-relaxed"
                 >
-                  {websiteData.description || 'Ein Ort der Entfaltung, des Wohlfühlens und der persönlichen Entwicklung. Wir begleiten Sie mit Herz und Fachkompetenz.'}
+                  {websiteData?.description || 'Ein Ort der Entfaltung, des Wohlfühlens und der persönlichen Entwicklung. Wir begleiten Sie mit Herz und Fachkompetenz.'}
                 </motion.p>
               </Skeleton>
 
@@ -423,7 +423,7 @@ export default function ClayLayout({ websiteData, cs, heroImageUrl, isLoading = 
             >
               <Heart className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg text-neutral-800">{websiteData.businessName}</span>
+            <span className="font-bold text-lg text-neutral-800">{websiteData?.businessName}</span>
           </div>
           <span className="text-neutral-500 text-sm">
             © {new Date().getFullYear()} Mit ♥ gemacht

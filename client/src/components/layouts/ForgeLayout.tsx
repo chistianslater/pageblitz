@@ -96,7 +96,7 @@ export default function ForgeLayout({ websiteData, cs, heroImageUrl, isLoading =
         }`}
       >
         <div className="max-w-[95vw] mx-auto px-6 flex items-center justify-between">
-          <span className="font-bold text-lg tracking-tight">{websiteData.businessName}</span>
+          <span className="font-bold text-lg tracking-tight">{websiteData?.businessName}</span>
           <div className="hidden md:flex items-center gap-8">
             <a href="#work" className="text-sm uppercase tracking-widest hover:text-neutral-500 transition-colors">Arbeit</a>
             <a href="#about" className="text-sm uppercase tracking-widest hover:text-neutral-500 transition-colors">Studio</a>
@@ -124,7 +124,7 @@ export default function ForgeLayout({ websiteData, cs, heroImageUrl, isLoading =
                 style={{ fontFamily: "'Cormorant Garamond', serif" }}
               >
                 {(() => {
-                  const text = websiteData.tagline || websiteData.businessName || 'Excellence';
+                  const text = websiteData?.tagline || websiteData?.businessName || 'Excellence';
                   const words = text.split(' ');
                   if (words.length >= 2) {
                     return (
@@ -151,7 +151,7 @@ export default function ForgeLayout({ websiteData, cs, heroImageUrl, isLoading =
             <Skeleton isLoading={isLoading} className="absolute inset-0">
               <img
                 src={heroImageUrl}
-                alt={websiteData.businessName}
+                alt={websiteData?.businessName}
                 className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
               />
               {/* Editorial grain overlay */}
@@ -169,7 +169,7 @@ export default function ForgeLayout({ websiteData, cs, heroImageUrl, isLoading =
             <div>
               <Skeleton isLoading={isLoading} className="w-full h-24 mb-6">
                 <p className="text-lg md:text-xl leading-relaxed text-neutral-600" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>
-                  {websiteData.description || 'Präzision und Ästhetik vereint. Wir schaffen Räume, die inspirieren und Formen, die begeistern.'}
+                  {websiteData?.description || 'Präzision und Ästhetik vereint. Wir schaffen Räume, die inspirieren und Formen, die begeistern.'}
                 </p>
               </Skeleton>
             </div>
@@ -328,7 +328,7 @@ export default function ForgeLayout({ websiteData, cs, heroImageUrl, isLoading =
               <div className="border-b-2 border-neutral-900 py-4">
                 <p className="text-xs uppercase tracking-widest text-neutral-400 mb-2">Email</p>
                 <a href="mailto:hello@studio.com" className="text-xl hover:text-neutral-500 transition-colors">
-                  hello@{websiteData.businessName?.toLowerCase().replace(/\s+/g, '')}.com
+                  hello@{websiteData?.businessName?.toLowerCase().replace(/\s+/g, '')}.com
                 </a>
               </div>
               <div className="border-b-2 border-neutral-900 py-4">
@@ -353,7 +353,7 @@ export default function ForgeLayout({ websiteData, cs, heroImageUrl, isLoading =
       <footer className="border-t-2 border-neutral-900 py-8">
         <div className="max-w-[95vw] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-sm uppercase tracking-widest">
-            © {new Date().getFullYear()} {websiteData.businessName}
+            © {new Date().getFullYear()} {websiteData?.businessName}
           </span>
           <div className="flex gap-8">
             <a href="#" className="text-sm uppercase tracking-widest hover:text-neutral-500 transition-colors">Instagram</a>
