@@ -1,65 +1,7 @@
 /* ============================================================
-   PAGEBLITZ ANIMATION SYSTEM v2.0
+   PAGEBLITZ ANIMATION SYSTEM
    Premium scroll-reveal, page-load, hover, and navbar effects
-   WCAG Accessible with prefers-reduced-motion support
    ============================================================ */
-
-/* --- Reduced Motion Support (WCAG 2.1 Compliance) --- */
-@media (prefers-reduced-motion: reduce) {
-  /* Disable all scroll-reveal animations */
-  [data-reveal],
-  [data-reveal="left"],
-  [data-reveal="right"],
-  [data-reveal="scale"] {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-  
-  /* Disable hero animations */
-  .hero-animate-badge,
-  .hero-animate-headline,
-  .hero-animate-sub,
-  .hero-animate-cta,
-  .hero-animate-image,
-  .hero-animate-nav {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-  
-  /* Disable hover transforms */
-  .btn-premium:hover,
-  .card-premium:hover {
-    transform: none !important;
-  }
-  
-  /* Disable image zoom */
-  .img-zoom:hover img {
-    transform: none !important;
-  }
-  
-  /* Disable gradient animations */
-  .animate-first,
-  .animate-second,
-  .animate-third,
-  .animate-fourth,
-  .animate-fifth {
-    animation: none !important;
-  }
-  
-  /* Disable floating elements */
-  .floating-element {
-    animation: none !important;
-  }
-  
-  /* Disable all transition animations */
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
 
 /* --- Scroll-Reveal Base State --- */
 [data-reveal] {
@@ -67,18 +9,6 @@
   transform: translateY(28px);
   transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
               transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Respect prefers-reduced-motion for individual elements */
-@media (prefers-reduced-motion: reduce) {
-  [data-reveal].revealed,
-  [data-reveal="left"].revealed,
-  [data-reveal="right"].revealed,
-  [data-reveal="scale"].revealed {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
 }
 
 [data-reveal="left"] {

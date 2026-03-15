@@ -49,7 +49,6 @@ export interface LayoutFontConfig {
  * - bodyFont: MUST always be a sans-serif font
  */
 export const LAYOUT_FONTS: Record<string, LayoutFontConfig> = {
-  // Bestehende Layouts
   elegant:  { headlineFont: "Fraunces",           bodyFont: "Outfit",           headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Outfit', 'Inter', sans-serif" },
   luxury:   { headlineFont: "Fraunces",           bodyFont: "Outfit",           headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Outfit', 'Inter', sans-serif" },
   warm:     { headlineFont: "Fraunces",           bodyFont: "Instrument Sans",  headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
@@ -64,14 +63,6 @@ export const LAYOUT_FONTS: Record<string, LayoutFontConfig> = {
   clean:    { headlineFont: "Instrument Sans",   bodyFont: "Inter",            headlineCss: "'Instrument Sans', 'Inter', sans-serif",   bodyCss: "'Inter', system-ui, sans-serif" },
   eden:     { headlineFont: "DM Serif Display",  bodyFont: "DM Sans",          headlineCss: "'DM Serif Display', Georgia, serif",          bodyCss: "'DM Sans', 'Inter', sans-serif" },
   apex:     { headlineFont: "Bebas Neue",         bodyFont: "Inter",            headlineCss: "'Bebas Neue', Impact, sans-serif",             bodyCss: "'Inter', system-ui, sans-serif" },
-  
-  // 🔥 NEU: 6 neue Layouts
-  aurora:   { headlineFont: "Space Grotesque",   bodyFont: "Inter",            headlineCss: "'Space Grotesque', sans-serif",            bodyCss: "'Inter', system-ui, sans-serif" }, // Glassmorphism
-  nexus:    { headlineFont: "Plus Jakarta Sans", bodyFont: "Inter",            headlineCss: "'Plus Jakarta Sans', sans-serif",          bodyCss: "'Inter', system-ui, sans-serif" }, // Bento Grid
-  clay:     { headlineFont: "Nunito",            bodyFont: "Outfit",           headlineCss: "'Nunito', sans-serif",                    bodyCss: "'Outfit', 'Inter', sans-serif" }, // Claymorphism
-  forge:    { headlineFont: "Cormorant Garamond", bodyFont: "Space Grotesque", headlineCss: "'Cormorant Garamond', Georgia, serif",      bodyCss: "'Space Grotesque', sans-serif" }, // Brutalist
-  pulse:    { headlineFont: "Space Grotesque",   bodyFont: "Nunito",           headlineCss: "'Space Grotesque', sans-serif",            bodyCss: "'Nunito', 'Inter', sans-serif" }, // Neumorphism
-  flux:     { headlineFont: "Cormorant Garamond", bodyFont: "Space Grotesque", headlineCss: "'Cormorant Garamond', Georgia, serif",      bodyCss: "'Space Grotesque', sans-serif" }, // Cinematic
 };
 
 /** Fallback config used when layoutStyle is unknown */
@@ -167,7 +158,6 @@ export const LOGO_FONT_OPTIONS = [
 
 /**
  * Predefined Color Schemes for Onboarding.
- * All schemes are WCAG AA compliant with minimum 4.5:1 contrast ratios.
  */
 export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description: string; colors: ColorScheme }[] = [
   {
@@ -187,11 +177,11 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
   {
     id: "warm",
     label: "Terracotta",
-    description: "Warmes Terracotta und Naturstein – handwerkliche Wärme und Erdverbundenheit. ✨ Kontrast-optimiert",
+    description: "Warmes Terracotta und Naturstein – handwerkliche Wärme und Erdverbundenheit.",
     colors: withOnColors({
-      primary: "#B44D1F",        // Terracotta - beibehalten, guter Kontrast
-      secondary: "#3D1A0A",      // Dunkelbraun - beibehalten
-      accent: "#9C6B3A",         // 🔧 FIX: Dunkleres Goldbraun für besseren Kontrast (war: #C4956A)
+      primary: "#B44D1F",
+      secondary: "#3D1A0A",
+      accent: "#C4956A",
       background: "#FEFCFA",
       surface: "#F5EDE0",
       text: "#1E1208",
@@ -201,12 +191,11 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
   {
     id: "elegant",
     label: "Champagner",
-    description: "Warmes Champagnergold und tiefes Anthrazit – für Luxus, Schönheit und hohe Ästhetik. ✨ Kontrast-optimiert",
+    description: "Warmes Champagnergold und tiefes Anthrazit – für Luxus, Schönheit und hohe Ästhetik.",
     colors: withOnColors({
-      primary: "#967B5C",        // Warm taupe - beibehalten
-      secondary: "#1A1511",      // Anthrazit - beibehalten
-      accent: "#D4AF37",         // 🔧 FIX: Classic Gold für bessere Sichtbarkeit (war: #F0EBE3)
-      accentSecondary: "#C9B896", // Zusätzlich: Sanftes Gold für subtile Elemente
+      primary: "#967B5C",
+      secondary: "#1A1511",
+      accent: "#F0EBE3",
       background: "#FDFBF8",
       surface: "#F7F3EE",
       text: "#1A1511",
@@ -216,18 +205,15 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
   {
     id: "modern",
     label: "Grafitmodern",
-    description: "Dunkles Graphit mit elektrischem Akzent – präzise, fokussiert und zeitgemäß. ✨ Dark Mode optimiert",
+    description: "Dunkles Graphit mit elektrischem Akzent – präzise, fokussiert und zeitgemäß.",
     colors: withOnColors({
-      primary: "#a3e635",        // 🔧 FIX: Gedämpftes Lime für weniger Flimmern (war: #bef264)
-      primaryGlow: "rgba(163, 230, 53, 0.3)", // Für Glow-Effekte
+      primary: "#bef264",
       secondary: "#0a0a0a",
       accent: "#ffffff",
       background: "#050505",
       surface: "#121212",
-      surfaceElevated: "#1a1a1a",
-      text: "#fafafa",
-      textLight: "rgba(250, 250, 250, 0.75)", // 🔧 FIX: Erhöht von 0.6 auf 0.75
-      textMuted: "rgba(250, 250, 250, 0.55)"   // 🔧 FIX: Erhöht von 0.5 auf 0.55
+      text: "#ffffff",
+      textLight: "rgba(255,255,255,0.6)"
     })
   },
   {
@@ -242,127 +228,6 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
       surface: "#f5f5f5",
       text: "#1a1a1a",
       textLight: "#6b7280"
-    })
-  },
-  // 🔥 NEU: 8 branchenspezifische Farbschemata
-  {
-    id: "health",
-    label: "Medical Blue",
-    description: "Vertrauen, Heilung, Sauberkeit – ideal für Ärzte, Therapeuten und Gesundheitsberufe.",
-    colors: withOnColors({
-      primary: "#2563EB",        // Medical Blue
-      secondary: "#1E40AF",      // Deep Blue
-      accent: "#10B981",         // Healing Green
-      accentLight: "#6EE7B7",
-      background: "#ffffff",
-      surface: "#F0F9FF",
-      text: "#1E3A5F",
-      textLight: "#64748B"
-    })
-  },
-  {
-    id: "eco",
-    label: "Forest Green",
-    description: "Nachhaltigkeit, Natur, Wachstum – perfekt für Bio-Betriebe und Umwelt-Unternehmen.",
-    colors: withOnColors({
-      primary: "#059669",        // Forest Green
-      secondary: "#047857",      // Deep Forest
-      accent: "#84CC16",         // Fresh Lime
-      accentLight: "#BEF264",
-      background: "#F0FDF4",
-      surface: "#DCFCE7",
-      text: "#064E3B",
-      textLight: "#059669"
-    })
-  },
-  {
-    id: "tech",
-    label: "Digital Blue",
-    description: "Innovation, Klarheit, Zukunft – für Software, IT und Tech-Startups.",
-    colors: withOnColors({
-      primary: "#0EA5E9",        // Digital Blue
-      secondary: "#0284C7",      // Deep Sky
-      accent: "#6366F1",         // Electric Indigo
-      accentLight: "#A5B4FC",
-      background: "#F0F9FF",
-      surface: "#E0F2FE",
-      text: "#0C4A6E",
-      textLight: "#0EA5E9"
-    })
-  },
-  {
-    id: "food",
-    label: "Appetite Red",
-    description: "Appetit, Wärme, Einladung – optimal für Restaurants, Cafés und Gastronomie.",
-    colors: withOnColors({
-      primary: "#DC2626",        // Appetite Red
-      secondary: "#991B1B",      // Deep Red
-      accent: "#F59E0B",         // Warm Orange
-      accentLight: "#FCD34D",
-      background: "#FEF2F2",
-      surface: "#FEE2E2",
-      text: "#7F1D1D",
-      textLight: "#DC2626"
-    })
-  },
-  {
-    id: "beauty",
-    label: "Rose Gold",
-    description: "Eleganz, Weiblichkeit, Luxus – für Kosmetik, Mode und Beauty-Dienstleister.",
-    colors: withOnColors({
-      primary: "#BE185D",        // Rose
-      secondary: "#9D174D",      // Deep Rose
-      accent: "#FCD34D",         // Champagne Gold
-      accentLight: "#FDE68A",
-      background: "#FDF2F8",
-      surface: "#FCE7F3",
-      text: "#831843",
-      textLight: "#BE185D"
-    })
-  },
-  {
-    id: "legal",
-    label: "Charcoal Gold",
-    description: "Autorität, Seriosität, Vertrauen – für Anwälte, Berater und Finanzdienstleister.",
-    colors: withOnColors({
-      primary: "#1E293B",        // Charcoal
-      secondary: "#0F172A",      // Deep Charcoal
-      accent: "#B45309",         // Traditional Gold
-      accentLight: "#D97706",
-      background: "#ffffff",
-      surface: "#F1F5F9",
-      text: "#0F172A",
-      textLight: "#475569"
-    })
-  },
-  {
-    id: "creative",
-    label: "Violet Sunset",
-    description: "Inspiration, Energie, Kreativität – für Designer, Künstler und Kreativ-Agenturen.",
-    colors: withOnColors({
-      primary: "#7C3AED",        // Violet
-      secondary: "#5B21B6",      // Deep Violet
-      accent: "#F97316",         // Sunset Orange
-      accentLight: "#FDBA74",
-      background: "#FAF5FF",
-      surface: "#F3E8FF",
-      text: "#4C1D95",
-      textLight: "#7C3AED"
-    })
-  },
-  {
-    id: "sport",
-    label: "Energy Teal",
-    description: "Energie, Dynamik, Motivation – für Fitness-Studios, Yoga und Sport-Anbieter.",
-    colors: withOnColors({
-      primary: "#EA580C",        // Energy Orange
-      secondary: "#C2410C",      // Deep Orange
-      accent: "#14B8A6",         // Active Teal
-      accentLight: "#5EEAD4",
-      background: "#FFF7ED",
-      surface: "#FFEDD5",
-      text: "#7C2D12",
-      textLight: "#EA580C"
     })
   }
 ];
@@ -453,7 +318,6 @@ export function generateRandomColorScheme(): { id: string; label: string; descri
 /**
  * Refined, professional color schemes inspired by high-end design.
  * Each palette uses the 60-30-10 rule for balanced composition.
- * All Dark Mode schemes have enhanced text contrast for WCAG AA compliance.
  */
 export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
   // Warm neutral with soft terracotta - Sophisticated & Approachable
@@ -501,47 +365,36 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
   }),
   
   // Charcoal with soft teal - Tech & Sophisticated
-  // 🔧 Dark Mode: Verbesserte Text-Kontraste
   dynamic:  withOnColors({ 
     primary: "#2d3748",      // Charcoal
     secondary: "#1a202c",      // Deep charcoal
     accent: "#5a8a8a",       // Muted teal
-    background: "#0A0A0A",     // 🔧 Tieferes Schwarz (war: #1a202c)
-    surface: "#141414",        // 🔧 Etwas angehoben (war: #2d3748)
-    surfaceElevated: "#1E1E1E", // 🔧 Für Cards/Modals
-    text: "#fafafa",           // 🔓 Fast weiß für besseren Kontrast
-    textLight: "rgba(250,250,250,0.75)", // 🔧 Erhöht von 0.6 auf 0.75
-    textMuted: "rgba(250,250,250,0.55)"  // 🔧 Erhöht von 0.5 auf 0.55
+    background: "#1a202c",     // Dark background
+    surface: "#2d3748",          // Slightly lighter
+    text: "#f7fafc",             // Off-white
+    textLight: "rgba(247,250,252,0.6)"
   }),
   
   // Deep forest with copper - Premium & Refined
-  // 🔧 Dark Mode: Verbesserte Text-Kontraste
   luxury:   withOnColors({ 
     primary: "#1c1917",      // Rich black
     secondary: "#292524",    // Warm black
     accent: "#b87333",       // Copper
-    accentLight: "#D4956A",  // 🔧 Helleres Copper für Hover
-    background: "#0A0A0A",   // 🔧 Tieferes Schwarz
-    surface: "#141414",        // 🔧 Angehoben
-    surfaceElevated: "#1E1E1E",
-    text: "#fafafa",           // 🔓 Fast weiß
-    textLight: "rgba(250,250,250,0.75)", // 🔧 Erhöht
-    textMuted: "rgba(250,250,250,0.55)"  // 🔧 Erhöht
+    background: "#1c1917",     // Dark background
+    surface: "#292524",          // Warm dark
+    text: "#fafaf9",             // Stone 50
+    textLight: "rgba(250,250,249,0.6)"
   }),
   
   // Warm stone with rust accent - Artisan & Crafted
-  // 🔧 Dark Mode: Verbesserte Text-Kontraste
   craft:    withOnColors({ 
     primary: "#78716c",      // Stone 500
     secondary: "#292524",    // Stone 900
     accent: "#a0522d",       // Sienna/rust
-    accentLight: "#C46B4A",
-    background: "#0A0A0A",   // 🔧 Tieferes Schwarz
-    surface: "#141414",        // 🔧 Angehoben
-    surfaceElevated: "#1E1E1E",
-    text: "#fafafa",           // 🔓 Fast weiß
-    textLight: "rgba(250,250,250,0.75)", // 🔧 Erhöht
-    textMuted: "rgba(250,250,250,0.55)"  // 🔧 Erhöht
+    background: "#1c1917",     // Dark stone
+    surface: "#292524",          // Warm dark
+    text: "#fafaf9",             // Stone 50
+    textLight: "rgba(250,250,249,0.6)"
   }),
   
   // Soft blue-gray with peach - Friendly & Light
@@ -578,18 +431,14 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
   }),
   
   // Deep purple with soft gold - Creative & Bold
-  // 🔧 Dark Mode: Verbesserte Text-Kontraste
   vibrant:  withOnColors({ 
-    primary: "#6D28D9",      // 🔧 Helleres Deep purple für besseren Kontrast (war: #4c1d95)
+    primary: "#4c1d95",      // Deep purple
     secondary: "#1e1b4b",    // Darker purple
     accent: "#c4b5a0",       // Soft gold
-    accentLight: "#E8DCC4",
-    background: "#0A0A0A",   // 🔧 Tieferes Schwarz
-    surface: "#141414",        // 🔧 Angehoben
-    surfaceElevated: "#1E1E1E",
-    text: "#fafafa",           // 🔓 Fast weiß
-    textLight: "rgba(250,250,250,0.75)", // 🔧 Erhöht
-    textMuted: "rgba(250,250,250,0.55)"  // 🔧 Erhöht
+    background: "#0f0a1a",     // Very dark purple
+    surface: "#1e1b4b",          // Dark purple
+    text: "#fafafa",             // Neutral 50
+    textLight: "rgba(250,250,250,0.6)"
   }),
   
   // Olive with warm sand - Organic & Earthy
@@ -601,91 +450,6 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     surface: "#f5f5f4",          // Stone 100
     text: "#292524",             // Stone 800
     textLight: "#78716c"         // Stone 500
-  }),
-  
-  // 🔥 NEU: 6 neue Layout Farbschemata
-  // Aurora: Glassmorphism - Tech/SaaS (Violet/Cyan Akzente auf Dark)
-  aurora:   withOnColors({ 
-    primary: "#6366f1",      // Indigo
-    secondary: "#1e1b4b",    // Deep purple
-    accent: "#06b6d4",       // Cyan
-    accentLight: "#67e8f9",
-    background: "#0a0a0f",   // Dark background
-    surface: "rgba(255,255,255,0.05)", // Glass surface
-    surfaceElevated: "rgba(255,255,255,0.08)",
-    text: "#fafafa",
-    textLight: "rgba(250,250,250,0.75)",
-    textMuted: "rgba(250,250,250,0.55)"
-  }),
-  
-  // Nexus: Bento Grid - Portfolio/Agency (Clean Slate)
-  nexus:    withOnColors({ 
-    primary: "#0f172a",      // Slate 900
-    secondary: "#f8fafc",    // Slate 50
-    accent: "#6366f1",       // Indigo
-    accentLight: "#818cf8",
-    background: "#fafafa",   // Light background
-    surface: "#ffffff",        // White cards
-    surfaceElevated: "#f1f5f9",
-    text: "#0f172a",
-    textLight: "#64748b",
-    textMuted: "#94a3b8"
-  }),
-  
-  // Clay: Claymorphism - Wellness/Lifestyle (Pastel)
-  clay:     withOnColors({ 
-    primary: "#FFB6C1",      // Light Pink
-    secondary: "#98FF98",    // Mint
-    accent: "#B0E0E6",       // Powder Blue
-    accentLight: "#E0FFFF",
-    background: "#FFF8E7",   // Cream
-    surface: "#ffffff",        // White
-    surfaceElevated: "#f5f5f5",
-    text: "#4a4a4a",
-    textLight: "#6b6b6b",
-    textMuted: "#8a8a8a"
-  }),
-  
-  // Forge: Brutalist - Architecture/Design (Monochrome + Red Accent)
-  forge:    withOnColors({ 
-    primary: "#1a1a1a",      // Near black
-    secondary: "#ffffff",    // White
-    accent: "#ff0000",       // Bold Red
-    accentLight: "#ff4444",
-    background: "#ffffff",   // White background
-    surface: "#f5f5f5",        // Light gray
-    surfaceElevated: "#e5e5e5",
-    text: "#1a1a1a",
-    textLight: "#666666",
-    textMuted: "#999999"
-  }),
-  
-  // Pulse: Neumorphism - Health/Fitness (Sage/Salmon)
-  pulse:    withOnColors({ 
-    primary: "#10B981",      // Emerald
-    secondary: "#F87171",    // Salmon
-    accent: "#A78BFA",       // Lavender
-    accentLight: "#C4B5FD",
-    background: "#e8e8e8",   // Gray background for neumorphism
-    surface: "#e8e8e8",
-    surfaceElevated: "#f0f0f0",
-    text: "#1f2937",
-    textLight: "#6b7280",
-    textMuted: "#9ca3af"
-  }),
-  
-  // Flux: Cinematic - Restaurant/Events (Dark + Gold)
-  flux:     withOnColors({ 
-    primary: "#D4AF37",      // Gold
-    secondary: "#B87333",    // Copper
-    accent: "#FFD700",       // Golden
-    accentLight: "#FFE55C",
-    background: "#0a0a0a",   // Deep black
-    surface: "#141414",      // Slightly lighter
-    surfaceElevated: "#1e1e1e",
-    text: "#fafafa",
-    textLight: "rgba(250,250,250,0.75)",
-    textMuted: "rgba(250,250,250,0.55)"
   }),
 };
 
@@ -704,7 +468,6 @@ export const DESIGN_TOKEN_CONFIG = {
  * Fallback Hero Images per Layout Style.
  */
 export const LAYOUT_FALLBACK_IMAGES: Record<string, string> = {
-  // Bestehende Layouts
   elegant: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&q=85&fit=crop",
   bold:    "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=85&fit=crop",
   warm:    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=85&fit=crop",
@@ -717,12 +480,4 @@ export const LAYOUT_FALLBACK_IMAGES: Record<string, string> = {
   modern:  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=85&fit=crop",
   vibrant: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=85&fit=crop",
   natural: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=85&fit=crop",
-  
-  // 🔥 NEU: 6 neue Layout Fallback Images
-  aurora:  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1600&q=85&fit=crop", // Tech/Glassmorphism
-  nexus:   "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=85&fit=crop", // Office/Bento
-  clay:    "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600&q=85&fit=crop", // Soft/Clay
-  forge:   "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=85&fit=crop", // Architecture
-  pulse:   "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=85&fit=crop", // Fitness/Gym
-  flux:    "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1600&q=85&fit=crop", // Restaurant/Bar
 };
