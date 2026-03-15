@@ -3135,18 +3135,1087 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 // INDUSTRY MAPPING & LAYOUT ENGINE
 // ================================================================
 
+// ================================================================
+// 13. AURORA (Tech · Glassmorphism · Dark)
+// ================================================================
+// Aesthetic: Deep space dark with animated gradient orbs and glass cards.
+// Key move: Gradient hero headline, glass service cards, animated orb background.
+export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'Space Grotesk', sans-serif");
+  const BODY = "'Inter', system-ui, sans-serif";
+  const primaryColor = safeCs.primary || '#6366f1';
+  const accentColor  = safeCs.accent  || '#22d3ee';
+  // Aurora is always dark – fixed dark palette
+  const BG      = '#080812';
+  const SURFACE = 'rgba(255,255,255,0.06)';
+  const BORDER  = 'rgba(255,255,255,0.1)';
+  const TXT     = '#f1f5f9';
+  const TXT_M   = 'rgba(241,245,249,0.65)';
+
+  const hero        = sec(websiteData, 'hero');
+  const about       = sec(websiteData, 'about');
+  const services    = sec(websiteData, 'services')?.items || [];
+  const heroCta     = hero?.ctaText || 'Loslegen';
+  const hl          = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent  = about?.content  || websiteData.description || '';
+  const footerText  = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const iconSet     = getCategoryIconSet(websiteData.businessCategory);
+  const aboutImg    = (websiteData as any).aboutImageUrl || heroImageUrl;
+
+  return (
+    <div style={{ fontFamily: BODY, backgroundColor: BG, color: TXT }} className="overflow-hidden">
+      <style>{`
+        @keyframes aurora-a{0%,100%{transform:translate(0,0)scale(1)}40%{transform:translate(3vw,-4vh)scale(1.08)}70%{transform:translate(-2vw,3vh)scale(0.96)}}
+        @keyframes aurora-b{0%,100%{transform:translate(0,0)scale(1)}33%{transform:translate(-4vw,2vh)scale(1.1)}67%{transform:translate(2vw,-3vh)scale(0.93)}}
+        @media(prefers-reduced-motion:reduce){.aurora-orb{animation:none!important}}
+      `}</style>
+
+      {/* Animated gradient orbs */}
+      <div aria-hidden="true" className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        <div className="aurora-orb absolute rounded-full"
+          style={{ width:'60vw', height:'60vw', top:'-15%', left:'-10%',
+            background:`radial-gradient(circle,${primaryColor}55 0%,transparent 70%)`,
+            filter:'blur(70px)', animation:'aurora-a 18s ease-in-out infinite' }} />
+        <div className="aurora-orb absolute rounded-full"
+          style={{ width:'50vw', height:'50vw', bottom:'5%', right:'-5%',
+            background:`radial-gradient(circle,${accentColor}45 0%,transparent 70%)`,
+            filter:'blur(80px)', animation:'aurora-b 22s ease-in-out infinite' }} />
+      </div>
+
+      {/* NAV */}
+      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4"
+        style={{ background:'rgba(8,8,18,0.7)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${BORDER}` }}>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: DISPLAY, fontWeight:700, fontSize:'1.2rem', letterSpacing:'-0.03em', color: TXT }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-slate-400" />
+        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+          <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
+            className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap shadow-lg">
+            {heroCta}
+          </button>
+        </Skeleton>
+      </nav>
+
+      {/* HERO */}
+      <section id="hero" className="relative z-10 min-h-screen flex flex-col items-center justify-center pt-24 pb-20 px-6 text-center">
+        {!isLoading && (
+          <motion.div initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8"
+            style={{ background:`${primaryColor}22`, border:`1px solid ${primaryColor}45` }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+            <span style={{ color:primaryColor, fontFamily:BODY }} className="text-xs font-semibold uppercase tracking-[0.15em]">
+              {websiteData.businessCategory || websiteData.businessName}
+            </span>
+          </motion.div>
+        )}
+        <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[10rem] mb-8">
+          <motion.h1 initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.8, delay:0.1 }}
+            style={{ fontFamily:DISPLAY, fontWeight:800, lineHeight:1.05, fontSize:getHeadlineFontSize(headlineSize,'clamp(3rem,8vw,7rem)'), letterSpacing:'-0.03em' }}>
+            {hl.main && hl.last ? (
+              <>{hl.main}<br /><span style={{ backgroundImage:`linear-gradient(135deg,${primaryColor},${accentColor})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{hl.last}</span></>
+            ) : (
+              <span style={{ backgroundImage:`linear-gradient(135deg,${primaryColor},${accentColor})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{hl.main || hl.last}</span>
+            )}
+          </motion.h1>
+        </Skeleton>
+        <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-10">
+          <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.8, delay:0.3 }}
+            style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8 }} className="text-lg max-w-2xl mx-auto mb-0">
+            {hero?.subheadline || websiteData.tagline}
+          </motion.p>
+        </Skeleton>
+        <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.5 }}
+          className="flex flex-wrap gap-4 justify-center">
+          <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
+            <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:700, color:'#fff' }}
+              className="px-10 py-4 rounded-full text-sm hover:scale-105 active:scale-95 transition-transform shadow-2xl whitespace-nowrap">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="min-w-[140px] h-14">
+            <button style={{ fontFamily:BODY, color:TXT_M, border:`1px solid ${BORDER}`, background:'rgba(255,255,255,0.04)', backdropFilter:'blur(10px)' }}
+              className="px-8 py-4 rounded-full text-sm hover:bg-white/10 transition-colors whitespace-nowrap">
+              Mehr erfahren
+            </button>
+          </Skeleton>
+        </motion.div>
+        {/* Hero image glass card */}
+        {!isLoading && heroImageUrl && (
+          <motion.div initial={{ opacity:0, y:50 }} animate={{ opacity:1, y:0 }} transition={{ duration:1, delay:0.8 }}
+            className="mt-16 w-full max-w-4xl mx-auto rounded-3xl overflow-hidden"
+            style={{ border:`1px solid ${BORDER}`, background:SURFACE, backdropFilter:'blur(20px)', boxShadow:`0 40px 80px rgba(0,0,0,0.5)` }}>
+            <img src={heroImageUrl} className="w-full h-[280px] sm:h-[360px] object-cover" alt={websiteData.businessName} />
+          </motion.div>
+        )}
+      </section>
+
+      {/* SERVICES */}
+      <section id="services" className="relative z-10 py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.7 }} className="text-center mb-16">
+            <p style={{ color:primaryColor, fontFamily:BODY, fontSize:'0.7rem', letterSpacing:'0.2em', fontWeight:700 }} className="uppercase mb-3">
+              {sec(websiteData,'services')?.title || 'Leistungen'}
+            </p>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:getSectionHeadlineSize(headlineSize,'services'), letterSpacing:'-0.02em', color:TXT }}>
+              {sec(websiteData,'services')?.headline || 'Was wir bieten'}
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(isLoading ? Array(6).fill({}) : services.slice(0,6)).map((service: any, i: number) => {
+              const Icon = iconSet[i % iconSet.length];
+              return (
+                <motion.div key={i} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:i*0.08 }}>
+                  <Skeleton isLoading={isLoading} className="min-h-[200px] rounded-2xl">
+                    <div className="p-7 rounded-2xl h-full hover:-translate-y-1 transition-transform duration-200"
+                      style={{ background:SURFACE, border:`1px solid ${BORDER}`, backdropFilter:'blur(16px)' }}>
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ background:`${primaryColor}25` }}>
+                        <Icon size={22} style={{ color:primaryColor }} />
+                      </div>
+                      <h3 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.05rem', color:TXT }} className="mb-3">{service.title}</h3>
+                      <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.65, fontSize:'0.88rem' }}>{service.description}</p>
+                    </div>
+                  </Skeleton>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="relative z-10 py-24 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+            <p style={{ color:accentColor, fontFamily:BODY, fontSize:'0.7rem', letterSpacing:'0.2em', fontWeight:700 }} className="uppercase mb-4">Über uns</p>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:getSectionHeadlineSize(headlineSize,'about'), letterSpacing:'-0.02em', color:TXT }} className="mb-6">{aboutHeadline}</h2>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
+            <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
+              className="px-8 py-3.5 rounded-full text-sm hover:scale-105 transition-transform whitespace-nowrap">
+              {heroCta}
+            </button>
+          </motion.div>
+          <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[400px] rounded-3xl">
+              {aboutImg
+                ? <div className="rounded-3xl overflow-hidden" style={{ border:`1px solid ${BORDER}` }}><img src={aboutImg} className="w-full h-[440px] object-cover" alt={aboutHeadline} /></div>
+                : <div className="rounded-3xl h-[440px] flex items-center justify-center" style={{ background:`${primaryColor}18`, border:`1px solid ${primaryColor}35` }}>
+                    <span style={{ color:primaryColor, fontFamily:DISPLAY, fontWeight:700, fontSize:'5rem' }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+        </div>
+      </section>
+
+      <TestimonialsSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={true} variant={1} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <ContactSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.02em' }} template="modern" headlineSize={headlineSize} />
+      <DynamicFooter websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} footerText={footerText} variant="minimal" logoStyle={{ fontFamily:DISPLAY, fontWeight:700, letterSpacing:'-0.02em' }} />
+    </div>
+  );
+}
+
+// ================================================================
+// 14. NEXUS (Portfolio · Bento Grid · Light)
+// ================================================================
+// Aesthetic: Asymmetric bento-grid hero. Cards of different sizes create visual rhythm.
+// Key move: 2×2 primary hero cell + 1×1 satellites, Space Grotesk -0.03em tracking.
+export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'Space Grotesk', sans-serif");
+  const BODY    = "'Plus Jakarta Sans', 'Inter', sans-serif";
+  const primaryColor = safeCs.primary || '#0f172a';
+  const accentColor  = safeCs.accent  || '#6366f1';
+  const BG    = safeCs.background || '#ffffff';
+  const TXT   = safeTextForBg(safeCs.text    || '#0f172a', true);
+  const TXT_M = safeTextForBg(safeCs.textLight || '#64748b', true);
+
+  const hero     = sec(websiteData, 'hero');
+  const about    = sec(websiteData, 'about');
+  const services = sec(websiteData, 'services')?.items || [];
+  const heroCta  = hero?.ctaText || 'Zusammenarbeiten';
+  const hl       = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent  = about?.content  || websiteData.description || '';
+  const footerText    = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const iconSet    = getCategoryIconSet(websiteData.businessCategory);
+  const aboutImg   = (websiteData as any).aboutImageUrl || heroImageUrl;
+  const phone      = getContactItem(websiteData, 'phone');
+
+  return (
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+      {/* NAV */}
+      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur-md" style={{ borderBottom:'1px solid rgba(0,0,0,0.06)' }}>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.15rem', letterSpacing:'-0.03em', color:TXT }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-neutral-600" />
+        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+          <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
+            className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap">
+            {heroCta}
+          </button>
+        </Skeleton>
+      </nav>
+
+      {/* BENTO GRID HERO */}
+      <section id="hero" className="pt-24 pb-6 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[minmax(180px,auto)]">
+          {/* Cell 1: 2×2 Main hero */}
+          <motion.div initial={{ opacity:0, scale:0.97 }} animate={{ opacity:1, scale:1 }} transition={{ duration:0.7 }}
+            className="col-span-2 row-span-2 rounded-3xl overflow-hidden relative p-10 flex flex-col justify-end min-h-[380px]"
+            style={{ backgroundColor:primaryColor }}>
+            {heroImageUrl && !isLoading && (
+              <img src={heroImageUrl} className="absolute inset-0 w-full h-full object-cover opacity-25" alt="" />
+            )}
+            <div className="relative z-10">
+              {!isLoading && (
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 uppercase tracking-wider"
+                  style={{ background:'rgba(255,255,255,0.18)', color:'rgba(255,255,255,0.92)' }}>
+                  {websiteData.businessCategory || websiteData.businessName}
+                </span>
+              )}
+              <Skeleton isLoading={isLoading} className="min-h-[8rem] mb-4">
+                <h1 style={{ fontFamily:DISPLAY, fontWeight:800, lineHeight:1.05, fontSize:getHeadlineFontSize(headlineSize,'clamp(2.2rem,5vw,4.5rem)'), color:'#ffffff', letterSpacing:'-0.03em' }} className="mb-4">
+                  {hl.main}
+                  {hl.main && hl.last ? <><br /><span style={{ color: accentColor === primaryColor ? 'rgba(255,255,255,0.7)' : accentColor }}>{hl.last}</span></> : null}
+                </h1>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="min-h-[2.5rem] min-w-[120px]">
+                <button style={{ backgroundColor:'#ffffff', color:primaryColor, fontFamily:BODY, fontWeight:700 }}
+                  className="px-7 py-3 rounded-full text-sm hover:scale-105 transition-transform whitespace-nowrap">
+                  {heroCta}
+                </button>
+              </Skeleton>
+            </div>
+          </motion.div>
+
+          {/* Cell 2: Tagline */}
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.15 }}
+            className="rounded-3xl p-7 flex flex-col justify-center" style={{ backgroundColor:`${accentColor}12`, border:`1px solid ${accentColor}22` }}>
+            <Skeleton isLoading={isLoading} className="min-h-[5rem]">
+              <p style={{ fontFamily:BODY, fontSize:'1rem', lineHeight:1.55, color:TXT, fontWeight:500 }}>
+                {hero?.subheadline || websiteData.tagline}
+              </p>
+            </Skeleton>
+          </motion.div>
+
+          {/* Cell 3: Phone / CTA */}
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.25 }}
+            className="rounded-3xl p-7 flex flex-col justify-center" style={{ backgroundColor:'#f8fafc', border:'1px solid rgba(0,0,0,0.06)' }}>
+            {!isLoading && (phone
+              ? <>
+                  <Phone size={22} style={{ color:accentColor }} className="mb-3" />
+                  <p style={{ fontFamily:BODY, fontWeight:600, color:TXT, fontSize:'0.9rem' }}>{phone}</p>
+                  <p style={{ fontFamily:BODY, color:TXT_M, fontSize:'0.75rem', marginTop:'0.25rem' }}>Ruf uns an</p>
+                </>
+              : <>
+                  <ArrowRight size={22} style={{ color:accentColor }} className="mb-3" />
+                  <p style={{ fontFamily:BODY, fontWeight:600, color:TXT, fontSize:'0.9rem' }}>Kontakt aufnehmen</p>
+                </>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Service mini-cards row */}
+        <div className="max-w-7xl mx-auto mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {(isLoading ? Array(4).fill({}) : services.slice(0,4)).map((service: any, i: number) => {
+            const Icon = iconSet[i % iconSet.length];
+            return (
+              <motion.div key={i} initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:i*0.07 }}>
+                <Skeleton isLoading={isLoading} className="min-h-[160px] rounded-3xl">
+                  <div className="p-6 rounded-3xl h-full hover:shadow-lg transition-shadow duration-200"
+                    style={{ backgroundColor:'#f8fafc', border:'1px solid rgba(0,0,0,0.06)' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor:`${primaryColor}12` }}>
+                      <Icon size={18} style={{ color:primaryColor }} />
+                    </div>
+                    <h3 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'0.92rem', color:TXT }} className="mb-2">{service.title}</h3>
+                    <p style={{ fontFamily:BODY, color:TXT_M, fontSize:'0.8rem', lineHeight:1.55 }}>{service.description}</p>
+                  </div>
+                </Skeleton>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="py-20 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[400px] rounded-3xl">
+              {aboutImg
+                ? <div className="rounded-3xl overflow-hidden"><img src={aboutImg} className="w-full h-[420px] object-cover" alt={aboutHeadline} /></div>
+                : <div className="rounded-3xl h-[420px] flex items-center justify-center" style={{ backgroundColor:`${primaryColor}10`, border:`1px solid ${primaryColor}20` }}>
+                    <span style={{ color:primaryColor, fontFamily:DISPLAY, fontWeight:700, fontSize:'5rem' }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+          <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
+            <p style={{ color:accentColor, fontFamily:BODY, fontSize:'0.7rem', letterSpacing:'0.2em', fontWeight:700 }} className="uppercase mb-4">Über uns</p>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:getSectionHeadlineSize(headlineSize,'about'), letterSpacing:'-0.03em', color:TXT }} className="mb-6">{aboutHeadline}</h2>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
+            <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
+              className="px-8 py-3.5 rounded-full text-sm hover:opacity-90 transition-opacity whitespace-nowrap">
+              {heroCta}
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={false} variant={0} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.03em' }} template="modern" headlineSize={headlineSize} />
+      <DynamicFooter websiteData={websiteData} cs={safeCs} isLoading={isLoading} footerText={footerText} variant="default" logoStyle={{ fontFamily:DISPLAY, fontWeight:700, letterSpacing:'-0.03em' }} />
+    </div>
+  );
+}
+
+// ================================================================
+// 15. CLAY (Wellness · Claymorphism · Pastel)
+// ================================================================
+// Aesthetic: Soft 3D cards with double shadows, blob shapes, rounded everything.
+// Key move: Clay card treatment with dual shadows, pastel palette, large border-radius.
+export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'Nunito', 'Varela Round', sans-serif");
+  const BODY    = "'Outfit', 'Inter', sans-serif";
+  const primaryColor = safeCs.primary || '#db2777';
+  const accentColor  = safeCs.accent  || '#a78bfa';
+  const BG    = safeCs.background || '#fdf4ff';
+  const TXT   = safeTextForBg(safeCs.text    || '#2d2d44', true);
+  const TXT_M = safeTextForBg(safeCs.textLight || '#6b6b8a', true);
+
+  const clay = (bg = '#ffffff'): React.CSSProperties => ({
+    backgroundColor: bg,
+    borderRadius: '28px',
+    boxShadow: '12px 12px 28px rgba(0,0,0,0.08), -6px -6px 16px rgba(255,255,255,0.82)',
+    border: '1px solid rgba(255,255,255,0.65)',
+  });
+
+  const hero     = sec(websiteData, 'hero');
+  const about    = sec(websiteData, 'about');
+  const services = sec(websiteData, 'services')?.items || [];
+  const heroCta  = hero?.ctaText || 'Termin buchen';
+  const hl       = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent  = about?.content  || websiteData.description || '';
+  const footerText    = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const iconSet = getCategoryIconSet(websiteData.businessCategory);
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
+
+  return (
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+      <style>{`
+        @keyframes clay-blob{0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%}50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%}}
+        @media(prefers-reduced-motion:reduce){.clay-blob-el{animation:none!important}}
+      `}</style>
+      {/* Decorative blobs */}
+      <div aria-hidden="true" className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex:0 }}>
+        <div className="clay-blob-el absolute" style={{ width:'50vw', height:'50vw', top:'-15%', right:'-10%',
+          background:`radial-gradient(circle,${primaryColor}22 0%,transparent 70%)`, filter:'blur(40px)',
+          animation:'clay-blob 10s ease-in-out infinite' }} />
+        <div className="clay-blob-el absolute" style={{ width:'40vw', height:'40vw', bottom:'0', left:'-5%',
+          background:`radial-gradient(circle,${accentColor}1e 0%,transparent 70%)`, filter:'blur(50px)',
+          animation:'clay-blob 13s ease-in-out infinite 3s' }} />
+      </div>
+
+      {/* NAV */}
+      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4"
+        style={{ background:`${BG}e8`, backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(255,255,255,0.5)',
+          boxShadow:'0 2px 20px rgba(0,0,0,0.06)' }}>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:'1.2rem', color:primaryColor }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-neutral-500" />
+        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+          <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
+            borderRadius:'50px', boxShadow:`0 8px 20px ${primaryColor}45` }}
+            className="px-6 py-2.5 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
+            {heroCta}
+          </button>
+        </Skeleton>
+      </nav>
+
+      {/* HERO */}
+      <section id="hero" className="relative z-10 min-h-screen flex items-center pt-24 pb-16 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center w-full">
+          <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.8 }}>
+            {!isLoading && (
+              <motion.div initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
+                style={{ backgroundColor:`${primaryColor}1e`, border:`1.5px solid ${primaryColor}35` }}>
+                <Sparkles size={13} style={{ color:primaryColor }} />
+                <span style={{ color:primaryColor, fontFamily:BODY }} className="text-xs font-semibold">
+                  {websiteData.businessCategory || websiteData.businessName}
+                </span>
+              </motion.div>
+            )}
+            <Skeleton isLoading={isLoading} className="min-h-[9rem] mb-6">
+              <h1 style={{ fontFamily:DISPLAY, fontWeight:900, lineHeight:1.15, fontSize:getHeadlineFontSize(headlineSize,'clamp(3rem,7vw,6rem)'), color:TXT }}>
+                {hl.main}
+                {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
+              </h1>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-8">
+              <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.75, fontSize:'1.05rem' }} className="mb-0">
+                {hero?.subheadline || websiteData.tagline}
+              </p>
+            </Skeleton>
+            <div className="flex flex-wrap gap-4">
+              <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
+                <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
+                  borderRadius:'50px', boxShadow:`0 12px 30px ${primaryColor}45` }}
+                  className="px-10 py-4 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
+                  {heroCta}
+                </button>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
+                <div style={{ ...clay(), padding:'1rem 2rem', cursor:'pointer', fontFamily:BODY, color:TXT_M }}
+                  className="text-sm hover:scale-[1.02] transition-transform whitespace-nowrap flex items-center">
+                  Mehr erfahren
+                </div>
+              </Skeleton>
+            </div>
+          </motion.div>
+          {/* Hero image clay card */}
+          <motion.div initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.8, delay:0.2 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[420px] rounded-[40px]">
+              {heroImageUrl
+                ? <div style={{ ...clay(), overflow:'hidden', borderRadius:'40px' }}>
+                    <img src={heroImageUrl} className="w-full h-[450px] sm:h-[520px] object-cover" alt={websiteData.businessName} />
+                  </div>
+                : <div style={{ ...clay(`${primaryColor}15`), height:'450px' }} className="flex items-center justify-center">
+                    <span style={{ color:primaryColor, fontFamily:DISPLAY, fontWeight:900, fontSize:'6rem' }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section id="services" className="relative z-10 py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.7 }} className="text-center mb-14">
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:900, fontSize:getSectionHeadlineSize(headlineSize,'services'), color:TXT }}>
+              {sec(websiteData,'services')?.headline || 'Unsere Angebote'}
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(isLoading ? Array(6).fill({}) : services.slice(0,6)).map((service: any, i: number) => {
+              const Icon = iconSet[i % iconSet.length];
+              const pastelBgs = ['#fff0f8','#f0f4ff','#f0fff4','#fffbf0','#f8f0ff','#f0fffe'];
+              return (
+                <motion.div key={i} initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:i*0.09 }}>
+                  <Skeleton isLoading={isLoading} className="min-h-[200px] rounded-[28px]">
+                    <div className="p-7 h-full hover:-translate-y-1.5 hover:scale-[1.01] transition-transform duration-200"
+                      style={clay(pastelBgs[i % pastelBgs.length])}>
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5" style={{ backgroundColor:`${primaryColor}22` }}>
+                        <Icon size={22} style={{ color:primaryColor }} />
+                      </div>
+                      <h3 style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:'1.05rem', color:TXT }} className="mb-3">{service.title}</h3>
+                      <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.65, fontSize:'0.88rem' }}>{service.description}</p>
+                    </div>
+                  </Skeleton>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="relative z-10 py-20 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:900, fontSize:getSectionHeadlineSize(headlineSize,'about'), color:TXT }} className="mb-6">{aboutHeadline}</h2>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
+            <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
+              borderRadius:'50px', boxShadow:`0 10px 25px ${primaryColor}45` }}
+              className="px-8 py-3.5 text-sm hover:scale-105 transition-transform whitespace-nowrap">
+              {heroCta}
+            </button>
+          </motion.div>
+          <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[400px] rounded-[40px]">
+              {aboutImg
+                ? <div style={{ ...clay(), overflow:'hidden', borderRadius:'40px' }}><img src={aboutImg} className="w-full h-[440px] object-cover" alt={aboutHeadline} /></div>
+                : <div style={{ ...clay(`${primaryColor}15`), height:'440px' }} className="flex items-center justify-center">
+                    <span style={{ color:primaryColor, fontFamily:DISPLAY, fontWeight:900, fontSize:'5rem' }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+        </div>
+      </section>
+
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Das sagen unsere Kunden'} dark={false} variant={0} serif={false} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight:900 }} template="modern" headlineSize={headlineSize} />
+      <DynamicFooter websiteData={websiteData} cs={safeCs} isLoading={isLoading} footerText={footerText} variant="default" logoStyle={{ fontFamily:DISPLAY, fontWeight:900 }} />
+    </div>
+  );
+}
+
+// ================================================================
+// 16. FORGE (Architecture · Brutalist Editorial · Sharp)
+// ================================================================
+// Aesthetic: Oversized editorial typography, strong grid lines, no border-radius.
+// Key move: Massive Cormorant Garamond 300 headlines, numbered service list, accent stripe.
+export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', Georgia, serif");
+  const BODY    = "'Space Grotesk', sans-serif";
+  const primaryColor = safeCs.primary || '#0a0a0a';
+  const accentColor  = safeCs.accent  || '#c4a000';
+  const BG    = safeCs.background || '#f8f7f4';
+  const TXT   = safeTextForBg(safeCs.text    || '#0a0a0a', true);
+  const TXT_M = safeTextForBg(safeCs.textLight || '#5a5a5a', true);
+
+  const hero     = sec(websiteData, 'hero');
+  const about    = sec(websiteData, 'about');
+  const services = sec(websiteData, 'services')?.items || [];
+  const heroCta  = hero?.ctaText || 'Kontakt aufnehmen';
+  const heroHeadline = hero?.headline || websiteData.tagline || websiteData.businessName || '';
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent  = about?.content  || websiteData.description || '';
+  const footerText    = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutImg   = (websiteData as any).aboutImageUrl || heroImageUrl;
+  const iconSet    = getCategoryIconSet(websiteData.businessCategory);
+
+  return (
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+      {/* NAV – minimal, line-based */}
+      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-8 py-5"
+        style={{ background:`${BG}f5`, backdropFilter:'blur(12px)', borderBottom:`2px solid ${TXT}` }}>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily:DISPLAY, fontWeight:600, fontSize:'1.1rem', letterSpacing:'0.04em', textTransform:'uppercase' as const }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-neutral-700" />
+        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+          <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
+            className="px-6 py-2.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
+            {heroCta}
+          </button>
+        </Skeleton>
+      </nav>
+
+      {/* HERO – oversized typo + full image */}
+      <section id="hero" className="pt-28 min-h-screen grid lg:grid-cols-[55%_45%] overflow-hidden"
+        style={{ borderBottom:`2px solid ${TXT}` }}>
+        <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:1 }}
+          className="flex flex-col justify-center px-8 lg:px-16 py-20 relative">
+          {!isLoading && (
+            <p style={{ fontFamily:BODY, fontSize:'0.65rem', letterSpacing:'0.3em', color:accentColor, fontWeight:600 }} className="uppercase mb-8">
+              {websiteData.businessCategory || '—'}
+            </p>
+          )}
+          <Skeleton isLoading={isLoading} className="min-h-[16rem] mb-8">
+            <h1 style={{ fontFamily:DISPLAY, fontWeight:300, lineHeight:0.95,
+              fontSize:getHeadlineFontSize(headlineSize,'clamp(4rem,10vw,9rem)'),
+              letterSpacing:'-0.03em', textTransform:'uppercase' as const, color:TXT }}>
+              {heroHeadline}
+            </h1>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-2/3 min-h-[3.5rem] mb-10">
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.7, maxWidth:'50ch',
+              borderLeft:`3px solid ${accentColor}`, paddingLeft:'1.25rem' }}>
+              {hero?.subheadline || websiteData.tagline}
+            </p>
+          </Skeleton>
+          <div className="flex flex-wrap gap-4">
+            <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
+              <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
+                className="px-10 py-4 text-xs uppercase hover:opacity-80 active:opacity-60 transition-opacity whitespace-nowrap">
+                {heroCta}
+              </button>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="min-w-[140px] h-14">
+              <button style={{ fontFamily:BODY, color:TXT_M, border:`2px solid ${TXT}`, letterSpacing:'0.08em',
+                backgroundColor:'transparent' }}
+                className="px-8 py-4 text-xs uppercase hover:bg-black hover:text-white transition-colors whitespace-nowrap">
+                Mehr erfahren
+              </button>
+            </Skeleton>
+          </div>
+        </motion.div>
+
+        {/* Right: Full image */}
+        <motion.div initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} transition={{ duration:1.2, delay:0.2 }}
+          className="relative min-h-[55vw] lg:min-h-0 overflow-hidden" style={{ borderLeft:`2px solid ${TXT}` }}>
+          <Skeleton isLoading={isLoading} className="absolute inset-0">
+            {heroImageUrl && <img src={heroImageUrl} className="absolute inset-0 w-full h-full object-cover"
+              style={{ filter:'grayscale(20%) contrast(1.05)' }} alt="" />}
+            <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor:accentColor }} />
+          </Skeleton>
+        </motion.div>
+      </section>
+
+      {/* SERVICES – numbered editorial list */}
+      <section id="services" className="py-20 px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-baseline gap-8 mb-16" style={{ borderBottom:`2px solid ${TXT}`, paddingBottom:'1.5rem' }}>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:300, fontSize:getSectionHeadlineSize(headlineSize,'services'),
+              letterSpacing:'-0.02em', textTransform:'uppercase' as const, color:TXT }}>
+              {sec(websiteData,'services')?.headline || 'Leistungen'}
+            </h2>
+            <span style={{ fontFamily:BODY, color:accentColor, fontSize:'0.7rem', letterSpacing:'0.2em', fontWeight:600 }} className="uppercase">
+              {services.length} Angebote
+            </span>
+          </div>
+          <div style={{ borderTop:`2px solid ${TXT}` }}>
+            {(isLoading ? Array(5).fill({}) : services.slice(0,5)).map((service: any, i: number) => {
+              const Icon = iconSet[i % iconSet.length];
+              return (
+                <motion.div key={i} initial={{ opacity:0, y:15 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:i*0.08 }}>
+                  <Skeleton isLoading={isLoading} className="min-h-[80px]">
+                    <div className="flex items-start gap-6 py-8 hover:bg-black/[0.02] transition-colors"
+                      style={{ borderBottom:`2px solid ${TXT}` }}>
+                      <span style={{ fontFamily:BODY, fontWeight:600, color:accentColor, fontSize:'0.75rem', minWidth:'2.5rem' }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <div className="flex-1">
+                        <h3 style={{ fontFamily:DISPLAY, fontWeight:600, fontSize:'1.4rem', color:TXT,
+                          textTransform:'uppercase' as const, letterSpacing:'-0.01em' }} className="mb-2">
+                          {service.title}
+                        </h3>
+                        <p style={{ fontFamily:BODY, color:TXT_M, fontSize:'0.88rem', lineHeight:1.65, maxWidth:'60ch' }}>{service.description}</p>
+                      </div>
+                      <Icon size={20} style={{ color:accentColor, opacity:0.6, marginTop:'0.2rem' }} />
+                    </div>
+                  </Skeleton>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="py-20 px-8 lg:px-16" style={{ borderTop:`2px solid ${TXT}`, borderBottom:`2px solid ${TXT}` }}>
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-[40%_60%] gap-16 items-start">
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:300, fontSize:getSectionHeadlineSize(headlineSize,'about'),
+              textTransform:'uppercase' as const, letterSpacing:'-0.02em', color:TXT }} className="mb-8">
+              {aboutHeadline}
+            </h2>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, fontSize:'0.95rem' }} className="mb-8">{aboutContent}</p>
+            <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
+              className="px-8 py-3.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
+              {heroCta}
+            </button>
+          </motion.div>
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[420px]">
+              {aboutImg
+                ? <img src={aboutImg} className="w-full h-[480px] object-cover"
+                    style={{ filter:'grayscale(15%) contrast(1.05)' }} alt={aboutHeadline} />
+                : <div className="h-[480px] flex items-center justify-center" style={{ backgroundColor:`${primaryColor}08` }}>
+                    <span style={{ color:TXT, fontFamily:DISPLAY, fontSize:'8rem', fontWeight:300 }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+        </div>
+      </section>
+
+      <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Referenzen'} dark={false} variant={0} serif={true} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight:300, textTransform:'uppercase' as const, letterSpacing:'-0.02em' }} template="modern" headlineSize={headlineSize} />
+      <DynamicFooter websiteData={websiteData} cs={safeCs} isLoading={isLoading} footerText={footerText} variant="default" showBorder={true} logoStyle={{ fontFamily:DISPLAY, fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.04em' }} />
+    </div>
+  );
+}
+
+// ================================================================
+// 17. PULSE (Health · Neumorphism · Soft 3D)
+// ================================================================
+// Aesthetic: Soft raised & pressed surfaces on light gray, circular elements, health feel.
+// Key move: Dual-shadow neumorphic cards, gradient CTAs, pressed badge effect.
+export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'Plus Jakarta Sans', sans-serif");
+  const BODY    = "'Inter', system-ui, sans-serif";
+  const primaryColor = safeCs.primary || '#4f86c6';
+  const accentColor  = safeCs.accent  || '#5dbb9c';
+  const NEU  = '#e8ecf0';   // Neumorphic base
+  const TXT  = '#2d3748';
+  const TXT_M = '#718096';
+
+  const neuRaised:  React.CSSProperties = { background:NEU, boxShadow:'8px 8px 20px rgba(163,177,198,0.6),-8px -8px 20px rgba(255,255,255,0.8)', borderRadius:'20px' };
+  const neuPressed: React.CSSProperties = { background:NEU, boxShadow:'inset 6px 6px 14px rgba(163,177,198,0.6),inset -6px -6px 14px rgba(255,255,255,0.7)', borderRadius:'20px' };
+
+  const hero     = sec(websiteData, 'hero');
+  const about    = sec(websiteData, 'about');
+  const services = sec(websiteData, 'services')?.items || [];
+  const heroCta  = hero?.ctaText || 'Termin anfragen';
+  const hl       = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent  = about?.content  || websiteData.description || '';
+  const footerText    = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const iconSet  = getCategoryIconSet(websiteData.businessCategory);
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
+
+  return (
+    <div style={{ fontFamily:BODY, backgroundColor:NEU, color:TXT }} className="overflow-hidden">
+      {/* NAV */}
+      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4"
+        style={{ background:`${NEU}f5`, backdropFilter:'blur(16px)',
+          boxShadow:'0 2px 12px rgba(163,177,198,0.3)' }}>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.2rem', color:TXT }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-slate-600" />
+        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+          <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY,
+            fontWeight:600, color:'#fff', boxShadow:`0 6px 18px ${primaryColor}50`, borderRadius:'50px' }}
+            className="px-6 py-2.5 text-xs uppercase tracking-wider hover:scale-105 transition-transform whitespace-nowrap">
+            {heroCta}
+          </button>
+        </Skeleton>
+      </nav>
+
+      {/* HERO */}
+      <section id="hero" className="min-h-screen flex items-center pt-24 pb-16 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center w-full">
+          <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.8 }}>
+            {!isLoading && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-8"
+                style={{ ...neuPressed, borderRadius:'50px', paddingLeft:'1rem', paddingRight:'1rem' }}>
+                <Heart size={13} style={{ color:primaryColor }} />
+                <span style={{ color:primaryColor, fontFamily:BODY, fontSize:'0.75rem', fontWeight:600 }}>
+                  {websiteData.businessCategory || websiteData.businessName}
+                </span>
+              </div>
+            )}
+            <Skeleton isLoading={isLoading} className="min-h-[10rem] mb-6">
+              <h1 style={{ fontFamily:DISPLAY, fontWeight:800, lineHeight:1.1,
+                fontSize:getHeadlineFontSize(headlineSize,'clamp(2.8rem,6vw,5.5rem)'), color:TXT }}>
+                {hl.main}
+                {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
+              </h1>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-10">
+              <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.75, fontSize:'1.05rem' }} className="mb-0">
+                {hero?.subheadline || websiteData.tagline}
+              </p>
+            </Skeleton>
+            <div className="flex flex-wrap gap-4">
+              <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
+                <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`,
+                  fontFamily:BODY, fontWeight:700, color:'#fff', borderRadius:'50px',
+                  boxShadow:`0 10px 28px ${primaryColor}50` }}
+                  className="px-10 py-4 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
+                  {heroCta}
+                </button>
+              </Skeleton>
+              <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
+                <button style={{ ...neuRaised, fontFamily:BODY, color:TXT_M, paddingLeft:'2rem', paddingRight:'2rem', paddingTop:'1rem', paddingBottom:'1rem' }}
+                  className="text-sm whitespace-nowrap">
+                  Mehr erfahren
+                </button>
+              </Skeleton>
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.8, delay:0.2 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[420px] rounded-[30px]">
+              {heroImageUrl
+                ? <div style={{ ...neuRaised, overflow:'hidden', borderRadius:'30px' }}>
+                    <img src={heroImageUrl} className="w-full h-[460px] object-cover" alt={websiteData.businessName} />
+                  </div>
+                : <div style={{ ...neuRaised, height:'460px' }} className="flex items-center justify-center">
+                    <span style={{ color:primaryColor, fontFamily:DISPLAY, fontWeight:700, fontSize:'5rem' }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section id="services" className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.7 }} className="text-center mb-16">
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:getSectionHeadlineSize(headlineSize,'services'), color:TXT }}>
+              {sec(websiteData,'services')?.headline || 'Unsere Angebote'}
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {(isLoading ? Array(6).fill({}) : services.slice(0,6)).map((service: any, i: number) => {
+              const Icon = iconSet[i % iconSet.length];
+              return (
+                <motion.div key={i} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:i*0.09 }}>
+                  <Skeleton isLoading={isLoading} className="min-h-[200px] rounded-[20px]">
+                    <div className="p-7 hover:scale-[1.01] transition-transform duration-200" style={neuRaised}>
+                      <div className="w-14 h-14 flex items-center justify-center mb-5"
+                        style={{ ...neuPressed, borderRadius:'16px', paddingLeft:'12px', paddingRight:'12px', paddingTop:'12px', paddingBottom:'12px' }}>
+                        <Icon size={24} style={{ color:primaryColor }} />
+                      </div>
+                      <h3 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.05rem', color:TXT }} className="mb-3">{service.title}</h3>
+                      <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.65, fontSize:'0.88rem' }}>{service.description}</p>
+                    </div>
+                  </Skeleton>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="py-20 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[400px] rounded-[30px]">
+              {aboutImg
+                ? <div style={{ ...neuRaised, overflow:'hidden', borderRadius:'30px' }}>
+                    <img src={aboutImg} className="w-full h-[440px] object-cover" alt={aboutHeadline} />
+                  </div>
+                : <div style={{ ...neuRaised, height:'440px' }} className="flex items-center justify-center">
+                    <span style={{ color:primaryColor, fontFamily:DISPLAY, fontWeight:700, fontSize:'5rem' }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+          <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:getSectionHeadlineSize(headlineSize,'about'), color:TXT }} className="mb-6">{aboutHeadline}</h2>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
+            <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`,
+              fontFamily:BODY, fontWeight:700, color:'#fff', borderRadius:'50px',
+              boxShadow:`0 10px 28px ${primaryColor}40` }}
+              className="px-8 py-3.5 text-sm hover:scale-105 transition-transform whitespace-nowrap">
+              {heroCta}
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      <TestimonialsSection websiteData={websiteData} cs={{ ...safeCs, surface:NEU, background:NEU }} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={false} variant={0} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={{ ...safeCs, surface:NEU, background:NEU }} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
+      <ContactSection websiteData={websiteData} cs={{ ...safeCs, background:NEU, surface:NEU }} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{}} template="modern" headlineSize={headlineSize} />
+      <DynamicFooter websiteData={websiteData} cs={{ ...safeCs, background:NEU }} isLoading={isLoading} footerText={footerText} variant="default" logoStyle={{ fontFamily:DISPLAY, fontWeight:700 }} />
+    </div>
+  );
+}
+
+// ================================================================
+// 18. FLUX (Restaurant · Dark Cinematic · Gold)
+// ================================================================
+// Aesthetic: Deep dark background, full-bleed cinematic hero, warm gold accents.
+// Key move: Full-screen hero image at 40% brightness, gradient from bottom, gold typography.
+export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlineSize }: any) {
+  const safeCs = cs || {};
+  const DISPLAY = getDisplayFont(websiteData, "'Syne', Impact, sans-serif");
+  const BODY    = "'Inter', system-ui, sans-serif";
+  const primaryColor = safeCs.primary || '#d4a843';
+  const accentColor  = safeCs.accent  || '#b07d3a';
+  const BG      = '#060608';
+  const SURFACE = '#0e0e12';
+  const TXT     = '#f5f0e8';
+  const TXT_M   = 'rgba(245,240,232,0.62)';
+  const BORDER  = `rgba(212,168,67,0.22)`;
+
+  const hero     = sec(websiteData, 'hero');
+  const about    = sec(websiteData, 'about');
+  const services = sec(websiteData, 'services')?.items || [];
+  const heroCta  = hero?.ctaText || 'Reservieren';
+  const hl       = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const aboutHeadline = about?.headline || 'Über uns';
+  const aboutContent  = about?.content  || websiteData.description || '';
+  const footerText    = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const iconSet  = getCategoryIconSet(websiteData.businessCategory);
+  const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
+
+  return (
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+      {/* NAV */}
+      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-8 py-5"
+        style={{ background:'rgba(6,6,8,0.78)', backdropFilter:'blur(24px)', borderBottom:`1px solid ${BORDER}` }}>
+        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+          {(websiteData as any).logoImageUrl
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:'1.2rem', letterSpacing:'0.08em',
+                textTransform:'uppercase' as const, color:primaryColor }}>{websiteData.businessName}</span>}
+        </Skeleton>
+        <NavLinks textClass="text-amber-200/60" />
+        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+          <button style={{ border:`1px solid ${primaryColor}`, color:primaryColor, fontFamily:BODY, fontWeight:500,
+            letterSpacing:'0.1em', backgroundColor:'transparent' }}
+            className="px-6 py-2.5 text-xs uppercase hover:bg-amber-400/10 transition-colors whitespace-nowrap">
+            {heroCta}
+          </button>
+        </Skeleton>
+      </nav>
+
+      {/* CINEMATIC HERO */}
+      <section id="hero" className="relative min-h-screen flex items-end pb-24 overflow-hidden">
+        {heroImageUrl && !isLoading && (
+          <div className="absolute inset-0">
+            <img src={heroImageUrl} className="w-full h-full object-cover"
+              style={{ filter:'brightness(0.38) saturate(0.82)' }} alt="" />
+          </div>
+        )}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0" style={{ background:`linear-gradient(to top,${BG} 18%,rgba(6,6,8,0.55) 55%,transparent 100%)` }} />
+        {/* Gold light leak top */}
+        {!isLoading && (
+          <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+            style={{ background:`linear-gradient(90deg,transparent,${primaryColor},transparent)`,
+              boxShadow:`0 0 40px 6px ${primaryColor}35` }} />
+        )}
+
+        <div className="relative z-10 max-w-6xl mx-auto px-8 w-full">
+          {!isLoading && (
+            <motion.p initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6 }}
+              style={{ fontFamily:BODY, fontSize:'0.65rem', letterSpacing:'0.3em', color:primaryColor, fontWeight:600 }} className="uppercase mb-6">
+              {websiteData.businessCategory || '—'}
+            </motion.p>
+          )}
+          <Skeleton isLoading={isLoading} className="min-h-[14rem] mb-8">
+            <motion.h1 initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ duration:1, delay:0.1 }}
+              style={{ fontFamily:DISPLAY, fontWeight:800, lineHeight:1.0,
+                fontSize:getHeadlineFontSize(headlineSize,'clamp(3.5rem,10vw,9rem)'),
+                letterSpacing:'-0.02em', textTransform:'uppercase' as const, color:TXT,
+                textShadow:`0 0 60px rgba(212,168,67,0.22)` }}>
+              {hl.main}
+              {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
+            </motion.h1>
+          </Skeleton>
+          <Skeleton isLoading={isLoading} className="w-2/3 min-h-[3rem] mb-10">
+            <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.8, delay:0.4 }}
+              style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.7, fontSize:'1.05rem',
+                borderLeft:`2px solid ${primaryColor}`, paddingLeft:'1.25rem' }}>
+              {hero?.subheadline || websiteData.tagline}
+            </motion.p>
+          </Skeleton>
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.6 }}
+            className="flex flex-wrap gap-4">
+            <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
+              <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#000',
+                letterSpacing:'0.08em' }}
+                className="px-10 py-4 text-xs uppercase hover:brightness-110 active:scale-95 transition-all shadow-lg whitespace-nowrap">
+                {heroCta}
+              </button>
+            </Skeleton>
+            <Skeleton isLoading={isLoading} className="min-w-[140px] h-14">
+              <button style={{ fontFamily:BODY, color:TXT_M, border:'1px solid rgba(255,255,255,0.2)',
+                letterSpacing:'0.08em', backgroundColor:'transparent' }}
+                className="px-8 py-4 text-xs uppercase hover:bg-white/5 transition-colors whitespace-nowrap">
+                Mehr erfahren
+              </button>
+            </Skeleton>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section id="services" className="py-24 px-8">
+        <div className="max-w-6xl mx-auto">
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.7 }} className="mb-16">
+            <p style={{ color:primaryColor, fontFamily:BODY, fontSize:'0.65rem', letterSpacing:'0.25em', fontWeight:600 }} className="uppercase mb-4">
+              {sec(websiteData,'services')?.title || 'Angebot'}
+            </p>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:getSectionHeadlineSize(headlineSize,'services'),
+              textTransform:'uppercase' as const, letterSpacing:'-0.02em', color:TXT }}>
+              {sec(websiteData,'services')?.headline || 'Unsere Spezialitäten'}
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(isLoading ? Array(6).fill({}) : services.slice(0,6)).map((service: any, i: number) => {
+              const Icon = iconSet[i % iconSet.length];
+              return (
+                <motion.div key={i} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:i*0.08 }}>
+                  <Skeleton isLoading={isLoading} className="min-h-[180px] rounded-2xl">
+                    <div className="p-7 rounded-2xl h-full hover:-translate-y-1 transition-transform duration-200"
+                      style={{ background:SURFACE, border:`1px solid ${BORDER}` }}>
+                      <Icon size={22} style={{ color:primaryColor }} className="mb-5" />
+                      <h3 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.05rem', color:TXT,
+                        textTransform:'uppercase' as const, letterSpacing:'0.02em' }} className="mb-3">
+                        {service.title}
+                      </h3>
+                      <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.65, fontSize:'0.88rem' }}>{service.description}</p>
+                    </div>
+                  </Skeleton>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="py-24 px-8" style={{ borderTop:`1px solid ${BORDER}` }}>
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+            <p style={{ color:primaryColor, fontFamily:BODY, fontSize:'0.65rem', letterSpacing:'0.25em', fontWeight:600 }} className="uppercase mb-5">Über uns</p>
+            <h2 style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:getSectionHeadlineSize(headlineSize,'about'),
+              textTransform:'uppercase' as const, letterSpacing:'-0.02em', color:TXT }} className="mb-6">
+              {aboutHeadline}
+            </h2>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
+            <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#000',
+              letterSpacing:'0.08em' }}
+              className="px-8 py-3.5 text-xs uppercase hover:brightness-110 transition-all whitespace-nowrap">
+              {heroCta}
+            </button>
+          </motion.div>
+          <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
+            <Skeleton isLoading={isLoading} className="min-h-[420px] rounded-2xl">
+              {aboutImg
+                ? <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${BORDER}` }}>
+                    <img src={aboutImg} className="w-full h-[460px] object-cover"
+                      style={{ filter:'brightness(0.82) saturate(0.9)' }} alt={aboutHeadline} />
+                  </div>
+                : <div className="rounded-2xl h-[460px] flex items-center justify-center"
+                    style={{ background:SURFACE, border:`1px solid ${BORDER}` }}>
+                    <span style={{ color:primaryColor, fontFamily:DISPLAY, fontWeight:800, fontSize:'5rem',
+                      textTransform:'uppercase' as const }}>{websiteData.businessName?.[0]}</span>
+                  </div>}
+            </Skeleton>
+          </motion.div>
+        </div>
+      </section>
+
+      <TestimonialsSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Stimmen'} dark={true} variant={1} headlineSize={headlineSize} />
+      <DynamicAddonSections websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
+      <ContactSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ textTransform:'uppercase' as const, letterSpacing:'-0.02em', fontWeight:800 }} template="modern" headlineSize={headlineSize} />
+      <DynamicFooter websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} footerText={footerText} variant="minimal" logoStyle={{ fontFamily:DISPLAY, fontWeight:800, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:primaryColor }} />
+    </div>
+  );
+}
+
 export const getLayoutKeyByIndustry = (category: string = "") => {
   const cat = category.toLowerCase();
   if (cat.includes('bau') || cat.includes('industrie') || cat.includes('handwerk')) return 'BOLD';
   if (cat.includes('friseur') || cat.includes('beauty') || cat.includes('kosmetik') || cat.includes('spa')) return 'ELEGANT';
+  // PULSE before CLEAN to avoid 'arzt' substring conflict
+  if (cat.includes('krankenhaus') || cat.includes('klinik') || cat.includes('pflegedienst') || cat.includes('altenpflege')) return 'PULSE';
   if (cat.includes('arzt') || cat.includes('kanzlei') || cat.includes('praxis') || cat.includes('therapie')) return 'CLEAN';
   if (cat.includes('tischler') || cat.includes('schreiner') || cat.includes('elektro') || cat.includes('sanitär')) return 'CRAFT';
   if (cat.includes('gym') || cat.includes('fitness') || cat.includes('sport') || cat.includes('training')) return 'DYNAMIC';
+  // FLUX before FRESH (nightlife beats casual dining)
+  if (cat.includes('nacht') || cat.includes('club') || cat.includes('lounge') || cat.includes('konzert') || cat.includes('disko')) return 'FLUX';
   if (cat.includes('café') || cat.includes('bäckerei') || cat.includes('restaurant') || cat.includes('bar')) return 'FRESH';
   if (cat.includes('auto') || cat.includes('fahrzeug') || cat.includes('immobilien') || cat.includes('schmuck')) return 'LUXURY';
+  // AURORA before MODERN (startups/SaaS get glassmorphism)
+  if (cat.includes('startup') || cat.includes('cloud') || cat.includes('saas') || cat.includes('cybersecurity')) return 'AURORA';
   if (cat.includes('agentur') || cat.includes('it') || cat.includes('marketing') || cat.includes('software')) return 'MODERN';
   if (cat.includes('natur') || cat.includes('bio') || cat.includes('garten') || cat.includes('florist')) return 'NATURAL';
+  // CLAY for family/children services
+  if (cat.includes('kinder') || cat.includes('kita') || cat.includes('kindergarten') || cat.includes('familien')) return 'CLAY';
   if (cat.includes('coach') || cat.includes('yoga') || cat.includes('ernährung') || cat.includes('fotograf') || cat.includes('massage') || cat.includes('heilpraktik')) return 'EDEN';
+  // NEXUS for creative portfolios & studios
+  if (cat.includes('portfolio') || cat.includes('kreativstudio') || cat.includes('designstudio') || cat.includes('atelier')) return 'NEXUS';
+  // FORGE before APEX: 'architektur' > 'architekt' specificity
+  if (cat.includes('architektur') || cat.includes('galerie') || cat.includes('museum') || cat.includes('innenarchitektur')) return 'FORGE';
   if (cat.includes('beratung') || cat.includes('recht') || cat.includes('steuer') || cat.includes('finanz') || cat.includes('architekt') || cat.includes('ingenieur')) return 'APEX';
   return 'PREMIUM';
 };
@@ -3157,7 +4226,9 @@ export const LayoutEngine = ({ gmbData, websiteData, isLoading }: any) => {
     BOLD: BoldLayoutV2, ELEGANT: ElegantLayoutV2, CLEAN: CleanLayoutV2,
     CRAFT: CraftLayoutV2, DYNAMIC: DynamicLayoutV2, FRESH: FreshLayoutV2,
     LUXURY: LuxuryLayoutV2, MODERN: ModernLayoutV2, NATURAL: NaturalLayoutV2,
-    PREMIUM: PremiumLayoutV2, EDEN: EdenLayoutV2, APEX: ApexLayoutV2
+    PREMIUM: PremiumLayoutV2, EDEN: EdenLayoutV2, APEX: ApexLayoutV2,
+    AURORA: AuroraLayoutV2, NEXUS: NexusLayoutV2, CLAY: ClayLayoutV2,
+    FORGE: ForgeLayoutV2, PULSE: PulseLayoutV2, FLUX: FluxLayoutV2,
   };
   const SelectedLayout = layouts[layoutKey] || PremiumLayoutV2;
   return (
