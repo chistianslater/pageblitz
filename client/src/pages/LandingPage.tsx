@@ -45,6 +45,16 @@ const GradientOrb = ({ className, delay = 0 }: { className?: string; delay?: num
   />
 );
 
+// --- Accessibility: Skip Link Component ---
+const SkipLink = () => (
+  <a
+    href="#main-content"
+    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+  >
+    Zum Hauptinhalt springen
+  </a>
+);
+
 const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,13 +67,14 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
   }, []);
 
   const navLinks = [
-    { label: "Funktionen", href: "#features" },
-    { label: "Beispiele", href: "#showcase" },
-    { label: "Preise", href: "#pricing" },
+    { label: "Funktionen", href: "#features", ariaLabel: "Funktionen und Features ansehen" },
+    { label: "Beispiele", href: "#showcase", ariaLabel: "Beispiel-Websites ansehen" },
+    { label: "Preise", href: "#pricing", ariaLabel: "Preise und Pakete ansehen" },
   ];
 
   return (
     <>
+      <SkipLink />
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -73,6 +84,8 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             ? `${isDark ? "bg-[#0a0a0a]/80" : "bg-white/90"} backdrop-blur-xl border-b border-white/5 py-4`
             : "bg-transparent py-6"
         }`}
+        role="navigation"
+        aria-label="Hauptnavigation"
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <motion.div
@@ -86,12 +99,14 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             <span className="text-white font-semibold text-lg tracking-tight">Pageblitz</span>
           </motion.div>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1" role="menubar">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-white/60 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all"
+                className="text-sm text-white/60 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                role="menuitem"
+                aria-label={link.ariaLabel}
               >
                 {link.label}
               </a>
@@ -102,22 +117,25 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             {/* Light/Dark toggle */}
             <button
               onClick={onToggle}
+              aria-label={isDark ? "Zum Light Mode wechseln" : "Zum Dark Mode wechseln"}
               title={isDark ? "Light Mode" : "Dark Mode"}
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             {/* Login icon */}
             <button
               onClick={() => navigate("/login")}
+              aria-label="Anmelden im Kundenbereich"
               title="Anmelden"
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               <LogIn className="w-4 h-4" />
             </button>
             <Button
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className={`btn-shimmer rounded-full px-5 h-10 text-sm font-medium transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-lg shadow-violet-950/25"}`}
+              aria-label="Website erstellen - Jetzt kostenlos testen"
+              className={`btn-shimmer rounded-full px-5 h-10 text-sm font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isDark ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-lg shadow-violet-950/25"}`}
             >
               Website erstellen
             </Button>
@@ -1511,17 +1529,26 @@ export default function LandingPage() {
     <div
       className="lp-root min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans"
       data-lp-theme={isDark ? "dark" : "light"}
+      role="document"
+      aria-label="Pageblitz - KI-Website-Generator Landing Page"
     >
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-400 z-[200] origin-left pointer-events-none"
         style={{ scaleX: smoothProgress }}
+        role="progressbar"
+        aria-label="Seiten-Scroll-Fortschritt"
+        aria-valuenow={Math.round(smoothProgress.get() * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
       />
 
-      <Navbar isDark={isDark} onToggle={() => setIsDark((v) => !v)} />
+      <header>
+        <Navbar isDark={isDark} onToggle={() => setIsDark((v) => !v)} />
+      </header>
 
       {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <GradientOrb className="w-[800px] h-[800px] bg-indigo-500/10 -left-40 -top-40" delay={0} />
         <GradientOrb className="w-[600px] h-[600px] bg-purple-500/10 right-0 top-1/4" delay={0.3} />
         <GradientOrb className="w-[400px] h-[400px] bg-blue-500/5 left-1/3 bottom-0" delay={0.5} />
@@ -1625,17 +1652,19 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                    className={`btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/20" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/30"}`}
+                    aria-label="7 Tage gratis testen - Jetzt Website erstellen"
+                    className={`btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/20" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/30"}`}
                   >
                     7 Tage gratis testen
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                   </Button>
                   <button
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-700 font-medium border border-violet-300 hover:border-violet-500 hover:text-violet-950 bg-transparent"}`}
+                    aria-label="Zu den Beispiel-Websites scrollen"
+                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-700 font-medium border border-violet-300 hover:border-violet-500 hover:text-violet-950 bg-transparent"}`}
                   >
                     Beispiele ansehen
-                    <ChevronDown className="ml-2 w-4 h-4" />
+                    <ChevronDown className="ml-2 w-4 h-4" aria-hidden="true" />
                   </button>
                 </motion.div>
 

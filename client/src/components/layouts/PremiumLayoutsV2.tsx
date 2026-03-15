@@ -1,7 +1,7 @@
 /**
- * PAGEBLITZ PREMIUM LAYOUTS v3.0 – DISTINCTIVELY DESIGNED
+ * PAGEBLITZ PREMIUM LAYOUTS v3.1 – ACCESSIBLE & DISTINCTIVELY DESIGNED
  * All content comes from websiteData (LLM-generated + real business data).
- * No more generic AI aesthetics – each layout has a unique typographic identity.
+ * WCAG AA compliant with semantic HTML, ARIA labels, and keyboard navigation.
  */
 
 import React, { useState, useRef } from 'react';
@@ -17,6 +17,77 @@ import {
   ShoppingBag, GraduationCap, Building, Camera, Music, Palette,
 } from 'lucide-react';
 import { getVariantIndex } from '../../lib/layoutUtils';
+
+// 🔥 NEU: 6 neue Layouts importieren
+import AuroraLayout from './AuroraLayout';
+import NexusLayout from './NexusLayout';
+import ClayLayout from './ClayLayout';
+import ForgeLayout from './ForgeLayout';
+import PulseLayout from './PulseLayout';
+import FluxLayout from './FluxLayout';
+
+// ── ACCESSIBILITY HELPERS ───────────────────────────────────────
+
+/**
+ * Generates accessible alt text for images based on business context
+ * Falls back to descriptive defaults when specific context is unavailable
+ */
+function generateAltText(type: 'hero' | 'about' | 'gallery' | 'logo', websiteData: any, index?: number): string {
+  const businessName = websiteData?.businessName || 'Unternehmen';
+  const category = websiteData?.businessCategory || 'Service';
+  
+  switch (type) {
+    case 'hero':
+      return `${businessName} - ${category}. Hauptbild der Website.`;
+    case 'about':
+      return `Über uns - ${businessName}. Team und Unternehmensvorstellung.`;
+    case 'gallery':
+      return `Galeriebild ${index ? index + 1 : 1} - ${businessName}. Impressionen und Arbeiten.`;
+    case 'logo':
+      return `Logo ${businessName}`;
+    default:
+      return `Bild - ${businessName}`;
+  }
+}
+
+/**
+ * Checks if user prefers reduced motion
+ * Used to conditionally disable animations for accessibility
+ */
+function usePrefersReducedMotion(): boolean {
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
+  
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handler = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+  
+  return prefersReducedMotion;
+}
+
+/**
+ * Returns motion props based on reduced motion preference
+ */
+function getAccessibleMotionProps(prefersReducedMotion: boolean, customTransition?: any) {
+  if (prefersReducedMotion) {
+    return {
+      initial: false,
+      animate: false,
+      transition: { duration: 0 }
+    };
+  }
+  
+  return {
+    transition: customTransition || { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  };
+}
 
 // ── SKELETON ────────────────────────────────────────────────────
 const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
@@ -264,14 +335,20 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <div className="flex flex-wrap items-center gap-4 mt-2">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl whitespace-nowrap">
+            <button 
+              style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
+              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+              aria-label={`${heroCta} - Hauptaktion`}
+            >
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
-              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+            <button 
+              style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
+              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+              aria-label="Mehr Informationen über unser Angebot"
+            >
               Mehr erfahren
             </button>
           </Skeleton>
@@ -285,9 +362,15 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1.2 }}
+        role="img"
+        aria-label={generateAltText('hero', websiteData)}
       >
         <Skeleton isLoading={isLoading} className="absolute inset-0">
-          <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
+          <img 
+            src={heroImageUrl} 
+            className="photo-editorial absolute inset-0 w-full h-full object-cover" 
+            alt={generateAltText('hero', websiteData)}
+          />
           {/* Gradient blend at left edge for seamless column transition */}
           <div className="absolute inset-y-0 left-0 w-16 pointer-events-none"
             style={{ backgroundImage: dark ? 'linear-gradient(to right, rgba(10,10,10,0.6), transparent)' : 'linear-gradient(to right, rgba(248,249,250,0.5), transparent)' }} />
@@ -349,14 +432,20 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         {/* CTA row */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl whitespace-nowrap">
+            <button 
+              style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
+              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+              aria-label={`${heroCta} - Hauptaktion`}
+            >
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
-              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+            <button 
+              style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
+              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+              aria-label="Mehr Informationen über unser Angebot"
+            >
               Mehr erfahren
             </button>
           </Skeleton>
@@ -365,7 +454,11 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         {/* Hero image */}
         <div className="relative w-full">
           <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl">
-            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+            <img 
+              src={heroImageUrl} 
+              className="photo-editorial w-full h-full object-cover" 
+              alt={generateAltText('hero', websiteData)}
+            />
           </Skeleton>
         </div>
       </motion.div>
@@ -387,8 +480,13 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden py-28 lg:py-32">
       {/* Full-bleed background — dramatically more visible */}
-      <div className="absolute inset-0 z-0">
-        <img src={heroImageUrl} className="w-full h-full object-cover" style={{ opacity: 0.38 }} alt="" />
+      <div className="absolute inset-0 z-0" role="img" aria-label={generateAltText('hero', websiteData)}>
+        <img 
+          src={heroImageUrl} 
+          className="w-full h-full object-cover" 
+          style={{ opacity: 0.38 }} 
+          alt={generateAltText('hero', websiteData)}
+        />
         <div className={`absolute inset-0 ${bgGradient}`} />
       </div>
 
@@ -435,14 +533,20 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             </Skeleton>
             <div className="flex flex-wrap gap-4">
               <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-                <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-                  className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform whitespace-nowrap">
+                <button 
+                  style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
+                  className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+                  aria-label={`${heroCta} - Hauptaktion`}
+                >
                   {heroCta}
                 </button>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-                <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
-                  className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+                <button 
+                  style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
+                  className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+                  aria-label="Mehr Informationen über unser Angebot"
+                >
                   Mehr erfahren
                 </button>
               </Skeleton>
@@ -572,10 +676,16 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 1 }}
+          role="img"
+          aria-label={generateAltText('about', websiteData)}
         >
           <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
             <div className="photo-frame aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
-              <img src={aboutImg} className="photo-editorial w-full h-full object-cover" alt="" />
+              <img 
+                src={aboutImg} 
+                className="photo-editorial w-full h-full object-cover" 
+                alt={generateAltText('about', websiteData)}
+              />
             </div>
           </Skeleton>
         </motion.div>
@@ -2315,19 +2425,48 @@ export function PremiumLayoutV2({
   const Services = ServicesVariants[servicesIdx];
   const About = AboutVariants[aboutIdx];
 
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const motionProps = getAccessibleMotionProps(prefersReducedMotion);
+
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
-          {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
-        </Skeleton>
-        <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
-      </nav>
+    <div 
+      style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} 
+      className="bg-white overflow-hidden"
+      role="document"
+      aria-label={`Website von ${websiteData.businessName}`}
+    >
+      <header role="banner">
+        <nav 
+          className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100"
+          role="navigation"
+          aria-label="Hauptnavigation"
+        >
+          <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+            {(websiteData as any).logoImageUrl
+              ? <img 
+                  src={(websiteData as any).logoImageUrl} 
+                  alt={generateAltText('logo', websiteData)} 
+                  className="h-8 w-auto object-contain max-w-[160px]" 
+                />
+              : <span 
+                  style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} 
+                  className="whitespace-nowrap block"
+                >
+                  {websiteData.businessName}
+                </span>}
+          </Skeleton>
+          <NavLinks textClass="text-neutral-800" />
+          <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+            <button 
+              style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} 
+              className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+              aria-label={`${heroCta} - Hauptaktion`}
+            >
+              {heroCta}
+            </button>
+          </Skeleton>
+        </nav>
+      </header>
 
       {/* HERO: Dynamic colored left panel / white right panel */}
       <section id="hero" className="min-h-screen grid lg:grid-cols-[45%_55%] pt-[80px]">
@@ -2344,14 +2483,24 @@ export function PremiumLayoutV2({
               <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
-              <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em', color: safeCs.onPrimary || '#ffffff' }} className="px-10 py-4 text-xs uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+              <button 
+                style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em', color: safeCs.onPrimary || '#ffffff' }} 
+                className="px-10 py-4 text-xs uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                aria-label={`${heroCta} - Hauptaktion`}
+              >
+                {heroCta}
+              </button>
             </Skeleton>
           </div>
         </div>
         {/* Right: image panel */}
-        <div className="relative min-h-[60vh] overflow-hidden">
+        <div className="relative min-h-[60vh] overflow-hidden" role="img" aria-label={generateAltText('hero', websiteData)}>
           <Skeleton isLoading={isLoading} className="absolute inset-0">
-            <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
+            <img 
+              src={heroImageUrl} 
+              className="photo-editorial absolute inset-0 w-full h-full object-cover" 
+              alt={generateAltText('hero', websiteData)}
+            />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/10" />
           </Skeleton>
         </div>
@@ -2408,7 +2557,11 @@ export function PremiumLayoutV2({
               </Skeleton>
             </div>
             <Skeleton isLoading={isLoading} className="aspect-[4/3] rounded-2xl shadow-2xl overflow-hidden">
-              <img src={aboutImg} className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
+              <img 
+                src={aboutImg} 
+                className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" 
+                alt={generateAltText('about', websiteData)}
+              />
             </Skeleton>
           </div>
         </section>
@@ -3137,6 +3290,16 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
 export const getLayoutKeyByIndustry = (category: string = "") => {
   const cat = category.toLowerCase();
+  
+  // 🔥 NEU: Neue Layouts für spezifische Branchen
+  if (cat.includes('startup') || cat.includes('tech') || cat.includes('saas') || cat.includes('app')) return 'AURORA'; // Glassmorphism
+  if (cat.includes('designer') || cat.includes('agentur') || cat.includes('studio') || cat.includes('portfolio')) return 'NEXUS'; // Bento Grid
+  if (cat.includes('kindergarten') || cat.includes('kita') || cat.includes('therapie') || cat.includes('wellness')) return 'CLAY'; // Claymorphism
+  if (cat.includes('architekt') || cat.includes('galerie') || cat.includes('kunst') || cat.includes('premium')) return 'FORGE'; // Brutalist
+  if (cat.includes('fitness') || cat.includes('gesundheit') || cat.includes('coach') || cat.includes('yoga')) return 'PULSE'; // Neumorphism
+  if (cat.includes('restaurant') || cat.includes('bar') || cat.includes('event') || cat.includes('club')) return 'FLUX'; // Cinematic
+  
+  // Bestehende Layouts
   if (cat.includes('bau') || cat.includes('industrie') || cat.includes('handwerk')) return 'BOLD';
   if (cat.includes('friseur') || cat.includes('beauty') || cat.includes('kosmetik') || cat.includes('spa')) return 'ELEGANT';
   if (cat.includes('arzt') || cat.includes('kanzlei') || cat.includes('praxis') || cat.includes('therapie')) return 'CLEAN';
@@ -3154,10 +3317,14 @@ export const getLayoutKeyByIndustry = (category: string = "") => {
 export const LayoutEngine = ({ gmbData, websiteData, isLoading }: any) => {
   const layoutKey = getLayoutKeyByIndustry(gmbData?.category);
   const layouts: any = {
+    // Bestehende Layouts
     BOLD: BoldLayoutV2, ELEGANT: ElegantLayoutV2, CLEAN: CleanLayoutV2,
     CRAFT: CraftLayoutV2, DYNAMIC: DynamicLayoutV2, FRESH: FreshLayoutV2,
     LUXURY: LuxuryLayoutV2, MODERN: ModernLayoutV2, NATURAL: NaturalLayoutV2,
-    PREMIUM: PremiumLayoutV2, EDEN: EdenLayoutV2, APEX: ApexLayoutV2
+    PREMIUM: PremiumLayoutV2, EDEN: EdenLayoutV2, APEX: ApexLayoutV2,
+    // 🔥 NEU: 6 neue Layouts
+    AURORA: AuroraLayout, NEXUS: NexusLayout, CLAY: ClayLayout,
+    FORGE: ForgeLayout, PULSE: PulseLayout, FLUX: FluxLayout,
   };
   const SelectedLayout = layouts[layoutKey] || PremiumLayoutV2;
   return (

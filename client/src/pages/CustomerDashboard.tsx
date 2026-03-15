@@ -45,6 +45,7 @@ function EditableField({ label, value, icon, multiline, onSave }: EditableFieldP
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
+  const inputId = useRef(`editable-${Math.random().toString(36).substr(2, 9)}`).current;
 
   const handleSave = async () => {
     setSaving(true);
@@ -61,56 +62,70 @@ function EditableField({ label, value, icon, multiline, onSave }: EditableFieldP
 
   return (
     <div className="group">
-      <label className="text-xs text-slate-400 font-medium flex items-center gap-1.5 mb-1">
-        {icon}
+      <label 
+        htmlFor={editing ? inputId : undefined}
+        className="text-xs text-slate-400 font-medium flex items-center gap-1.5 mb-1"
+      >
+        <span aria-hidden="true">{icon}</span>
         {label}
       </label>
       {editing ? (
         <div className="flex flex-col gap-2">
           {multiline ? (
             <textarea
-              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none resize-none min-h-[80px]"
+              id={inputId}
+              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none resize-none min-h-[80px] focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
+              aria-label={`${label} bearbeiten`}
             />
           ) : (
             <input
-              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none"
+              id={inputId}
+              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
+              aria-label={`${label} bearbeiten`}
               onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
             />
           )}
           <div className="flex gap-2">
             <button
               onClick={() => { setDraft(value); setEditing(false); }}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300 transition-colors"
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-800"
+              aria-label="Bearbeiten abbrechen"
             >
-              <X className="w-3 h-3" /> Abbrechen
+              <X className="w-3 h-3" aria-hidden="true" /> Abbrechen
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800"
+              aria-label={saving ? "Wird gespeichert..." : "Speichern"}
             >
-              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" /> : <Check className="w-3 h-3" aria-hidden="true" />}
               Speichern
             </button>
           </div>
         </div>
       ) : (
         <div className="flex items-start gap-2">
-          <p className="flex-1 text-sm text-slate-200 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50 min-h-[36px] leading-relaxed">
+          <p 
+            className="flex-1 text-sm text-slate-200 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50 min-h-[36px] leading-relaxed"
+            role="region"
+            aria-label={`Aktueller Wert: ${label}`}
+          >
             {value || <span className="text-slate-500 italic">Nicht angegeben</span>}
           </p>
           <button
             onClick={() => { setDraft(value); setEditing(true); }}
-            className="flex-shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700 transition-colors opacity-0 group-hover:opacity-100"
+            className="flex-shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800"
             title={`${label} bearbeiten`}
+            aria-label={`${label} bearbeiten`}
           >
-            <Edit2 className="w-3.5 h-3.5" />
+            <Edit2 className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -2127,21 +2142,55 @@ export default function CustomerDashboard() {
       {/* Tab Navigation */}
       <div className="border-b border-slate-700/50 bg-slate-900/50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-1">
+          <div 
+            className="flex gap-1" 
+            role="tablist" 
+            aria-label="Website-Einstellungen Navigation"
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`tabpanel-${tab.id}`}
+                id={`tab-${tab.id}`}
+                tabIndex={activeTab === tab.id ? 0 : -1}
+                onKeyDown={(e) => {
+                  // 🔥 ACCESSIBILITY: Arrow key navigation for tabs
+                  const tabIds = tabs.map(t => t.id);
+                  const currentIndex = tabIds.indexOf(activeTab);
+                  if (e.key === "ArrowRight") {
+                    const nextIndex = (currentIndex + 1) % tabIds.length;
+                    setActiveTab(tabIds[nextIndex]);
+                    document.getElementById(`tab-${tabIds[nextIndex]}`)?.focus();
+                  } else if (e.key === "ArrowLeft") {
+                    const prevIndex = (currentIndex - 1 + tabIds.length) % tabIds.length;
+                    setActiveTab(tabIds[prevIndex]);
+                    document.getElementById(`tab-${tabIds[prevIndex]}`)?.focus();
+                  } else if (e.key === "Home") {
+                    e.preventDefault();
+                    setActiveTab(tabIds[0]);
+                    document.getElementById(`tab-${tabIds[0]}`)?.focus();
+                  } else if (e.key === "End") {
+                    e.preventDefault();
+                    setActiveTab(tabIds[tabIds.length - 1]);
+                    document.getElementById(`tab-${tabIds[tabIds.length - 1]}`)?.focus();
+                  }
+                }}
+                className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 ${
                   activeTab === tab.id
                     ? "text-blue-400 border-blue-400 bg-blue-500/10"
                     : "text-slate-400 border-transparent hover:text-white hover:bg-slate-800/50"
                 }`}
               >
-                {tab.icon}
+                <span aria-hidden="true">{tab.icon}</span>
                 {tab.label}
                 {tab.badge && tab.badge > 0 ? (
-                  <span className="ml-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
+                  <span 
+                    className="ml-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none"
+                    aria-label={`${tab.badge} ungelesene ${tab.label}`}
+                  >
                     {tab.badge > 99 ? "99+" : tab.badge}
                   </span>
                 ) : null}
@@ -2155,7 +2204,12 @@ export default function CustomerDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Preview Tab */}
         {activeTab === "preview" && (
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+          <div 
+            id="tabpanel-preview"
+            role="tabpanel"
+            aria-labelledby="tab-preview"
+            className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden"
+          >
             <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-3">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-500/60" />
@@ -2201,7 +2255,12 @@ export default function CustomerDashboard() {
 
         {/* Content Tab */}
         {activeTab === "content" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div 
+            id="tabpanel-content"
+            role="tabpanel"
+            aria-labelledby="tab-content"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          >
             {/* Business Info */}
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
               <h2 className="text-white font-semibold flex items-center gap-2">
@@ -2292,7 +2351,12 @@ export default function CustomerDashboard() {
 
         {/* Design Tab */}
         {activeTab === "design" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div 
+            id="tabpanel-design"
+            role="tabpanel"
+            aria-labelledby="tab-design"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          >
             <div className="lg:col-span-2">
               <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
                 <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
@@ -2412,7 +2476,12 @@ export default function CustomerDashboard() {
 
         {/* Structure Tab */}
         {activeTab === "structure" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div 
+            id="tabpanel-structure"
+            role="tabpanel"
+            aria-labelledby="tab-structure"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          >
             <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
               <StructureEditor
                 websiteId={website.id}
@@ -2440,7 +2509,12 @@ export default function CustomerDashboard() {
 
         {/* Add-ons Tab */}
         {activeTab === "addons" && (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div 
+            id="tabpanel-addons"
+            role="tabpanel"
+            aria-labelledby="tab-addons"
+            className="grid grid-cols-1 xl:grid-cols-3 gap-6"
+          >
             <div className="xl:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
               <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
                 <Sparkles className="w-4 h-4 text-pink-400" />
@@ -2475,7 +2549,12 @@ export default function CustomerDashboard() {
 
         {/* Analytics Tab */}
         {activeTab === "analytics" && (
-          <div className="space-y-6">
+          <div 
+            id="tabpanel-analytics"
+            role="tabpanel"
+            aria-labelledby="tab-analytics"
+            className="space-y-6"
+          >
             {analyticsLoading ? (
               <div className="flex items-center justify-center h-40">
                 <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
@@ -2520,7 +2599,12 @@ export default function CustomerDashboard() {
 
         {/* Submissions (Anfragen) Tab */}
         {activeTab === "submissions" && (
-          <div className="space-y-4">
+          <div 
+            id="tabpanel-submissions"
+            role="tabpanel"
+            aria-labelledby="tab-submissions"
+            className="space-y-4"
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-white text-lg font-semibold">

@@ -443,3 +443,458 @@ html {
   from { left: -80%; }
   to   { left: 130%; }
 }
+
+/* ============================================================
+   PAGEBLITZ DESIGN SYSTEM v2.0
+   Semantic Tokens, Spacing-System, Elevation-Levels
+   WCAG Accessible Design Tokens
+   ============================================================ */
+
+/* ── Semantic Color Tokens ───────────────────────────────────────
+   Erweiterte Farbtokens für bessere semantische Konsistenz
+   und WCAG-konforme Kontraste */
+
+@layer base {
+  :root {
+    /* Text Colors - Semantisch */
+    --color-text-primary: var(--foreground);
+    --color-text-secondary: var(--muted-foreground);
+    --color-text-tertiary: oklch(0.55 0.015 265);
+    --color-text-disabled: oklch(0.6 0.01 265);
+    --color-text-inverse: var(--background);
+    
+    /* Surface Colors - Für verschiedene Ebenen */
+    --color-surface-base: var(--background);
+    --color-surface-elevated: var(--card);
+    --color-surface-overlay: oklch(0.25 0.015 265 / 0.8);
+    
+    /* Interactive State Colors */
+    --color-state-hover: oklch(0.3 0.015 265 / 0.1);
+    --color-state-pressed: oklch(0.3 0.015 265 / 0.2);
+    --color-state-focus: var(--ring);
+    --color-state-disabled: oklch(0.4 0.01 265 / 0.3);
+    
+    /* Status Colors */
+    --color-success: oklch(0.65 0.15 145);
+    --color-warning: oklch(0.75 0.15 85);
+    --color-error: oklch(0.6 0.2 25);
+    --color-info: oklch(0.65 0.15 250);
+  }
+}
+
+/* ── Spacing System (4/8dp Rhythmus) ─────────────────────────────
+   Konsistentes 8dp-Grid-System für alle Templates */
+
+@layer utilities {
+  /* Base Spacing Scale */
+  .space-0 { --space: 0; }
+  .space-1 { --space: 0.25rem; }  /* 4px */
+  .space-2 { --space: 0.5rem; }   /* 8px */
+  .space-3 { --space: 0.75rem; }  /* 12px */
+  .space-4 { --space: 1rem; }     /* 16px */
+  .space-5 { --space: 1.25rem; }   /* 20px */
+  .space-6 { --space: 1.5rem; }   /* 24px */
+  .space-8 { --space: 2rem; }     /* 32px */
+  .space-10 { --space: 2.5rem; }  /* 40px */
+  .space-12 { --space: 3rem; }    /* 48px */
+  .space-16 { --space: 4rem; }    /* 64px */
+  .space-20 { --space: 5rem; }     /* 80px */
+  .space-24 { --space: 6rem; }    /* 96px */
+  .space-32 { --space: 8rem; }    /* 128px */
+  
+  /* Section Spacing Presets */
+  .section-sm { padding-top: 3rem; padding-bottom: 3rem; }
+  .section-md { padding-top: 5rem; padding-bottom: 5rem; }
+  .section-lg { padding-top: 8rem; padding-bottom: 8rem; }
+  .section-xl { padding-top: 12rem; padding-bottom: 12rem; }
+  
+  /* Component Spacing */
+  .component-sm { padding: 0.75rem; }
+  .component-md { padding: 1rem; }
+  .component-lg { padding: 1.5rem; }
+  .component-xl { padding: 2rem; }
+}
+
+/* ── Elevation System (Shadow-Levels) ────────────────────────────
+   Konsistente Shadow-Hierarchie für Cards, Modals, Dropdowns */
+
+@layer utilities {
+  /* Level 1: Subtle, für statische Elemente */
+  .elevation-1 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Level 2: Soft, für Cards */
+  .elevation-2 {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Level 3: Medium, für Hover-States */
+  .elevation-3 {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Level 4: High, für Dropdowns, Popovers */
+  .elevation-4 {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Level 5: Dramatic, für Modals */
+  .elevation-5 {
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Glass Elevation */
+  .elevation-glass {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* ── Premium Button System ──────────────────────────────────────
+   Erweiterte Button-States mit WCAG-konformem Feedback */
+
+@layer components {
+  /* Premium Button Base */
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+    transition: 
+      transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 150ms ease;
+    will-change: transform, box-shadow;
+  }
+  
+  /* Hover State - Lift + Shadow */
+  .btn-premium:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Press/Active State - Squish */
+  .btn-premium:active:not(:disabled) {
+    transform: scale(0.98) translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition-duration: 100ms;
+  }
+  
+  /* Focus State - Visible Ring */
+  .btn-premium:focus-visible {
+    outline: none;
+    box-shadow: 
+      0 0 0 2px var(--background),
+      0 0 0 4px var(--ring);
+  }
+  
+  /* Disabled State - Reduced Opacity */
+  .btn-premium:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Loading State */
+  .btn-premium[data-loading="true"] {
+    position: relative;
+    color: transparent;
+  }
+  
+  .btn-premium[data-loading="true"]::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    left: 50%;
+    top: 50%;
+    margin-left: -0.5rem;
+    margin-top: -0.5rem;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Premium Card System ────────────────────────────────────────
+   Konsistente Card-Komponenten mit Hover-States */
+
+@layer components {
+  /* Premium Card Base */
+  .card-premium {
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-lg);
+    transition: 
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
+  }
+  
+  /* Card Hover - Lift + Shadow */
+  .card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Card Press */
+  .card-premium:active {
+    transform: translateY(-2px) scale(0.995);
+    transition-duration: 100ms;
+  }
+  
+  /* Card Focus */
+  .card-premium:focus-visible {
+    outline: none;
+    box-shadow: 
+      0 0 0 2px var(--background),
+      0 0 0 4px var(--ring),
+      0 16px 40px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Card Variants */
+  .card-premium-flat {
+    box-shadow: none;
+    border: 1px solid var(--border);
+  }
+  
+  .card-premium-flat:hover {
+    border-color: var(--ring);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .card-premium-ghost {
+    background: transparent;
+    border: 1px solid transparent;
+  }
+  
+  .card-premium-ghost:hover {
+    background: var(--color-state-hover);
+    border-color: var(--border);
+  }
+}
+
+/* ── Typography System ─────────────────────────────────────────
+   Konsistente Typographie-Hierarchie */
+
+@layer utilities {
+  /* Max Width for Readability (65ch = ~65 Zeichen pro Zeile) */
+  .text-readable {
+    max-width: 65ch;
+  }
+  
+  /* Heading Hierarchy */
+  .heading-hero {
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+  
+  .heading-xl {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  
+  .heading-lg {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+  
+  .heading-md {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1.3;
+    font-weight: 600;
+  }
+  
+  .heading-sm {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    line-height: 1.4;
+    font-weight: 600;
+  }
+  
+  /* Body Text */
+  .body-lg {
+    font-size: 1.125rem;
+    line-height: 1.75;
+  }
+  
+  .body-md {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .body-sm {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  /* Caption/Label */
+  .text-caption {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  
+  /* Uppercase Labels */
+  .text-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ── Focus Management ───────────────────────────────────────────
+   Konsistente Focus-Styles für alle interaktiven Elemente */
+
+@layer base {
+  /* Standard Focus Ring */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  
+  /* High Contrast Focus für Dark Mode */
+  .dark :focus-visible {
+    outline-color: oklch(0.65 0.15 265);
+  }
+  
+  /* Remove default focus for mouse users */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  
+  /* Skip Link Styling */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--background);
+    color: var(--foreground);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--ring);
+    z-index: 9999;
+    transition: top 200ms ease;
+  }
+  
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
+
+/* ── Screen Reader Only ────────────────────────────────────────
+   Utility für Accessibility-Texte */
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  
+  .sr-only:focus {
+    position: fixed;
+    width: auto;
+    height: auto;
+    padding: 0.75rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    z-index: 9999;
+    background: var(--background);
+    color: var(--foreground);
+    border: 2px solid var(--ring);
+    border-radius: var(--radius-md);
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────────────
+   Respektiere User-Präferenzen für Animationen */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .btn-premium:hover,
+  .card-premium:hover,
+  .img-zoom:hover img {
+    transform: none !important;
+  }
+}
+
+/* ── Mobile-First Breakpoints ──────────────────────────────────
+   Vereinheitlichte Breakpoints für alle Templates */
+
+@layer base {
+  /* Container Queries Support */
+  @supports (container-type: inline-size) {
+    .container-query {
+      container-type: inline-size;
+    }
+  }
+  
+  /* Touch Target Minimum (44×44pt für iOS, 48×48dp für Android) */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .touch-target-lg {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* ── Print Styles ─────────────────────────────────────────────
+   Optimierte Druckausgabe */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  /* Entferne Hintergründe und Schatten */
+  * {
+    background: white !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    color: black !important;
+  }
+  
+  /* Sorge für lesbare Links */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    opacity: 0.7;
+  }
+}

@@ -2427,6 +2427,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
         {/* Chat panel – smooth slide */}
         <div
+          id="chat-panel"
           className="flex w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0 items-center overflow-hidden transition-all duration-300 ease-in-out"
           style={{
             maxWidth: chatHidden ? 0 : 360,
@@ -2454,7 +2455,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
           {/* Messages + Input: flex column, messages scroll, input sticky */}
           <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
+          {/* 🔥 ACCESSIBILITY: Live-Region für Screen Reader Ankündigungen */}
+          <div 
+            className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0"
+            role="log"
+            aria-live="polite"
+            aria-atomic="false"
+            aria-label="Chat-Verlauf"
+          >
             {messages.map((msg) => {
               // Section divider rendering
               if ((msg.role as string) === "divider") {
@@ -2462,7 +2470,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 try { divInfo = JSON.parse(msg.content); } catch {}
                 if (!divInfo) return null;
                 return (
-                  <div key={msg.id} className="flex items-center gap-3 my-2 px-1">
+                  <div key={msg.id} className="flex items-center gap-3 my-2 px-1" aria-hidden="true">
                     <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
                     <div className="flex items-center gap-2 bg-slate-700/80 border border-slate-600/60 rounded-xl px-4 py-2 flex-shrink-0 shadow-sm">
                       <span className="text-base">{divInfo.icon}</span>
@@ -2480,10 +2488,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                role="article"
+                aria-label={msg.role === "bot" ? "KI-Assistent Nachricht" : "Ihre Nachricht"}
               >
                 {msg.role === "bot" && (
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
-                    <Zap className="w-3.5 h-3.5 text-white" />
+                  <div 
+                    className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5"
+                    aria-label="KI-Assistent"
+                    role="img"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-white" aria-hidden="true" />
                   </div>
                 )}
                 <div className="flex gap-2 items-end">
@@ -4601,7 +4615,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (
                 <div className="pt-3 pb-2">
                   <p className="text-xs text-slate-500 mb-2 font-medium">Schnellantworten:</p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2" role="list" aria-label="Schnellantworten">
                     {getQuickReplies(currentStep).map((reply) => (
                       <button
                         key={reply}
@@ -4613,7 +4627,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             handleSubmit(reply);
                           }
                         }}
-                        className="text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
+                        className="text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+                        aria-label={`Schnellantwort: ${reply}`}
                       >
                         {reply}
                       </button>
@@ -4671,7 +4686,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         ? `z.B. "Damen und Herren in ${data.legalCity || 'Bocholt'}, die Wert auf..."`
                         : "Deine Antwort... (Shift+Enter für neue Zeile)"
                     }
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none leading-relaxed"
+                    aria-label={
+                      currentStep === "tagline" ? "Werbespruch eingeben" :
+                      currentStep === "description" ? "Beschreibung eingeben" :
+                      currentStep === "usp" ? "Alleinstellungsmerkmal eingeben" :
+                      "Zielgruppe eingeben"
+                    }
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 border border-slate-600/50 resize-none leading-relaxed"
                     style={{ minHeight: "72px", maxHeight: "160px" }}
                   />
                 ) : (
@@ -4680,6 +4701,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
+                    aria-label={
+                      currentStep === "businessName" ? "Unternehmensname eingeben" :
+                      currentStep === "legalOwner" ? "Inhaber eingeben" :
+                      currentStep === "legalStreet" ? "Straße eingeben" :
+                      currentStep === "legalZip" ? "Postleitzahl eingeben" :
+                      currentStep === "legalCity" ? "Ort eingeben" :
+                      currentStep === "legalEmail" ? "E-Mail eingeben" :
+                      currentStep === "legalPhone" ? "Telefon eingeben" :
+                      currentStep === "legalVat" ? "USt-IdNr. eingeben (optional)" :
+                      "Antwort eingeben"
+                    }
                     placeholder={
                       currentStep === "businessName"
                         ? data.businessName || "Unternehmensname eingeben..."
