@@ -34,12 +34,12 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, isLoading =
             {!isLoading && (
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] mb-8 self-start border border-slate-900/20 bg-slate-900/05 text-slate-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-900 flex-shrink-0" />
-                ✓ {websiteData.businessCategory || 'Geprüfter Anbieter'}
+                ✓ {websiteData?.businessCategory || 'Geprüfter Anbieter'}
               </span>
             )}
             <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-8">
               {(() => {
-                const text = websiteData.tagline || websiteData.businessName || 'Vertrauen & Expertise';
+                const text = websiteData?.tagline || websiteData?.businessName || 'Vertrauen & Expertise';
                 const words = text.split(' ');
                 const mid = Math.ceil(words.length / 2);
                 const line1 = words.slice(0, mid).join(' ');
@@ -54,7 +54,7 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, isLoading =
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-8">
               <p className="text-base md:text-lg text-slate-500 mb-8 md:mb-10 max-w-lg">
-                {websiteData.tagline}
+                {websiteData?.tagline}
               </p>
             </Skeleton>
             <div className="flex flex-col sm:flex-row gap-4 md:gap-8 border-t border-slate-200 pt-6 md:pt-10 items-start sm:items-center">

@@ -42,12 +42,12 @@ export default function FreshLayout({ websiteData, cs, heroImageUrl, isLoading =
               }}
             >
               <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cs.primary }} />
-              {websiteData.businessCategory || 'Täglich Frisch & Regional'}
+              {websiteData?.businessCategory || 'Täglich Frisch & Regional'}
             </span>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="w-full h-20 md:h-32 mb-10">
             {(() => {
-              const text = websiteData.tagline || websiteData.businessName || 'Täglich Frisch';
+              const text = websiteData?.tagline || websiteData?.businessName || 'Täglich Frisch';
               const words = text.split(' ');
               const mid = Math.ceil(words.length / 2);
               const line1 = words.slice(0, mid).join(' ');

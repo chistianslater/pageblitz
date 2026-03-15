@@ -295,7 +295,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
   const textColor    = dark ? (safeCs.lightText || '#ffffff') : safeTextForBg(safeCs.text, true);
   const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : safeTextForBg(safeCs.textLight, true);
-  const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
+  const badgeText    = websiteData?.businessCategory ? `✓ ${websiteData?.businessCategory}` : (websiteData?.businessName || 'Professioneller Service');
 
   return (
     <section id="hero" className="grid lg:grid-cols-[45%_55%] min-h-screen overflow-hidden">
@@ -329,7 +329,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-8">
           <p style={{ fontFamily: bodyFont, color: textMuted }}
             className="text-lg leading-relaxed max-w-sm mb-0">
-            {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
+            {websiteData?.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData?.tagline}
           </p>
         </Skeleton>
 
@@ -392,7 +392,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const accentColor  = safeCs.accent || safeCs.secondary || primaryColor;
   const textColor    = dark ? (safeCs.lightText || '#ffffff') : safeTextForBg(safeCs.text, true);
   const textMuted    = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.6)') : safeTextForBg(safeCs.textLight, true);
-  const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
+  const badgeText    = websiteData?.businessCategory ? `✓ ${websiteData?.businessCategory}` : (websiteData?.businessName || 'Professioneller Service');
 
   return (
     <section id="hero" className="pt-28 md:pt-36 pb-16 md:pb-24 text-center px-6 max-w-7xl mx-auto relative overflow-hidden">
@@ -425,7 +425,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-10">
           <p style={{ fontFamily: bodyFont, color: textMuted }}
             className="text-xl max-w-2xl mx-auto italic leading-relaxed mb-0">
-            {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
+            {websiteData?.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData?.tagline}
           </p>
         </Skeleton>
 
@@ -475,7 +475,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const bgGradient   = dark
     ? 'bg-gradient-to-br from-black/80 via-black/60 to-black/30'
     : 'bg-gradient-to-br from-white/85 via-white/65 to-white/25';
-  const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
+  const badgeText    = websiteData?.businessCategory ? `✓ ${websiteData?.businessCategory}` : (websiteData?.businessName || 'Professioneller Service');
 
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden py-28 lg:py-32">
@@ -528,7 +528,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             <Skeleton isLoading={isLoading} className="w-full min-h-[5rem] mb-8">
               <p style={{ fontFamily: bodyFont, color: textMuted, borderLeft: `3px solid ${primaryColor}` }}
                 className="text-lg lg:text-xl font-light leading-relaxed pl-6 mb-0">
-                {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
+                {websiteData?.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData?.tagline}
               </p>
             </Skeleton>
             <div className="flex flex-wrap gap-4">
@@ -1002,7 +1002,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
       }
     });
     submitMutation.mutate({
-      slug: websiteData.slug,
+      slug: websiteData?.slug,
       name,
       email,
       ...(phone ? { phone } : {}),
@@ -1495,7 +1495,7 @@ function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'defa
               style={{ ...logoStyle, ...textMainStyle }}
               className="break-words block leading-tight"
             >
-              {websiteData.businessName}
+              {websiteData?.businessName}
             </span>
           </Skeleton>
           <p className="text-sm break-words leading-relaxed" style={textMutedStyle}>{footerText}</p>
@@ -1535,17 +1535,17 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
-  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const hl = splitHeadline(hero?.headline || websiteData?.tagline || websiteData?.businessName || '');
   const aboutHeadline = about?.headline || 'Warum Kunden uns vertrauen';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Space Grotesk', Impact, 'Arial Narrow', sans-serif");
   const BODY = "'Plus Jakarta Sans', 'Arial', sans-serif";
   const HL: React.CSSProperties = { fontWeight: 900, letterSpacing: '0.02em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const darkBg = (safeCs as any).darkBackground || '#0A0A0A';
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -1565,8 +1565,8 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/10" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase truncate block">{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase truncate block">{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
@@ -1629,17 +1629,17 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin buchen';
-  const heroHeadline = hero?.headline || websiteData.tagline || '';
+  const heroHeadline = hero?.headline || websiteData?.tagline || '';
   const aboutHeadline = about?.headline || 'Ihr Wohlbefinden, unser Versprechen';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', 'Garamond', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 300 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const hl = splitHeadline(heroHeadline);
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -1659,8 +1659,8 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }} className="whitespace-nowrap block">{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
@@ -1702,7 +1702,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="md:max-w-[280px] lg:max-w-[320px] text-center md:text-left">
             <Skeleton isLoading={isLoading} className="w-full h-8">
-              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="break-words">{websiteData.businessName}</span>
+              <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="break-words">{websiteData?.businessName}</span>
             </Skeleton>
           </div>
           <ul className="space-y-1 text-sm text-white/50 text-center">
@@ -1728,16 +1728,16 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
-  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const hl = splitHeadline(hero?.headline || websiteData?.tagline || websiteData?.businessName || '');
   const aboutHeadline = about?.headline || 'In besten Händen bei uns';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Outfit', 'Helvetica Neue', sans-serif");
   const BODY = "'Outfit', 'Helvetica Neue', sans-serif";
   const HL: React.CSSProperties = { fontWeight: 600 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -1758,7 +1758,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-2.5 h-8 rounded-full shrink-0" style={{ backgroundColor: safeCs.primary }} />
-            <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }} className="whitespace-nowrap block">{websiteData.businessName}</span>
+            <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }} className="whitespace-nowrap block">{websiteData?.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
@@ -1822,16 +1822,16 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Angebot anfragen';
-  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const hl = splitHeadline(hero?.headline || websiteData?.tagline || websiteData?.businessName || '');
   const aboutHeadline = about?.headline || 'Handwerk, das für sich spricht';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Playfair Display', Georgia, serif");
   const BODY = "'Source Sans 3', 'Georgia', sans-serif";
   const HL: React.CSSProperties = { fontWeight: 900 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -1851,8 +1851,8 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F2EBD9]/90 backdrop-blur-sm border-b border-neutral-300/50">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }} className="whitespace-nowrap block">{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -1915,17 +1915,17 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Training buchen';
-  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const hl = splitHeadline(hero?.headline || websiteData?.tagline || websiteData?.businessName || '');
   const aboutHeadline = about?.headline || 'Ihr Ziel. Unser Antrieb.';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Bebas Neue', Impact, 'Arial Narrow', sans-serif");
   const BODY = "'Rajdhani', 'Arial', sans-serif";
   const HL: React.CSSProperties = { letterSpacing: '0.04em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const darkBg = (safeCs as any).darkBackground || '#080808';
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -1945,8 +1945,8 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-sm border-b border-white/10" style={{ backgroundColor: darkBg + 'e6' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.6rem', letterSpacing: '0.08em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.6rem', letterSpacing: '0.08em' }} className="whitespace-nowrap block">{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
@@ -2009,17 +2009,17 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Reservieren';
-  const heroHeadline = hero?.headline || websiteData.tagline || '';
+  const heroHeadline = hero?.headline || websiteData?.tagline || '';
   const aboutHeadline = about?.headline || 'Leidenschaft auf jedem Teller';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Fraunces', Georgia, serif");
   const BODY = "'Jost', 'Helvetica Neue', sans-serif";
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 700 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const hl = splitHeadline(heroHeadline);
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -2039,8 +2039,8 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FBF7F0]/90 backdrop-blur-sm border-b border-neutral-200/60">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }} className="whitespace-nowrap block">{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
@@ -2103,10 +2103,10 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const hero = sec(websiteData, 'hero');
   const about = sec(websiteData, 'about');
   const heroCta = hero?.ctaText || 'Termin vereinbaren';
-  const heroHeadline = hero?.headline || websiteData.tagline || '';
+  const heroHeadline = hero?.headline || websiteData?.tagline || '';
   const aboutHeadline = about?.headline || 'Qualität ohne Kompromisse';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Playfair Display', Georgia, serif");
   const BODY = "'Tenor Sans', 'Helvetica Neue', sans-serif";
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 400, letterSpacing: '0.01em' };
@@ -2114,7 +2114,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const hl = splitHeadline(heroHeadline);
   const darkBg = (safeCs as any).darkBackground || '#0C0A09';
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -2134,8 +2134,8 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-md border-b border-white/5" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }} className="whitespace-nowrap block">{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
@@ -2199,16 +2199,16 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
   const heroCta = hero?.ctaText || 'Projekt starten';
-  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const hl = splitHeadline(hero?.headline || websiteData?.tagline || websiteData?.businessName || '');
   const aboutHeadline = about?.headline || 'Ihr Partner für digitalen Erfolg';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Clash Display', 'Syne', sans-serif");
   const BODY = "'Satoshi', 'Helvetica Neue', sans-serif";
   const HL: React.CSSProperties = { fontWeight: 800, letterSpacing: '-0.03em' };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -2228,8 +2228,8 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }} className="whitespace-nowrap block">{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[130px] h-10">
@@ -2293,17 +2293,17 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
   const heroCta = hero?.ctaText || 'Beratung anfragen';
-  const heroHeadline = hero?.headline || websiteData.tagline || '';
+  const heroHeadline = hero?.headline || websiteData?.tagline || '';
   const aboutHeadline = about?.headline || 'Natürlich gut. Nachhaltig besser.';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(websiteData, "'Cormorant Garamond', Georgia, serif");
   const BODY = "'DM Sans', 'Georgia', sans-serif";
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 700 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
   const hl = splitHeadline(heroHeadline);
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -2324,7 +2324,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           <div className="flex items-center gap-2 overflow-hidden">
             <Leaf size={24} style={{ color: safeCs.primary }} className="shrink-0" />
-            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 400 }} className="whitespace-nowrap block">{websiteData.businessName}</span>
+            <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 400 }} className="whitespace-nowrap block">{websiteData?.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
@@ -2396,12 +2396,12 @@ export function PremiumLayoutV2({
   const services = sec(websiteData, 'services')?.items || [];
   const heroCta = hero?.ctaText || 'Kontakt aufnehmen';
   const hl = splitHeadline(
-    hero?.headline || websiteData.tagline || websiteData.businessName || ''
+    hero?.headline || websiteData?.tagline || websiteData?.businessName || ''
   );
   const aboutHeadline = about?.headline || 'Erfahrung, die Sie voranbringt';
-  const aboutContent = about?.content || websiteData.description || '';
+  const aboutContent = about?.content || websiteData?.description || '';
   const footerText =
-    websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
+    websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
   const DISPLAY = getDisplayFont(
     websiteData,
     "'Instrument Serif', Georgia, serif"
@@ -2410,7 +2410,7 @@ export function PremiumLayoutV2({
   const HL: React.CSSProperties = { fontStyle: 'italic', fontWeight: 400 };
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
-  const seed = websiteData.id || websiteData.businessName;
+  const seed = websiteData?.id || websiteData?.businessName;
   const heroIdx = getVariantIndex(seed, 'hero', 3);
   const servicesIdx = getVariantIndex(seed, 'services', 2);
   const aboutIdx = getVariantIndex(seed, 'about', 2);
@@ -2433,7 +2433,7 @@ export function PremiumLayoutV2({
       style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} 
       className="bg-white overflow-hidden"
       role="document"
-      aria-label={`Website von ${websiteData.businessName}`}
+      aria-label={`Website von ${websiteData?.businessName}`}
     >
       <header role="banner">
         <nav 
@@ -2452,7 +2452,7 @@ export function PremiumLayoutV2({
                   style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} 
                   className="whitespace-nowrap block"
                 >
-                  {websiteData.businessName}
+                  {websiteData?.businessName}
                 </span>}
           </Skeleton>
           <NavLinks textClass="text-neutral-800" />
@@ -2480,7 +2480,7 @@ export function PremiumLayoutV2({
               </h1>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
-              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData.tagline}</p>
+              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData?.tagline}</p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
               <button 
@@ -2889,11 +2889,11 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
   const heroCta = hero?.ctaText || 'Termin buchen';
-  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const hl = splitHeadline(hero?.headline || websiteData?.tagline || websiteData?.businessName || '');
   const aboutHeadline = about?.headline || 'Über uns';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const badgeText = websiteData.businessCategory ? `• ${websiteData.businessCategory}` : (websiteData.businessName || '');
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
+  const badgeText = websiteData?.businessCategory ? `• ${websiteData?.businessCategory}` : (websiteData?.businessName || '');
 
   return (
     <div style={{ fontFamily: BODY, backgroundColor: '#FDFBF7', color: textColor, display: 'flex', flexDirection: 'column' }} className="overflow-hidden">
@@ -2903,8 +2903,8 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FDFBF7]/95 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: DISPLAY, fontSize: '1.25rem', fontWeight: 400, fontStyle: 'italic' }}>{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: DISPLAY, fontSize: '1.25rem', fontWeight: 400, fontStyle: 'italic' }}>{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
@@ -2942,7 +2942,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
           <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-10">
             <p style={{ fontFamily: BODY, color: textMuted, fontStyle: 'italic' }} className="text-lg leading-relaxed max-w-sm mb-0">
-              {hero?.subheadline || websiteData.tagline}
+              {hero?.subheadline || websiteData?.tagline}
             </p>
           </Skeleton>
 
@@ -3095,11 +3095,11 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const about = sec(websiteData, 'about');
   const services = sec(websiteData, 'services')?.items || [];
   const heroCta = hero?.ctaText || 'Beratung anfragen';
-  const hl = splitHeadline(hero?.headline || websiteData.tagline || websiteData.businessName || '');
+  const hl = splitHeadline(hero?.headline || websiteData?.tagline || websiteData?.businessName || '');
   const aboutHeadline = about?.headline || 'Über uns';
-  const aboutContent = about?.content || websiteData.description || '';
-  const footerText = websiteData.footer?.text || `© ${new Date().getFullYear()} ${websiteData.businessName}`;
-  const badgeText = websiteData.businessCategory ? websiteData.businessCategory : (websiteData.businessName || '');
+  const aboutContent = about?.content || websiteData?.description || '';
+  const footerText = websiteData?.footer?.text || `© ${new Date().getFullYear()} ${websiteData?.businessName}`;
+  const badgeText = websiteData?.businessCategory ? websiteData?.businessCategory : (websiteData?.businessName || '');
 
   return (
     <div style={{ fontFamily: BODY, backgroundColor: '#ffffff', color: textColor, display: 'flex', flexDirection: 'column' }} className="overflow-hidden">
@@ -3109,8 +3109,8 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/95 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
           {(websiteData as any).logoImageUrl
-            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
-            : <span style={{ fontFamily: DISPLAY, fontSize: '1.4rem', letterSpacing: '0.08em' }}>{websiteData.businessName}</span>}
+            ? <img src={(websiteData as any).logoImageUrl} alt={websiteData?.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
+            : <span style={{ fontFamily: DISPLAY, fontSize: '1.4rem', letterSpacing: '0.08em' }}>{websiteData?.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
@@ -3154,7 +3154,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
           <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3rem] mb-10">
             <p style={{ fontFamily: BODY, color: textMuted, fontSize: '1rem' }} className="leading-relaxed max-w-md mb-0">
-              {hero?.subheadline || websiteData.tagline}
+              {hero?.subheadline || websiteData?.tagline}
             </p>
           </Skeleton>
 

@@ -25,7 +25,7 @@ const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean,
 };
 
 export default function CraftLayout({ websiteData, cs, heroImageUrl, isLoading = false }: Props) {
-  const subheadline = websiteData.sections?.[0]?.subheadline || "Präzision und Qualität aus Meisterhand.";
+  const subheadline = websiteData?.sections?.[0]?.subheadline || "Präzision und Qualität aus Meisterhand.";
 
   return (
     <div className="bg-[#f2f2f2] text-neutral-800">
@@ -39,12 +39,12 @@ export default function CraftLayout({ websiteData, cs, heroImageUrl, isLoading =
               style={{ backgroundColor: `${cs.primary}15`, borderColor: `${cs.primary}40`, color: cs.primary }}
             >
               <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cs.primary }} />
-              {websiteData.businessCategory || websiteData.businessName || 'Handwerk & Qualität'}
+              {websiteData?.businessCategory || websiteData?.businessName || 'Handwerk & Qualität'}
             </span>
           )}
           <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-6">
             {(() => {
-              const text = websiteData.tagline || websiteData.businessName || 'Handwerk Qualität';
+              const text = websiteData?.tagline || websiteData?.businessName || 'Handwerk Qualität';
               const words = text.split(' ');
               const mid = Math.ceil(words.length / 2);
               return (

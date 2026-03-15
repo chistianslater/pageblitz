@@ -46,7 +46,7 @@ export default function PremiumLayout({ websiteData, cs, heroImageUrl, isLoading
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-full h-16 max-w-xs mb-8">
               <p className="text-white/40 max-w-xs mb-8 md:mb-12 text-base md:text-lg font-light leading-relaxed">
-                {websiteData.tagline}
+                {websiteData?.tagline}
               </p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-40 h-12">
