@@ -8,7 +8,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain";
 
 interface SectionConfig {
   type: string;
@@ -1936,6 +1936,9 @@ export default function CustomerDashboard() {
   const [setupStepIdx, setSetupStepIdx] = useState(0);
   const [slugInput, setSlugInput] = useState("");
   const [showDomainHint, setShowDomainHint] = useState(false);
+  const [domainTabSlugInput, setDomainTabSlugInput] = useState("");
+  const [domainTabSlugSaved, setDomainTabSlugSaved] = useState(false);
+  const [showCustomDomainInfo, setShowCustomDomainInfo] = useState(false);
   const [legalOwnerInput, setLegalOwnerInput] = useState("");
   const [legalEmailInput2, setLegalEmailInput2] = useState("");
 
@@ -1952,6 +1955,10 @@ export default function CustomerDashboard() {
   const { data: slugCheck, isFetching: slugChecking } = trpc.customer.checkSlugAvailability.useQuery(
     { slug: slugInput, websiteId: _activeWebsiteIdForSetup },
     { enabled: slugInput.length >= 3 }
+  );
+  const { data: domainSlugCheck, isFetching: domainSlugChecking } = trpc.customer.checkSlugAvailability.useQuery(
+    { slug: domainTabSlugInput, websiteId: websiteId ?? 0 },
+    { enabled: domainTabSlugInput.length >= 3 && domainTabSlugInput !== website?.slug }
   );
 
   if (authLoading || isLoading) {
@@ -2046,6 +2053,7 @@ export default function CustomerDashboard() {
     { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
+    { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
     { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
     { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
@@ -2515,6 +2523,129 @@ export default function CustomerDashboard() {
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Domain Tab */}
+        {activeTab === "domain" && website && (
+          <div className="space-y-6 max-w-xl">
+            <div>
+              <h2 className="text-white text-lg font-semibold">Domain & Adresse</h2>
+              <p className="text-slate-400 text-sm mt-0.5">Verwalte die Web-Adresse deiner Website.</p>
+            </div>
+
+            {/* Subdomain */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
+                  <Globe className="w-4 h-4 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">Pageblitz-Subdomain</p>
+                  <p className="text-slate-400 text-xs">Kostenlos inklusive</p>
+                </div>
+              </div>
+
+              {/* Current URL display */}
+              <div className="flex items-center gap-2 bg-slate-900/60 rounded-xl px-4 py-2.5 border border-slate-700/50">
+                <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <a
+                  href={`https://${website.slug}.pageblitz.de`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 text-sm font-mono transition-colors truncate"
+                >
+                  {website.slug}.pageblitz.de
+                </a>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500 ml-auto shrink-0" />
+              </div>
+
+              {/* Slug change */}
+              <div className="space-y-2">
+                <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain ändern</label>
+                <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                  <input
+                    type="text"
+                    value={domainTabSlugInput || website.slug}
+                    onChange={(e) => {
+                      setDomainTabSlugSaved(false);
+                      setDomainTabSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""));
+                    }}
+                    className="flex-1 bg-transparent text-white outline-none text-sm font-mono"
+                  />
+                  <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
+                </div>
+                {domainTabSlugInput.length >= 3 && domainTabSlugInput !== website.slug && (
+                  <p className={`text-xs flex items-center gap-1.5 ${
+                    domainSlugChecking ? "text-slate-400" :
+                    domainSlugCheck?.available ? "text-emerald-400" : "text-red-400"
+                  }`}>
+                    {domainSlugChecking ? "⏳ Prüfe Verfügbarkeit..." :
+                     domainSlugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben"}
+                  </p>
+                )}
+                {domainTabSlugSaved && (
+                  <p className="text-xs text-emerald-400 flex items-center gap-1">✓ Subdomain gespeichert</p>
+                )}
+                <button
+                  disabled={
+                    !domainTabSlugInput ||
+                    domainTabSlugInput === website.slug ||
+                    domainTabSlugInput.length < 3 ||
+                    (!domainSlugCheck?.available && domainTabSlugInput !== website.slug) ||
+                    domainSlugChecking ||
+                    updateSlugMutation.isPending
+                  }
+                  onClick={async () => {
+                    await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: domainTabSlugInput });
+                    setDomainTabSlugSaved(true);
+                    toast.success("Subdomain gespeichert");
+                  }}
+                  className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                >
+                  {updateSlugMutation.isPending ? "Speichern..." : "Subdomain speichern"}
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Domain */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setShowCustomDomainInfo(v => !v)}
+                className="w-full flex items-center gap-3 p-5 text-left hover:bg-slate-700/20 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
+                  <ExternalLink className="w-4 h-4 text-violet-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-semibold">Eigene Domain verbinden</p>
+                  <p className="text-slate-400 text-xs">z.B. www.mein-unternehmen.de</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${showCustomDomainInfo ? "rotate-180" : ""}`} />
+              </button>
+              {showCustomDomainInfo && (
+                <div className="px-5 pb-5 space-y-3 border-t border-slate-700/50 pt-4">
+                  <p className="text-slate-300 text-sm">Setze diesen CNAME-Eintrag bei deinem Domain-Anbieter (IONOS, Strato, GoDaddy, etc.):</p>
+                  <div className="space-y-2 bg-slate-900/60 rounded-xl p-4">
+                    {[
+                      { label: "Typ",  value: "CNAME" },
+                      { label: "Name", value: "www" },
+                      { label: "Ziel", value: "pageblitz.de" },
+                      { label: "TTL",  value: "3600" },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex items-center justify-between">
+                        <span className="text-slate-500 text-xs w-12">{label}</span>
+                        <span className="text-white text-xs font-mono bg-slate-800 px-3 py-1 rounded-lg">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                    <p className="text-amber-300 text-xs">⏱ DNS-Änderungen können bis zu 24 Stunden dauern, bis sie wirksam sind.</p>
+                  </div>
+                  <p className="text-slate-500 text-xs">Nach dem Setzen des CNAME-Eintrags melde dich beim Support — wir schalten die Domain für dich frei.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
