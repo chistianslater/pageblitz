@@ -4,6 +4,25 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* ── Animated gradient backgrounds (LandingPage sections) ──────────────── */
+@keyframes gradient-orb-drift {
+  0%,  100% { transform: translate(0px,   0px) scale(1);    }
+  25%        { transform: translate(45px, -35px) scale(1.08); }
+  50%        { transform: translate(-30px, 25px) scale(0.95); }
+  75%        { transform: translate(20px,  40px) scale(1.04); }
+}
+@keyframes gradient-orb-drift-alt {
+  0%,  100% { transform: translate(0px,   0px) scale(1);    }
+  25%        { transform: translate(-45px, 20px) scale(1.06); }
+  50%        { transform: translate(35px, -30px) scale(0.96); }
+  75%        { transform: translate(-20px,-40px) scale(1.02); }
+}
+@keyframes gradient-text-shimmer {
+  0%,  100% { background-position: 0%   50%; }
+  50%        { background-position: 100% 50%; }
+}
+/* ──────────────────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&family=DM+Serif+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Source+Sans+3:wght@400;600&family=Bebas+Neue&family=Rajdhani:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800&family=Space+Mono&family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
@@ -344,4 +363,83 @@ html {
 /* Aspect-ratio Hilfskonstanten */
 .aspect-hero    { aspect-ratio: 16 / 10; }
 .aspect-about   { aspect-ratio: 4  /  5; }
+
+/* ── Landing Page Light/Dark Mode ──────────────────────────────────────── */
+
+/* Root transition – only colour properties so framer-motion is unaffected */
+.lp-root {
+  transition:
+    background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    color             0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light-mode root */
+[data-lp-theme="light"].lp-root { background-color: #f3f4f6; color: #111827; }
+
+/* ── Text ── */
+[data-lp-theme="light"] .text-white            { color: #111827;              transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/80        { color: rgba(17,24,39,0.82);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/70        { color: rgba(17,24,39,0.75);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/60        { color: rgba(17,24,39,0.68);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/50        { color: rgba(17,24,39,0.58);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/40        { color: rgba(17,24,39,0.48);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/35        { color: rgba(17,24,39,0.42);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/30        { color: rgba(17,24,39,0.35);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .text-white\/20        { color: rgba(17,24,39,0.22);  transition: color 0.5s ease; }
+[data-lp-theme="light"] .hover\:text-white:hover { color: #111827; }
+
+/* ── Signal-Buttons (violet) behalten IMMER weißen Text ──
+   Muss NACH den text-white-Overrides stehen, damit gleiche Spezifität (0,2,0)
+   die spätere Regel gewinnt */
+[data-lp-theme="light"] .bg-violet-950 { color: white; }
+[data-lp-theme="light"] .bg-violet-900 { color: white; }
+[data-lp-theme="light"] .hover\:bg-violet-900:hover { color: white; }
+
+/* ── Borders ── */
+[data-lp-theme="light"] .border-white\/5  { border-color: rgba(0,0,0,0.06);  transition: border-color 0.5s ease; }
+[data-lp-theme="light"] .border-white\/8  { border-color: rgba(0,0,0,0.08);  transition: border-color 0.5s ease; }
+[data-lp-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.09);  transition: border-color 0.5s ease; }
+[data-lp-theme="light"] .border-white\/20 { border-color: rgba(0,0,0,0.12);  transition: border-color 0.5s ease; }
+
+/* ── Backgrounds ── */
+[data-lp-theme="light"] .bg-white\/\[0\.015\]           { background-color: rgba(0,0,0,0.02);  transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-white\/\[0\.02\]            { background-color: rgba(0,0,0,0.025); transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-white\/\[0\.03\]            { background-color: rgba(0,0,0,0.03);  transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-white\/5                    { background-color: rgba(0,0,0,0.04);  transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-white\/10                   { background-color: rgba(0,0,0,0.06);  transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .hover\:bg-white\/5:hover       { background-color: rgba(0,0,0,0.04); }
+[data-lp-theme="light"] .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(0,0,0,0.04); }
+[data-lp-theme="light"] .bg-\[\#0a0a0a\]               { background-color: #f3f4f6; transition: background-color 0.5s ease; }
+[data-lp-theme="light"] .bg-\[\#0a0a0a\]\/95           { background-color: rgba(243,244,246,0.97); transition: background-color 0.5s ease; }
 .aspect-square-sm { aspect-ratio: 1 / 1; }
+
+/* ── Button Shimmer / Highlight Sweep ──────────────────────────────────── */
+/* Works on both dark (white) and violet buttons — uses a blue-tinted shimmer
+   that is visible as a bright sweep on dark violet and as a cool shine on white */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(180, 195, 255, 0.38) 50%,
+    transparent 80%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-shimmer:hover::before {
+  animation: btn-shine 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes btn-shine {
+  from { left: -80%; }
+  to   { left: 130%; }
+}

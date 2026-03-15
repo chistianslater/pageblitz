@@ -3,12 +3,12 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain";
 
 interface SectionConfig {
   type: string;
@@ -409,9 +409,24 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
     setFields(fields.filter((_, i) => i !== idx));
   };
 
+  const moveField = (idx: number, direction: "up" | "down") => {
+    const newFields = [...fields];
+    const swapWith = direction === "up" ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= newFields.length) return;
+    [newFields[idx], newFields[swapWith]] = [newFields[swapWith], newFields[idx]];
+    setFields(newFields);
+  };
+
   const updateField = (idx: number, updates: Partial<FormField>) => {
     const newFields = [...fields];
-    newFields[idx] = { ...newFields[idx], ...updates };
+    const updated = { ...newFields[idx], ...updates };
+    // When type is changed to "email", auto-set id to "email" so form submission works.
+    // Only do this if no other field already uses id "email".
+    if (updates.type === 'email' && updated.id !== 'email') {
+      const alreadyHasEmail = fields.some((f, i) => i !== idx && f.id === 'email');
+      if (!alreadyHasEmail) updated.id = 'email';
+    }
+    newFields[idx] = updated;
     setFields(newFields);
   };
 
@@ -441,6 +456,25 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
         {fields.map((field, idx) => (
           <div key={field.id} className="bg-slate-800/60 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
+              {/* Up / Down reorder buttons */}
+              <div className="flex flex-col gap-0.5">
+                <button
+                  onClick={() => moveField(idx, "up")}
+                  disabled={idx === 0}
+                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-20"
+                  title="Nach oben"
+                >
+                  <ChevronUp className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => moveField(idx, "down")}
+                  disabled={idx === fields.length - 1}
+                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-20"
+                  title="Nach unten"
+                >
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </div>
               <span className="text-slate-500 text-xs font-mono">#{idx + 1}</span>
               <input
                 type="text"
@@ -710,9 +744,10 @@ interface AddonsEditorProps {
   website: any;
   onboarding: any;
   onUpdate: () => void;
+  purchasedAddOns: Record<string, boolean>;
 }
 
-function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditorProps) {
+function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOns }: AddonsEditorProps) {
   const websiteData = (website.websiteData as WebsiteData) || {};
 
   // Get existing data from website sections
@@ -768,8 +803,49 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [expandedAddon, setExpandedAddon] = useState<string | null>(null);
+  const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
+  // Stable ref — initialized null here, assigned after updateAddons is declared below
+  const updateAddonsRef = useRef<any>(null);
+
+  const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
+    onSuccess: (_, variables) => {
+      const key = variables.addonKey;
+      if (key === "contactForm") {
+        setAddons(prev => ({ ...prev, contactForm: true }));
+      } else {
+        setAddons(prev => ({
+          ...prev,
+          [key]: { ...(prev as any)[key], enabled: true },
+        }));
+      }
+      setConfirmAddon(null);
+      onUpdate();
+      toast.success("Add-on freigeschaltet! 🎉");
+    },
+    onError: (err: any) => {
+      toast.error("Freischalten fehlgeschlagen: " + err.message);
+      setConfirmAddon(null);
+    },
+  });
+
+  const ADDON_LABELS: Record<string, { name: string; icon: string; color: string }> = {
+    gallery:     { name: "Bildergalerie",   icon: "🖼️",  color: "text-pink-300" },
+    menu:        { name: "Speisekarte",     icon: "🍽️",  color: "text-amber-300" },
+    pricelist:   { name: "Preisliste",      icon: "💶",  color: "text-emerald-300" },
+    contactForm: { name: "Kontaktformular", icon: "✉️",  color: "text-blue-300" },
+  };
+
+  const renderAddonLock = (addonKey: "gallery" | "menu" | "pricelist" | "contactForm") => (
+    <button
+      onClick={() => setConfirmAddon(addonKey)}
+      className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex-shrink-0"
+    >
+      <Lock className="w-3 h-3" />
+      Freischalten
+    </button>
+  );
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
@@ -786,6 +862,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       toast.error("Speichern fehlgeschlagen");
     },
   });
+  // Keep ref in sync on every render — safe since refs are just mutable containers
+  updateAddonsRef.current = updateAddons;
 
   // Auto-save effect - watches for changes in addons
   useEffect(() => {
@@ -806,7 +884,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     autoSaveTimeoutRef.current = setTimeout(() => {
       setSaveStatus("saving");
       setSaving(true);
-      updateAddons.mutate({
+      updateAddonsRef.current.mutate({
         websiteId,
         addOns: {
           gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
@@ -829,7 +907,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [addons, websiteId, updateAddons]);
+  }, [addons, websiteId]); // updateAddons intentionally excluded — stable via ref
 
   const handleSave = async () => {
     setSaving(true);
@@ -1101,16 +1179,18 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            {/* Toggle Switch */}
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.gallery.enabled}
-                onChange={() => toggleAddon("gallery")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500" />
-            </label>
+            {/* Toggle Switch / Paywall */}
+            {!purchasedAddOns["gallery"] ? renderAddonLock("gallery") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.gallery.enabled}
+                  onChange={() => toggleAddon("gallery")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -1194,15 +1274,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.menu.enabled}
-                onChange={() => toggleAddon("menu")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500" />
-            </label>
+            {!purchasedAddOns["menu"] ? renderAddonLock("menu") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.menu.enabled}
+                  onChange={() => toggleAddon("menu")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -1324,15 +1406,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.pricelist.enabled}
-                onChange={() => toggleAddon("pricelist")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500" />
-            </label>
+            {!purchasedAddOns["pricelist"] ? renderAddonLock("pricelist") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.pricelist.enabled}
+                  onChange={() => toggleAddon("pricelist")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -1454,15 +1538,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
                 )}
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.contactForm}
-                onChange={() => toggleAddon("contactForm")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500" />
-            </label>
+            {!purchasedAddOns["contactForm"] ? renderAddonLock("contactForm") : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={addons.contactForm}
+                  onChange={() => toggleAddon("contactForm")}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500" />
+              </label>
+            )}
           </div>
         </div>
 
@@ -1491,6 +1577,51 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
           </div>
         )}
       </div>
+
+      {/* ── Add-on Kauf-Bestätigung Modal ── */}
+      {confirmAddon && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                  {ADDON_LABELS[confirmAddon]?.icon}
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                  <p className={`text-sm font-medium ${ADDON_LABELS[confirmAddon]?.color}`}>
+                    {ADDON_LABELS[confirmAddon]?.name}
+                  </p>
+                </div>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed mb-1">
+                <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+              </p>
+              <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmAddon(null)}
+                  disabled={purchaseAddonMutation.isPending}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: confirmAddon as any })}
+                  disabled={purchaseAddonMutation.isPending}
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {purchaseAddonMutation.isPending
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</>
+                    : "Jetzt freischalten"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1709,6 +1840,23 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
   );
 }
 
+// ── Setup Step Chip ───────────────────────────────────
+function StepChip({ done, label, onClick }: { done: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={done ? undefined : onClick}
+      disabled={done}
+      className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+        done
+          ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10 cursor-default"
+          : "border-blue-400/40 text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
+      }`}
+    >
+      {done ? "✓" : "○"} {label}
+    </button>
+  );
+}
+
 // ── Main Component ────────────────────────────────────
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -1733,10 +1881,85 @@ export default function CustomerDashboard() {
     },
   });
 
+  const activeWebsiteId = myWebsites?.[0]?.website.id;
+  const { data: analyticsStats, isLoading: analyticsLoading } = trpc.customer.getAnalytics.useQuery(
+    { websiteId: selectedWebsiteId || activeWebsiteId || 0 },
+    { enabled: !!(selectedWebsiteId || activeWebsiteId) && activeTab === "analytics" }
+  );
+
+  const [showArchivedSubmissions, setShowArchivedSubmissions] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const { data: submissionsData, isLoading: submissionsLoading, refetch: refetchSubmissions } = trpc.customer.getSubmissions.useQuery(
+    { websiteId: selectedWebsiteId || activeWebsiteId || 0, includeArchived: showArchivedSubmissions },
+    { enabled: !!(selectedWebsiteId || activeWebsiteId) }
+  );
+
+  const markReadMutation = trpc.customer.markSubmissionRead.useMutation({
+    onSuccess: () => refetchSubmissions(),
+  });
+
+  const archiveMutation = trpc.customer.archiveSubmission.useMutation({
+    onSuccess: () => refetchSubmissions(),
+    onError: () => toast.error("Fehler beim Archivieren."),
+  });
+
+  const deleteMutation = trpc.customer.deleteSubmission.useMutation({
+    onSuccess: () => { setDeleteConfirmId(null); refetchSubmissions(); },
+    onError: () => toast.error("Fehler beim Löschen."),
+  });
+
+  const [contactEmailInput, setContactEmailInput] = useState("");
+  const [contactEmailSaved, setContactEmailSaved] = useState(false);
+  const contactEmailRef = useRef<HTMLInputElement>(null);
+  const updateContactEmailMutation = trpc.customer.updateContactEmail.useMutation({
+    onSuccess: () => { setContactEmailSaved(true); setTimeout(() => setContactEmailSaved(false), 2500); refetch(); },
+    onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
+  });
+
   const handleUpdate = () => {
     refetch();
     setPreviewKey((k) => k + 1);
   };
+
+  // ── useEffect + Setup-Hooks MÜSSEN vor allen Early-Returns stehen ───────
+  const _selectedEntry = myWebsites?.find((e) => e.website.id === selectedWebsiteId) || myWebsites?.[0];
+  const storedContactEmailEarly = (_selectedEntry?.website as any)?.contactEmail as string | null | undefined;
+  useEffect(() => {
+    setContactEmailInput(storedContactEmailEarly ?? "");
+  }, [storedContactEmailEarly]);
+
+  // ── Setup-Flow State ──────────────────────────────────────────────────────
+  const [setupOpen, setSetupOpen] = useState(() =>
+    new URLSearchParams(window.location.search).get("checkout") === "success"
+  );
+  const [setupStepIdx, setSetupStepIdx] = useState(0);
+  const [slugInput, setSlugInput] = useState("");
+  const [showDomainHint, setShowDomainHint] = useState(false);
+  const [domainTabSlugInput, setDomainTabSlugInput] = useState("");
+  const [domainTabSlugSaved, setDomainTabSlugSaved] = useState(false);
+  const [showCustomDomainInfo, setShowCustomDomainInfo] = useState(false);
+  const [legalOwnerInput, setLegalOwnerInput] = useState("");
+  const [legalEmailInput2, setLegalEmailInput2] = useState("");
+
+  const _activeWebsiteIdForSetup = _selectedEntry?.website.id ?? 0;
+  const updateSlugMutation = trpc.customer.updateSlug.useMutation({
+    onSuccess: () => { refetch(); },
+  });
+  const setLiveMutation = trpc.customer.setLive.useMutation({
+    onSuccess: () => { refetch(); setSetupOpen(false); },
+  });
+  const generateLegalMutation = trpc.customer.generateLegalPages.useMutation({
+    onSuccess: () => { refetch(); },
+  });
+  const { data: slugCheck, isFetching: slugChecking } = trpc.customer.checkSlugAvailability.useQuery(
+    { slug: slugInput, websiteId: _activeWebsiteIdForSetup },
+    { enabled: slugInput.length >= 3 }
+  );
+  const { data: domainSlugCheck, isFetching: domainSlugChecking } = trpc.customer.checkSlugAvailability.useQuery(
+    { slug: domainTabSlugInput, websiteId: _activeWebsiteIdForSetup },
+    { enabled: domainTabSlugInput.length >= 3 && domainTabSlugInput !== _selectedEntry?.website?.slug }
+  );
 
   if (authLoading || isLoading) {
     return (
@@ -1787,9 +2010,33 @@ export default function CustomerDashboard() {
   }
 
   const selectedEntry = myWebsites.find((e) => e.website.id === selectedWebsiteId) || myWebsites[0];
-  const { website, business } = selectedEntry;
+  const { website, business, subscription } = selectedEntry;
   const websiteData = website.websiteData as WebsiteData | undefined;
   const colorScheme = website.colorScheme as ColorScheme | undefined;
+  // Sync contactEmail – useEffect is above early returns to satisfy Rules of Hooks
+  const storedContactEmail = (website as any).contactEmail as string | null | undefined;
+
+  // ── Setup-Flow Status ─────────────────────────────────
+  const addOns = (subscription?.addOns ?? {}) as Record<string, boolean>;
+  const slugDone  = !website.slug.startsWith("preview-");
+  const emailDone = !addOns.contactForm || !!(website as any).contactEmail;
+  const legalDone = !!(website.websiteData as any)?.impressumHtml && !!(website.websiteData as any)?.datenschutzHtml;
+  const liveDone  = website.status === "active";
+  const allDone   = slugDone && emailDone && legalDone && liveDone;
+
+  // Initialise slugInput when setupOpen opens for step 0
+  function slugifyFE(text: string): string {
+    return text.toLowerCase()
+      .replace(/[äöüß]/g, (m) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  }
+  const suggestedSlug = slugifyFE(business?.name || "");
+
+  const openSetupStep = (idx: number) => {
+    if (idx === 0 && !slugInput) setSlugInput(suggestedSlug);
+    setSetupStepIdx(idx);
+    setSetupOpen(true);
+  };
 
   const makeUpdater = (field: string) => async (value: string) => {
     await updateMutation.mutateAsync({
@@ -1798,12 +2045,17 @@ export default function CustomerDashboard() {
     });
   };
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  const unreadCount = submissionsData?.unreadCount ?? 0;
+
+  const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
     { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
+    { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
+    { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
+    { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
 
   return (
@@ -1836,7 +2088,7 @@ export default function CustomerDashboard() {
           <StatusBadge status={website.status} />
           {website.status === "active" && (
             <a
-              href={`/site/${website.slug}`}
+              href={`https://${website.slug}.pageblitz.de`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-xl transition-colors"
@@ -1855,6 +2107,31 @@ export default function CustomerDashboard() {
         </div>
       </header>
 
+      {/* ── Setup-Checkliste Banner (sticky, direkt unter dem Header) ── */}
+      {!allDone && !setupOpen && (
+        <div className="sticky top-[65px] z-10 bg-gradient-to-r from-blue-900/95 to-indigo-900/95 backdrop-blur-sm border-b border-blue-500/30 shadow-lg shadow-blue-950/20">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 mr-1">
+              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-white text-xs font-semibold">Website einrichten</span>
+            </div>
+            <div className="w-px h-4 bg-blue-400/30" />
+            <StepChip done={slugDone}  label="Subdomain"   onClick={() => openSetupStep(0)} />
+            {addOns.contactForm && (
+              <StepChip done={emailDone} label="Kontakt-E-Mail" onClick={() => openSetupStep(1)} />
+            )}
+            <StepChip done={legalDone} label="Impressum & Datenschutz" onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)} />
+            <StepChip done={liveDone}  label="Live schalten" onClick={() => openSetupStep(addOns.contactForm ? 3 : 2)} />
+            <button
+              onClick={() => openSetupStep(!slugDone ? 0 : (addOns.contactForm && !emailDone) ? 1 : !legalDone ? (addOns.contactForm ? 2 : 1) : (addOns.contactForm ? 3 : 2))}
+              className="ml-auto text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
+            >
+              Einrichten →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="border-b border-slate-700/50 bg-slate-900/50">
         <div className="max-w-7xl mx-auto px-4">
@@ -1863,7 +2140,7 @@ export default function CustomerDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === tab.id
                     ? "text-blue-400 border-blue-400 bg-blue-500/10"
                     : "text-slate-400 border-transparent hover:text-white hover:bg-slate-800/50"
@@ -1871,6 +2148,11 @@ export default function CustomerDashboard() {
               >
                 {tab.icon}
                 {tab.label}
+                {tab.badge && tab.badge > 0 ? (
+                  <span className="ml-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
+                    {tab.badge > 99 ? "99+" : tab.badge}
+                  </span>
+                ) : null}
               </button>
             ))}
           </div>
@@ -2177,6 +2459,7 @@ export default function CustomerDashboard() {
                 website={website}
                 onboarding={onboardingData}
                 onUpdate={handleUpdate}
+                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
               />
             </div>
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
@@ -2197,7 +2480,650 @@ export default function CustomerDashboard() {
             </div>
           </div>
         )}
+
+        {/* Analytics Tab */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6">
+            {analyticsLoading ? (
+              <div className="flex items-center justify-center h-40">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+              </div>
+            ) : analyticsStats ? (
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: "Seitenaufrufe", value: analyticsStats.pageviews.toLocaleString("de-DE"), icon: <MousePointerClick className="w-5 h-5 text-blue-400" />, color: "text-blue-400" },
+                    { label: "Besucher", value: analyticsStats.visitors.toLocaleString("de-DE"), icon: <Users className="w-5 h-5 text-violet-400" />, color: "text-violet-400" },
+                    { label: "Absprungrate", value: `${analyticsStats.bounceRate} %`, icon: <BarChart2 className="w-5 h-5 text-amber-400" />, color: "text-amber-400" },
+                    { label: "Ø Verweildauer", value: `${Math.floor(analyticsStats.avgDuration / 60)}:${String(analyticsStats.avgDuration % 60).padStart(2, "0")} Min`, icon: <Clock className="w-5 h-5 text-green-400" />, color: "text-green-400" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        {stat.icon}
+                        <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">{stat.label}</span>
+                      </div>
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-slate-500 text-xs mt-1">Letzte 30 Tage</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                  <p className="text-slate-400 text-sm">
+                    Diese Statistiken werden von <span className="text-white font-medium">Umami Analytics</span> erfasst –
+                    cookielos, DSGVO-konform, keine persönlichen Daten.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+                <BarChart2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-white font-semibold mb-2">Noch keine Statistiken verfügbar</h3>
+                <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  Analytics werden aktiviert, sobald deine Website live ist und die ersten Besucher kommen.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Domain Tab */}
+        {activeTab === "domain" && website && (
+          <div className="space-y-6 max-w-xl">
+            <div>
+              <h2 className="text-white text-lg font-semibold">Domain & Adresse</h2>
+              <p className="text-slate-400 text-sm mt-0.5">Verwalte die Web-Adresse deiner Website.</p>
+            </div>
+
+            {/* Subdomain */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
+                  <Globe className="w-4 h-4 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">Pageblitz-Subdomain</p>
+                  <p className="text-slate-400 text-xs">Kostenlos inklusive</p>
+                </div>
+              </div>
+
+              {/* Current URL display */}
+              <div className="flex items-center gap-2 bg-slate-900/60 rounded-xl px-4 py-2.5 border border-slate-700/50">
+                <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <a
+                  href={`https://${website.slug}.pageblitz.de`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 text-sm font-mono transition-colors truncate"
+                >
+                  {website.slug}.pageblitz.de
+                </a>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500 ml-auto shrink-0" />
+              </div>
+
+              {/* Slug change */}
+              <div className="space-y-2">
+                <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain ändern</label>
+                <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                  <input
+                    type="text"
+                    value={domainTabSlugInput || website.slug}
+                    onChange={(e) => {
+                      setDomainTabSlugSaved(false);
+                      setDomainTabSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""));
+                    }}
+                    className="flex-1 bg-transparent text-white outline-none text-sm font-mono"
+                  />
+                  <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
+                </div>
+                {domainTabSlugInput.length >= 3 && domainTabSlugInput !== website.slug && (
+                  <p className={`text-xs flex items-center gap-1.5 ${
+                    domainSlugChecking ? "text-slate-400" :
+                    domainSlugCheck?.available ? "text-emerald-400" : "text-red-400"
+                  }`}>
+                    {domainSlugChecking ? "⏳ Prüfe Verfügbarkeit..." :
+                     domainSlugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben"}
+                  </p>
+                )}
+                {domainTabSlugSaved && (
+                  <p className="text-xs text-emerald-400 flex items-center gap-1">✓ Subdomain gespeichert</p>
+                )}
+                <button
+                  disabled={
+                    !domainTabSlugInput ||
+                    domainTabSlugInput === website.slug ||
+                    domainTabSlugInput.length < 3 ||
+                    (!domainSlugCheck?.available && domainTabSlugInput !== website.slug) ||
+                    domainSlugChecking ||
+                    updateSlugMutation.isPending
+                  }
+                  onClick={async () => {
+                    await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: domainTabSlugInput });
+                    setDomainTabSlugSaved(true);
+                    toast.success("Subdomain gespeichert");
+                  }}
+                  className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                >
+                  {updateSlugMutation.isPending ? "Speichern..." : "Subdomain speichern"}
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Domain */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setShowCustomDomainInfo(v => !v)}
+                className="w-full flex items-center gap-3 p-5 text-left hover:bg-slate-700/20 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
+                  <ExternalLink className="w-4 h-4 text-violet-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-semibold">Eigene Domain verbinden</p>
+                  <p className="text-slate-400 text-xs">z.B. www.mein-unternehmen.de</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${showCustomDomainInfo ? "rotate-180" : ""}`} />
+              </button>
+              {showCustomDomainInfo && (
+                <div className="px-5 pb-5 space-y-3 border-t border-slate-700/50 pt-4">
+                  <p className="text-slate-300 text-sm">Setze diesen CNAME-Eintrag bei deinem Domain-Anbieter (IONOS, Strato, GoDaddy, etc.):</p>
+                  <div className="space-y-2 bg-slate-900/60 rounded-xl p-4">
+                    {[
+                      { label: "Typ",  value: "CNAME" },
+                      { label: "Name", value: "www" },
+                      { label: "Ziel", value: "pageblitz.de" },
+                      { label: "TTL",  value: "3600" },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex items-center justify-between">
+                        <span className="text-slate-500 text-xs w-12">{label}</span>
+                        <span className="text-white text-xs font-mono bg-slate-800 px-3 py-1 rounded-lg">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                    <p className="text-amber-300 text-xs">⏱ DNS-Änderungen können bis zu 24 Stunden dauern, bis sie wirksam sind.</p>
+                  </div>
+                  <p className="text-slate-500 text-xs">Nach dem Setzen des CNAME-Eintrags melde dich beim Support — wir schalten die Domain für dich frei.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Submissions (Anfragen) Tab */}
+        {activeTab === "submissions" && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-white text-lg font-semibold">
+                  {showArchivedSubmissions ? "Archivierte Anfragen" : "Kontaktanfragen"}
+                </h2>
+                <p className="text-slate-400 text-sm mt-0.5">
+                  {submissionsData?.submissions.length ?? 0} {showArchivedSubmissions ? "archivierte" : "aktive"} Anfragen
+                  {!showArchivedSubmissions && unreadCount > 0 && <span className="ml-2 text-rose-400 font-medium">· {unreadCount} ungelesen</span>}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Archive toggle */}
+                <button
+                  onClick={() => setShowArchivedSubmissions(v => !v)}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                    showArchivedSubmissions
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+                      : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  {showArchivedSubmissions ? "Aktive anzeigen" : "Archiv"}
+                </button>
+                {/* Custom recipient email */}
+                {!showArchivedSubmissions && (
+                  <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
+                    <Mail className="w-4 h-4 text-slate-500 shrink-0" />
+                    <input
+                      type="email"
+                      value={contactEmailInput}
+                      onChange={(e) => setContactEmailInput(e.target.value)}
+                      placeholder={business?.email || "Empfänger-E-Mail eintragen..."}
+                      className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-48"
+                    />
+                    <button
+                      onClick={() => updateContactEmailMutation.mutate({ websiteId: website.id, contactEmail: contactEmailInput })}
+                      disabled={updateContactEmailMutation.isPending}
+                      className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+                    >
+                      {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {submissionsLoading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+              </div>
+            ) : !submissionsData?.submissions.length ? (
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-12 text-center">
+                <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-white font-semibold mb-2">
+                  {showArchivedSubmissions ? "Keine archivierten Anfragen" : "Noch keine Anfragen"}
+                </h3>
+                <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  {showArchivedSubmissions
+                    ? "Archivierte Anfragen erscheinen hier."
+                    : "Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {submissionsData.submissions.map((sub) => {
+                  const isUnread = !sub.readAt;
+                  const isDeleting = deleteConfirmId === sub.id;
+                  return (
+                    <div
+                      key={sub.id}
+                      className={`bg-slate-800/60 border rounded-2xl p-5 transition-colors ${
+                        showArchivedSubmissions
+                          ? "border-slate-700/30 opacity-75"
+                          : isUnread
+                            ? "border-blue-500/40 bg-slate-800/80"
+                            : "border-slate-700/50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1">
+                            {isUnread && !showArchivedSubmissions && (
+                              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                            )}
+                            <span className="text-white font-semibold truncate">{sub.name}</span>
+                            <span className="text-slate-400 text-xs shrink-0">
+                              {new Date(sub.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-3 mb-3">
+                            <a
+                              href={`mailto:${sub.email}`}
+                              className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              {sub.email}
+                            </a>
+                            {sub.phone && (
+                              <a
+                                href={`tel:${sub.phone}`}
+                                className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                                {sub.phone}
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
+                            {sub.message}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          {!showArchivedSubmissions ? (
+                            <>
+                              <a
+                                href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
+                                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                              >
+                                <Mail className="w-3 h-3" />
+                                Antworten
+                              </a>
+                              {isUnread && (
+                                <button
+                                  onClick={() => markReadMutation.mutate({ submissionId: sub.id })}
+                                  className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
+                                >
+                                  Als gelesen markieren
+                                </button>
+                              )}
+                              <button
+                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: true })}
+                                disabled={archiveMutation.isPending}
+                                className="flex items-center gap-1 text-slate-500 hover:text-amber-400 text-xs transition-colors disabled:opacity-40"
+                                title="Archivieren"
+                              >
+                                <Layers className="w-3.5 h-3.5" />
+                                Archivieren
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: false })}
+                                disabled={archiveMutation.isPending}
+                                className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors disabled:opacity-40"
+                              >
+                                <Layers className="w-3.5 h-3.5" />
+                                Wiederherstellen
+                              </button>
+                              {isDeleting ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-400">Sicher?</span>
+                                  <button
+                                    onClick={() => deleteMutation.mutate({ submissionId: sub.id })}
+                                    disabled={deleteMutation.isPending}
+                                    className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-40"
+                                  >
+                                    Ja, löschen
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                                  >
+                                    Abbrechen
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDeleteConfirmId(sub.id)}
+                                  className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                                  title="Endgültig löschen"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Löschen
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* ── Setup-Modal ── */}
+      {setupOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+              <div>
+                <h2 className="text-white font-bold text-lg">Website einrichten</h2>
+                <p className="text-slate-400 text-sm mt-0.5">
+                  Schritt {setupStepIdx + 1} von {addOns.contactForm ? 4 : 3}
+                </p>
+              </div>
+              <button
+                onClick={() => setSetupOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Step 0 – Subdomain wählen */}
+            {setupStepIdx === 0 && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">🌐</div>
+                  <h3 className="text-white font-semibold text-lg">Deine Website-Adresse</h3>
+                  <p className="text-slate-400 text-sm mt-1">Wähle eine einfache, einprägsame Adresse für deine Website.</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain</label>
+                  <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                    <input
+                      type="text"
+                      value={slugInput}
+                      onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""))}
+                      placeholder={suggestedSlug || "mein-unternehmen"}
+                      className="flex-1 bg-transparent text-white outline-none text-sm"
+                      autoFocus
+                    />
+                    <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
+                  </div>
+                  {slugInput.length >= 3 && (
+                    <p className={`text-xs flex items-center gap-1.5 ${
+                      slugChecking ? "text-slate-400" :
+                      slugCheck?.available ? "text-emerald-400" : "text-red-400"
+                    }`}>
+                      {slugChecking ? "⏳ Prüfe Verfügbarkeit..." :
+                       slugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben – anderen Namen wählen"}
+                    </p>
+                  )}
+                  {slugInput.length > 0 && slugInput.length < 3 && (
+                    <p className="text-xs text-slate-400">Mindestens 3 Zeichen</p>
+                  )}
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setSetupOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                  >
+                    Später
+                  </button>
+                  <button
+                    disabled={!slugCheck?.available || slugInput.length < 3 || updateSlugMutation.isPending}
+                    onClick={async () => {
+                      await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: slugInput });
+                      setSetupStepIdx(1);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                  >
+                    {updateSlugMutation.isPending ? "Speichern..." : "Übernehmen →"}
+                  </button>
+                </div>
+                {/* Eigene Domain – subtiler Accordion-Hinweis */}
+                <div className="border-t border-slate-700/50 pt-3 mt-1">
+                  <button
+                    onClick={() => setShowDomainHint(v => !v)}
+                    className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors w-full text-left"
+                  >
+                    <span>🔗</span>
+                    <span>Du hast bereits eine Domain? So verbindest du sie</span>
+                    <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${showDomainHint ? "rotate-180" : ""}`} />
+                  </button>
+                  {showDomainHint && (
+                    <div className="mt-3 bg-slate-900 rounded-xl p-4 space-y-2">
+                      <p className="text-slate-300 text-xs font-medium mb-2">CNAME-Eintrag bei deinem DNS-Anbieter setzen:</p>
+                      {[
+                        { label: "Typ",  value: "CNAME" },
+                        { label: "Name", value: "www" },
+                        { label: "Ziel", value: "pageblitz.de" },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-1.5">
+                          <span className="text-slate-400 text-xs">{label}</span>
+                          <span className="text-white text-xs font-mono">{value}</span>
+                        </div>
+                      ))}
+                      <p className="text-slate-500 text-xs text-center pt-1">DNS-Änderungen können bis zu 24h dauern</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 1 – Kontakt-E-Mail (nur wenn contactForm Add-on) */}
+            {setupStepIdx === 1 && addOns.contactForm && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">📧</div>
+                  <h3 className="text-white font-semibold text-lg">Kontaktformular-E-Mail</h3>
+                  <p className="text-slate-400 text-sm mt-1">Wohin sollen Kundenanfragen aus deinem Kontaktformular gesendet werden?</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Empfänger-E-Mail</label>
+                  <input
+                    ref={contactEmailRef}
+                    type="email"
+                    defaultValue={contactEmailInput}
+                    onChange={(e) => setContactEmailInput(e.target.value)}
+                    onInput={(e) => setContactEmailInput((e.target as HTMLInputElement).value)}
+                    placeholder="deine@email.de"
+                    className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                    autoComplete="off"
+                    autoFocus
+                    id="setup-contact-email"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setSetupStepIdx(2)}
+                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                  >
+                    Überspringen
+                  </button>
+                  <button
+                    disabled={updateContactEmailMutation.isPending}
+                    onClick={async () => {
+                      const val = contactEmailRef.current?.value || contactEmailInput;
+                      if (!val.trim()) {
+                        toast.error("Bitte eine E-Mail-Adresse eingeben.");
+                        return;
+                      }
+                      try {
+                        await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: val.trim() });
+                        setContactEmailInput(val.trim());
+                        setSetupStepIdx(2);
+                      } catch { /* onError handler shows toast */ }
+                    }}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                  >
+                    {updateContactEmailMutation.isPending ? "Speichern..." : "Speichern →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 (contactForm) / Step 1 (no contactForm) – Impressum & Datenschutz */}
+            {setupStepIdx === (addOns.contactForm ? 2 : 1) && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-3">📋</div>
+                  <h3 className="text-white font-semibold text-lg">Impressum & Datenschutz</h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Gesetzlich vorgeschrieben. Gib den Namen des Inhabers an – dauert 30 Sekunden.
+                  </p>
+                </div>
+                {legalDone ? (
+                  <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+                    <span className="text-emerald-400 text-xl">✓</span>
+                    <div>
+                      <p className="text-emerald-400 text-sm font-medium">Impressum & Datenschutz generiert</p>
+                      <p className="text-slate-400 text-xs mt-0.5">Erreichbar unter /impressum und /datenschutz</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Vor- und Nachname des Inhabers *</label>
+                      <input
+                        type="text"
+                        value={legalOwnerInput}
+                        onChange={(e) => setLegalOwnerInput(e.target.value)}
+                        placeholder="Max Mustermann"
+                        className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Impressum-E-Mail *</label>
+                      <input
+                        type="email"
+                        value={legalEmailInput2}
+                        onChange={(e) => setLegalEmailInput2(e.target.value)}
+                        placeholder="info@beispiel.de"
+                        className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      />
+                    </div>
+                    {generateLegalMutation.isError && (
+                      <p className="text-red-400 text-xs">{generateLegalMutation.error?.message || "Fehler beim Generieren"}</p>
+                    )}
+                  </div>
+                )}
+                <div className="flex gap-3 pt-2">
+                  {!legalDone && (
+                    <button
+                      disabled={
+                        legalOwnerInput.trim().split(/\s+/).length < 2 ||
+                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(legalEmailInput2) ||
+                        generateLegalMutation.isPending
+                      }
+                      onClick={async () => {
+                        await generateLegalMutation.mutateAsync({
+                          websiteId: website.id,
+                          legalOwner: legalOwnerInput.trim(),
+                          legalEmail: legalEmailInput2.trim(),
+                        });
+                      }}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                    >
+                      {generateLegalMutation.isPending ? "Generiere..." : "Generieren →"}
+                    </button>
+                  )}
+                  {legalDone && (
+                    <button
+                      onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 2)}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                    >
+                      Weiter →
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Final Step – Live schalten */}
+            {setupStepIdx === (addOns.contactForm ? 3 : 2) && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">🚀</div>
+                  <h3 className="text-white font-semibold text-lg">Deine Website ist bereit!</h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Schalte deine Website jetzt live. Sie wird öffentlich erreichbar unter:
+                  </p>
+                  <p className="text-blue-400 text-sm font-mono mt-2">
+                    {website.slug}.pageblitz.de
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { label: "Subdomain",              done: slugDone  },
+                    ...(addOns.contactForm ? [{ label: "Kontakt-E-Mail", done: emailDone }] : []),
+                    { label: "Impressum & Datenschutz", done: legalDone },
+                  ].map(({ label, done }) => (
+                    <div key={label} className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-amber-400"}`}>
+                      <span>{done ? "✓" : "⚠"}</span>
+                      <span>{label}</span>
+                    </div>
+                  ))}
+                </div>
+                {!legalDone && (
+                  <p className="text-amber-400 text-xs text-center bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
+                    ⚠ Impressum & Datenschutz fehlen noch – bitte erst generieren (vorheriger Schritt)
+                  </p>
+                )}
+                <button
+                  disabled={setLiveMutation.isPending || !legalDone}
+                  onClick={() => setLiveMutation.mutateAsync({ websiteId: website.id })}
+                  className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-lg shadow-emerald-900/30"
+                >
+                  {setLiveMutation.isPending ? "Wird live geschaltet..." : "⚡ Website jetzt live schalten"}
+                </button>
+              </div>
+            )}
+
+            {/* Step-Dots */}
+            <div className="flex justify-center gap-2 pb-4">
+              {Array.from({ length: addOns.contactForm ? 4 : 3 }).map((_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full transition-all ${
+                  i === setupStepIdx ? "bg-blue-400 w-4" : i < setupStepIdx ? "bg-emerald-400" : "bg-slate-600"
+                }`} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

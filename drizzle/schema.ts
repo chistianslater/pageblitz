@@ -75,6 +75,12 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   captureStatus: mysqlEnum("captureStatus", ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]).default("email_captured"),
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
+  // Contact form: custom recipient email (overrides business.email if set)
+  contactEmail: varchar("contactEmail", { length: 320 }),
+  // Former slug — set when the user changes their slug so old URLs can redirect
+  formerSlug: varchar("formerSlug", { length: 255 }),
+  // Umami Analytics
+  umamiWebsiteId: varchar("umamiWebsiteId", { length: 100 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -89,7 +95,8 @@ export const subscriptions = mysqlTable("subscriptions", {
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
   status: mysqlEnum("status", ["active", "canceled", "past_due", "trialing", "incomplete"]).notNull().default("incomplete"),
   plan: varchar("plan", { length: 50 }).notNull().default("base"),
-  addOns: json("addOns"), // { contactForm: bool, gallery: bool, subpages: string[] }
+  billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
+  addOns: json("addOns"), // { contactForm: bool, gallery: bool, menu: bool, pricelist: bool }
   currentPeriodEnd: bigint("currentPeriodEnd", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
@@ -128,6 +135,7 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   legalCountry: varchar("legalCountry", { length: 100 }).default("Deutschland"),
   legalEmail: varchar("legalEmail", { length: 255 }),
   legalPhone: varchar("legalPhone", { length: 100 }),
+  openingHours: json("openingHours"), // DayHours[] – { day, open, from, to }
   legalVatId: varchar("legalVatId", { length: 100 }),
   legalRegister: varchar("legalRegister", { length: 255 }),
   legalRegisterCourt: varchar("legalRegisterCourt", { length: 255 }),
@@ -147,6 +155,9 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
+  // Section visibility & order (from hideSections drag-and-drop step)
+  sectionOrder: json("sectionOrder"), // string[] – user's custom section order
+  hiddenSections: json("hiddenSections"), // string[] – sections hidden by user
   completedAt: bigint("completedAt", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
@@ -212,3 +223,20 @@ export const generationJobs = mysqlTable("generation_jobs", {
 
 export type GenerationJob = typeof generationJobs.$inferSelect;
 export type InsertGenerationJob = typeof generationJobs.$inferInsert;
+
+export const contactSubmissions = mysqlTable("contact_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  message: text("message").notNull(),
+  customFields: json("customFields"), // { [fieldId]: value } – flexible extra fields
+  ipAddress: varchar("ipAddress", { length: 45 }), // for rate limiting
+  readAt: timestamp("readAt"),
+  archivedAt: timestamp("archivedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;

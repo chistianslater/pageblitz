@@ -335,6 +335,15 @@ interface PriceListCategory {
   items: PriceListItem[];
 }
 
+interface DayHours {
+  day: string;
+  open: boolean;
+  from: string;
+  to: string;
+}
+
+const WEEKDAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+
 interface OnboardingData {
   businessCategory: string;
   businessName: string;
@@ -349,6 +358,7 @@ interface OnboardingData {
   legalCity: string;
   legalEmail: string;
   legalPhone: string;
+  openingHours: DayHours[] | null;
   legalVatId: string;
   colorScheme: ColorScheme;
   heroPhotoUrl: string; // selected or uploaded hero photo URL
@@ -389,6 +399,7 @@ type ChatStep =
   | "legalZipCity"
   | "legalEmail"
   | "legalPhone"
+  | "openingHours"
   | "legalVat"
   | "colorScheme"
   | "brandColor"
@@ -442,6 +453,7 @@ const STEP_ORDER: ChatStep[] = [
   "legalZipCity",
   "legalEmail",
   "legalPhone",
+  "openingHours",
   "legalVat",
   "addons",
   "editMenu",
@@ -479,6 +491,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   legalZipCity: null,
   legalEmail: null,
   legalPhone: null,
+  openingHours: "kontakt",
   legalVat: null,
   addons: null,
   editMenu: "speisekarte",
@@ -525,6 +538,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
 
+  // Billing interval – read from URL param (passed from LandingPage), default: yearly
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(() => {
+    const param = new URLSearchParams(window.location.search).get("billing");
+    return param === "monthly" ? "monthly" : "yearly";
+  });
+
   // ── Website data ────────────────────────────────────────────────────────
   const { data: siteData, isLoading: siteLoading, error: siteError, refetch: refetchSiteData } = trpc.website.get.useQuery(
     { token: previewToken, id: websiteIdProp },
@@ -546,6 +565,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
   const business = siteData?.business;
+  // Hide FOMO banner once checkout is completed (sold = paid, active = live)
+  const isPaid = siteData?.website?.status === "sold" || siteData?.website?.status === "active";
 
   // ── Dynamic step order based on layout and websiteData ──────────────────
   // These mirror data.addOn* but are declared before `data` to avoid
@@ -558,7 +579,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const websiteDataRaw = siteData?.website?.websiteData as any;
     const sections = websiteDataRaw?.sections || [];
     const hasAbout = sections.some((s: any) => s.type === "about");
-    const layoutHasAboutImage = !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
+    // For non-GMB users the initial generation runs with empty category → random layout
+    // from the "general" pool (may include layouts without about-image like "trust").
+    // Since the real layout is re-assigned on final generation, always show aboutPhoto
+    // for non-GMB users regardless of the preliminary layoutStyle.
+    const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
+    const layoutHasAboutImage = !isGmbFlow || !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
     const hasCustomerEmail = !!(siteData?.website as any)?.customerEmail;
 
     return STEP_ORDER.filter((step) => {
@@ -571,6 +597,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
       if (step === "email") return !hasCustomerEmail; // Skip email step if already provided
+      // Opening hours only for manual onboarding (GMB already has hours from Google)
+      if (step === "openingHours") return !isGmbFlow;
       return true;
     });
   }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
@@ -594,6 +622,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  // Only show exit-intent overlay once per session (not on every upward mouse move)
+  const exitIntentShownRef = useRef(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
 
   useEffect(() => {
@@ -607,14 +637,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // intentionally left blank – no native browser dialog
     };
 
-    // Exit intent (mouse leaves window upwards)
+    // Exit intent (mouse leaves window upwards) – shows at most once per session
     const handleMouseOut = (e: MouseEvent) => {
-      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview") {
-        if (hasUserEmail && !showExitConfirmation) {
-          // Show confirmation for logged-in users
+      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && !exitIntentShownRef.current) {
+        exitIntentShownRef.current = true;
+        if (hasUserEmail) {
           setShowExitConfirmation(true);
-        } else if (!hasUserEmail && !showExitIntent) {
-          // Show email capture for guests
+        } else {
           setShowExitIntent(true);
         }
       }
@@ -630,7 +659,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       }
     };
-  }, [currentStep, showExitIntent, showExitConfirmation, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
+  }, [currentStep, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -639,6 +668,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [sectionOrder, setSectionOrder] = useState<string[]>([]);
   const [draggedSectionIdx, setDraggedSectionIdx] = useState<number | null>(null);
   const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
+  // Opening hours widget state
+  const [hoursState, setHoursState] = useState<DayHours[]>(() =>
+    WEEKDAYS.map((day, i) => ({ day, open: i < 5, from: "09:00", to: "18:00" }))
+  );
   const [quickReplySelected, setQuickReplySelected] = useState(false);
   const [inPlaceEditId, setInPlaceEditId] = useState<string | null>(null);
   const [inPlaceEditValue, setInPlaceEditValue] = useState("");
@@ -654,6 +687,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // Refs für Kaskaden-Update bei Branchen-Änderung
   const prevCategoryRef = useRef<string>('');
   const contentPhaseRef = useRef<'skeleton' | 'colors' | 'images' | 'texts' | 'complete'>('skeleton');
+  // Guard: Phase-2 KI-Textgenerierung nur einmal ausführen (verhindert Re-Trigger bei State-Changes)
+  const contentGenerationAttemptedRef = useRef(false);
 
   // Auto-scroll preview to current section
   useEffect(() => {
@@ -700,6 +735,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalCity: "",
     legalEmail: "",
     legalPhone: "",
+    openingHours: null,
     legalVatId: "",
     colorScheme: withOnColors({
       primary: "#3B82F6",
@@ -872,6 +908,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }));
     }
+
+    // Restore section order and visibility from hideSections step
+    const rawSectionOrder = (existingOnboarding as any).sectionOrder;
+    if (Array.isArray(rawSectionOrder) && rawSectionOrder.length > 0) {
+      setSectionOrder(rawSectionOrder);
+    }
+    const rawHiddenSections = (existingOnboarding as any).hiddenSections;
+    if (Array.isArray(rawHiddenSections) && rawHiddenSections.length > 0) {
+      setHiddenSections(new Set<string>(rawHiddenSections));
+    }
   }, [existingOnboarding]);
 
   // Synchronize add-on states with data to ensure edit steps appear when selected in real-time
@@ -887,15 +933,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
 
-  // ── Save current step to localStorage whenever it changes ───────────────
-  useEffect(() => {
-    if (currentStep === 'welcome') return; // Don't save initial state
-
-    const effectiveWebsiteId = websiteIdProp || websiteId;
-    if (effectiveWebsiteId && currentStep) {
-      localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, currentStep);
-    }
-  }, [currentStep, websiteId, websiteIdProp]);
+  // ── Stable localStorage key – available immediately from props (no async) ──
+  // For /preview/TOKEN/onboarding: uses previewToken (always present, no waiting for siteData)
+  // For /website/ID/onboarding:    uses websiteIdProp (always present)
+  // This replaces the old approach of using the async `websiteId` from siteData.
+  const onboardingStorageKey = previewToken
+    ? `onboarding_step_token_${previewToken}`
+    : websiteIdProp
+    ? `onboarding_step_${websiteIdProp}`
+    : null;
 
   // ── Resume from database when onboarding data loads ────────────────────
   // This effect runs when onboarding data is loaded from the server
@@ -904,11 +950,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Only proceed if we have onboarding data and are still at welcome step
     if (!existingOnboarding || currentStep !== 'welcome') return;
 
-    const effectiveWebsiteId = websiteIdProp || websiteId;
-
     // First check localStorage (takes precedence)
-    const savedStep = effectiveWebsiteId
-      ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+    const savedStep = onboardingStorageKey
+      ? localStorage.getItem(onboardingStorageKey)
       : null;
 
     if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
@@ -925,13 +969,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
           setCurrentStep(targetStep);
           // Also save to localStorage for next time
-          if (effectiveWebsiteId) {
-            localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+          if (onboardingStorageKey) {
+            localStorage.setItem(onboardingStorageKey, targetStep);
           }
         }
       }
     }
-  }, [existingOnboarding, currentStep, websiteId, websiteIdProp]);
+  }, [existingOnboarding, currentStep, onboardingStorageKey]);
 
   // ── tRPC mutations ──────────────────────────────────────────────────────
   const saveStepMutation = trpc.onboarding.saveStep.useMutation();
@@ -970,6 +1014,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       return (saved as any) || 'skeleton';
     }
     return 'skeleton';
+  });
+
+  // Tracks whether the user has explicitly confirmed their business category.
+  // Only after confirmation do we reveal the actual website (exit skeleton phase).
+  // On resume: if contentPhase was already past skeleton, treat category as confirmed.
+  const [categoryConfirmed, setCategoryConfirmed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return saved !== null && saved !== 'skeleton';
+    }
+    return false;
+  });
+
+  // Progressive reveal: hero area clears after Du/Sie is confirmed.
+  // Always starts as false – no localStorage, so overlay is always present on every page load
+  // until the user explicitly selects Du or Sie in the current session.
+  const [heroRevealed, setHeroRevealed] = useState(false);
+
+  // Progressive reveal: lower content area clears after text generation finishes.
+  // On resume: skip overlay only if fully complete.
+  const [contentRevealed, setContentRevealed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return saved === 'complete';
+    }
+    return false;
   });
 
 
@@ -1026,17 +1096,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [siteData?.website?.websiteData, initialized]);
 
   // ── Persist current step across page reloads ────────────────────────────
-  const stepStorageKey = websiteIdProp ? `onboarding_step_${websiteIdProp}` : null;
-
   // Save step whenever it changes
   useEffect(() => {
-    if (!stepStorageKey) return;
+    if (!onboardingStorageKey) return;
     if (currentStep === 'checkout' || currentStep === 'preview') {
-      localStorage.removeItem(stepStorageKey);
+      localStorage.removeItem(onboardingStorageKey);
     } else if (currentStep !== 'welcome') {
-      localStorage.setItem(stepStorageKey, currentStep);
+      localStorage.setItem(onboardingStorageKey, currentStep);
     }
-  }, [currentStep, stepStorageKey]);
+  }, [currentStep, onboardingStorageKey]);
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
@@ -1129,8 +1197,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Handwerk",
             "Bar/Tapas",
           ];
-        case "businessName":
-          return name ? ["Ja, stimmt!"] : [];
+        case "businessName": {
+          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          return isGmb && name ? ["Ja, stimmt!"] : [];
+        }
         case "addressingMode":
           return [];
         case "tagline":
@@ -1152,10 +1222,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Privat- und Gewerbekunden",
           ];
         case "legalOwner": {
-          // Suggest owner name from GMB if available (business name as fallback hint)
-          const suggestions: string[] = [];
-          if (business?.name) suggestions.push(business.name);
-          return suggestions;
+          // Do NOT suggest business name – legalOwner must be a real person's full name
+          return [];
         }
         case "legalStreet": {
           // Extract street from GMB address (format: "Straße 12, PLZ Stadt, Land")
@@ -1190,13 +1258,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         case "legalPhone":
           return data.legalPhone ? [data.legalPhone] : (business?.phone ? [business.phone] : []);
+        case "openingHours":
+          return ["Überspringen"];
         case "email":
           return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         default:
           return [];
       }
     },
-    [data.businessName, data.businessCategory, data.legalEmail, business?.name, business?.address, business?.email]
+    [data.businessName, data.businessCategory, data.legalEmail, business?.name, business?.address, business?.email, business?.placeId]
   );
   // ── Step promptss ────────────────────────────────────────────────────────
   const getStepPrompt = useCallback(
@@ -1207,8 +1277,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Hallo! Bevor wir starten – welche **Branche** ist dein Unternehmen?\n\nBeispiel: Restaurant, Friseur, Bauunternehmen, Fitness-Studio, Anwaltskanzlei, etc.\n\nDas hilft mir, deine Website perfekt auf deine Branche abzustimmen!`;
         case "welcome":
           return `Hey! 👋 Ich bin dein persönlicher Website-Assistent. Ich helfe dir in wenigen Minuten, deine Website mit echten Infos zu befüllen – damit sie nicht mehr generisch klingt, sondern wirklich nach **${name}** aussieht.\n\nKlingt gut? Dann lass uns starten! 🚀`;
-        case "businessName":
-          return `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName || "noch keinen Namen"}** vorausgefüllt – stimmt das so?`;
+        case "businessName": {
+          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          return isGmb && data.businessName
+            ? `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName}** vorausgefüllt – stimmt das so?`
+            : `Wie lautet der offizielle Name deines Unternehmens?`;
+        }
         case "addressingMode":
           return `Kurze Frage zur Sprache deiner Website: Sollen deine Besucher **geduzt** oder **gesiezt** werden?\n\n*Das beeinflusst alle Texte – von Überschriften bis zu Call-to-Actions.*`;
         case "tagline":
@@ -1245,6 +1319,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
         case "legalPhone":
           return `Welche **Telefonnummer** soll im Impressum und auf der Website stehen?\n\nBeispiel: *+49 2871 123456*`;
+        case "openingHours":
+          return `Zu welchen Zeiten bist du für Kunden erreichbar? 🕐\n\nGib deine Öffnungszeiten ein oder überspringe diesen Schritt – du kannst sie jederzeit später im Dashboard anpassen.`;
         case "legalVat":
           return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach "Nein" oder lass das Feld leer.`;
         case "hideSections":
@@ -1288,7 +1364,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return "Nächster Schritt...";
       }
     },
-    [data.businessName, business?.name, data.headlineFont]
+    [data.businessName, business?.name, business?.placeId, data.headlineFont]
   );
 
   // ── Initialize chat ─────────────────────────────────────────────────────
@@ -1419,10 +1495,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
         }
 
-        // Resume from saved step - check localStorage first, then database
-        const effectiveWebsiteId = websiteIdProp || websiteId;
-        const savedStep = effectiveWebsiteId
-          ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+        // Resume from saved step - check localStorage first (stable key, no async), then database
+        const savedStep = onboardingStorageKey
+          ? localStorage.getItem(onboardingStorageKey)
           : null;
 
         if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
@@ -1441,9 +1516,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
               setCurrentStep(targetStep);
               // Also save to localStorage for next time
-              if (effectiveWebsiteId) {
-                localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+              if (onboardingStorageKey) {
+                localStorage.setItem(onboardingStorageKey, targetStep);
               }
+              await addBotMessage(getStepPrompt(targetStep), 800);
               return;
             }
           }
@@ -1473,14 +1549,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       };
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, websiteIdProp]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, onboardingStorageKey]);
 
   // ── Progressive content revelation based on user input ─────────
   
-  // Phase 1: When businessCategory is entered -> show colors
+  // Phase 1: When businessCategory is explicitly confirmed by user -> show colors
+  // Uses categoryConfirmed (not data.businessCategory) to avoid revealing the website
+  // before the user has answered the category question (prevents premature skeleton exit
+  // when businessCategory is pre-filled from GMB data or existingOnboarding).
   useEffect(() => {
-    const hasCategory = !!data.businessCategory?.trim();
-    if (hasCategory && contentPhase === 'skeleton') {
+    if (categoryConfirmed && contentPhase === 'skeleton') {
       setContentPhase('colors');
       localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'colors');
       
@@ -1523,7 +1601,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, nextPhase);
       }, 500);
     }
-  }, [data.businessCategory, contentPhase, previewToken, websiteIdProp]);
+  }, [categoryConfirmed, contentPhase, data.businessCategory, previewToken, websiteIdProp]);
   
   // Phase 2: When both category AND name are entered -> generate texts
   useEffect(() => {
@@ -1532,19 +1610,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasWebsiteId = !!websiteId;
     const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
     
-    // Only proceed if we're at images phase (colors+images ready) and have name
+    // Only proceed if we're at images phase AND addressingMode was confirmed (heroRevealed).
+    // This ensures Du/Sie preference is captured before text generation starts.
     if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && contentPhase === 'images' &&
-        !isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
-      
+        heroRevealed &&
+        !isGeneratingInitialContent && !generateInitialContentMutation.isPending &&
+        !contentGenerationAttemptedRef.current) {
+
+      // Guard against double-trigger (state changes can re-fire this effect)
+      contentGenerationAttemptedRef.current = true;
+
       setContentPhase('texts');
       localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'texts');
       setIsGeneratingInitialContent(true);
       localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
-      
+
       generateInitialContentMutation.mutateAsync({
         websiteId,
         businessName: data.businessName,
         businessCategory: data.businessCategory,
+        addressingMode: (data.addressingMode as 'du' | 'Sie') || 'du',
       }).then((result) => {
         if (result.success) {
           // Update local data state with generated content + services
@@ -1557,13 +1642,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               description: svc.description,
             })) || prev.topServices,
           }));
-          
+
           toast.success("Website-Texte & Leistungen wurden generiert!", { duration: 2000 });
-          
-          // Mark as complete
+
+          // Mark as complete + progressive reveal: lower content area now visible
           setContentPhase('complete');
           localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
-          
+          setContentRevealed(true);
+
           // Refetch to update preview
           setTimeout(() => {
             refetchSiteData();
@@ -1571,13 +1657,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }).catch((err) => {
         console.error("Initial content generation failed:", err);
+        // Recover gracefully: show website as-is, don't leave stuck skeleton
+        setContentPhase('complete');
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+        setContentRevealed(true);
+        toast.error("Texte konnten nicht generiert werden. Du kannst sie später bearbeiten.", { duration: 4000 });
       }).finally(() => {
         setIsGeneratingInitialContent(false);
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       });
     }
   }, [data.businessCategory, data.businessName, websiteId, business?.placeId, contentPhase,
-      isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
+      heroRevealed, isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
 
   // Halte contentPhaseRef synchron (damit Kaskaden-useEffect ohne Dependency-Array darauf zugreifen kann)
   useEffect(() => { contentPhaseRef.current = contentPhase; }, [contentPhase]);
@@ -1705,6 +1796,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
 
+      // Synchronously update localStorage to avoid race condition on quick page refresh
+      if (onboardingStorageKey) {
+        if (nextStep === 'checkout' || nextStep === 'preview') {
+          localStorage.removeItem(onboardingStorageKey);
+        } else {
+          localStorage.setItem(onboardingStorageKey, nextStep);
+        }
+      }
+
       // If this step has a section divider, inject it as a special message type
       const divider = SECTION_DIVIDERS[nextStep];
       if (divider) {
@@ -1725,7 +1825,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }, 900);
     },
-    [addBotMessage, getStepPrompt, SECTION_DIVIDERS]
+    [addBotMessage, getStepPrompt, SECTION_DIVIDERS, onboardingStorageKey]
   );
 
   const goToNextStep = useCallback(async () => {
@@ -1763,7 +1863,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
     const val = value !== undefined ? value.trim() : inputValue.trim();
     const isExplicitEmpty = value === "";
-    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat"].includes(currentStep)) return;
+    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat", "openingHours"].includes(currentStep)) return;
 
     setInputValue("");
 
@@ -1776,12 +1876,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const confirmationPattern = /^(ja|j|yes|y|yep|yup|stimmt|ok|okay|klar)$/i;
           if (val && confirmationPattern.test(val.trim())) {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
+            await trySaveStep(stepIdx, { businessName: data.businessName });
           } else if (val) {
             addUserMessage(val);
             setData((p) => ({ ...p, businessName: val }));
             await trySaveStep(stepIdx, { businessName: val });
           } else {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
+            await trySaveStep(stepIdx, { businessName: data.businessName });
           }
           break;
         }
@@ -1850,6 +1952,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           await trySaveStep(stepIdx, { legalPhone: phoneVal });
           break;
         }
+        case "openingHours": {
+          // Handled exclusively via the UI widget (Übernehmen/Überspringen buttons)
+          // Text "Überspringen" from quickReply skips without saving
+          addUserMessage("Überspringen");
+          setData((p) => ({ ...p, openingHours: null }));
+          await trySaveStep(stepIdx, { openingHours: null });
+          break;
+        }
         case "legalVat": {
           // Empty input or explicit "no" = Kleinunternehmer (no VAT ID)
           const trimmed = val.trim();
@@ -1873,13 +1983,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           // For admin-generated websites: save as customerEmail in DB + set captureStatus
           const isAdminSite = siteData?.website?.source === "admin";
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
-          if (isAdminSite && !alreadyHasEmail && websiteId) {
+          // Only do the "capture email → businessCategory" flow when user is at the
+          // BEGINNING of the onboarding (businessCategory not yet set).
+          // If they've already gone through all content steps, go to the normal next step.
+          const isAtStart = !data.businessCategory;
+          if (isAdminSite && !alreadyHasEmail && websiteId && isAtStart) {
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val },
               {
                 onSuccess: async () => {
                   toast.success("E-Mail gespeichert! ✅");
-                  // Advance to businessCategory instead of the normal next step
+                  // Advance to businessCategory (user is starting the flow)
                   await advanceToStep("businessCategory");
                 },
                 onError: () => {
@@ -1896,6 +2010,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             addUserMessage(val);
             setData((p) => ({ ...p, businessCategory: val }));
             await trySaveStep(stepIdx, { businessCategory: val });
+            setCategoryConfirmed(true); // Triggers contentPhase skeleton → colors transition
           }
           break;
         case "addressingMode":
@@ -1964,12 +2079,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Then create checkout session
       const session = await checkoutMutation.mutateAsync({
         websiteId,
+        billingInterval,
         addOns: {
-          subpages: data.subPages.filter((p) => p.name.trim()).length,
-          features: {
-            gallery: data.addOnGallery,
-            contactForm: data.addOnContactForm,
-          },
+          contactForm: data.addOnContactForm,
+          gallery:     data.addOnGallery,
+          menu:        _addOnMenu,
+          pricelist:   _addOnPricelist,
         },
       });
       window.open(session.url, "_blank");
@@ -2118,6 +2233,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       patched.sections = heroSec ? [heroSec, ...others] : others;
     }
 
+    // Expose section order to layout components for CSS ordering
+    if (sectionOrder.length > 0) {
+      (patched as any)._sectionOrder = [...sectionOrder];
+    }
+
     // Patch colorScheme override
     if (data.colorScheme) {
       (patched as any)._colorSchemeOverride = data.colorScheme;
@@ -2151,6 +2271,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       (patched as any).aboutImageUrl = data.aboutPhotoUrl;
     }
 
+    // Expose slug for legal links (Impressum/Datenschutz) in live preview
+    const slug = siteData?.website?.slug;
+    if (slug) {
+      (patched as any)._slug = slug;
+    }
+
     return patched;
   }, [
     siteData?.website?.websiteData,
@@ -2173,6 +2299,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.contactFormFields,
     hiddenSections,
     sectionOrder,
+    siteData?.website?.slug,
   ]);
 
   // ── Section list for hideSections drag-and-drop step ────────────────────
@@ -2211,19 +2338,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [currentStep, allSectionsForHideStep.length]);
 
   // ── Price calculation ───────────────────────────────────────────────────
-  const BASE_PRICE_INTRO = 19.90;  // First month intro offer (19,90 €)
-  const BASE_PRICE_REGULAR = 19.90; // Regular monthly price (19,90 €)
-  const FEATURE_PRICE = 3.90;       // Per feature (3,90 €)
-  const SUBPAGE_PRICE = 2.50;       // Per subpage (2,50 €)
+  const BASE_PRICE_MONTHLY = 24.90; // 24,90 €/Monat (monatliche Abrechnung)
+  const BASE_PRICE_YEARLY  = 19.90; // 19,90 €/Monat (jährliche Abrechnung)
+  const ADDON_PRICE = 3.90;         // 3,90 € pro Add-on
 
-  const totalPrice = (isFirstMonth = false) => {
-    let price = isFirstMonth ? BASE_PRICE_INTRO : BASE_PRICE_REGULAR;
-    if (data.addOnContactForm) price += FEATURE_PRICE;
-    if (data.addOnGallery) price += FEATURE_PRICE;
-    if (data.addOnMenu) price += FEATURE_PRICE;
-    if (data.addOnPricelist) price += FEATURE_PRICE;
-    price += data.subPages.filter(p => p.name).length * SUBPAGE_PRICE;
-    return price.toFixed(2);
+  const totalPrice = () => {
+    const base  = billingInterval === "yearly" ? BASE_PRICE_YEARLY : BASE_PRICE_MONTHLY;
+    let addons  = 0;
+    if (data.addOnContactForm) addons += ADDON_PRICE;
+    if (data.addOnGallery)     addons += ADDON_PRICE;
+    if (_addOnMenu)            addons += ADDON_PRICE;
+    if (_addOnPricelist)       addons += ADDON_PRICE;
+    return (base + addons).toFixed(2).replace(".", ",");
   };
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -2286,14 +2412,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         </div>
       )}
 
-      {/* FOMO Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
-        <Clock className="w-4 h-4 flex-shrink-0" />
-        <span>
-          ⚡ Diese Website ist noch{" "}
-          <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
-        </span>
-      </div>
+      {/* FOMO Header – only shown before payment */}
+      {!isPaid && (
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
+          <Clock className="w-4 h-4 flex-shrink-0" />
+          <span>
+            ⚡ Diese Website ist noch{" "}
+            <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
+          </span>
+        </div>
+      )}
 
       {/* Main layout */}
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
@@ -2847,6 +2975,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={async () => {
                       addUserMessage(`Branche: ${data.businessCategory} ✓`);
                       await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
+                      setCategoryConfirmed(true);
                       await goToNextStep();
                     }}
                     className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
@@ -3122,6 +3251,37 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'du' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'du' });
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
+                  setHeroRevealed(true);
+                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
+                  if (_isGmb) {
+                    // GMB: regenerate text with the chosen addressing mode
+                    if (websiteId) {
+                      setIsGeneratingInitialContent(true);
+                      generateInitialContentMutation.mutateAsync({
+                        websiteId,
+                        businessName: data.businessName,
+                        businessCategory: data.businessCategory,
+                        addressingMode: 'du',
+                      }).then((result) => {
+                        if (result.success) {
+                          setData(prev => ({
+                            ...prev,
+                            tagline: result.tagline || prev.tagline,
+                            description: result.description || prev.description,
+                            topServices: result.services?.map((s: any) => ({
+                              title: s.title, description: s.description,
+                            })) || prev.topServices,
+                          }));
+                        }
+                      }).catch(console.error).finally(() => {
+                        setIsGeneratingInitialContent(false);
+                        setTimeout(() => setContentRevealed(true), 600);
+                      });
+                    } else {
+                      setTimeout(() => setContentRevealed(true), 1000);
+                    }
+                  }
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-blue-500/60 hover:bg-blue-500/10 transition-all text-left group"
@@ -3143,6 +3303,37 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'Sie' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'Sie' });
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
+                  setHeroRevealed(true);
+                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
+                  if (_isGmb) {
+                    // GMB: regenerate text with the chosen addressing mode
+                    if (websiteId) {
+                      setIsGeneratingInitialContent(true);
+                      generateInitialContentMutation.mutateAsync({
+                        websiteId,
+                        businessName: data.businessName,
+                        businessCategory: data.businessCategory,
+                        addressingMode: 'Sie',
+                      }).then((result) => {
+                        if (result.success) {
+                          setData(prev => ({
+                            ...prev,
+                            tagline: result.tagline || prev.tagline,
+                            description: result.description || prev.description,
+                            topServices: result.services?.map((s: any) => ({
+                              title: s.title, description: s.description,
+                            })) || prev.topServices,
+                          }));
+                        }
+                      }).catch(console.error).finally(() => {
+                        setIsGeneratingInitialContent(false);
+                        setTimeout(() => setContentRevealed(true), 600);
+                      });
+                    } else {
+                      setTimeout(() => setContentRevealed(true), 1000);
+                    }
+                  }
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all text-left group"
@@ -3825,6 +4016,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-4"
             >
+              {/* Coming Soon overlay wrapper */}
+              <div className="relative rounded-2xl overflow-hidden">
+                {/* Blurred content behind overlay */}
+                <div className="select-none pointer-events-none opacity-40 blur-[1px]">
               {/* Info Card */}
                 <div className="bg-blue-600/10 border border-blue-500/30 rounded-2xl p-4 space-y-2">
                   <div className="flex items-start gap-3">
@@ -3881,32 +4076,46 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
                 <div className="flex flex-col gap-3 pt-1">
                   <button
-                    onClick={() => setData((p) => ({ ...p, subPages: [...p.subPages, { id: genId(), name: "", description: "" }] }))}
-                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl border border-slate-600 transition-colors"
+                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 text-slate-300 py-2.5 rounded-xl border border-slate-600"
                   >
                     <Plus className="w-3.5 h-3.5" /> Neue Unterseite hinzufügen <span className="text-blue-400 font-bold">(+9,90 €)</span>
                   </button>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      disabled={isTyping}
-                      onClick={async () => {
-                        if (isTyping) return;
-                        const validPages = data.subPages.filter((p) => p.name.trim());
-                        addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
-                        await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: validPages.map((p) => p.name) });
-                        await goToNextStep();
-                      }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
-                    >
-                      {data.subPages.length > 0 ? "Speichern & weiter" : "Überspringen & weiter"} <ChevronRight className="w-4 h-4" />
-                    </button>
+                </div>
+                </div>{/* end blurred content */}
+
+                {/* Coming Soon overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-[2px] rounded-2xl z-10">
+                  <div className="flex flex-col items-center gap-3 text-center px-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/40">
+                      <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                      <span className="text-indigo-300 text-xs font-semibold uppercase tracking-widest">Coming Soon</span>
+                    </div>
+                    <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+                      Unterseiten sind in Kürze verfügbar. Wir arbeiten daran!
+                    </p>
                   </div>
                 </div>
+              </div>{/* end relative wrapper */}
+
+              {/* Action button – outside overlay so it always works */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    addUserMessage("Keine Unterseiten");
+                    await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: [] });
+                    await goToNextStep();
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </motion.div>
           )}
 
-          {currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
+          {currentStep === "legalOwner" && business && business.placeId && !business.placeId.startsWith("self-") && (business.address || business.phone || business.email) && (
             <motion.div
               key="legalOwner-gmb-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -4024,6 +4233,105 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </motion.div>
           )}
 
+          {currentStep === "openingHours" && (
+            <motion.div
+              key="openingHours-step"
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.97 }}
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              {/* Quick-select buttons */}
+              <div className="flex flex-wrap gap-2 mb-1">
+                {[
+                  { label: "Mo – Fr", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 5 }))) },
+                  { label: "Mo – Sa", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 6 }))) },
+                  { label: "Täglich", action: () => setHoursState(h => h.map(d => ({ ...d, open: true }))) },
+                  { label: "Alle gleiche Zeit", action: () => {
+                    const first = hoursState.find(d => d.open);
+                    if (!first) return;
+                    setHoursState(h => h.map(d => d.open ? { ...d, from: first.from, to: first.to } : d));
+                  }},
+                ].map(({ label, action }) => (
+                  <button key={label} onClick={action}
+                    className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 border border-white/10 transition-colors">
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 7-day grid */}
+              <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden divide-y divide-white/5">
+                {hoursState.map((dh, i) => (
+                  <div key={dh.day} className="flex items-center gap-3 px-3 py-2.5">
+                    {/* Toggle */}
+                    <button
+                      onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, open: !d.open } : d))}
+                      className={`w-9 h-5 rounded-full flex-shrink-0 transition-colors relative ${dh.open ? 'bg-emerald-500' : 'bg-white/20'}`}
+                    >
+                      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${dh.open ? 'left-4' : 'left-0.5'}`} />
+                    </button>
+                    {/* Day name */}
+                    <span className={`text-sm w-24 flex-shrink-0 ${dh.open ? 'text-white' : 'text-slate-500'}`}>
+                      {dh.day.slice(0, 2)}
+                    </span>
+                    {dh.open ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          type="time"
+                          value={dh.from}
+                          onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from: e.target.value } : d))}
+                          className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-24 focus:outline-none focus:border-blue-400"
+                        />
+                        <span className="text-slate-500 text-xs">–</span>
+                        <input
+                          type="time"
+                          value={dh.to}
+                          onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to: e.target.value } : d))}
+                          className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-24 focus:outline-none focus:border-blue-400"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-500 flex-1">Geschlossen</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={async () => {
+                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
+                    const saved = hoursState;
+                    addUserMessage(`${saved.filter(d => d.open).length} Tage eingetragen`);
+                    setData(p => ({ ...p, openingHours: saved }));
+                    await trySaveStep(stepIdx, { openingHours: saved });
+                    const next = dynamicStepOrder[stepIdx + 1];
+                    if (next) await advanceToStep(next);
+                  }}
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors"
+                >
+                  Übernehmen ✓
+                </button>
+                <button
+                  onClick={async () => {
+                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
+                    addUserMessage("Überspringen");
+                    setData(p => ({ ...p, openingHours: null }));
+                    await trySaveStep(stepIdx, { openingHours: null });
+                    const next = dynamicStepOrder[stepIdx + 1];
+                    if (next) await advanceToStep(next);
+                  }}
+                  className="px-5 py-2.5 bg-white/10 hover:bg-white/15 text-slate-300 text-sm rounded-xl transition-colors border border-white/10"
+                >
+                  Überspringen
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {currentStep === "hideSections" && (
             <motion.div
               key="hideSections-step"
@@ -4126,6 +4434,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           if (isTyping) return;
                           const hidden = Array.from(hiddenSections);
                           addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
+                          // Persist section order + hidden sections to DB (non-blocking)
+                          const stepIdx = dynamicStepOrder.indexOf("hideSections");
+                          trySaveStep(stepIdx, {
+                            sectionOrder: sectionOrder.length > 0 ? [...sectionOrder] : [],
+                            hiddenSections: hidden,
+                          });
                           await advanceToStep("preview");
                         }}
                         className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
@@ -4177,63 +4491,74 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-3"
             >
+                {/* Billing interval toggle */}
+                <div className="flex rounded-xl overflow-hidden border border-slate-600 mb-1">
+                  <button
+                    onClick={() => setBillingInterval("yearly")}
+                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                      billingInterval === "yearly"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    Jährlich · <span className="font-bold">19,90 €</span>/Mo
+                    {billingInterval === "yearly" && (
+                      <span className="ml-1.5 text-xs bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded-full">2 Monate gratis</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setBillingInterval("monthly")}
+                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                      billingInterval === "monthly"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    Monatlich · <span className="font-bold">24,90 €</span>/Mo
+                  </button>
+                </div>
+
                 <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
-                  {/* Intro offer banner */}
-                  <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-3 py-2 mb-2">
-                    <p className="text-xs font-semibold text-amber-300">🎉 Einführungsangebot: Erster Monat nur 39€!</p>
-                  </div>
-                  
-                  {/* First month pricing */}
+                  {/* Line items */}
                   <div className="space-y-2 pb-2 border-b border-slate-600">
-                    <p className="text-xs text-slate-400 font-medium">1. Monat:</p>
                     <div className="flex justify-between text-sm text-slate-300">
                       <span>Basis-Website</span>
-                      <span className="text-amber-400 font-semibold">39,00 €</span>
-                    </div>
-                  </div>
-                  
-                  {/* Regular pricing */}
-                  <div className="space-y-2 pt-2">
-                    <p className="text-xs text-slate-400 font-medium">Ab 2. Monat:</p>
-                    <div className="flex justify-between text-sm text-slate-300">
-                      <span>Basis-Website</span>
-                      <span>79,00 €/Monat</span>
+                      <span>{billingInterval === "yearly" ? "19,90" : "24,90"} €/Monat</span>
                     </div>
                     {data.addOnContactForm && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Kontaktformular</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Kontaktformular</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
                     {data.addOnGallery && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Bildergalerie</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Bildergalerie</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.addOnMenu && (
+                    {_addOnMenu && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Speisekarte</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Speisekarte</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.addOnPricelist && (
+                    {_addOnPricelist && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Preisliste</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Preisliste</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.subPages.filter((p) => p.name).map((page) => (
-                      <div key={page.id} className="flex justify-between text-sm text-slate-300">
-                        <span>Unterseite: {page.name}</span>
-                        <span>+9,90 €/Monat</span>
-                      </div>
-                    ))}
-                    <div className="border-t border-slate-600 pt-2 flex justify-between font-bold text-white">
-                      <span>Gesamt ab Monat 2</span>
-                      <span>{totalPrice(false)} €/Monat</span>
-                    </div>
                   </div>
+                  <div className="pt-1 flex justify-between font-bold text-white text-base">
+                    <span>Gesamt</span>
+                    <span>{totalPrice()} €/Monat</span>
+                  </div>
+                  <p className="text-xs text-slate-500 pt-0.5">
+                    {billingInterval === "yearly"
+                      ? "Jährliche Abrechnung · monatlich abbuchbar · Jederzeit kündbar"
+                      : "Monatliche Abrechnung · Jederzeit kündbar"}
+                  </p>
                 </div>
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <div
@@ -4256,10 +4581,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {completeMutation.isPending || checkoutMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <>\n                      <Zap className="w-5 h-5" /> Jetzt für {totalPrice(true)} € freischalten (1. Monat)\n                    </>                 )}
+                    <><Zap className="w-5 h-5" /> Jetzt für {totalPrice()} €/Mo freischalten</>
+                  )}
                 </button>
                 <p className="text-center text-xs text-slate-500">
-                  Monatlich kündbar • Keine Einrichtungsgebühr • SSL inklusive
+                  7 Tage gratis testen • Keine Einrichtungsgebühr • SSL inklusive
                 </p>
             </motion.div>
           )}
@@ -4269,7 +4595,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         <div ref={messagesEndRef} />
         </div>
         {/* Input area – sticky at bottom */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory"].includes(currentStep) && (
+          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (
@@ -4571,7 +4897,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Website – fades in when category is entered; skeleton mode prevents flash */}
                 <div style={{
                   opacity: contentPhase === 'skeleton' ? 0 : 1,
-                  transition: 'opacity 0.45s ease',
+                  transition: 'opacity 0.6s ease',
+                  position: 'relative',
                 }}>
                   <WebsiteRenderer
                     websiteData={liveWebsiteData}
@@ -4585,7 +4912,40 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     layoutStyle={layoutStyle}
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
-                    isLoading={isGeneratingInitialContent || contentPhase === 'colors' || contentPhase === 'images'}
+                    isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}
+                  />
+
+                  {/* ── Magic progressive reveal overlays ─────────────────────────────
+                      These "fog of war" layers lift one by one as the user fills in info,
+                      creating the feeling that the website is being built before their eyes.
+                  ─────────────────────────────────────────────────────────────────────── */}
+
+                  {/* Layer 1: Full overlay – clears after businessName confirmed (hero reveal) */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(135deg, rgba(8,12,35,0.72) 0%, rgba(12,18,50,0.65) 100%)',
+                      opacity: heroRevealed ? 0 : 1,
+                      transition: 'opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1)',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                    }}
+                  />
+
+                  {/* Layer 2: Lower content overlay – clears after text generation complete */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      top: '38%', left: 0, right: 0, bottom: 0,
+                      background: 'linear-gradient(to bottom, rgba(8,12,35,0) 0%, rgba(8,12,35,0.68) 18%, rgba(8,12,35,0.68) 100%)',
+                      opacity: contentRevealed ? 0 : 1,
+                      transition: 'opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.45s',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                    }}
                   />
                 </div>
               </div>
@@ -4620,9 +4980,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <CheckCircle className="w-8 h-8 text-white" />
                       </div>
                       <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Fortschritt gespeichert ✓</h2>
-                      <p className="text-emerald-100 text-sm font-medium leading-relaxed">
-                        Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
-                      </p>
+                      {!isPaid && (
+                        <p className="text-emerald-100 text-sm font-medium leading-relaxed">
+                          Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -4647,13 +5009,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
                     >
                       Weiter bearbeiten
-                    </button>
-
-                    <button
-                      onClick={() => { setShowExitIntent(false); window.close?.(); }}
-                      className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
-                    >
-                      Trotzdem schließen
                     </button>
                   </div>
                 </>
@@ -4773,14 +5128,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 </button>
 
                 <button
-                  onClick={() => {
-                    setShowExitConfirmation(false);
-                    // Allow user to leave
-                    window.removeEventListener('beforeunload', () => {});
-                  }}
+                  onClick={() => setShowExitConfirmation(false)}
                   className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors py-2"
                 >
-                  Trotzdem verlassen
+                  Schließen
                 </button>
               </div>
             </div>

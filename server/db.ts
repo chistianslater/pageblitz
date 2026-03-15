@@ -9,6 +9,7 @@ import {
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
   generationJobs, InsertGenerationJob, GenerationJob,
+  contactSubmissions, InsertContactSubmission, ContactSubmission,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -157,6 +158,13 @@ export async function getWebsiteBySlug(slug: string) {
   return result[0];
 }
 
+export async function getWebsiteByFormerSlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(generatedWebsites).where(eq(generatedWebsites.formerSlug, slug)).limit(1);
+  return result[0];
+}
+
 export async function getWebsiteByToken(token: string) {
   const db = await getDb();
   if (!db) return undefined;
@@ -231,6 +239,24 @@ export async function updateWebsite(id: number, data: Partial<InsertGeneratedWeb
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(generatedWebsites).set(data).where(eq(generatedWebsites.id, id));
+}
+
+/** Returns website + its business in a single call – used by server-side SEO meta injection */
+export async function getWebsiteBySlugWithBusiness(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const websites = await db.select().from(generatedWebsites).where(eq(generatedWebsites.slug, slug)).limit(1);
+  if (!websites[0]) return undefined;
+  const website = websites[0];
+  const businessResult = await db.select().from(businesses).where(eq(businesses.id, website.businessId)).limit(1);
+  return { website, business: businessResult[0] ?? null };
+}
+
+/** Returns slugs of all active websites – used for sitemap.xml generation */
+export async function listActiveWebsites(): Promise<Array<{ slug: string }>> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ slug: generatedWebsites.slug }).from(generatedWebsites).where(eq(generatedWebsites.status, "active"));
 }
 
 // ── Outreach Emails ────────────────────────────────────
@@ -523,7 +549,8 @@ export async function getWebsitesByUserId(userId: number) {
     })
     .from(subscriptions)
     .innerJoin(generatedWebsites, eq(subscriptions.websiteId, generatedWebsites.id))
-    .where(eq(subscriptions.userId, userId));
+    // Exclude "incomplete" subscriptions (checkout started but never paid)
+    .where(and(eq(subscriptions.userId, userId), sql`${subscriptions.status} != 'incomplete'`));
   return rows;
 }
 
@@ -556,4 +583,68 @@ export async function updateGenerationJob(id: number, data: Partial<InsertGenera
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(generationJobs).set(data).where(eq(generationJobs.id, id));
+}
+
+// ── Contact Submissions ────────────────────────────────
+export async function createContactSubmission(data: InsertContactSubmission): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(contactSubmissions).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getContactSubmissionsByWebsiteId(
+  websiteId: number,
+  { includeArchived = false }: { includeArchived?: boolean } = {}
+): Promise<ContactSubmission[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const condition = includeArchived
+    ? and(eq(contactSubmissions.websiteId, websiteId), sql`archivedAt IS NOT NULL`)
+    : and(eq(contactSubmissions.websiteId, websiteId), sql`archivedAt IS NULL`);
+  return db.select().from(contactSubmissions)
+    .where(condition)
+    .orderBy(desc(contactSubmissions.createdAt));
+}
+
+export async function countUnreadSubmissions(websiteId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  // Only count non-archived unread
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(contactSubmissions)
+    .where(and(eq(contactSubmissions.websiteId, websiteId), sql`readAt IS NULL AND archivedAt IS NULL`));
+  return Number(result[0]?.count ?? 0);
+}
+
+export async function archiveSubmission(id: number, archive: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(contactSubmissions)
+    .set({ archivedAt: archive ? new Date() : null })
+    .where(eq(contactSubmissions.id, id));
+}
+
+export async function deleteContactSubmission(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
+}
+
+export async function markSubmissionRead(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(contactSubmissions)
+    .set({ readAt: new Date() })
+    .where(eq(contactSubmissions.id, id));
+}
+
+export async function countRecentSubmissionsByIp(ip: string, sinceMs: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - sinceMs);
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(contactSubmissions)
+    .where(and(eq(contactSubmissions.ipAddress, ip), sql`createdAt > ${since}`));
+  return Number(result[0]?.count ?? 0);
 }

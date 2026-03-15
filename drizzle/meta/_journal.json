@@ -78,6 +78,20 @@
       "when": 1741000000000,
       "tag": "0010_add_external_lead_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1773412712696,
+      "tag": "0011_handy_cloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1773435407761,
+      "tag": "0012_material_masque",
+      "breakpoints": true
     }
   ]
 }

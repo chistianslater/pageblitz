@@ -4,10 +4,10 @@ import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export default function LegalPage() {
+export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const [location] = useLocation();
   const params = useParams<{ slug: string }>();
-  const slug = params.slug;
+  const slug = forceSlug ?? params.slug;
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const isImpressum = location.endsWith("/impressum");
@@ -65,6 +65,8 @@ export default function LegalPage() {
   const websiteData = website.websiteData as any;
   const impressumHtml = websiteData?.impressumHtml;
   const datenschutzHtml = websiteData?.datenschutzHtml;
+  const colorScheme = (website as any).colorScheme as any;
+  const primaryColor = colorScheme?.primary || "#2563eb";
 
   const html = isImpressum ? impressumHtml : isDatenschutz ? datenschutzHtml : null;
 
@@ -97,8 +99,8 @@ export default function LegalPage() {
               )}
               {isRegenerating ? "Wird regeneriert..." : "Seite jetzt generieren"}
             </button>
-            <a 
-              href={`/site/${slug}`} 
+            <a
+              href={/^[a-z0-9][a-z0-9-]*\.pageblitz\.de$/.test(window.location.hostname) ? '/' : `/site/${slug}`}
               className="text-blue-600 hover:underline text-sm"
             >
               ← Zurück zur Website
@@ -109,11 +111,31 @@ export default function LegalPage() {
     );
   }
 
-  // Render the generated HTML directly
+  // Render the generated HTML directly with site-matching styling
   return (
-    <div
-      dangerouslySetInnerHTML={{ __html: html }}
-      className="legal-page"
-    />
+    <div className="min-h-screen bg-white">
+      <style>{`
+        .legal-page-content {
+          max-width: 760px;
+          margin: 0 auto;
+          padding: 3rem 1.5rem;
+          font-family: system-ui, -apple-system, sans-serif;
+          color: #1a1a1a;
+          line-height: 1.75;
+          font-size: 0.95rem;
+        }
+        .legal-page-content h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.5rem; color: #111; }
+        .legal-page-content h2 { font-size: 1.2rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; color: #222; }
+        .legal-page-content h3 { font-size: 1rem; font-weight: 600; margin-top: 1.25rem; color: #333; }
+        .legal-page-content p  { margin-bottom: 0.75rem; }
+        .legal-page-content a  { color: ${primaryColor}; text-decoration: underline; }
+        .legal-page-content a:hover { opacity: 0.8; }
+        .legal-page-content ul { margin-left: 1.5rem; margin-bottom: 0.75rem; list-style: disc; }
+      `}</style>
+      <div
+        dangerouslySetInnerHTML={{ __html: html }}
+        className="legal-page-content"
+      />
+    </div>
   );
 }

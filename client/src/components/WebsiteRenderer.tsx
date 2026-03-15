@@ -1,8 +1,10 @@
 import type { WebsiteData, ColorScheme } from "@shared/types";
-import { 
+import {
   BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
   DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
-  NaturalLayoutV2, PremiumLayoutV2
+  NaturalLayoutV2, PremiumLayoutV2, EdenLayoutV2, ApexLayoutV2,
+  AuroraLayoutV2, NexusLayoutV2, ClayLayoutV2, ForgeLayoutV2,
+  PulseLayoutV2, FluxLayoutV2,
 } from "./layouts/PremiumLayoutsV2";
 
 interface WebsiteRendererProps {
@@ -15,6 +17,7 @@ interface WebsiteRendererProps {
   isLoading?: boolean;
   headlineSize?: 'large' | 'medium' | 'small';
   headlineFontOverride?: string;
+  slug?: string;
 }
 
 function getLayoutComponent(category: string = "", layoutStyle?: string | null): any {
@@ -30,6 +33,14 @@ function getLayoutComponent(category: string = "", layoutStyle?: string | null):
     if (style.includes('luxury')) return LuxuryLayoutV2;
     if (style.includes('modern')) return ModernLayoutV2;
     if (style.includes('natural')) return NaturalLayoutV2;
+  if (style.includes('eden')) return EdenLayoutV2;
+  if (style.includes('apex')) return ApexLayoutV2;
+  if (style.includes('aurora')) return AuroraLayoutV2;
+  if (style.includes('nexus')) return NexusLayoutV2;
+  if (style.includes('clay')) return ClayLayoutV2;
+  if (style.includes('forge')) return ForgeLayoutV2;
+  if (style.includes('pulse')) return PulseLayoutV2;
+  if (style.includes('flux')) return FluxLayoutV2;
   }
   
   // Fallback: determine by business category
@@ -46,7 +57,7 @@ function getLayoutComponent(category: string = "", layoutStyle?: string | null):
   return PremiumLayoutV2;
 }
 
-export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, headlineSize, headlineFontOverride }: WebsiteRendererProps) {
+export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, headlineSize, headlineFontOverride, slug }: WebsiteRendererProps) {
   const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
   const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
   
@@ -55,7 +66,7 @@ export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl
   let wd = websiteData as any;
   const hiddenSections = (websiteData as any)?.hiddenSections || [];
   
-  if (aboutImageUrl || headlineFontOverride || hiddenSections.length > 0) {
+  if (aboutImageUrl || headlineFontOverride || hiddenSections.length > 0 || slug) {
     wd = { ...websiteData } as any;
     if (aboutImageUrl) wd.aboutImageUrl = aboutImageUrl;
     if (headlineFontOverride) {
@@ -65,6 +76,8 @@ export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl
     if (Array.isArray(wd.sections) && hiddenSections.length > 0) {
       wd.sections = wd.sections.filter((s: any) => !hiddenSections.includes(s.type));
     }
+    // Pass slug so ContactSection can submit forms
+    if (slug) wd.slug = slug;
   }
   
   // Use layoutStyle if provided (from admin/dashboard), otherwise fall back to businessCategory

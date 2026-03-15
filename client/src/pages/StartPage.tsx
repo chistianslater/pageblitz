@@ -19,6 +19,8 @@ export default function StartPage() {
   const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<Step>("email");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [privacyError, setPrivacyError] = useState(false);
 
   // If user is logged in, pre-fill email and skip to choice step
   useEffect(() => {
@@ -81,7 +83,9 @@ export default function StartPage() {
     const email = customerEmail.trim();
     if (!email) { setEmailError("Bitte gib deine E-Mail-Adresse ein"); return; }
     if (!isValidEmail(email)) { setEmailError("Bitte gib eine gültige E-Mail-Adresse ein"); return; }
+    if (!privacyAccepted) { setPrivacyError(true); return; }
     setEmailError(null);
+    setPrivacyError(false);
     // Save email as first funnel step immediately
     captureEmailMutation.mutate({ email });
   };
@@ -271,6 +275,39 @@ export default function StartPage() {
                     )}
                   </div>
 
+                  {/* Datenschutz-Checkbox */}
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none group">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={privacyAccepted}
+                        onChange={(e) => {
+                          setPrivacyAccepted(e.target.checked);
+                          if (e.target.checked) setPrivacyError(false);
+                        }}
+                        className="w-4 h-4 rounded accent-indigo-500 cursor-pointer"
+                      />
+                    </div>
+                    <span className={`text-xs leading-relaxed transition-colors ${privacyError ? "text-red-400" : "text-slate-400 group-hover:text-slate-300"}`}>
+                      Ich habe die{" "}
+                      <a
+                        href="/datenschutz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-indigo-400 hover:text-indigo-300 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Datenschutzerklärung
+                      </a>{" "}
+                      gelesen und stimme der Verarbeitung meiner Daten zur Erstellung meiner Website zu.
+                      {privacyError && (
+                        <span className="block mt-0.5 text-red-400 font-medium">
+                          Bitte akzeptiere die Datenschutzerklärung.
+                        </span>
+                      )}
+                    </span>
+                  </label>
+
                   <Button
                     onClick={handleEmailNext}
                     disabled={!customerEmail.trim() || isCapturing}
@@ -450,6 +487,9 @@ export default function StartPage() {
                               setGmbSearchRegion(cityName);
                               setCitySuggestions([]);
                               setShowCitySuggestions(false);
+                              if (gmbSearchQuery.trim() && !gmbSearchLoading) {
+                                handleGmbSearch();
+                              }
                             }}
                             className="w-full text-left px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
                           >
@@ -557,7 +597,7 @@ export default function StartPage() {
       </div>
 
       <p className="text-slate-600 text-xs mt-8 text-center">
-        Kein Konto erforderlich · 7 Tage kostenlos · ab 19,90 €/Monat
+        7 Tage gratis · danach 19,90 €/Monat · Jederzeit kündbar
       </p>
     </div>
   );

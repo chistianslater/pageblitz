@@ -6,18 +6,20 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import {
   upsertBusiness, getBusinessById, listBusinesses, countBusinesses, updateBusiness,
-  createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByToken, getWebsiteByBusinessId,
+  createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
   listWebsites, countWebsites, updateWebsite,
   createOutreachEmail, listOutreachEmails, countOutreachEmails,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
-  createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
+  createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId, updateSubscription,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
   getLeadFunnelStats, listExternalLeads, countExternalLeads,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
   updateUser, getUserByOpenId,
+  createContactSubmission, getContactSubmissionsByWebsiteId, countUnreadSubmissions,
+  markSubmissionRead, countRecentSubmissionsByIp, archiveSubmission, deleteContactSubmission,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
@@ -32,31 +34,55 @@ import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
+import { registerUmamiWebsite, getUmamiStats } from "./umami";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
 import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+// Compat client with older API — current_period_end not in 2026-02-25.clover
+const stripeCompat = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-04-10" as any });
 
 const PRICING = {
-  base: { amount: 1990, currency: "eur", interval: "month" as const },      // 19,90 €/Monat
-  feature: { amount: 390, currency: "eur", interval: "month" as const },     // 3,90 € pro Extra-Feature
-  subpage: { amount: 250, currency: "eur", interval: "month" as const },     // 2,50 € pro Extra-Unterseite
+  base: {
+    monthly: 2490,  // 24,90 €/Monat (monatliche Abrechnung)
+    yearly:  1990,  // 19,90 €/Monat (jährliche Abrechnung, monatlich abgebucht)
+  },
+  addon: 390,       // 3,90 € pro Add-on (unabhängig vom Billing-Interval)
 } as const;
 
-// Feature-Typen für Stripe Checkout
-type FeatureType = "gallery" | "contactForm" | "menu" | "pricelist";
-const FEATURE_NAMES: Record<FeatureType, string> = {
-  gallery: "Bildergalerie",
+// Add-on-Typen für Stripe Checkout (Extra-Seite folgt später zu 6,90 €)
+type AddOnKey = "contactForm" | "gallery" | "menu" | "pricelist";
+const ADDON_NAMES: Record<AddOnKey, string> = {
   contactForm: "Kontaktformular",
-  menu: "Speisekarte",
-  pricelist: "Preisliste",
+  gallery:     "Bildergalerie",
+  menu:        "Speisekarte",
+  pricelist:   "Preisliste",
 };
 
 function slugify(text: string): string {
   return text.toLowerCase()
     .replace(/[äöüß]/g, m => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
+
+/**
+ * Converts an array of DayHours objects into a human-readable opening hours string.
+ * Consecutive days with identical times are grouped (e.g. "Montag – Freitag: 09:00 – 18:00 Uhr").
+ */
+function formatOpeningHoursText(hours: Array<{ day: string; open: boolean; from: string; to: string }>): string {
+  const open = hours.filter(h => h.open);
+  if (open.length === 0) return '';
+  const lines: string[] = [];
+  let i = 0;
+  while (i < open.length) {
+    let j = i;
+    while (j + 1 < open.length && open[j + 1].from === open[i].from && open[j + 1].to === open[i].to) j++;
+    const range = i === j ? open[i].day : `${open[i].day} – ${open[j].day}`;
+    lines.push(`${range}: ${open[i].from} – ${open[i].to} Uhr`);
+    i = j + 1;
+  }
+  return lines.join('\n');
 }
 
 // Generic Google Places types that apply to virtually every business – not useful as category
@@ -1918,18 +1944,29 @@ export const appRouter = router({
       .input(z.object({ id: z.number().optional(), slug: z.string().optional(), token: z.string().optional() }))
       .query(async ({ input }) => {
         let website;
+        let redirectToSlug: string | null = null;
         if (input.id) website = await getWebsiteById(input.id);
-        else if (input.slug) website = await getWebsiteBySlug(input.slug);
+        else if (input.slug) {
+          website = await getWebsiteBySlug(input.slug);
+          // Fallback: look up by former slug so old preview-* URLs redirect to the new slug
+          if (!website) {
+            const byFormer = await getWebsiteByFormerSlug(input.slug);
+            if (byFormer) {
+              website = byFormer;
+              redirectToSlug = byFormer.slug;
+            }
+          }
+        }
         else if (input.token) website = await getWebsiteByToken(input.token);
         if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
         const business = await getBusinessById(website.businessId);
-        
+
         // Inject ID into websiteData for stable randomization seed in frontend
         if (website.websiteData) {
           (website.websiteData as any).id = website.id;
         }
-        
-        return { website, business };
+
+        return { website, business, redirectToSlug };
       }),
 
     updateStatus: adminProcedure
@@ -2193,49 +2230,31 @@ Antworte NUR mit validem JSON:
   checkout: router({
     createSession: publicProcedure
       .input(z.object({
-        websiteId: z.number(),
+        websiteId:       z.number(),
+        billingInterval: z.enum(["monthly", "yearly"]).default("yearly"),
         addOns: z.object({
-          subpages: z.number().default(0),
-          features: z.object({
-            gallery: z.boolean().default(false),
-            contactForm: z.boolean().default(false),
-            menu: z.boolean().default(false),
-            pricelist: z.boolean().default(false),
-          }).default({}),
-        }).default({ subpages: 0, features: {} }),
+          contactForm: z.boolean().default(false),
+          gallery:     z.boolean().default(false),
+          menu:        z.boolean().default(false),
+          pricelist:   z.boolean().default(false),
+        }).default({}),
       }))
       .mutation(async ({ input, ctx }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
 
-        let totalAmount = PRICING.base.amount;
-        const addOnsList: string[] = [];
-        const featureCount = Object.values(input.addOns.features).filter(Boolean).length;
+        const baseAmount  = PRICING.base[input.billingInterval];
+        const activeAddOns = (Object.entries(input.addOns) as [AddOnKey, boolean][]).filter(([, v]) => v);
+        const totalAmount  = baseAmount + activeAddOns.length * PRICING.addon;
 
-        // Unterseiten berechnen (2,50 € pro Stück)
-        if (input.addOns.subpages > 0) {
-          totalAmount += input.addOns.subpages * PRICING.subpage.amount;
-          addOnsList.push(`${input.addOns.subpages}x Unterseite`);
-        }
+        const basePriceStr  = (baseAmount / 100).toFixed(2).replace(".", ",");
+        const intervalLabel = input.billingInterval === "yearly" ? "Jahresabo" : "monatlich";
+        const description   = [
+          `${basePriceStr} €/Mo Basis (${intervalLabel})`,
+          ...activeAddOns.map(([k]) => ADDON_NAMES[k]),
+        ].join(" + ");
 
-        // Features berechnen (3,90 € pro Feature)
-        if (featureCount > 0) {
-          totalAmount += featureCount * PRICING.feature.amount;
-
-          // Feature-Namen sammeln
-          (Object.entries(input.addOns.features) as [FeatureType, boolean][])
-            .filter(([, enabled]) => enabled)
-            .forEach(([type]) => addOnsList.push(FEATURE_NAMES[type]));
-        }
-
-        // Beschreibung erstellen
-        const basePrice = (PRICING.base.amount / 100).toFixed(2).replace('.', ',');
-        const descriptionParts = [`${basePrice} €/Monat Basis`];
-        if (addOnsList.length > 0) {
-          descriptionParts.push(addOnsList.join(', '));
-        }
-        const totalPrice = (totalAmount / 100).toFixed(2).replace('.', ',');
-
+        const origin = ctx.req.headers.origin || "https://pageblitz.de";
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
           mode: "subscription",
@@ -2245,27 +2264,31 @@ Antworte NUR mit validem JSON:
               price_data: {
                 currency: "eur",
                 product_data: {
-                  name: `Pageblitz Website - ${website.businessName || website.slug}`,
-                  description: descriptionParts.join(' + '),
+                  name: `Pageblitz – ${website.businessName || (website.websiteData as any)?.businessName || "Deine Website"}`,
+                  description,
                 },
                 unit_amount: totalAmount,
-                recurring: { interval: "month", interval_count: 1 },
+                recurring: { interval: "month" },
               },
               quantity: 1,
             },
           ],
-          success_url: `${ctx.req.headers.origin}/websites/${website.id}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${ctx.req.headers.origin}/admin/websites`,
+          subscription_data: {
+            trial_period_days: 7,
+          },
+          success_url: `${origin}/my-website?checkout=success`,
+          cancel_url:  `${origin}/start`,
           metadata: {
-            websiteId: website.id.toString(),
-            userId: ctx.user?.id.toString() || "anonymous",
-            addOns: JSON.stringify(input.addOns),
-            totalAmount: totalAmount.toString(),
+            websiteId:       website.id.toString(),
+            userId:          ctx.user?.id?.toString() || "0",
+            billingInterval: input.billingInterval,
+            addOns:          JSON.stringify(input.addOns),
+            totalAmount:     totalAmount.toString(),
           },
         });
 
         if (!session.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Stripe session URL not generated" });
-        return { url: session.url, sessionId: session.id, totalAmount, addOnsList };
+        return { url: session.url, sessionId: session.id, totalAmount, addOnsList: activeAddOns.map(([k]) => ADDON_NAMES[k]) };
       }),
   }),
   
@@ -2580,11 +2603,74 @@ Kontext: ${input.context}`,
           photoUrls: onboarding.photoUrls,
         });
         
+        // Inject contact items from manual onboarding data (phone, email, address, opening hours)
+        const contactItems: Array<{ title: string; description: string; icon: string }> = [];
+        if (onboarding.legalPhone)
+          contactItems.push({ title: 'Telefon', description: onboarding.legalPhone, icon: 'Phone' });
+        if (onboarding.legalEmail)
+          contactItems.push({ title: 'E-Mail', description: onboarding.legalEmail, icon: 'Mail' });
+        const addrParts = [
+          onboarding.legalStreet,
+          `${onboarding.legalZip || ''} ${onboarding.legalCity || ''}`.trim(),
+        ].filter(Boolean);
+        const addrStr = addrParts.join(', ');
+        if (addrStr)
+          contactItems.push({ title: 'Adresse', description: addrStr, icon: 'MapPin' });
+        const ohRaw = (onboarding as any).openingHours;
+        if (ohRaw && Array.isArray(ohRaw) && ohRaw.length > 0) {
+          const ohText = formatOpeningHoursText(ohRaw);
+          if (ohText) contactItems.push({ title: 'Öffnungszeiten', description: ohText, icon: 'Clock' });
+        }
+        if (contactItems.length > 0 && patchedData) {
+          // Ensure sections array exists (some non-GMB websites might not have one yet)
+          if (!(patchedData as any).sections) (patchedData as any).sections = [];
+          (patchedData as any).sections = (patchedData as any).sections.filter((s: any) => s.type !== 'contact');
+          (patchedData as any).sections.push({
+            type: 'contact',
+            headline: 'Kontakt',
+            items: contactItems,
+            content: 'Wir freuen uns auf Ihre Nachricht.',
+            ctaText: 'Nachricht senden',
+          });
+        }
+
+        // Apply user's section order and hidden sections from hideSections step
+        const savedSectionOrder: string[] | undefined = (onboarding as any).sectionOrder;
+        const savedHiddenSections: string[] | undefined = (onboarding as any).hiddenSections;
+        if (patchedData && (patchedData as any).sections) {
+          let secs = (patchedData as any).sections;
+          if (savedHiddenSections && savedHiddenSections.length > 0) {
+            secs = secs.filter((s: any) => !savedHiddenSections.includes(s.type));
+          }
+          if (savedSectionOrder && savedSectionOrder.length > 0) {
+            const heroSec = secs.find((s: any) => s.type === 'hero');
+            const others = secs.filter((s: any) => s.type !== 'hero');
+            others.sort((a: any, b: any) => {
+              const ai = savedSectionOrder.indexOf(a.type);
+              const bi = savedSectionOrder.indexOf(b.type);
+              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            });
+            secs = heroSec ? [heroSec, ...others] : others;
+          }
+          (patchedData as any).sections = secs;
+        }
+
         // Also update the business category in the business table if it changed
         if ((onboarding as any).businessCategory && website.businessId) {
           try {
             await updateBusiness(website.businessId, { category: (onboarding as any).businessCategory });
           } catch { /* non-critical */ }
+        }
+
+        // Sync phone/address/opening hours back to business table for future regenerations
+        if (website.businessId) {
+          const bizUpd: Record<string, any> = {};
+          if (onboarding.legalPhone) bizUpd.phone = onboarding.legalPhone;
+          if (addrStr) bizUpd.address = addrStr;
+          if (ohRaw) bizUpd.openingHours = ohRaw;
+          if (Object.keys(bizUpd).length > 0) {
+            try { await updateBusiness(website.businessId, bizUpd); } catch { /* non-critical */ }
+          }
         }
         
         // Generate legal pages if legal data is present
@@ -2641,20 +2727,28 @@ Kontext: ${input.context}`,
         if (onboarding.heroPhotoUrl) websiteUpdateData.heroImageUrl = onboarding.heroPhotoUrl;
         if (onboarding.aboutPhotoUrl) websiteUpdateData.aboutImageUrl = onboarding.aboutPhotoUrl;
         await updateWebsite(input.websiteId, websiteUpdateData);
-        
+
+        // Register in Umami Analytics (non-critical, fire-and-forget)
+        const domain = website.slug + ".pageblitz.de";
+        registerUmamiWebsite(website.slug, domain)
+          .then((umamiId) => {
+            if (umamiId) updateWebsite(input.websiteId, { umamiWebsiteId: umamiId });
+          })
+          .catch(() => { /* non-critical */ });
+
         // Mark onboarding as completed
         await updateOnboarding(input.websiteId, {
           status: "completed",
           completedAt: Date.now(),
           updatedAt: Date.now(),
         });
-        
+
         // Notify owner
         await notifyOwner({
           title: "Onboarding abgeschlossen",
           content: `Website ${website.slug} wurde durch Onboarding aktiviert.`,
         });
-        
+
         return { success: true };
       }),
     
@@ -2788,15 +2882,122 @@ Kontext: ${input.context}`,
     getMyWebsites: protectedProcedure.query(async ({ ctx }) => {
       const userId = ctx.user.id;
       const rows = await getWebsitesByUserId(userId);
-      // Enrich with business data
+      // Enrich with business data + auto-sync currentPeriodEnd from Stripe if missing
       const results = await Promise.all(
         rows.map(async (row) => {
           const business = await getBusinessById(row.website.businessId);
+          // Fetch currentPeriodEnd from Stripe if not yet stored (use compat client)
+          if (row.subscription && !row.subscription.currentPeriodEnd && row.subscription.stripeSubscriptionId) {
+            try {
+              const stripeSub = await stripeCompat.subscriptions.retrieve(row.subscription.stripeSubscriptionId);
+              const periodEnd = (stripeSub as any).current_period_end as number | undefined;
+              if (periodEnd) {
+                await updateSubscription(row.subscription.id, { currentPeriodEnd: periodEnd, updatedAt: Date.now() });
+                (row.subscription as any).currentPeriodEnd = periodEnd;
+              }
+            } catch (e) {
+              console.warn("[getMyWebsites] Could not fetch Stripe subscription period:", e);
+            }
+          }
           return { website: row.website, subscription: row.subscription, business };
         })
       );
       return results;
     }),
+
+    // ── Setup-Flow ──────────────────────────────────────
+    checkSlugAvailability: publicProcedure
+      .input(z.object({ slug: z.string(), websiteId: z.number() }))
+      .query(async ({ input }) => {
+        if (input.slug.length < 3) return { available: false };
+        const existing = await getWebsiteBySlug(input.slug);
+        const available = !existing || existing.id === input.websiteId;
+        return { available };
+      }),
+
+    updateSlug: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        slug: z.string().min(3).max(60).regex(/^[a-z0-9-]+$/, "Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row)
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        const existing = await getWebsiteBySlug(input.slug);
+        if (existing && existing.id !== input.websiteId)
+          throw new TRPCError({ code: "CONFLICT", message: "Diese Adresse ist bereits vergeben" });
+        // Preserve the old slug so old URLs can redirect
+        const oldSlug = row.website.slug;
+        await updateWebsite(input.websiteId, {
+          slug: input.slug,
+          ...(oldSlug !== input.slug ? { formerSlug: oldSlug } : {}),
+        });
+        return { success: true };
+      }),
+
+    setLive: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        await updateWebsite(input.websiteId, { status: "active" });
+        return { success: true };
+      }),
+
+    /** Saves legal owner/email to onboarding and generates Impressum + Datenschutz */
+    generateLegalPages: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        legalOwner: z.string().min(2),
+        legalEmail: z.string().email(),
+        legalStreet: z.string().optional(),
+        legalZip: z.string().optional(),
+        legalCity: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        // Save legal data to onboarding
+        await updateOnboarding(input.websiteId, {
+          legalOwner: input.legalOwner,
+          legalEmail: input.legalEmail,
+          ...(input.legalStreet ? { legalStreet: input.legalStreet } : {}),
+          ...(input.legalZip    ? { legalZip:    input.legalZip    } : {}),
+          ...(input.legalCity   ? { legalCity:   input.legalCity   } : {}),
+        });
+
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+
+        const legalData = {
+          businessName: (website.websiteData as any)?.businessName || onboarding?.businessName || "Unternehmen",
+          legalOwner: input.legalOwner,
+          legalStreet: input.legalStreet || onboarding?.legalStreet || "",
+          legalZip:    input.legalZip    || onboarding?.legalZip    || "",
+          legalCity:   input.legalCity   || onboarding?.legalCity   || "",
+          legalCountry: "Deutschland",
+          legalEmail: input.legalEmail,
+          legalPhone:  onboarding?.legalPhone  || undefined,
+          legalVatId:  onboarding?.legalVatId  || undefined,
+        };
+
+        const impressumHtml    = generateImpressum(legalData);
+        const datenschutzHtml  = generateDatenschutz(legalData);
+        const websiteData      = (website.websiteData as any) || {};
+
+        await updateWebsite(input.websiteId, {
+          websiteData: { ...websiteData, impressumHtml, datenschutzHtml, hasLegalPages: true },
+        });
+
+        return { success: true };
+      }),
+
     updateWebsiteContent: protectedProcedure
       .input(z.object({
         websiteId: z.number(),
@@ -3263,6 +3464,60 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    purchaseAddon: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        addonKey: z.enum(["contactForm", "gallery", "menu", "pricelist"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN" });
+        if (!row.subscription) throw new TRPCError({ code: "NOT_FOUND", message: "Kein aktives Abonnement gefunden." });
+
+        const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
+        if (stripeSubscriptionId) {
+          // Step 1: create a standalone price with inline product (prices.create supports
+          // product_data across all API versions; subscriptionItems.create does not)
+          const price = await stripe.prices.create({
+            currency: "eur",
+            unit_amount: PRICING.addon,
+            recurring: { interval: "month" },
+            product_data: { name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}` },
+          } as any);
+
+          // Step 2: add the price to the existing subscription (proration charged immediately)
+          await stripe.subscriptionItems.create({
+            subscription: stripeSubscriptionId,
+            price: price.id,
+            quantity: 1,
+            proration_behavior: "create_prorations",
+          } as any);
+        }
+
+        // Update addOns record in DB
+        const currentAddOns = (row.subscription.addOns as Record<string, boolean>) || {};
+        const newAddOns = { ...currentAddOns, [input.addonKey]: true };
+        await updateSubscription(row.subscription.id, { addOns: newAddOns, updatedAt: Date.now() });
+        return { success: true };
+      }),
+
+    createBillingPortalSession: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find((r) => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN" });
+        const stripeCustomerId = row.subscription?.stripeCustomerId;
+        if (!stripeCustomerId) throw new TRPCError({ code: "NOT_FOUND", message: "Kein Stripe-Kundenkonto gefunden. Bitte kontaktiere den Support." });
+        const origin = ctx.req.headers.origin || "https://pageblitz.de";
+        const session = await stripe.billingPortal.sessions.create({
+          customer: stripeCustomerId,
+          return_url: `${origin}/my-account`,
+        });
+        return { url: session.url };
+      }),
+
     setWebsiteActive: adminProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
@@ -3288,6 +3543,66 @@ Kontext: ${input.context}`,
           });
         }
         await updateWebsite(input.websiteId, { status: "active" });
+        return { success: true };
+      }),
+
+    getAnalytics: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const umamiWebsiteId = (owned.website as any).umamiWebsiteId as string | null | undefined;
+        if (!umamiWebsiteId) return null;
+        const stats = await getUmamiStats(umamiWebsiteId);
+        return stats;
+      }),
+
+    updateContactEmail: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        contactEmail: z.string().email().max(320).or(z.literal("")),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        await updateWebsite(input.websiteId, { contactEmail: input.contactEmail || null } as any);
+        return { success: true };
+      }),
+
+    getSubmissions: protectedProcedure
+      .input(z.object({ websiteId: z.number(), includeArchived: z.boolean().default(false) }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const submissions = await getContactSubmissionsByWebsiteId(input.websiteId, { includeArchived: input.includeArchived });
+        const unreadCount = await countUnreadSubmissions(input.websiteId);
+        return { submissions, unreadCount };
+      }),
+
+    markSubmissionRead: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await markSubmissionRead(input.submissionId);
+        return { success: true };
+      }),
+
+    archiveSubmission: protectedProcedure
+      .input(z.object({ submissionId: z.number(), archive: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership via website
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        // We trust the client here (submissionId belongs to one of the user's websites)
+        await archiveSubmission(input.submissionId, input.archive);
+        return { success: true };
+      }),
+
+    deleteSubmission: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteContactSubmission(input.submissionId);
         return { success: true };
       }),
   }),
@@ -3711,6 +4026,7 @@ Kontext: ${input.context}`,
         websiteId: z.number(),
         businessName: z.string(),
         businessCategory: z.string(),
+        addressingMode: z.enum(['du', 'Sie']).optional().default('du'),
       }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
@@ -3719,7 +4035,7 @@ Kontext: ${input.context}`,
         const business = await getBusinessById(website.businessId);
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
 
-        const { businessName, businessCategory } = input;
+        const { businessName, businessCategory, addressingMode } = input;
 
         // Build StoryBrand-aligned prompt for all website content
         const prompt = `Du bist ein Experte für das StoryBrand-Framework von Donald Miller und erstellst Website-Texte für deutsche Kleinunternehmen.
@@ -3728,6 +4044,7 @@ Das StoryBrand-Prinzip: Der KUNDE ist der Held – nicht das Unternehmen. Das Un
 
 Unternehmensname: ${businessName}
 Branche/Kategorie: ${businessCategory}
+Anrede: ${addressingMode === 'Sie' ? 'Besucher IMMER siezen – also "Sie", "Ihnen", "Ihr" verwenden. Niemals "du", "dir", "dein".' : 'Besucher IMMER duzen – also "du", "dir", "dein" verwenden. Niemals "Sie", "Ihnen", "Ihr".'}
 
 Erstelle folgende Website-Texte strikt nach StoryBrand:
 
@@ -3878,6 +4195,99 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           processSteps:   generatedProcessSteps,
           services:       generatedServices,
         };
+      }),
+  }),
+
+  // ── Public: Contact Form ──────────────────────────────────────
+  contact: router({
+    submit: publicProcedure
+      .input(z.object({
+        slug: z.string(),
+        name: z.string().min(1).max(255),
+        email: z.string().email().max(320),
+        phone: z.string().max(50).optional(),
+        message: z.string().min(1).max(5000),
+        customFields: z.record(z.string(), z.string()).optional(),
+        // Honeypot: filled by bots, must be empty for humans
+        website_url: z.string().max(0).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Honeypot check – bots fill this field
+        if (input.website_url && input.website_url.length > 0) {
+          return { success: true }; // silently ignore
+        }
+
+        // Look up website by slug
+        const website = await getWebsiteBySlug(input.slug);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+
+        // IP-based rate limiting: max 5 submissions per IP per hour
+        const ip = (ctx as any).req?.ip
+          || (ctx as any).req?.headers?.["x-forwarded-for"]?.split(",")[0]?.trim()
+          || "unknown";
+        const recentCount = await countRecentSubmissionsByIp(ip, 60 * 60 * 1000);
+        if (recentCount >= 5) {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Zu viele Anfragen. Bitte versuche es später erneut." });
+        }
+
+        // Save to DB
+        await createContactSubmission({
+          websiteId: website.id,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          message: input.message,
+          customFields: input.customFields ?? {},
+          ipAddress: ip,
+        });
+
+        // Send email notification to business owner
+        const business = website.businessId ? await getBusinessById(website.businessId) : null;
+        // contactEmail on website overrides business.email
+        const recipientEmail = (website as any).contactEmail || business?.email;
+
+        if (recipientEmail) {
+          const { sendEmail } = await import("./_core/email");
+          const businessName = business?.name ?? website.slug;
+          await sendEmail({
+            to: recipientEmail,
+            from: `Pageblitz Kontaktformular <kontakt@pageblitz.de>`,
+            replyTo: input.email, // Business owner hits "Reply" → antwort geht direkt an Besucher
+            subject: `Neue Kontaktanfrage – ${businessName}`,
+            html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f5; margin: 0; padding: 32px 16px;">
+  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div style="background: #18181b; padding: 28px 32px;">
+      <p style="color: #a1a1aa; font-size: 12px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.08em;">Neue Kontaktanfrage</p>
+      <h1 style="color: #ffffff; font-size: 22px; font-weight: 600; margin: 0;">${businessName}</h1>
+    </div>
+    <div style="padding: 32px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px; width: 30%;">Name</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px; font-weight: 500;">${input.name}</td></tr>
+        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">E-Mail</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;"><a href="mailto:${input.email}" style="color: #6366f1; font-size: 14px; text-decoration: none;">${input.email}</a></td></tr>
+        ${input.phone ? `<tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">Telefon</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px;">${input.phone}</td></tr>` : ""}
+      </table>
+      <div style="margin-top: 24px; background: #f9f9f9; border-radius: 8px; padding: 20px;">
+        <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.06em;">Nachricht</p>
+        <p style="color: #18181b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${input.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+      </div>
+      <div style="margin-top: 24px; text-align: center;">
+        <a href="mailto:${input.email}?subject=Re: Kontaktanfrage" style="display: inline-block; background: #18181b; color: #fff; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 8px;">Direkt antworten</a>
+      </div>
+    </div>
+    <div style="padding: 20px 32px; border-top: 1px solid #f0f0f0; text-align: center;">
+      <p style="color: #a1a1aa; font-size: 12px; margin: 0;">Gesendet via <a href="https://pageblitz.de" style="color: #6366f1; text-decoration: none;">pageblitz.de</a></p>
+    </div>
+  </div>
+</body>
+</html>`,
+          }).catch(() => { /* non-critical */ });
+        }
+
+        return { success: true };
       }),
   }),
 

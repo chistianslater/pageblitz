@@ -1,5 +1,5 @@
 /**
- * Standalone layout preview page – renders any of the 10 premium layouts with mock data.
+ * Standalone layout preview page – renders any of the 18 premium layouts with mock data.
  * Route: /layout-preview/:key?scheme=trust|warm|elegant|modern
  * Opens without any admin chrome so the layout fills the full viewport.
  */
@@ -8,7 +8,9 @@ import { useRoute, useLocation } from "wouter";
 import {
   BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
   DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
-  NaturalLayoutV2, PremiumLayoutV2,
+  NaturalLayoutV2, PremiumLayoutV2, EdenLayoutV2, ApexLayoutV2,
+  AuroraLayoutV2, NexusLayoutV2, ClayLayoutV2, ForgeLayoutV2,
+  PulseLayoutV2, FluxLayoutV2,
 } from "@/components/layouts/PremiumLayoutsV2";
 import { PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
 import { withOnColors } from "@shared/layoutConfig";
@@ -122,6 +124,46 @@ const MOCK: Record<string, any> = {
     ["M&A Advisory", "Diskreter Begleiter bei Unternehmenstransaktionen – von der Due Diligence bis zum Closing."],
     ["Executive Coaching", "Individuelle Führungskräfteentwicklung für Top-Manager und Geschäftsführer."],
   ], "Unsere Expertise"),
+  EDEN: genericMock("Clara Müller Coaching", "Dein Leben. Deine Kraft. Dein Weg.", "Erstgespräch buchen", [
+    ["Life Coaching", "Persönliche Begleitung auf Ihrem Weg zu mehr Klarheit, Balance und Erfüllung im Alltag."],
+    ["Ernährungsberatung", "Individuelle Ernährungskonzepte, die zu Ihrem Körper und Ihrem Leben passen – keine Verbote, nur echte Veränderung."],
+    ["Entspannungs- & Atemkurse", "Ganzheitliche Übungen und Techniken für mehr innere Ruhe und nachhaltige Stressreduktion."],
+  ], "Über Clara"),
+  APEX: genericMock("Brandt & Partner Rechtsanwälte", "Ihr Recht. Klar vertreten.", "Beratung anfragen", [
+    ["Unternehmensrecht", "Gründung, Verträge, M&A – wir begleiten Ihr Unternehmen juristisch auf jedem Schritt."],
+    ["Arbeitsrecht", "Professionelle Vertretung für Arbeitgeber und Arbeitnehmer in allen arbeitsrechtlichen Fragen."],
+    ["Immobilienrecht", "Von der Due Diligence bis zur Beurkundung – umfassende rechtliche Begleitung bei Immobilientransaktionen."],
+  ], "Die Kanzlei"),
+  AURORA: genericMock("Nucleus AI", "Software that thinks ahead.", "Get early access", [
+    ["AI-Powered Analytics", "Verwandeln Sie rohe Daten in strategische Erkenntnisse – in Echtzeit und vollautomatisiert."],
+    ["Cloud Infrastructure", "Skalierbare, sichere und blitzschnelle Cloud-Lösungen, die mit Ihrem Unternehmen wachsen."],
+    ["Developer APIs", "Leistungsstarke REST- und GraphQL-APIs für nahtlose Integration in jede moderne Tech-Stack."],
+  ], "Über Nucleus AI"),
+  NEXUS: genericMock("Studio Mila", "Design mit Seele. Pixel mit Präzision.", "Projekt anfragen", [
+    ["Brand Identity", "Logos, Farbpaletten, Typografie – wir entwickeln eine visuelle Sprache, die Ihre Marke unverwechselbar macht."],
+    ["UI/UX Design", "Nutzeroberflächen, die intuitiv funktionieren und gleichzeitig begeistern – von Wireframe bis zu Highfidelity."],
+    ["Motion & Video", "Animationen, Reels und Erklärvideos, die Botschaften lebendig machen und im Gedächtnis bleiben."],
+  ], "Das Studio"),
+  CLAY: genericMock("KleineSterne Kita", "Ein sicherer Hafen für kleine Entdecker.", "Jetzt anmelden", [
+    ["Krippe (0–3 Jahre)", "Liebevolle Eingewöhnung und individuelle Förderung in kleinen Gruppen – Ihr Kind ist bei uns in besten Händen."],
+    ["Kindergarten (3–6 Jahre)", "Spielerisches Lernen, Kreativität und soziale Kompetenz im modernen, lichtdurchfluteten Gruppenraum."],
+    ["Hort & Nachmittagsbetreuung", "Hausaufgabenhilfe, Ausflüge und freies Spielen – betreut und geborgen bis 18 Uhr."],
+  ], "Unsere Einrichtung"),
+  FORGE: genericMock("Architektur Klar", "Räume, die bleiben.", "Projekt besprechen", [
+    ["Neubau & Planung", "Von der ersten Skizze bis zur Baugenehmigung – wir denken jeden Quadratmeter zu Ende, bevor der erste Stein gesetzt wird."],
+    ["Umbau & Sanierung", "Bestandsgebäude neu gedacht: wir verbinden Charakter mit Funktionalität und modernem Komfort."],
+    ["Innenarchitektur", "Räume, die atmen. Materialien, die berühren. Konzepte, die Ihren Alltag bereichern."],
+  ], "Über das Büro"),
+  PULSE: genericMock("Zentrum für Gesundheit", "Ihre Gesundheit. Unser Auftrag.", "Termin vereinbaren", [
+    ["Diagnostik & Check-up", "Umfassende Gesundheitschecks mit modernster Technik – für ein klares Bild Ihrer Gesundheit."],
+    ["Physiotherapie", "Individuelle Therapiepläne für Bewegungsfreiheit, Schmerzlinderung und nachhaltige Rehabilitation."],
+    ["Präventivmedizin", "Vorsorge statt Nachsorge – wir begleiten Sie auf dem Weg zu einem gesünderen, energiereichen Leben."],
+  ], "Das Zentrum"),
+  FLUX: genericMock("Club Meridian", "Nächte, die unvergesslich bleiben.", "Tickets sichern", [
+    ["Live-Events & Konzerte", "Nationale und internationale Artists auf unserer Hauptbühne – Musik, die unter die Haut geht."],
+    ["Private & Corporate Events", "Exklusive Abende für bis zu 500 Gäste – Catering, Licht, Sound: alles aus einer Hand."],
+    ["Rooftop Bar", "Über den Dächern der Stadt – Cocktails, Sunset-Sessions und das beste Panorama der Stadt."],
+  ], "Über den Club"),
 };
 
 const LAYOUTS: Record<string, { component: React.ComponentType<any>; label: string; heroImage: string }> = {
@@ -135,6 +177,14 @@ const LAYOUTS: Record<string, { component: React.ComponentType<any>; label: stri
   MODERN:  { component: ModernLayoutV2,  label: "Modern – IT & Agentur",         heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop" },
   NATURAL: { component: NaturalLayoutV2, label: "Natural – Bio & Natur",         heroImage: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=80&fit=crop" },
   PREMIUM: { component: PremiumLayoutV2, label: "Premium – Business & Consulting", heroImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80&fit=crop" },
+  EDEN:    { component: EdenLayoutV2,    label: "Eden – Coaching & Personal Services", heroImage: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=1600&q=80&fit=crop" },
+  APEX:    { component: ApexLayoutV2,    label: "Apex – Beratung & B2B Profis",  heroImage: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1600&q=80&fit=crop" },
+  AURORA:  { component: AuroraLayoutV2,  label: "Aurora – Tech & Startups",       heroImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&fit=crop" },
+  NEXUS:   { component: NexusLayoutV2,   label: "Nexus – Portfolio & Kreativ",    heroImage: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1600&q=80&fit=crop" },
+  CLAY:    { component: ClayLayoutV2,    label: "Clay – Wellness & Familien",     heroImage: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1600&q=80&fit=crop" },
+  FORGE:   { component: ForgeLayoutV2,   label: "Forge – Architektur & Kunst",    heroImage: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&q=80&fit=crop" },
+  PULSE:   { component: PulseLayoutV2,   label: "Pulse – Gesundheit & Klinik",    heroImage: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1600&q=80&fit=crop" },
+  FLUX:    { component: FluxLayoutV2,    label: "Flux – Nightlife & Events",      heroImage: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=1600&q=80&fit=crop" },
 };
 
 export default function LayoutPreviewStandalone() {

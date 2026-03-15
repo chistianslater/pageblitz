@@ -86,6 +86,9 @@ export function generateImpressum(data: LegalData): string {
 
   <h2>Urheberrecht</h2>
   <p>Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.</p>
+
+  <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e5e7eb;" />
+  <p style="font-size: 0.8rem; color: #9ca3af;">Diese Website wurde automatisch erstellt mit <a href="https://pageblitz.de" target="_blank" rel="noopener noreferrer" style="color: #6b7280;">pageblitz.de</a></p>
 </body>
 </html>
 `.trim();
