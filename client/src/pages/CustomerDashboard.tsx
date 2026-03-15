@@ -1957,8 +1957,8 @@ export default function CustomerDashboard() {
     { enabled: slugInput.length >= 3 }
   );
   const { data: domainSlugCheck, isFetching: domainSlugChecking } = trpc.customer.checkSlugAvailability.useQuery(
-    { slug: domainTabSlugInput, websiteId: websiteId ?? 0 },
-    { enabled: domainTabSlugInput.length >= 3 && domainTabSlugInput !== website?.slug }
+    { slug: domainTabSlugInput, websiteId: _activeWebsiteIdForSetup },
+    { enabled: domainTabSlugInput.length >= 3 && domainTabSlugInput !== _selectedEntry?.website?.slug }
   );
 
   if (authLoading || isLoading) {
