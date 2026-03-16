@@ -3589,6 +3589,9 @@ Kontext: ${input.context}`,
 
         const website = owned.website;
 
+        // TEMP DEBUG LOG
+        console.log(`[updateAddons] websiteId=${input.websiteId} contactForm=${input.addOns.contactForm} gallery=${input.addOns.gallery?.enabled} menu=${input.addOns.menu?.enabled} pricelist=${input.addOns.pricelist?.enabled}`);
+
         // Update onboarding with add-on settings
         await updateOnboarding(input.websiteId, {
           addOnGallery: input.addOns.gallery?.enabled,
