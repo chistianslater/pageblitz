@@ -90,8 +90,7 @@ export function registerLandingChatRoutes(app: Express) {
       });
 
       let content =
-        (llmResult.content?.[0] as any)?.text ||
-        (typeof llmResult.content === "string" ? llmResult.content : "") ||
+        (llmResult.choices?.[0]?.message?.content as string) ||
         "Ich bin gerade nicht erreichbar – bitte versuche es gleich nochmal!";
 
       // ── Lead extraction ─────────────────────────────────────────────────────

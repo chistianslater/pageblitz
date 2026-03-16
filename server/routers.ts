@@ -2934,6 +2934,11 @@ Kontext: ${input.context}`,
               console.warn("[getMyWebsites] colorScheme migration failed:", e);
             }
           }
+          // Inject ID into websiteData for stable randomization seed in frontend
+          // (mirrors the same injection in website.get so preview matches live site)
+          if (row.website.websiteData) {
+            (row.website.websiteData as any).id = row.website.id;
+          }
           return { website: row.website, subscription: row.subscription, business };
         })
       );
