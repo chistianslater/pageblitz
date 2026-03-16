@@ -5,6 +5,7 @@ import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
+import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory, CATEGORY_GROUPS } from "@shared/gmbCategories";
@@ -5569,6 +5570,16 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
             );
           })
         )}
+      </div>
+
+      {/* Stock Photo Search */}
+      <div className="border-t border-slate-700 pt-3 space-y-2">
+        <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Stock-Foto suchen</p>
+        <StockPhotoSearch
+          defaultQuery={businessCategory}
+          onSelect={(url) => onSelect(url)}
+          perPage={9}
+        />
       </div>
 
       {/* Upload option */}

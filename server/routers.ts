@@ -38,6 +38,7 @@ import { registerUmamiWebsite, getUmamiStats } from "./umami";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
 import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
+import { searchStockPhotos } from "./_core/stockPhotos";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 // Compat client with older API — current_period_end not in 2026-02-25.clover
@@ -2794,6 +2795,16 @@ Kontext: ${input.context}`,
       }),
 
     // Get industry-specific photo suggestions for the hero image step
+    searchStockPhotos: publicProcedure
+      .input(z.object({
+        query: z.string().min(2).max(100),
+        page: z.number().optional().default(1),
+        perPage: z.number().optional().default(12),
+      }))
+      .query(async ({ input }) => {
+        return searchStockPhotos(input.query, input.page, input.perPage);
+      }),
+
     getPhotoSuggestions: publicProcedure
       .input(z.object({ category: z.string(), businessName: z.string().optional() }))
       .query(async ({ input }) => {

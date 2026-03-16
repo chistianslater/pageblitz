@@ -5,6 +5,7 @@ import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
+import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { FONT_OPTIONS } from "@shared/layoutConfig";
 
@@ -2165,10 +2166,10 @@ export default function CustomerDashboard() {
               </div>
             )}
 
-            {/* Stock Photos */}
+            {/* Stock Photos – industry suggestions */}
             {stockPhotos.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock-Fotos</p>
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Vorgeschlagene Stock-Fotos</p>
                 <div className="grid grid-cols-3 gap-2">
                   {stockPhotos.map((url, i) => (
                     <button key={i} onClick={() => selectPickerImage(url)}
@@ -2179,6 +2180,12 @@ export default function CustomerDashboard() {
                 </div>
               </div>
             )}
+
+            {/* Stock Photo Search (Unsplash) */}
+            <div className="space-y-2">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock-Foto suchen</p>
+              <StockPhotoSearch onSelect={selectPickerImage} />
+            </div>
 
             {/* Upload */}
             <div className="space-y-2">
