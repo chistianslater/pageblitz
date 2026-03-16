@@ -4082,9 +4082,10 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           <Skeleton isLoading={isLoading} className="min-h-[14rem] mb-8">
             <motion.h1 initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ duration:1, delay:0.1 }}
               style={{ fontFamily:DISPLAY, fontWeight:800, lineHeight:1.0,
-                fontSize:getHeadlineFontSize(headlineSize,'clamp(3.5rem,10vw,9rem)'),
+                fontSize:getHeadlineFontSize(headlineSize,'clamp(3rem, 8vw, 7rem)'),
                 letterSpacing:'-0.02em', textTransform:'uppercase' as const, color:TXT,
-                textShadow:`0 0 60px rgba(212,168,67,0.22)` }}>
+                textShadow:`0 0 60px rgba(212,168,67,0.22)`,
+                overflowWrap:'break-word', wordBreak:'break-word' }}>
               {hl.main}
               {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
             </motion.h1>
