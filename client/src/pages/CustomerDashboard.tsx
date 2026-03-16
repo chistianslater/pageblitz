@@ -2064,7 +2064,14 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
 
   const handleToggle = () => {
     if (!isPurchased) { setConfirmOpen(true); return; }
-    setAiChat(v => !v);
+    const newVal = !aiChat;
+    setAiChat(newVal);
+    setSaving(true);
+    // Auto-save toggle immediately so it persists on page reload
+    updateAddons.mutate({
+      websiteId,
+      addOns: { gallery: { enabled: false }, aiChat: newVal, chatWelcomeMessage: welcomeMsg.trim() || undefined },
+    });
   };
 
   const handleSave = () => {
@@ -2399,7 +2406,22 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
             <span className="ml-1 text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">+4,90 €/Monat</span>
           </h2>
           <button
-            onClick={() => setEnabled(!enabled)}
+            onClick={() => {
+              const newVal = !enabled;
+              setEnabled(newVal);
+              // Auto-save enabled/disabled state immediately
+              saveSettingsMutation.mutate({
+                websiteId,
+                enabled: newVal,
+                weeklySchedule: schedule,
+                durationMinutes: duration,
+                bufferMinutes: buffer,
+                advanceDays: advance,
+                title: title.trim() || "Terminbuchung",
+                description: description.trim() || undefined,
+                notificationEmail: notifEmail.trim() || null,
+              });
+            }}
             className={`relative w-11 h-6 rounded-full transition-colors ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
           >
             <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
