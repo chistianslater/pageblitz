@@ -3016,7 +3016,7 @@ export default function CustomerDashboard() {
             </div>
             <div className="overflow-auto max-h-[calc(100vh-280px)]">
               {websiteData ? (
-                <div key={previewKey} style={{ zoom: 0.85 }}>
+                <div key={previewKey} style={{ zoom: 0.85, contain: "layout" }}>
                   <WebsiteRenderer
                     websiteData={websiteData}
                     colorScheme={colorScheme}
