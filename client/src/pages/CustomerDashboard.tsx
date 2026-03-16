@@ -1005,22 +1005,36 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   };
 
   const toggleAddon = (key: keyof typeof addons) => {
+    // Build the updated addons object immediately so we can save it right away
+    let newAddons: typeof addons;
     if (key === "contactForm") {
-      setAddons({ ...addons, contactForm: !addons.contactForm });
+      newAddons = { ...addons, contactForm: !addons.contactForm };
     } else {
       const newEnabled = !addons[key].enabled;
-      setAddons({
-        ...addons,
-        [key]: { ...addons[key], enabled: newEnabled },
-      });
-      // Auto-expand when enabling
-      if (newEnabled) {
-        setExpandedAddon(key);
-      } else {
-        setExpandedAddon(null);
-      }
+      newAddons = { ...addons, [key]: { ...addons[key], enabled: newEnabled } };
+      if (newEnabled) setExpandedAddon(key);
+      else setExpandedAddon(null);
     }
-    // Auto-save will be triggered by useEffect
+    setAddons(newAddons);
+
+    // Save immediately — do NOT rely on the debounce which gets cancelled on tab-switch
+    setSaveStatus("saving");
+    setSaving(true);
+    updateAddonsRef.current.mutate({
+      websiteId,
+      addOns: {
+        gallery: newAddons.gallery.enabled ? { enabled: true, photos: newAddons.gallery.photos } : { enabled: false },
+        menu: newAddons.menu.enabled ? { enabled: true, categories: newAddons.menu.categories } : { enabled: false },
+        pricelist: newAddons.pricelist.enabled ? { enabled: true, categories: newAddons.pricelist.categories } : { enabled: false },
+        contactForm: newAddons.contactForm,
+        contactFormFields: newAddons.contactFormFields || [
+          { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+          { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+          { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+          { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+        ],
+      },
+    });
   };
 
   // Gallery functions
