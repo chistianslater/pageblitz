@@ -573,25 +573,44 @@ interface DesignEditorProps {
 }
 
 function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
-  const colorScheme = (website.colorScheme as ColorScheme) || {};
-  const websiteData = (website.websiteData as WebsiteData) || {};
-  const designTokens = websiteData.designTokens || {};
+  // Helper: extract colors from website object
+  const colorsFromWebsite = (w: any) => {
+    const cs = (w.colorScheme as ColorScheme) || {};
+    return {
+      primary:    cs.primary    || "#3B82F6",
+      secondary:  cs.secondary  || "#F1F5F9",
+      accent:     cs.accent     || "#8B5CF6",
+      background: cs.background || "#FFFFFF",
+      text:       cs.text       || "#1E293B",
+    };
+  };
 
-  const [colors, setColors] = useState({
-    primary: colorScheme.primary || "#3B82F6",
-    secondary: colorScheme.secondary || "#F1F5F9",
-    accent: colorScheme.accent || "#8B5CF6",
-    background: colorScheme.background || "#FFFFFF",
-    text: colorScheme.text || "#1E293B",
-  });
+  // Helper: extract fonts – normalize old "text-4xl" headlineSize to "large"/"medium"/"small"
+  const fontsFromWebsite = (w: any) => {
+    const dt = ((w.websiteData as WebsiteData) || {}).designTokens || {};
+    const rawSize = dt.headlineSize || "large";
+    const headlineSize =
+      ["small", "medium", "large"].includes(rawSize) ? rawSize
+      : rawSize === "text-2xl" || rawSize === "text-3xl" ? "small"
+      : rawSize === "text-5xl" || rawSize === "text-6xl" ? "large"
+      : "large";
+    return {
+      headlineFont: (dt.headlineFont as string) || "",  // "" = keep layout default
+      bodyFont:     (dt.bodyFont     as string) || "",
+      headlineSize,
+    };
+  };
 
-  const [fonts, setFonts] = useState({
-    headlineFont: designTokens.headlineFont || "Inter",
-    bodyFont: designTokens.bodyFont || "Inter",
-    headlineSize: designTokens.headlineSize || "text-4xl",
-  });
-
+  const [colors, setColors] = useState(() => colorsFromWebsite(website));
+  const [fonts,  setFonts]  = useState(() => fontsFromWebsite(website));
   const [saving, setSaving] = useState(false);
+
+  // Sync form state whenever website prop changes (after onUpdate / refetch)
+  useEffect(() => {
+    setColors(colorsFromWebsite(website));
+    setFonts(fontsFromWebsite(website));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [website.colorScheme, website.websiteData]);
 
   const updateDesign = trpc.customer.updateDesign.useMutation({
     onSuccess: () => {
@@ -606,13 +625,32 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
     await updateDesign.mutateAsync({
       websiteId,
       colorScheme: colors,
-      designTokens: fonts,
+      // only send font overrides when explicitly set (empty = keep layout default)
+      designTokens: {
+        ...(fonts.headlineFont ? { headlineFont: fonts.headlineFont } : {}),
+        ...(fonts.bodyFont     ? { bodyFont:     fonts.bodyFont     } : {}),
+        headlineSize: fonts.headlineSize,
+      },
     });
     setSaving(false);
   };
 
-  const headlineSizeOptions = ["text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl"];
-  const fontOptions = ["Inter", "Poppins", "Playfair Display", "Roboto", "Open Sans", "Lato", "Montserrat"];
+  const headlineSizeOptions = [
+    { value: "small",  label: "Normal" },
+    { value: "medium", label: "Groß" },
+    { value: "large",  label: "Extra groß" },
+  ];
+  const fontOptions = [
+    { value: "",                 label: "Layout-Standard" },
+    { value: "Inter",            label: "Inter" },
+    { value: "Poppins",          label: "Poppins" },
+    { value: "Playfair Display", label: "Playfair Display" },
+    { value: "Lora",             label: "Lora" },
+    { value: "Roboto",           label: "Roboto" },
+    { value: "Open Sans",        label: "Open Sans" },
+    { value: "Montserrat",       label: "Montserrat" },
+    { value: "Lato",             label: "Lato" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -700,7 +738,7 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, headlineFont: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {fontOptions.map(f => <option key={f} value={f}>{f}</option>)}
+              {fontOptions.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
           </div>
           <div>
@@ -710,7 +748,7 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, bodyFont: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {fontOptions.map(f => <option key={f} value={f}>{f}</option>)}
+              {fontOptions.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
           </div>
           <div>
@@ -720,7 +758,7 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, headlineSize: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {headlineSizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              {headlineSizeOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </div>
         </div>
