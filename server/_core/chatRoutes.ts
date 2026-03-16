@@ -36,7 +36,7 @@ function buildSystemPrompt(website: any): string {
   const city = wd.city || wd.location || "";
   const phone = wd.phone || "";
   const email = wd.email || "";
-  const calendlyUrl = website.calendlyUrl || "";
+  const hasBooking = !!website.addOnBooking;
   const welcomeMsg = website.chatWelcomeMessage || "";
 
   // Extract services from sections
@@ -48,8 +48,8 @@ function buildSystemPrompt(website: any): string {
     .filter(Boolean)
     .join(", ") || industry;
 
-  const ctaBlock = calendlyUrl
-    ? `Terminbuchung: Schick dem Besucher diesen Link wenn er einen Termin buchen möchte: ${calendlyUrl}`
+  const ctaBlock = hasBooking
+    ? `Terminbuchung: Weise den Besucher auf das Buchungsformular auf der Website hin – er kann dort direkt einen Termin buchen.`
     : `Terminbuchung: Empfehle den Besuchern, direkt anzurufen oder ihre Kontaktdaten zu hinterlassen.`;
 
   const welcomeBlock = welcomeMsg

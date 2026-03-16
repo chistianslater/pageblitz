@@ -18,7 +18,7 @@ PAGEBLITZ IM ÜBERBLICK:
 
 OPTIONALE ADD-ONS:
 1. 🤖 KI-Chat Assistent (+9,90 €/Mo): Ein KI-Chatbot direkt auf der Kunden-Website. Beantwortet Besucherfragen 24/7, benachrichtigt den Unternehmer bei Anfragen per E-Mail. Kein Personal nötig.
-2. 📅 Terminbuchung (+4,90 €/Mo): Pageblitz-eigene Terminbuchungs-Lösung. Der Unternehmer trägt EINMALIG seinen bestehenden Calendly-Link im Dashboard ein – Pageblitz zeigt dann automatisch einen "Termin buchen"-Button auf der Website. Kunden buchen 24/7, Termine landen direkt im Kalender. Kein eigenes Buchungssystem nötig – ein kostenloser Calendly-Account reicht.
+2. 📅 Terminbuchung (+4,90 €/Mo): Pageblitz-eigenes Buchungs-Widget direkt auf der Website. Kunden buchen Termine online – 24/7, ohne Anrufe. Services und Verfügbarkeit werden einmalig im Kunden-Dashboard eingetragen.
 3. ✉️ Kontaktformular (+3,90 €/Mo): Individuell anpassbare Felder, DSGVO-konform, Anfragen kommen per E-Mail.
 4. 🖼️ Bildergalerie (+3,90 €/Mo): Bis zu 20 Fotos direkt hochladen.
 5. 🍽️ Speisekarte (+3,90 €/Mo): Kategorien, Gerichte, Preise – für Restaurants und Cafés.

@@ -326,6 +326,7 @@ interface OnboardingData {
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
   addOnPricelistData: { headline?: string; categories: PriceListCategory[] };
   addOnAiChat: boolean;     // KI-Chat-Widget
+  chatWelcomeMessage: string; // Begrüßungsnachricht für KI-Chat
   addOnBooking: boolean;    // Terminbuchung
   addressingMode: 'du' | 'Sie'; // Besucher duzen oder siezen
   subPages: SubPage[];
@@ -363,6 +364,7 @@ type ChatStep =
   | "headlineFont"
   | "headlineSize"
   | "addons"
+  | "editAiChat"
   | "editMenu"
   | "editPricelist"
   | "editGallery"
@@ -409,6 +411,7 @@ const STEP_ORDER: ChatStep[] = [
   "openingHours",
   "legalVat",
   "addons",
+  "editAiChat",
   "editMenu",
   "editPricelist",
   "editGallery",
@@ -447,6 +450,7 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   openingHours: "kontakt",
   legalVat: null,
   addons: null,
+  editAiChat: null,
   editMenu: "speisekarte",
   editPricelist: "preise",
   editGallery: "galerie",
@@ -527,6 +531,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [_addOnMenu, _setAddOnMenu] = useState(false);
   const [_addOnPricelist, _setAddOnPricelist] = useState(false);
   const [_addOnGallery, _setAddOnGallery] = useState(false);
+  const [_addOnAiChat, _setAddOnAiChat] = useState(false);
   const dynamicStepOrder = useMemo(() => {
     const layout = (siteData?.website as any)?.layoutStyle as string | undefined;
     const websiteDataRaw = siteData?.website?.websiteData as any;
@@ -546,6 +551,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // yet be loaded when dynamicStepOrder is first computed, leading to the
       // step being silently skipped on initial render.
       if (step === "aboutPhoto") return layoutHasAboutImage;
+      if (step === "editAiChat") return _addOnAiChat;
       if (step === "editMenu") return _addOnMenu;
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
@@ -554,7 +560,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (step === "openingHours") return !isGmbFlow;
       return true;
     });
-  }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
+  }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -718,6 +724,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     addOnPricelist: false,
     addOnPricelistData: { headline: "Unsere Preise", categories: [{ id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] }] },
     addOnAiChat: false,
+    chatWelcomeMessage: "",
     addOnBooking: false,
     subPages: [],
     email: "",
@@ -825,6 +832,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (existingOnboarding.addOnContactForm !== undefined && existingOnboarding.addOnContactForm !== null) {
       setData(p => ({ ...p, addOnContactForm: existingOnboarding.addOnContactForm! }));
     }
+    if (existingOnboarding.addOnAiChat !== undefined && existingOnboarding.addOnAiChat !== null) {
+      setData(p => ({ ...p, addOnAiChat: existingOnboarding.addOnAiChat! }));
+      _setAddOnAiChat(existingOnboarding.addOnAiChat!);
+    }
+    if (existingOnboarding.addOnBooking !== undefined && existingOnboarding.addOnBooking !== null) {
+      setData(p => ({ ...p, addOnBooking: existingOnboarding.addOnBooking! }));
+    }
+    if (existingOnboarding.chatWelcomeMessage) {
+      setData(p => ({ ...p, chatWelcomeMessage: existingOnboarding.chatWelcomeMessage! }));
+    }
     // Sync contact form fields - default to simple fields for onboarding
     if (existingOnboarding.contactFormFields) {
       setData(p => ({ ...p, contactFormFields: existingOnboarding.contactFormFields! }));
@@ -886,7 +903,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (data.addOnGallery !== _addOnGallery) {
       _setAddOnGallery(data.addOnGallery);
     }
-  }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
+    if (data.addOnAiChat !== _addOnAiChat) {
+      _setAddOnAiChat(data.addOnAiChat);
+    }
+  }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, data.addOnAiChat, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
 
   // ── Stable localStorage key – available immediately from props (no async) ──
   // For /preview/TOKEN/onboarding: uses previewToken (always present, no waiting for siteData)
@@ -1301,6 +1321,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Fast fertig! Wie groß sollen deine Überschriften sein?\n\n🔹 **Extra groß** – Dramatisch, mutig, für kurze, kraftvolle Statements\n🔹 **Groß** – Ausgewogen, klassisch, gut lesbar\n🔹 **Normal** – Dezent, elegant, für längere Texte`;
         case "addons":
           return `⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern? Du kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
+        case "editAiChat":
+          return `Du hast den **KI-Chat** aktiviert! 🤖\n\nMit welcher Nachricht soll dein KI-Assistent Besucher begrüßen?\n\nBeispiel: *"Hallo! Ich bin der digitale Assistent von ${name}. Wie kann ich dir helfen?"*\n\n*Du kannst das später jederzeit im Dashboard anpassen.*`;
         case "editMenu":
           return `Du hast die **Speisekarte** aktiviert! 📖\n\nHier kannst du schon mal ein paar Gerichte eintragen. Keine Sorge, du kannst das später jederzeit vervollständigen oder jetzt einfach überspringen.`;
         case "editPricelist":
@@ -2457,7 +2479,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               description: "Beschreibung", usp: "USP", services: "Leistungen",
               legalOwner: "Impressum", legalStreet: "Adresse", legalZipCity: "Ort",
               legalEmail: "E-Mail", legalPhone: "Telefon", legalVat: "Steuer",
-              addons: "Extras", editMenu: "Speisekarte", editPricelist: "Preise",
+              addons: "Extras", editAiChat: "KI-Chat", editMenu: "Speisekarte", editPricelist: "Preise",
               editGallery: "Galerie", subpages: "Unterseiten", openingHours: "Zeiten",
               email: "Kontakt", hideSections: "Anzeige",
             };
@@ -3684,6 +3706,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       key={addon.key}
                       onClick={() => setData((p) => ({ ...p, [addon.key]: !(p as any)[addon.key] }))}
+                      style={{ touchAction: "manipulation" }}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
                         (data as any)[addon.key]
                           ? "border-blue-500 bg-blue-500/10"
@@ -3707,37 +3730,103 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {data.addOnContactForm && (
                   <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 mt-2">
                     <p className="text-blue-300 text-xs">
-                      <strong>📬 Kontaktformular:</strong> Name, Betreff und Nachricht werden angezeigt. 
+                      <strong>📬 Kontaktformular:</strong> Name, Betreff und Nachricht werden angezeigt.
                       Du kannst das Formular später im Kundenportal noch bearbeiten.
+                    </p>
+                  </div>
+                )}
+                {/* Booking Info */}
+                {data.addOnBooking && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
+                    <p className="text-emerald-300 text-xs">
+                      <strong>📅 Terminbuchung:</strong> Du kannst deine Services und Verfügbarkeit nach der Freischaltung im Kunden-Dashboard einrichten.
                     </p>
                   </div>
                 )}
                 <button
                   disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
                   onClick={async () => {
                     if (isTyping) return;
+                    // Use functional setData to guarantee we read the latest state,
+                    // avoiding stale-closure issues on mobile (iOS tap delay).
+                    let snapshot: OnboardingData | null = null;
+                    setData(p => { snapshot = p; return p; });
+                    const d = snapshot ?? data;
                     const selected = [];
-                    if (data.addOnContactForm) selected.push("Kontaktformular");
-                    if (data.addOnGallery) selected.push("Bildergalerie");
-                    if (data.addOnMenu) selected.push("Speisekarte");
-                    if (data.addOnPricelist) selected.push("Preisliste");
+                    if (d.addOnContactForm) selected.push("Kontaktformular");
+                    if (d.addOnGallery) selected.push("Bildergalerie");
+                    if (d.addOnMenu) selected.push("Speisekarte");
+                    if (d.addOnPricelist) selected.push("Preisliste");
+                    if (d.addOnAiChat) selected.push("KI-Chat");
+                    if (d.addOnBooking) selected.push("Terminbuchung");
                     addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
                     await trySaveStep(STEP_ORDER.indexOf("addons"), {
-                      addOnContactForm: data.addOnContactForm,
-                      contactFormFields: data.contactFormFields,
-                      addOnGallery: data.addOnGallery,
-                      addOnMenu: data.addOnMenu,
-                      addOnPricelist: data.addOnPricelist,
-                      addOnAiChat: data.addOnAiChat,
-                      addOnBooking: data.addOnBooking,
+                      addOnContactForm: d.addOnContactForm,
+                      contactFormFields: d.contactFormFields,
+                      addOnGallery: d.addOnGallery,
+                      addOnMenu: d.addOnMenu,
+                      addOnPricelist: d.addOnPricelist,
+                      addOnAiChat: d.addOnAiChat,
+                      addOnBooking: d.addOnBooking,
                     });
-                    
+
                     await goToNextStep();
                   }}
                   className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
+            </motion.div>
+          )}
+
+          {currentStep === "editAiChat" && (
+            <motion.div
+              key="editAiChat-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Begrüßungsnachricht</p>
+                <textarea
+                  rows={3}
+                  value={data.chatWelcomeMessage}
+                  onChange={e => setData(p => ({ ...p, chatWelcomeMessage: e.target.value }))}
+                  placeholder={`Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`}
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none placeholder-slate-500"
+                />
+                <p className="text-slate-500 text-xs">Der KI-Chat begrüßt Besucher auf deiner Website mit dieser Nachricht. Du kannst sie später im Dashboard jederzeit ändern.</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    const suggestion = `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                    setData(p => ({ ...p, chatWelcomeMessage: suggestion }));
+                  }}
+                  className="flex-1 text-xs text-slate-400 hover:text-white py-2 px-3 rounded-xl border border-slate-600/50 hover:border-slate-500 bg-slate-700/40 transition-colors"
+                >
+                  💡 Vorschlag übernehmen
+                </button>
+                <button
+                  disabled={isTyping}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const msg = data.chatWelcomeMessage.trim() || `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                    if (!data.chatWelcomeMessage.trim()) {
+                      setData(p => ({ ...p, chatWelcomeMessage: msg }));
+                    }
+                    addUserMessage(`🤖 Begrüßung: "${msg.slice(0, 60)}${msg.length > 60 ? "…" : ""}"`);
+                    await trySaveStep(STEP_ORDER.indexOf("editAiChat"), { chatWelcomeMessage: msg });
+                    await goToNextStep();
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -4878,6 +4967,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 legalPhone: "Telefon",
                 legalVat: "Steuer",
                 addons: "Extras",
+                editAiChat: "KI-Chat",
                 editMenu: "Speisekarte",
                 editPricelist: "Preise",
                 editGallery: "Galerie",
