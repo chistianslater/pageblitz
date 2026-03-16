@@ -117,7 +117,7 @@ export function registerBookingRoutes(app: Express) {
       if (!db) return res.status(503).json({ error: "db_unavailable" });
 
       const [website] = await db
-        .select({ id: generatedWebsites.id, addOnBooking: generatedWebsites.addOnBooking })
+        .select()
         .from(generatedWebsites)
         .where(eq(generatedWebsites.slug, req.params.slug))
         .limit(1);
@@ -157,7 +157,7 @@ export function registerBookingRoutes(app: Express) {
       }
 
       const [website] = await db
-        .select({ id: generatedWebsites.id, addOnBooking: generatedWebsites.addOnBooking })
+        .select()
         .from(generatedWebsites)
         .where(eq(generatedWebsites.slug, req.params.slug))
         .limit(1);
@@ -255,7 +255,7 @@ export function registerBookingRoutes(app: Express) {
       }
 
       const [website] = await db
-        .select({ id: generatedWebsites.id, addOnBooking: generatedWebsites.addOnBooking })
+        .select()
         .from(generatedWebsites)
         .where(eq(generatedWebsites.slug, req.params.slug))
         .limit(1);
