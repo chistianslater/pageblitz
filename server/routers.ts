@@ -2269,6 +2269,8 @@ Antworte NUR mit validem JSON:
                 },
                 unit_amount: totalAmount,
                 recurring: { interval: "month" },
+                // Alle Preise sind Bruttopreise inkl. MwSt. – Stripe rechnet KEINE Steuer drauf
+                tax_behavior: "inclusive" as const,
               },
               quantity: 1,
             },
@@ -3475,15 +3477,25 @@ Kontext: ${input.context}`,
         if (!row) throw new TRPCError({ code: "FORBIDDEN" });
         if (!row.subscription) throw new TRPCError({ code: "NOT_FOUND", message: "Kein aktives Abonnement gefunden." });
 
+        // Guard: prevent double-charging if add-on is already active
+        const currentAddOns = (row.subscription.addOns as Record<string, any>) || {};
+        const alreadyActive =
+          currentAddOns[input.addonKey] === true ||
+          currentAddOns.features?.[input.addonKey] === true;
+        if (alreadyActive) {
+          return { success: true, alreadyOwned: true };
+        }
+
         const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
         if (stripeSubscriptionId) {
-          // Step 1: create a standalone price with inline product (prices.create supports
-          // product_data across all API versions; subscriptionItems.create does not)
+          // Step 1: create a standalone price with inline product
+          // tax_behavior "inclusive" = Preis ist Brutto inkl. MwSt., Stripe rechnet NICHTS drauf
           const price = await stripe.prices.create({
             currency: "eur",
             unit_amount: PRICING.addon,
             recurring: { interval: "month" },
             product_data: { name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}` },
+            tax_behavior: "inclusive",
           } as any);
 
           // Step 2: add the price to the existing subscription (proration charged immediately)
@@ -3496,7 +3508,6 @@ Kontext: ${input.context}`,
         }
 
         // Update addOns record in DB
-        const currentAddOns = (row.subscription.addOns as Record<string, boolean>) || {};
         const newAddOns = { ...currentAddOns, [input.addonKey]: true };
         await updateSubscription(row.subscription.id, { addOns: newAddOns, updatedAt: Date.now() });
         return { success: true };

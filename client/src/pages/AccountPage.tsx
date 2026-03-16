@@ -183,6 +183,22 @@ export default function AccountPage() {
   const website = myWebsites?.[0]?.website;
   const hasActiveSubscription = subscription?.status === "active" || subscription?.status === "trialing";
 
+  // Compute active paid add-ons from subscription.addOns (supports both storage formats)
+  const subAddOns = (subscription?.addOns ?? {}) as Record<string, any>;
+  const ADDON_INFO: Record<string, { label: string; price: string }> = {
+    contactForm: { label: "Kontaktformular", price: "3,90 €/Mo" },
+    gallery:     { label: "Bildergalerie",   price: "3,90 €/Mo" },
+    menu:        { label: "Speisekarte",     price: "3,90 €/Mo" },
+    pricelist:   { label: "Preisliste",      price: "3,90 €/Mo" },
+  };
+  const activeAddOns = (Object.keys(ADDON_INFO) as Array<keyof typeof ADDON_INFO>).filter(
+    (k) => subAddOns[k] === true || subAddOns.features?.[k] === true
+  );
+  const BASE_PRICE_CENTS = 1990; // Jahresabo-Basis (Brutto inkl. MwSt.)
+  const ADDON_PRICE_CENTS = 390;
+  const totalCents = BASE_PRICE_CENTS + activeAddOns.length * ADDON_PRICE_CENTS;
+  const totalStr = (totalCents / 100).toFixed(2).replace(".", ",");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
@@ -405,14 +421,42 @@ export default function AccountPage() {
                       <div className="bg-gradient-to-br from-blue-600/20 to-violet-600/20 border border-blue-500/30 rounded-xl p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="text-white font-semibold text-lg">Basis-Paket</h3>
-                            <p className="text-slate-400 text-sm">19,90 € / Monat</p>
+                            <h3 className="text-white font-semibold text-lg">
+                              Pageblitz{activeAddOns.length > 0 ? ` + ${activeAddOns.length} Add-on${activeAddOns.length > 1 ? "s" : ""}` : ""}
+                            </h3>
+                            <p className="text-slate-400 text-sm">Alle Preise inkl. MwSt.</p>
                           </div>
                           <StatusBadge status={subscription?.status || "incomplete"} />
                         </div>
 
+                        {/* Itemized breakdown */}
+                        <div className="space-y-2 mb-4">
+                          {/* Base plan */}
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-slate-300">Basis-Paket (Jahresabo)</span>
+                            <span className="text-white font-semibold">19,90 €/Mo</span>
+                          </div>
+                          {/* Active add-ons */}
+                          {activeAddOns.map((key) => (
+                            <div key={key} className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-300">{ADDON_INFO[key].label}</span>
+                                <span className="text-xs text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full">Aktiv</span>
+                              </div>
+                              <span className="text-emerald-400 font-semibold">+{ADDON_INFO[key].price}</span>
+                            </div>
+                          ))}
+                          {/* Total – only if add-ons active */}
+                          {activeAddOns.length > 0 && (
+                            <div className="flex items-center justify-between text-sm border-t border-slate-700/60 pt-2 mt-2">
+                              <span className="text-white font-bold">Gesamt</span>
+                              <span className="text-white font-bold">{totalStr} €/Mo</span>
+                            </div>
+                          )}
+                        </div>
+
                         {hasActiveSubscription && (
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-2 text-sm border-t border-slate-700/40 pt-3 mt-1">
                             <div className="flex items-center gap-2 text-emerald-400">
                               <CheckCircle className="w-4 h-4" />
                               <span>Website aktiv: {website?.slug}.pageblitz.de</span>
