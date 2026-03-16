@@ -106,7 +106,7 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
   };
 
   return (
-    <div className="h-screen relative overflow-hidden bg-[#0a0a0a]">
+    <div className="relative overflow-hidden bg-[#0a0a0a]" style={{ height: "100dvh" }}>
       {/* Gradient orbs – mobile-sized, no heavy motion animations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-blue-500/20 rounded-full blur-[80px]" />
@@ -2316,13 +2316,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const slug = siteData?.website?.slug;
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
+    <div
+      className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden"
+      style={{
+        height: "100dvh",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
 
       {/* ── Fullscreen preview overlay ──────────────────────────────────── */}
       {showFullPreview && liveWebsiteData && colorScheme && (
         <div className="fixed inset-0 z-[9999] flex flex-col bg-black">
-          {/* Browser chrome bar */}
-          <div className="flex items-center gap-3 px-4 h-11 bg-slate-900 border-b border-slate-700 flex-shrink-0">
+          {/* Browser chrome bar – safe-area-top so it clears the notch/status bar */}
+          <div
+            className="flex items-center gap-3 px-4 bg-slate-900 border-b border-slate-700 flex-shrink-0"
+            style={{
+              paddingTop: "env(safe-area-inset-top)",
+              height: "calc(44px + env(safe-area-inset-top))",
+            }}
+          >
             <div className="flex gap-1.5 flex-shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500/80" />
               <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
@@ -2353,16 +2366,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
           {/* Scrollable website – renders the same live data as the right-side preview
               so all active add-ons (gallery, contact form, …) are always visible */}
-          <div className="flex-1 overflow-auto bg-white relative">
-            {/* Mobile sticky close bar at bottom */}
-            <div className="lg:hidden sticky bottom-0 left-0 right-0 z-10 p-3 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/60">
-              <button
-                onClick={() => setShowFullPreview(false)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" /> Zurück zum Chat
-              </button>
-            </div>
+          <div className="flex-1 overflow-auto bg-white">
             <WebsiteRenderer
               websiteData={liveWebsiteData}
               businessCategory={data.businessCategory || (business as any)?.category || undefined}
@@ -2374,6 +2378,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               headlineSize={data.headlineSize}
               isLoading={false}
             />
+          </div>
+          {/* Mobile back bar – OUTSIDE overflow-auto so it's never covered by website content.
+              paddingBottom clears the iOS home indicator. */}
+          <div
+            className="lg:hidden bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/60 flex-shrink-0"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          >
+            <button
+              onClick={() => setShowFullPreview(false)}
+              className="w-full flex items-center justify-center gap-2 py-3 mx-3 my-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+              style={{ width: "calc(100% - 24px)" }}
+            >
+              <ChevronLeft className="w-4 h-4" /> Zurück zum Chat
+            </button>
           </div>
         </div>
       )}
