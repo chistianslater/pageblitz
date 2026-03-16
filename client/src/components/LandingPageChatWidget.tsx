@@ -62,7 +62,7 @@ export default function LandingPageChatWidget() {
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
-    if (!text || loading || leadCaptured) return;
+    if (!text || loading) return;
     setInput("");
     setErrorMsg(null);
 
@@ -224,20 +224,21 @@ export default function LandingPageChatWidget() {
                 </div>
               )}
 
-              {/* Lead captured → CTA */}
+              {/* CTA-Card (erscheint nach Bot-Empfehlung, Chat bleibt aktiv) */}
               {leadCaptured && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-xl p-3 border border-white/10 bg-white/5 text-center"
+                  className="rounded-xl p-3.5 border text-center"
+                  style={{ background: `${PRIMARY}18`, borderColor: `${PRIMARY}40` }}
                 >
-                  <p className="text-white/60 text-xs mb-2">Bereit loszulegen?</p>
+                  <p className="text-white/70 text-xs mb-2.5 font-medium">✨ Starte jetzt kostenlos – in 3 Minuten live</p>
                   <button
                     onClick={() => navigate("/start?billing=yearly")}
-                    className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95"
                     style={{ background: PRIMARY }}
                   >
-                    Jetzt 7 Tage gratis starten
+                    7 Tage gratis – keine Kreditkarte
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </motion.div>
@@ -260,15 +261,14 @@ export default function LandingPageChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                disabled={leadCaptured}
                 rows={1}
-                placeholder={leadCaptured ? "Danke – wir melden uns! 🎉" : "Frage stellen…"}
+                placeholder="Frage stellen…"
                 className="flex-1 resize-none bg-white/8 text-white text-sm placeholder-white/30 rounded-xl px-3 py-2.5 outline-none border border-white/10 focus:border-white/25 transition-colors min-h-[40px] max-h-[100px]"
                 style={{ lineHeight: "1.4" }}
               />
               <button
                 onClick={sendMessage}
-                disabled={!input.trim() || loading || leadCaptured}
+                disabled={!input.trim() || loading}
                 className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-30"
                 style={{ background: PRIMARY }}
               >

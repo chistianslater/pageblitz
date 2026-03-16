@@ -443,3 +443,36 @@ html {
   from { left: -80%; }
   to   { left: 130%; }
 }
+
+/* ── Nav CTA Button: kontinuierlicher Shimmer-Loop + Glow-Puls ─────────── */
+.btn-nav-cta {
+  position: relative;
+  overflow: hidden;
+  animation: nav-cta-glow 3.5s ease-in-out infinite;
+}
+.btn-nav-cta::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 45%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.50) 50%,
+    transparent 80%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+  animation: nav-cta-shine 3.5s ease-in-out infinite;
+}
+@keyframes nav-cta-shine {
+  0%, 30%   { left: -80%; opacity: 0; }
+  35%       { opacity: 1; }
+  55%, 100% { left: 130%; opacity: 0; }
+}
+@keyframes nav-cta-glow {
+  0%, 100% { box-shadow: 0 0 12px 0px rgba(233, 30, 140, 0.35), 0 4px 14px rgba(0,0,0,0.25); }
+  50%      { box-shadow: 0 0 22px 4px rgba(233, 30, 140, 0.55), 0 4px 18px rgba(0,0,0,0.30); }
+}

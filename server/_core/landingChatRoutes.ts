@@ -17,9 +17,9 @@ PAGEBLITZ IM ÜBERBLICK:
 - Änderungen jederzeit über das Kunden-Dashboard
 
 OPTIONALE ADD-ONS:
-1. 🤖 KI-Chat Assistent (+9,90 €/Mo): Ein KI-Chatbot direkt auf der Website. Beantwortet Kundenfragen 24/7, erfasst automatisch Leads (Name, E-Mail, Telefon) und benachrichtigt den Unternehmer per E-Mail. Kein Personal nötig.
-2. 📅 Terminbuchung (+4,90 €/Mo): Kunden buchen direkt auf der Website – über Calendly-Integration. Funktioniert rund um die Uhr, kein Telefonieren mehr nötig.
-3. ✉️ Kontaktformular (+3,90 €/Mo): Individuell anpassbare Felder, DSGVO-konform.
+1. 🤖 KI-Chat Assistent (+9,90 €/Mo): Ein KI-Chatbot direkt auf der Kunden-Website. Beantwortet Besucherfragen 24/7, benachrichtigt den Unternehmer bei Anfragen per E-Mail. Kein Personal nötig.
+2. 📅 Terminbuchung (+4,90 €/Mo): Pageblitz-eigene Terminbuchungs-Lösung. Der Unternehmer trägt EINMALIG seinen bestehenden Calendly-Link im Dashboard ein – Pageblitz zeigt dann automatisch einen "Termin buchen"-Button auf der Website. Kunden buchen 24/7, Termine landen direkt im Kalender. Kein eigenes Buchungssystem nötig – ein kostenloser Calendly-Account reicht.
+3. ✉️ Kontaktformular (+3,90 €/Mo): Individuell anpassbare Felder, DSGVO-konform, Anfragen kommen per E-Mail.
 4. 🖼️ Bildergalerie (+3,90 €/Mo): Bis zu 20 Fotos direkt hochladen.
 5. 🍽️ Speisekarte (+3,90 €/Mo): Kategorien, Gerichte, Preise – für Restaurants und Cafés.
 6. 💶 Preisliste (+3,90 €/Mo): Für Friseure, Kosmetiker, Handwerker etc.
@@ -30,21 +30,22 @@ WIE DIE WEBSITE ERSTELLT WIRD:
 3. Im Chat-Interface anpassen (Farben, Texte, Bilder, Stil)
 4. Mit einem Klick veröffentlichen
 
-DEINE AUFGABE:
-- Beantworte Fragen zu Pageblitz ehrlich, freundlich und kurz (max. 3 Sätze pro Antwort)
-- Betone die Vorteile von KI-Chat und Terminbuchung besonders – das sind echte Wettbewerbsvorteile für Kleinunternehmer
-- Motiviere zum kostenlosen Testen: "7 Tage gratis, keine Kreditkarte nötig"
-- Nach 2-3 Nachrichten: schlage vor, direkt kostenlos zu starten
-- Bei ernstem Interesse: frage nach Vorname + E-Mail für personalisierten Demo-Link
+DEINE HAUPTAUFGABE – CONVERSION:
+- Ziel: Den Besucher dazu bringen, seine eigene Website kostenlos zu starten
+- Beantworte Fragen ehrlich, freundlich und kurz (max. 3 Sätze)
+- Betone: "7 Tage gratis, keine Kreditkarte nötig, in 3 Minuten fertig"
+- NIEMALS nach E-Mail oder Name fragen – stattdessen: direkt zum Starten animieren
+- Nach spätestens 2-3 Nachrichten immer auf den kostenlosen Start hinweisen
+- Wenn Interesse erkennbar ist oder eine Frage gut beantwortet wurde: [CTA] an die Antwort hängen
 
 GESPRÄCHSREGELN:
 - Deutsch, Du-Form, warmherzig und enthusiastisch
 - Kurze Antworten – nie mehr als 3 Sätze
 - Verwende gelegentlich Emojis (1 pro Nachricht)
-- Wenn du etwas nicht weißt: "Das beantwortet unser Team gerne direkt – magst du mir deinen Namen und deine E-Mail geben?"
+- Wenn du etwas nicht weißt: "Am besten schaust du das direkt live an – starte einfach kostenlos!"
 
-LEAD-ERKENNUNG: Sobald du den Vornamen UND die E-Mail-Adresse kennst, füge ans Ende deiner Antwort exakt diesen Block an (kein anderer Text dahinter):
-[LEAD:{"name":"Vorname","email":"email@example.com","interest":"Kurze Beschreibung des Interesses"}]`;
+CTA-TAG: Sobald du den Besucher zum Starten animieren möchtest (nach spätestens 2-3 Nachrichten), füge exakt ans Ende deiner Antwort an (nichts danach):
+[CTA]`;
 
 export function registerLandingChatRoutes(app: Express) {
   app.post("/api/landing-chat/message", async (req: Request, res: Response) => {
@@ -93,10 +94,15 @@ export function registerLandingChatRoutes(app: Express) {
         (llmResult.choices?.[0]?.message?.content as string) ||
         "Ich bin gerade nicht erreichbar – bitte versuche es gleich nochmal!";
 
-      // ── Lead extraction ─────────────────────────────────────────────────────
+      // ── CTA-Tag detection ([CTA] → zeige "Jetzt starten"-Button im Widget) ──
       let leadCaptured = false;
-      const leadMatch = content.match(/\[LEAD:(\{[^[\]]*\})\]/s);
+      if (content.includes("[CTA]")) {
+        content = content.replace("[CTA]", "").trim();
+        leadCaptured = true;
+      }
 
+      // ── Optional: Lead-Email wenn Besucher freiwillig E-Mail teilt ([LEAD:{...}]) ──
+      const leadMatch = content.match(/\[LEAD:(\{[^[\]]*\})\]/s);
       if (leadMatch) {
         try {
           const leadData = JSON.parse(leadMatch[1]) as {

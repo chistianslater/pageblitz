@@ -119,12 +119,13 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             >
               <LogIn className="w-4 h-4" />
             </button>
-            <Button
+            <button
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className={`btn-shimmer rounded-full px-5 h-10 text-sm font-medium transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-lg shadow-violet-950/25"}`}
+              className="btn-nav-cta rounded-full px-5 h-10 text-sm font-semibold text-white transition-all duration-300 hover:brightness-110 active:scale-95"
+              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
             >
-              Website erstellen
-            </Button>
+              Website erstellen ✦
+            </button>
           </div>
 
           <div className="md:hidden flex items-center gap-2">
