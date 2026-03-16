@@ -83,16 +83,25 @@ function slugify(text: string): string {
  * Converts an array of DayHours objects into a human-readable opening hours string.
  * Consecutive days with identical times are grouped (e.g. "Montag – Freitag: 09:00 – 18:00 Uhr").
  */
-function formatOpeningHoursText(hours: Array<{ day: string; open: boolean; from: string; to: string }>): string {
+function formatOpeningHoursText(hours: Array<{ day: string; open: boolean; from: string; to: string; from2?: string; to2?: string }>): string {
   const open = hours.filter(h => h.open);
   if (open.length === 0) return '';
   const lines: string[] = [];
   let i = 0;
   while (i < open.length) {
     let j = i;
-    while (j + 1 < open.length && open[j + 1].from === open[i].from && open[j + 1].to === open[i].to) j++;
+    // Group consecutive days only if both slots match exactly
+    while (
+      j + 1 < open.length &&
+      open[j + 1].from === open[i].from &&
+      open[j + 1].to === open[i].to &&
+      (open[j + 1].from2 ?? '') === (open[i].from2 ?? '') &&
+      (open[j + 1].to2 ?? '') === (open[i].to2 ?? '')
+    ) j++;
     const range = i === j ? open[i].day : `${open[i].day} – ${open[j].day}`;
-    lines.push(`${range}: ${open[i].from} – ${open[i].to} Uhr`);
+    const slot1 = `${open[i].from} – ${open[i].to} Uhr`;
+    const slot2 = open[i].from2 && open[i].to2 ? `, ${open[i].from2} – ${open[i].to2} Uhr` : '';
+    lines.push(`${range}: ${slot1}${slot2}`);
     i = j + 1;
   }
   return lines.join('\n');

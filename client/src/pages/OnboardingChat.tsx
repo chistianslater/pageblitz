@@ -289,6 +289,8 @@ interface DayHours {
   open: boolean;
   from: string;
   to: string;
+  from2?: string; // optional second time slot (e.g. after lunch break)
+  to2?: string;
 }
 
 const WEEKDAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
@@ -323,6 +325,8 @@ interface OnboardingData {
   addOnMenuData: { headline?: string; categories: MenuCategory[] };
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
   addOnPricelistData: { headline?: string; categories: PriceListCategory[] };
+  addOnAiChat: boolean;     // KI-Chat-Widget
+  addOnBooking: boolean;    // Terminbuchung
   addressingMode: 'du' | 'Sie'; // Besucher duzen oder siezen
   subPages: SubPage[];
   email: string; // for FOMO reminder
@@ -713,6 +717,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     addOnMenuData: { headline: "Unsere Speisekarte", categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
     addOnPricelist: false,
     addOnPricelistData: { headline: "Unsere Preise", categories: [{ id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] }] },
+    addOnAiChat: false,
+    addOnBooking: false,
     subPages: [],
     email: "",
   });
@@ -1246,11 +1252,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const cat = (data.businessCategory || "Dienstleistung").toLowerCase();
           let example = "Privatkunden und kleine Unternehmen in der Region";
           if (cat.includes("friseur") || cat.includes("hair") || cat.includes("beauty")) {
-            example = "Damen und Herren in Bocholt, die Wert auf einen modernen Haarschnitt legen";
+            example = "Damen und Herren in Köln, die Wert auf einen modernen Haarschnitt legen";
           } else if (cat.includes("restaurant") || cat.includes("essen") || cat.includes("food") || cat.includes("café")) {
             example = "Feinschmecker und Familien, die gerne in gemütlicher Atmosphäre speisen";
           } else if (cat.includes("bau") || cat.includes("handwerk") || cat.includes("dach")) {
-            example = "Privathaushalte in Bocholt, die ein neues Dach brauchen oder sanieren möchten";
+            example = "Privathaushalte in Köln, die ein neues Dach brauchen oder sanieren möchten";
           } else if (cat.includes("arzt") || cat.includes("zahnarzt") || cat.includes("medizin")) {
             example = "Patienten, die eine kompetente und einfühlsame zahnärztliche Betreuung suchen";
           } else if (cat.includes("anwalt") || cat.includes("beratung") || cat.includes("recht")) {
@@ -1263,7 +1269,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "legalStreet":
           return `Wie lautet die **Straße und Hausnummer** der Geschäftsadresse?\n\nBeispiel: *Musterstraße 12*`;
         case "legalZipCity":
-          return `Und die **Postleitzahl und Stadt**?\n\nBeispiel: *46395 Bocholt*`;
+          return `Und die **Postleitzahl und Stadt**?\n\nBeispiel: *50667 Köln*`;
         case "legalEmail":
           return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
         case "legalPhone":
@@ -1877,7 +1883,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
         case "legalZipCity": {
           const zipCityMatch = val.trim().match(/^(\d{5})\s+(.+)$/);
-          if (!zipCityMatch) { toast.error("Bitte im Format 'PLZ Stadt' eingeben, z.B. 46395 Bocholt"); return; }
+          if (!zipCityMatch) { toast.error("Bitte im Format 'PLZ Stadt' eingeben, z.B. 50667 Köln"); return; }
           const zip = zipCityMatch[1];
           const city = zipCityMatch[2];
           addUserMessage(val);
@@ -3614,6 +3620,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     { key: "addOnGallery" as const, label: "Bildergalerie", price: "+3,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
                     ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+3,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
                     ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+3,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
+                    { key: "addOnAiChat" as const, label: "KI-Chat", price: "+9,90 €/Monat", desc: "Beantwortet Kundenfragen automatisch 24/7", emoji: "🤖" },
+                    { key: "addOnBooking" as const, label: "Terminbuchung", price: "+4,90 €/Monat", desc: "Kunden buchen Termine direkt auf der Website", emoji: "📅" },
                   ];
 
                   return addons.map((addon) => (
@@ -3663,7 +3671,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       contactFormFields: data.contactFormFields,
                       addOnGallery: data.addOnGallery,
                       addOnMenu: data.addOnMenu,
-                      addOnPricelist: data.addOnPricelist
+                      addOnPricelist: data.addOnPricelist,
+                      addOnAiChat: data.addOnAiChat,
+                      addOnBooking: data.addOnBooking,
                     });
                     
                     await goToNextStep();
@@ -4284,20 +4294,54 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       {dh.day.slice(0, 2)}
                     </span>
                     {dh.open ? (
-                      <div className="flex items-center gap-1.5 flex-1">
-                        <input
-                          type="time"
-                          value={dh.from}
-                          onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from: e.target.value } : d))}
-                          className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-24 focus:outline-none focus:border-blue-400"
-                        />
-                        <span className="text-slate-500 text-xs">–</span>
-                        <input
-                          type="time"
-                          value={dh.to}
-                          onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to: e.target.value } : d))}
-                          className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-24 focus:outline-none focus:border-blue-400"
-                        />
+                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        {/* First time slot */}
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="time"
+                            value={dh.from}
+                            onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from: e.target.value } : d))}
+                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                          />
+                          <span className="text-slate-500 text-xs">–</span>
+                          <input
+                            type="time"
+                            value={dh.to}
+                            onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to: e.target.value } : d))}
+                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                          />
+                          {/* Add second slot button */}
+                          {!dh.from2 && (
+                            <button
+                              onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: "13:00", to2: "18:00" } : d))}
+                              className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-slate-400 hover:text-white text-xs flex items-center justify-center transition-colors"
+                              title="Zweites Zeitfenster hinzufügen (z.B. nach Mittagspause)"
+                            >+</button>
+                          )}
+                        </div>
+                        {/* Second time slot (optional, e.g. after lunch break) */}
+                        {dh.from2 !== undefined && (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="time"
+                              value={dh.from2}
+                              onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: e.target.value } : d))}
+                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                            />
+                            <span className="text-slate-500 text-xs">–</span>
+                            <input
+                              type="time"
+                              value={dh.to2}
+                              onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to2: e.target.value } : d))}
+                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                            />
+                            <button
+                              onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: undefined, to2: undefined } : d))}
+                              className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-red-500/30 text-slate-400 hover:text-red-400 text-xs flex items-center justify-center transition-colors"
+                              title="Zweites Zeitfenster entfernen"
+                            >×</button>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <span className="text-xs text-slate-500 flex-1">Geschlossen</span>
@@ -4675,7 +4719,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         : currentStep === "usp"
                         ? "z.B. 'Wir sind der einzige Anbieter in der Region, der...' "
                         : currentStep === "targetAudience"
-                        ? `z.B. "Damen und Herren in ${data.legalCity || 'Bocholt'}, die Wert auf..."`
+                        ? `z.B. "Damen und Herren in ${data.legalCity || 'Köln'}, die Wert auf..."`
                         : "Deine Antwort... (Shift+Enter für neue Zeile)"
                     }
                     className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none leading-relaxed"
@@ -4695,7 +4739,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         : currentStep === "legalStreet"
                         ? "Musterstraße 12"
                         : currentStep === "legalZipCity"
-                        ? "46395 Bocholt"
+                        ? "50667 Köln"
                         : currentStep === "legalEmail"
                         ? "info@musterfirma.de"
                         : currentStep === "legalVat"
