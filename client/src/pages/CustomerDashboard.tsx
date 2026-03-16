@@ -2506,7 +2506,7 @@ export default function CustomerDashboard() {
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Bild ändern
-                </label>
+                </button>
               </div>
             </div>
           </div>
