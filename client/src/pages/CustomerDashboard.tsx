@@ -1900,6 +1900,102 @@ function StepChip({ done, label, onClick }: { done: boolean; label: string; onCl
 }
 
 // ── AI Chat Add-on Section ───────────────────────────
+// ── Booking Add-on Section (in Add-ons tab) ────────────
+function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine }: {
+  websiteId: number;
+  website: any;
+  onUpdate: () => void;
+  onGoToTermine: () => void;
+}) {
+  const [enabled, setEnabled] = useState<boolean>(!!(website as any).addOnBooking);
+  const [saving, setSaving] = useState(false);
+
+  const saveSettingsMutation = trpc.customer.saveBookingSettings.useMutation({
+    onSuccess: () => { setSaving(false); onUpdate(); toast.success("Terminbuchung gespeichert"); },
+    onError: () => { setSaving(false); toast.error("Speichern fehlgeschlagen"); },
+  });
+
+  // Fetch existing settings to pass through unchanged when just toggling
+  const { data: bookingData } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+
+  const handleToggle = () => {
+    const newVal = !enabled;
+    setEnabled(newVal);
+    setSaving(true);
+    const s = bookingData?.settings;
+    saveSettingsMutation.mutate({
+      websiteId,
+      enabled: newVal,
+      weeklySchedule: (s?.weeklySchedule as any) ?? {
+        mon: { enabled: true, start: "09:00", end: "17:00" },
+        tue: { enabled: true, start: "09:00", end: "17:00" },
+        wed: { enabled: true, start: "09:00", end: "17:00" },
+        thu: { enabled: true, start: "09:00", end: "17:00" },
+        fri: { enabled: true, start: "09:00", end: "17:00" },
+        sat: { enabled: false, start: "09:00", end: "12:00" },
+        sun: { enabled: false, start: "09:00", end: "12:00" },
+      },
+      durationMinutes: s?.durationMinutes ?? 30,
+      bufferMinutes: s?.bufferMinutes ?? 0,
+      advanceDays: s?.advanceDays ?? 30,
+      title: s?.title ?? "Terminbuchung",
+      description: s?.description ?? undefined,
+      notificationEmail: s?.notificationEmail ?? null,
+    });
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+      <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
+        <CalendarDays className="w-4 h-4 text-blue-400" />
+        Terminbuchung
+        <span className="ml-auto text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">+4,90 €/Monat</span>
+      </h2>
+
+      <div className={`rounded-xl p-4 border transition-all mb-4 ${enabled ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-white text-sm font-medium">Terminbuchung aktivieren</div>
+            <div className="text-slate-400 text-xs mt-0.5">Besucher können direkt auf deiner Website Termine buchen</div>
+          </div>
+          <button
+            onClick={handleToggle}
+            disabled={saving}
+            className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
+          >
+            <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
+          </button>
+        </div>
+        {enabled && (
+          <div className="mt-3 flex items-center gap-2 text-sm">
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-emerald-400">Aktiviert</span>
+            <span className="text-slate-500">·</span>
+            <button
+              onClick={onGoToTermine}
+              className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+            >
+              Verfügbarkeit & Termine verwalten →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {!enabled && (
+        <div className="text-slate-400 text-xs space-y-1">
+          {["Eigenes Buchungssystem – kein externer Account nötig", "Wochenplan mit Uhrzeiten frei konfigurierbar", "Automatische Bestätigungs-E-Mails an Kunden", "Terminübersicht und Absagen im Dashboard"].map(f => (
+            <div key={f} className="flex items-start gap-2">
+              <span className="text-blue-400 mt-0.5">✓</span>
+              <span>{f}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── AI Chat Add-on Section ─────────────────────────────
 function AiChatAddonSection({ websiteId, website, onUpdate }: { websiteId: number; website: any; onUpdate: () => void }) {
   const [aiChat, setAiChat] = useState<boolean>(!!(website as any).addOnAiChat);
   const [welcomeMsg, setWelcomeMsg] = useState<string>((website as any).chatWelcomeMessage || "");
@@ -3126,8 +3222,16 @@ export default function CustomerDashboard() {
               </div>
             </div>
 
-            {/* AI Chat Add-on Section */}
-            <AiChatAddonSection websiteId={website.id} website={website} onUpdate={handleUpdate} />
+            {/* Booking + AI Chat Add-on Sections */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <BookingAddonSection
+                websiteId={website.id}
+                website={website}
+                onUpdate={handleUpdate}
+                onGoToTermine={() => setActiveTab("appointments")}
+              />
+              <AiChatAddonSection websiteId={website.id} website={website} onUpdate={handleUpdate} />
+            </div>
           </div>
         )}
 
