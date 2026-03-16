@@ -118,6 +118,15 @@ function Router() {
  * Auf Kunden-Websites (/site/:slug) wird der Banner nicht gezeigt –
  * dort hat der Betreiber seinen eigenen CookieBanner.
  */
+/** Scrollt bei jedem Routenwechsel sofort nach oben (verhindert "Seite lädt nicht"-Bug) */
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [location]);
+  return null;
+}
+
 function AppContent() {
   const [location] = useLocation();
 
@@ -131,6 +140,7 @@ function AppContent() {
 
   return (
     <>
+      <ScrollToTop />
       <Router />
       {!isCustomerSite && <PageblitzCookieBanner />}
     </>
