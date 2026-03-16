@@ -5595,6 +5595,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
         <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Stock-Foto suchen</p>
         <StockPhotoSearch
           defaultQuery={businessCategory}
+          selectedUrl={heroPhotoUrl}
           onSelect={(url) => onSelect(url)}
           perPage={9}
         />

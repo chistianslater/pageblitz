@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
-import { Search, Loader2, ChevronRight } from "lucide-react";
+import { Search, Loader2, ChevronRight, Check } from "lucide-react";
 
 interface StockPhotoSearchProps {
   /** Called when user clicks a photo – receives full-res URL */
   onSelect: (url: string) => void;
+  /** Currently selected photo URL – shows checkmark overlay */
+  selectedUrl?: string;
   /** Optional initial search query */
   defaultQuery?: string;
   /** Number of photos per page (default 12) */
@@ -15,6 +17,7 @@ interface StockPhotoSearchProps {
 
 export default function StockPhotoSearch({
   onSelect,
+  selectedUrl,
   defaultQuery = "",
   perPage = 12,
   className = "",
@@ -91,7 +94,11 @@ export default function StockPhotoSearch({
                 key={photo.id}
                 onClick={() => onSelect(photo.url)}
                 title={`Foto von ${photo.photographer} auf Unsplash`}
-                className="group relative aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all focus:outline-none focus:ring-blue-500"
+                className={`group relative aspect-video rounded-lg overflow-hidden border-2 transition-all focus:outline-none ${
+                  selectedUrl === photo.url
+                    ? "border-blue-400 ring-2 ring-blue-400/40"
+                    : "border-slate-600/40 hover:border-slate-400"
+                }`}
                 style={{ touchAction: "manipulation" }}
               >
                 <img
@@ -100,12 +107,22 @@ export default function StockPhotoSearch({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                   loading="lazy"
                 />
+                {/* Selected checkmark */}
+                {selectedUrl === photo.url && (
+                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  </div>
+                )}
                 {/* Photographer attribution on hover */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="text-white text-[9px] truncate leading-tight">
-                    {photo.photographer}
-                  </p>
-                </div>
+                {selectedUrl !== photo.url && (
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white text-[9px] truncate leading-tight">
+                      {photo.photographer}
+                    </p>
+                  </div>
+                )}
               </button>
             ))}
           </div>
