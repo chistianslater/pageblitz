@@ -1289,11 +1289,14 @@ function TestimonialsLight({ websiteData, cs, isLoading, heading, serif }: any) 
 }
 
 // ── NAV LINKS ────────────────────────────────────────────────────
+const scrollToContact = () =>
+  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+
 const NavLinks = ({ textClass = "text-inherit" }: { textClass?: string }) => (
   <div className="hidden md:flex items-center gap-6">
-    <a href="#leistungen" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Leistungen</a>
-    <a href="#ueber-uns" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Über uns</a>
-    <a href="#kontakt" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Kontakt</a>
+    <a href="#services" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Leistungen</a>
+    <a href="#about" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Über uns</a>
+    <a href="#contact" className={`text-xs font-medium uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity ${textClass}`}>Kontakt</a>
   </div>
 );
 
@@ -1463,7 +1466,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs uppercase hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs uppercase hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1557,7 +1560,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1656,7 +1659,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1749,7 +1752,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em', color: safeCs.onPrimary || '#ffffff' }} className="px-7 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em', color: safeCs.onPrimary || '#ffffff' }} className="px-7 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1843,7 +1846,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-40 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -1937,7 +1940,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-32 h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -2032,7 +2035,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
         <NavLinks textClass="text-white" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
-          <button style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -2126,7 +2129,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[130px] h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -2222,7 +2225,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[130px] h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -2328,7 +2331,7 @@ export function PremiumLayoutV2({
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
-          <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -2758,7 +2761,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
-          <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -2964,7 +2967,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
-          <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
+          <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
 
@@ -3197,7 +3200,7 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
         <NavLinks textClass="text-slate-400" />
         <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
-          <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
+          <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
             className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap shadow-lg">
             {heroCta}
           </button>
@@ -3360,7 +3363,7 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-600" />
         <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
-          <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
+          <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
             className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap">
             {heroCta}
           </button>
@@ -3540,7 +3543,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </Skeleton>
         <NavLinks textClass="text-neutral-500" />
         <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
-          <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
+          <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
             borderRadius:'50px', boxShadow:`0 8px 20px ${primaryColor}45` }}
             className="px-6 py-2.5 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
             {heroCta}
@@ -3705,7 +3708,7 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
         <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
-          <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
+          <button onClick={scrollToContact} style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
             className="px-6 py-2.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
             {heroCta}
           </button>
@@ -3880,7 +3883,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </Skeleton>
         <NavLinks textClass="text-slate-600" />
         <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
-          <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY,
+          <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY,
             fontWeight:600, color:'#fff', boxShadow:`0 6px 18px ${primaryColor}50`, borderRadius:'50px' }}
             className="px-6 py-2.5 text-xs uppercase tracking-wider hover:scale-105 transition-transform whitespace-nowrap">
             {heroCta}
@@ -4050,7 +4053,7 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         </Skeleton>
         <NavLinks textClass="text-amber-200/60" />
         <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
-          <button style={{ border:`1px solid ${primaryColor}`, color:primaryColor, fontFamily:BODY, fontWeight:500,
+          <button onClick={scrollToContact} style={{ border:`1px solid ${primaryColor}`, color:primaryColor, fontFamily:BODY, fontWeight:500,
             letterSpacing:'0.1em', backgroundColor:'transparent' }}
             className="px-6 py-2.5 text-xs uppercase hover:bg-amber-400/10 transition-colors whitespace-nowrap">
             {heroCta}
