@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronLeft, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
@@ -787,9 +787,10 @@ interface AddonsEditorProps {
   onboarding: any;
   onUpdate: () => void;
   purchasedAddOns: Record<string, boolean>;
+  onGoToTermine: () => void;
 }
 
-function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOns }: AddonsEditorProps) {
+function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOns, onGoToTermine }: AddonsEditorProps) {
   const websiteData = (website.websiteData as WebsiteData) || {};
 
   // Get existing data from website sections
@@ -844,7 +845,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [expandedAddon, setExpandedAddon] = useState<string | null>(null);
+  const [activeDetail, setActiveDetail] = useState<string | null>(null);
   const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
@@ -994,8 +995,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     } else {
       const newEnabled = !addons[key].enabled;
       newAddons = { ...addons, [key]: { ...addons[key], enabled: newEnabled } };
-      if (newEnabled) setExpandedAddon(key);
-      else setExpandedAddon(null);
+      // No auto-expand — user navigates to detail via "Einstellungen" button
     }
     setAddons(newAddons);
 
@@ -1154,534 +1154,389 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
   };
 
+  // ── helper to render a consistent toggle switch ───────────────────────────
+  const Toggle = ({ checked, onChange, color }: { checked: boolean; onChange: () => void; color: string }) => (
+    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
+      <div className={`w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${color}`} />
+    </label>
+  );
+
+  const SaveStatus = () => (
+    <div className="flex items-center gap-1.5 text-xs">
+      {saveStatus === "saving" && <><Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" /><span className="text-amber-400">Speichern…</span></>}
+      {saveStatus === "saved" && lastSaved && <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Gespeichert {lastSaved.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</span></>}
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Section Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-slate-400 text-sm">
-          Aktiviere Features für deine Website. Änderungen werden automatisch gespeichert.
-        </p>
-        {/* Auto-save Status Indicator */}
-        <div className="flex items-center gap-2">
-          {saveStatus === "saving" && (
-            <span className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Wird gespeichert...
-            </span>
-          )}
-          {saveStatus === "saved" && lastSaved && (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full">
-              <Check className="w-3.5 h-3.5" />
-              Gespeichert {lastSaved.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-            </span>
-          )}
-          {saveStatus === "unsaved" && (
-            <span className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-500/10 px-3 py-1.5 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" />
-              Warte auf Eingabe...
-            </span>
-          )}
-          {/* Manual save button for instant save */}
-          <button
-            onClick={() => {
-              if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
-              setSaveStatus("saving");
-              setSaving(true);
-              updateAddons.mutate({
-                websiteId,
-                addOns: {
-                  gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
-                  menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
-                  pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
-                  contactForm: addons.contactForm,
-                  contactFormFields: addons.contactFormFields || [
-                    { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-                    { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
-                    { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-                    { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
-                  ],
-                },
-              });
-            }}
-            disabled={saving || uploading || saveStatus === "saved"}
-            className="flex items-center gap-1.5 text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-white px-3 py-1.5 rounded-lg transition-colors"
-            title="Jetzt sofort speichern"
-          >
-            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-            {saving ? "Speichern..." : "Jetzt speichern"}
-          </button>
-        </div>
-      </div>
-
-      {/* Gallery */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.gallery.enabled ? (expandedAddon === "gallery" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        {/* Card Header */}
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0">
-              <Image className="w-6 h-6 text-pink-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Bildergalerie</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Präsentiere deine Arbeiten und Projekte in einer ansprechenden Galerie. 
-                {addons.gallery.enabled && addons.gallery.photos.length > 0 && (
-                  <span className="text-pink-400 ml-1">{addons.gallery.photos.length} Bilder hochgeladen</span>
-                )}
-              </p>
-            </div>
-            {/* Toggle Switch / Paywall */}
-            {!purchasedAddOns["gallery"] ? renderAddonLock("gallery") : (
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={addons.gallery.enabled}
-                  onChange={() => toggleAddon("gallery")}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500" />
-              </label>
-            )}
-          </div>
-        </div>
-
-        {/* Expandable Content */}
-        {addons.gallery.enabled && (
-          <div className="border-t border-slate-700/50">
+    <div className="space-y-4">
+      {/* ── DETAIL VIEW ────────────────────────────────────────────────── */}
+      {activeDetail && (
+        <div className="space-y-5">
+          {/* Back + save status row */}
+          <div className="flex items-center justify-between">
             <button
-              onClick={() => setExpandedAddon(expandedAddon === "gallery" ? null : "gallery")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
+              onClick={() => setActiveDetail(null)}
+              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors group"
             >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "gallery" ? "Weniger anzeigen" : "Bilder verwalten"}
-              </span>
-              {expandedAddon === "gallery" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              Zurück zu Add-ons
             </button>
-
-            {expandedAddon === "gallery" && (
-              <div className="p-5 pt-0 space-y-4">
-                {addons.gallery.photos.length > 0 && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {addons.gallery.photos.map((photo, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
-                        <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-                        <button
-                          onClick={() => removeGalleryPhoto(idx)}
-                          className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={uploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) addGalleryPhoto(file);
-                    }}
-                  />
-                  <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
-                    {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
-                  </div>
-                  <div className="text-center">
-                    <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
-                    <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
-                  </div>
-                </label>
-              </div>
-            )}
+            <SaveStatus />
           </div>
-        )}
-      </div>
 
-      {/* Menu */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.menu.enabled ? (expandedAddon === "menu" ? "border-amber-500/50 ring-1 ring-amber-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-6 h-6 text-amber-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Speisekarte</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Ideal für Restaurants, Cafés und Bäckereien. Präsentiere deine Gerichte mit Preisen und Beschreibungen.
-                {addons.menu.enabled && (
-                  <span className="text-amber-400 ml-1">
-                    {addons.menu.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Gerichte
-                  </span>
-                )}
-              </p>
-            </div>
-            {!purchasedAddOns["menu"] ? renderAddonLock("menu") : (
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={addons.menu.enabled}
-                  onChange={() => toggleAddon("menu")}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500" />
+          {/* Gallery detail */}
+          {activeDetail === "gallery" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center">
+                  <Image className="w-4 h-4 text-pink-400" />
+                </div>
+                Bildergalerie verwalten
+              </h3>
+              {addons.gallery.photos.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                  {addons.gallery.photos.map((photo, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
+                      <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
+                      <button onClick={() => removeGalleryPhoto(idx)} className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
+                <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addGalleryPhoto(file); }} />
+                <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
+                  {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
+                </div>
+                <div className="text-center">
+                  <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
+                  <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
+                </div>
               </label>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
 
-        {addons.menu.enabled && (
-          <div className="border-t border-slate-700/50">
-            <button
-              onClick={() => setExpandedAddon(expandedAddon === "menu" ? null : "menu")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "menu" ? "Weniger anzeigen" : "Speisekarte bearbeiten"}
-              </span>
-              {expandedAddon === "menu" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            {expandedAddon === "menu" && (
-              <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
+          {/* Menu detail */}
+          {activeDetail === "menu" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                </div>
+                Speisekarte bearbeiten
+              </h3>
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 {addons.menu.categories.map((category, catIdx) => (
                   <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
-                      <input
-                        type="text"
-                        value={category.name}
-                        onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)}
-                        placeholder="Kategorie Name (z.B. Hauptgerichte)"
-                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500 font-medium"
-                      />
-                      {addons.menu.categories.length > 1 && (
-                        <button
-                          onClick={() => removeMenuCategory(catIdx)}
-                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <input type="text" value={category.name} onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)} placeholder="Kategorie Name (z.B. Hauptgerichte)" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500 font-medium" />
+                      {addons.menu.categories.length > 1 && <button onClick={() => removeMenuCategory(catIdx)} className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>}
                     </div>
-
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
                         <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={item.name || ""}
-                                onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)}
-                                placeholder="Gerichtname"
-                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
-                              />
-                              <input
-                                type="text"
-                                value={item.price || ""}
-                                onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)}
-                                placeholder="Preis (z.B. 12,90 €)"
-                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
-                              />
+                              <input type="text" value={item.name || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Gerichtname" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
+                              <input type="text" value={item.price || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)} placeholder="Preis (z.B. 12,90 €)" className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
                             </div>
-                            <input
-                              type="text"
-                              value={item.description || ""}
-                              onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)}
-                              placeholder="Beschreibung (optional)"
-                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
-                            />
+                            <input type="text" value={item.description || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
                           </div>
-                          <button
-                            onClick={() => removeMenuItem(catIdx, itemIdx)}
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <button onClick={() => removeMenuItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       ))}
-                      <button
-                        onClick={() => addMenuItem(catIdx)}
-                        className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-2"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Gericht hinzufügen
-                      </button>
+                      <button onClick={() => addMenuItem(catIdx)} className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-1"><Plus className="w-4 h-4" />Gericht hinzufügen</button>
                     </div>
                   </div>
                 ))}
-                <button
-                  onClick={addMenuCategory}
-                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
-                >
-                  <Plus className="w-4 h-4" />
-                  Neue Kategorie hinzufügen
-                </button>
+                <button onClick={addMenuCategory} className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"><Plus className="w-4 h-4" />Neue Kategorie</button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Pricelist */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.pricelist.enabled ? (expandedAddon === "pricelist" ? "border-emerald-500/50 ring-1 ring-emerald-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0">
-              <LayoutGrid className="w-6 h-6 text-emerald-400" />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Preisliste</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Zeige deine Leistungen mit Preisen übersichtlich an. Perfekt für Friseure, Beauty-Studios und Dienstleister.
-                {addons.pricelist.enabled && (
-                  <span className="text-emerald-400 ml-1">
-                    {addons.pricelist.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Preise
-                  </span>
-                )}
-              </p>
-            </div>
-            {!purchasedAddOns["pricelist"] ? renderAddonLock("pricelist") : (
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={addons.pricelist.enabled}
-                  onChange={() => toggleAddon("pricelist")}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500" />
-              </label>
-            )}
-          </div>
-        </div>
+          )}
 
-        {addons.pricelist.enabled && (
-          <div className="border-t border-slate-700/50">
-            <button
-              onClick={() => setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "pricelist" ? "Weniger anzeigen" : "Preisliste bearbeiten"}
-              </span>
-              {expandedAddon === "pricelist" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            {expandedAddon === "pricelist" && (
-              <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
+          {/* Pricelist detail */}
+          {activeDetail === "pricelist" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+                  <LayoutGrid className="w-4 h-4 text-emerald-400" />
+                </div>
+                Preisliste bearbeiten
+              </h3>
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 {addons.pricelist.categories.map((category, catIdx) => (
                   <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
-                      <input
-                        type="text"
-                        value={category.name}
-                        onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)}
-                        placeholder="Kategorie Name (z.B. Damen)"
-                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500 font-medium"
-                      />
-                      {addons.pricelist.categories.length > 1 && (
-                        <button
-                          onClick={() => removePriceCategory(catIdx)}
-                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <input type="text" value={category.name} onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)} placeholder="Kategorie Name (z.B. Damen)" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500 font-medium" />
+                      {addons.pricelist.categories.length > 1 && <button onClick={() => removePriceCategory(catIdx)} className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>}
                     </div>
-
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
                         <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={item.name || ""}
-                                onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)}
-                                placeholder="Leistung"
-                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
-                              />
-                              <input
-                                type="text"
-                                value={item.price || ""}
-                                onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)}
-                                placeholder="Preis"
-                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
-                              />
+                              <input type="text" value={item.name || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Leistung" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
+                              <input type="text" value={item.price || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)} placeholder="Preis" className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
                             </div>
-                            <input
-                              type="text"
-                              value={item.description || ""}
-                              onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)}
-                              placeholder="Beschreibung (optional)"
-                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
-                            />
+                            <input type="text" value={item.description || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
                           </div>
-                          <button
-                            onClick={() => removePriceItem(catIdx, itemIdx)}
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <button onClick={() => removePriceItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       ))}
-                      <button
-                        onClick={() => addPriceItem(catIdx)}
-                        className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-2"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Preis hinzufügen
-                      </button>
+                      <button onClick={() => addPriceItem(catIdx)} className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-1"><Plus className="w-4 h-4" />Preis hinzufügen</button>
                     </div>
                   </div>
                 ))}
-                <button
-                  onClick={addPriceCategory}
-                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
-                >
-                  <Plus className="w-4 h-4" />
-                  Neue Kategorie hinzufügen
-                </button>
+                <button onClick={addPriceCategory} className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"><Plus className="w-4 h-4" />Neue Kategorie</button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
 
-      {/* Contact Form */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.contactForm ? (expandedAddon === "contactForm" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-6 h-6 text-blue-400" />
+          {/* ContactForm detail */}
+          {activeDetail === "contactForm" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
+                  <Mail className="w-4 h-4 text-blue-400" />
+                </div>
+                Formularfelder bearbeiten
+              </h3>
+              <ContactFormEditor websiteId={websiteId} initialFields={addons.contactFormFields} onSave={handleSaveContactFormFields} />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Kontaktformular</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Ermögliche Besuchern, direkt über deine Website Anfragen zu senden. 
-                {addons.contactForm && (
-                  <span className="text-blue-400 ml-1">
-                    {addons.contactFormFields?.length || 4} Felder konfiguriert
-                  </span>
-                )}
-              </p>
-            </div>
-            {!purchasedAddOns["contactForm"] ? renderAddonLock("contactForm") : (
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={addons.contactForm}
-                  onChange={() => toggleAddon("contactForm")}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500" />
-              </label>
-            )}
-          </div>
+          )}
+
+          {/* Booking detail */}
+          {activeDetail === "booking" && (
+            <BookingAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} onGoToTermine={onGoToTermine} purchasedAddOns={purchasedAddOns} />
+          )}
+
+          {/* AiChat detail */}
+          {activeDetail === "aiChat" && (
+            <AiChatAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} purchasedAddOns={purchasedAddOns} />
+          )}
         </div>
+      )}
 
-        {addons.contactForm && (
-          <div className="border-t border-slate-700/50">
-            <button
-              onClick={() => setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "contactForm" ? "Weniger anzeigen" : "Formularfelder bearbeiten"}
-              </span>
-              {expandedAddon === "contactForm" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            {expandedAddon === "contactForm" && (
-              <div className="p-5 pt-2">
-                <ContactFormEditor
-                  websiteId={websiteId}
-                  initialFields={addons.contactFormFields}
-                  onSave={handleSaveContactFormFields}
-                />
-              </div>
-            )}
+      {/* ── OVERVIEW ────────────────────────────────────────────────────── */}
+      {!activeDetail && (
+        <div className="space-y-3">
+          {/* Save status row */}
+          <div className="flex justify-end h-6">
+            <SaveStatus />
           </div>
-        )}
-      </div>
 
-      {/* ── Add-on Kauf-Bestätigung Modal ── */}
-      {confirmAddon && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl">
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">
-                  {ADDON_LABELS[confirmAddon]?.icon}
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold">Add-on freischalten</h3>
-                  <p className={`text-sm font-medium ${ADDON_LABELS[confirmAddon]?.color}`}>
-                    {ADDON_LABELS[confirmAddon]?.name}
-                  </p>
-                </div>
+          {/* ── Gallery ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.gallery.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0">
+                <Image className="w-5 h-5 text-pink-400" />
               </div>
-              <p className="text-slate-300 text-sm leading-relaxed mb-1">
-                <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
-              </p>
-              <p className="text-slate-500 text-xs leading-relaxed mb-6">
-                Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setConfirmAddon(null)}
-                  disabled={purchaseAddonMutation.isPending}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
-                >
-                  Abbrechen
-                </button>
-                <button
-                  onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: confirmAddon as any })}
-                  disabled={purchaseAddonMutation.isPending}
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-                >
-                  {purchaseAddonMutation.isPending
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</>
-                    : "Jetzt freischalten"}
-                </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Bildergalerie</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">+3,90 €/Mon</span>
+                  {addons.gallery.enabled && addons.gallery.photos.length > 0 && <span className="text-xs text-pink-400">{addons.gallery.photos.length} Bilder</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Präsentiere deine Arbeiten in einer Galerie.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.gallery.enabled && (
+                  <button onClick={() => setActiveDetail("gallery")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["gallery"] ? (
+                  <button onClick={() => setConfirmAddon("gallery")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.gallery.enabled} onChange={() => toggleAddon("gallery")} color="peer-checked:bg-pink-500" />
+                )}
               </div>
             </div>
           </div>
+
+          {/* ── Speisekarte ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.menu.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Speisekarte</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">+3,90 €/Mon</span>
+                  {addons.menu.enabled && <span className="text-xs text-amber-400">{addons.menu.categories.reduce((a, c) => a + (c.items?.length || 0), 0)} Gerichte</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Ideal für Restaurants, Cafés und Bäckereien.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.menu.enabled && (
+                  <button onClick={() => setActiveDetail("menu")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["menu"] ? (
+                  <button onClick={() => setConfirmAddon("menu")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.menu.enabled} onChange={() => toggleAddon("menu")} color="peer-checked:bg-amber-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Preisliste ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.pricelist.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0">
+                <LayoutGrid className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Preisliste</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">+3,90 €/Mon</span>
+                  {addons.pricelist.enabled && <span className="text-xs text-emerald-400">{addons.pricelist.categories.reduce((a, c) => a + (c.items?.length || 0), 0)} Preise</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Perfekt für Friseure, Beauty-Studios und Dienstleister.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.pricelist.enabled && (
+                  <button onClick={() => setActiveDetail("pricelist")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["pricelist"] ? (
+                  <button onClick={() => setConfirmAddon("pricelist")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.pricelist.enabled} onChange={() => toggleAddon("pricelist")} color="peer-checked:bg-emerald-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Kontaktformular ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.contactForm ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Kontaktformular</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">+3,90 €/Mon</span>
+                  {addons.contactForm && <span className="text-xs text-blue-400">{addons.contactFormFields?.length || 4} Felder</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Ermögliche Besuchern, direkt Anfragen zu senden.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.contactForm && (
+                  <button onClick={() => setActiveDetail("contactForm")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["contactForm"] ? (
+                  <button onClick={() => setConfirmAddon("contactForm")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.contactForm} onChange={() => toggleAddon("contactForm")} color="peer-checked:bg-blue-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Terminbuchung ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${(website as any).addOnBooking ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <CalendarDays className="w-5 h-5 text-violet-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Terminbuchung</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-medium">+4,90 €/Mon</span>
+                  {(website as any).addOnBooking && <span className="text-xs text-emerald-400 flex items-center gap-0.5"><Check className="w-3 h-3" />Aktiv</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Kunden buchen direkt auf deiner Website einen Termin.</p>
+              </div>
+              <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap flex-shrink-0">
+                <Settings className="w-3.5 h-3.5" />Einstellungen
+              </button>
+            </div>
+          </div>
+
+          {/* ── KI-Chat ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${(website as any).addOnAiChat ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
+                <MessageSquare className="w-5 h-5 text-fuchsia-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">KI-Chat</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 font-medium">+9,90 €/Mon</span>
+                  {(website as any).addOnAiChat && <span className="text-xs text-emerald-400 flex items-center gap-0.5"><Check className="w-3 h-3" />Aktiv</span>}
+                </div>
+                <p className="text-slate-400 text-xs">KI beantwortet Kundenfragen & erfasst Leads automatisch.</p>
+              </div>
+              <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap flex-shrink-0">
+                <Settings className="w-3.5 h-3.5" />Einstellungen
+              </button>
+            </div>
+          </div>
+
+          {/* ── Purchase confirmation modal ── */}
+          {confirmAddon && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+              <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl">
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                      {ADDON_LABELS[confirmAddon]?.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                      <p className={`text-sm font-medium ${ADDON_LABELS[confirmAddon]?.color}`}>
+                        {ADDON_LABELS[confirmAddon]?.name}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed mb-1">
+                    <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+                  </p>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                    Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+                  </p>
+                  <div className="flex gap-3">
+                    <button onClick={() => setConfirmAddon(null)} disabled={purchaseAddonMutation.isPending} className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50">
+                      Abbrechen
+                    </button>
+                    <button onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: confirmAddon as any })} disabled={purchaseAddonMutation.isPending} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                      {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Wird gebucht…</> : "Jetzt freischalten"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
+// ── Structure Editor ─────────────────────────────────
 // ── Structure Editor ─────────────────────────────────
 interface StructureEditorProps {
   websiteId: number;
@@ -3336,61 +3191,25 @@ export default function CustomerDashboard() {
 
         {/* Add-ons Tab */}
         {activeTab === "addons" && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                  <Sparkles className="w-4 h-4 text-pink-400" />
-                  Add-ons verwalten
-                </h2>
-                {onboardingData !== undefined ? (
-                  <AddonsEditor
-                    websiteId={website.id}
-                    website={website}
-                    onboarding={onboardingData}
-                    onUpdate={handleUpdate}
-                    purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
-                  </div>
-                )}
-              </div>
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                  <Settings className="w-4 h-4 text-blue-400" />
-                  Erweiterte Bearbeitung
-                </h2>
-                <p className="text-slate-400 text-sm mb-4">
-                  Für detaillierte Bearbeitung von Galerie-Bildern, Menüpunkten und Preisen nutze das vollständige Onboarding.
-                </p>
-                <a
-                  href={`/preview/${website.previewToken}/onboarding`}
-                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Vollständiges Onboarding öffnen
-                </a>
-              </div>
-            </div>
-
-            {/* Booking + AI Chat Add-on Sections */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <BookingAddonSection
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+            <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
+              <Sparkles className="w-4 h-4 text-pink-400" />
+              Add-ons
+            </h2>
+            {onboardingData !== undefined ? (
+              <AddonsEditor
                 websiteId={website.id}
                 website={website}
+                onboarding={onboardingData}
                 onUpdate={handleUpdate}
+                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
                 onGoToTermine={() => setActiveTab("appointments")}
-                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
               />
-              <AiChatAddonSection
-                websiteId={website.id}
-                website={website}
-                onUpdate={handleUpdate}
-                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
-              />
-            </div>
+            ) : (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+              </div>
+            )}
           </div>
         )}
 
