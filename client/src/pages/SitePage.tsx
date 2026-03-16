@@ -18,7 +18,9 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     { enabled: !!effectiveSlug, staleTime: 0, refetchOnMount: "always" }
   );
 
-  // ── useEffect MUSS vor allen Early-Returns stehen (Rules of Hooks) ───────
+  // ── ALL hooks MUST be before any early returns (Rules of Hooks) ──────────
+  const [bookingOpen, setBookingOpen] = useState(false);
+
   const umamiWebsiteId = (data?.website as any)?.umamiWebsiteId as string | null | undefined;
   useEffect(() => {
     if (!umamiWebsiteId) return;
@@ -70,8 +72,6 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   const business = data.business;
   const w = data.website as any;
   const primaryColor = colorScheme?.primary || "#2563eb";
-
-  const [bookingOpen, setBookingOpen] = useState(false);
 
   return (
     <>
