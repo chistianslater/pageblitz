@@ -2443,42 +2443,79 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
           </div>
 
-          {/* Mobile-only progress bar (desktop shows it in the preview panel header) */}
+          {/* Mobile-only progress bar + step navigation (desktop shows it in the preview panel header) */}
           {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
             const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
             const currentIdx = Math.max(0, dynamicStepOrder.indexOf(currentStep));
             const pct = totalSteps > 0 ? Math.round((currentIdx / totalSteps) * 100) : 0;
-            // Last answered user message – tapping ← re-opens its edit UI
-            const lastEditableMsg = [...messages].reverse().find(m => m.role === "user" && m.step);
+
+            // Completed steps – same labels as desktop
+            const stepLabels: Record<string, string> = {
+              businessCategory: "Branche", businessName: "Name", brandLogo: "Logo",
+              colorScheme: "Farben", heroPhoto: "Foto", aboutPhoto: "Über uns",
+              headlineFont: "Schrift", headlineSize: "Größe", tagline: "Claim",
+              description: "Beschreibung", usp: "USP", services: "Leistungen",
+              legalOwner: "Impressum", legalStreet: "Adresse", legalZipCity: "Ort",
+              legalEmail: "E-Mail", legalPhone: "Telefon", legalVat: "Steuer",
+              addons: "Extras", editMenu: "Speisekarte", editPricelist: "Preise",
+              editGallery: "Galerie", subpages: "Unterseiten", openingHours: "Zeiten",
+              email: "Kontakt", hideSections: "Anzeige",
+            };
+            const completedSteps = dynamicStepOrder
+              .slice(0, currentIdx)
+              .filter(s => s !== "welcome" && s !== "checkout" && s !== "preview");
+
             return (
-              <div className="lg:hidden w-full px-3 py-2 border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0 flex items-center gap-2">
-                {/* Back button – visible whenever there is a previous step to edit */}
-                {lastEditableMsg && !inPlaceEditId && !isTyping ? (
-                  <button
-                    onClick={() => {
-                      setInPlaceEditId(lastEditableMsg.id);
-                      setInPlaceEditValue(lastEditableMsg.content);
-                    }}
-                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 active:bg-white/20 text-slate-300 transition-colors"
-                    style={{ touchAction: "manipulation" }}
-                    title="Vorherigen Schritt bearbeiten"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <div className="w-8 flex-shrink-0" /> /* placeholder to keep layout stable */
+              <div className="lg:hidden border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0">
+                {/* Scrollable step pills – shown when not in edit mode and steps exist */}
+                {!editMode.isEditing && completedSteps.length > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 pt-2 pb-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider flex-shrink-0">Bearbeiten:</span>
+                    {completedSteps.map(step => (
+                      <button
+                        key={step}
+                        onClick={() => {
+                          setEditMode({ isEditing: true, returnToStep: currentStep });
+                          setCurrentStep(step);
+                        }}
+                        className="flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full bg-slate-700/60 active:bg-slate-600 text-slate-300 border border-slate-600/50 transition-colors"
+                        style={{ touchAction: "manipulation" }}
+                      >
+                        {stepLabels[step] || step}
+                      </button>
+                    ))}
+                  </div>
                 )}
-                <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
-                    initial={false}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                  />
+                {/* Edit-mode return button */}
+                {editMode.isEditing && editMode.returnToStep && (
+                  <div className="flex items-center gap-2 px-3 pt-2 pb-1">
+                    <span className="text-[10px] text-amber-400">⚡ Bearbeitungsmodus</span>
+                    <button
+                      onClick={() => {
+                        setCurrentStep(editMode.returnToStep!);
+                        setEditMode({ isEditing: false, returnToStep: null });
+                      }}
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 active:bg-amber-600/50 text-amber-200 border border-amber-500/50 transition-colors"
+                      style={{ touchAction: "manipulation" }}
+                    >
+                      Zurück zum aktuellen Schritt
+                    </button>
+                  </div>
+                )}
+                {/* Progress bar + counter */}
+                <div className="flex items-center gap-2 px-3 py-2">
+                  <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
+                      initial={false}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-medium tabular-nums flex-shrink-0">
+                    {currentIdx}&thinsp;/&thinsp;{totalSteps}
+                  </span>
                 </div>
-                <span className="text-[11px] text-slate-400 font-medium tabular-nums flex-shrink-0">
-                  {currentIdx}&thinsp;/&thinsp;{totalSteps}
-                </span>
               </div>
             );
           })()}
