@@ -10,6 +10,7 @@ import { registerAdminAuthRoutes } from "./adminAuth";
 import { registerGoogleAuthRoutes } from "./googleAuth";
 import { registerMagicLinkAuthRoutes } from "./magicLinkAuth";
 import { registerChatRoutes } from "./chatRoutes";
+import { registerBookingRoutes } from "./bookingRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./static";
@@ -64,6 +65,7 @@ async function startServer() {
   // Passwordless Magic-Link login for customers
   registerMagicLinkAuthRoutes(app);
   registerChatRoutes(app);
+  registerBookingRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

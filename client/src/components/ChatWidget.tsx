@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageCircle, X, Send, Loader2, ExternalLink, ChevronDown } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, ChevronDown, CalendarDays } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -11,8 +11,8 @@ interface ChatWidgetProps {
   primaryColor?: string;
   businessName?: string;
   welcomeMessage?: string;
-  calendlyUrl?: string;
-  addOnCalendly?: boolean;
+  addOnBooking?: boolean;
+  onBookingRequest?: () => void;
 }
 
 // Generate or retrieve a stable session ID
@@ -43,8 +43,8 @@ export default function ChatWidget({
   primaryColor = "#2563eb",
   businessName = "Assistent",
   welcomeMessage,
-  calendlyUrl,
-  addOnCalendly = false,
+  addOnBooking = false,
+  onBookingRequest,
 }: ChatWidgetProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -266,41 +266,37 @@ export default function ChatWidget({
               </div>
             )}
 
-            {/* Calendly CTA */}
-            {addOnCalendly && calendlyUrl && leadCaptured && (
+            {/* Booking CTA after lead captured */}
+            {addOnBooking && leadCaptured && onBookingRequest && (
               <div className="flex justify-center pt-1">
-                <a
-                  href={calendlyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => { onBookingRequest(); setOpen(false); }}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shadow-sm transition-opacity hover:opacity-90"
                   style={{ backgroundColor: primaryColor, color: textOnPrimary }}
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  Termin buchen
-                </a>
+                  <CalendarDays className="w-4 h-4" />
+                  Jetzt Termin buchen
+                </button>
               </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Calendly banner (before lead captured) */}
-          {addOnCalendly && calendlyUrl && !leadCaptured && (
+          {/* Booking banner (always visible when add-on active) */}
+          {addOnBooking && onBookingRequest && !leadCaptured && (
             <div
               className="px-4 py-2 flex-shrink-0 border-t"
               style={{ backgroundColor: bgLight, borderColor: "#e2e8f0" }}
             >
-              <a
-                href={calendlyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => { onBookingRequest(); setOpen(false); }}
                 className="flex items-center justify-center gap-2 w-full py-1.5 rounded-lg text-sm font-medium border transition-opacity hover:opacity-80"
                 style={{ borderColor: primaryColor, color: primaryColor, backgroundColor: "white" }}
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <CalendarDays className="w-3.5 h-3.5" />
                 Direkt Termin buchen
-              </a>
+              </button>
             </div>
           )}
 

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint, boolean, date } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -153,6 +153,8 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnPricelist: boolean("addOnPricelist").default(false),
   addOnPricelistData: json("addOnPricelistData"), // { categories: [{ name, items: [{ name, price }] }] }
   addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
+  // Booking Add-on
+  addOnBooking: boolean("addOnBooking").default(false),
   // AI Chat Add-on
   addOnAiChat: boolean("addOnAiChat").default(false),
   addOnCalendly: boolean("addOnCalendly").default(false),
@@ -276,3 +278,40 @@ export const chatLeads = mysqlTable("chat_leads", {
 
 export type ChatLead = typeof chatLeads.$inferSelect;
 export type InsertChatLead = typeof chatLeads.$inferInsert;
+
+// ── Appointment Booking ──────────────────────────────────────────────────────
+export const appointmentSettings = mysqlTable("appointment_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull().unique(),
+  // weeklySchedule: { mon: { enabled, start: "09:00", end: "17:00" }, ... }
+  weeklySchedule: json("weeklySchedule").notNull(),
+  durationMinutes: int("durationMinutes").notNull().default(30),
+  bufferMinutes: int("bufferMinutes").notNull().default(0),
+  advanceDays: int("advanceDays").notNull().default(30),
+  title: varchar("title", { length: 255 }).default("Terminbuchung"),
+  description: text("description"),
+  notificationEmail: varchar("notificationEmail", { length: 320 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AppointmentSettings = typeof appointmentSettings.$inferSelect;
+export type InsertAppointmentSettings = typeof appointmentSettings.$inferInsert;
+
+export const appointments = mysqlTable("appointments", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  visitorName: varchar("visitorName", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  message: text("message"),
+  appointmentDate: varchar("appointmentDate", { length: 10 }).notNull(), // YYYY-MM-DD
+  appointmentTime: varchar("appointmentTime", { length: 5 }).notNull(),  // HH:MM
+  status: mysqlEnum("status", ["pending", "confirmed", "cancelled"]).default("pending").notNull(),
+  cancelToken: varchar("cancelToken", { length: 32 }).notNull().unique(),
+  notifiedAt: timestamp("notifiedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Appointment = typeof appointments.$inferSelect;
+export type InsertAppointment = typeof appointments.$inferInsert;

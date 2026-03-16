@@ -22,8 +22,8 @@ import {
   markSubmissionRead, countRecentSubmissionsByIp, archiveSubmission, deleteContactSubmission,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
-import { chatLeads, generatedWebsites } from "../drizzle/schema";
-import { desc, eq as eqDrizzle } from "drizzle-orm";
+import { chatLeads, generatedWebsites, appointmentSettings, appointments } from "../drizzle/schema";
+import { desc, eq as eqDrizzle, and as andDrizzle, gte as gteDrizzle } from "drizzle-orm";
 import { getDb } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -3021,6 +3021,119 @@ Kontext: ${input.context}`,
           .update(generatedWebsites)
           .set(updateData)
           .where(eqDrizzle(generatedWebsites.id, input.websiteId));
+
+        return { success: true };
+      }),
+
+    // ── Booking: Settings + Appointments ────────────────────────────────────
+    getBookingSettings: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        const [settings] = _db ? await _db
+          .select()
+          .from(appointmentSettings)
+          .where(eqDrizzle(appointmentSettings.websiteId, input.websiteId))
+          .limit(1) : [undefined];
+
+        return {
+          addOnBooking: !!(row.website as any).addOnBooking,
+          settings: settings ?? null,
+        };
+      }),
+
+    saveBookingSettings: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        enabled: z.boolean(),
+        weeklySchedule: z.record(z.any()),
+        durationMinutes: z.number().min(15).max(240),
+        bufferMinutes: z.number().min(0).max(120),
+        advanceDays: z.number().min(1).max(90),
+        title: z.string().max(255).optional(),
+        description: z.string().max(1000).optional(),
+        notificationEmail: z.string().email().max(320).optional().nullable(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        if (!_db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        // Enable/disable add-on
+        await _db.update(generatedWebsites)
+          .set({ addOnBooking: input.enabled })
+          .where(eqDrizzle(generatedWebsites.id, input.websiteId));
+
+        // Upsert settings
+        const [existing] = await _db.select({ id: appointmentSettings.id })
+          .from(appointmentSettings)
+          .where(eqDrizzle(appointmentSettings.websiteId, input.websiteId))
+          .limit(1);
+
+        const settingsData = {
+          weeklySchedule: input.weeklySchedule,
+          durationMinutes: input.durationMinutes,
+          bufferMinutes: input.bufferMinutes,
+          advanceDays: input.advanceDays,
+          title: input.title || "Terminbuchung",
+          description: input.description || null,
+          notificationEmail: input.notificationEmail || null,
+        };
+
+        if (existing) {
+          await _db.update(appointmentSettings).set(settingsData).where(eqDrizzle(appointmentSettings.id, existing.id));
+        } else {
+          await _db.insert(appointmentSettings).values({ websiteId: input.websiteId, ...settingsData });
+        }
+
+        return { success: true };
+      }),
+
+    getAppointments: protectedProcedure
+      .input(z.object({ websiteId: z.number(), upcoming: z.boolean().optional().default(true) }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        if (!_db) return { appointments: [] };
+
+        const today = new Date().toISOString().slice(0, 10);
+        const all = await _db
+          .select()
+          .from(appointments)
+          .where(
+            input.upcoming
+              ? andDrizzle(eqDrizzle(appointments.websiteId, input.websiteId), gteDrizzle(appointments.appointmentDate, today))
+              : eqDrizzle(appointments.websiteId, input.websiteId)
+          )
+          .orderBy(appointments.appointmentDate, appointments.appointmentTime)
+          .limit(200);
+
+        return { appointments: all };
+      }),
+
+    cancelAppointmentByOwner: protectedProcedure
+      .input(z.object({ appointmentId: z.number(), websiteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        if (!_db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        await _db.update(appointments)
+          .set({ status: "cancelled" })
+          .where(andDrizzle(eqDrizzle(appointments.id, input.appointmentId), eqDrizzle(appointments.websiteId, input.websiteId)));
 
         return { success: true };
       }),

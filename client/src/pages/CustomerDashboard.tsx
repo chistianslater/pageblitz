@@ -3,14 +3,14 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { FONT_OPTIONS } from "@shared/layoutConfig";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads" | "appointments";
 
 interface SectionConfig {
   type: string;
@@ -1902,8 +1902,6 @@ function StepChip({ done, label, onClick }: { done: boolean; label: string; onCl
 // ── AI Chat Add-on Section ───────────────────────────
 function AiChatAddonSection({ websiteId, website, onUpdate }: { websiteId: number; website: any; onUpdate: () => void }) {
   const [aiChat, setAiChat] = useState<boolean>(!!(website as any).addOnAiChat);
-  const [calendly, setCalendly] = useState<boolean>(!!(website as any).addOnCalendly);
-  const [calendlyUrl, setCalendlyUrl] = useState<string>((website as any).calendlyUrl || "");
   const [welcomeMsg, setWelcomeMsg] = useState<string>((website as any).chatWelcomeMessage || "");
   const [saving, setSaving] = useState(false);
 
@@ -1922,8 +1920,6 @@ function AiChatAddonSection({ websiteId, website, onUpdate }: { websiteId: numbe
       addOns: {
         gallery: { enabled: false },
         aiChat,
-        calendly,
-        calendlyUrl: calendlyUrl.trim() || undefined,
         chatWelcomeMessage: welcomeMsg.trim() || undefined,
       },
     });
@@ -1937,61 +1933,34 @@ function AiChatAddonSection({ websiteId, website, onUpdate }: { websiteId: numbe
         <span className="ml-auto text-xs bg-violet-600/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">+9,90 €/Monat</span>
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        {/* Toggle AI Chat */}
-        <div className={`rounded-xl p-4 border transition-all ${aiChat ? "border-violet-500/40 bg-violet-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <div className="text-white text-sm font-medium">KI-Chat aktivieren</div>
-              <div className="text-slate-400 text-xs mt-0.5">Chat-Widget erscheint auf deiner Website</div>
-            </div>
-            <button
-              onClick={() => setAiChat(!aiChat)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${aiChat ? "bg-violet-500" : "bg-slate-600"}`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${aiChat ? "left-5.5 translate-x-0" : "left-0.5"}`} style={{ left: aiChat ? "22px" : "2px" }} />
-            </button>
+      {/* Toggle AI Chat */}
+      <div className={`rounded-xl p-4 border transition-all mb-4 ${aiChat ? "border-violet-500/40 bg-violet-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <div className="text-white text-sm font-medium">KI-Chat aktivieren</div>
+            <div className="text-slate-400 text-xs mt-0.5">Chat-Widget erscheint auf deiner Website</div>
           </div>
-          {aiChat && (
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                <span>Gespräche diesen Monat</span>
-                <span className={usagePct >= 80 ? "text-orange-400" : "text-slate-400"}>{usageCount} / 200</span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-1.5">
-                <div
-                  className={`h-1.5 rounded-full transition-all ${usagePct >= 80 ? "bg-orange-400" : "bg-violet-500"}`}
-                  style={{ width: `${usagePct}%` }}
-                />
-              </div>
-            </div>
-          )}
+          <button
+            onClick={() => setAiChat(!aiChat)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${aiChat ? "bg-violet-500" : "bg-slate-600"}`}
+          >
+            <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: aiChat ? "22px" : "2px" }} />
+          </button>
         </div>
-
-        {/* Toggle Calendly */}
-        <div className={`rounded-xl p-4 border transition-all ${calendly ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <div className="text-white text-sm font-medium">Terminbuchung (Calendly)</div>
-              <div className="text-slate-400 text-xs mt-0.5">+3,90 €/Monat · kostenloser Calendly-Account reicht</div>
+        {aiChat && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+              <span>Gespräche diesen Monat</span>
+              <span className={usagePct >= 80 ? "text-orange-400" : "text-slate-400"}>{usageCount} / 200</span>
             </div>
-            <button
-              onClick={() => setCalendly(!calendly)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${calendly ? "bg-blue-500" : "bg-slate-600"}`}
-            >
-              <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: calendly ? "22px" : "2px" }} />
-            </button>
+            <div className="w-full bg-slate-700 rounded-full h-1.5">
+              <div
+                className={`h-1.5 rounded-full transition-all ${usagePct >= 80 ? "bg-orange-400" : "bg-violet-500"}`}
+                style={{ width: `${usagePct}%` }}
+              />
+            </div>
           </div>
-          {calendly && (
-            <input
-              type="url"
-              value={calendlyUrl}
-              onChange={e => setCalendlyUrl(e.target.value)}
-              placeholder="https://calendly.com/dein-name"
-              className="w-full mt-2 bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-            />
-          )}
-        </div>
+        )}
       </div>
 
       {/* Welcome message */}
@@ -2135,6 +2104,339 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ── Appointments Tab ───────────────────────────────────
+const DAY_LABELS: Record<string, string> = { mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa", sun: "So" };
+const DAY_NAMES: Record<string, string> = { mon: "Montag", tue: "Dienstag", wed: "Mittwoch", thu: "Donnerstag", fri: "Freitag", sat: "Samstag", sun: "Sonntag" };
+const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+const DEFAULT_SCHEDULE = {
+  mon: { enabled: true, start: "09:00", end: "17:00" },
+  tue: { enabled: true, start: "09:00", end: "17:00" },
+  wed: { enabled: true, start: "09:00", end: "17:00" },
+  thu: { enabled: true, start: "09:00", end: "17:00" },
+  fri: { enabled: true, start: "09:00", end: "17:00" },
+  sat: { enabled: false, start: "09:00", end: "12:00" },
+  sun: { enabled: false, start: "09:00", end: "12:00" },
+};
+
+function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
+  const { data: bookingData, isLoading: bookingLoading, refetch: refetchBooking } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+  const { data: appointmentsData, isLoading: appointmentsLoading, refetch: refetchAppointments } = trpc.customer.getAppointments.useQuery({ websiteId, upcoming: true });
+  const saveSettingsMutation = trpc.customer.saveBookingSettings.useMutation({
+    onSuccess: () => { toast.success("Einstellungen gespeichert"); refetchBooking(); },
+    onError: (e: any) => toast.error("Fehler: " + e.message),
+  });
+  const cancelMutation = trpc.customer.cancelAppointmentByOwner.useMutation({
+    onSuccess: () => { toast.success("Termin abgesagt"); refetchAppointments(); },
+    onError: () => toast.error("Fehler beim Absagen"),
+  });
+
+  const [enabled, setEnabled] = useState<boolean>(false);
+  const [schedule, setSchedule] = useState<Record<string, { enabled: boolean; start: string; end: string }>>(DEFAULT_SCHEDULE);
+  const [duration, setDuration] = useState(30);
+  const [buffer, setBuffer] = useState(0);
+  const [advance, setAdvance] = useState(30);
+  const [title, setTitle] = useState("Terminbuchung");
+  const [description, setDescription] = useState("");
+  const [notifEmail, setNotifEmail] = useState("");
+  const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null);
+  const [showPast, setShowPast] = useState(false);
+  const { data: pastData, refetch: refetchPast } = trpc.customer.getAppointments.useQuery(
+    { websiteId, upcoming: false },
+    { enabled: showPast }
+  );
+
+  useEffect(() => {
+    if (!bookingData) return;
+    setEnabled(bookingData.addOnBooking);
+    if (bookingData.settings) {
+      const s = bookingData.settings;
+      setSchedule((s.weeklySchedule as any) ?? DEFAULT_SCHEDULE);
+      setDuration(s.durationMinutes ?? 30);
+      setBuffer(s.bufferMinutes ?? 0);
+      setAdvance(s.advanceDays ?? 30);
+      setTitle(s.title ?? "Terminbuchung");
+      setDescription(s.description ?? "");
+      setNotifEmail(s.notificationEmail ?? "");
+    }
+  }, [bookingData]);
+
+  const handleSave = () => {
+    saveSettingsMutation.mutate({
+      websiteId,
+      enabled,
+      weeklySchedule: schedule,
+      durationMinutes: duration,
+      bufferMinutes: buffer,
+      advanceDays: advance,
+      title: title.trim() || "Terminbuchung",
+      description: description.trim() || undefined,
+      notificationEmail: notifEmail.trim() || null,
+    });
+  };
+
+  const setDay = (key: string, field: string, value: any) => {
+    setSchedule(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
+  };
+
+  if (bookingLoading) return <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>;
+
+  const appts = appointmentsData?.appointments ?? [];
+  const pastAppts = pastData?.appointments ?? [];
+
+  return (
+    <div className="space-y-6">
+      {/* Settings card */}
+      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-white font-semibold flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-blue-400" />
+            Terminbuchung
+            <span className="ml-1 text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">+4,90 €/Monat</span>
+          </h2>
+          <button
+            onClick={() => setEnabled(!enabled)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
+          >
+            <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
+          </button>
+        </div>
+
+        {enabled && (
+          <div className="space-y-5">
+            {/* Title */}
+            <div>
+              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Leistungsbezeichnung</label>
+              <input
+                type="text"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="Terminbuchung"
+                maxLength={255}
+                className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Beschreibung <span className="text-slate-600 normal-case font-normal">(optional)</span></label>
+              <textarea
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="Kurze Beschreibung der Leistung..."
+                rows={2}
+                maxLength={500}
+                className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+              />
+            </div>
+
+            {/* Duration / Buffer / Advance */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Termin-Dauer", value: duration, onChange: setDuration, options: [15, 20, 30, 45, 60, 90, 120], suffix: "Min" },
+                { label: "Pufferzeit", value: buffer, onChange: setBuffer, options: [0, 5, 10, 15, 30], suffix: "Min" },
+                { label: "Buchbar bis", value: advance, onChange: setAdvance, options: [7, 14, 21, 30, 60, 90], suffix: "Tage" },
+              ].map(({ label, value, onChange, options, suffix }) => (
+                <div key={label}>
+                  <label className="text-slate-400 text-xs font-medium block mb-1.5">{label}</label>
+                  <select
+                    value={value}
+                    onChange={e => onChange(Number(e.target.value))}
+                    className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-2 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  >
+                    {options.map(o => <option key={o} value={o}>{o} {suffix}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+
+            {/* Weekly Schedule */}
+            <div>
+              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-2">Verfügbarkeit</label>
+              <div className="space-y-2">
+                {DAY_ORDER.map(key => {
+                  const day = schedule[key] ?? { enabled: false, start: "09:00", end: "17:00" };
+                  return (
+                    <div key={key} className={`flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${day.enabled ? "bg-blue-500/10 border border-blue-500/20" : "bg-slate-900/40 border border-slate-700/30"}`}>
+                      <button
+                        onClick={() => setDay(key, "enabled", !day.enabled)}
+                        className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${day.enabled ? "bg-blue-500" : "bg-slate-600"}`}
+                      >
+                        <span className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: day.enabled ? "18px" : "2px" }} />
+                      </button>
+                      <span className={`text-sm font-medium w-8 flex-shrink-0 ${day.enabled ? "text-white" : "text-slate-500"}`}>{DAY_LABELS[key]}</span>
+                      {day.enabled ? (
+                        <div className="flex items-center gap-2 flex-1">
+                          <input
+                            type="time"
+                            value={day.start}
+                            onChange={e => setDay(key, "start", e.target.value)}
+                            className="bg-slate-900/60 border border-slate-600 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                          />
+                          <span className="text-slate-500 text-xs">–</span>
+                          <input
+                            type="time"
+                            value={day.end}
+                            onChange={e => setDay(key, "end", e.target.value)}
+                            className="bg-slate-900/60 border border-slate-600 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-slate-600 text-sm">Nicht verfügbar</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Notification Email */}
+            <div>
+              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Benachrichtigungs-E-Mail <span className="text-slate-600 normal-case font-normal">(für neue Buchungen)</span></label>
+              <input
+                type="email"
+                value={notifEmail}
+                onChange={e => setNotifEmail(e.target.value)}
+                placeholder="deine@email.de (Standard: Account-E-Mail)"
+                maxLength={320}
+                className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleSave}
+          disabled={saveSettingsMutation.isPending}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+        >
+          {saveSettingsMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+          Einstellungen speichern
+        </button>
+      </div>
+
+      {/* Appointments list */}
+      {enabled && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-emerald-400" />
+              Kommende Termine
+              {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
+            </h3>
+          </div>
+
+          {appointmentsLoading ? (
+            <div className="flex items-center justify-center h-32"><Loader2 className="w-5 h-5 animate-spin text-blue-400" /></div>
+          ) : appts.length === 0 ? (
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+              <Calendar className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+              <p className="text-white font-medium mb-1">Keine kommenden Termine</p>
+              <p className="text-slate-400 text-sm">Wenn Besucher einen Termin buchen, erscheint er hier.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {appts.map((a: any) => {
+                const isCancelling = cancelConfirmId === a.id;
+                return (
+                  <div
+                    key={a.id}
+                    className={`bg-slate-800/60 border rounded-xl p-4 flex items-start justify-between gap-4 ${
+                      a.status === "cancelled" ? "border-slate-700/30 opacity-60" : "border-slate-700/50"
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-white font-medium text-sm">{a.visitorName}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                          a.status === "cancelled" ? "bg-red-500/10 text-red-400 border-red-500/30" :
+                          a.status === "confirmed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" :
+                          "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        }`}>
+                          {a.status === "cancelled" ? "Abgesagt" : a.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-blue-300 text-sm mb-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {new Date(a.appointmentDate + "T12:00:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" })}
+                        {" · "}{a.appointmentTime} Uhr
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-1">
+                        <a href={`mailto:${a.email}`} className="text-slate-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5" />{a.email}
+                        </a>
+                        {a.phone && (
+                          <a href={`tel:${a.phone}`} className="text-slate-400 hover:text-green-300 transition-colors flex items-center gap-1">
+                            <Phone className="w-3.5 h-3.5" />{a.phone}
+                          </a>
+                        )}
+                      </div>
+                      {a.message && <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">{a.message}</p>}
+                    </div>
+                    {a.status !== "cancelled" && (
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        {isCancelling ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-400">Sicher?</span>
+                            <button
+                              onClick={() => { cancelMutation.mutate({ appointmentId: a.id, websiteId }); setCancelConfirmId(null); }}
+                              className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
+                            >
+                              Ja, absagen
+                            </button>
+                            <button onClick={() => setCancelConfirmId(null)} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                              Abbrechen
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setCancelConfirmId(a.id)}
+                            className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                          >
+                            <CalendarX className="w-3.5 h-3.5" />Absagen
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Past appointments toggle */}
+          <button
+            onClick={() => { setShowPast(v => !v); if (!showPast) refetchPast(); }}
+            className="flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+          >
+            <ChevronDown className={`w-4 h-4 transition-transform ${showPast ? "rotate-180" : ""}`} />
+            {showPast ? "Vergangene ausblenden" : "Vergangene Termine anzeigen"}
+          </button>
+
+          {showPast && pastAppts.length > 0 && (
+            <div className="space-y-2 opacity-70">
+              {pastAppts.filter((a: any) => a.appointmentDate < new Date().toISOString().slice(0, 10)).map((a: any) => (
+                <div key={a.id} className="bg-slate-900/40 border border-slate-700/30 rounded-xl p-3 flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-slate-300 text-sm font-medium">{a.visitorName}</span>
+                    <span className="text-slate-500 text-xs ml-2">
+                      {new Date(a.appointmentDate + "T12:00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })} {a.appointmentTime} Uhr
+                    </span>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${a.status === "cancelled" ? "text-red-400" : "text-slate-400"}`}>
+                    {a.status === "cancelled" ? "Abgesagt" : "Erledigt"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -2344,6 +2646,7 @@ export default function CustomerDashboard() {
     { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
     { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
     { id: "leads", label: "Chat-Leads", icon: <Users className="w-4 h-4" /> },
+    { id: "appointments", label: "Termine", icon: <CalendarDays className="w-4 h-4" /> },
     { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
 
@@ -2831,6 +3134,11 @@ export default function CustomerDashboard() {
         {/* Leads Tab */}
         {activeTab === "leads" && (
           <ChatLeadsTab websiteId={website.id} website={website} onGoToAddons={() => setActiveTab("addons")} />
+        )}
+
+        {/* Appointments Tab */}
+        {activeTab === "appointments" && (
+          <AppointmentsTab websiteId={website.id} website={website} onGoToAddons={() => setActiveTab("addons")} />
         )}
 
         {/* Analytics Tab */}
