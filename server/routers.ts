@@ -2901,11 +2901,38 @@ Kontext: ${input.context}`,
               console.warn("[getMyWebsites] Could not fetch Stripe subscription period:", e);
             }
           }
+          // Auto-migrate: if colorScheme is missing, reconstruct from industry and save
+          if (!row.website.colorScheme) {
+            try {
+              const cs = getIndustryColorScheme(row.website.industry || "default", business?.name || "");
+              await updateWebsite(row.website.id, { colorScheme: cs });
+              (row.website as any).colorScheme = cs;
+            } catch (e) {
+              console.warn("[getMyWebsites] colorScheme migration failed:", e);
+            }
+          }
           return { website: row.website, subscription: row.subscription, business };
         })
       );
       return results;
     }),
+
+    getImageSuggestions: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        const website = row.website;
+        const business = await getBusinessById(website.businessId);
+        const industry = website.industry || "default";
+        const bizName = business?.name || "";
+        // Stock photos: hero image + gallery images for this industry
+        const stockHero = getHeroImageUrl(industry, bizName);
+        const stockGallery = getGalleryImages(industry, bizName);
+        const stockPhotos = [...new Set([stockHero, ...stockGallery])].filter(Boolean) as string[];
+        return { stockPhotos };
+      }),
 
     // ── Setup-Flow ──────────────────────────────────────
     checkSlugAvailability: publicProcedure

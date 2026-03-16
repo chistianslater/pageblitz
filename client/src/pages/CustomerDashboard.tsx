@@ -1904,6 +1904,7 @@ export default function CustomerDashboard() {
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("preview");
   const [previewKey, setPreviewKey] = useState(0);
+  const [imagePicker, setImagePicker] = useState<{ slot: "hero" | "about"; websiteId: number } | null>(null);
 
   const { data: myWebsites, isLoading, refetch } = trpc.customer.getMyWebsites.useQuery(
     undefined,
@@ -1913,6 +1914,11 @@ export default function CustomerDashboard() {
   const { data: onboardingData } = trpc.customer.getOnboardingData.useQuery(
     { websiteId: selectedWebsiteId || myWebsites?.[0]?.website.id || 0 },
     { enabled: !!selectedWebsiteId || !!myWebsites?.[0]?.website.id }
+  );
+
+  const { data: imageSuggestions } = trpc.customer.getImageSuggestions.useQuery(
+    { websiteId: imagePicker?.websiteId || 0 },
+    { enabled: !!imagePicker }
   );
 
   const updateMutation = trpc.customer.updateWebsiteContent.useMutation({
@@ -2099,8 +2105,95 @@ export default function CustomerDashboard() {
     { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
 
+  // ── Image upload helper (used by picker + direct upload) ────────────────
+  const handleImageUpload = async (file: File, slot: "hero" | "about", websiteId: number) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const result = await (window as any).__trpcUpload?.({ websiteId, imageData: base64, mimeType: file.type });
+        if (result?.url) {
+          await updateMutation.mutateAsync({ websiteId, patch: slot === "hero" ? { heroPhotoUrl: result.url } : { aboutPhotoUrl: result.url } });
+          setImagePicker(null);
+        }
+      } catch { toast.error("Upload fehlgeschlagen"); }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const selectPickerImage = async (url: string) => {
+    if (!imagePicker) return;
+    await updateMutation.mutateAsync({
+      websiteId: imagePicker.websiteId,
+      patch: imagePicker.slot === "hero" ? { heroPhotoUrl: url } : { aboutPhotoUrl: url },
+    });
+    setImagePicker(null);
+  };
+
+  const gmbPhotos = (onboardingData?.photoUrls as string[] | null) || [];
+  const stockPhotos = imageSuggestions?.stockPhotos || [];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+
+      {/* ── Image Picker Modal ── */}
+      {imagePicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setImagePicker(null)}>
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto space-y-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-semibold text-sm">
+                {imagePicker.slot === "hero" ? "Hauptbild" : "Über-uns-Bild"} auswählen
+              </h3>
+              <button onClick={() => setImagePicker(null)} className="p-1.5 text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* GMB Photos */}
+            {gmbPhotos.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Deine GMB-Fotos</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {gmbPhotos.map((url, i) => (
+                    <button key={i} onClick={() => selectPickerImage(url)}
+                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Stock Photos */}
+            {stockPhotos.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock-Fotos</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {stockPhotos.map((url, i) => (
+                    <button key={i} onClick={() => selectPickerImage(url)}
+                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Upload */}
+            <div className="space-y-2">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Eigenes Foto hochladen</p>
+              <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-3 cursor-pointer transition-colors">
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f, imagePicker.slot, imagePicker.websiteId); }} />
+                <Upload className="w-4 h-4" />
+                Bild vom Gerät wählen (max. 5 MB)
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
@@ -2377,33 +2470,13 @@ export default function CustomerDashboard() {
                     <Image className="w-8 h-8 text-slate-500" />
                   </div>
                 )}
-                <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        const base64 = (reader.result as string).split(",")[1];
-                        try {
-                          const result = await (window as any).__trpcUpload?.({ websiteId: website.id, imageData: base64, mimeType: file.type });
-                          if (result?.url) {
-                            await updateMutation.mutateAsync({ websiteId: website.id, patch: { heroPhotoUrl: result.url } });
-                          }
-                        } catch {
-                          toast.error("Upload fehlgeschlagen");
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
+                <button
+                  onClick={() => setImagePicker({ slot: "hero", websiteId: website.id })}
+                  className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors"
+                >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Bild ändern
-                </label>
+                </button>
               </div>
 
               {/* About Image */}
@@ -2427,30 +2500,10 @@ export default function CustomerDashboard() {
                     <Image className="w-8 h-8 text-slate-500" />
                   </div>
                 )}
-                <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        const base64 = (reader.result as string).split(",")[1];
-                        try {
-                          const result = await (window as any).__trpcUpload?.({ websiteId: website.id, imageData: base64, mimeType: file.type });
-                          if (result?.url) {
-                            await updateMutation.mutateAsync({ websiteId: website.id, patch: { aboutPhotoUrl: result.url } });
-                          }
-                        } catch {
-                          toast.error("Upload fehlgeschlagen");
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
+                <button
+                  onClick={() => setImagePicker({ slot: "about", websiteId: website.id })}
+                  className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors"
+                >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Bild ändern
                 </label>
