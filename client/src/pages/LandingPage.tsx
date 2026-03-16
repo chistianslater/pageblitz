@@ -23,7 +23,11 @@ import {
   Sun,
   Moon,
   LogIn,
+  MessageCircle,
+  CalendarCheck,
+  Bot,
 } from "lucide-react";
+import LandingPageChatWidget from "@/components/LandingPageChatWidget";
 import { Button } from "@/components/ui/button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import {
@@ -1825,13 +1829,15 @@ export default function LandingPage() {
             </motion.h3>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <FeatureCard icon={Rocket} title="Sofort fertige Texte" description="Keine leere Seite, kein Copy-Paste. Die KI schreibt deine Leistungsbeschreibungen, Über-uns-Texte und Seitentitel – passend zu deiner Branche." index={0} isDark={isDark} />
             <FeatureCard icon={Clock} title="In 3 Minuten online" description="Gib deinen Google My Business Link ein – und 3 Minuten später hat dein Business einen professionellen Webauftritt. Kein Warten, keine Einrichtung." index={1} isDark={isDark} />
             <FeatureCard icon={Smartphone} title="Sieht auf jedem Handy gut aus" description="Über 70% deiner Kunden googeln dich am Smartphone. Deine Website passt sich automatisch an – ohne dass du etwas tun musst." index={2} isDark={isDark} />
             <FeatureCard icon={Search} title="Wird bei Google gefunden" description="SEO-optimierter Code, strukturierte Daten und schnelle Ladezeiten – damit neue Kunden dich über Google entdecken, nicht nur Bestandskunden." index={3} isDark={isDark} />
-            <FeatureCard icon={ShieldCheck} title="Kein Anwalt nötig" description="Impressum, Datenschutzerklärung und DSGVO-konforme Cookie-Banner werden automatisch generiert und aktuell gehalten." index={4} isDark={isDark} />
-            <FeatureCard icon={Globe} title="Deine eigene Domain" description="Verbinde deine bestehende Domain oder nutze eine kostenlose .pageblitz.de Subdomain. SSL-Zertifikat und Hosting sind inklusive." index={5} isDark={isDark} />
+            <FeatureCard icon={MessageCircle} title="KI-Chat der verkauft" description="Ein KI-Assistent auf deiner Website beantwortet Kundenfragen 24/7 und erfasst automatisch Leads – während du schläfst." index={4} isDark={isDark} />
+            <FeatureCard icon={CalendarCheck} title="Terminbuchung 24/7" description="Kunden buchen Termine direkt auf deiner Website – ohne Telefonieren, ohne Wartezeiten. Vollautomatisch, rund um die Uhr." index={5} isDark={isDark} />
+            <FeatureCard icon={ShieldCheck} title="Kein Anwalt nötig" description="Impressum, Datenschutzerklärung und DSGVO-konforme Cookie-Banner werden automatisch generiert und aktuell gehalten." index={6} isDark={isDark} />
+            <FeatureCard icon={Globe} title="Deine eigene Domain" description="Verbinde deine bestehende Domain oder nutze eine kostenlose .pageblitz.de Subdomain. SSL-Zertifikat und Hosting sind inklusive." index={7} isDark={isDark} />
           </div>
         </div>
       </section>
@@ -1937,6 +1943,236 @@ export default function LandingPage() {
                 </motion.button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── KI-Chat Spotlight ─────────────────────────────────────────────── */}
+      <section className="py-32 relative overflow-hidden">
+        <GradientOrb className="w-[600px] h-[600px] bg-pink-500/10 -left-40 top-10" delay={0.2} />
+        <GradientOrb className="w-[400px] h-[400px] bg-purple-500/8 right-0 bottom-0" delay={0.4} />
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            {/* Left: Text */}
+            <div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6 border"
+                style={{ background: "rgba(233,30,140,0.12)", borderColor: "rgba(233,30,140,0.3)", color: "#e91e8c" }}
+              >
+                <Bot className="w-3.5 h-3.5" />
+                Add-on · nur 9,90 €/Monat
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.08, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+                className={`text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-6 leading-[1.1] transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
+              >
+                Dein 24/7<br />
+                <span style={{ color: "#e91e8c" }}>Vertriebsmitarbeiter.</span>
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.18, duration: 0.6 }}
+                className={`text-lg mb-8 leading-relaxed transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-500"}`}
+              >
+                Der KI-Chat beantwortet Kundenfragen automatisch, erfasst
+                Kontaktdaten und benachrichtigt dich per E-Mail – auch nachts,
+                am Wochenende und im Urlaub.
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.28, duration: 0.55 }}
+                className="space-y-3 mb-10"
+              >
+                {[
+                  { emoji: "💬", text: "Beantwortet Fragen zu Leistungen, Preisen & Öffnungszeiten" },
+                  { emoji: "📩", text: "Erfasst Name, E-Mail & Telefon von Interessenten automatisch" },
+                  { emoji: "🔔", text: "Du bekommst sofort eine E-Mail, wenn ein neuer Lead erfasst wurde" },
+                  { emoji: "📅", text: "Kombinierbar mit Terminbuchung – Kunden buchen direkt im Chat" },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -12 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.08 }}
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/8" : "bg-gray-50 border-gray-100"}`}
+                  >
+                    <span className="text-lg leading-none mt-0.5 shrink-0">{item.emoji}</span>
+                    <span className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/70" : "text-gray-700"}`}>{item.text}</span>
+                  </motion.div>
+                ))}
+              </motion.div>
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.55 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
+                className="btn-shimmer flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-medium text-white transition-all"
+                style={{ background: "#e91e8c", boxShadow: "0 8px 28px rgba(233,30,140,0.35)" }}
+              >
+                KI-Chat jetzt freischalten
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+              <p className={`mt-3 text-xs transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>
+                Im Basis-Paket wählbar · 7 Tage gratis testen
+              </p>
+            </div>
+
+            {/* Right: Mock chat preview */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              className="relative"
+            >
+              {/* Phone frame */}
+              <div className="relative mx-auto max-w-[320px]">
+                <div className="rounded-3xl overflow-hidden border border-white/15 shadow-2xl shadow-black/50" style={{ background: "#111118" }}>
+                  {/* Chat header */}
+                  <div className="flex items-center gap-3 px-4 py-3.5" style={{ background: "#e91e8c" }}>
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <MessageCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold text-sm">Müller Haartechnik</div>
+                      <div className="text-white/70 text-xs flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse" />
+                        Online · antwortet sofort
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Chat messages */}
+                  <div className="px-4 py-4 space-y-3 min-h-[320px]">
+                    {[
+                      { role: "assistant", text: "Hallo! 👋 Wie kann ich dir helfen?", delay: 0 },
+                      { role: "user", text: "Was kostet ein Herrenhaarschnitt?", delay: 0.4 },
+                      { role: "assistant", text: "Ein Herrenhaarschnitt kostet bei uns ab 28 €, mit Waschen & Styling 35 €. 💈 Soll ich direkt einen Termin für dich buchen?", delay: 0.9 },
+                      { role: "user", text: "Ja gerne, am Freitag?", delay: 1.5 },
+                      { role: "assistant", text: "Super! Wie ist dein Name und deine Handynummer? Dann können wir dich kurz bestätigen. 😊", delay: 2.0 },
+                    ].map((msg, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4 + msg.delay, duration: 0.4 }}
+                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                            msg.role === "user"
+                              ? "text-white rounded-br-sm"
+                              : "bg-white/10 text-white/85 rounded-bl-sm"
+                          }`}
+                          style={msg.role === "user" ? { background: "#e91e8c" } : {}}
+                        >
+                          {msg.text}
+                        </div>
+                      </motion.div>
+                    ))}
+
+                    {/* Lead captured indicator */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 2.8 }}
+                      className="flex items-center gap-2 bg-green-500/15 border border-green-500/30 rounded-xl px-3 py-2"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
+                      <span className="text-green-400 text-xs font-medium">Lead erfasst – E-Mail an dich gesendet!</span>
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Floating price badge */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, rotate: -6 }}
+                  whileInView={{ opacity: 1, scale: 1, rotate: -6 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 1.0, type: "spring", stiffness: 200 }}
+                  className="absolute -right-8 top-16 bg-white rounded-2xl px-4 py-3 shadow-xl border border-gray-100 text-center"
+                >
+                  <div className="text-2xl font-bold text-gray-900">9,90€</div>
+                  <div className="text-gray-500 text-xs">/Monat</div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Terminbuchung Highlight ────────────────────────────────────────── */}
+      <section className={`py-20 transition-colors duration-500 ${isDark ? "border-y border-white/5 bg-white/[0.015]" : "bg-gray-50"}`}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="w-20 h-20 rounded-3xl border flex items-center justify-center shrink-0"
+              style={{ background: "rgba(99,102,241,0.15)", borderColor: "rgba(99,102,241,0.3)" }}
+            >
+              <CalendarCheck className="w-10 h-10" style={{ color: "#6366f1" }} />
+            </motion.div>
+            <div className="flex-1 text-center md:text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-3 border"
+                style={{ background: "rgba(99,102,241,0.12)", borderColor: "rgba(99,102,241,0.3)", color: "#6366f1" }}
+              >
+                Add-on · nur 4,90 €/Monat
+              </motion.div>
+              <motion.h3
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.08 }}
+                className={`text-2xl md:text-3xl font-semibold tracking-tight mb-3 transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
+              >
+                Terminbuchung – direkt auf deiner Website.
+              </motion.h3>
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.14 }}
+                className={`text-base leading-relaxed transition-colors duration-500 ${isDark ? "text-white/55" : "text-gray-500"}`}
+              >
+                Kein Telefonieren, kein Hin-und-Her per WhatsApp. Kunden wählen einfach ihren Wunschtermin –
+                du siehst alles in deinem Kalender. Kostet weniger als eine Tasse Kaffee pro Monat.
+              </motion.p>
+            </div>
+            <motion.button
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
+              className={`btn-shimmer flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
+            >
+              Jetzt einrichten
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
           </div>
         </div>
       </section>
@@ -2090,10 +2326,9 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-10">
+                <div className="space-y-4 mb-8">
                   {[
                     "KI-generierte Website",
-                    "Eigene Domain nutzbar (Add-on)",
                     "SSL-Zertifikat",
                     "DSGVO-konformer Datenschutz & Impressum",
                     "Premium Cloud Hosting",
@@ -2105,6 +2340,28 @@ export default function LandingPage() {
                       <span className="text-white/70 text-sm">{feature}</span>
                     </div>
                   ))}
+                </div>
+
+                {/* Add-ons */}
+                <div className={`rounded-2xl p-5 mb-8 border transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/8" : "bg-gray-50 border-gray-200"}`}>
+                  <p className={`text-xs font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-400"}`}>Optionale Add-ons</p>
+                  <div className="space-y-3">
+                    {[
+                      { icon: "🤖", label: "KI-Chat Assistent", price: "+9,90 €/Mo." },
+                      { icon: "📅", label: "Terminbuchung", price: "+4,90 €/Mo." },
+                      { icon: "✉️", label: "Kontaktformular", price: "+3,90 €/Mo." },
+                      { icon: "🖼️", label: "Bildergalerie", price: "+3,90 €/Mo." },
+                      { icon: "🍽️", label: "Speisekarte", price: "+3,90 €/Mo." },
+                      { icon: "💶", label: "Preisliste", price: "+3,90 €/Mo." },
+                    ].map(({ icon, label, price }) => (
+                      <div key={label} className="flex items-center justify-between">
+                        <span className={`text-sm transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}>
+                          <span className="mr-2">{icon}</span>{label}
+                        </span>
+                        <span className={`text-xs font-medium transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-400"}`}>{price}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <Button
@@ -2252,6 +2509,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Landing Page Chat Widget */}
+      <LandingPageChatWidget />
 
       {/* Footer */}
       <footer className="py-12 border-t border-white/5">
