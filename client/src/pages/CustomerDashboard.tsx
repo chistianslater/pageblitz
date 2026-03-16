@@ -891,11 +891,15 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
+  const utils = trpc.useUtils();
+
   const updateAddons = trpc.customer.updateAddons.useMutation({
     onSuccess: () => {
       setSaveStatus("saved");
       setLastSaved(new Date());
       setSaving(false);
+      // Invalidate onboarding cache so the next mount gets fresh values
+      utils.customer.getOnboardingData.invalidate({ websiteId });
       onUpdate();
     },
     onError: () => {
@@ -906,24 +910,6 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   });
   // Keep ref in sync on every render — safe since refs are just mutable containers
   updateAddonsRef.current = updateAddons;
-
-  // One-time sync: onboarding data loads asynchronously, so useState initial values
-  // are often `false`. Once onboarding arrives, patch the toggle states once.
-  const hasInitializedFromOnboarding = useRef(false);
-  useEffect(() => {
-    if (!onboarding || hasInitializedFromOnboarding.current) return;
-    hasInitializedFromOnboarding.current = true;
-    // Reset the auto-save guard so the state patch doesn't trigger an unnecessary save
-    hasInitialSavedRef.current = false;
-    setAddons(prev => ({
-      ...prev,
-      gallery: { ...prev.gallery, enabled: !!onboarding.addOnGallery },
-      menu: { ...prev.menu, enabled: !!onboarding.addOnMenu },
-      pricelist: { ...prev.pricelist, enabled: !!onboarding.addOnPricelist },
-      contactForm: !!onboarding.addOnContactForm,
-      contactFormFields: onboarding.contactFormFields || prev.contactFormFields,
-    }));
-  }, [onboarding]);
 
   // Auto-save effect - watches for changes in addons
   useEffect(() => {
@@ -3361,13 +3347,19 @@ export default function CustomerDashboard() {
                   <Sparkles className="w-4 h-4 text-pink-400" />
                   Add-ons verwalten
                 </h2>
-                <AddonsEditor
-                  websiteId={website.id}
-                  website={website}
-                  onboarding={onboardingData}
-                  onUpdate={handleUpdate}
-                  purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
-                />
+                {onboardingData !== undefined ? (
+                  <AddonsEditor
+                    websiteId={website.id}
+                    website={website}
+                    onboarding={onboardingData}
+                    onUpdate={handleUpdate}
+                    purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                  </div>
+                )}
               </div>
               <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
                 <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
