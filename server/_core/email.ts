@@ -308,6 +308,67 @@ export const emailTemplates = {
 };
 
 /**
+ * Send Magic Link login email
+ */
+export async function sendMagicLinkEmail(to: string, magicUrl: string): Promise<{ success: boolean; error?: string }> {
+  return sendEmail({
+    to,
+    from: "Pageblitz <noreply@pageblitz.de>",
+    subject: "Dein Login-Link für Pageblitz",
+    html: `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f5; margin: 0; padding: 32px 16px;">
+  <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <!-- Header -->
+    <div style="background: #18181b; padding: 28px 32px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+        <div style="width: 32px; height: 32px; background: #ffffff; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">
+          <span style="font-size: 18px; line-height: 1;">⚡</span>
+        </div>
+        <span style="color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: -0.3px;">Page<span style="color: #818cf8;">blitz</span></span>
+      </div>
+      <p style="color: #a1a1aa; font-size: 12px; margin: 8px 0 0 0; text-transform: uppercase; letter-spacing: 0.08em;">Login-Link</p>
+    </div>
+    <!-- Body -->
+    <div style="padding: 32px;">
+      <h2 style="color: #18181b; font-size: 20px; font-weight: 600; margin: 0 0 12px 0;">Willkommen zurück! 👋</h2>
+      <p style="color: #52525b; font-size: 15px; line-height: 1.6; margin: 0 0 28px 0;">
+        Klicke auf den Button unten, um dich sicher in deinen Pageblitz-Account einzuloggen.<br>
+        Kein Passwort nötig.
+      </p>
+      <!-- CTA Button -->
+      <div style="text-align: center; margin-bottom: 28px;">
+        <a href="${magicUrl}" style="display: inline-block; background: #4f46e5; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 10px; letter-spacing: 0.01em;">
+          Jetzt einloggen →
+        </a>
+      </div>
+      <!-- Security note -->
+      <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px;">
+        <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+          🔒 Dieser Link ist <strong>15 Minuten gültig</strong> und kann nur <strong>einmal verwendet</strong> werden.<br>
+          Falls du diesen Login nicht angefordert hast, kannst du diese E-Mail ignorieren.
+        </p>
+      </div>
+      <!-- Fallback URL -->
+      <p style="color: #9ca3af; font-size: 11px; margin: 20px 0 0 0; word-break: break-all;">
+        Link funktioniert nicht? Kopiere diese URL in deinen Browser:<br>
+        <span style="color: #6366f1;">${magicUrl}</span>
+      </p>
+    </div>
+    <!-- Footer -->
+    <div style="background: #f9fafb; border-top: 1px solid #f0f0f0; padding: 16px 32px; text-align: center;">
+      <p style="color: #9ca3af; font-size: 11px; margin: 0;">
+        © ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de" style="color: #9ca3af;">pageblitz.de</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`,
+  });
+}
+
+/**
  * Send lead nurturing email based on capture status
  */
 export async function sendLeadEmail({

@@ -8,6 +8,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerAdminAuthRoutes } from "./adminAuth";
 import { registerGoogleAuthRoutes } from "./googleAuth";
+import { registerMagicLinkAuthRoutes } from "./magicLinkAuth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./static";
@@ -59,6 +60,8 @@ async function startServer() {
   registerGoogleAuthRoutes(app);
   // Simple password login for self-hosted admin
   registerAdminAuthRoutes(app);
+  // Passwordless Magic-Link login for customers
+  registerMagicLinkAuthRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

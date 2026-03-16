@@ -1,5 +1,6 @@
-import { eq, desc, sql, and, like } from "drizzle-orm";
+import { eq, desc, sql, and, like, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import crypto from "crypto";
 import {
   InsertUser, users,
   businesses, InsertBusiness, Business,
@@ -10,6 +11,7 @@ import {
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
   generationJobs, InsertGenerationJob, GenerationJob,
   contactSubmissions, InsertContactSubmission, ContactSubmission,
+  magicLinkTokens,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -646,5 +648,48 @@ export async function countRecentSubmissionsByIp(ip: string, sinceMs: number): P
   const result = await db.select({ count: sql<number>`count(*)` })
     .from(contactSubmissions)
     .where(and(eq(contactSubmissions.ipAddress, ip), sql`createdAt > ${since}`));
+  return Number(result[0]?.count ?? 0);
+}
+
+// ── MAGIC LINK TOKENS ────────────────────────────────────────────────────────
+
+/** Erstellt einen sicheren Token, speichert den SHA-256-Hash und gibt den Klartext zurück. */
+export async function createMagicLinkToken(email: string, redirectUrl: string): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const token = crypto.randomBytes(32).toString("hex"); // 64-char hex, kryptografisch sicher
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 Minuten
+  await db.insert(magicLinkTokens).values({ tokenHash, email, redirectUrl, expiresAt });
+  return token;
+}
+
+/** Sucht einen Token anhand des Klartexts (wird intern gehasht). */
+export async function getMagicLinkToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const [row] = await db.select().from(magicLinkTokens)
+    .where(eq(magicLinkTokens.tokenHash, tokenHash)).limit(1);
+  return row ?? null;
+}
+
+/** Markiert einen Token als verbraucht (single-use). */
+export async function consumeMagicLinkToken(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(magicLinkTokens)
+    .set({ usedAt: new Date() })
+    .where(eq(magicLinkTokens.id, id));
+}
+
+/** Rate-Limit: Anzahl der Tokens einer E-Mail in den letzten 15 Minuten. */
+export async function countRecentMagicLinksByEmail(email: string): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - 15 * 60 * 1000);
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(magicLinkTokens)
+    .where(and(eq(magicLinkTokens.email, email), gte(magicLinkTokens.createdAt, since)));
   return Number(result[0]?.count ?? 0);
 }
