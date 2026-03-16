@@ -2733,6 +2733,9 @@ export default function CustomerDashboard() {
 
   const unreadCount = submissionsData?.unreadCount ?? 0;
 
+  const aiChatEnabled = !!(website as any).addOnAiChat;
+  const bookingEnabled = !!(website as any).addOnBooking;
+
   const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
@@ -2741,8 +2744,8 @@ export default function CustomerDashboard() {
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
     { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
     { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
-    { id: "leads", label: "Chat-Leads", icon: <Users className="w-4 h-4" /> },
-    { id: "appointments", label: "Termine", icon: <CalendarDays className="w-4 h-4" /> },
+    ...(aiChatEnabled ? [{ id: "leads" as Tab, label: "Chat-Leads", icon: <Users className="w-4 h-4" /> }] : []),
+    ...(bookingEnabled ? [{ id: "appointments" as Tab, label: "Termine", icon: <CalendarDays className="w-4 h-4" /> }] : []),
     { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
 
@@ -2774,6 +2777,10 @@ export default function CustomerDashboard() {
 
   const gmbPhotos = (onboardingData?.photoUrls as string[] | null) || [];
   const stockPhotos = imageSuggestions?.stockPhotos || [];
+
+  // Falls aktiver Tab durch deaktiviertes Add-on wegfällt → zurück zu Add-ons
+  if (activeTab === "leads" && !aiChatEnabled) setActiveTab("addons");
+  if (activeTab === "appointments" && !bookingEnabled) setActiveTab("addons");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
