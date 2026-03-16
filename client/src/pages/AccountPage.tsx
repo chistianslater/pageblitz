@@ -230,9 +230,9 @@ export default function AccountPage() {
                 <div className="w-16 h-16 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
                   {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <div>
-                  <h2 className="text-white font-semibold">{user.name || "Unbenannt"}</h2>
-                  <p className="text-slate-400 text-sm">{user.email}</p>
+                <div className="min-w-0">
+                  <h2 className="text-white font-semibold truncate">{user.name || "Unbenannt"}</h2>
+                  <p className="text-slate-400 text-sm truncate">{user.email}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-500">
