@@ -4602,7 +4602,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         <div ref={messagesEndRef} />
         </div>
         {/* Input area – sticky at bottom */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours"].includes(currentStep) && (
+          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours", "heroPhoto", "aboutPhoto"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (

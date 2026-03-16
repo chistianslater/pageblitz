@@ -92,6 +92,7 @@ export default function StockPhotoSearch({
                 onClick={() => onSelect(photo.url)}
                 title={`Foto von ${photo.photographer} auf Unsplash`}
                 className="group relative aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all focus:outline-none focus:ring-blue-500"
+                style={{ touchAction: "manipulation" }}
               >
                 <img
                   src={photo.thumb}
