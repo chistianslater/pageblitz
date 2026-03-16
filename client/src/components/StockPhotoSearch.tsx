@@ -60,7 +60,7 @@ export default function StockPhotoSearch({
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Stichwort eingeben, z.B. „Friseur", „Büro", „Restaurant"…"
+          placeholder='Stichwort eingeben, z.B. "Friseur", "Büro", "Restaurant"...'
           className="w-full bg-slate-700/60 text-white text-sm pl-9 pr-4 py-2.5 rounded-xl border border-slate-600 outline-none focus:border-blue-500 placeholder-slate-500 transition-colors"
         />
         {isFetching && (
