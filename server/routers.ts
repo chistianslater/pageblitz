@@ -52,17 +52,26 @@ const PRICING = {
     monthly: 2490,  // 24,90 €/Monat (monatliche Abrechnung)
     yearly:  1990,  // 19,90 €/Monat (jährliche Abrechnung, monatlich abgebucht)
   },
-  addon: 390,       // 3,90 € pro Add-on (unabhängig vom Billing-Interval)
+  addon: 390,         // 3,90 € pro Standard-Add-on
+  addonAiChat: 990,   // 9,90 € KI-Chat
+  addonBooking: 490,  // 4,90 € Terminbuchung
 } as const;
 
-// Add-on-Typen für Stripe Checkout (Extra-Seite folgt später zu 6,90 €)
-type AddOnKey = "contactForm" | "gallery" | "menu" | "pricelist";
+type AddOnKey = "contactForm" | "gallery" | "menu" | "pricelist" | "aiChat" | "booking";
 const ADDON_NAMES: Record<AddOnKey, string> = {
   contactForm: "Kontaktformular",
   gallery:     "Bildergalerie",
   menu:        "Speisekarte",
   pricelist:   "Preisliste",
+  aiChat:      "KI-Chat",
+  booking:     "Terminbuchung",
 };
+
+function addonPrice(key: AddOnKey): number {
+  if (key === "aiChat")   return PRICING.addonAiChat;
+  if (key === "booking")  return PRICING.addonBooking;
+  return PRICING.addon;
+}
 
 function slugify(text: string): string {
   return text.toLowerCase()
@@ -3715,7 +3724,7 @@ Kontext: ${input.context}`,
     purchaseAddon: protectedProcedure
       .input(z.object({
         websiteId: z.number(),
-        addonKey: z.enum(["contactForm", "gallery", "menu", "pricelist"]),
+        addonKey: z.enum(["contactForm", "gallery", "menu", "pricelist", "aiChat", "booking"]),
       }))
       .mutation(async ({ input, ctx }) => {
         const rows = await getWebsitesByUserId(ctx.user.id);
@@ -3734,17 +3743,15 @@ Kontext: ${input.context}`,
 
         const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
         if (stripeSubscriptionId) {
-          // Step 1: create a standalone price with inline product
-          // tax_behavior "inclusive" = Preis ist Brutto inkl. MwSt., Stripe rechnet NICHTS drauf
+          // tax_behavior "inclusive" = Preis ist Brutto inkl. MwSt.
           const price = await stripe.prices.create({
             currency: "eur",
-            unit_amount: PRICING.addon,
+            unit_amount: addonPrice(input.addonKey),
             recurring: { interval: "month" },
             product_data: { name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}` },
             tax_behavior: "inclusive",
           } as any);
 
-          // Step 2: add the price to the existing subscription (proration charged immediately)
           await stripe.subscriptionItems.create({
             subscription: stripeSubscriptionId,
             price: price.id,
@@ -3756,6 +3763,17 @@ Kontext: ${input.context}`,
         // Update addOns record in DB
         const newAddOns = { ...currentAddOns, [input.addonKey]: true };
         await updateSubscription(row.subscription.id, { addOns: newAddOns, updatedAt: Date.now() });
+
+        // Auto-enable the feature on the website
+        const _db = await getDb();
+        if (_db) {
+          if (input.addonKey === "aiChat") {
+            await _db.update(generatedWebsites).set({ addOnAiChat: true }).where(eqDrizzle(generatedWebsites.id, input.websiteId));
+          } else if (input.addonKey === "booking") {
+            await _db.update(generatedWebsites).set({ addOnBooking: true }).where(eqDrizzle(generatedWebsites.id, input.websiteId));
+          }
+        }
+
         return { success: true };
       }),
 
