@@ -907,6 +907,24 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   // Keep ref in sync on every render — safe since refs are just mutable containers
   updateAddonsRef.current = updateAddons;
 
+  // One-time sync: onboarding data loads asynchronously, so useState initial values
+  // are often `false`. Once onboarding arrives, patch the toggle states once.
+  const hasInitializedFromOnboarding = useRef(false);
+  useEffect(() => {
+    if (!onboarding || hasInitializedFromOnboarding.current) return;
+    hasInitializedFromOnboarding.current = true;
+    // Reset the auto-save guard so the state patch doesn't trigger an unnecessary save
+    hasInitialSavedRef.current = false;
+    setAddons(prev => ({
+      ...prev,
+      gallery: { ...prev.gallery, enabled: !!onboarding.addOnGallery },
+      menu: { ...prev.menu, enabled: !!onboarding.addOnMenu },
+      pricelist: { ...prev.pricelist, enabled: !!onboarding.addOnPricelist },
+      contactForm: !!onboarding.addOnContactForm,
+      contactFormFields: onboarding.contactFormFields || prev.contactFormFields,
+    }));
+  }, [onboarding]);
+
   // Auto-save effect - watches for changes in addons
   useEffect(() => {
     // Skip initial render
