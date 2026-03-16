@@ -2448,8 +2448,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
             const currentIdx = Math.max(0, dynamicStepOrder.indexOf(currentStep));
             const pct = totalSteps > 0 ? Math.round((currentIdx / totalSteps) * 100) : 0;
+            // Last answered user message – tapping ← re-opens its edit UI
+            const lastEditableMsg = [...messages].reverse().find(m => m.role === "user" && m.step);
             return (
-              <div className="lg:hidden w-full px-4 py-2.5 border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0 flex items-center gap-3">
+              <div className="lg:hidden w-full px-3 py-2 border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0 flex items-center gap-2">
+                {/* Back button – visible whenever there is a previous step to edit */}
+                {lastEditableMsg && !inPlaceEditId && !isTyping ? (
+                  <button
+                    onClick={() => {
+                      setInPlaceEditId(lastEditableMsg.id);
+                      setInPlaceEditValue(lastEditableMsg.content);
+                    }}
+                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 active:bg-white/20 text-slate-300 transition-colors"
+                    style={{ touchAction: "manipulation" }}
+                    title="Vorherigen Schritt bearbeiten"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <div className="w-8 flex-shrink-0" /> /* placeholder to keep layout stable */
+                )}
                 <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
@@ -2644,10 +2662,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             setInPlaceEditId(msg.id);
                             setInPlaceEditValue(msg.content);
                           }}
-                          className="w-6 h-6 rounded-md bg-slate-600/50 hover:bg-slate-500/50 flex items-center justify-center transition-colors flex-shrink-0"
+                          className="w-8 h-8 rounded-md bg-slate-600/50 hover:bg-slate-500/50 active:bg-slate-500/70 flex items-center justify-center transition-colors flex-shrink-0"
+                          style={{ touchAction: "manipulation" }}
                           title="Antwort bearbeiten"
                         >
-                          <Edit2 className="w-3.5 h-3.5 text-slate-300 hover:text-white" />
+                          <Edit2 className="w-3.5 h-3.5 text-slate-300" />
                         </button>
                       )}
                     </>
