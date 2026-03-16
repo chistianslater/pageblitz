@@ -2336,16 +2336,33 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {previewToken ? `pageblitz.de/preview/${previewToken}` : "deine-website.pageblitz.de"}
               </span>
             </div>
+            {/* Desktop close button */}
             <button
               onClick={() => setShowFullPreview(false)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex-shrink-0"
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex-shrink-0"
             >
               <X className="w-3 h-3" /> Schließen
+            </button>
+            {/* Mobile close button in header (larger tap target) */}
+            <button
+              onClick={() => setShowFullPreview(false)}
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-colors flex-shrink-0"
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
           {/* Scrollable website – renders the same live data as the right-side preview
               so all active add-ons (gallery, contact form, …) are always visible */}
-          <div className="flex-1 overflow-auto bg-white">
+          <div className="flex-1 overflow-auto bg-white relative">
+            {/* Mobile sticky close bar at bottom */}
+            <div className="lg:hidden sticky bottom-0 left-0 right-0 z-10 p-3 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/60">
+              <button
+                onClick={() => setShowFullPreview(false)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" /> Zurück zum Chat
+              </button>
+            </div>
             <WebsiteRenderer
               websiteData={liveWebsiteData}
               businessCategory={data.businessCategory || (business as any)?.category || undefined}
