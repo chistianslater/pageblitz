@@ -481,7 +481,7 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
   const cardBorderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
   const serviceIconSet = getCategoryIconSet(websiteData?.businessCategory);
   return (
-    <section id="leistungen" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
+    <section id="services" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-16 md:mb-20">
           <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
@@ -529,7 +529,7 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
   const dividerColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
   const hoverBgColor = dark ? 'rgba(255,255,255,0.05)' : '#f9fafb';
   return (
-    <section id="leistungen" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
+    <section id="services" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-8">
           <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
@@ -568,7 +568,7 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   // Don't render if no about content
   if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
-    <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+    <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -604,7 +604,7 @@ function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   // Don't render if no about content
   if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
-    <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-900 text-white">
+    <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-900 text-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-[55%_45%] gap-16 items-center">
         <div>
           <Skeleton isLoading={isLoading} className="w-full h-32 mb-10">
@@ -1010,7 +1010,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   };
 
   return (
-    <section id="kontakt" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bgClass} ${topBorder}`} style={{ ...bgStyle, ...topBorderStyle, fontFamily: bodyFont }}>
+    <section id="contact" className={`py-24 md:py-32 px-6 scroll-mt-20 ${bgClass} ${topBorder}`} style={{ ...bgStyle, ...topBorderStyle, fontFamily: bodyFont }}>
       <div className="max-w-7xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-48 h-10 mb-16">
           <h2 className={`mb-16 text-center ${textMain}`} style={{ ...hs, ...textMainStyle, fontSize: getSectionHeadlineSize(headlineSize, 'contact') }}>Kontakt</h2>
@@ -2369,7 +2369,7 @@ export function PremiumLayoutV2({
 
       <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
         {services.length > 0 && (
-          <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20">
+          <section id="services" className="py-24 md:py-32 px-6 scroll-mt-20">
             <div className="max-w-7xl mx-auto">
               <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[6rem] mb-24">
                 <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="mb-0">
@@ -2402,7 +2402,7 @@ export function PremiumLayoutV2({
       </div>
 
       <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
-        <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-[#F7F9FC] scroll-mt-20">
+        <section id="about" className="py-24 md:py-32 px-6 bg-[#F7F9FC] scroll-mt-20">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
             <div>
               <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
@@ -2845,7 +2845,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       {/* SERVICES */}
       <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
         {services.length > 0 && (
-          <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-white">
+          <section id="services" className="py-24 md:py-32 px-6 scroll-mt-20 bg-white">
             <div className="max-w-7xl mx-auto">
               <Skeleton isLoading={isLoading} className="w-full max-w-md min-h-[5rem] mb-16">
                 <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, fontStyle: 'italic', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="mb-0">
@@ -2884,7 +2884,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       {/* ABOUT */}
       <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
-        <section id="ueber-uns" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
+        <section id="about" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <Skeleton isLoading={isLoading} className="w-full min-h-[8rem] mb-8">
@@ -3052,7 +3052,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       {/* SERVICES — Numbered ruled list */}
       <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
         {services.length > 0 && (
-          <section id="leistungen" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
+          <section id="services" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-50">
             <div className="max-w-7xl mx-auto">
               <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[5rem] mb-16">
                 <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.05em', fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
@@ -3090,7 +3090,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       {/* ABOUT */}
       <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
-        <section id="ueber-uns" className="py-24 md:py-32 px-6 scroll-mt-20">
+        <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
             <div>
               {!isLoading && <div className="w-12 h-0.5 mb-8" style={{ backgroundColor: primaryColor }} />}

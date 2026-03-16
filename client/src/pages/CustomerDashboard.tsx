@@ -387,6 +387,7 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
   const [fields, setFields] = useState<FormField[]>(initialFields || defaultFields);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [cfDragIdx, setCfDragIdx] = useState<number | null>(null);
 
   // Update fields when initialFields changes
   useEffect(() => {
@@ -456,28 +457,27 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
 
       <div className="space-y-3">
         {fields.map((field, idx) => (
-          <div key={field.id} className="bg-slate-800/60 rounded-xl p-4 space-y-3">
+          <div
+            key={field.id}
+            draggable
+            onDragStart={() => setCfDragIdx(idx)}
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (cfDragIdx === null || cfDragIdx === idx) return;
+              const nf = [...fields];
+              const item = nf[cfDragIdx];
+              nf.splice(cfDragIdx, 1);
+              nf.splice(idx, 0, item);
+              setFields(nf);
+              setCfDragIdx(idx);
+            }}
+            onDragEnd={() => setCfDragIdx(null)}
+            className={`rounded-xl p-4 space-y-3 border transition-all cursor-move ${cfDragIdx === idx ? "opacity-50 border-blue-500/50 ring-1 ring-blue-500/20 bg-slate-700/60" : "bg-slate-800/60 border-transparent"}`}
+          >
             <div className="flex items-center gap-2">
-              {/* Up / Down reorder buttons */}
-              <div className="flex flex-col gap-0.5">
-                <button
-                  onClick={() => moveField(idx, "up")}
-                  disabled={idx === 0}
-                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-20"
-                  title="Nach oben"
-                >
-                  <ChevronUp className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => moveField(idx, "down")}
-                  disabled={idx === fields.length - 1}
-                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors disabled:opacity-20"
-                  title="Nach unten"
-                >
-                  <ChevronDown className="w-3 h-3" />
-                </button>
+              <div className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 flex-shrink-0">
+                <GripVertical className="w-4 h-4" />
               </div>
-              <span className="text-slate-500 text-xs font-mono">#{idx + 1}</span>
               <input
                 type="text"
                 value={field.label}
@@ -847,6 +847,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [activeDetail, setActiveDetail] = useState<string | null>(null);
   const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
+  const [menuDragState, setMenuDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
+  const [priceDragState, setPriceDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
   // Stable ref — initialized null here, assigned after updateAddons is declared below
@@ -1106,6 +1108,21 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
   };
 
+  const handleMenuItemDragStart = (catIdx: number, itemIdx: number) => setMenuDragState({ catIdx, itemIdx });
+  const handleMenuItemDragOver = (e: React.DragEvent, catIdx: number, itemIdx: number) => {
+    e.preventDefault();
+    if (!menuDragState || menuDragState.catIdx !== catIdx || menuDragState.itemIdx === itemIdx) return;
+    const newCategories = [...addons.menu.categories];
+    const items = [...(newCategories[catIdx].items || [])];
+    const dragged = items[menuDragState.itemIdx];
+    items.splice(menuDragState.itemIdx, 1);
+    items.splice(itemIdx, 0, dragged);
+    newCategories[catIdx] = { ...newCategories[catIdx], items };
+    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+    setMenuDragState({ catIdx, itemIdx });
+  };
+  const handleMenuItemDragEnd = () => setMenuDragState(null);
+
   // Pricelist category functions
   const addPriceCategory = () => {
     setAddons({
@@ -1153,6 +1170,21 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     };
     setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
   };
+
+  const handlePriceItemDragStart = (catIdx: number, itemIdx: number) => setPriceDragState({ catIdx, itemIdx });
+  const handlePriceItemDragOver = (e: React.DragEvent, catIdx: number, itemIdx: number) => {
+    e.preventDefault();
+    if (!priceDragState || priceDragState.catIdx !== catIdx || priceDragState.itemIdx === itemIdx) return;
+    const newCategories = [...addons.pricelist.categories];
+    const items = [...(newCategories[catIdx].items || [])];
+    const dragged = items[priceDragState.itemIdx];
+    items.splice(priceDragState.itemIdx, 1);
+    items.splice(itemIdx, 0, dragged);
+    newCategories[catIdx] = { ...newCategories[catIdx], items };
+    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+    setPriceDragState({ catIdx, itemIdx });
+  };
+  const handlePriceItemDragEnd = () => setPriceDragState(null);
 
   // ── helper to render a consistent toggle switch ───────────────────────────
   const Toggle = ({ checked, onChange, color }: { checked: boolean; onChange: () => void; color: string }) => (
@@ -1240,7 +1272,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                     </div>
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
-                        <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                        <div
+                          key={itemIdx}
+                          draggable
+                          onDragStart={() => handleMenuItemDragStart(catIdx, itemIdx)}
+                          onDragOver={(e) => handleMenuItemDragOver(e, catIdx, itemIdx)}
+                          onDragEnd={handleMenuItemDragEnd}
+                          className={`flex gap-2 items-center rounded-lg p-3 border cursor-move transition-all ${menuDragState?.catIdx === catIdx && menuDragState?.itemIdx === itemIdx ? "opacity-50 border-amber-500/50 ring-1 ring-amber-500/20 bg-slate-800/40" : "bg-slate-800/40 border-slate-700/50"}`}
+                        >
+                          <div className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 flex-shrink-0">
+                            <GripVertical className="w-3.5 h-3.5" />
+                          </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
                               <input type="text" value={item.name || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Gerichtname" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
@@ -1248,7 +1290,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                             </div>
                             <input type="text" value={item.description || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
                           </div>
-                          <button onClick={() => removeMenuItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => removeMenuItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       ))}
                       <button onClick={() => addMenuItem(catIdx)} className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-1"><Plus className="w-4 h-4" />Gericht hinzufügen</button>
@@ -1279,7 +1321,17 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                     </div>
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
-                        <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                        <div
+                          key={itemIdx}
+                          draggable
+                          onDragStart={() => handlePriceItemDragStart(catIdx, itemIdx)}
+                          onDragOver={(e) => handlePriceItemDragOver(e, catIdx, itemIdx)}
+                          onDragEnd={handlePriceItemDragEnd}
+                          className={`flex gap-2 items-center rounded-lg p-3 border cursor-move transition-all ${priceDragState?.catIdx === catIdx && priceDragState?.itemIdx === itemIdx ? "opacity-50 border-emerald-500/50 ring-1 ring-emerald-500/20 bg-slate-800/40" : "bg-slate-800/40 border-slate-700/50"}`}
+                        >
+                          <div className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 flex-shrink-0">
+                            <GripVertical className="w-3.5 h-3.5" />
+                          </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
                               <input type="text" value={item.name || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Leistung" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
@@ -1287,7 +1339,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                             </div>
                             <input type="text" value={item.description || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
                           </div>
-                          <button onClick={() => removePriceItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => removePriceItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       ))}
                       <button onClick={() => addPriceItem(catIdx)} className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-1"><Plus className="w-4 h-4" />Preis hinzufügen</button>
