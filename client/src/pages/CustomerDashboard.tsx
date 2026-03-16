@@ -2964,7 +2964,7 @@ export default function CustomerDashboard() {
             </div>
             <div className="overflow-auto max-h-[calc(100vh-280px)]">
               {websiteData ? (
-                <div key={previewKey} className="transform-gpu origin-top" style={{ transform: "scale(0.85)", transformOrigin: "top left", width: "117.65%", height: "117.65%" }}>
+                <div key={previewKey} style={{ zoom: 0.85 }}>
                   <WebsiteRenderer
                     websiteData={websiteData}
                     colorScheme={colorScheme}
