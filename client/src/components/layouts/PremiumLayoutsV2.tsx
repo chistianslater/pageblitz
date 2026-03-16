@@ -125,6 +125,7 @@ const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 
       'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(2.5rem, 3.5vw, 4.5rem)', // HeroVariantA
       'clamp(3rem, 5vw, 6rem)':        'clamp(3rem, 5vw, 6rem)',        // HeroVariantB
       'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(2.8rem, 4.5vw, 6rem)',   // HeroVariantC
+      'clamp(2rem, 5vw, 5rem)':        'clamp(2rem, 5vw, 5rem)',        // Flux
     },
     medium: {
       'clamp(3rem, 8vw, 7rem)': 'clamp(2.5rem, 6vw, 5rem)',
@@ -133,6 +134,7 @@ const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 
       'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(2rem, 2.8vw, 3.5rem)',
       'clamp(3rem, 5vw, 6rem)':        'clamp(2.4rem, 4vw, 5rem)',
       'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(2.2rem, 3.5vw, 4.5rem)',
+      'clamp(2rem, 5vw, 5rem)':        'clamp(1.6rem, 4vw, 4rem)',      // Flux
     },
     small: {
       'clamp(3rem, 8vw, 7rem)': 'clamp(2rem, 5vw, 4rem)',
@@ -141,6 +143,7 @@ const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 
       'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(1.8rem, 2.2vw, 2.8rem)',
       'clamp(3rem, 5vw, 6rem)':        'clamp(2rem, 3.2vw, 4rem)',
       'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(1.8rem, 2.8vw, 3.8rem)',
+      'clamp(2rem, 5vw, 5rem)':        'clamp(1.3rem, 3vw, 3.2rem)',    // Flux
     },
   };
   return sizeMap[headlineSize]?.[baseSize] || baseSize;
@@ -4082,7 +4085,7 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           <Skeleton isLoading={isLoading} className="min-h-[14rem] mb-8">
             <motion.h1 initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ duration:1, delay:0.1 }}
               style={{ fontFamily:DISPLAY, fontWeight:800, lineHeight:1.0,
-                fontSize:getHeadlineFontSize(headlineSize,'clamp(3rem, 8vw, 7rem)'),
+                fontSize:getHeadlineFontSize(headlineSize,'clamp(2rem, 5vw, 5rem)'),
                 letterSpacing:'-0.02em', textTransform:'uppercase' as const, color:TXT,
                 textShadow:`0 0 60px rgba(212,168,67,0.22)`,
                 overflowWrap:'break-word', wordBreak:'break-word' }}>
