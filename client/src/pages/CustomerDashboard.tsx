@@ -891,15 +891,11 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
-  const utils = trpc.useUtils();
-
   const updateAddons = trpc.customer.updateAddons.useMutation({
     onSuccess: () => {
       setSaveStatus("saved");
       setLastSaved(new Date());
       setSaving(false);
-      // Invalidate onboarding cache so the next mount gets fresh values
-      utils.customer.getOnboardingData.invalidate({ websiteId });
       onUpdate();
     },
     onError: () => {
