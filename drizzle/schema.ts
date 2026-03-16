@@ -153,6 +153,13 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnPricelist: boolean("addOnPricelist").default(false),
   addOnPricelistData: json("addOnPricelistData"), // { categories: [{ name, items: [{ name, price }] }] }
   addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
+  // AI Chat Add-on
+  addOnAiChat: boolean("addOnAiChat").default(false),
+  addOnCalendly: boolean("addOnCalendly").default(false),
+  calendlyUrl: varchar("calendlyUrl", { length: 512 }),
+  chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),
+  chatUsageCount: int("chatUsageCount").default(0),
+  chatUsageResetAt: timestamp("chatUsageResetAt"),
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
   // Section visibility & order (from hideSections drag-and-drop step)
@@ -252,3 +259,20 @@ export const magicLinkTokens = mysqlTable("magic_link_tokens", {
 });
 
 export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
+
+// ── AI Chat Leads ────────────────────────────────────────────────────────────
+export const chatLeads = mysqlTable("chat_leads", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull(),
+  visitorName: varchar("visitorName", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  summary: text("summary"),          // KI-Zusammenfassung des Anliegens
+  notifiedAt: timestamp("notifiedAt"), // wann Email an Inhaber gesendet
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ChatLead = typeof chatLeads.$inferSelect;
+export type InsertChatLead = typeof chatLeads.$inferInsert;

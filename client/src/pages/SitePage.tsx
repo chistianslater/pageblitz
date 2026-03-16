@@ -3,6 +3,7 @@ import { useParams } from "wouter";
 import { useEffect } from "react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import CookieBanner from "@/components/CookieBanner";
+import ChatWidget from "@/components/ChatWidget";
 import { Loader2, AlertCircle } from "lucide-react";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
@@ -66,6 +67,7 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
   const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
   const business = data.business;
+  const w = data.website as any;
 
   return (
     <>
@@ -80,7 +82,17 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
         openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
         slug={effectiveSlug}
       />
-      <CookieBanner slug={effectiveSlug} primaryColor={colorScheme.primary} />
+      <CookieBanner slug={effectiveSlug} primaryColor={colorScheme?.primary} />
+      {w.addOnAiChat && (
+        <ChatWidget
+          slug={effectiveSlug}
+          primaryColor={colorScheme?.primary || "#2563eb"}
+          businessName={websiteData?.businessName || business?.name || "Assistent"}
+          welcomeMessage={w.chatWelcomeMessage || undefined}
+          calendlyUrl={w.calendlyUrl || undefined}
+          addOnCalendly={!!w.addOnCalendly}
+        />
+      )}
     </>
   );
 }

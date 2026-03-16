@@ -10,7 +10,7 @@ import type { WebsiteData, ColorScheme } from "@shared/types";
 import { FONT_OPTIONS } from "@shared/layoutConfig";
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads";
 
 interface SectionConfig {
   type: string;
@@ -1899,6 +1899,246 @@ function StepChip({ done, label, onClick }: { done: boolean; label: string; onCl
   );
 }
 
+// ── AI Chat Add-on Section ───────────────────────────
+function AiChatAddonSection({ websiteId, website, onUpdate }: { websiteId: number; website: any; onUpdate: () => void }) {
+  const [aiChat, setAiChat] = useState<boolean>(!!(website as any).addOnAiChat);
+  const [calendly, setCalendly] = useState<boolean>(!!(website as any).addOnCalendly);
+  const [calendlyUrl, setCalendlyUrl] = useState<string>((website as any).calendlyUrl || "");
+  const [welcomeMsg, setWelcomeMsg] = useState<string>((website as any).chatWelcomeMessage || "");
+  const [saving, setSaving] = useState(false);
+
+  const usageCount = (website as any).chatUsageCount ?? 0;
+  const usagePct = Math.min(100, Math.round((usageCount / 200) * 100));
+
+  const updateAddons = trpc.customer.updateAddons.useMutation({
+    onSuccess: () => { setSaving(false); onUpdate(); toast.success("KI-Chat gespeichert"); },
+    onError: () => { setSaving(false); toast.error("Speichern fehlgeschlagen"); },
+  });
+
+  const handleSave = () => {
+    setSaving(true);
+    updateAddons.mutate({
+      websiteId,
+      addOns: {
+        gallery: { enabled: false },
+        aiChat,
+        calendly,
+        calendlyUrl: calendlyUrl.trim() || undefined,
+        chatWelcomeMessage: welcomeMsg.trim() || undefined,
+      },
+    });
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+      <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
+        <MessageSquare className="w-4 h-4 text-violet-400" />
+        KI-Chat Add-on
+        <span className="ml-auto text-xs bg-violet-600/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">+9,90 €/Monat</span>
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        {/* Toggle AI Chat */}
+        <div className={`rounded-xl p-4 border transition-all ${aiChat ? "border-violet-500/40 bg-violet-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <div className="text-white text-sm font-medium">KI-Chat aktivieren</div>
+              <div className="text-slate-400 text-xs mt-0.5">Chat-Widget erscheint auf deiner Website</div>
+            </div>
+            <button
+              onClick={() => setAiChat(!aiChat)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${aiChat ? "bg-violet-500" : "bg-slate-600"}`}
+            >
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${aiChat ? "left-5.5 translate-x-0" : "left-0.5"}`} style={{ left: aiChat ? "22px" : "2px" }} />
+            </button>
+          </div>
+          {aiChat && (
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <span>Gespräche diesen Monat</span>
+                <span className={usagePct >= 80 ? "text-orange-400" : "text-slate-400"}>{usageCount} / 200</span>
+              </div>
+              <div className="w-full bg-slate-700 rounded-full h-1.5">
+                <div
+                  className={`h-1.5 rounded-full transition-all ${usagePct >= 80 ? "bg-orange-400" : "bg-violet-500"}`}
+                  style={{ width: `${usagePct}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Toggle Calendly */}
+        <div className={`rounded-xl p-4 border transition-all ${calendly ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <div className="text-white text-sm font-medium">Terminbuchung (Calendly)</div>
+              <div className="text-slate-400 text-xs mt-0.5">+3,90 €/Monat · kostenloser Calendly-Account reicht</div>
+            </div>
+            <button
+              onClick={() => setCalendly(!calendly)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${calendly ? "bg-blue-500" : "bg-slate-600"}`}
+            >
+              <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: calendly ? "22px" : "2px" }} />
+            </button>
+          </div>
+          {calendly && (
+            <input
+              type="url"
+              value={calendlyUrl}
+              onChange={e => setCalendlyUrl(e.target.value)}
+              placeholder="https://calendly.com/dein-name"
+              className="w-full mt-2 bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Welcome message */}
+      {aiChat && (
+        <div className="mb-5">
+          <label className="text-slate-300 text-sm font-medium block mb-1.5">
+            Begrüßungsnachricht <span className="text-slate-500 font-normal">(optional)</span>
+          </label>
+          <input
+            type="text"
+            value={welcomeMsg}
+            onChange={e => setWelcomeMsg(e.target.value)}
+            placeholder={`Hallo! Ich bin der Assistent – wie kann ich dir helfen?`}
+            maxLength={256}
+            className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+          />
+        </div>
+      )}
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+      >
+        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+        KI-Chat speichern
+      </button>
+    </div>
+  );
+}
+
+// ── Chat Leads Tab ────────────────────────────────────
+function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
+  const { data, isLoading } = trpc.customer.getChatLeads.useQuery({ websiteId });
+  const markRead = trpc.customer.markChatLeadRead.useMutation();
+  const aiChatEnabled = !!(website as any).addOnAiChat;
+
+  if (!aiChatEnabled) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/20 rounded-2xl flex items-center justify-center mb-4">
+          <MessageSquare className="w-8 h-8 text-violet-400" />
+        </div>
+        <h3 className="text-white font-semibold text-lg mb-2">KI-Chat noch nicht aktiviert</h3>
+        <p className="text-slate-400 text-sm max-w-sm mb-5">
+          Aktiviere den KI-Chat, damit Besucher direkt auf deiner Website mit dir interagieren können – Leads landen dann hier.
+        </p>
+        <button
+          onClick={onGoToAddons}
+          className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+        >
+          Zu Add-ons → KI-Chat aktivieren
+        </button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
+      </div>
+    );
+  }
+
+  const leads = data?.leads ?? [];
+
+  if (leads.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mb-4">
+          <Users className="w-8 h-8 text-slate-500" />
+        </div>
+        <h3 className="text-white font-semibold text-lg mb-2">Noch keine Leads</h3>
+        <p className="text-slate-400 text-sm max-w-sm">
+          Sobald Website-Besucher ihren Namen und Kontakt im Chat hinterlassen, erscheinen sie hier.
+        </p>
+      </div>
+    );
+  }
+
+  const unread = leads.filter((l: any) => !l.readAt).length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-semibold flex items-center gap-2">
+          <Users className="w-4 h-4 text-violet-400" />
+          Chat-Leads
+          {unread > 0 && (
+            <span className="bg-violet-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{unread} neu</span>
+          )}
+        </h2>
+        <span className="text-slate-500 text-sm">{leads.length} insgesamt</span>
+      </div>
+
+      <div className="space-y-3">
+        {leads.map((lead: any) => (
+          <div
+            key={lead.id}
+            className={`bg-slate-800/60 border rounded-xl p-4 transition-all ${lead.readAt ? "border-slate-700/40" : "border-violet-500/40 ring-1 ring-violet-500/10"}`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="text-white font-medium text-sm">{lead.visitorName || "Unbekannt"}</span>
+                  {!lead.readAt && (
+                    <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full border border-violet-500/30">Neu</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {lead.email && (
+                    <a href={`mailto:${lead.email}`} className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5" />{lead.email}
+                    </a>
+                  )}
+                  {lead.phone && (
+                    <a href={`tel:${lead.phone}`} className="text-green-400 hover:text-green-300 transition-colors flex items-center gap-1">
+                      <Phone className="w-3.5 h-3.5" />{lead.phone}
+                    </a>
+                  )}
+                </div>
+                {lead.summary && (
+                  <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">{lead.summary}</p>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <span className="text-slate-500 text-xs whitespace-nowrap">
+                  {new Date(lead.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                </span>
+                {!lead.readAt && (
+                  <button
+                    onClick={() => markRead.mutate({ leadId: lead.id, websiteId })}
+                    className="text-xs text-slate-400 hover:text-white transition-colors"
+                  >
+                    Als gelesen markieren
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -2103,6 +2343,7 @@ export default function CustomerDashboard() {
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
     { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
     { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
+    { id: "leads", label: "Chat-Leads", icon: <Users className="w-4 h-4" /> },
     { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
 
@@ -2549,37 +2790,47 @@ export default function CustomerDashboard() {
 
         {/* Add-ons Tab */}
         {activeTab === "addons" && (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                <Sparkles className="w-4 h-4 text-pink-400" />
-                Add-ons verwalten
-              </h2>
-              <AddonsEditor
-                websiteId={website.id}
-                website={website}
-                onboarding={onboardingData}
-                onUpdate={handleUpdate}
-                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
-              />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
+                  <Sparkles className="w-4 h-4 text-pink-400" />
+                  Add-ons verwalten
+                </h2>
+                <AddonsEditor
+                  websiteId={website.id}
+                  website={website}
+                  onboarding={onboardingData}
+                  onUpdate={handleUpdate}
+                  purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
+                />
+              </div>
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
+                  <Settings className="w-4 h-4 text-blue-400" />
+                  Erweiterte Bearbeitung
+                </h2>
+                <p className="text-slate-400 text-sm mb-4">
+                  Für detaillierte Bearbeitung von Galerie-Bildern, Menüpunkten und Preisen nutze das vollständige Onboarding.
+                </p>
+                <a
+                  href={`/preview/${website.previewToken}/onboarding`}
+                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Vollständiges Onboarding öffnen
+                </a>
+              </div>
             </div>
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                <Settings className="w-4 h-4 text-blue-400" />
-                Erweiterte Bearbeitung
-              </h2>
-              <p className="text-slate-400 text-sm mb-4">
-                Für detaillierte Bearbeitung von Galerie-Bildern, Menüpunkten und Preisen nutze das vollständige Onboarding.
-              </p>
-              <a
-                href={`/preview/${website.previewToken}/onboarding`}
-                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Vollständiges Onboarding öffnen
-              </a>
-            </div>
+
+            {/* AI Chat Add-on Section */}
+            <AiChatAddonSection websiteId={website.id} website={website} onUpdate={handleUpdate} />
           </div>
+        )}
+
+        {/* Leads Tab */}
+        {activeTab === "leads" && (
+          <ChatLeadsTab websiteId={website.id} website={website} onGoToAddons={() => setActiveTab("addons")} />
         )}
 
         {/* Analytics Tab */}

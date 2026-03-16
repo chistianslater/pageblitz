@@ -22,6 +22,9 @@ import {
   markSubmissionRead, countRecentSubmissionsByIp, archiveSubmission, deleteContactSubmission,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
+import { chatLeads, generatedWebsites } from "../drizzle/schema";
+import { desc, eq as eqDrizzle } from "drizzle-orm";
+import { getDb } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
 import { invokeLLM } from "./_core/llm";
@@ -2945,6 +2948,83 @@ Kontext: ${input.context}`,
         return { stockPhotos };
       }),
 
+    // ── AI Chat: Leads + Settings ────────────────────────────────────────────
+    getChatLeads: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const _db = await getDb();
+        const leads = _db ? await _db
+          .select()
+          .from(chatLeads)
+          .where(eqDrizzle(chatLeads.websiteId, input.websiteId))
+          .orderBy(desc(chatLeads.createdAt))
+          .limit(100) : [];
+
+        return { leads };
+      }),
+
+    markChatLeadRead: protectedProcedure
+      .input(z.object({ leadId: z.number(), websiteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const _db = await getDb();
+        if (_db) await _db
+          .update(chatLeads)
+          .set({ readAt: new Date() })
+          .where(eqDrizzle(chatLeads.id, input.leadId));
+
+        return { success: true };
+      }),
+
+    getChatSettings: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const w = row.website as any;
+        return {
+          addOnAiChat: w.addOnAiChat ?? false,
+          addOnCalendly: w.addOnCalendly ?? false,
+          calendlyUrl: w.calendlyUrl ?? "",
+          chatWelcomeMessage: w.chatWelcomeMessage ?? "",
+          chatUsageCount: w.chatUsageCount ?? 0,
+          chatUsageResetAt: w.chatUsageResetAt ?? null,
+        };
+      }),
+
+    updateChatSettings: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        calendlyUrl: z.string().max(512).optional(),
+        chatWelcomeMessage: z.string().max(512).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const updateData: Record<string, any> = {};
+        if (input.calendlyUrl !== undefined) updateData.calendlyUrl = input.calendlyUrl || null;
+        if (input.chatWelcomeMessage !== undefined) updateData.chatWelcomeMessage = input.chatWelcomeMessage || null;
+
+        const _db = await getDb();
+        if (_db) await _db
+          .update(generatedWebsites)
+          .set(updateData)
+          .where(eqDrizzle(generatedWebsites.id, input.websiteId));
+
+        return { success: true };
+      }),
+
     // ── Setup-Flow ──────────────────────────────────────
     checkSlugAvailability: publicProcedure
       .input(z.object({ slug: z.string(), websiteId: z.number() }))
@@ -3373,6 +3453,10 @@ Kontext: ${input.context}`,
             required: z.boolean(),
             options: z.array(z.string()).optional(),
           })).optional().nullable(),
+          aiChat: z.boolean().optional(),
+          calendly: z.boolean().optional(),
+          calendlyUrl: z.string().max(512).optional(),
+          chatWelcomeMessage: z.string().max(512).optional(),
         }),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -3392,6 +3476,17 @@ Kontext: ${input.context}`,
           contactFormFields: input.addOns.contactFormFields,
           updatedAt: Date.now(),
         });
+
+        // AI Chat add-ons: write directly to generated_websites
+        const chatUpdate: Record<string, any> = {};
+        if (input.addOns.aiChat !== undefined) chatUpdate.addOnAiChat = input.addOns.aiChat;
+        if (input.addOns.calendly !== undefined) chatUpdate.addOnCalendly = input.addOns.calendly;
+        if (input.addOns.calendlyUrl !== undefined) chatUpdate.calendlyUrl = input.addOns.calendlyUrl || null;
+        if (input.addOns.chatWelcomeMessage !== undefined) chatUpdate.chatWelcomeMessage = input.addOns.chatWelcomeMessage || null;
+        if (Object.keys(chatUpdate).length > 0) {
+          const _dbChat = await getDb();
+          if (_dbChat) await _dbChat.update(generatedWebsites).set(chatUpdate).where(eqDrizzle(generatedWebsites.id, input.websiteId));
+        }
 
         // Update websiteData sections based on add-ons
         const websiteData = (website.websiteData as any) || {};
