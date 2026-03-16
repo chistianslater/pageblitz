@@ -214,13 +214,13 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
     label: "Grafitmodern",
     description: "Dunkles Graphit mit elektrischem Akzent – präzise, fokussiert und zeitgemäß.",
     colors: withOnColors({
-      primary: "#bef264",
+      primary: "#a3e635",
       secondary: "#0a0a0a",
       accent: "#ffffff",
       background: "#050505",
       surface: "#121212",
       text: "#ffffff",
-      textLight: "rgba(255,255,255,0.6)"
+      textLight: "rgba(255,255,255,0.75)"
     })
   },
   {
@@ -492,9 +492,9 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#1a202c",     // Dark background
     surface: "#2d3748",          // Slightly lighter
     text: "#f7fafc",             // Off-white
-    textLight: "rgba(247,250,252,0.6)"
+    textLight: "rgba(247,250,252,0.75)"
   }),
-  
+
   // Deep forest with copper - Premium & Refined
   luxury:   withOnColors({ 
     primary: "#1c1917",      // Rich black
@@ -503,9 +503,9 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#1c1917",     // Dark background
     surface: "#292524",          // Warm dark
     text: "#fafaf9",             // Stone 50
-    textLight: "rgba(250,250,249,0.6)"
+    textLight: "rgba(250,250,249,0.75)"
   }),
-  
+
   // Warm stone with rust accent - Artisan & Crafted
   craft:    withOnColors({ 
     primary: "#78716c",      // Stone 500
@@ -514,9 +514,9 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#1c1917",     // Dark stone
     surface: "#292524",          // Warm dark
     text: "#fafaf9",             // Stone 50
-    textLight: "rgba(250,250,249,0.6)"
+    textLight: "rgba(250,250,249,0.75)"
   }),
-  
+
   // Soft blue-gray with peach - Friendly & Light
   fresh:    withOnColors({ 
     primary: "#64748b",      // Blue-gray
@@ -558,7 +558,7 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#0f0a1a",     // Very dark purple
     surface: "#1e1b4b",          // Dark purple
     text: "#fafafa",             // Neutral 50
-    textLight: "rgba(250,250,250,0.6)"
+    textLight: "rgba(250,250,250,0.75)"
   }),
   
   // Olive with warm sand - Organic & Earthy
@@ -630,7 +630,7 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#060608",   // Near-black
     surface: "#0e0e12",
     text: "#f5f0e8",
-    textLight: "rgba(245,240,232,0.6)"
+    textLight: "rgba(245,240,232,0.75)"
   }),
 };
 
