@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
+import { FONT_OPTIONS } from "@shared/layoutConfig";
 
 // ── Types ───────────────────────────────────────────
 type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain";
@@ -640,17 +641,7 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
     { value: "medium", label: "Groß" },
     { value: "large",  label: "Extra groß" },
   ];
-  const fontOptions = [
-    { value: "",                 label: "Layout-Standard" },
-    { value: "Inter",            label: "Inter" },
-    { value: "Poppins",          label: "Poppins" },
-    { value: "Playfair Display", label: "Playfair Display" },
-    { value: "Lora",             label: "Lora" },
-    { value: "Roboto",           label: "Roboto" },
-    { value: "Open Sans",        label: "Open Sans" },
-    { value: "Montserrat",       label: "Montserrat" },
-    { value: "Lato",             label: "Lato" },
-  ];
+  // fontOptions rendered inline via FONT_OPTIONS from layoutConfig
 
   return (
     <div className="space-y-6">
@@ -738,7 +729,13 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, headlineFont: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {fontOptions.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              <option value="">Layout-Standard</option>
+              <optgroup label="── Serifenschriften ──">
+                {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
+              <optgroup label="── Serifenlose ──">
+                {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
             </select>
           </div>
           <div>
@@ -748,7 +745,13 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, bodyFont: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {fontOptions.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              <option value="">Layout-Standard</option>
+              <optgroup label="── Serifenschriften ──">
+                {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
+              <optgroup label="── Serifenlose ──">
+                {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
             </select>
           </div>
           <div>
