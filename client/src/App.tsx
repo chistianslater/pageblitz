@@ -64,6 +64,12 @@ function getCustomerSubdomain(): string | null {
 }
 
 function Router() {
+  // Direct location subscription ensures this component re-renders on every
+  // navigation – without it the Switch may not update if AppContent's cascade
+  // gets deferred/batched by React 18 concurrent mode.
+  const [location] = useLocation();
+  void location; // used for reactivity only
+
   // Subdomain routing: schau-horch.pageblitz.de → render site directly
   const customerSlug = getCustomerSubdomain();
   if (customerSlug) {
@@ -122,7 +128,11 @@ function Router() {
 function ScrollToTop() {
   const [location] = useLocation();
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    // Direct property assignment is universally compatible (incl. iOS Safari,
+    // which silently ignores behavior:"instant" and never resets the scroll).
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0; // legacy WebKit / iOS fallback
+    window.scrollTo(0, 0);       // virtual viewport fallback (iOS Safari)
   }, [location]);
   return null;
 }

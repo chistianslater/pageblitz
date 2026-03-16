@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle, GripVertical } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle, GripVertical, Eye } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -17,60 +17,79 @@ import { useAuth } from "@/_core/hooks/useAuth";
 
 // ── Epic Loading Screen Component ───────────────────────────────────────────
 
-// WarpStar Interface für 3D Hyperraum-Effekt
-interface WarpStar {
-  id: number;
-  x: number;
-  y: number;
-  z: number;
-  size: number;
-  speed: number;
+// Star data stored in refs – never causes React re-renders
+interface WarpStarData {
+  x: number; y: number; z: number; size: number; speed: number; hue: number;
 }
 
 const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: number }) => {
-  const [warpStars, setWarpStars] = useState<WarpStar[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const starsRef = useRef<WarpStarData[]>([]);
 
-  // Initialize warp stars - mehr Sterne, größer und heller
+  // Canvas-based warp animation – zero React re-renders per frame
   useEffect(() => {
-    const stars: WarpStar[] = Array.from({ length: 400 }, (_, i) => ({
-      id: i,
-      x: (Math.random() - 0.5) * 2500,
-      y: (Math.random() - 0.5) * 2500,
-      z: Math.random() * 2000,
-      size: Math.random() * 3 + 1.5, // Größere Sterne (1.5 - 4.5px)
-      speed: Math.random() * 20 + 15, // Schneller für mehr Dynamik
-    }));
-    setWarpStars(stars);
-  }, []);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  // Animation loop for warp effect
-  useEffect(() => {
-    const animate = () => {
-      setWarpStars(prevStars =>
-        prevStars.map(star => {
-          let newZ = star.z - star.speed;
-          if (newZ <= 0) {
-            newZ = 2000;
-            return {
-              ...star,
-              z: newZ,
-              x: (Math.random() - 0.5) * 2000,
-              y: (Math.random() - 0.5) * 2000,
-            };
-          }
-          return { ...star, z: newZ };
-        })
-      );
-      animationRef.current = requestAnimationFrame(animate);
+    const isMobile = window.innerWidth < 768;
+    const starCount = isMobile ? 80 : 220;
+
+    const init = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      starsRef.current = Array.from({ length: starCount }, () => ({
+        x: (Math.random() - 0.5) * 2,
+        y: (Math.random() - 0.5) * 2,
+        z: Math.random(),
+        size: Math.random() * 2 + 0.5,
+        speed: Math.random() * 0.012 + 0.005,
+        hue: [200, 180, 220][Math.floor(Math.random() * 3)],
+      }));
     };
+    init();
+    window.addEventListener("resize", init);
 
-    animationRef.current = requestAnimationFrame(animate);
+    const draw = () => {
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h / 2;
+      ctx.clearRect(0, 0, w, h);
+
+      starsRef.current.forEach((s) => {
+        const prevZ = s.z;
+        s.z -= s.speed;
+        if (s.z <= 0.01) {
+          s.z = 1; s.x = (Math.random() - 0.5) * 2; s.y = (Math.random() - 0.5) * 2;
+          s.hue = [200, 180, 220][Math.floor(Math.random() * 3)];
+          return;
+        }
+        const scale = 1 / s.z;
+        const prevScale = 1 / prevZ;
+        const sx = cx + s.x * cx * scale * 1.4;
+        const sy = cy + s.y * cy * scale * 1.4;
+        const px = cx + s.x * cx * prevScale * 1.4;
+        const py = cy + s.y * cy * prevScale * 1.4;
+        const opacity = Math.min(0.9, (1 - s.z) * 0.85 + 0.1);
+        const grad = ctx.createLinearGradient(px, py, sx, sy);
+        grad.addColorStop(0, "transparent");
+        grad.addColorStop(1, `hsla(${s.hue},100%,82%,${opacity})`);
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(sx, sy);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = Math.max(0.4, s.size * scale * 1.5);
+        ctx.stroke();
+      });
+
+      animationRef.current = requestAnimationFrame(draw);
+    };
+    animationRef.current = requestAnimationFrame(draw);
+
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      cancelAnimationFrame(animationRef.current);
+      window.removeEventListener("resize", init);
     };
   }, []);
 
@@ -87,87 +106,16 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0a0a0a]">
-      {/* Animated Gradient Orbs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            x: ["-20%", "0%", "-20%"],
-            y: ["-10%", "10%", "-10%"],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] bg-blue-500/20 rounded-full blur-[120px]"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            x: ["20%", "-10%", "20%"],
-            y: ["10%", "-10%", "10%"],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[100px]"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            x: ["10%", "-20%", "10%"],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[80px]"
-        />
+    <div className="h-screen relative overflow-hidden bg-[#0a0a0a]">
+      {/* Gradient orbs – mobile-sized, no heavy motion animations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-blue-500/20 rounded-full blur-[80px]" />
+        <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] max-w-[400px] max-h-[400px] bg-purple-500/20 rounded-full blur-[70px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] max-w-[350px] max-h-[350px] bg-indigo-500/15 rounded-full blur-[60px]" />
       </div>
 
-      {/* Warp Speed / Hyperraum Effekt */}
-      <div
-        ref={containerRef}
-        className="absolute inset-0 overflow-hidden pointer-events-none"
-        style={{
-          perspective: "500px",
-          transformStyle: "preserve-3d",
-        }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            transformStyle: "preserve-3d",
-            transform: "rotateX(0deg)",
-          }}
-        >
-          {warpStars.map((star) => {
-            const perspective = 500;
-            const scale = perspective / (perspective + star.z);
-            const x = star.x * scale + 50;
-            const y = star.y * scale + 50;
-            // Höhere Opazität für bessere Sichtbarkeit
-            const opacity = Math.min(1, (2000 - star.z) / 800) * scale + 0.3;
-            const trailLength = Math.max(15, star.speed * scale * 4);
-            // Zufällige Farbe: Blau, Cyan oder Weiß für mehr Varianz
-            const hue = Math.random() > 0.7 ? 200 : (Math.random() > 0.5 ? 180 : 220); // Blau/Cyan Töne
-
-            return (
-              <div
-                key={star.id}
-                className="absolute"
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  width: `${trailLength}px`,
-                  height: `${star.size * scale}px`,
-                  background: `linear-gradient(90deg, transparent, hsla(${hue}, 100%, 85%, ${opacity}))`,
-                  transform: `translate(-50%, -50%) rotate(${Math.atan2(y - 50, x - 50) * (180 / Math.PI)}deg)`,
-                  opacity: Math.min(1, opacity),
-                  boxShadow: `
-                    0 0 ${6 * scale}px hsla(${hue}, 100%, 80%, ${opacity}),
-                    0 0 ${12 * scale}px hsla(${hue}, 100%, 70%, ${opacity * 0.5})
-                  `,
-                  borderRadius: '2px',
-                }}
-              />
-            );
-          })}
-        </div>
-      </div>
+      {/* Warp Speed – Canvas-rendered, zero React re-renders */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
       {/* Grid Pattern Overlay */}
       <div
@@ -2428,9 +2376,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
         {/* Chat panel – smooth slide */}
         <div
-          className="flex w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0 items-center overflow-hidden transition-all duration-300 ease-in-out"
+          className="flex w-full lg:w-[360px] flex-col lg:border-r border-slate-700/50 flex-1 lg:flex-none items-stretch overflow-hidden transition-all duration-300 ease-in-out"
           style={{
-            maxWidth: chatHidden ? 0 : 360,
+            maxWidth: chatHidden ? 0 : undefined,
+            width: chatHidden ? 0 : undefined,
             minWidth: chatHidden ? 0 : undefined,
             opacity: chatHidden ? 0 : 1,
             pointerEvents: chatHidden ? "none" : undefined,
@@ -2452,6 +2401,28 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </div>
 
           </div>
+
+          {/* Mobile-only progress bar (desktop shows it in the preview panel header) */}
+          {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
+            const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
+            const currentIdx = Math.max(0, dynamicStepOrder.indexOf(currentStep));
+            const pct = totalSteps > 0 ? Math.round((currentIdx / totalSteps) * 100) : 0;
+            return (
+              <div className="lg:hidden w-full px-4 py-2.5 border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0 flex items-center gap-3">
+                <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
+                    initial={false}
+                    animate={{ width: `${pct}%` }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  />
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium tabular-nums flex-shrink-0">
+                  {currentIdx}&thinsp;/&thinsp;{totalSteps}
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Messages + Input: flex column, messages scroll, input sticky */}
           <div className="flex-1 flex flex-col min-h-0">
@@ -4713,10 +4684,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             </div>
           )}
+          {/* Mobile: preview shortcut button – only shown on small screens */}
+          {liveWebsiteData && colorScheme && (
+            <div className="lg:hidden px-3 pb-3 pt-1 flex-shrink-0">
+              <button
+                onClick={() => setShowFullPreview(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600/40 text-slate-300 hover:text-white text-sm transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                Website-Vorschau anzeigen
+              </button>
+            </div>
+          )}
           </div>{/* end messages+input wrapper */}
         </div>
-        {/* Preview panell – MacBook mockup */}
-        <div className="relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col">
+        {/* Preview panel – MacBook mockup (desktop only) */}
+        <div className="hidden lg:flex relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex-col">
           {/* Preview top bar: chat toggle + progress bar */}
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-700/50">
             {/* Chat toggle button – always visible here */}
