@@ -2491,14 +2491,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             // Completed steps – same labels as desktop
             const stepLabels: Record<string, string> = {
-              businessCategory: "Branche", businessName: "Name", brandLogo: "Logo",
-              colorScheme: "Farben", heroPhoto: "Foto", aboutPhoto: "Über uns",
+              businessCategory: "Branche", businessName: "Name", addressingMode: "Anrede",
+              brandLogo: "Logo", colorScheme: "Farben", heroPhoto: "Foto", aboutPhoto: "Über uns",
               headlineFont: "Schrift", headlineSize: "Größe", tagline: "Claim",
               description: "Beschreibung", usp: "USP", services: "Leistungen",
               legalOwner: "Impressum", legalStreet: "Adresse", legalZipCity: "Ort",
               legalEmail: "E-Mail", legalPhone: "Telefon", legalVat: "Steuer",
               addons: "Extras", editAiChat: "KI-Chat", editMenu: "Speisekarte", editPricelist: "Preise",
-              editGallery: "Galerie", subpages: "Unterseiten", openingHours: "Zeiten",
+              editGallery: "Galerie", subpages: "Unterseiten", openingHours: "Öffnungszeiten",
               email: "Kontakt", hideSections: "Anzeige",
             };
             const completedSteps = dynamicStepOrder
@@ -3045,23 +3045,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       Keine Leistungen anzeigen
                     </button>
                   )}
-                  <button
-                    disabled={isTyping || saveStepMutation.isPending}
-                    onClick={async () => {
-                      if (isTyping) return;
-                      const filtered = data.topServices.filter((s) => s.title.trim());
-                      if (filtered.length === 0) {
-                        setShowSkipServicesWarning(true);
-                        return;
-                      }
-                      addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
-                      await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
-                      await goToNextStep();
-                    }}
-                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Weiter <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+                  {/* Weiter-Button im fixen Bottom-Bar */}
               </div>
             </motion.div>
           )}
@@ -3541,20 +3525,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   )}
                 </div>
 
-                <button
-                  disabled={isTyping || uploadLogoMutation.isPending}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const logo = data.brandLogo || "font:Montserrat";
-                    const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
-                    addUserMessage(`Logo gewählt: ${label} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
@@ -3567,7 +3538,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-3"
             >
-              <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau rechts ändert sich sofort:</p>
+              <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau ändert sich sofort:</p>
                 <div className="space-y-2">
                   {(() => {
                     const hideSerifs = prefersSansSerif(data.businessCategory);
@@ -3616,19 +3587,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     })()}
                   </div>
 
-                <button
-                  disabled={isTyping || !data.headlineFont}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const fontLabel = data.headlineFont;
-                    addUserMessage(`Schriftart gewählt: ${fontLabel} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
@@ -3676,19 +3635,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   ))}
                 </div>
 
-                <button
-                  disabled={isTyping}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const sizeLabel = data.headlineSize === 'large' ? 'Extra groß' : data.headlineSize === 'medium' ? 'Groß' : 'Normal';
-                    addUserMessage(`Schriftgröße gewählt: ${sizeLabel} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("headlineSize"), { headlineSize: data.headlineSize });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
@@ -4117,22 +4064,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     industry={data.businessCategory}
                   />
 
-                  <button
-                    disabled={isTyping}
-                    onClick={async () => {
-                      if (isTyping) return;
-                      const count = data.addOnGalleryData.images.length;
-                      addUserMessage(count > 0 ? `${count} Bilder für die Galerie ausgewählt ✓` : "Standard-Bilder für die Galerie behalten");
-                      await trySaveStep(STEP_ORDER.indexOf("editGallery"), { 
-                        galleryHeadline: data.addOnGalleryData.headline,
-                        galleryImages: data.addOnGalleryData.images 
-                      });
-                      await goToNextStep();
-                    }}
-                    className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors font-medium"
-                  >
-                    Weiter <ChevronRight className="w-4 h-4" />
-                  </button>
+                  {/* Weiter-Button im fixen Bottom-Bar */}
                 </div>
             </motion.div>
           )}
@@ -4227,21 +4159,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 </div>
               </div>{/* end relative wrapper */}
 
-              {/* Action button – outside overlay so it always works */}
-              <div className="flex gap-2 pt-1">
-                <button
-                  disabled={isTyping}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    addUserMessage("Keine Unterseiten");
-                    await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: [] });
-                    await goToNextStep();
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+              {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
@@ -4610,24 +4528,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         )}
                       </div>
 
-                      <button
-                        disabled={isTyping}
-                        onClick={async () => {
-                          if (isTyping) return;
-                          const hidden = Array.from(hiddenSections);
-                          addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
-                          // Persist section order + hidden sections to DB (non-blocking)
-                          const stepIdx = dynamicStepOrder.indexOf("hideSections");
-                          trySaveStep(stepIdx, {
-                            sectionOrder: sectionOrder.length > 0 ? [...sectionOrder] : [],
-                            hiddenSections: hidden,
-                          });
-                          await advanceToStep("preview");
-                        }}
-                        className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-                      >
-                        Weiter <ChevronRight className="w-4 h-4" />
-                      </button>
+                      {/* Weiter-Button im fixen Bottom-Bar */}
                     </>
                   );
                 })()}
@@ -4777,7 +4678,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         <div ref={messagesEndRef} />
         </div>
         {/* Input area – sticky at bottom */}
-          {!["services", "addons", "editAiChat", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours", "heroPhoto", "aboutPhoto"].includes(currentStep) && (
+          {!["services", "addons", "editAiChat", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours", "heroPhoto", "aboutPhoto", "headlineFont", "headlineSize", "editGallery", "hideSections"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pt-3 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (
@@ -4894,7 +4795,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             </div>
           )}
-          {/* Weiter-Button für UI-Schritte (addons, editAiChat) – außerhalb des Scroll-Containers */}
+          {/* Weiter-Buttons für UI-Schritte – außerhalb des Scroll-Containers (sticky auf Mobile) */}
           {currentStep === "addons" && (
             <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
               <button
@@ -4951,6 +4852,142 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </button>
             </div>
           )}
+          {currentStep === "brandLogo" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping || uploadLogoMutation.isPending}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const logo = data.brandLogo || "font:Montserrat";
+                  const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
+                  addUserMessage(`Logo gewählt: ${label} ✓`);
+                  await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "headlineFont" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping || !data.headlineFont}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  addUserMessage(`Schriftart gewählt: ${data.headlineFont} ✓`);
+                  await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "headlineSize" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const sizeLabel = data.headlineSize === 'large' ? 'Extra groß' : data.headlineSize === 'medium' ? 'Groß' : 'Normal';
+                  addUserMessage(`Schriftgröße gewählt: ${sizeLabel} ✓`);
+                  await trySaveStep(STEP_ORDER.indexOf("headlineSize"), { headlineSize: data.headlineSize });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "services" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping || saveStepMutation.isPending}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const filtered = data.topServices.filter((s) => s.title.trim());
+                  if (filtered.length === 0) {
+                    setShowSkipServicesWarning(true);
+                    return;
+                  }
+                  addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
+                  await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "editGallery" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const count = data.addOnGalleryData.images.length;
+                  addUserMessage(count > 0 ? `${count} Bilder für die Galerie ausgewählt ✓` : "Standard-Bilder für die Galerie behalten");
+                  await trySaveStep(STEP_ORDER.indexOf("editGallery"), {
+                    galleryHeadline: data.addOnGalleryData.headline,
+                    galleryImages: data.addOnGalleryData.images
+                  });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "subpages" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  addUserMessage("Keine Unterseiten");
+                  await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: [] });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "hideSections" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const hidden = Array.from(hiddenSections);
+                  addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
+                  const stepIdx = dynamicStepOrder.indexOf("hideSections");
+                  trySaveStep(stepIdx, {
+                    sectionOrder: sectionOrder.length > 0 ? [...sectionOrder] : [],
+                    hiddenSections: hidden,
+                  });
+                  await advanceToStep("preview");
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           {/* Mobile: preview shortcut button – only shown on small screens, hidden on preview step (has its own button) */}
           {liveWebsiteData && colorScheme && currentStep !== "preview" && (
             <div className="lg:hidden px-3 pb-3 pt-1 flex-shrink-0">
@@ -4993,6 +5030,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               const stepLabels: Record<string, string> = {
                 businessCategory: "Branche",
                 businessName: "Name",
+                addressingMode: "Anrede",
                 brandLogo: "Logo",
                 colorScheme: "Farben",
                 heroPhoto: "Foto",
@@ -5008,6 +5046,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 legalZipCity: "Ort",
                 legalEmail: "E-Mail",
                 legalPhone: "Telefon",
+                openingHours: "Öffnungszeiten",
                 legalVat: "Steuer",
                 addons: "Extras",
                 editAiChat: "KI-Chat",
