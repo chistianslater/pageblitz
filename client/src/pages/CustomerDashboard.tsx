@@ -123,6 +123,120 @@ function EditableField({ label, value, icon, multiline, placeholder, onSave }: E
   );
 }
 
+// ── KI-Inhaltseditor ─────────────────────────────────
+interface AiContentEditorProps {
+  websiteId: number;
+  onUpdate: () => void;
+}
+
+interface EditHistoryEntry {
+  message: string;
+  ts: Date;
+}
+
+function AiContentEditor({ websiteId, onUpdate }: AiContentEditorProps) {
+  const [input, setInput] = useState("");
+  const [history, setHistory] = useState<EditHistoryEntry[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const examples = [
+    'Hero-Titel zu "Ihr Spezialist fur..." andern',
+    "Uber-uns-Sektion professioneller schreiben",
+    'Vierten Service "Notdienst" mit Beschreibung hinzufugen',
+    'CTA-Button-Text zu "Jetzt anfragen" andern',
+    "3 neue Kundenstimmen mit Namen und Bewertung schreiben",
+  ];
+
+  const applyMutation = trpc.customer.applyAiEdit.useMutation({
+    onSuccess: () => {
+      setHistory((h) => [{ message: input.trim(), ts: new Date() }, ...h].slice(0, 10));
+      setInput("");
+      onUpdate();
+      toast.success("Änderung übernommen ✓");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Fehler bei der KI-Bearbeitung");
+    },
+  });
+
+  const handleSubmit = () => {
+    const text = input.trim();
+    if (!text || applyMutation.isPending) return;
+    applyMutation.mutate({ websiteId, userMessage: text });
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+      <div>
+        <h2 className="text-white font-semibold flex items-center gap-2">
+          <span className="text-lg">✦</span>
+          KI-Inhaltseditor
+        </h2>
+        <p className="text-slate-400 text-xs mt-0.5">
+          Beschreibe auf Deutsch, was du ändern möchtest – die KI setzt es direkt um.
+        </p>
+      </div>
+
+      {/* Examples */}
+      <div className="flex flex-wrap gap-1.5">
+        {examples.map((ex) => (
+          <button
+            key={ex}
+            onClick={() => { setInput(ex.replace(/„|"/g, "")); textareaRef.current?.focus(); }}
+            className="text-xs px-2.5 py-1 rounded-full bg-slate-700/60 hover:bg-slate-600/60 text-slate-300 hover:text-white border border-slate-600/40 transition-colors text-left"
+          >
+            {ex}
+          </button>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="flex flex-col gap-2">
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(); }}
+          placeholder={'z.B. "Andere den Hero-Titel zu Ihr Friseur in Munchen" oder "Fuge Service Haarverlangerung hinzu"'}
+          rows={3}
+          disabled={applyMutation.isPending}
+          className="w-full bg-slate-700/60 text-white text-sm px-3 py-2.5 rounded-xl border border-slate-600 focus:border-blue-500 outline-none resize-none placeholder-slate-500 disabled:opacity-60"
+        />
+        <div className="flex items-center justify-between">
+          <span className="text-slate-500 text-xs">⌘ + Enter zum Senden</span>
+          <button
+            onClick={handleSubmit}
+            disabled={!input.trim() || applyMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          >
+            {applyMutation.isPending ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Wird angepasst…</>
+            ) : (
+              <><Sparkles className="w-3.5 h-3.5" /> Änderung umsetzen</>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* History */}
+      {history.length > 0 && (
+        <div className="space-y-1.5 border-t border-slate-700/50 pt-3">
+          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Letzte Änderungen</p>
+          {history.map((h, i) => (
+            <div key={i} className="flex items-start gap-2 text-xs text-slate-400">
+              <Check className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="flex-1 line-clamp-1">{h.message}</span>
+              <span className="text-slate-600 flex-shrink-0">
+                {h.ts.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Services Editor ──────────────────────────────────
 interface ServicesEditorProps {
   websiteId: number;
@@ -3183,6 +3297,11 @@ export default function CustomerDashboard() {
         {/* Content Tab */}
         {activeTab === "content" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* KI-Inhaltseditor */}
+            <div className="lg:col-span-2">
+              <AiContentEditor websiteId={website.id} onUpdate={handleUpdate} />
+            </div>
+
             {/* Business Info */}
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
               <h2 className="text-white font-semibold flex items-center gap-2">

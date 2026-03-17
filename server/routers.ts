@@ -3352,6 +3352,89 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    // ── KI-basierter Inhaltseditor ────────────────────────────────────────
+    applyAiEdit: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        userMessage: z.string().min(3).max(1200),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Nicht autorisiert" });
+
+        const websiteData = (owned.website.websiteData as any) || {};
+
+        // Strip large non-editable blobs before sending to LLM
+        const editableData: any = { ...websiteData };
+        delete editableData.impressumHtml;
+        delete editableData.datenschutzHtml;
+        delete editableData.hasLegalPages;
+
+        const systemPrompt = `Du bist ein Website-Inhalts-Editor für deutsche Kleinunternehmer auf der Plattform Pageblitz.
+Du erhältst die aktuellen Website-Daten als JSON-Objekt und eine Änderungsanfrage.
+
+Deine Regeln:
+1. Setze exakt die Änderung um, die der Nutzer beschreibt – nicht mehr, nicht weniger.
+2. Lasse alle nicht betroffenen Felder und deren Werte absolut unverändert.
+3. Antworte AUSSCHLIESSLICH mit dem vollständig aktualisierten JSON-Objekt – kein Text davor oder danach, kein Markdown, kein Code-Block.
+4. Behalte die exakte JSON-Struktur (Schlüsselnamen, Arrays, Typen) unverändert.
+
+Wichtige Felder im JSON:
+- businessName: Unternehmensname
+- tagline: Hauptslogan (kurz, einprägsam)
+- description: Ausführlichere Beschreibung
+- usp: Alleinstellungsmerkmal / USP-Text
+- seoTitle: Google-Titel (max. 60 Zeichen)
+- seoDescription: Meta-Beschreibung (max. 155 Zeichen)
+- sections[]: Array der Sektionen – jede hat type + spezifische Felder:
+  • hero → headline, subheadline, ctaText
+  • about → headline, text (oder items[])
+  • services / features → headline, items[{title, description, icon}]
+  • testimonials → headline, items[{name, text, rating}]
+  • process → headline, items[{step, title, description}]
+  • cta → headline, subheadline, ctaText
+  • contact → headline
+  • gallery → headline
+  • menu → headline, categories[{name, items[{name, description, price}]}]
+  • pricelist → headline, categories[{name, items[{name, description, price}]}]
+- footer: { text, links[] }`;
+
+        const userPrompt = `Aktuelle Website-Daten:\n${JSON.stringify(editableData, null, 2)}\n\nÄnderungsanfrage: ${input.userMessage}`;
+
+        let updatedData: any;
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            max_tokens: 6000,
+            response_format: { type: "json_object" },
+          });
+          const raw = response.choices[0]?.message?.content;
+          const rawStr = typeof raw === "string" ? raw : JSON.stringify(raw);
+          updatedData = JSON.parse(rawStr);
+        } catch (e) {
+          console.error("[applyAiEdit] LLM/parse error:", e);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "KI-Antwort konnte nicht verarbeitet werden. Bitte versuche es erneut.",
+          });
+        }
+
+        // Re-attach preserved fields
+        const mergedData = {
+          ...updatedData,
+          impressumHtml: websiteData.impressumHtml,
+          datenschutzHtml: websiteData.datenschutzHtml,
+          hasLegalPages: websiteData.hasLegalPages,
+        };
+
+        await updateWebsite(input.websiteId, { websiteData: mergedData });
+        return { success: true };
+      }),
+
     // Update legal data and regenerate Impressum/Datenschutz pages
     updateLegalData: protectedProcedure
       .input(z.object({
