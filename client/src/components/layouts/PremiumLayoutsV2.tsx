@@ -1459,13 +1459,13 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/10" style={{ backgroundColor: darkBg + 'cc' }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs uppercase hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -1553,13 +1553,13 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-[#FFFDFB] overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -1651,14 +1651,14 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-2.5 h-8 rounded-full shrink-0" style={{ backgroundColor: safeCs.primary }} />
             <span style={{ fontFamily: resolveLogoFont(websiteData, BODY), fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }} className="whitespace-nowrap block">{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -1745,13 +1745,13 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column' }} className="bg-[#F2EBD9] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F2EBD9]/90 backdrop-blur-sm border-b border-neutral-300/50">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-40 h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em', color: safeCs.onPrimary || '#ffffff' }} className="px-7 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -1839,13 +1839,13 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-sm border-b border-white/10" style={{ backgroundColor: darkBg + 'e6' }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.6rem', letterSpacing: '0.08em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="w-40 h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -1933,13 +1933,13 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column' }} className="bg-[#FBF7F0] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FBF7F0]/90 backdrop-blur-sm border-b border-neutral-200/60">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-32 h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[110px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -2028,13 +2028,13 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   return (
     <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-md border-b border-white/5" style={{ backgroundColor: darkBg + 'cc' }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
           <button onClick={scrollToContact} style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -2122,13 +2122,13 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -2217,14 +2217,14 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   return (
     <div style={{ fontFamily: BODY, display: 'flex', flexDirection: 'column' }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
             <Leaf size={24} style={{ color: safeCs.primary }} className="shrink-0" />
             <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 400 }} className="whitespace-nowrap block">{websiteData.businessName}</span>
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -2324,13 +2324,13 @@ export function PremiumLayoutV2({
   return (
     <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -2754,13 +2754,13 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23grain)' opacity='0.09'/%3E%3C/svg%3E")` }} />
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FDFBF7]/95 backdrop-blur-md border-b border-neutral-100">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: DISPLAY, fontSize: '1.25rem', fontWeight: 400, fontStyle: 'italic' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[120px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -2960,13 +2960,13 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `radial-gradient(rgba(15, 30, 60, 0.07) 1px, transparent 1px)`, backgroundSize: '22px 22px' }} />
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/95 backdrop-blur-md border-b border-neutral-100">
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: DISPLAY, fontSize: '1.4rem', letterSpacing: '0.08em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="w-auto min-w-[140px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
         </Skeleton>
       </nav>
@@ -3193,13 +3193,13 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4"
         style={{ background:'rgba(8,8,18,0.7)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${BORDER}` }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily: DISPLAY, fontWeight:700, fontSize:'1.2rem', letterSpacing:'-0.03em', color: TXT }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-slate-400" />
-        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
             className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap shadow-lg">
             {heroCta}
@@ -3356,13 +3356,13 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
     <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur-md" style={{ borderBottom:'1px solid rgba(0,0,0,0.06)' }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.15rem', letterSpacing:'-0.03em', color:TXT }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-600" />
-        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
             className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap">
             {heroCta}
@@ -3536,13 +3536,13 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4"
         style={{ background:`${BG}e8`, backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(255,255,255,0.5)',
           boxShadow:'0 2px 20px rgba(0,0,0,0.06)' }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:'1.2rem', color:primaryColor }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-500" />
-        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
             borderRadius:'50px', boxShadow:`0 8px 20px ${primaryColor}45` }}
             className="px-6 py-2.5 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
@@ -3701,13 +3701,13 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       {/* NAV – minimal, line-based */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-8 py-5"
         style={{ background:`${BG}f5`, backdropFilter:'blur(12px)', borderBottom:`2px solid ${TXT}` }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily:DISPLAY, fontWeight:600, fontSize:'1.1rem', letterSpacing:'0.04em', textTransform:'uppercase' as const }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
             className="px-6 py-2.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
             {heroCta}
@@ -3876,13 +3876,13 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4"
         style={{ background:`${NEU}f5`, backdropFilter:'blur(16px)',
           boxShadow:'0 2px 12px rgba(163,177,198,0.3)' }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.2rem', color:TXT }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-slate-600" />
-        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY,
             fontWeight:600, color:'#fff', boxShadow:`0 6px 18px ${primaryColor}50`, borderRadius:'50px' }}
             className="px-6 py-2.5 text-xs uppercase tracking-wider hover:scale-105 transition-transform whitespace-nowrap">
@@ -4045,14 +4045,14 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-8 py-5"
         style={{ background:'rgba(6,6,8,0.78)', backdropFilter:'blur(24px)', borderBottom:`1px solid ${BORDER}` }}>
-        <Skeleton isLoading={isLoading} className="max-w-[40%] min-h-[2rem]">
+        <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
             ? <img src={(websiteData as any).logoImageUrl} alt={websiteData.businessName} className="h-8 w-auto object-contain max-w-[160px]" />
             : <span style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:'1.2rem', letterSpacing:'0.08em',
                 textTransform:'uppercase' as const, color:primaryColor }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-amber-200/60" />
-        <Skeleton isLoading={isLoading} className="min-w-[130px] h-10">
+        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
           <button onClick={scrollToContact} style={{ border:`1px solid ${primaryColor}`, color:primaryColor, fontFamily:BODY, fontWeight:500,
             letterSpacing:'0.1em', backgroundColor:'transparent' }}
             className="px-6 py-2.5 text-xs uppercase hover:bg-amber-400/10 transition-colors whitespace-nowrap">

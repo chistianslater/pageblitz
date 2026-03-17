@@ -2792,6 +2792,15 @@ export default function CustomerDashboard() {
     setContactEmailInput(storedContactEmailEarly ?? "");
   }, [storedContactEmailEarly]);
 
+  // Falls aktiver Tab durch deaktiviertes Add-on wegfällt → zurück zu Add-ons
+  // MUSS vor Early-Returns stehen (Rules of Hooks)
+  const _addOnAiChatEarly = !!(_selectedEntry?.website as any)?.addOnAiChat;
+  const _addOnBookingEarly = !!(_selectedEntry?.website as any)?.addOnBooking;
+  useEffect(() => {
+    if (activeTab === "leads" && !_addOnAiChatEarly) setActiveTab("addons");
+    if (activeTab === "appointments" && !_addOnBookingEarly) setActiveTab("addons");
+  }, [activeTab, _addOnAiChatEarly, _addOnBookingEarly]);
+
   // ── Setup-Flow State ──────────────────────────────────────────────────────
   const [setupOpen, setSetupOpen] = useState(() =>
     new URLSearchParams(window.location.search).get("checkout") === "success"
@@ -2954,12 +2963,6 @@ export default function CustomerDashboard() {
 
   const gmbPhotos = (onboardingData?.photoUrls as string[] | null) || [];
   const stockPhotos = imageSuggestions?.stockPhotos || [];
-
-  // Falls aktiver Tab durch deaktiviertes Add-on wegfällt → zurück zu Add-ons (useEffect, nie im Render!)
-  useEffect(() => {
-    if (activeTab === "leads" && !aiChatEnabled) setActiveTab("addons");
-    if (activeTab === "appointments" && !bookingEnabled) setActiveTab("addons");
-  }, [activeTab, aiChatEnabled, bookingEnabled]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
