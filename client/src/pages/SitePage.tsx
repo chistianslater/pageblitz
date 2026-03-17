@@ -107,16 +107,16 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
         </>
       )}
 
-      {/* Booking Add-on: round icon button above chat bubble (both add-ons active) */}
+      {/* Booking Add-on: round icon button bottom-left (both add-ons active) */}
       {w.addOnBooking && w.addOnAiChat && (
         <button
           onClick={() => setBookingOpen(true)}
-          className="fixed bottom-[88px] right-6 z-[9998] w-12 h-12 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+          className="fixed bottom-6 left-6 z-[9998] w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
           style={{ backgroundColor: primaryColor, color: colorScheme?.onPrimary || "#ffffff" }}
           aria-label="Termin buchen"
           title="Termin buchen"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
         </button>
       )}
 
