@@ -313,7 +313,7 @@ export default function ChatWidget({
               onKeyDown={handleKey}
               placeholder={leadCaptured ? "Wir melden uns bald bei dir!" : "Schreib eine Nachricht..."}
               disabled={loading || !!errorMsg || leadCaptured}
-              className="flex-1 text-sm outline-none px-3 py-2 rounded-xl border border-gray-200 focus:border-gray-400 transition-colors disabled:bg-gray-50 disabled:text-gray-400"
+              className="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none px-3 py-2 rounded-xl border border-gray-200 focus:border-gray-400 transition-colors disabled:bg-gray-50 disabled:text-gray-400"
             />
             <button
               onClick={sendMessage}
