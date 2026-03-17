@@ -252,76 +252,121 @@ export default function ContentEditorSplitView({
     onUpdate();
   }, [websiteId, confirmMutation, onUpdate]);
 
-  /** Handle click inside preview in inline-edit mode */
-  const handleInlineClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (!target) return;
+  /** Activate inline editing on a specific element */
+  const activateInlineEdit = useCallback((el: HTMLElement, path: string, text: string) => {
+    inlineActiveRef.current = { el, path, original: text };
+    el.contentEditable = "true";
 
-    // Skip if already editing this element
-    if (target === inlineActiveRef.current?.el) return;
-    // Skip clicks on interactive elements (buttons that should remain clickable is ok; we handle text inside them)
-    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") return;
-
-    // Find closest editable text element
-    const tags = ["h1","h2","h3","h4","h5","h6","p","span","a","li","button"];
-    let textEl: HTMLElement | null = null;
-    for (const tag of tags) {
-      const found = (target.closest(tag) ?? (target.tagName.toLowerCase() === tag ? target : null)) as HTMLElement | null;
-      if (found && (found.textContent ?? "").trim().length >= 2) {
-        textEl = found;
-        break;
-      }
-    }
-    if (!textEl) return;
-
-    const text = (textEl.textContent ?? "").trim();
-    if (text.length < 2) return;
-
-    // Try to find this text in our data
-    const path = findFieldPath(localDataRef.current, text);
-    if (!path) return; // Not a mapped field — ignore click
-
-    // Finish any previous edit first
-    if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
-
-    // Activate editing
-    inlineActiveRef.current = { el: textEl, path, original: text };
-    textEl.contentEditable = "true";
-
-    // Select all for easy replacement
     requestAnimationFrame(() => {
-      textEl!.focus();
-      const range = document.createRange();
-      range.selectNodeContents(textEl!);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
+      el.focus();
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      } catch (_) { /* ignore selection errors */ }
     });
 
     const onBlur = () => {
-      textEl!.removeEventListener("blur", onBlur);
-      textEl!.removeEventListener("keydown", onKeyDown);
-      // small timeout so ESC handler runs first
+      el.removeEventListener("blur", onBlur);
+      el.removeEventListener("keydown", onKeyDown);
       setTimeout(() => {
-        if (inlineActiveRef.current?.el === textEl) finishInlineEdit(inlineActiveRef.current);
+        if (inlineActiveRef.current?.el === el) finishInlineEdit(inlineActiveRef.current);
       }, 0);
     };
     const onKeyDown = (ke: KeyboardEvent) => {
       if (ke.key === "Enter" && !ke.shiftKey) {
         ke.preventDefault();
-        textEl!.blur();
+        el.blur();
       }
       if (ke.key === "Escape") {
-        textEl!.textContent = text; // Restore
-        textEl!.contentEditable = "false";
-        textEl!.removeEventListener("blur", onBlur);
-        textEl!.removeEventListener("keydown", onKeyDown);
+        el.textContent = text;
+        el.contentEditable = "false";
+        el.removeEventListener("blur", onBlur);
+        el.removeEventListener("keydown", onKeyDown);
         inlineActiveRef.current = null;
       }
     };
-    textEl.addEventListener("blur", onBlur);
-    textEl.addEventListener("keydown", onKeyDown);
+    el.addEventListener("blur", onBlur);
+    el.addEventListener("keydown", onKeyDown);
   }, [finishInlineEdit]);
+
+  /** Native click handler for inline-edit mode (attached via useEffect, not React event) */
+  const inlineClickHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
+  useEffect(() => {
+    inlineClickHandlerRef.current = (e: MouseEvent) => {
+      const raw = e.target as HTMLElement | null;
+      if (!raw) return;
+      if (raw.tagName === "INPUT" || raw.tagName === "TEXTAREA" || raw.tagName === "SELECT") return;
+
+      // Build candidate list: start from the clicked element, walk up through ancestors
+      // Stop at section boundaries to avoid accidentally editing container divs
+      const TEXT_TAGS = new Set(["h1","h2","h3","h4","h5","h6","p","span","a","li","button","label","strong","em","small"]);
+      const STOP_TAGS = new Set(["section","article","nav","header","footer","main","aside","div"]);
+
+      // Collect candidates: the clicked element + its text-tag ancestors (until a stop tag)
+      const candidates: HTMLElement[] = [];
+      let cur: HTMLElement | null = raw;
+      while (cur && cur !== previewScrollRef.current) {
+        const tag = cur.tagName.toLowerCase();
+        if (STOP_TAGS.has(tag)) break;
+        if (TEXT_TAGS.has(tag)) candidates.push(cur);
+        cur = cur.parentElement;
+      }
+      // If no text-tag found, try the raw target itself (might be a div with direct text)
+      if (candidates.length === 0 && (raw.textContent ?? "").trim().length >= 2) {
+        candidates.push(raw);
+      }
+
+      // Find the most specific element whose text maps to a data field
+      for (const el of candidates) {
+        // Skip if already editing
+        if (el === inlineActiveRef.current?.el) return;
+
+        // Use only the element's own direct text content (not all descendants)
+        // to avoid matching container text that concatenates multiple fields
+        const ownText = Array.from(el.childNodes)
+          .filter(n => n.nodeType === Node.TEXT_NODE)
+          .map(n => n.textContent ?? "")
+          .join("")
+          .trim();
+
+        const fullText = (el.textContent ?? "").trim();
+
+        // Try own text first (leaf), then full text
+        const textToSearch = ownText.length >= 2 ? ownText : fullText;
+        if (textToSearch.length < 2) continue;
+
+        const path = findFieldPath(localDataRef.current, textToSearch);
+        if (!path) {
+          // Also try full text if own text didn't match
+          if (ownText !== fullText && fullText.length >= 2) {
+            const pathFull = findFieldPath(localDataRef.current, fullText);
+            if (pathFull) {
+              if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
+              activateInlineEdit(el, pathFull, fullText);
+              return;
+            }
+          }
+          continue;
+        }
+
+        if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
+        activateInlineEdit(el, path, textToSearch);
+        return;
+      }
+    };
+  }, [activateInlineEdit, finishInlineEdit]);
+
+  // Attach/detach native click listener based on mode
+  useEffect(() => {
+    const container = previewScrollRef.current;
+    if (!container || previewMode !== "inline") return;
+    const handler = (e: MouseEvent) => inlineClickHandlerRef.current?.(e);
+    container.addEventListener("click", handler);
+    return () => container.removeEventListener("click", handler);
+  }, [previewMode]);
 
   // ── Section select mode ─────────────────────────────────────────────────────
   const selectSection = useCallback((sectionType: string) => {
@@ -554,19 +599,13 @@ export default function ContentEditorSplitView({
             />
           </div>
 
-          {/* Overlay: active in "select" mode, transparent (click-through) in "inline" mode */}
-          <div
-            className={`absolute inset-0 ${previewMode === "select" ? "cursor-crosshair" : "pointer-events-none"}`}
-            style={{ zIndex: 50 }}
-            onClick={previewMode === "select" ? handlePreviewClick : undefined}
-          />
-
-          {/* Inline-edit click catcher: sits below overlay, active only in inline mode */}
-          {previewMode === "inline" && (
+          {/* Overlay: only in select mode — captures section clicks.
+              In inline mode there is NO overlay so clicks reach the actual elements. */}
+          {previewMode === "select" && (
             <div
-              className="absolute inset-0 cursor-text"
-              style={{ zIndex: 40 }}
-              onClick={handleInlineClick}
+              className="absolute inset-0 cursor-crosshair"
+              style={{ zIndex: 50 }}
+              onClick={handlePreviewClick}
             />
           )}
         </div>
