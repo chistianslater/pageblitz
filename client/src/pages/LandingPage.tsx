@@ -1310,6 +1310,10 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
     };
   }, [isHovering, startAutoScroll, scrollToTop]);
 
+  const slug = config.data.businessName
+    ? config.data.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    : layout;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -1320,65 +1324,69 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white mb-4 border border-white/10 group-hover:border-white/30 transition-all shadow-2xl">
-        {/* Live Website Preview - scaled to fit */}
-        <div 
-          ref={previewRef}
-          className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide"
-          style={{ scrollBehavior: "auto" }}
-        >
-          <div 
-            className="origin-top-left"
-            style={{ 
-              transform: "scale(0.28)", 
-              transformOrigin: "top left",
-              width: "357%",
-              maxWidth: "357%",
-              height: "auto",
-              minHeight: "357%",
-              overflowX: "hidden",
-            }}
-          >
-            <LayoutComponent 
-              websiteData={config.data} 
-              cs={colorScheme}
-              heroImageUrl={config.heroImage}
-              isLoading={false}
-            />
+      {/* Browser Window Mockup */}
+      <div className="rounded-xl overflow-hidden border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.55)] group-hover:shadow-[0_24px_70px_rgba(99,102,241,0.25)] group-hover:border-white/[0.15] transition-all duration-500">
+
+        {/* Browser Chrome */}
+        <div className="bg-[#1c1e2e] px-3.5 py-2.5 flex items-center gap-3 border-b border-white/[0.06]">
+          {/* Traffic lights */}
+          <div className="flex gap-1.5 flex-shrink-0">
+            <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+            <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+            <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+          </div>
+          {/* URL bar */}
+          <div className="flex-1 bg-white/[0.06] rounded-md px-3 py-1 flex items-center gap-1.5 min-w-0">
+            <svg className="w-3 h-3 text-white/25 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-white/35 text-[11px] font-mono truncate">pageblitz.de/{slug}</span>
           </div>
         </div>
-        
-        {/* Gradient overlay for smooth fade */}
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-none" />
 
-        {/* Layout badge */}
-        <div className="absolute top-3 right-3">
-          <span className="text-xs font-medium bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded border border-white/20">
-            {layout}
-          </span>
+        {/* Website Preview */}
+        <div className="relative overflow-hidden bg-white" style={{ aspectRatio: "16/10" }}>
+          <div
+            ref={previewRef}
+            className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide"
+            style={{ scrollBehavior: "auto" }}
+          >
+            <div
+              className="origin-top-left"
+              style={{
+                transform: "scale(0.28)",
+                transformOrigin: "top left",
+                width: "357%",
+                maxWidth: "357%",
+                height: "auto",
+                minHeight: "357%",
+                overflowX: "hidden",
+              }}
+            >
+              <LayoutComponent
+                websiteData={config.data}
+                cs={colorScheme}
+                heroImageUrl={config.heroImage}
+                isLoading={false}
+              />
+            </div>
+          </div>
+
+          {/* Bottom fade */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
         </div>
       </div>
-      
-      {/* Info */}
-      <div className="flex items-center justify-between">
+
+      {/* Info below card */}
+      <div className="flex items-center justify-between mt-3 px-0.5">
         <div>
-          <h4 className="text-white font-semibold group-hover:text-indigo-300 transition-colors">{config.data.businessName}</h4>
-          <p className="text-white/50 text-sm">{config.label}</p>
+          <h4 className="text-white font-semibold text-sm group-hover:text-indigo-300 transition-colors">{config.data.businessName}</h4>
+          <p className="text-white/40 text-xs mt-0.5">{config.label}</p>
         </div>
         <div className="flex gap-1">
-          <div 
-            className="w-4 h-4 rounded-full border border-white/20" 
-            style={{ backgroundColor: colorScheme.primary }}
-          />
-          <div 
-            className="w-4 h-4 rounded-full border border-white/20" 
-            style={{ backgroundColor: colorScheme.secondary }}
-          />
-          <div 
-            className="w-4 h-4 rounded-full border border-white/20" 
-            style={{ backgroundColor: colorScheme.accent }}
-          />
+          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.primary }} />
+          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.secondary }} />
+          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.accent }} />
         </div>
       </div>
     </motion.div>
