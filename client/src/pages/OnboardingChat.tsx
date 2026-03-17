@@ -934,7 +934,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       ? localStorage.getItem(onboardingStorageKey)
       : null;
 
-    if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
+    if (savedStep && savedStep !== 'welcome') {
       setCurrentStep(savedStep as ChatStep);
       return;
     }
@@ -945,7 +945,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const stepIndex = dbStepCurrent;
       if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
         const targetStep = STEP_ORDER[stepIndex];
-        if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
+        if (targetStep && targetStep !== 'welcome') {
           setCurrentStep(targetStep);
           // Also save to localStorage for next time
           if (onboardingStorageKey) {
@@ -1491,9 +1491,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           ? localStorage.getItem(onboardingStorageKey)
           : null;
 
-        if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
-          setCurrentStep(savedStep as ChatStep);
-          await addBotMessage(getStepPrompt(savedStep as ChatStep), 800);
+        if (savedStep && savedStep !== 'welcome') {
+          const step = savedStep as ChatStep;
+          setCurrentStep(step);
+          // checkout and preview are pure UI steps – no bot message needed, the UI renders directly
+          if (step !== 'checkout' && step !== 'preview') {
+            await addBotMessage(getStepPrompt(step), 800);
+          }
           return;
         }
 
@@ -1504,13 +1508,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const stepIndex = dbStepCurrent;
           if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
             const targetStep = STEP_ORDER[stepIndex];
-            if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
+            if (targetStep && targetStep !== 'welcome') {
               setCurrentStep(targetStep);
               // Also save to localStorage for next time
               if (onboardingStorageKey) {
                 localStorage.setItem(onboardingStorageKey, targetStep);
               }
-              await addBotMessage(getStepPrompt(targetStep), 800);
+              if (targetStep !== 'checkout' && targetStep !== 'preview') {
+                await addBotMessage(getStepPrompt(targetStep), 800);
+              }
               return;
             }
           }
@@ -1793,12 +1799,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       setCurrentStep(nextStep);
 
       // Synchronously update localStorage to avoid race condition on quick page refresh
+      // checkout and preview are saved too so reload brings the user back to the right place
       if (onboardingStorageKey) {
-        if (nextStep === 'checkout' || nextStep === 'preview') {
-          localStorage.removeItem(onboardingStorageKey);
-        } else {
-          localStorage.setItem(onboardingStorageKey, nextStep);
-        }
+        localStorage.setItem(onboardingStorageKey, nextStep);
       }
 
       // If this step has a section divider, inject it as a special message type
@@ -2549,9 +2552,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
 
           {/* Mobile-only progress bar + step navigation (desktop shows it in the preview panel header) */}
-          {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
+          {currentStep !== "welcome" && currentStep !== "checkout" && currentStep !== "preview" && (() => {
             const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
-            const currentIdx = Math.max(0, dynamicStepOrder.indexOf(currentStep));
+            const rawIdx = dynamicStepOrder.indexOf(currentStep);
+            // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
+            if (rawIdx === -1) return null;
+            const currentIdx = rawIdx;
             const pct = totalSteps > 0 ? Math.round((currentIdx / totalSteps) * 100) : 0;
 
             // Completed steps – same labels as desktop
@@ -5097,9 +5103,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {chatHidden ? "Chat einblenden" : "Chat ausblenden"}
             </button>
             {/* Progress bar with clickable completed steps */}
-            {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
+            {currentStep !== "welcome" && currentStep !== "checkout" && currentStep !== "preview" && (() => {
               const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
               const currentIdx = dynamicStepOrder.indexOf(currentStep);
+              // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
+              if (currentIdx === -1) return null;
               const progress = Math.round((currentIdx / totalSteps) * 100);
 
               // Get completed steps (all steps before current)
