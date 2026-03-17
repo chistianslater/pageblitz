@@ -1233,8 +1233,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           return suggestions;
         }
-        case "legalEmail":
-          return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
+        case "legalEmail": {
+          if (data.legalEmail) return [data.legalEmail];
+          const emailSuggestions: string[] = [];
+          // Prefer the email the user entered before starting onboarding
+          if (data.email) emailSuggestions.push(data.email);
+          if (business?.email && business.email !== data.email) emailSuggestions.push(business.email);
+          return emailSuggestions;
+        }
         case "legalPhone":
           return data.legalPhone ? [data.legalPhone] : (business?.phone ? [business.phone] : []);
         case "openingHours":
@@ -1245,7 +1251,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return [];
       }
     },
-    [data.businessName, data.businessCategory, data.legalEmail, business?.name, business?.address, business?.email, business?.placeId]
+    [data.businessName, data.businessCategory, data.legalEmail, data.email, business?.name, business?.address, business?.email, business?.placeId]
   );
   // ── Step promptss ────────────────────────────────────────────────────────
   const getStepPrompt = useCallback(
@@ -1294,8 +1300,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Wie lautet die **Straße und Hausnummer** der Geschäftsadresse?\n\nBeispiel: *Musterstraße 12*`;
         case "legalZipCity":
           return `Und die **Postleitzahl und Stadt**?\n\nBeispiel: *50667 Köln*`;
-        case "legalEmail":
-          return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
+        case "legalEmail": {
+          const prefilledEmail = data.email || business?.email;
+          return prefilledEmail
+            ? `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nIch schlage **${prefilledEmail}** vor – einfach bestätigen oder eine andere eingeben.`
+            : `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
+        }
         case "legalPhone":
           return `Welche **Telefonnummer** soll im Impressum und auf der Website stehen?\n\nBeispiel: *+49 2871 123456*`;
         case "openingHours":
@@ -1345,7 +1355,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return "Nächster Schritt...";
       }
     },
-    [data.businessName, business?.name, business?.placeId, data.headlineFont]
+    [data.businessName, data.email, business?.name, business?.email, business?.placeId, data.headlineFont]
   );
 
   // ── Initialize chat ─────────────────────────────────────────────────────
