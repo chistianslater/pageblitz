@@ -271,7 +271,7 @@ export default function AccountPage() {
                 <CreditCard className="w-5 h-5" />
                 <span className="font-medium">Abonnement</span>
                 {hasActiveSubscription && (
-                  <span className="ml-auto w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className={`ml-auto w-2 h-2 rounded-full ${isCanceling ? "bg-amber-400" : "bg-emerald-500"}`} />
                 )}
               </button>
               <button
