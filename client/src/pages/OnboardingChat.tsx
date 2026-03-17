@@ -5,6 +5,7 @@ import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
+import ChatWidget from "@/components/ChatWidget";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
@@ -2077,6 +2078,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           gallery:     data.addOnGallery,
           menu:        _addOnMenu,
           pricelist:   _addOnPricelist,
+          aiChat:      _addOnAiChat,
+          booking:     data.addOnBooking,
         },
       });
       window.open(session.url, "_blank");
@@ -2269,6 +2272,41 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       (patched as any)._slug = slug;
     }
 
+    // Patch contact section with user-entered legal data + opening hours
+    {
+      const contactIdx = patched.sections.findIndex((s: any) => s.type === "contact");
+      const contactSec: any = contactIdx > -1 ? patched.sections[contactIdx] : { type: "contact", headline: "Kontakt", items: [] };
+      const items: any[] = [...(contactSec.items || [])];
+      const setItem = (icon: string, value: string) => {
+        if (!value) return;
+        const idx = items.findIndex((i: any) => i.icon === icon);
+        if (idx > -1) items[idx] = { ...items[idx], description: value };
+        else items.push({ icon, description: value });
+      };
+      // Address from legal data
+      const street = data.legalStreet || "";
+      const zipCity = data.legalZip && data.legalCity ? `${data.legalZip} ${data.legalCity}` : (data.legalCity || "");
+      const address = [street, zipCity].filter(Boolean).join(", ");
+      setItem("MapPin", address);
+      setItem("Phone", data.legalPhone || "");
+      setItem("Mail", data.legalEmail || "");
+      // Opening hours: format DayHours[] → compact string
+      if (data.openingHours && data.openingHours.length > 0) {
+        const openDays = data.openingHours.filter(d => d.open);
+        if (openDays.length > 0) {
+          const hoursStr = openDays.map(d => {
+            const slot1 = `${d.from}–${d.to}`;
+            const slot2 = d.from2 && d.to2 ? `, ${d.from2}–${d.to2}` : "";
+            return `${d.day.slice(0, 2)}: ${slot1}${slot2}`;
+          }).join(" · ");
+          setItem("Clock", hoursStr);
+        }
+      }
+      const updated = { ...contactSec, items };
+      if (contactIdx > -1) patched.sections[contactIdx] = updated;
+      else patched.sections.push(updated);
+    }
+
     return patched;
   }, [
     siteData?.website?.websiteData,
@@ -2289,6 +2327,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.addOnPricelist,
     data.addOnPricelistData,
     data.contactFormFields,
+    data.legalStreet, data.legalZip, data.legalCity, data.legalPhone, data.legalEmail,
+    data.openingHours,
     hiddenSections,
     sectionOrder,
     siteData?.website?.slug,
@@ -2307,6 +2347,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     faq:          { label: "FAQ",                   emoji: "❓" },
     menu:         { label: "Speisekarte",           emoji: "📖" },
     pricelist:    { label: "Preisliste",            emoji: "🏷️" },
+    process:      { label: "Ablauf",                emoji: "⚙️" },
   };
 
   const allSectionsForHideStep = useMemo(() => {
@@ -2330,9 +2371,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [currentStep, allSectionsForHideStep.length]);
 
   // ── Price calculation ───────────────────────────────────────────────────
-  const BASE_PRICE_MONTHLY = 24.90; // 24,90 €/Monat (monatliche Abrechnung)
-  const BASE_PRICE_YEARLY  = 19.90; // 19,90 €/Monat (jährliche Abrechnung)
-  const ADDON_PRICE = 3.90;         // 3,90 € pro Add-on
+  const BASE_PRICE_MONTHLY   = 24.90; // 24,90 €/Monat (monatliche Abrechnung)
+  const BASE_PRICE_YEARLY    = 19.90; // 19,90 €/Monat (jährliche Abrechnung)
+  const ADDON_PRICE          = 3.90;  // 3,90 € pro Standard-Add-on
+  const ADDON_PRICE_AI_CHAT  = 9.90;  // 9,90 € KI-Chat
+  const ADDON_PRICE_BOOKING  = 4.90;  // 4,90 € Terminbuchung
 
   const totalPrice = () => {
     const base  = billingInterval === "yearly" ? BASE_PRICE_YEARLY : BASE_PRICE_MONTHLY;
@@ -2341,6 +2384,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (data.addOnGallery)     addons += ADDON_PRICE;
     if (_addOnMenu)            addons += ADDON_PRICE;
     if (_addOnPricelist)       addons += ADDON_PRICE;
+    if (_addOnAiChat)          addons += ADDON_PRICE_AI_CHAT;
+    if (data.addOnBooking)     addons += ADDON_PRICE_BOOKING;
     return (base + addons).toFixed(2).replace(".", ",");
   };
 
@@ -2424,6 +2469,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               headlineSize={data.headlineSize}
               isLoading={false}
             />
+            {_addOnAiChat && liveWebsiteData && (
+              <ChatWidget
+                slug={siteData?.website?.slug || "preview"}
+                primaryColor={(data.colorScheme as any)?.primary || colorScheme?.primary || "#2563eb"}
+                businessName={liveWebsiteData.businessName || data.businessName || "Assistent"}
+                welcomeMessage={data.chatWelcomeMessage || undefined}
+                addOnBooking={!!data.addOnBooking}
+                onBookingRequest={() => {}}
+              />
+            )}
           </div>
           {/* Mobile back bar – OUTSIDE overflow-auto so it's never covered by website content.
               paddingBottom clears the iOS home indicator. */}
@@ -4632,6 +4687,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <span>+3,90 €/Monat</span>
                       </div>
                     )}
+                    {_addOnAiChat && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>+ KI-Chat</span>
+                        <span>+9,90 €/Monat</span>
+                      </div>
+                    )}
+                    {data.addOnBooking && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>+ Terminbuchung</span>
+                        <span>+4,90 €/Monat</span>
+                      </div>
+                    )}
                   </div>
                   <div className="pt-1 flex justify-between font-bold text-white text-base">
                     <span>Gesamt</span>
@@ -5205,6 +5272,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     headlineSize={data.headlineSize}
                     isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}
                   />
+                  {_addOnAiChat && liveWebsiteData && (
+                    <ChatWidget
+                      slug={siteData?.website?.slug || "preview"}
+                      primaryColor={(data.colorScheme as any)?.primary || colorScheme?.primary || "#2563eb"}
+                      businessName={liveWebsiteData.businessName || data.businessName || "Assistent"}
+                      welcomeMessage={data.chatWelcomeMessage || undefined}
+                      addOnBooking={!!data.addOnBooking}
+                      onBookingRequest={() => {}}
+                    />
+                  )}
 
                   {/* ── Magic progressive reveal overlays ─────────────────────────────
                       These "fog of war" layers lift one by one as the user fills in info,

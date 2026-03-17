@@ -2259,6 +2259,8 @@ Antworte NUR mit validem JSON:
           gallery:     z.boolean().default(false),
           menu:        z.boolean().default(false),
           pricelist:   z.boolean().default(false),
+          aiChat:      z.boolean().default(false),
+          booking:     z.boolean().default(false),
         }).default({}),
       }))
       .mutation(async ({ input, ctx }) => {
@@ -2267,7 +2269,7 @@ Antworte NUR mit validem JSON:
 
         const baseAmount  = PRICING.base[input.billingInterval];
         const activeAddOns = (Object.entries(input.addOns) as [AddOnKey, boolean][]).filter(([, v]) => v);
-        const totalAmount  = baseAmount + activeAddOns.length * PRICING.addon;
+        const totalAmount  = baseAmount + activeAddOns.reduce((sum, [k]) => sum + addonPrice(k), 0);
 
         const basePriceStr  = (baseAmount / 100).toFixed(2).replace(".", ",");
         const intervalLabel = input.billingInterval === "yearly" ? "Jahresabo" : "monatlich";
