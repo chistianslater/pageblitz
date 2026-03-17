@@ -81,6 +81,17 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   formerSlug: varchar("formerSlug", { length: 255 }),
   // Umami Analytics
   umamiWebsiteId: varchar("umamiWebsiteId", { length: 100 }),
+  // Add-on flags (live state on the website)
+  addOnContactForm: boolean("addOnContactForm").default(false),
+  addOnGallery: boolean("addOnGallery").default(false),
+  addOnMenu: boolean("addOnMenu").default(false),
+  addOnPricelist: boolean("addOnPricelist").default(false),
+  addOnBooking: boolean("addOnBooking").default(false),
+  addOnAiChat: boolean("addOnAiChat").default(false),
+  // AI Chat usage tracking
+  chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),
+  chatUsageCount: int("chatUsageCount").default(0),
+  chatUsageResetAt: timestamp("chatUsageResetAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

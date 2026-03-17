@@ -2955,9 +2955,11 @@ export default function CustomerDashboard() {
   const gmbPhotos = (onboardingData?.photoUrls as string[] | null) || [];
   const stockPhotos = imageSuggestions?.stockPhotos || [];
 
-  // Falls aktiver Tab durch deaktiviertes Add-on wegfällt → zurück zu Add-ons
-  if (activeTab === "leads" && !aiChatEnabled) setActiveTab("addons");
-  if (activeTab === "appointments" && !bookingEnabled) setActiveTab("addons");
+  // Falls aktiver Tab durch deaktiviertes Add-on wegfällt → zurück zu Add-ons (useEffect, nie im Render!)
+  useEffect(() => {
+    if (activeTab === "leads" && !aiChatEnabled) setActiveTab("addons");
+    if (activeTab === "appointments" && !bookingEnabled) setActiveTab("addons");
+  }, [activeTab, aiChatEnabled, bookingEnabled]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
