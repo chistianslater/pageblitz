@@ -95,7 +95,7 @@ export default function ChatWidget({
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
-    if (!text || loading || leadCaptured) return;
+    if (!text || loading) return;
 
     const userMsg: Message = { role: "user", content: text };
     const newMessages = [...messages, userMsg];
@@ -154,7 +154,7 @@ export default function ChatWidget({
     } finally {
       setLoading(false);
     }
-  }, [input, loading, leadCaptured, messages, slug]);
+  }, [input, loading, messages, slug]);
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -311,13 +311,13 @@ export default function ChatWidget({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder={leadCaptured ? "Wir melden uns bald bei dir!" : "Schreib eine Nachricht..."}
-              disabled={loading || !!errorMsg || leadCaptured}
+              placeholder="Schreib eine Nachricht..."
+              disabled={loading || !!errorMsg}
               className="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none px-3 py-2 rounded-xl border border-gray-200 focus:border-gray-400 transition-colors disabled:bg-gray-50 disabled:text-gray-400"
             />
             <button
               onClick={sendMessage}
-              disabled={!input.trim() || loading || !!errorMsg || leadCaptured}
+              disabled={!input.trim() || loading || !!errorMsg}
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-40 hover:opacity-90"
               style={{ backgroundColor: primaryColor, color: textOnPrimary }}
               aria-label="Senden"
