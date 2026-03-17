@@ -3381,11 +3381,11 @@ Deine Regeln:
 4. Behalte die exakte JSON-Struktur (Schlüsselnamen, Arrays, Typen) unverändert.
 5a. HINZUFÜGEN-Regel: Wenn der Nutzer Elemente "hinzufügen", "ergänzen", "erweitern" oder "noch X weitere" möchte → ERWEITERE das bestehende Array. Niemals das gesamte Array ersetzen!
 5. Füge dem JSON-Objekt immer diese zwei Meta-Felder hinzu:
-   - "_mode":
-     • "apply" – direkte Änderungsanweisung (z.B. "ändere X zu Y", "mach kürzer", "ersetze")
-     • "suggest" – offene Frage nach Verbesserungsideen (z.B. "was würdest du verbessern?", "hast du Ideen?")
-     • "chat" – Meta-Frage, Rückfrage oder Gesprächsnachricht OHNE Website-Änderung (z.B. "was hast du geändert?", "was wurde übernommen?", "kannst du das erklären?", "wieso?"). Bei "chat" lasse ALLE Website-Daten unverändert!
-   - "_aiMessage": Kurze deutsche Antwort (max. 150 Zeichen). Bei "apply": z.B. "Slogan auf '...' geändert." Bei "suggest": z.B. "Wie wäre es mit: '...'?" Bei "chat": direkte Antwort auf die Frage des Nutzers.
+   - "_mode" – Entscheidungsregel:
+     • "apply"   → Nutzer gibt den GENAUEN neuen Inhalt vor (z.B. "setze den Slogan auf 'X'", "ersetze Y durch Z", "mach den Text kürzer"). Du setzt 1:1 um, was vorgegeben wird.
+     • "suggest" → Nutzer bittet die KI, den Inhalt SELBST ZU WÄHLEN oder schlägt vor, etwas zu verbessern (z.B. "schlage vor", "was würdest du empfehlen?", "finde passende X", "optimiere", "verbessere", "welche würden passen?", "ich hätte gerne X – schlage welche vor"). AUCH WENN der Nutzer ein klares Ziel nennt (z.B. "6 Leistungen"), aber die KI die konkreten Inhalte aussucht → immer "suggest"!
+     • "chat"    → Meta-Frage oder Gesprächsnachricht OHNE jede Änderung (z.B. "was hast du geändert?", "erkläre das", "wieso?"). Bei "chat" lasse ALLE Daten unverändert.
+   - "_aiMessage": Kurze deutsche Antwort (max. 150 Zeichen). Bei "apply": z.B. "Slogan auf '...' geändert." Bei "suggest": z.B. "Wie wäre es mit: X, Y und Z?" Bei "chat": direkte Antwort.
 
 Wichtige Felder im JSON:
 - businessName: Unternehmensname
