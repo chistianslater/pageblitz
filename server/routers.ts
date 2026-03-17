@@ -20,6 +20,7 @@ import {
   updateUser, getUserByOpenId,
   createContactSubmission, getContactSubmissionsByWebsiteId, countUnreadSubmissions,
   markSubmissionRead, countRecentSubmissionsByIp, archiveSubmission, deleteContactSubmission,
+  getChatTranscriptsByWebsiteId, deleteChatTranscriptById,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
 import { chatLeads, generatedWebsites, appointmentSettings, appointments } from "../drizzle/schema";
@@ -3005,6 +3006,28 @@ Kontext: ${input.context}`,
           .set({ readAt: new Date() })
           .where(eqDrizzle(chatLeads.id, input.leadId));
 
+        return { success: true };
+      }),
+
+    getChatTranscripts: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const transcripts = await getChatTranscriptsByWebsiteId(input.websiteId, 100);
+        return { transcripts };
+      }),
+
+    deleteChatTranscript: protectedProcedure
+      .input(z.object({ transcriptId: z.number(), websiteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        await deleteChatTranscriptById(input.transcriptId);
         return { success: true };
       }),
 

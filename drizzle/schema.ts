@@ -315,3 +315,21 @@ export const appointments = mysqlTable("appointments", {
 
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = typeof appointments.$inferInsert;
+
+// ── AI Chat Transcripts ───────────────────────────────────────────────────────
+export const chatTranscripts = mysqlTable("chat_transcripts", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull().unique(),
+  chatLeadId: int("chatLeadId"),            // nullable FK to chat_leads
+  messages: json("messages").notNull(),     // Array<{role,content}>
+  messageCount: int("messageCount").notNull().default(0),
+  visitorName: varchar("visitorName", { length: 255 }),
+  summary: text("summary"),
+  expiresAt: timestamp("expiresAt").notNull(), // 30 days from createdAt
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ChatTranscript = typeof chatTranscripts.$inferSelect;
+export type InsertChatTranscript = typeof chatTranscripts.$inferInsert;

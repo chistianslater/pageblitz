@@ -12,6 +12,7 @@ import {
   generationJobs, InsertGenerationJob, GenerationJob,
   contactSubmissions, InsertContactSubmission, ContactSubmission,
   magicLinkTokens,
+  chatTranscripts, ChatTranscript,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -692,4 +693,61 @@ export async function countRecentMagicLinksByEmail(email: string): Promise<numbe
     .from(magicLinkTokens)
     .where(and(eq(magicLinkTokens.email, email), gte(magicLinkTokens.createdAt, since)));
   return Number(result[0]?.count ?? 0);
+}
+
+// ── Chat Transcripts ─────────────────────────────────────────────────────────
+
+export async function upsertChatTranscript(
+  websiteId: number,
+  sessionId: string,
+  messages: Array<{ role: string; content: string }>,
+  opts?: { chatLeadId?: number; visitorName?: string; summary?: string }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+  await db
+    .insert(chatTranscripts)
+    .values({
+      websiteId,
+      sessionId,
+      messages: messages as any,
+      messageCount: messages.length,
+      chatLeadId: opts?.chatLeadId ?? null,
+      visitorName: opts?.visitorName ?? null,
+      summary: opts?.summary ?? null,
+      expiresAt,
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        messages: messages as any,
+        messageCount: messages.length,
+        chatLeadId: opts?.chatLeadId ?? undefined,
+        visitorName: opts?.visitorName ?? undefined,
+        summary: opts?.summary ?? undefined,
+        expiresAt,
+      },
+    });
+}
+
+export async function getChatTranscriptsByWebsiteId(
+  websiteId: number,
+  limit = 50
+): Promise<ChatTranscript[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const now = new Date();
+  return db
+    .select()
+    .from(chatTranscripts)
+    .where(and(eq(chatTranscripts.websiteId, websiteId), gte(chatTranscripts.expiresAt, now)))
+    .orderBy(desc(chatTranscripts.updatedAt))
+    .limit(limit);
+}
+
+export async function deleteChatTranscriptById(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(chatTranscripts).where(eq(chatTranscripts.id, id));
 }

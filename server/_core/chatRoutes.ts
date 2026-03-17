@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { getDb } from "../db";
+import { getDb, upsertChatTranscript } from "../db";
 import { generatedWebsites, chatLeads, businesses, users, subscriptions } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { invokeLLM } from "./llm";
@@ -260,6 +260,21 @@ export function registerChatRoutes(app: Express) {
         .update(generatedWebsites)
         .set({ chatUsageCount: usageCount + 1 })
         .where(eq(generatedWebsites.id, website.id)).catch(() => {});
+
+      // Save / update transcript (fire-and-forget)
+      const fullMessages = [
+        ...trimmedMessages,
+        { role: "assistant", content: cleanContent },
+      ];
+      upsertChatTranscript(
+        website.id,
+        sessionId || "anonymous",
+        fullMessages,
+        {
+          visitorName: leadData?.name ?? undefined,
+          summary: leadData?.summary ?? undefined,
+        }
+      ).catch(() => {});
 
       return res.json({
         content: cleanContent,
