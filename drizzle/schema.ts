@@ -93,7 +93,7 @@ export const subscriptions = mysqlTable("subscriptions", {
   userId: int("userId").notNull(),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
-  status: mysqlEnum("status", ["active", "canceled", "past_due", "trialing", "incomplete"]).notNull().default("incomplete"),
+  status: mysqlEnum("status", ["active", "canceling", "canceled", "past_due", "trialing", "incomplete"]).notNull().default("incomplete"),
   plan: varchar("plan", { length: 50 }).notNull().default("base"),
   billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
   addOns: json("addOns"), // { contactForm: bool, gallery: bool, menu: bool, pricelist: bool }
