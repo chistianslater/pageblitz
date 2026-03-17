@@ -8,6 +8,8 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  backupApiUrl: process.env.BACKUP_API_URL ?? "",
+  backupApiKey: process.env.BACKUP_API_KEY ?? "",
   googlePlacesApiKey: process.env.GOOGLE_PLACES_API_KEY ?? "",
   // Resend Email Configuration
   resendApiKey: process.env.RESEND_API_KEY ?? "",

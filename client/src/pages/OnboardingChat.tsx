@@ -1337,7 +1337,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "email":
           return `Fast fertig! 🎊 An welche E-Mail-Adresse sollen wir deine Website-Infos und die Freischalt-Bestätigung schicken?`;
         case "preview":
-          return `🎉 **Deine Website ist fertig personalisiert!**\n\nSchau dir die Vorschau rechts an – das ist deine echte Website mit deinen echten Daten. Klicke auf **„Vollbild-Vorschau öffnen"**, um alle Funktionen zu testen!\n\n*💡 Keine Sorge: Fotos, Texte, Farben – alles kann nach der Freischaltung jederzeit geändert werden. Du bist nicht festgelegt!*`;
+          return `🎉 **Deine Website ist fertig personalisiert!**\n\nKlicke auf **„Vollbild-Vorschau öffnen"**, um deine echte Website mit deinen echten Daten zu sehen und alle Funktionen zu testen!\n\n*💡 Keine Sorge: Fotos, Texte, Farben – alles kann nach der Freischaltung jederzeit geändert werden. Du bist nicht festgelegt!*`;
         case "checkout":
           return `Bereit zum Freischalten? 🚀 Wähle dein Paket und starte durch!`;
         default:
@@ -4255,42 +4255,60 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               className="ml-9 mt-2"
             >
                 {!gmbÜbernommenEditMode ? (
-                  <button
-                    onClick={async () => {
+                  <div className="space-y-2">
+                    {/* Preview of the data to be imported */}
+                    {(() => {
                       const parts = business.address ? business.address.split(",") : [];
                       const street = parts[0]?.trim() || "";
                       const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
                       const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
                       const zip = zipCityMatch?.[1] || "";
                       const city = zipCityMatch?.[2] || "";
-                      const phone = business.phone || "";
-                      const email = business.email || "";
-                      setData((p) => ({
-                        ...p,
-                        legalStreet: street || p.legalStreet,
-                        legalZip: zip || p.legalZip,
-                        legalCity: city || p.legalCity,
-                        legalPhone: phone || p.legalPhone,
-                        legalEmail: email || p.legalEmail,
-                      }));
-                      const summary = [
-                        street && `Straße: ${street}`,
-                        zip && city && `PLZ/Stadt: ${zip} ${city}`,
-                        phone && `Telefon: ${phone}`,
-                        email && `E-Mail: ${email}`,
-                      ].filter(Boolean).join(" · ");
-                      addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
-                      const stepIdx = STEP_ORDER.indexOf("legalOwner");
-                      if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
-                      if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
-                      if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
-                      if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
-                      await advanceToStep("legalVat");
-                    }}
-                    className="flex items-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2 rounded-xl transition-all"
-                  >
-                    <span>📍</span> Adresse, Telefon & E-Mail aus Google My Business übernehmen
-                  </button>
+                      return (
+                        <div className="bg-slate-800/60 border border-slate-600/40 rounded-xl px-3 py-2.5 space-y-1">
+                          {street && <p className="text-xs text-slate-300">📍 {street}{zip && city ? `, ${zip} ${city}` : ""}</p>}
+                          {business.phone && <p className="text-xs text-slate-300">📞 {business.phone}</p>}
+                          {business.email && <p className="text-xs text-slate-300">✉️ {business.email}</p>}
+                        </div>
+                      );
+                    })()}
+                    <button
+                      onClick={async () => {
+                        const parts = business.address ? business.address.split(",") : [];
+                        const street = parts[0]?.trim() || "";
+                        const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
+                        const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
+                        const zip = zipCityMatch?.[1] || "";
+                        const city = zipCityMatch?.[2] || "";
+                        const phone = business.phone || "";
+                        const email = business.email || "";
+                        setData((p) => ({
+                          ...p,
+                          legalStreet: street || p.legalStreet,
+                          legalZip: zip || p.legalZip,
+                          legalCity: city || p.legalCity,
+                          legalPhone: phone || p.legalPhone,
+                          legalEmail: email || p.legalEmail,
+                        }));
+                        const summary = [
+                          street && `Straße: ${street}`,
+                          zip && city && `PLZ/Stadt: ${zip} ${city}`,
+                          phone && `Telefon: ${phone}`,
+                          email && `E-Mail: ${email}`,
+                        ].filter(Boolean).join(" · ");
+                        addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
+                        const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                        if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
+                        if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
+                        if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
+                        if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
+                        await advanceToStep("legalVat");
+                      }}
+                      className="w-full flex items-center justify-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2.5 rounded-xl transition-all font-medium"
+                    >
+                      ✓ Diese Daten übernehmen
+                    </button>
+                  </div>
                 ) : (
                   /* Edit mode: show fields inline */
                   <div className="bg-slate-800/80 border border-slate-600/50 rounded-xl p-3 space-y-2">
@@ -4933,8 +4951,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </button>
             </div>
           )}
-          {/* Mobile: preview shortcut button – only shown on small screens */}
-          {liveWebsiteData && colorScheme && (
+          {/* Mobile: preview shortcut button – only shown on small screens, hidden on preview step (has its own button) */}
+          {liveWebsiteData && colorScheme && currentStep !== "preview" && (
             <div className="lg:hidden px-3 pb-3 pt-1 flex-shrink-0">
               <button
                 onClick={() => setShowFullPreview(true)}
