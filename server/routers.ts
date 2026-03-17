@@ -3379,6 +3379,9 @@ Deine Regeln:
 2. Lasse alle nicht betroffenen Felder und deren Werte absolut unverändert.
 3. Antworte AUSSCHLIESSLICH mit dem vollständig aktualisierten JSON-Objekt – kein Text davor oder danach, kein Markdown, kein Code-Block.
 4. Behalte die exakte JSON-Struktur (Schlüsselnamen, Arrays, Typen) unverändert.
+5. Füge dem JSON-Objekt immer diese zwei Meta-Felder hinzu:
+   - "_mode": "apply" wenn der Nutzer eine direkte Anweisung gibt (z.B. "ändere X", "mach kürzer", "ersetze"). "suggest" wenn der Nutzer eine offene Frage stellt oder nach Ideen/Vorschlägen fragt (z.B. "was würdest du verbessern?", "hast du Ideen?", "optimiere das").
+   - "_aiMessage": Kurze deutsche Rückmeldung was du gemacht hast oder vorschlägst (max. 120 Zeichen). Bei "apply": "Slogan auf '...' geändert." Bei "suggest": "Wie wäre es mit: '...'?"
 
 Wichtige Felder im JSON:
 - businessName: Unternehmensname
@@ -3423,6 +3426,14 @@ Wichtige Felder im JSON:
           });
         }
 
+        // Extract meta fields before saving
+        const mode: "apply" | "suggest" = updatedData._mode === "suggest" ? "suggest" : "apply";
+        const aiMessage: string = typeof updatedData._aiMessage === "string"
+          ? updatedData._aiMessage
+          : mode === "apply" ? "Änderung wurde übernommen." : "Hier ist mein Vorschlag.";
+        delete updatedData._mode;
+        delete updatedData._aiMessage;
+
         // Re-attach preserved fields
         const mergedData = {
           ...updatedData,
@@ -3431,7 +3442,26 @@ Wichtige Felder im JSON:
           hasLegalPages: websiteData.hasLegalPages,
         };
 
+        if (mode === "suggest") {
+          // Don't save yet – return proposal to frontend for confirmation
+          return { mode: "suggest" as const, aiMessage, proposedData: mergedData };
+        }
+
         await updateWebsite(input.websiteId, { websiteData: mergedData });
+        return { mode: "apply" as const, aiMessage, success: true };
+      }),
+
+    // Confirm a pending AI suggestion
+    confirmAiEdit: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        proposedData: z.any(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find((r) => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nicht autorisiert" });
+        await updateWebsite(input.websiteId, { websiteData: input.proposedData });
         return { success: true };
       }),
 

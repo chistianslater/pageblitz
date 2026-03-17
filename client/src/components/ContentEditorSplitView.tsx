@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { Send, Loader2, User, MousePointer, ChevronDown, ChevronUp } from "lucide-react";
+import { Send, Loader2, User, MousePointer, Check, X } from "lucide-react";
 import WebsiteRenderer from "./WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -24,6 +24,9 @@ interface Message {
   role: "assistant" | "user";
   content: string;
   pending?: boolean;
+  // For suggest-mode: holds proposed data waiting for confirmation
+  proposedData?: any;
+  confirmed?: boolean; // true = accepted, false = rejected, undefined = pending decision
 }
 
 interface Props {
@@ -63,7 +66,6 @@ export default function ContentEditorSplitView({
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [previewKey, setPreviewKey] = useState(0);
-  const [showHint, setShowHint] = useState(true);
 
   const previewScrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -77,13 +79,26 @@ export default function ContentEditorSplitView({
   }, [messages]);
 
   const applyMutation = trpc.customer.applyAiEdit.useMutation({
-    onSuccess: () => {
-      onUpdate();
-      setPreviewKey(k => k + 1);
-      setMessages(msgs => [
-        ...msgs.filter(m => !m.pending),
-        { role: "assistant", content: "✓ Fertig! Die Vorschau wurde aktualisiert." },
-      ]);
+    onSuccess: (result) => {
+      if (result.mode === "suggest") {
+        // Show suggestion with confirm/reject buttons
+        setMessages(msgs => [
+          ...msgs.filter(m => !m.pending),
+          {
+            role: "assistant",
+            content: result.aiMessage,
+            proposedData: result.proposedData,
+          },
+        ]);
+      } else {
+        // Direct apply
+        onUpdate();
+        setPreviewKey(k => k + 1);
+        setMessages(msgs => [
+          ...msgs.filter(m => !m.pending),
+          { role: "assistant", content: `✓ ${result.aiMessage}` },
+        ]);
+      }
     },
     onError: (err) => {
       setMessages(msgs => [
@@ -93,32 +108,45 @@ export default function ContentEditorSplitView({
     },
   });
 
-  // Select a section — scroll preview + set chat context
+  const confirmMutation = trpc.customer.confirmAiEdit.useMutation({
+    onSuccess: () => {
+      onUpdate();
+      setPreviewKey(k => k + 1);
+    },
+  });
+
+  // Accept a suggestion
+  const handleAccept = useCallback((msgIndex: number, proposedData: any) => {
+    setMessages(msgs => msgs.map((m, i) =>
+      i === msgIndex ? { ...m, confirmed: true } : m
+    ));
+    confirmMutation.mutate({ websiteId, proposedData });
+  }, [websiteId, confirmMutation]);
+
+  // Reject a suggestion
+  const handleReject = useCallback((msgIndex: number) => {
+    setMessages(msgs => msgs.map((m, i) =>
+      i === msgIndex ? { ...m, confirmed: false } : m
+    ));
+  }, []);
+
+  // Select a section — scroll preview + update badge (no chat message)
   const selectSection = useCallback((sectionId: string) => {
     const meta = SECTION_META[sectionId];
     if (!meta) return;
     setSelectedSection(sectionId);
-    setShowHint(false);
 
-    // Scroll preview to section
-    const inner = previewScrollRef.current?.querySelector(`#${sectionId}`) as HTMLElement | null;
-    if (inner) {
-      const scrollEl = previewScrollRef.current!;
-      // zoom: 0.75 applied, so offset is scaled
-      const zoom = 0.75;
-      const sectionTop = inner.offsetTop * zoom;
-      scrollEl.scrollTo({ top: sectionTop - 60, behavior: "smooth" });
+    // Scroll preview to section using getBoundingClientRect (works correctly with CSS zoom)
+    const scrollEl = previewScrollRef.current;
+    if (scrollEl) {
+      const inner = scrollEl.querySelector(`#${sectionId}`) as HTMLElement | null;
+      if (inner) {
+        const containerRect = scrollEl.getBoundingClientRect();
+        const elRect = inner.getBoundingClientRect();
+        const scrollOffset = scrollEl.scrollTop + (elRect.top - containerRect.top) - 60;
+        scrollEl.scrollTo({ top: Math.max(0, scrollOffset), behavior: "smooth" });
+      }
     }
-
-    // Add assistant context message
-    setMessages(msgs => {
-      const last = msgs[msgs.length - 1];
-      if (last?.role === "assistant" && last.content.includes(meta.label)) return msgs;
-      return [...msgs, {
-        role: "assistant",
-        content: `**${meta.label}** ausgewählt (${meta.hint}). Was möchtest du ändern?`,
-      }];
-    });
 
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
@@ -210,7 +238,7 @@ export default function ContentEditorSplitView({
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3">
-          {showHint && (
+          {!selectedSection && messages.length <= 1 && (
             <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-700/20 rounded-xl px-3 py-2.5 border border-slate-700/30">
               <MousePointer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
               <span>Klicke auf einen Bereich in der Vorschau rechts, um ihn auszuwählen</span>
@@ -224,25 +252,54 @@ export default function ContentEditorSplitView({
                   <span className="text-blue-400" style={{ fontSize: 9 }}>✦</span>
                 </div>
               )}
-              <div className={`max-w-[88%] text-sm leading-relaxed px-3 py-2 rounded-2xl ${
-                msg.pending
-                  ? "bg-slate-700/40 text-slate-500"
-                  : msg.role === "user"
-                    ? "bg-blue-600 text-white rounded-br-sm"
-                    : "bg-slate-700/60 text-slate-200 rounded-bl-sm"
-              }`}>
-                {msg.pending ? (
-                  <span className="flex gap-1 items-center h-4">
-                    {[0, 150, 300].map(d => (
-                      <span key={d} className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: `${d}ms` }} />
-                    ))}
-                  </span>
-                ) : (
-                  msg.content.split("**").map((part, j) =>
-                    j % 2 === 1 ? <strong key={j} className="text-white">{part}</strong> : <span key={j}>{part}</span>
-                  )
+              <div className="max-w-[88%] flex flex-col gap-1.5">
+                <div className={`text-sm leading-relaxed px-3 py-2 rounded-2xl ${
+                  msg.pending
+                    ? "bg-slate-700/40 text-slate-500"
+                    : msg.role === "user"
+                      ? "bg-blue-600 text-white rounded-br-sm"
+                      : "bg-slate-700/60 text-slate-200 rounded-bl-sm"
+                }`}>
+                  {msg.pending ? (
+                    <span className="flex gap-1 items-center h-4">
+                      {[0, 150, 300].map(d => (
+                        <span key={d} className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: `${d}ms` }} />
+                      ))}
+                    </span>
+                  ) : (
+                    msg.content.split("**").map((part, j) =>
+                      j % 2 === 1 ? <strong key={j} className="text-white">{part}</strong> : <span key={j}>{part}</span>
+                    )
+                  )}
+                </div>
+
+                {/* Suggestion confirm/reject buttons */}
+                {msg.proposedData && msg.confirmed === undefined && (
+                  <div className="flex gap-1.5 pl-1">
+                    <button
+                      onClick={() => handleAccept(i, msg.proposedData)}
+                      disabled={confirmMutation.isPending}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+                    >
+                      <Check className="w-3 h-3" /> Übernehmen
+                    </button>
+                    <button
+                      onClick={() => handleReject(i)}
+                      disabled={confirmMutation.isPending}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-slate-700/40 border border-slate-600/40 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+                    >
+                      <X className="w-3 h-3" /> Verwerfen
+                    </button>
+                  </div>
+                )}
+                {msg.proposedData && msg.confirmed === true && (
+                  <span className="pl-1 text-xs text-emerald-400">✓ Übernommen</span>
+                )}
+                {msg.proposedData && msg.confirmed === false && (
+                  <span className="pl-1 text-xs text-slate-500">Verworfen</span>
                 )}
               </div>
+
               {msg.role === "user" && (
                 <div className="w-5 h-5 rounded-full bg-slate-600/80 flex items-center justify-center flex-shrink-0 mt-1">
                   <User className="w-2.5 h-2.5 text-slate-300" />
