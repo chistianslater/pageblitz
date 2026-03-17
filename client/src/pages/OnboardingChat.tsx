@@ -4643,26 +4643,30 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div className="flex rounded-xl overflow-hidden border border-slate-600 mb-1">
                   <button
                     onClick={() => setBillingInterval("yearly")}
-                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                    className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
                       billingInterval === "yearly"
                         ? "bg-indigo-600 text-white"
                         : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    Jährlich · <span className="font-bold">19,90 €</span>/Mo
-                    {billingInterval === "yearly" && (
-                      <span className="ml-1.5 text-xs bg-green-500/30 text-green-300 px-1.5 py-0.5 rounded-full">2 Monate gratis</span>
-                    )}
+                    <span>Jährlich · <span className="font-bold">19,90 €</span>/Mo</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-normal transition-all ${
+                      billingInterval === "yearly"
+                        ? "bg-green-500/30 text-green-300"
+                        : "bg-slate-600/40 text-slate-500"
+                    }`}>2 Monate gratis</span>
                   </button>
                   <button
                     onClick={() => setBillingInterval("monthly")}
-                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                    className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
                       billingInterval === "monthly"
                         ? "bg-indigo-600 text-white"
                         : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    Monatlich · <span className="font-bold">24,90 €</span>/Mo
+                    <span>Monatlich · <span className="font-bold">24,90 €</span>/Mo</span>
+                    {/* spacer so both buttons stay the same height */}
+                    <span className="text-xs opacity-0 px-2 py-0.5">–</span>
                   </button>
                 </div>
 
