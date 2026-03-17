@@ -235,7 +235,10 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
         </motion.div>
 
         {/* Tech specs floating badges */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 flex-wrap px-4">
+        <div
+          className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 flex-wrap px-4"
+          style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
+        >
           {["KI-gestützt", "SEO-optimiert", "Mobile-ready", "Blitzschnell"].map((tag, i) => (
             <motion.div
               key={tag}
@@ -1806,20 +1809,27 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   );
 
   const goToNextStep = useCallback(async () => {
-    // If in edit mode, return to the original position instead of advancing
+    const idx = dynamicStepOrder.indexOf(currentStep);
+    const next = dynamicStepOrder[idx + 1];
+
+    // If in edit mode, return to the original position instead of advancing –
+    // UNLESS the next step is an addon config step (editAiChat, editMenu, etc.)
+    // that was just activated; those must always be completed even in edit mode.
     if (editMode.isEditing && editMode.returnToStep) {
+      const addonConfigSteps: ChatStep[] = ["editAiChat", "editMenu", "editPricelist", "editGallery"];
+      if (next && addonConfigSteps.includes(next)) {
+        await advanceToStep(next);
+        return;
+      }
       addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
       await new Promise(resolve => setTimeout(resolve, 600));
       const returnStep = editMode.returnToStep;
       setCurrentStep(returnStep);
       setEditMode({ isEditing: false, returnToStep: null });
-      // Show the prompt for the step we're returning to
       await addBotMessage(getStepPrompt(returnStep), 400);
       return;
     }
 
-    const idx = dynamicStepOrder.indexOf(currentStep);
-    const next = dynamicStepOrder[idx + 1];
     if (next) {
       await advanceToStep(next);
     }
@@ -3743,40 +3753,42 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </p>
                   </div>
                 )}
-                <button
-                  disabled={isTyping}
-                  style={{ touchAction: "manipulation" }}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    // Use functional setData to guarantee we read the latest state,
-                    // avoiding stale-closure issues on mobile (iOS tap delay).
-                    let snapshot: OnboardingData | null = null;
-                    setData(p => { snapshot = p; return p; });
-                    const d = snapshot ?? data;
-                    const selected = [];
-                    if (d.addOnContactForm) selected.push("Kontaktformular");
-                    if (d.addOnGallery) selected.push("Bildergalerie");
-                    if (d.addOnMenu) selected.push("Speisekarte");
-                    if (d.addOnPricelist) selected.push("Preisliste");
-                    if (d.addOnAiChat) selected.push("KI-Chat");
-                    if (d.addOnBooking) selected.push("Terminbuchung");
-                    addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
-                    await trySaveStep(STEP_ORDER.indexOf("addons"), {
-                      addOnContactForm: d.addOnContactForm,
-                      contactFormFields: d.contactFormFields,
-                      addOnGallery: d.addOnGallery,
-                      addOnMenu: d.addOnMenu,
-                      addOnPricelist: d.addOnPricelist,
-                      addOnAiChat: d.addOnAiChat,
-                      addOnBooking: d.addOnBooking,
-                    });
+                <div className="sticky bottom-0 -mx-4 px-4 pb-3 pt-2 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent">
+                  <button
+                    disabled={isTyping}
+                    style={{ touchAction: "manipulation" }}
+                    onClick={async () => {
+                      if (isTyping) return;
+                      // Use functional setData to guarantee we read the latest state,
+                      // avoiding stale-closure issues on mobile (iOS tap delay).
+                      let snapshot: OnboardingData | null = null;
+                      setData(p => { snapshot = p; return p; });
+                      const d = snapshot ?? data;
+                      const selected = [];
+                      if (d.addOnContactForm) selected.push("Kontaktformular");
+                      if (d.addOnGallery) selected.push("Bildergalerie");
+                      if (d.addOnMenu) selected.push("Speisekarte");
+                      if (d.addOnPricelist) selected.push("Preisliste");
+                      if (d.addOnAiChat) selected.push("KI-Chat");
+                      if (d.addOnBooking) selected.push("Terminbuchung");
+                      addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
+                      await trySaveStep(STEP_ORDER.indexOf("addons"), {
+                        addOnContactForm: d.addOnContactForm,
+                        contactFormFields: d.contactFormFields,
+                        addOnGallery: d.addOnGallery,
+                        addOnMenu: d.addOnMenu,
+                        addOnPricelist: d.addOnPricelist,
+                        addOnAiChat: d.addOnAiChat,
+                        addOnBooking: d.addOnBooking,
+                      });
 
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                      await goToNextStep();
+                    }}
+                    className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Weiter <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
             </motion.div>
           )}
 
@@ -3800,18 +3812,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 />
                 <p className="text-slate-500 text-xs">Der KI-Chat begrüßt Besucher auf deiner Website mit dieser Nachricht. Du kannst sie später im Dashboard jederzeit ändern.</p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    const suggestion = `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
-                    setData(p => ({ ...p, chatWelcomeMessage: suggestion }));
-                  }}
-                  className="flex-1 text-xs text-slate-400 hover:text-white py-2 px-3 rounded-xl border border-slate-600/50 hover:border-slate-500 bg-slate-700/40 transition-colors"
-                >
-                  💡 Vorschlag übernehmen
-                </button>
+              <button
+                onClick={() => {
+                  const suggestion = `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                  setData(p => ({ ...p, chatWelcomeMessage: suggestion }));
+                }}
+                className="w-full text-xs text-slate-400 hover:text-white py-2 px-3 rounded-xl border border-slate-600/50 hover:border-slate-500 bg-slate-700/40 transition-colors"
+              >
+                💡 Vorschlag übernehmen
+              </button>
+              <div className="sticky bottom-0 -mx-4 px-4 pb-3 pt-2 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent">
                 <button
                   disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
                   onClick={async () => {
                     if (isTyping) return;
                     const msg = data.chatWelcomeMessage.trim() || `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
@@ -3822,7 +3835,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     await trySaveStep(STEP_ORDER.indexOf("editAiChat"), { chatWelcomeMessage: msg });
                     await goToNextStep();
                   }}
-                  className="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Weiter <ChevronRight className="w-4 h-4" />
                 </button>
