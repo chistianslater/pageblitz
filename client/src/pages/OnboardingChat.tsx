@@ -236,8 +236,8 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
 
         {/* Tech specs floating badges */}
         <div
-          className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 flex-wrap px-4"
-          style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
+          className="absolute left-0 right-0 flex justify-center gap-4 flex-wrap px-4 pb-8"
+          style={{ bottom: "env(safe-area-inset-bottom)" }}
         >
           {["KI-gestützt", "SEO-optimiert", "Mobile-ready", "Blitzschnell"].map((tag, i) => (
             <motion.div
@@ -1730,8 +1730,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         setInputValue(result.text);
         toast.success("Text generiert! Du kannst ihn noch anpassen.");
       }
-    } catch {
-      toast.error("KI-Generierung fehlgeschlagen");
+    } catch (err: any) {
+      const msg = err?.message || "";
+      if (msg.includes("429") || msg.includes("overloaded") || msg.includes("Too Many")) {
+        toast.error("KI gerade überlastet – bitte in 10 Sekunden nochmal versuchen.");
+      } else {
+        toast.error("KI-Generierung fehlgeschlagen");
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -2354,7 +2359,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const slug = siteData?.website?.slug;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
       className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden"
       style={{
         height: "100dvh",
@@ -3753,42 +3761,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </p>
                   </div>
                 )}
-                <div className="sticky bottom-0 -mx-4 px-4 pb-3 pt-2 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent">
-                  <button
-                    disabled={isTyping}
-                    style={{ touchAction: "manipulation" }}
-                    onClick={async () => {
-                      if (isTyping) return;
-                      // Use functional setData to guarantee we read the latest state,
-                      // avoiding stale-closure issues on mobile (iOS tap delay).
-                      let snapshot: OnboardingData | null = null;
-                      setData(p => { snapshot = p; return p; });
-                      const d = snapshot ?? data;
-                      const selected = [];
-                      if (d.addOnContactForm) selected.push("Kontaktformular");
-                      if (d.addOnGallery) selected.push("Bildergalerie");
-                      if (d.addOnMenu) selected.push("Speisekarte");
-                      if (d.addOnPricelist) selected.push("Preisliste");
-                      if (d.addOnAiChat) selected.push("KI-Chat");
-                      if (d.addOnBooking) selected.push("Terminbuchung");
-                      addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
-                      await trySaveStep(STEP_ORDER.indexOf("addons"), {
-                        addOnContactForm: d.addOnContactForm,
-                        contactFormFields: d.contactFormFields,
-                        addOnGallery: d.addOnGallery,
-                        addOnMenu: d.addOnMenu,
-                        addOnPricelist: d.addOnPricelist,
-                        addOnAiChat: d.addOnAiChat,
-                        addOnBooking: d.addOnBooking,
-                      });
-
-                      await goToNextStep();
-                    }}
-                    className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Weiter <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
             </motion.div>
           )}
 
@@ -3821,25 +3794,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               >
                 💡 Vorschlag übernehmen
               </button>
-              <div className="sticky bottom-0 -mx-4 px-4 pb-3 pt-2 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent">
-                <button
-                  disabled={isTyping}
-                  style={{ touchAction: "manipulation" }}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const msg = data.chatWelcomeMessage.trim() || `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
-                    if (!data.chatWelcomeMessage.trim()) {
-                      setData(p => ({ ...p, chatWelcomeMessage: msg }));
-                    }
-                    addUserMessage(`🤖 Begrüßung: "${msg.slice(0, 60)}${msg.length > 60 ? "…" : ""}"`);
-                    await trySaveStep(STEP_ORDER.indexOf("editAiChat"), { chatWelcomeMessage: msg });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+              {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
             </motion.div>
           )}
 
@@ -4804,7 +4759,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         <div ref={messagesEndRef} />
         </div>
         {/* Input area – sticky at bottom */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours", "heroPhoto", "aboutPhoto"].includes(currentStep) && (
+          {!["services", "addons", "editAiChat", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours", "heroPhoto", "aboutPhoto"].includes(currentStep) && (
             <div className="flex-shrink-0 px-4 pt-3 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (
@@ -4919,6 +4874,63 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </div>
 
 
+            </div>
+          )}
+          {/* Weiter-Button für UI-Schritte (addons, editAiChat) – außerhalb des Scroll-Containers */}
+          {currentStep === "addons" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  let snapshot: OnboardingData | null = null;
+                  setData(p => { snapshot = p; return p; });
+                  const d = snapshot ?? data;
+                  const selected = [];
+                  if (d.addOnContactForm) selected.push("Kontaktformular");
+                  if (d.addOnGallery) selected.push("Bildergalerie");
+                  if (d.addOnMenu) selected.push("Speisekarte");
+                  if (d.addOnPricelist) selected.push("Preisliste");
+                  if (d.addOnAiChat) selected.push("KI-Chat");
+                  if (d.addOnBooking) selected.push("Terminbuchung");
+                  addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
+                  await trySaveStep(STEP_ORDER.indexOf("addons"), {
+                    addOnContactForm: d.addOnContactForm,
+                    contactFormFields: d.contactFormFields,
+                    addOnGallery: d.addOnGallery,
+                    addOnMenu: d.addOnMenu,
+                    addOnPricelist: d.addOnPricelist,
+                    addOnAiChat: d.addOnAiChat,
+                    addOnBooking: d.addOnBooking,
+                  });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "editAiChat" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const msg = data.chatWelcomeMessage.trim() || `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                  if (!data.chatWelcomeMessage.trim()) {
+                    setData(p => ({ ...p, chatWelcomeMessage: msg }));
+                  }
+                  addUserMessage(`🤖 Begrüßung: "${msg.slice(0, 60)}${msg.length > 60 ? "…" : ""}"`);
+                  await trySaveStep(STEP_ORDER.indexOf("editAiChat"), { chatWelcomeMessage: msg });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           )}
           {/* Mobile: preview shortcut button – only shown on small screens */}
@@ -5360,7 +5372,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
