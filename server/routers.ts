@@ -3295,6 +3295,8 @@ Kontext: ${input.context}`,
           brandSecondaryColor: z.string().optional(),
           sections: z.array(z.any()).optional(),
           hiddenSections: z.array(z.string()).optional(),
+          seoTitle: z.string().optional(),
+          seoDescription: z.string().optional(),
         }),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -3305,10 +3307,12 @@ Kontext: ${input.context}`,
         const website = owned.website;
         // Patch websiteData
         const websiteData = (website.websiteData as any) || {};
-        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl, sections, hiddenSections } = input.patch;
+        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl, sections, hiddenSections, seoTitle, seoDescription } = input.patch;
         if (tagline !== undefined) websiteData.tagline = tagline;
         if (description !== undefined) websiteData.description = description;
         if (businessName !== undefined) websiteData.businessName = businessName;
+        if (seoTitle !== undefined) websiteData.seoTitle = seoTitle;
+        if (seoDescription !== undefined) websiteData.seoDescription = seoDescription;
         // Patch sections
         if ((tagline || description) && Array.isArray(websiteData.sections)) {
           websiteData.sections = websiteData.sections.map((s: any) => {

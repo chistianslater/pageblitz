@@ -41,6 +41,56 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     }
   }, [data?.redirectToSlug]);
 
+  // ── SEO meta tags ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!data?.website) return;
+    const wd = data.website.websiteData as any;
+    const biz = data.business;
+    const businessName = wd?.businessName || biz?.name || "";
+    const city = biz?.address?.split(",")?.pop()?.trim() || "";
+    const category = (biz as any)?.category || "";
+
+    // Title: custom → fallback auto-generated
+    const title = wd?.seoTitle ||
+      (businessName && category && city
+        ? `${businessName} – ${category} in ${city}`
+        : businessName
+          ? `${businessName} – Offizielle Website`
+          : "Website");
+
+    // Description: custom → tagline → description → fallback
+    const description = wd?.seoDescription ||
+      wd?.tagline ||
+      (wd?.description ? wd.description.slice(0, 155) + (wd.description.length > 155 ? "…" : "") : "") ||
+      `${businessName} – Professionelle Website mit Infos zu Leistungen, Kontakt und mehr.`;
+
+    document.title = title;
+
+    // Helper: upsert a <meta> tag
+    const setMeta = (selector: string, attr: string, content: string) => {
+      let el = document.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr.split("=")[0], attr.split("=")[1] ?? attr);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+
+    setMeta('meta[name="description"]', 'name=description', description);
+    setMeta('meta[property="og:title"]', 'property=og:title', title);
+    setMeta('meta[property="og:description"]', 'property=og:description', description);
+    setMeta('meta[property="og:type"]', 'property=og:type', "website");
+    if (wd?.heroImageUrl || (data.website as any).heroImageUrl) {
+      setMeta('meta[property="og:image"]', 'property=og:image', wd?.heroImageUrl || (data.website as any).heroImageUrl);
+    }
+
+    return () => {
+      // Restore on unmount (navigation away)
+      document.title = "Pageblitz";
+    };
+  }, [data]);
+
   // Also show spinner while slug isn't resolved yet (wouter params timing)
   if (!effectiveSlug || isLoading) {
     return (

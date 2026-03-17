@@ -40,10 +40,11 @@ interface EditableFieldProps {
   value: string;
   icon?: React.ReactNode;
   multiline?: boolean;
+  placeholder?: string;
   onSave: (v: string) => Promise<void>;
 }
 
-function EditableField({ label, value, icon, multiline, onSave }: EditableFieldProps) {
+function EditableField({ label, value, icon, multiline, placeholder, onSave }: EditableFieldProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -71,15 +72,17 @@ function EditableField({ label, value, icon, multiline, onSave }: EditableFieldP
         <div className="flex flex-col gap-2">
           {multiline ? (
             <textarea
-              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none resize-none min-h-[80px]"
+              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none resize-none min-h-[80px] placeholder-slate-500"
               value={draft}
+              placeholder={placeholder}
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
             />
           ) : (
             <input
-              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none"
+              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none placeholder-slate-500"
               value={draft}
+              placeholder={placeholder}
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
               onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
@@ -105,7 +108,7 @@ function EditableField({ label, value, icon, multiline, onSave }: EditableFieldP
       ) : (
         <div className="flex items-start gap-2">
           <p className="flex-1 text-sm text-slate-200 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50 min-h-[36px] leading-relaxed">
-            {value || <span className="text-slate-500 italic">Nicht angegeben</span>}
+            {value || <span className="text-slate-500 italic">{placeholder ? `z.B. ${placeholder.slice(0, 60)}${placeholder.length > 60 ? "…" : ""}` : "Nicht angegeben"}</span>}
           </p>
           <button
             onClick={() => { setDraft(value); setEditing(true); }}
@@ -3229,6 +3232,36 @@ export default function CustomerDashboard() {
                 icon={<MapPin className="w-3 h-3" />}
                 onSave={makeUpdater("address")}
               />
+            </div>
+
+            {/* SEO */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 lg:col-span-2">
+              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+                SEO – Sichtbarkeit in Google
+              </h2>
+              <p className="text-slate-400 text-xs mb-4">Wird in Google-Suchergebnissen als Titel und Beschreibung angezeigt. Leer lassen = automatisch generiert.</p>
+              <div className="space-y-4">
+                <EditableField
+                  label="SEO-Titel (Google-Titel)"
+                  value={websiteData?.seoTitle || ""}
+                  placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`}
+                  onSave={makeUpdater("seoTitle")}
+                />
+                <div>
+                  <EditableField
+                    label="Meta-Beschreibung (Google-Snippet)"
+                    value={websiteData?.seoDescription || ""}
+                    multiline
+                    placeholder={websiteData?.tagline || "Kurze Beschreibung für Suchmaschinen (max. 155 Zeichen)"}
+                    onSave={makeUpdater("seoDescription")}
+                  />
+                  <p className="text-slate-500 text-xs mt-1">
+                    {(websiteData?.seoDescription || "").length}/155 Zeichen
+                    {(websiteData?.seoDescription || "").length > 155 && <span className="text-amber-400 ml-1">⚠ zu lang</span>}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Services */}
