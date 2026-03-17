@@ -121,17 +121,34 @@ function injectMicrosoftClarity(): void {
 function injectMetaPixel(): void {
   if (document.getElementById("pb-meta-pixel")) return;
 
+  const w = window as any;
+
+  // 1. Build the fbq stub directly in JS – no inline <script> textContent needed,
+  //    so there are zero CSP / browser-execution edge cases.
+  if (!w.fbq) {
+    const fbq: any = function (...args: any[]) {
+      if (fbq.callMethod) {
+        fbq.callMethod(...args);
+      } else {
+        (fbq.queue = fbq.queue || []).push(args);
+      }
+    };
+    fbq.push    = fbq;
+    fbq.loaded  = true;
+    fbq.version = "2.0";
+    fbq.queue   = [];
+    w.fbq  = fbq;
+    w._fbq = fbq;
+  }
+
+  // 2. Queue the pixel init call (processed once fbevents.js loads)
+  w.fbq("init", "2254773071720412");
+
+  // 3. Load fbevents.js via a plain <script src> – reliable in all browsers
   const s = document.createElement("script");
-  s.id = "pb-meta-pixel";
-  // Standard Meta Pixel bootstrap – sets up fbq stub + loads fbevents.js async.
-  // PageView is NOT fired here; trackMetaPageView() handles that so we can
-  // fire it on every SPA route change without duplicates.
-  s.textContent =
-    `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?` +
-    `n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;` +
-    `n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;` +
-    `t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}` +
-    `(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');` +
-    `fbq('init','2254773071720412');`;
+  s.id    = "pb-meta-pixel";
+  s.async = true;
+  s.src   = "https://connect.facebook.net/en_US/fbevents.js";
   document.head.appendChild(s);
+  // PageView is fired by trackMetaPageView() via App.tsx route-change effect
 }
