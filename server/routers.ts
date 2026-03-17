@@ -3075,7 +3075,7 @@ Kontext: ${input.context}`,
       .input(z.object({
         websiteId: z.number(),
         enabled: z.boolean(),
-        weeklySchedule: z.record(z.any()),
+        weeklySchedule: z.record(z.string(), z.any()),
         durationMinutes: z.number().min(15).max(240),
         bufferMinutes: z.number().min(0).max(120),
         advanceDays: z.number().min(1).max(90),

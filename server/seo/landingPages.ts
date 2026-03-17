@@ -820,6 +820,77 @@ export const DE_CITIES: SeoCity[] = [
   { name: "Freiburg", slug: "freiburg" },
 ];
 
+// ── Per-industry visual style + relevant add-ons ─────────────────────────────
+
+interface IndustryStyle {
+  accent: string;     // CTA + accent color
+  heroBg: string;     // gradient for mock-browser hero
+  orb: string;        // rgba for background orbs
+}
+
+const INDUSTRY_STYLES: Record<string, IndustryStyle> = {
+  friseur:        { accent: "#c8a96e", heroBg: "linear-gradient(135deg,#1c1610 0%,#2d2212 100%)", orb: "rgba(200,169,110,.13)" },
+  restaurant:     { accent: "#f97316", heroBg: "linear-gradient(135deg,#1c1008 0%,#2d1a0c 100%)", orb: "rgba(249,115,22,.12)" },
+  handwerk:       { accent: "#f59e0b", heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1e08 100%)", orb: "rgba(245,158,11,.12)" },
+  zahnarzt:       { accent: "#38bdf8", heroBg: "linear-gradient(135deg,#061828 0%,#0f2440 100%)", orb: "rgba(56,189,248,.12)" },
+  kosmetik:       { accent: "#f472b6", heroBg: "linear-gradient(135deg,#1c0a18 0%,#2d1028 100%)", orb: "rgba(244,114,182,.12)" },
+  fitness:        { accent: "#ef4444", heroBg: "linear-gradient(135deg,#1a0808 0%,#2d1010 100%)", orb: "rgba(239,68,68,.12)" },
+  arzt:           { accent: "#34d399", heroBg: "linear-gradient(135deg,#061614 0%,#0a2420 100%)", orb: "rgba(52,211,153,.12)" },
+  immobilien:     { accent: "#818cf8", heroBg: "linear-gradient(135deg,#0c0c1e 0%,#141428 100%)", orb: "rgba(129,140,248,.12)" },
+  rechtsanwalt:   { accent: "#6366f1", heroBg: "linear-gradient(135deg,#0a0c20 0%,#121430 100%)", orb: "rgba(99,102,241,.12)" },
+  steuerberater:  { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#080c18 0%,#101c2c 100%)", orb: "rgba(96,165,250,.12)" },
+  fotograf:       { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#241e0c 100%)", orb: "rgba(251,191,36,.12)" },
+  physiotherapie: { accent: "#22d3ee", heroBg: "linear-gradient(135deg,#060f14 0%,#0a1a20 100%)", orb: "rgba(34,211,238,.12)" },
+  nagelstudio:    { accent: "#c084fc", heroBg: "linear-gradient(135deg,#180a20 0%,#280e34 100%)", orb: "rgba(192,132,252,.12)" },
+  baeckerei:      { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#1c1208 0%,#2c1e08 100%)", orb: "rgba(251,191,36,.12)" },
+  reinigung:      { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#08101c 0%,#0e2040 100%)", orb: "rgba(96,165,250,.12)" },
+  hundesalon:     { accent: "#a78bfa", heroBg: "linear-gradient(135deg,#100c1e 0%,#1e1434 100%)", orb: "rgba(167,139,250,.12)" },
+  musikschule:    { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2a1804 100%)", orb: "rgba(251,146,60,.12)" },
+};
+
+const DEFAULT_INDUSTRY_STYLE: IndustryStyle = {
+  accent: "#e91e8c",
+  heroBg: "linear-gradient(135deg,#1a0a14 0%,#2a1020 100%)",
+  orb: "rgba(233,30,140,.12)",
+};
+
+// Add-ons relevant per industry – avoids e.g. "Speisekarte" for a Zahnarzt
+interface AddonDef { icon: string; title: string; desc: string; price: string }
+
+function getRelevantAddons(slug: string): AddonDef[] {
+  const ALL: Record<string, AddonDef> = {
+    aiChat:    { icon: "🤖", title: "KI-Chat Assistent",  desc: "Beantwortet Kundenfragen rund um die Uhr – automatisch auf dein Unternehmen trainiert.", price: "+ 9,90 €/Mo." },
+    booking:   { icon: "📅", title: "Terminbuchung",       desc: "Kunden buchen direkt auf deiner Website einen Termin – ohne Anruf, ohne Wartezeit.",      price: "+ 4,90 €/Mo." },
+    contact:   { icon: "✉️", title: "Kontaktformular",     desc: "Kundenanfragen direkt per E-Mail – DSGVO-konform und sofort einsatzbereit.",               price: "+ 3,90 €/Mo." },
+    gallery:   { icon: "🖼️", title: "Bildergalerie",       desc: "Präsentiere deine Arbeiten, Räumlichkeiten oder Produkte in einer professionellen Galerie.", price: "+ 3,90 €/Mo." },
+    menu:      { icon: "🍽️", title: "Speisekarte",         desc: "Digitale Speisekarte mit Kategorien, Beschreibungen und Preisen – immer aktuell.",          price: "+ 3,90 €/Mo." },
+    pricelist: { icon: "💶", title: "Preisliste",           desc: "Zeige dein Leistungsangebot und deine Preise übersichtlich auf der Website.",               price: "+ 3,90 €/Mo." },
+  };
+
+  const SETS: Record<string, (keyof typeof ALL)[]> = {
+    restaurant:     ["aiChat", "booking", "contact", "gallery", "menu", "pricelist"],
+    baeckerei:      ["contact", "gallery", "menu", "pricelist"],
+    zahnarzt:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    arzt:           ["aiChat", "booking", "contact", "pricelist"],
+    physiotherapie: ["aiChat", "booking", "contact", "pricelist"],
+    fitness:        ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    friseur:        ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    kosmetik:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    nagelstudio:    ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    hundesalon:     ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    handwerk:       ["aiChat", "contact", "gallery", "pricelist"],
+    reinigung:      ["aiChat", "contact", "pricelist"],
+    immobilien:     ["aiChat", "contact", "gallery"],
+    rechtsanwalt:   ["aiChat", "booking", "contact"],
+    steuerberater:  ["aiChat", "booking", "contact"],
+    fotograf:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    musikschule:    ["aiChat", "booking", "contact", "gallery", "pricelist"],
+  };
+
+  const keys = SETS[slug] ?? ["aiChat", "booking", "contact", "gallery", "pricelist"];
+  return keys.map((k) => ALL[k]);
+}
+
 // ── Inline CSS (shared across all landing pages) ─────────────────────────────
 
 const SHARED_CSS = `
@@ -836,7 +907,10 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .nav-cta:hover{opacity:.9;transform:translateY(-1px)}
 /* Hero */
 .hero{background:#0a0a0a;color:#fff;padding:6rem 0 5rem;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,rgba(233,30,140,.1),transparent);pointer-events:none}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,var(--orb,rgba(233,30,140,.1)),transparent);pointer-events:none}
+.hero-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);opacity:.6}
+.orb-tl{width:500px;height:500px;top:-200px;left:-150px;background:var(--orb,rgba(233,30,140,.08))}
+.orb-br{width:400px;height:400px;bottom:-150px;right:-100px;background:var(--orb,rgba(233,30,140,.06))}
 .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.7)}
 .hero h1{font-size:clamp(1.875rem,4.5vw,3rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff}
 .hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:640px;margin:0 auto 2.5rem;line-height:1.7}
@@ -934,17 +1008,46 @@ details[open] summary::after{content:"−"}
 /* Footer */
 footer{background:#050505;color:rgba(255,255,255,.25);padding:2rem 0;text-align:center;font-size:.875rem;border-top:1px solid rgba(255,255,255,.06)}
 footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
+/* Mock Browser Preview */
+.preview-section{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden}
+.mock-browser{max-width:860px;margin:3.5rem auto 0;border-radius:16px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);background:#111}
+.mock-chrome{background:#1c1c1c;padding:.625rem 1rem;display:flex;align-items:center;gap:.75rem;border-bottom:1px solid rgba(255,255,255,.07)}
+.mock-dots{display:flex;gap:.375rem;flex-shrink:0}
+.mock-dot{width:.625rem;height:.625rem;border-radius:50%}
+.mock-dot.r{background:#ff5f57}.mock-dot.a{background:#febc2e}.mock-dot.g{background:#28c840}
+.mock-url{flex:1;background:rgba(255,255,255,.06);border-radius:6px;padding:.25rem .75rem;font-size:.75rem;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:.375rem;max-width:380px;margin:0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Inner mock website */
+.mw-wrap{overflow:hidden}
+.mw-nav{background:rgba(0,0,0,.35);padding:.625rem 1.25rem;display:flex;align-items:center;gap:.75rem}
+.mw-logo-pill{width:5.5rem;height:.875rem;background:rgba(255,255,255,.18);border-radius:4px}
+.mw-spacer{flex:1}
+.mw-nav-link{width:2.75rem;height:.5rem;background:rgba(255,255,255,.1);border-radius:3px}
+.mw-nav-links{display:flex;gap:.5rem}
+.mw-btn{width:5rem;height:1.5rem;background:var(--accent,#e91e8c);border-radius:999px;opacity:.85}
+.mw-hero{padding:2.25rem 1.5rem 2rem;position:relative;overflow:hidden;background:var(--hero-bg,#0f172a)}
+.mw-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,var(--orb,rgba(56,189,248,.2)),transparent);pointer-events:none}
+.mw-hero-eyebrow{display:inline-block;height:.5rem;width:6rem;background:rgba(255,255,255,.2);border-radius:999px;margin-bottom:.75rem}
+.mw-hero-name{font-size:clamp(.875rem,2vw,1.375rem);font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.25;margin-bottom:.625rem;position:relative}
+.mw-hero-sub{height:.4rem;width:72%;background:rgba(255,255,255,.18);border-radius:3px;margin-bottom:.3rem;position:relative}
+.mw-hero-sub2{height:.4rem;width:55%;background:rgba(255,255,255,.12);border-radius:3px;margin-bottom:1.25rem;position:relative}
+.mw-hero-cta{display:inline-flex;align-items:center;background:var(--accent,#e91e8c);color:#fff;border-radius:999px;padding:.375rem 1rem;font-size:.6875rem;font-weight:700;opacity:.9;position:relative}
+.mw-services{background:rgba(0,0,0,.25);padding:1.25rem 1.5rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem}
+.mw-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.875rem .75rem}
+.mw-card-icon{font-size:1.125rem;margin-bottom:.5rem}
+.mw-card-line1{height:.4rem;width:80%;background:rgba(255,255,255,.2);border-radius:2px;margin-bottom:.3rem}
+.mw-card-line2{height:.35rem;width:60%;background:rgba(255,255,255,.1);border-radius:2px}
 /* Responsive */
 @media(max-width:768px){
   .steps-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .comp-table{display:none}
+  .mw-services{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:640px){
   .hero{padding:4rem 0 3rem}
   .hero h1{font-size:1.75rem}
   .hero-trust{gap:1rem;font-size:.75rem}
-  .features,.addons,.pricing,.faq,.steps,.comparison{padding:3rem 0}
+  .features,.addons,.pricing,.faq,.steps,.comparison,.preview-section{padding:3rem 0}
   .stats{padding:2rem 0}
 }
 `.trim();
@@ -1048,6 +1151,26 @@ export function generateLandingPageHTML(
           `<a class="city-link" href="/website-erstellen/${industry.slug}/${c.slug}">${c.name}</a>`
       ).join("\n    ")}\n  </div></div></div>`;
 
+  // Industry visual style
+  const style = INDUSTRY_STYLES[industry.slug] ?? DEFAULT_INDUSTRY_STYLE;
+
+  // Industry-relevant add-ons
+  const relevantAddons = getRelevantAddons(industry.slug);
+  const addonsHtml = relevantAddons
+    .map(
+      (a) =>
+        `<div class="addon-card"><div class="addon-icon">${a.icon}</div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.desc)}</p><span class="addon-price">${escapeHtml(a.price)}</span></div>`
+    )
+    .join("\n      ");
+
+  // Pricing add-ons list (matches relevant ones)
+  const pricingAddonsHtml = relevantAddons
+    .map(
+      (a) =>
+        `<div class="pricing-addon-row"><span>${a.icon} ${escapeHtml(a.title)}</span><span>${escapeHtml(a.price)}</span></div>`
+    )
+    .join("\n          ");
+
   const featuresHtml = industry.features
     .map(
       (f) =>
@@ -1061,6 +1184,20 @@ export function generateLandingPageHTML(
         `<details><summary>${escapeHtml(f.q)}</summary><div class="faq-answer"><p>${escapeHtml(f.a)}</p></div></details>`
     )
     .join("\n    ");
+
+  // Mock browser – service cards from industry features
+  const mockBusinessName = city
+    ? `${industry.displayName} ${city.name}`
+    : `${industry.displayName}`;
+  const mockUrl = city
+    ? `${industry.slug}-${city.slug}.pageblitz.de`
+    : `${industry.slug}.pageblitz.de`;
+  const mockCardsHtml = industry.features
+    .slice(0, 3)
+    .map(
+      (f) => `<div class="mw-card"><div class="mw-card-icon">${f.icon}</div><div class="mw-card-line1"></div><div class="mw-card-line2"></div></div>`
+    )
+    .join("\n          ");
 
   return `<!DOCTYPE html>
 <html lang="de">
@@ -1089,7 +1226,7 @@ export function generateLandingPageHTML(
   <script type="application/ld+json">${buildBreadcrumbSchema(industry, city)}</script>
   <style>${SHARED_CSS}</style>
 </head>
-<body>
+<body style="--accent:${style.accent};--orb:${style.orb};--hero-bg:${style.heroBg}">
 
 <nav>
   <div class="container nav-inner">
@@ -1097,16 +1234,18 @@ export function generateLandingPageHTML(
       <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#18181b"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg>
       Pageblitz
     </a>
-    <a class="nav-cta" href="https://pageblitz.de/start">Website erstellen ✦</a>
+    <a class="nav-cta" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc)">Website erstellen ✦</a>
   </div>
 </nav>
 
 <section class="hero">
+  <div class="hero-orb orb-tl"></div>
+  <div class="hero-orb orb-br"></div>
   <div class="container">
     <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
     <h1>${escapeHtml(h1)}</h1>
     <p>${escapeHtml(industry.description)}</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+    <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
     <div class="hero-trust">
       <span>✓ Keine Kreditkarte nötig</span>
       <span>✓ Keine Einrichtungsgebühr</span>
@@ -1120,11 +1259,54 @@ export function generateLandingPageHTML(
     <div class="stats-grid">
       <div><div class="stat-value">1.200+</div><div class="stat-label">Websites erstellt</div></div>
       <div><div class="stat-value">3 Min.</div><div class="stat-label">Durchschnittliche Zeit</div></div>
-      <div><div class="stat-value">85%</div><div class="stat-label">SEO-Performance</div></div>
+      <div><div class="stat-value">97%</div><div class="stat-label">Zufriedene Kunden</div></div>
       <div><div class="stat-value">19,90€</div><div class="stat-label">Pro Monat</div></div>
     </div>
   </div>
 </div>
+
+<section class="preview-section">
+  <div class="container">
+    <p class="section-label">Beispiel</p>
+    <h2 class="section-title">So könnte deine ${escapeHtml(industry.displayName)}-Website aussehen</h2>
+    <p class="section-sub">Von der KI in 3 Minuten generiert – mit deinen echten Daten, deinem Namen, deiner Adresse</p>
+    <div class="mock-browser">
+      <div class="mock-chrome">
+        <div class="mock-dots">
+          <div class="mock-dot r"></div>
+          <div class="mock-dot a"></div>
+          <div class="mock-dot g"></div>
+        </div>
+        <div class="mock-url">
+          <span>🔒</span>
+          <span>${escapeHtml(mockUrl)}</span>
+        </div>
+      </div>
+      <div class="mw-wrap">
+        <div class="mw-nav">
+          <div class="mw-logo-pill"></div>
+          <div class="mw-spacer"></div>
+          <div class="mw-nav-links">
+            <div class="mw-nav-link"></div>
+            <div class="mw-nav-link"></div>
+            <div class="mw-nav-link"></div>
+          </div>
+          <div class="mw-btn"></div>
+        </div>
+        <div class="mw-hero" style="background:${style.heroBg}">
+          <div class="mw-hero-eyebrow"></div>
+          <div class="mw-hero-name">${escapeHtml(mockBusinessName)}</div>
+          <div class="mw-hero-sub"></div>
+          <div class="mw-hero-sub2"></div>
+          <div class="mw-hero-cta" style="background:${style.accent}">Jetzt Termin buchen →</div>
+        </div>
+        <div class="mw-services">
+          ${mockCardsHtml}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section class="steps">
   <div class="container">
@@ -1166,44 +1348,9 @@ export function generateLandingPageHTML(
   <div class="container">
     <p class="section-label">Optionale Add-ons</p>
     <h2 class="section-title">Mehr Funktionen mit einem Klick</h2>
-    <p class="section-sub">Erweitere deine ${escapeHtml(industry.displayName)}-Website mit leistungsstarken Extras – jederzeit zubuchbar</p>
+    <p class="section-sub">Erweitere deine ${escapeHtml(industry.displayName)}-Website mit den passenden Extras – jederzeit zubuchbar</p>
     <div class="addons-grid">
-      <div class="addon-card">
-        <div class="addon-icon">🤖</div>
-        <h4>KI-Chat Assistent</h4>
-        <p>Beantwortet Kundenfragen rund um die Uhr – automatisch und auf dein Unternehmen trainiert.</p>
-        <span class="addon-price">+ 9,90 €/Mo.</span>
-      </div>
-      <div class="addon-card">
-        <div class="addon-icon">📅</div>
-        <h4>Terminbuchung</h4>
-        <p>Kunden buchen direkt auf deiner Website einen Termin – ohne Anruf, ohne Wartezeit.</p>
-        <span class="addon-price">+ 4,90 €/Mo.</span>
-      </div>
-      <div class="addon-card">
-        <div class="addon-icon">✉️</div>
-        <h4>Kontaktformular</h4>
-        <p>Kundenanfragen direkt per E-Mail – DSGVO-konform und sofort einsatzbereit.</p>
-        <span class="addon-price">+ 3,90 €/Mo.</span>
-      </div>
-      <div class="addon-card">
-        <div class="addon-icon">🖼️</div>
-        <h4>Bildergalerie</h4>
-        <p>Präsentiere deine Arbeiten, Produkte oder Räumlichkeiten in einer professionellen Galerie.</p>
-        <span class="addon-price">+ 3,90 €/Mo.</span>
-      </div>
-      <div class="addon-card">
-        <div class="addon-icon">🍽️</div>
-        <h4>Speisekarte</h4>
-        <p>Digitale Speisekarte oder Leistungsübersicht mit Preisen – immer aktuell.</p>
-        <span class="addon-price">+ 3,90 €/Mo.</span>
-      </div>
-      <div class="addon-card">
-        <div class="addon-icon">💶</div>
-        <h4>Preisliste</h4>
-        <p>Zeige dein Angebot und Preise übersichtlich auf deiner Website.</p>
-        <span class="addon-price">+ 3,90 €/Mo.</span>
-      </div>
+      ${addonsHtml}
     </div>
   </div>
 </section>
@@ -1228,15 +1375,10 @@ export function generateLandingPageHTML(
           <li>Chat-Support</li>
         </ul>
         <div class="pricing-addon-box">
-          <div class="pricing-addon-label">Optionale Add-ons</div>
-          <div class="pricing-addon-row"><span>🤖 KI-Chat Assistent</span><span>+9,90 €/Mo.</span></div>
-          <div class="pricing-addon-row"><span>📅 Terminbuchung</span><span>+4,90 €/Mo.</span></div>
-          <div class="pricing-addon-row"><span>✉️ Kontaktformular</span><span>+3,90 €/Mo.</span></div>
-          <div class="pricing-addon-row"><span>🖼️ Bildergalerie</span><span>+3,90 €/Mo.</span></div>
-          <div class="pricing-addon-row"><span>🍽️ Speisekarte</span><span>+3,90 €/Mo.</span></div>
-          <div class="pricing-addon-row"><span>💶 Preisliste</span><span>+3,90 €/Mo.</span></div>
+          <div class="pricing-addon-label">Optionale Add-ons für ${escapeHtml(industry.displayName)}</div>
+          ${pricingAddonsHtml}
         </div>
-        <a class="pricing-cta" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+        <a class="pricing-cta" href="https://pageblitz.de/start" style="background:${style.accent};color:#fff">7 Tage gratis starten</a>
         <div class="pricing-note-bottom">7 Tage gratis · danach 19,90 €/Mo. (jährlich) · Jederzeit kündbar</div>
       </div>
     </div>
@@ -1279,7 +1421,7 @@ export function generateLandingPageHTML(
   <div class="container">
     <h2>Jetzt ${escapeHtml(industry.displayName)}-Website erstellen${escapeHtml(cityStr)}</h2>
     <p>In 3 Minuten online. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage komplett gratis.</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+    <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
     <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</div>
   </div>
 </section>
