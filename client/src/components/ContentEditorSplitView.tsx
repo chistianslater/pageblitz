@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { Send, Loader2, User, MousePointer, Check, X, Eye } from "lucide-react";
+import { Send, Loader2, User, MousePointer, Check, X, Eye, Type, Crosshair } from "lucide-react";
 import WebsiteRenderer from "./WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -19,22 +19,64 @@ const SECTION_META: Record<string, { label: string; hint: string }> = {
   pricelist:    { label: "Preisliste",     hint: "Kategorien, Leistungen, Preise" },
 };
 
-// Section type → actual DOM id (some layouts use German ids)
+// Section type → actual DOM id
 const SECTION_DOM_ID: Record<string, string> = {
   gallery:   "galerie",
   menu:      "speisekarte",
   pricelist: "preise",
 };
-function getDomId(type: string): string {
-  return SECTION_DOM_ID[type] ?? type;
+function getDomId(type: string): string { return SECTION_DOM_ID[type] ?? type; }
+
+const DOM_ID_TO_SECTION: Record<string, string> = {
+  galerie: "gallery", speisekarte: "menu", preise: "pricelist",
+};
+
+// ── Inline-edit helpers ───────────────────────────────────────────────────────
+// Keys we never want to make editable (technical/non-content fields)
+const SKIP_KEYS = new Set([
+  "id", "type", "icon", "rating", "step", "href", "url", "src",
+  "layoutStyle", "colorScheme", "designTokens", "heroImage", "aboutImageUrl",
+  "slug", "impressumHtml", "datenschutzHtml", "hasLegalPages",
+  "seoTitle", "seoDescription", "hiddenSections",
+]);
+
+/** Walk `data` and return the dot/bracket path to the first string that
+ *  matches `text`. Returns null if not found. */
+function findFieldPath(data: any, text: string, path = ""): string | null {
+  if (typeof data === "string") {
+    return data.trim() === text.trim() ? (path || ".") : null;
+  }
+  if (Array.isArray(data)) {
+    for (let i = 0; i < data.length; i++) {
+      const r = findFieldPath(data[i], text, `${path}[${i}]`);
+      if (r !== null) return r;
+    }
+    return null;
+  }
+  if (typeof data === "object" && data !== null) {
+    for (const key of Object.keys(data)) {
+      if (SKIP_KEYS.has(key)) continue;
+      const r = findFieldPath(data[key], text, path ? `${path}.${key}` : key);
+      if (r !== null) return r;
+    }
+  }
+  return null;
 }
 
-// Reverse map: DOM id → section type (for click detection)
-const DOM_ID_TO_SECTION: Record<string, string> = {
-  galerie:      "gallery",
-  speisekarte:  "menu",
-  preise:       "pricelist",
-};
+/** Return a deep clone of `data` with the value at `path` set to `value`. */
+function updateFieldAtPath(data: any, path: string, value: string): any {
+  const clone = JSON.parse(JSON.stringify(data));
+  const parts = path.split(/[.\[\]]/).filter(Boolean);
+  let cur: any = clone;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const p = parts[i];
+    cur = /^\d+$/.test(p) ? cur[parseInt(p)] : cur[p];
+  }
+  const last = parts[parts.length - 1];
+  if (/^\d+$/.test(last)) cur[parseInt(last)] = value;
+  else cur[last] = value;
+  return clone;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Message {
@@ -42,7 +84,7 @@ interface Message {
   content: string;
   pending?: boolean;
   proposedData?: any;
-  confirmed?: boolean; // true = accepted, false = rejected, undefined = pending
+  confirmed?: boolean;
 }
 
 interface Props {
@@ -54,16 +96,14 @@ interface Props {
   onUpdate: () => void;
 }
 
-// ── Highlight style injector ──────────────────────────────────────────────────
+type PreviewMode = "select" | "inline";
+
+// ── Highlight for section-select mode ────────────────────────────────────────
 function usePreviewHighlight(sectionId: string | null) {
   useEffect(() => {
     const id = "pb-editor-highlight";
     let el = document.getElementById(id) as HTMLStyleElement | null;
-    if (!el) {
-      el = document.createElement("style");
-      el.id = id;
-      document.head.appendChild(el);
-    }
+    if (!el) { el = document.createElement("style"); el.id = id; document.head.appendChild(el); }
     const domId = sectionId ? getDomId(sectionId) : null;
     el.textContent = domId
       ? `#${domId} { outline: 3px solid #3b82f6 !important; outline-offset: -3px !important; }`
@@ -72,24 +112,57 @@ function usePreviewHighlight(sectionId: string | null) {
   }, [sectionId]);
 }
 
+// ── Hover CSS for inline-edit mode ────────────────────────────────────────────
+function useInlineHoverStyle(active: boolean) {
+  useEffect(() => {
+    const id = "pb-inline-hover";
+    let el = document.getElementById(id) as HTMLStyleElement | null;
+    if (!el) { el = document.createElement("style"); el.id = id; document.head.appendChild(el); }
+    el.textContent = active ? `
+      .pb-preview-inner h1:not([contenteditable="true"]):hover,
+      .pb-preview-inner h2:not([contenteditable="true"]):hover,
+      .pb-preview-inner h3:not([contenteditable="true"]):hover,
+      .pb-preview-inner h4:not([contenteditable="true"]):hover,
+      .pb-preview-inner p:not([contenteditable="true"]):hover,
+      .pb-preview-inner span:not([contenteditable="true"]):hover,
+      .pb-preview-inner a:not([contenteditable="true"]):hover,
+      .pb-preview-inner button:not([contenteditable="true"]):hover,
+      .pb-preview-inner li:not([contenteditable="true"]):hover {
+        outline: 2px dashed rgba(245,158,11,0.55) !important;
+        outline-offset: 2px !important;
+        cursor: text !important;
+      }
+      .pb-preview-inner [contenteditable="true"] {
+        outline: 2px solid #f59e0b !important;
+        outline-offset: 2px !important;
+        background: rgba(245,158,11,0.06) !important;
+        cursor: text !important;
+        min-width: 4px;
+      }
+    ` : "";
+    return () => { if (el) el.textContent = ""; };
+  }, [active]);
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ContentEditorSplitView({
   websiteId, websiteData, colorScheme, website, business, onUpdate,
 }: Props) {
-  // Local copy of websiteData — updated immediately from API responses
   const [localData, setLocalData] = useState<WebsiteData>(websiteData);
-  // Whether preview is currently showing a pending proposal (not yet saved)
   const [previewingProposal, setPreviewingProposal] = useState(false);
-  // The saved snapshot to revert to if user rejects a proposal
   const savedDataRef = useRef<WebsiteData>(websiteData);
+  const localDataRef = useRef<WebsiteData>(websiteData);
 
-  // Sync when parent re-fetches (e.g. after onUpdate())
+  // Sync when parent re-fetches
   useEffect(() => {
     if (!previewingProposal) {
       setLocalData(websiteData);
       savedDataRef.current = websiteData;
+      localDataRef.current = websiteData;
     }
   }, [websiteData, previewingProposal]);
+
+  useEffect(() => { localDataRef.current = localData; }, [localData]);
 
   const [messages, setMessages] = useState<Message[]>([{
     role: "assistant",
@@ -97,95 +170,164 @@ export default function ContentEditorSplitView({
   }]);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [input, setInput] = useState("");
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("select");
 
   const previewScrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Track element currently being inline-edited
+  const inlineActiveRef = useRef<{ el: HTMLElement; path: string; original: string } | null>(null);
 
-  usePreviewHighlight(selectedSection);
+  usePreviewHighlight(previewMode === "select" ? selectedSection : null);
+  useInlineHoverStyle(previewMode === "inline");
 
-  // Auto-scroll chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ── tRPC mutations ──────────────────────────────────────────────────────────
   const applyMutation = trpc.customer.applyAiEdit.useMutation({
     onSuccess: (result) => {
       if (result.mode === "chat") {
-        setMessages(msgs => [
-          ...msgs.filter(m => !m.pending),
-          { role: "assistant", content: result.aiMessage },
-        ]);
+        setMessages(msgs => [...msgs.filter(m => !m.pending), { role: "assistant", content: result.aiMessage }]);
       } else if (result.mode === "suggest") {
-        // Show proposed changes live in preview immediately
         setLocalData(result.proposedData as WebsiteData);
+        localDataRef.current = result.proposedData as WebsiteData;
         setPreviewingProposal(true);
-        setMessages(msgs => [
-          ...msgs.filter(m => !m.pending),
-          {
-            role: "assistant",
-            content: result.aiMessage,
-            proposedData: result.proposedData,
-          },
-        ]);
+        setMessages(msgs => [...msgs.filter(m => !m.pending), {
+          role: "assistant", content: result.aiMessage, proposedData: result.proposedData,
+        }]);
       } else {
-        // Direct apply — update local state right away, no waiting for refetch
         const newData = (result as any).updatedData as WebsiteData;
-        if (newData) {
-          setLocalData(newData);
-          savedDataRef.current = newData;
-        }
+        if (newData) { setLocalData(newData); savedDataRef.current = newData; localDataRef.current = newData; }
         setPreviewingProposal(false);
         onUpdate();
-        setMessages(msgs => [
-          ...msgs.filter(m => !m.pending),
-          { role: "assistant", content: `✓ ${result.aiMessage}` },
-        ]);
+        setMessages(msgs => [...msgs.filter(m => !m.pending), { role: "assistant", content: `✓ ${result.aiMessage}` }]);
       }
     },
     onError: (err) => {
-      setMessages(msgs => [
-        ...msgs.filter(m => !m.pending),
-        { role: "assistant", content: `Fehler: ${err.message || "Bitte versuche es nochmal."}` },
-      ]);
+      setMessages(msgs => [...msgs.filter(m => !m.pending), { role: "assistant", content: `Fehler: ${err.message || "Bitte versuche es nochmal."}` }]);
     },
   });
 
   const confirmMutation = trpc.customer.confirmAiEdit.useMutation({
     onSuccess: (result) => {
       const newData = (result as any).updatedData as WebsiteData;
-      if (newData) {
-        setLocalData(newData);
-        savedDataRef.current = newData;
-      }
+      if (newData) { setLocalData(newData); savedDataRef.current = newData; localDataRef.current = newData; }
       setPreviewingProposal(false);
       onUpdate();
     },
   });
 
-  // Accept a suggestion
   const handleAccept = useCallback((msgIndex: number, proposedData: any) => {
-    setMessages(msgs => msgs.map((m, i) =>
-      i === msgIndex ? { ...m, confirmed: true } : m
-    ));
+    setMessages(msgs => msgs.map((m, i) => i === msgIndex ? { ...m, confirmed: true } : m));
     confirmMutation.mutate({ websiteId, proposedData });
   }, [websiteId, confirmMutation]);
 
-  // Reject a suggestion — revert preview to saved state
   const handleReject = useCallback((msgIndex: number) => {
-    setMessages(msgs => msgs.map((m, i) =>
-      i === msgIndex ? { ...m, confirmed: false } : m
-    ));
+    setMessages(msgs => msgs.map((m, i) => i === msgIndex ? { ...m, confirmed: false } : m));
     setLocalData(savedDataRef.current);
+    localDataRef.current = savedDataRef.current;
     setPreviewingProposal(false);
   }, []);
 
-  // Select a section — scroll preview + update badge
+  // ── Inline editing ──────────────────────────────────────────────────────────
+  /** Finish an active inline edit: save if text changed */
+  const finishInlineEdit = useCallback((entry: { el: HTMLElement; path: string; original: string }) => {
+    const newText = (entry.el.textContent ?? "").trim();
+    entry.el.contentEditable = "false";
+    inlineActiveRef.current = null;
+
+    if (newText === entry.original || newText === "") {
+      // No change or cleared — restore original
+      entry.el.textContent = entry.original;
+      return;
+    }
+
+    const newData = updateFieldAtPath(localDataRef.current, entry.path, newText);
+    setLocalData(newData as WebsiteData);
+    savedDataRef.current = newData as WebsiteData;
+    localDataRef.current = newData as WebsiteData;
+    confirmMutation.mutate({ websiteId, proposedData: newData });
+    onUpdate();
+  }, [websiteId, confirmMutation, onUpdate]);
+
+  /** Handle click inside preview in inline-edit mode */
+  const handleInlineClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (!target) return;
+
+    // Skip if already editing this element
+    if (target === inlineActiveRef.current?.el) return;
+    // Skip clicks on interactive elements (buttons that should remain clickable is ok; we handle text inside them)
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") return;
+
+    // Find closest editable text element
+    const tags = ["h1","h2","h3","h4","h5","h6","p","span","a","li","button"];
+    let textEl: HTMLElement | null = null;
+    for (const tag of tags) {
+      const found = (target.closest(tag) ?? (target.tagName.toLowerCase() === tag ? target : null)) as HTMLElement | null;
+      if (found && (found.textContent ?? "").trim().length >= 2) {
+        textEl = found;
+        break;
+      }
+    }
+    if (!textEl) return;
+
+    const text = (textEl.textContent ?? "").trim();
+    if (text.length < 2) return;
+
+    // Try to find this text in our data
+    const path = findFieldPath(localDataRef.current, text);
+    if (!path) return; // Not a mapped field — ignore click
+
+    // Finish any previous edit first
+    if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
+
+    // Activate editing
+    inlineActiveRef.current = { el: textEl, path, original: text };
+    textEl.contentEditable = "true";
+
+    // Select all for easy replacement
+    requestAnimationFrame(() => {
+      textEl!.focus();
+      const range = document.createRange();
+      range.selectNodeContents(textEl!);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    });
+
+    const onBlur = () => {
+      textEl!.removeEventListener("blur", onBlur);
+      textEl!.removeEventListener("keydown", onKeyDown);
+      // small timeout so ESC handler runs first
+      setTimeout(() => {
+        if (inlineActiveRef.current?.el === textEl) finishInlineEdit(inlineActiveRef.current);
+      }, 0);
+    };
+    const onKeyDown = (ke: KeyboardEvent) => {
+      if (ke.key === "Enter" && !ke.shiftKey) {
+        ke.preventDefault();
+        textEl!.blur();
+      }
+      if (ke.key === "Escape") {
+        textEl!.textContent = text; // Restore
+        textEl!.contentEditable = "false";
+        textEl!.removeEventListener("blur", onBlur);
+        textEl!.removeEventListener("keydown", onKeyDown);
+        inlineActiveRef.current = null;
+      }
+    };
+    textEl.addEventListener("blur", onBlur);
+    textEl.addEventListener("keydown", onKeyDown);
+  }, [finishInlineEdit]);
+
+  // ── Section select mode ─────────────────────────────────────────────────────
   const selectSection = useCallback((sectionType: string) => {
     const meta = SECTION_META[sectionType];
     if (!meta) return;
     setSelectedSection(sectionType);
-
     const domId = getDomId(sectionType);
     const scrollEl = previewScrollRef.current;
     if (scrollEl) {
@@ -200,30 +342,21 @@ export default function ContentEditorSplitView({
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
 
-  // Click detection on preview overlay
   const handlePreviewClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const sectionTypes = Object.keys(SECTION_META);
     const allDomIds = new Set([...sectionTypes, ...Object.keys(DOM_ID_TO_SECTION)]);
     const resolveId = (domId: string): string => DOM_ID_TO_SECTION[domId] ?? domId;
-
     let target = e.target as HTMLElement | null;
     while (target) {
-      if (target.id && allDomIds.has(target.id)) {
-        selectSection(resolveId(target.id));
-        return;
-      }
+      if (target.id && allDomIds.has(target.id)) { selectSection(resolveId(target.id)); return; }
       target = target.parentElement;
     }
     const els = document.elementsFromPoint(e.clientX, e.clientY);
     for (const el of els) {
-      if (el instanceof HTMLElement && el.id && allDomIds.has(el.id)) {
-        selectSection(resolveId(el.id));
-        return;
-      }
+      if (el instanceof HTMLElement && el.id && allDomIds.has(el.id)) { selectSection(resolveId(el.id)); return; }
     }
   }, [selectSection]);
 
-  // Send message to AI
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (!text || applyMutation.isPending) return;
@@ -239,6 +372,13 @@ export default function ContentEditorSplitView({
     applyMutation.mutate({ websiteId, userMessage: prefix + text });
   }, [input, selectedSection, applyMutation, websiteId]);
 
+  // Switch modes: finish any active inline edit
+  const switchMode = useCallback((mode: PreviewMode) => {
+    if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
+    setPreviewMode(mode);
+    if (mode === "select") setSelectedSection(null);
+  }, [finishInlineEdit]);
+
   const sectionChips = (websiteData?.sections as any[] | undefined)
     ?.filter(s => SECTION_META[s.type])
     ?.map(s => ({ type: s.type, ...SECTION_META[s.type] })) ?? [];
@@ -248,45 +388,44 @@ export default function ContentEditorSplitView({
 
       {/* ── Left: Chat panel ─────────────────────────────────────────────── */}
       <div className="w-[38%] flex flex-col bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden flex-shrink-0">
-
-        {/* Header */}
         <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2 flex-shrink-0">
           <span className="text-blue-400 text-base">✦</span>
           <span className="text-white font-semibold text-sm">KI-Inhaltseditor</span>
-          {selectedSection && (
+          {selectedSection && previewMode === "select" && (
             <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
               📍 {SECTION_META[selectedSection]?.label}
             </span>
           )}
         </div>
 
-        {/* Section chips */}
         {sectionChips.length > 0 && (
           <div className="px-3 py-2 border-b border-slate-700/30 flex-shrink-0 flex flex-wrap gap-1.5">
             {sectionChips.map(s => (
-              <button
-                key={s.type}
-                onClick={() => selectSection(s.type)}
-                title={s.hint}
+              <button key={s.type} onClick={() => { switchMode("select"); selectSection(s.type); }} title={s.hint}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
-                  selectedSection === s.type
+                  selectedSection === s.type && previewMode === "select"
                     ? "bg-blue-500/25 border-blue-500/60 text-blue-200"
                     : "bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-white hover:border-slate-500"
-                }`}
-              >
+                }`}>
                 {s.label}
               </button>
             ))}
           </div>
         )}
 
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3">
-          {!selectedSection && messages.length <= 1 && (
-            <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-700/20 rounded-xl px-3 py-2.5 border border-slate-700/30">
-              <MousePointer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
-              <span>Klicke auf einen Bereich in der Vorschau rechts, um ihn auszuwählen</span>
+          {previewMode === "inline" ? (
+            <div className="flex items-start gap-2 text-xs text-amber-400/80 bg-amber-500/10 rounded-xl px-3 py-2.5 border border-amber-500/20">
+              <Type className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+              <span>Klicke direkt auf einen Text in der Vorschau, um ihn zu bearbeiten. <strong className="text-amber-300">Enter</strong> zum Speichern, <strong className="text-amber-300">Esc</strong> zum Abbrechen.</span>
             </div>
+          ) : (
+            !selectedSection && messages.length <= 1 && (
+              <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-700/20 rounded-xl px-3 py-2.5 border border-slate-700/30">
+                <MousePointer className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
+                <span>Klicke auf einen Bereich in der Vorschau rechts, um ihn auszuwählen</span>
+              </div>
+            )
           )}
 
           {messages.map((msg, i) => (
@@ -298,17 +437,13 @@ export default function ContentEditorSplitView({
               )}
               <div className="max-w-[88%] flex flex-col gap-1.5">
                 <div className={`text-sm leading-relaxed px-3 py-2 rounded-2xl ${
-                  msg.pending
-                    ? "bg-slate-700/40 text-slate-500"
-                    : msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-sm"
-                      : "bg-slate-700/60 text-slate-200 rounded-bl-sm"
+                  msg.pending ? "bg-slate-700/40 text-slate-500"
+                  : msg.role === "user" ? "bg-blue-600 text-white rounded-br-sm"
+                  : "bg-slate-700/60 text-slate-200 rounded-bl-sm"
                 }`}>
                   {msg.pending ? (
                     <span className="flex gap-1 items-center h-4">
-                      {[0, 150, 300].map(d => (
-                        <span key={d} className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: `${d}ms` }} />
-                      ))}
+                      {[0,150,300].map(d => <span key={d} className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
                     </span>
                   ) : (
                     msg.content.split("**").map((part, j) =>
@@ -316,34 +451,21 @@ export default function ContentEditorSplitView({
                     )
                   )}
                 </div>
-
-                {/* Suggestion confirm/reject */}
                 {msg.proposedData && msg.confirmed === undefined && (
                   <div className="flex gap-1.5 pl-1">
-                    <button
-                      onClick={() => handleAccept(i, msg.proposedData)}
-                      disabled={confirmMutation.isPending}
-                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
-                    >
+                    <button onClick={() => handleAccept(i, msg.proposedData)} disabled={confirmMutation.isPending}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 transition-colors disabled:opacity-50">
                       <Check className="w-3 h-3" /> Übernehmen
                     </button>
-                    <button
-                      onClick={() => handleReject(i)}
-                      disabled={confirmMutation.isPending}
-                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-slate-700/40 border border-slate-600/40 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
-                    >
+                    <button onClick={() => handleReject(i)} disabled={confirmMutation.isPending}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-slate-700/40 border border-slate-600/40 text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
                       <X className="w-3 h-3" /> Verwerfen
                     </button>
                   </div>
                 )}
-                {msg.proposedData && msg.confirmed === true && (
-                  <span className="pl-1 text-xs text-emerald-400">✓ Übernommen</span>
-                )}
-                {msg.proposedData && msg.confirmed === false && (
-                  <span className="pl-1 text-xs text-slate-500">Verworfen</span>
-                )}
+                {msg.proposedData && msg.confirmed === true && <span className="pl-1 text-xs text-emerald-400">✓ Übernommen</span>}
+                {msg.proposedData && msg.confirmed === false && <span className="pl-1 text-xs text-slate-500">Verworfen</span>}
               </div>
-
               {msg.role === "user" && (
                 <div className="w-5 h-5 rounded-full bg-slate-600/80 flex items-center justify-center flex-shrink-0 mt-1">
                   <User className="w-2.5 h-2.5 text-slate-300" />
@@ -354,32 +476,18 @@ export default function ContentEditorSplitView({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
         <div className="p-3 border-t border-slate-700/50 flex-shrink-0 space-y-2">
           <div className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
+            <input ref={inputRef} type="text" value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleSend(); }}
-              placeholder={
-                selectedSection
-                  ? `${SECTION_META[selectedSection]?.label} bearbeiten…`
-                  : "Was soll ich ändern?"
-              }
+              placeholder={selectedSection ? `${SECTION_META[selectedSection]?.label} bearbeiten…` : "Was soll ich ändern?"}
               disabled={applyMutation.isPending}
               className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-xl border border-slate-600 focus:border-blue-500 outline-none placeholder-slate-500 disabled:opacity-60 min-w-0"
             />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || applyMutation.isPending}
-              className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white flex items-center justify-center flex-shrink-0 transition-colors"
-            >
-              {applyMutation.isPending
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <Send className="w-4 h-4" />
-              }
+            <button onClick={handleSend} disabled={!input.trim() || applyMutation.isPending}
+              className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white flex items-center justify-center flex-shrink-0 transition-colors">
+              {applyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>
           </div>
           <p className="text-slate-600 text-xs text-center">Enter zum Senden · Sektion in Vorschau anklicken</p>
@@ -389,9 +497,9 @@ export default function ContentEditorSplitView({
       {/* ── Right: Preview ───────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden min-w-0">
 
-        {/* Browser bar */}
+        {/* Browser bar + mode toggle */}
         <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-3 flex-shrink-0">
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5 flex-shrink-0">
             <div className="w-3 h-3 rounded-full bg-red-500/60" />
             <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
             <div className="w-3 h-3 rounded-full bg-green-500/60" />
@@ -399,41 +507,68 @@ export default function ContentEditorSplitView({
           <div className="flex-1 bg-slate-700/60 rounded-lg px-3 py-1 text-slate-400 text-xs font-mono truncate">
             {website.slug}.pageblitz.de
           </div>
+
           {previewingProposal ? (
             <span className="flex items-center gap-1 text-xs text-amber-400 flex-shrink-0">
               <Eye className="w-3 h-3" /> Vorschau
             </span>
           ) : (
-            <div className="flex items-center gap-1 text-xs text-slate-500 flex-shrink-0">
-              <MousePointer className="w-3 h-3" />
-              <span className="hidden sm:inline">Anklicken zum Auswählen</span>
+            /* Mode toggle */
+            <div className="flex items-center rounded-lg overflow-hidden border border-slate-600/50 flex-shrink-0">
+              <button
+                onClick={() => switchMode("select")}
+                title="Sektion auswählen für KI-Chat"
+                className={`flex items-center gap-1 px-2.5 py-1 text-xs transition-colors ${
+                  previewMode === "select"
+                    ? "bg-blue-600 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-700/60"
+                }`}>
+                <Crosshair className="w-3 h-3" />
+                <span className="hidden sm:inline">KI</span>
+              </button>
+              <button
+                onClick={() => switchMode("inline")}
+                title="Texte direkt bearbeiten"
+                className={`flex items-center gap-1 px-2.5 py-1 text-xs transition-colors ${
+                  previewMode === "inline"
+                    ? "bg-amber-500/80 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-700/60"
+                }`}>
+                <Type className="w-3 h-3" />
+                <span className="hidden sm:inline">Text</span>
+              </button>
             </div>
           )}
         </div>
 
-        {/* Preview + click overlay */}
+        {/* Preview */}
         <div className="flex-1 overflow-auto relative" ref={previewScrollRef}>
-          <div style={{ zoom: 0.75, contain: "layout" }}>
+          <div className="pb-preview-inner" style={{ zoom: 0.75, contain: "layout" }}>
             <WebsiteRenderer
               websiteData={localData}
               colorScheme={colorScheme}
               heroImageUrl={website.heroImageUrl || undefined}
               aboutImageUrl={(website as any).aboutImageUrl || undefined}
               layoutStyle={(website as any).layoutStyle || undefined}
-              businessPhone={business?.phone || undefined}
-              businessAddress={business?.address || undefined}
-              businessEmail={business?.email || undefined}
               slug={website.slug}
-              contactFormLocked={false}
             />
           </div>
 
-          {/* Transparent overlay captures clicks */}
+          {/* Overlay: active in "select" mode, transparent (click-through) in "inline" mode */}
           <div
-            className="absolute inset-0 cursor-crosshair"
+            className={`absolute inset-0 ${previewMode === "select" ? "cursor-crosshair" : "pointer-events-none"}`}
             style={{ zIndex: 50 }}
-            onClick={handlePreviewClick}
+            onClick={previewMode === "select" ? handlePreviewClick : undefined}
           />
+
+          {/* Inline-edit click catcher: sits below overlay, active only in inline mode */}
+          {previewMode === "inline" && (
+            <div
+              className="absolute inset-0 cursor-text"
+              style={{ zIndex: 40 }}
+              onClick={handleInlineClick}
+            />
+          )}
         </div>
       </div>
     </div>
