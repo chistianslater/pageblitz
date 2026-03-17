@@ -3379,6 +3379,7 @@ Deine Regeln:
 2. Lasse alle nicht betroffenen Felder und deren Werte absolut unverändert.
 3. Antworte AUSSCHLIESSLICH mit dem vollständig aktualisierten JSON-Objekt – kein Text davor oder danach, kein Markdown, kein Code-Block.
 4. Behalte die exakte JSON-Struktur (Schlüsselnamen, Arrays, Typen) unverändert.
+5a. HINZUFÜGEN-Regel: Wenn der Nutzer Elemente "hinzufügen", "ergänzen", "erweitern" oder "noch X weitere" möchte → ERWEITERE das bestehende Array. Niemals das gesamte Array ersetzen!
 5. Füge dem JSON-Objekt immer diese zwei Meta-Felder hinzu:
    - "_mode":
      • "apply" – direkte Änderungsanweisung (z.B. "ändere X zu Y", "mach kürzer", "ersetze")
@@ -3460,7 +3461,7 @@ Wichtige Felder im JSON:
         }
 
         await updateWebsite(input.websiteId, { websiteData: mergedData });
-        return { mode: "apply" as const, aiMessage, success: true };
+        return { mode: "apply" as const, aiMessage, updatedData: mergedData };
       }),
 
     // Confirm a pending AI suggestion
@@ -3474,7 +3475,7 @@ Wichtige Felder im JSON:
         if (!rows.find((r) => r.website.id === input.websiteId))
           throw new TRPCError({ code: "FORBIDDEN", message: "Nicht autorisiert" });
         await updateWebsite(input.websiteId, { websiteData: input.proposedData });
-        return { success: true };
+        return { success: true, updatedData: input.proposedData };
       }),
 
     // Update legal data and regenerate Impressum/Datenschutz pages

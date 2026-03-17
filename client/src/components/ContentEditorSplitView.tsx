@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { Send, Loader2, User, MousePointer, Check, X } from "lucide-react";
+import { Send, Loader2, User, MousePointer, Check, X, Eye } from "lucide-react";
 import WebsiteRenderer from "./WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -41,9 +41,8 @@ interface Message {
   role: "assistant" | "user";
   content: string;
   pending?: boolean;
-  // For suggest-mode: holds proposed data waiting for confirmation
   proposedData?: any;
-  confirmed?: boolean; // true = accepted, false = rejected, undefined = pending decision
+  confirmed?: boolean; // true = accepted, false = rejected, undefined = pending
 }
 
 interface Props {
@@ -56,7 +55,7 @@ interface Props {
 }
 
 // ── Highlight style injector ──────────────────────────────────────────────────
-function usePreviewHighlight(sectionId: string | null, previewKey: number) {
+function usePreviewHighlight(sectionId: string | null) {
   useEffect(() => {
     const id = "pb-editor-highlight";
     let el = document.getElementById(id) as HTMLStyleElement | null;
@@ -65,30 +64,45 @@ function usePreviewHighlight(sectionId: string | null, previewKey: number) {
       el.id = id;
       document.head.appendChild(el);
     }
-    el.textContent = sectionId
-      ? `#${sectionId} { outline: 3px solid #3b82f6 !important; outline-offset: -3px !important; }`
+    const domId = sectionId ? getDomId(sectionId) : null;
+    el.textContent = domId
+      ? `#${domId} { outline: 3px solid #3b82f6 !important; outline-offset: -3px !important; }`
       : "";
     return () => { if (el) el.textContent = ""; };
-  }, [sectionId, previewKey]);
+  }, [sectionId]);
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ContentEditorSplitView({
   websiteId, websiteData, colorScheme, website, business, onUpdate,
 }: Props) {
+  // Local copy of websiteData — updated immediately from API responses
+  const [localData, setLocalData] = useState<WebsiteData>(websiteData);
+  // Whether preview is currently showing a pending proposal (not yet saved)
+  const [previewingProposal, setPreviewingProposal] = useState(false);
+  // The saved snapshot to revert to if user rejects a proposal
+  const savedDataRef = useRef<WebsiteData>(websiteData);
+
+  // Sync when parent re-fetches (e.g. after onUpdate())
+  useEffect(() => {
+    if (!previewingProposal) {
+      setLocalData(websiteData);
+      savedDataRef.current = websiteData;
+    }
+  }, [websiteData, previewingProposal]);
+
   const [messages, setMessages] = useState<Message[]>([{
     role: "assistant",
     content: "Ich bin dein Website-Editor. Klicke auf einen Bereich in der Vorschau oder wähle eine Sektion aus — dann sage mir, was du ändern möchtest.",
   }]);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [input, setInput] = useState("");
-  const [previewKey, setPreviewKey] = useState(0);
 
   const previewScrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  usePreviewHighlight(selectedSection, previewKey);
+  usePreviewHighlight(selectedSection);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -98,25 +112,31 @@ export default function ContentEditorSplitView({
   const applyMutation = trpc.customer.applyAiEdit.useMutation({
     onSuccess: (result) => {
       if (result.mode === "chat") {
-        // Conversational reply — just show message, no changes
         setMessages(msgs => [
           ...msgs.filter(m => !m.pending),
           { role: "assistant", content: result.aiMessage },
         ]);
       } else if (result.mode === "suggest") {
-        // Show suggestion with confirm/reject buttons
+        // Show proposed changes live in preview immediately
+        setLocalData(result.proposedData as WebsiteData);
+        setPreviewingProposal(true);
         setMessages(msgs => [
           ...msgs.filter(m => !m.pending),
           {
             role: "assistant",
             content: result.aiMessage,
-            proposedData: (result as any).proposedData,
+            proposedData: result.proposedData,
           },
         ]);
       } else {
-        // Direct apply
+        // Direct apply — update local state right away, no waiting for refetch
+        const newData = (result as any).updatedData as WebsiteData;
+        if (newData) {
+          setLocalData(newData);
+          savedDataRef.current = newData;
+        }
+        setPreviewingProposal(false);
         onUpdate();
-        setPreviewKey(k => k + 1);
         setMessages(msgs => [
           ...msgs.filter(m => !m.pending),
           { role: "assistant", content: `✓ ${result.aiMessage}` },
@@ -132,9 +152,14 @@ export default function ContentEditorSplitView({
   });
 
   const confirmMutation = trpc.customer.confirmAiEdit.useMutation({
-    onSuccess: () => {
+    onSuccess: (result) => {
+      const newData = (result as any).updatedData as WebsiteData;
+      if (newData) {
+        setLocalData(newData);
+        savedDataRef.current = newData;
+      }
+      setPreviewingProposal(false);
       onUpdate();
-      setPreviewKey(k => k + 1);
     },
   });
 
@@ -146,23 +171,22 @@ export default function ContentEditorSplitView({
     confirmMutation.mutate({ websiteId, proposedData });
   }, [websiteId, confirmMutation]);
 
-  // Reject a suggestion
+  // Reject a suggestion — revert preview to saved state
   const handleReject = useCallback((msgIndex: number) => {
     setMessages(msgs => msgs.map((m, i) =>
       i === msgIndex ? { ...m, confirmed: false } : m
     ));
+    setLocalData(savedDataRef.current);
+    setPreviewingProposal(false);
   }, []);
 
-  // Select a section — scroll preview + update badge (no chat message)
+  // Select a section — scroll preview + update badge
   const selectSection = useCallback((sectionType: string) => {
     const meta = SECTION_META[sectionType];
     if (!meta) return;
     setSelectedSection(sectionType);
 
-    // Use the actual DOM id (may differ from section type for German ids)
     const domId = getDomId(sectionType);
-
-    // Scroll preview to section using getBoundingClientRect (works correctly with CSS zoom)
     const scrollEl = previewScrollRef.current;
     if (scrollEl) {
       const inner = scrollEl.querySelector(`#${domId}`) as HTMLElement | null;
@@ -173,20 +197,15 @@ export default function ContentEditorSplitView({
         scrollEl.scrollTo({ top: Math.max(0, scrollOffset), behavior: "smooth" });
       }
     }
-
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
 
   // Click detection on preview overlay
   const handlePreviewClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const sectionTypes = Object.keys(SECTION_META);
-    // All valid DOM ids = section types + German aliases
     const allDomIds = new Set([...sectionTypes, ...Object.keys(DOM_ID_TO_SECTION)]);
+    const resolveId = (domId: string): string => DOM_ID_TO_SECTION[domId] ?? domId;
 
-    const resolveId = (domId: string): string =>
-      DOM_ID_TO_SECTION[domId] ?? domId;
-
-    // Walk up DOM from click target to find a section id
     let target = e.target as HTMLElement | null;
     while (target) {
       if (target.id && allDomIds.has(target.id)) {
@@ -195,8 +214,6 @@ export default function ContentEditorSplitView({
       }
       target = target.parentElement;
     }
-
-    // Fallback via elementsFromPoint
     const els = document.elementsFromPoint(e.clientX, e.clientY);
     for (const el of els) {
       if (el instanceof HTMLElement && el.id && allDomIds.has(el.id)) {
@@ -210,22 +227,18 @@ export default function ContentEditorSplitView({
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (!text || applyMutation.isPending) return;
-
     const prefix = selectedSection
       ? `[Bearbeite Sektion: ${SECTION_META[selectedSection]?.label || selectedSection}] `
       : "";
-
     setMessages(msgs => [
       ...msgs,
       { role: "user", content: text },
       { role: "assistant", content: "...", pending: true },
     ]);
     setInput("");
-
     applyMutation.mutate({ websiteId, userMessage: prefix + text });
   }, [input, selectedSection, applyMutation, websiteId]);
 
-  // Section chips from websiteData
   const sectionChips = (websiteData?.sections as any[] | undefined)
     ?.filter(s => SECTION_META[s.type])
     ?.map(s => ({ type: s.type, ...SECTION_META[s.type] })) ?? [];
@@ -304,7 +317,7 @@ export default function ContentEditorSplitView({
                   )}
                 </div>
 
-                {/* Suggestion confirm/reject buttons */}
+                {/* Suggestion confirm/reject */}
                 {msg.proposedData && msg.confirmed === undefined && (
                   <div className="flex gap-1.5 pl-1">
                     <button
@@ -386,17 +399,23 @@ export default function ContentEditorSplitView({
           <div className="flex-1 bg-slate-700/60 rounded-lg px-3 py-1 text-slate-400 text-xs font-mono truncate">
             {website.slug}.pageblitz.de
           </div>
-          <div className="flex items-center gap-1 text-xs text-slate-500 flex-shrink-0">
-            <MousePointer className="w-3 h-3" />
-            <span className="hidden sm:inline">Anklicken zum Auswählen</span>
-          </div>
+          {previewingProposal ? (
+            <span className="flex items-center gap-1 text-xs text-amber-400 flex-shrink-0">
+              <Eye className="w-3 h-3" /> Vorschau
+            </span>
+          ) : (
+            <div className="flex items-center gap-1 text-xs text-slate-500 flex-shrink-0">
+              <MousePointer className="w-3 h-3" />
+              <span className="hidden sm:inline">Anklicken zum Auswählen</span>
+            </div>
+          )}
         </div>
 
         {/* Preview + click overlay */}
         <div className="flex-1 overflow-auto relative" ref={previewScrollRef}>
-          <div key={previewKey} style={{ zoom: 0.75, contain: "layout" }}>
+          <div style={{ zoom: 0.75, contain: "layout" }}>
             <WebsiteRenderer
-              websiteData={websiteData}
+              websiteData={localData}
               colorScheme={colorScheme}
               heroImageUrl={website.heroImageUrl || undefined}
               aboutImageUrl={(website as any).aboutImageUrl || undefined}
@@ -409,7 +428,7 @@ export default function ContentEditorSplitView({
             />
           </div>
 
-          {/* Transparent overlay captures clicks, passes them to handlePreviewClick */}
+          {/* Transparent overlay captures clicks */}
           <div
             className="absolute inset-0 cursor-crosshair"
             style={{ zIndex: 50 }}
