@@ -1135,9 +1135,9 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any)) dt.buttonStyle = "filled";
       if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
       { const lfSS = getLayoutFonts(layoutStyle);
-      if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfSS.headlineFont;
-      if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfSS.bodyFont;
-      if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfSS.bodyFont; }
+      // Always enforce canonical layout fonts — never trust LLM-generated font names
+      dt.headlineFont = lfSS.headlineFont;
+      dt.bodyFont = lfSS.bodyFont; }
       if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
       if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
       if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
@@ -1720,11 +1720,10 @@ export const appRouter = router({
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
-          // Ensure font names are plain strings (no brackets)
+          // Always enforce canonical layout fonts
           { const lf = getLayoutFonts(layoutStyle);
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lf.headlineFont;
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lf.bodyFont;
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lf.bodyFont; }
+          dt.headlineFont = lf.headlineFont;
+          dt.bodyFont = lf.bodyFont; }
           // Ensure accent color is a valid hex/rgb
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
@@ -1910,10 +1909,10 @@ export const appRouter = router({
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
+          // Always enforce canonical layout fonts
           { const lfR = getLayoutFonts(layoutStyle);
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfR.headlineFont;
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfR.bodyFont;
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfR.bodyFont; }
+          dt.headlineFont = lfR.headlineFont;
+          dt.bodyFont = lfR.bodyFont; }
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
           if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;

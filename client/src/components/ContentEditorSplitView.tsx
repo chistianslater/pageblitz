@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { Send, Loader2, User, MousePointer, Check, X, Eye, Type, Crosshair } from "lucide-react";
+import { Send, Loader2, User, MousePointer, Check, X, Eye, Type, Crosshair, Undo2, HelpCircle, ChevronRight } from "lucide-react";
 import WebsiteRenderer from "./WebsiteRenderer";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 
@@ -144,7 +144,67 @@ function useInlineHoverStyle(active: boolean) {
   }, [active]);
 }
 
+// ── Tutorial overlay ──────────────────────────────────────────────────────────
+const TUTORIAL_KEY = "pb_editor_tutorial_v1";
+const TUTORIAL_STEPS = [
+  {
+    icon: "✦",
+    title: "KI-Modus",
+    body: "Wähle eine Sektion über die Chips oder klicke direkt in die Vorschau — dann beschreibe der KI im Chat, was du ändern möchtest.",
+    highlight: "select",
+  },
+  {
+    icon: "T",
+    title: "Text-Modus",
+    body: "Schalte oben auf [T Text] um und klicke direkt auf jeden Text in der Vorschau. Ein Cursor öffnet sich — bearbeite direkt, Enter zum Speichern.",
+    highlight: "inline",
+  },
+  {
+    icon: "↩",
+    title: "Undo",
+    body: "Jede Änderung wird gespeichert. Mit dem Pfeil-Zurück-Button oben kannst du Schritte rückgängig machen (bis zu 20 Schritte).",
+    highlight: "undo",
+  },
+];
+
+function EditorTutorial({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState(0);
+  const isLast = step === TUTORIAL_STEPS.length - 1;
+  const s = TUTORIAL_STEPS[step];
+  return (
+    <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl">
+      <div className="bg-slate-800 border border-slate-600/60 rounded-2xl p-6 mx-4 max-w-xs w-full shadow-2xl">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 font-bold text-sm flex-shrink-0">
+            {s.icon}
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 uppercase tracking-widest">Schritt {step + 1} / {TUTORIAL_STEPS.length}</p>
+            <p className="text-white font-semibold text-sm">{s.title}</p>
+          </div>
+        </div>
+        <p className="text-slate-300 text-sm leading-relaxed mb-5">{s.body}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1">
+            {TUTORIAL_STEPS.map((_, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === step ? "bg-blue-400" : "bg-slate-600"}`} />
+            ))}
+          </div>
+          <button
+            onClick={() => isLast ? onClose() : setStep(s => s + 1)}
+            className="flex items-center gap-1.5 text-sm px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          >
+            {isLast ? "Los geht's!" : "Weiter"} <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
+const HISTORY_MAX = 20;
+
 export default function ContentEditorSplitView({
   websiteId, websiteData, colorScheme, website, business, onUpdate,
 }: Props) {
@@ -152,6 +212,17 @@ export default function ContentEditorSplitView({
   const [previewingProposal, setPreviewingProposal] = useState(false);
   const savedDataRef = useRef<WebsiteData>(websiteData);
   const localDataRef = useRef<WebsiteData>(websiteData);
+
+  // Undo history: array of past states, most recent last
+  const historyRef = useRef<WebsiteData[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+
+  // Tutorial
+  const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem(TUTORIAL_KEY));
+  const closeTutorial = useCallback(() => {
+    localStorage.setItem(TUTORIAL_KEY, "1");
+    setShowTutorial(false);
+  }, []);
 
   // Sync when parent re-fetches
   useEffect(() => {
@@ -163,6 +234,30 @@ export default function ContentEditorSplitView({
   }, [websiteData, previewingProposal]);
 
   useEffect(() => { localDataRef.current = localData; }, [localData]);
+
+  /** Push current state onto undo stack before applying a change */
+  const pushHistory = useCallback((snapshot: WebsiteData) => {
+    historyRef.current = [...historyRef.current, snapshot].slice(-HISTORY_MAX);
+    setCanUndo(true);
+  }, []);
+
+  // Forward ref so handleUndo can call confirmMutation before it's defined
+  const confirmMutateRef = useRef<(data: WebsiteData) => void>(() => {});
+
+  /** Undo last saved change */
+  const handleUndo = useCallback(() => {
+    const history = historyRef.current;
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    historyRef.current = history.slice(0, -1);
+    setCanUndo(historyRef.current.length > 0);
+    setLocalData(prev);
+    savedDataRef.current = prev;
+    localDataRef.current = prev;
+    setPreviewingProposal(false);
+    confirmMutateRef.current(prev);
+    onUpdate();
+  }, [onUpdate]);
 
   const [messages, setMessages] = useState<Message[]>([{
     role: "assistant",
@@ -199,7 +294,10 @@ export default function ContentEditorSplitView({
         }]);
       } else {
         const newData = (result as any).updatedData as WebsiteData;
-        if (newData) { setLocalData(newData); savedDataRef.current = newData; localDataRef.current = newData; }
+        if (newData) {
+          pushHistory(savedDataRef.current);
+          setLocalData(newData); savedDataRef.current = newData; localDataRef.current = newData;
+        }
         setPreviewingProposal(false);
         onUpdate();
         setMessages(msgs => [...msgs.filter(m => !m.pending), { role: "assistant", content: `✓ ${result.aiMessage}` }]);
@@ -219,10 +317,17 @@ export default function ContentEditorSplitView({
     },
   });
 
+  // Wire forward ref after mutation is defined
+  useEffect(() => {
+    confirmMutateRef.current = (data: WebsiteData) =>
+      confirmMutation.mutate({ websiteId, proposedData: data });
+  });
+
   const handleAccept = useCallback((msgIndex: number, proposedData: any) => {
+    pushHistory(savedDataRef.current);
     setMessages(msgs => msgs.map((m, i) => i === msgIndex ? { ...m, confirmed: true } : m));
     confirmMutation.mutate({ websiteId, proposedData });
-  }, [websiteId, confirmMutation]);
+  }, [websiteId, confirmMutation, pushHistory]);
 
   const handleReject = useCallback((msgIndex: number) => {
     setMessages(msgs => msgs.map((m, i) => i === msgIndex ? { ...m, confirmed: false } : m));
@@ -244,13 +349,14 @@ export default function ContentEditorSplitView({
       return;
     }
 
+    pushHistory(localDataRef.current);
     const newData = updateFieldAtPath(localDataRef.current, entry.path, newText);
     setLocalData(newData as WebsiteData);
     savedDataRef.current = newData as WebsiteData;
     localDataRef.current = newData as WebsiteData;
-    confirmMutation.mutate({ websiteId, proposedData: newData });
+    confirmMutateRef.current(newData as WebsiteData);
     onUpdate();
-  }, [websiteId, confirmMutation, onUpdate]);
+  }, [websiteId, onUpdate, pushHistory]);
 
   /** Activate inline editing on a specific element */
   const activateInlineEdit = useCallback((el: HTMLElement, path: string, text: string) => {
@@ -432,12 +538,36 @@ export default function ContentEditorSplitView({
     <div className="flex gap-3" style={{ height: "calc(100vh - 220px)", minHeight: 560 }}>
 
       {/* ── Left: Chat panel ─────────────────────────────────────────────── */}
-      <div className="w-[38%] flex flex-col bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden flex-shrink-0">
+      <div className="w-[38%] flex flex-col bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden flex-shrink-0 relative">
+
+        {/* Tutorial overlay */}
+        {showTutorial && <EditorTutorial onClose={closeTutorial} />}
+
         <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2 flex-shrink-0">
           <span className="text-blue-400 text-base">✦</span>
           <span className="text-white font-semibold text-sm">KI-Inhaltseditor</span>
+
+          {/* Undo button */}
+          <button
+            onClick={handleUndo}
+            disabled={!canUndo}
+            title="Letzte Änderung rückgängig machen"
+            className="ml-auto w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          >
+            <Undo2 className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Tutorial re-open */}
+          <button
+            onClick={() => setShowTutorial(true)}
+            title="Hilfe anzeigen"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-300 hover:bg-slate-700/60 transition-colors flex-shrink-0"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+          </button>
+
           {selectedSection && previewMode === "select" && (
-            <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
               📍 {SECTION_META[selectedSection]?.label}
             </span>
           )}
