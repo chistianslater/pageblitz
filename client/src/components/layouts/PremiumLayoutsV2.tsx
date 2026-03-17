@@ -670,7 +670,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   // Variant 0: Horizontal Steps (Current)
   if (variant === 0) {
     return (
-      <section className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
+      <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto">
             <h2 className={`text-3xl md:text-4xl text-center ${textMain}`} style={{ ...hs, ...textMainStyle }}>
@@ -702,7 +702,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
 
   // Variant 1: Vertical Alternating Timeline
   return (
-    <section className={`py-24 md:py-32 px-6 ${bgClass}`} style={{ ...bgStyle, fontFamily: bodyFont }}>
+    <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={{ ...bgStyle, fontFamily: bodyFont }}>
       <div className="max-w-4xl mx-auto">
         <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-12">
           <h2 className={`text-3xl md:text-4xl text-center mb-0 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
@@ -1201,7 +1201,7 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
   // Variant 0: Standard Grid
   if (variant === 0) {
     return (
-      <section className={`py-24 md:py-32 px-6 ${bg}`} style={bgStyle}>
+      <section id="testimonials" className={`py-24 md:py-32 px-6 ${bg}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="max-w-2xl mx-auto mb-20">
             <div className="text-center mb-20">
@@ -1239,7 +1239,7 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
 
   // Variant 1: Large Focus (Single or Two columns)
   return (
-    <section className={`py-24 md:py-32 px-6 ${bg} overflow-hidden relative isolate`} style={bgStyle}>
+    <section id="testimonials" className={`py-24 md:py-32 px-6 ${bg} overflow-hidden relative isolate`} style={bgStyle}>
       <div className="absolute top-0 right-0 w-1/2 h-full bg-neutral-500/5 -z-10 skew-x-12 translate-x-1/2" />
       <div className="max-w-7xl mx-auto relative z-0">
         <div className="grid lg:grid-cols-2 gap-16 items-start">

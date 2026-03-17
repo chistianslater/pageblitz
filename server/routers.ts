@@ -3380,8 +3380,11 @@ Deine Regeln:
 3. Antworte AUSSCHLIESSLICH mit dem vollständig aktualisierten JSON-Objekt – kein Text davor oder danach, kein Markdown, kein Code-Block.
 4. Behalte die exakte JSON-Struktur (Schlüsselnamen, Arrays, Typen) unverändert.
 5. Füge dem JSON-Objekt immer diese zwei Meta-Felder hinzu:
-   - "_mode": "apply" wenn der Nutzer eine direkte Anweisung gibt (z.B. "ändere X", "mach kürzer", "ersetze"). "suggest" wenn der Nutzer eine offene Frage stellt oder nach Ideen/Vorschlägen fragt (z.B. "was würdest du verbessern?", "hast du Ideen?", "optimiere das").
-   - "_aiMessage": Kurze deutsche Rückmeldung was du gemacht hast oder vorschlägst (max. 120 Zeichen). Bei "apply": "Slogan auf '...' geändert." Bei "suggest": "Wie wäre es mit: '...'?"
+   - "_mode":
+     • "apply" – direkte Änderungsanweisung (z.B. "ändere X zu Y", "mach kürzer", "ersetze")
+     • "suggest" – offene Frage nach Verbesserungsideen (z.B. "was würdest du verbessern?", "hast du Ideen?")
+     • "chat" – Meta-Frage, Rückfrage oder Gesprächsnachricht OHNE Website-Änderung (z.B. "was hast du geändert?", "was wurde übernommen?", "kannst du das erklären?", "wieso?"). Bei "chat" lasse ALLE Website-Daten unverändert!
+   - "_aiMessage": Kurze deutsche Antwort (max. 150 Zeichen). Bei "apply": z.B. "Slogan auf '...' geändert." Bei "suggest": z.B. "Wie wäre es mit: '...'?" Bei "chat": direkte Antwort auf die Frage des Nutzers.
 
 Wichtige Felder im JSON:
 - businessName: Unternehmensname
@@ -3427,7 +3430,11 @@ Wichtige Felder im JSON:
         }
 
         // Extract meta fields before saving
-        const mode: "apply" | "suggest" = updatedData._mode === "suggest" ? "suggest" : "apply";
+        const rawMode = updatedData._mode;
+        const mode: "apply" | "suggest" | "chat" =
+          rawMode === "suggest" ? "suggest" :
+          rawMode === "chat" ? "chat" :
+          "apply";
         const aiMessage: string = typeof updatedData._aiMessage === "string"
           ? updatedData._aiMessage
           : mode === "apply" ? "Änderung wurde übernommen." : "Hier ist mein Vorschlag.";
@@ -3441,6 +3448,11 @@ Wichtige Felder im JSON:
           datenschutzHtml: websiteData.datenschutzHtml,
           hasLegalPages: websiteData.hasLegalPages,
         };
+
+        if (mode === "chat") {
+          // Pure conversational reply — don't save or show confirm buttons
+          return { mode: "chat" as const, aiMessage };
+        }
 
         if (mode === "suggest") {
           // Don't save yet – return proposal to frontend for confirmation

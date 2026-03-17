@@ -19,6 +19,23 @@ const SECTION_META: Record<string, { label: string; hint: string }> = {
   pricelist:    { label: "Preisliste",     hint: "Kategorien, Leistungen, Preise" },
 };
 
+// Section type → actual DOM id (some layouts use German ids)
+const SECTION_DOM_ID: Record<string, string> = {
+  gallery:   "galerie",
+  menu:      "speisekarte",
+  pricelist: "preise",
+};
+function getDomId(type: string): string {
+  return SECTION_DOM_ID[type] ?? type;
+}
+
+// Reverse map: DOM id → section type (for click detection)
+const DOM_ID_TO_SECTION: Record<string, string> = {
+  galerie:      "gallery",
+  speisekarte:  "menu",
+  preise:       "pricelist",
+};
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Message {
   role: "assistant" | "user";
@@ -80,14 +97,20 @@ export default function ContentEditorSplitView({
 
   const applyMutation = trpc.customer.applyAiEdit.useMutation({
     onSuccess: (result) => {
-      if (result.mode === "suggest") {
+      if (result.mode === "chat") {
+        // Conversational reply — just show message, no changes
+        setMessages(msgs => [
+          ...msgs.filter(m => !m.pending),
+          { role: "assistant", content: result.aiMessage },
+        ]);
+      } else if (result.mode === "suggest") {
         // Show suggestion with confirm/reject buttons
         setMessages(msgs => [
           ...msgs.filter(m => !m.pending),
           {
             role: "assistant",
             content: result.aiMessage,
-            proposedData: result.proposedData,
+            proposedData: (result as any).proposedData,
           },
         ]);
       } else {
@@ -131,15 +154,18 @@ export default function ContentEditorSplitView({
   }, []);
 
   // Select a section — scroll preview + update badge (no chat message)
-  const selectSection = useCallback((sectionId: string) => {
-    const meta = SECTION_META[sectionId];
+  const selectSection = useCallback((sectionType: string) => {
+    const meta = SECTION_META[sectionType];
     if (!meta) return;
-    setSelectedSection(sectionId);
+    setSelectedSection(sectionType);
+
+    // Use the actual DOM id (may differ from section type for German ids)
+    const domId = getDomId(sectionType);
 
     // Scroll preview to section using getBoundingClientRect (works correctly with CSS zoom)
     const scrollEl = previewScrollRef.current;
     if (scrollEl) {
-      const inner = scrollEl.querySelector(`#${sectionId}`) as HTMLElement | null;
+      const inner = scrollEl.querySelector(`#${domId}`) as HTMLElement | null;
       if (inner) {
         const containerRect = scrollEl.getBoundingClientRect();
         const elRect = inner.getBoundingClientRect();
@@ -153,13 +179,18 @@ export default function ContentEditorSplitView({
 
   // Click detection on preview overlay
   const handlePreviewClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const sectionIds = Object.keys(SECTION_META);
+    const sectionTypes = Object.keys(SECTION_META);
+    // All valid DOM ids = section types + German aliases
+    const allDomIds = new Set([...sectionTypes, ...Object.keys(DOM_ID_TO_SECTION)]);
+
+    const resolveId = (domId: string): string =>
+      DOM_ID_TO_SECTION[domId] ?? domId;
 
     // Walk up DOM from click target to find a section id
     let target = e.target as HTMLElement | null;
     while (target) {
-      if (target.id && sectionIds.includes(target.id)) {
-        selectSection(target.id);
+      if (target.id && allDomIds.has(target.id)) {
+        selectSection(resolveId(target.id));
         return;
       }
       target = target.parentElement;
@@ -168,8 +199,8 @@ export default function ContentEditorSplitView({
     // Fallback via elementsFromPoint
     const els = document.elementsFromPoint(e.clientX, e.clientY);
     for (const el of els) {
-      if (el instanceof HTMLElement && el.id && sectionIds.includes(el.id)) {
-        selectSection(el.id);
+      if (el instanceof HTMLElement && el.id && allDomIds.has(el.id)) {
+        selectSection(resolveId(el.id));
         return;
       }
     }
