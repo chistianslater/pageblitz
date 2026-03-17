@@ -433,6 +433,7 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
                         <CheckoutDialog website={w} />
                         <ActivateWebsiteButton website={w} />
                         <TestSubscriptionButton website={w} />
+                        <UnlockAllAddonsButton website={w} />
                         <RegenerateDialog website={w} />
                         <OutreachDialog website={w} />
                         <DeleteWebsiteDialog website={w} />
@@ -918,6 +919,24 @@ function TestSubscriptionButton({ website }: { website: any }) {
       disabled={createTestSub.isPending} title="Verknüpft diese Website mit deinem Account (für Test-Zwecke)">
       {createTestSub.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserPlus className="h-3 w-3 mr-1" />}
       Test-Abo
+    </Button>
+  );
+}
+
+function UnlockAllAddonsButton({ website }: { website: any }) {
+  const { user } = useAuth();
+  const utils = trpc.useUtils();
+  const unlockMutation = trpc.customer.unlockAllAddons.useMutation({
+    onSuccess: () => { utils.website.list.invalidate(); toast.success("Alle Add-ons freigeschaltet! 🎉"); },
+    onError: (err) => toast.error(err.message),
+  });
+  if (!user) return null;
+  return (
+    <Button variant="outline" size="sm" className="text-purple-400 border-purple-400/30 hover:bg-purple-400/10"
+      onClick={() => unlockMutation.mutate({ websiteId: website.id, userId: user.id })}
+      disabled={unlockMutation.isPending} title="Schaltet alle Add-ons für Testzwecke frei (ohne Stripe)">
+      {unlockMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+      Alle Add-ons
     </Button>
   );
 }

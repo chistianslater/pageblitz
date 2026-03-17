@@ -3837,6 +3837,42 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    unlockAllAddons: adminProcedure
+      .input(z.object({ websiteId: z.number(), userId: z.number() }))
+      .mutation(async ({ input }) => {
+        // Enable all add-ons on the website row
+        await updateWebsite(input.websiteId, {
+          status: "active",
+          addOnContactForm: true,
+          addOnGallery: true,
+          addOnMenu: true,
+          addOnPricelist: true,
+          addOnBooking: true,
+          addOnAiChat: true,
+        });
+        // Create or update subscription with all add-ons enabled
+        const existing = await getSubscriptionByWebsiteId(input.websiteId);
+        const allAddOns = { contactForm: true, gallery: true, menu: true, pricelist: true, booking: true, aiChat: true };
+        if (existing) {
+          await updateSubscriptionByWebsiteId(input.websiteId, {
+            userId: input.userId,
+            status: "active",
+            addOns: allAddOns,
+          });
+        } else {
+          await createSubscription({
+            websiteId: input.websiteId,
+            userId: input.userId,
+            status: "active",
+            plan: "base",
+            addOns: allAddOns,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }
+        return { success: true };
+      }),
+
     getAnalytics: protectedProcedure
       .input(z.object({ websiteId: z.number() }))
       .query(async ({ ctx, input }) => {
