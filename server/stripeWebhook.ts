@@ -163,24 +163,42 @@ export function registerStripeWebhook(app: Express) {
             const subscription = event.data.object as Stripe.Subscription;
             const sub = await getSubscriptionByStripeId(subscription.id);
             if (sub) {
-              const newStatus = subscription.status === "active" ? "active"
-                : subscription.status === "trialing" ? "trialing"
-                : subscription.status === "past_due" ? "past_due"
-                : "canceled";
               // current_period_end not available in newer API — fetch via compat client
               let periodEnd: number | undefined;
+              let cancelAtPeriodEnd = false;
               try {
                 const freshSub = await stripeCompat.subscriptions.retrieve(subscription.id);
                 periodEnd = (freshSub as any).current_period_end;
+                cancelAtPeriodEnd = (freshSub as any).cancel_at_period_end === true;
               } catch (_) {}
+
+              // Map Stripe status to local status
+              // If cancel_at_period_end is set, the subscription is still running but scheduled to cancel
+              let newStatus: string;
+              if (subscription.status === "active" && cancelAtPeriodEnd) {
+                newStatus = "canceling"; // running until period end, then gets deleted
+              } else if (subscription.status === "active") {
+                newStatus = "active";
+              } else if (subscription.status === "trialing") {
+                newStatus = "trialing";
+              } else if (subscription.status === "past_due") {
+                newStatus = "past_due";
+              } else {
+                newStatus = "canceled";
+              }
+
               await updateSubscription(sub.id, {
-                status: newStatus,
+                status: newStatus as any,
                 ...(periodEnd ? { currentPeriodEnd: periodEnd } : {}),
                 updatedAt: Date.now(),
               });
-              if (newStatus === "active") {
+
+              // Website stays active while subscription is still running (canceling = still paid)
+              if (newStatus === "active" || newStatus === "canceling" || newStatus === "trialing") {
                 await updateWebsite(sub.websiteId, { status: "active" });
               }
+
+              console.log(`[Webhook] Subscription updated for website ${sub.websiteId}: ${newStatus}${cancelAtPeriodEnd ? " (cancel_at_period_end)" : ""}`);
             }
             break;
           }

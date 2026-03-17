@@ -52,9 +52,10 @@ function Section({ title, icon, children }: SectionProps) {
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
     active: { label: "Aktiv", cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
-    canceled: { label: "Gekündigt", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
-    past_due: { label: "Zahlung ausstehend", cls: "bg-red-500/20 text-red-300 border-red-500/40" },
     trialing: { label: "Testphase", cls: "bg-blue-500/20 text-blue-300 border-blue-500/40" },
+    canceling: { label: "Gekündigt", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
+    canceled: { label: "Abgelaufen", cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" },
+    past_due: { label: "Zahlung ausstehend", cls: "bg-red-500/20 text-red-300 border-red-500/40" },
     incomplete: { label: "Unvollständig", cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" },
   };
   const { label, cls } = map[status] || { label: status, cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" };
@@ -181,7 +182,8 @@ export default function AccountPage() {
   // Get subscription info from first website (if any)
   const subscription = myWebsites?.[0]?.subscription;
   const website = myWebsites?.[0]?.website;
-  const hasActiveSubscription = subscription?.status === "active" || subscription?.status === "trialing";
+  const hasActiveSubscription = subscription?.status === "active" || subscription?.status === "trialing" || subscription?.status === "canceling";
+  const isCanceling = subscription?.status === "canceling";
 
   // Compute active paid add-ons from subscription.addOns (supports both storage formats)
   const subAddOns = (subscription?.addOns ?? {}) as Record<string, any>;
@@ -464,12 +466,28 @@ export default function AccountPage() {
                             <div className="flex items-center gap-2 text-slate-400">
                               <Calendar className="w-4 h-4" />
                               <span>
-                                Nächste Zahlung:{" "}
+                                {isCanceling ? "Läuft ab am: " : "Nächste Zahlung: "}
                                 {subscription?.currentPeriodEnd
                                   ? new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString("de-DE")
                                   : "Unbekannt"}
                               </span>
                             </div>
+                          </div>
+                        )}
+
+                        {/* Canceling info banner */}
+                        {isCanceling && (
+                          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                            <p className="text-sm text-amber-300">
+                              Dein Abo wurde gekündigt. Deine Website bleibt bis zum{" "}
+                              <strong>
+                                {subscription?.currentPeriodEnd
+                                  ? new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString("de-DE")
+                                  : "Periodenende"}
+                              </strong>{" "}
+                              online und wird danach automatisch deaktiviert.
+                            </p>
                           </div>
                         )}
                       </div>
@@ -492,7 +510,7 @@ export default function AccountPage() {
                           <Zap className="w-4 h-4 mr-2" />
                           Bearbeiten
                         </Button>
-                        {hasActiveSubscription && (
+                        {hasActiveSubscription && !isCanceling && (
                           <Button
                             variant="outline"
                             className="border-red-500/50 text-red-400 hover:bg-red-500/10"
