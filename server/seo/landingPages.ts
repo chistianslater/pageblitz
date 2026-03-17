@@ -829,70 +829,102 @@ a{color:inherit;text-decoration:none}
 img{max-width:100%;height:auto}
 .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
 /* Nav */
-nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:.875rem 0;position:sticky;top:0;z-index:100}
+nav{background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-bottom:1px solid #e5e7eb;padding:.875rem 0;position:sticky;top:0;z-index:100}
 .nav-inner{display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:1.25rem;font-weight:800;color:#2563eb;letter-spacing:-.5px}
-.nav-cta{background:#2563eb;color:#fff!important;padding:.5rem 1.25rem;border-radius:6px;font-size:.875rem;font-weight:600;transition:background .2s}
+.logo{font-size:1.25rem;font-weight:800;color:#2563eb;letter-spacing:-.5px;display:flex;align-items:center;gap:.375rem}
+.nav-cta{background:#2563eb;color:#fff!important;padding:.5rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;transition:background .2s}
 .nav-cta:hover{background:#1d4ed8}
 /* Hero */
-.hero{background:linear-gradient(135deg,#1e40af 0%,#2563eb 60%,#3b82f6 100%);color:#fff;padding:4.5rem 0;text-align:center}
-.hero h1{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:800;margin-bottom:1.25rem;line-height:1.2}
-.hero p{font-size:1.0625rem;opacity:.92;max-width:680px;margin:0 auto 2rem}
-.btn-primary{display:inline-block;background:#16a34a;color:#fff;padding:.875rem 2.25rem;border-radius:8px;font-size:1.0625rem;font-weight:700;transition:background .2s}
-.btn-primary:hover{background:#15803d}
-.social-proof{margin-top:1.25rem;font-size:.875rem;opacity:.75}
+.hero{background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 50%,#1d4ed8 100%);color:#fff;padding:5rem 0 4rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(59,130,246,.25),transparent);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.9)}
+.hero h1{font-size:clamp(1.875rem,4.5vw,3rem);font-weight:800;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em}
+.hero p{font-size:1.0625rem;opacity:.85;max-width:680px;margin:0 auto 2rem;line-height:1.7}
+.btn-primary{display:inline-block;background:#16a34a;color:#fff;padding:.9375rem 2.5rem;border-radius:10px;font-size:1.0625rem;font-weight:700;transition:all .2s;box-shadow:0 4px 14px rgba(22,163,74,.4)}
+.btn-primary:hover{background:#15803d;transform:translateY(-1px);box-shadow:0 6px 20px rgba(22,163,74,.45)}
+.hero-trust{margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:.8125rem;opacity:.75}
+.hero-trust span{display:flex;align-items:center;gap:.375rem}
+/* Steps */
+.steps{padding:4.5rem 0;background:#f8fafc}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2rem;margin-top:3rem}
+.step{text-align:center;padding:1.5rem 1rem}
+.step-num{width:3rem;height:3rem;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.125rem;font-weight:800;margin:0 auto 1.25rem}
+.step h3{font-size:1.0625rem;font-weight:700;margin-bottom:.5rem;color:#111827}
+.step p{color:#4b5563;font-size:.9375rem;line-height:1.65}
 /* Features */
-.features{padding:4rem 0}
-.section-title{text-align:center;font-size:clamp(1.375rem,3vw,2rem);font-weight:800;margin-bottom:.75rem;color:#111827}
-.section-sub{text-align:center;color:#6b7280;margin-bottom:3rem;max-width:600px;margin-left:auto;margin-right:auto}
+.features{padding:4.5rem 0}
+.section-title{text-align:center;font-size:clamp(1.5rem,3vw,2.125rem);font-weight:800;margin-bottom:.75rem;color:#111827;letter-spacing:-.02em}
+.section-sub{text-align:center;color:#6b7280;margin-bottom:3rem;max-width:600px;margin-left:auto;margin-right:auto;font-size:1.0625rem}
 .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1.5rem}
-.feature-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:2rem}
-.feature-icon{font-size:2rem;margin-bottom:.875rem}
+.feature-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:2rem;transition:box-shadow .2s,border-color .2s}
+.feature-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);border-color:#bfdbfe}
+.feature-icon{font-size:2.25rem;margin-bottom:1rem}
 .feature-card h3{font-size:1.0625rem;font-weight:700;margin-bottom:.5rem;color:#1d4ed8}
 .feature-card p{color:#4b5563;font-size:.9375rem;line-height:1.65}
+/* Add-ons */
+.addons{padding:4.5rem 0;background:#f0f9ff}
+.addons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-top:3rem}
+.addon-card{background:#fff;border:1px solid #bae6fd;border-radius:12px;padding:1.5rem;text-align:center}
+.addon-icon{font-size:1.75rem;margin-bottom:.75rem}
+.addon-card h4{font-size:.9375rem;font-weight:700;color:#0c4a6e;margin-bottom:.375rem}
+.addon-card p{font-size:.8125rem;color:#0369a1;line-height:1.5}
+.addon-price{display:inline-block;margin-top:.75rem;background:#e0f2fe;color:#0284c7;font-size:.75rem;font-weight:700;padding:.25rem .625rem;border-radius:999px}
 /* Pricing */
-.pricing{background:#eff6ff;padding:4rem 0}
-.pricing-card{max-width:440px;margin:0 auto;background:#fff;border:2px solid #2563eb;border-radius:16px;padding:2.5rem;text-align:center;box-shadow:0 4px 24px rgba(37,99,235,.1)}
-.price{font-size:2.75rem;font-weight:800;color:#2563eb;margin:.75rem 0}
-.price-note{font-size:.9375rem;color:#6b7280}
-.pricing-features{list-style:none;margin:1.5rem 0 2rem;text-align:left}
-.pricing-features li{padding:.5rem 0;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:.625rem;font-size:.9375rem;color:#374151}
-.pricing-features li::before{content:"✓";color:#16a34a;font-weight:700;flex-shrink:0}
+.pricing{padding:4.5rem 0}
+.pricing-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:820px;margin:3rem auto 0}
+.pricing-card{background:#fff;border:2px solid #e5e7eb;border-radius:18px;padding:2.25rem;position:relative}
+.pricing-card.featured{border-color:#2563eb;box-shadow:0 8px 32px rgba(37,99,235,.15)}
+.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#2563eb;color:#fff;font-size:.75rem;font-weight:700;padding:.3rem .875rem;border-radius:999px;white-space:nowrap}
+.pricing-name{font-size:.875rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px}
+.pricing-price{font-size:2.5rem;font-weight:800;color:#111827;margin:.5rem 0;letter-spacing:-.03em}
+.pricing-price span{font-size:1rem;color:#6b7280;font-weight:400}
+.pricing-note{font-size:.875rem;color:#6b7280;margin-bottom:1.5rem}
+.pricing-features{list-style:none}
+.pricing-features li{padding:.5rem 0;border-bottom:1px solid #f1f5f9;display:flex;align-items:flex-start;gap:.625rem;font-size:.9375rem;color:#374151}
+.pricing-features li:last-child{border-bottom:none}
+.pricing-features li::before{content:"✓";color:#16a34a;font-weight:700;flex-shrink:0;margin-top:.125rem}
+.pricing-cta{display:block;margin-top:1.75rem;text-align:center;background:#2563eb;color:#fff;padding:.875rem;border-radius:10px;font-weight:700;font-size:.9375rem;transition:background .2s}
+.pricing-cta:hover{background:#1d4ed8}
+.pricing-cta.secondary{background:#f1f5f9;color:#374151}
+.pricing-cta.secondary:hover{background:#e2e8f0}
 /* FAQ */
-.faq{padding:4rem 0}
+.faq{padding:4.5rem 0;background:#f8fafc}
 .faq-list{max-width:760px;margin:0 auto}
-details{border:1px solid #e5e7eb;border-radius:10px;margin-bottom:.75rem;overflow:hidden}
-details[open]{border-color:#2563eb}
-summary{padding:1.125rem 1.375rem;cursor:pointer;font-weight:600;font-size:.9375rem;list-style:none;display:flex;justify-content:space-between;align-items:center;color:#111827;-webkit-tap-highlight-color:transparent}
+details{background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:.75rem;overflow:hidden}
+details[open]{border-color:#93c5fd}
+summary{padding:1.25rem 1.5rem;cursor:pointer;font-weight:600;font-size:.9375rem;list-style:none;display:flex;justify-content:space-between;align-items:center;color:#111827;-webkit-tap-highlight-color:transparent}
 summary::-webkit-details-marker{display:none}
-summary::after{content:"+";font-size:1.25rem;color:#2563eb;font-weight:400;flex-shrink:0;margin-left:.75rem}
+summary::after{content:"+";font-size:1.25rem;color:#2563eb;font-weight:300;flex-shrink:0;margin-left:.75rem}
 details[open] summary::after{content:"−"}
-.faq-answer{padding:0 1.375rem 1.25rem;color:#4b5563;font-size:.9375rem;line-height:1.7}
+.faq-answer{padding:0 1.5rem 1.25rem;color:#4b5563;font-size:.9375rem;line-height:1.7}
 /* CTA Banner */
-.cta-banner{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:4rem 0;text-align:center}
-.cta-banner h2{font-size:clamp(1.375rem,3vw,2rem);font-weight:800;margin-bottom:1rem}
-.cta-banner p{opacity:.8;max-width:560px;margin:0 auto 2rem;font-size:1.0625rem}
+.cta-banner{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:5rem 0;text-align:center}
+.cta-banner h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:800;margin-bottom:1rem;letter-spacing:-.02em}
+.cta-banner p{opacity:.75;max-width:560px;margin:0 auto 2rem;font-size:1.0625rem;line-height:1.7}
 /* Industries */
-.industries{padding:3rem 0;background:#f9fafb}
+.industries{padding:3rem 0;background:#f9fafb;border-top:1px solid #e5e7eb}
 .industries h3{text-align:center;font-size:1.125rem;font-weight:700;margin-bottom:1.5rem;color:#374151}
 .industry-links{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-width:880px;margin:0 auto}
-.industry-link{display:inline-block;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:.4375rem .875rem;font-size:.875rem;color:#374151;transition:all .15s}
+.industry-link{display:inline-block;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:.4375rem .875rem;font-size:.875rem;color:#374151;transition:all .15s}
 .industry-link:hover,.industry-link.active{border-color:#2563eb;color:#2563eb;background:#eff6ff}
 .industry-link.active{font-weight:600}
 /* Cities */
 .cities{padding:2.5rem 0;border-top:1px solid #e5e7eb}
 .cities h3{text-align:center;font-size:1rem;font-weight:700;margin-bottom:1.25rem;color:#374151}
 .city-links{display:flex;flex-wrap:wrap;gap:.375rem;justify-content:center;max-width:880px;margin:0 auto}
-.city-link{display:inline-block;background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:.3125rem .75rem;font-size:.8125rem;color:#374151;transition:all .15s}
+.city-link{display:inline-block;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:.3125rem .75rem;font-size:.8125rem;color:#374151;transition:all .15s}
 .city-link:hover,.city-link.active{border-color:#2563eb;color:#2563eb;background:#eff6ff}
 /* Footer */
-footer{background:#111827;color:#9ca3af;padding:2rem 0;text-align:center;font-size:.875rem}
-footer a{color:#9ca3af;text-decoration:underline;margin:0 .5rem}
+footer{background:#0f172a;color:#64748b;padding:2.5rem 0;text-align:center;font-size:.875rem}
+footer a{color:#94a3b8;text-decoration:underline;margin:0 .5rem}
 /* Responsive */
 @media(max-width:640px){
-  .hero{padding:2.5rem 0}
-  .features,.pricing,.faq,.industries,.cities{padding:2.25rem 0}
-  .hero h1{font-size:1.625rem}
+  .hero{padding:3rem 0 2.5rem}
+  .features,.addons,.pricing,.faq,.industries,.cities{padding:2.5rem 0}
+  .hero h1{font-size:1.75rem}
+  .hero-trust{gap:1rem;font-size:.75rem}
+  .pricing-wrapper{grid-template-columns:1fr}
+  .steps-grid{gap:1.25rem}
 }
 `.trim();
 
@@ -1027,6 +1059,7 @@ export function generateLandingPageHTML(
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(metaDesc)}">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <script type="application/ld+json">${buildFaqSchema(industry.faqs)}</script>
   <script type="application/ld+json">${buildWebPageSchema(title, metaDesc, canonical)}</script>
   <script type="application/ld+json">${buildBreadcrumbSchema(industry, city)}</script>
@@ -1036,47 +1069,128 @@ export function generateLandingPageHTML(
 
 <nav>
   <div class="container nav-inner">
-    <a class="logo" href="/">⚡ Pageblitz</a>
+    <a class="logo" href="/"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#2563eb"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg> Pageblitz</a>
     <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos starten</a>
   </div>
 </nav>
 
 <section class="hero">
   <div class="container">
+    <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
     <h1>${escapeHtml(h1)}</h1>
     <p>${escapeHtml(industry.description)}</p>
     <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten →</a>
-    <p class="social-proof">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</p>
+    <div class="hero-trust">
+      <span>✓ Keine Kreditkarte nötig</span>
+      <span>✓ Keine Einrichtungsgebühr</span>
+      <span>✓ Jederzeit kündbar</span>
+    </div>
+  </div>
+</section>
+
+<section class="steps">
+  <div class="container">
+    <h2 class="section-title">In 3 Schritten zur fertigen Website</h2>
+    <p class="section-sub">Kein Webdesigner, kein Warten – die KI macht alles automatisch</p>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Branche &amp; Daten eingeben</h3>
+        <p>Wähle deine Branche und beantworte ein paar Fragen zu deinem ${escapeHtml(industry.displayName)}-Betrieb.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>KI erstellt deine Website</h3>
+        <p>Unsere KI generiert Texte, Layout und Design automatisch – passend für ${escapeHtml(industry.displayName)}.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Online &amp; fertig</h3>
+        <p>Deine Website ist sofort unter deiner eigenen Adresse erreichbar – DSGVO-konform und mobiloptimiert.</p>
+      </div>
+    </div>
   </div>
 </section>
 
 <section class="features">
   <div class="container">
     <h2 class="section-title">Was Pageblitz für deinen ${escapeHtml(industry.displayName)}${escapeHtml(cityFull)} bietet</h2>
-    <p class="section-sub">Alles was du brauchst – in 3 Minuten fertig, ab 19,90 €/Monat</p>
+    <p class="section-sub">Alle Funktionen, die du brauchst – ab 19,90 €/Monat, kein Technik-Know-how nötig</p>
     <div class="features-grid">
       ${featuresHtml}
     </div>
   </div>
 </section>
 
+<section class="addons">
+  <div class="container">
+    <h2 class="section-title">Optionale Add-ons für noch mehr Funktionen</h2>
+    <p class="section-sub">Erweitere deine ${escapeHtml(industry.displayName)}-Website mit leistungsstarken Extras – aktivierbar mit einem Klick</p>
+    <div class="addons-grid">
+      <div class="addon-card">
+        <div class="addon-icon">💬</div>
+        <h4>KI-Chat</h4>
+        <p>Ein KI-Assistent beantwortet Kundenfragen rund um die Uhr – automatisch und auf dein Unternehmen trainiert.</p>
+        <span class="addon-price">+ 9,90 €/Mo</span>
+      </div>
+      <div class="addon-card">
+        <div class="addon-icon">📅</div>
+        <h4>Terminbuchung</h4>
+        <p>Kunden buchen direkt auf deiner Website einen Termin – ohne Anruf, ohne Wartezeit.</p>
+        <span class="addon-price">+ 4,90 €/Mo</span>
+      </div>
+      <div class="addon-card">
+        <div class="addon-icon">🖼️</div>
+        <h4>Bildergalerie</h4>
+        <p>Präsentiere deine Arbeiten, Produkte oder Räumlichkeiten in einer professionellen Galerie.</p>
+        <span class="addon-price">+ 3,90 €/Mo</span>
+      </div>
+      <div class="addon-card">
+        <div class="addon-icon">📋</div>
+        <h4>Kontaktformular</h4>
+        <p>Kundenanfragen direkt per E-Mail empfangen – mit DSGVO-konformem Formular.</p>
+        <span class="addon-price">+ 3,90 €/Mo</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="pricing">
   <div class="container">
-    <h2 class="section-title">Faire Preise für ${escapeHtml(industry.displayName)}-Websites</h2>
-    <p class="section-sub">Professionell, günstig und ohne versteckte Kosten</p>
-    <div class="pricing-card">
-      <div style="font-size:.875rem;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:.5px">Basis-Paket</div>
-      <div class="price">19,90 €<span style="font-size:1rem;color:#6b7280;font-weight:400">/Monat</span></div>
-      <p class="price-note">7 Tage gratis · Keine Einrichtungsgebühr</p>
-      <ul class="pricing-features">
-        <li>Professionelle ${escapeHtml(industry.displayName)}-Website</li>
-        <li>Von der KI in 3 Minuten erstellt</li>
-        <li>Impressum &amp; Datenschutzerklärung inklusive</li>
-        <li>DSGVO-konformes Kontaktformular</li>
-        <li>Öffnungszeiten &amp; Kontaktdaten</li>
-        <li>Mobilfreundliches Design</li>
-      </ul>
-      <a class="btn-primary" style="display:block;width:100%" href="https://pageblitz.de/start">Jetzt gratis starten</a>
+    <h2 class="section-title">Faire Preise – transparent &amp; ohne Überraschungen</h2>
+    <p class="section-sub">Professionelle ${escapeHtml(industry.displayName)}-Website ohne versteckte Kosten</p>
+    <div class="pricing-wrapper">
+      <div class="pricing-card">
+        <div class="pricing-name">Basis-Paket</div>
+        <div class="pricing-price">19,90 €<span>/Monat</span></div>
+        <div class="pricing-note">Inkl. 7 Tage gratis · Keine Einrichtungsgebühr</div>
+        <ul class="pricing-features">
+          <li>Professionelle ${escapeHtml(industry.displayName)}-Website</li>
+          <li>Von der KI in 3 Minuten erstellt</li>
+          <li>Impressum &amp; Datenschutzerklärung</li>
+          <li>Öffnungszeiten &amp; Kontaktdaten</li>
+          <li>Mobiloptimiertes Design</li>
+          <li>SSL &amp; DSGVO-konform</li>
+          <li>Subdomain (deinname.pageblitz.de)</li>
+        </ul>
+        <a class="pricing-cta secondary" href="https://pageblitz.de/start">Gratis testen</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">⚡ Beliebt</div>
+        <div class="pricing-name">Basis + Add-ons</div>
+        <div class="pricing-price">ab 23,80 €<span>/Monat</span></div>
+        <div class="pricing-note">Alle Basis-Features plus deine Wunsch-Extras</div>
+        <ul class="pricing-features">
+          <li>Alles aus Basis-Paket</li>
+          <li>KI-Chat (+ 9,90 €/Mo)</li>
+          <li>Terminbuchung (+ 4,90 €/Mo)</li>
+          <li>Bildergalerie (+ 3,90 €/Mo)</li>
+          <li>Kontaktformular (+ 3,90 €/Mo)</li>
+          <li>Speisekarte / Preisliste (+ 3,90 €/Mo)</li>
+          <li>Nur zahlen was du nutzt</li>
+        </ul>
+        <a class="pricing-cta" href="https://pageblitz.de/start">Jetzt starten →</a>
+      </div>
     </div>
   </div>
 </section>
@@ -1094,7 +1208,7 @@ export function generateLandingPageHTML(
 <section class="cta-banner">
   <div class="container">
     <h2>Jetzt ${escapeHtml(industry.displayName)}-Website erstellen${escapeHtml(cityStr)}</h2>
-    <p>In 3 Minuten online. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage gratis.</p>
+    <p>In 3 Minuten online. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage komplett gratis.</p>
     <a class="btn-primary" href="https://pageblitz.de/start">Kostenlos starten →</a>
   </div>
 </section>
