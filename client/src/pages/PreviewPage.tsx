@@ -233,7 +233,11 @@ export default function PreviewPage() {
         businessPhone={business?.phone || undefined}
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
-        openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
+        openingHours={
+          Array.isArray(business?.openingHours) && typeof business?.openingHours[0] === 'string'
+            ? convertOpeningHoursToGerman(business.openingHours as string[])
+            : undefined
+        }
         businessCategory={(business as any)?.category || undefined}
         showActivateButton={true}
         onActivate={goToOnboarding}
