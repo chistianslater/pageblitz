@@ -36,6 +36,11 @@ export function saveConsent(data: Omit<ConsentData, "timestamp">): void {
     // ignore storage errors
   }
   loadConsentedScripts(consent);
+  // Fire PageView immediately when user accepts – the fbq stub queues it
+  // and fbevents.js will process it once loaded from CDN
+  if (data.marketing) {
+    trackMetaPageView();
+  }
 }
 
 /**
@@ -56,6 +61,26 @@ export function loadConsentedScripts(consent: ConsentData): void {
   if (consent.marketing) {
     injectMetaPixel();
   }
+}
+
+/**
+ * Meta Pixel PageView manuell feuern – z.B. bei SPA-Routenwechseln.
+ * Nur aufrufen, wenn Marketing-Consent erteilt wurde.
+ */
+export function trackMetaPageView(): void {
+  try {
+    const w = window as any;
+    if (typeof w.fbq === "function") {
+      w.fbq("track", "PageView");
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/** Marketing-Consent prüfen. */
+export function hasMarketingConsent(): boolean {
+  return getStoredConsent()?.marketing === true;
 }
 
 // ─── Injektion-Helpers ────────────────────────────────────────────────────────
@@ -98,12 +123,15 @@ function injectMetaPixel(): void {
 
   const s = document.createElement("script");
   s.id = "pb-meta-pixel";
+  // Standard Meta Pixel bootstrap – sets up fbq stub + loads fbevents.js async.
+  // PageView is NOT fired here; trackMetaPageView() handles that so we can
+  // fire it on every SPA route change without duplicates.
   s.textContent =
     `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?` +
     `n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;` +
     `n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;` +
     `t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}` +
     `(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');` +
-    `fbq('init','2254773071720412');fbq('track','PageView');`;
+    `fbq('init','2254773071720412');`;
   document.head.appendChild(s);
 }

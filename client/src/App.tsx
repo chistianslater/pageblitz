@@ -5,7 +5,7 @@ import { Route, Switch, useLocation } from "wouter";
 import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PageblitzCookieBanner from "./components/PageblitzCookieBanner";
-import { initConsent } from "./lib/consent";
+import { initConsent, trackMetaPageView, hasMarketingConsent } from "./lib/consent";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardLayout from "./components/DashboardLayout";
 import LandingPage from "./pages/LandingPage";
@@ -144,6 +144,13 @@ function AppContent() {
   useEffect(() => {
     initConsent();
   }, []);
+
+  // Meta Pixel PageView bei jedem SPA-Routenwechsel feuern
+  useEffect(() => {
+    if (hasMarketingConsent()) {
+      trackMetaPageView();
+    }
+  }, [location]);
 
   // Kunden-Website-Routen: kein PageBlitz-Banner (auch bei Subdomain-Zugriff)
   const isCustomerSite = location.startsWith("/site/") || !!getCustomerSubdomain();
