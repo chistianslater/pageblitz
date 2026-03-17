@@ -56,6 +56,7 @@ export default function BookingWidget({ slug, primaryColor = "#2563eb", onClose,
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [consentGiven, setConsentGiven] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -331,21 +332,46 @@ export default function BookingWidget({ slug, primaryColor = "#2563eb", onClose,
               <div className="space-y-3">
                 <div>
                   <label className="text-xs font-medium text-gray-600 block mb-1">Name *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} placeholder="Max Mustermann" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-colors" />
+                  <input required value={name} onChange={e => setName(e.target.value)} placeholder="Max Mustermann" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-blue-400 transition-colors" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-600 block mb-1">E-Mail *</label>
-                  <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="max@beispiel.de" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-colors" />
+                  <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="max@beispiel.de" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-blue-400 transition-colors" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-600 block mb-1">Telefon <span className="text-gray-400 font-normal">(optional)</span></label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="0171 1234567" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-colors" />
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="0171 1234567" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-blue-400 transition-colors" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-600 block mb-1">Anmerkung <span className="text-gray-400 font-normal">(optional)</span></label>
-                  <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="z.B. besondere Wünsche..." rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-colors resize-none" />
+                  <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="z.B. besondere Wünsche..." rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-blue-400 transition-colors resize-none" />
                 </div>
               </div>
+
+              {/* DSGVO-Einwilligung */}
+              <label className="flex items-start gap-2.5 mt-4 cursor-pointer group">
+                <div className="relative mt-0.5 flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={consentGiven}
+                    onChange={e => setConsentGiven(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div
+                    className="w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
+                    style={{
+                      backgroundColor: consentGiven ? primaryColor : "transparent",
+                      borderColor: consentGiven ? primaryColor : "#d1d5db",
+                    }}
+                  >
+                    {consentGiven && <Check className="w-2.5 h-2.5" style={{ color: textOnPrimary }} />}
+                  </div>
+                </div>
+                <span className="text-xs text-gray-500 leading-relaxed">
+                  Ich stimme zu, dass meine Angaben zur Bearbeitung meiner Terminanfrage gespeichert und genutzt werden. Weitere Infos in der{" "}
+                  <a href="/datenschutz" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700 transition-colors">Datenschutzerklärung</a>.
+                </span>
+              </label>
 
               {submitError && (
                 <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{submitError}</div>
@@ -353,7 +379,7 @@ export default function BookingWidget({ slug, primaryColor = "#2563eb", onClose,
 
               <button
                 type="submit"
-                disabled={submitting || !name || !email}
+                disabled={submitting || !name || !email || !consentGiven}
                 className="mt-4 w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:opacity-90"
                 style={{ backgroundColor: primaryColor, color: textOnPrimary }}
               >
