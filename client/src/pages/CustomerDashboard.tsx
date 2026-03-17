@@ -2597,9 +2597,9 @@ export default function CustomerDashboard() {
     { enabled: !!user }
   );
 
-  const { data: onboardingData } = trpc.customer.getOnboardingData.useQuery(
+  const { data: onboardingData, isError: onboardingDataError } = trpc.customer.getOnboardingData.useQuery(
     { websiteId: selectedWebsiteId || myWebsites?.[0]?.website.id || 0 },
-    { enabled: !!selectedWebsiteId || !!myWebsites?.[0]?.website.id }
+    { enabled: !!selectedWebsiteId || !!myWebsites?.[0]?.website.id, retry: false }
   );
 
   const { data: imageSuggestions } = trpc.customer.getImageSuggestions.useQuery(
@@ -3248,11 +3248,11 @@ export default function CustomerDashboard() {
               <Sparkles className="w-4 h-4 text-pink-400" />
               Add-ons
             </h2>
-            {onboardingData !== undefined ? (
+            {onboardingData !== undefined || onboardingDataError ? (
               <AddonsEditor
                 websiteId={website.id}
                 website={website}
-                onboarding={onboardingData}
+                onboarding={onboardingData ?? null}
                 onUpdate={handleUpdate}
                 purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
                 onGoToTermine={() => setActiveTab("appointments")}

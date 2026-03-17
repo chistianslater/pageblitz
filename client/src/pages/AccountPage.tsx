@@ -187,18 +187,19 @@ export default function AccountPage() {
 
   // Compute active paid add-ons from subscription.addOns (supports both storage formats)
   const subAddOns = (subscription?.addOns ?? {}) as Record<string, any>;
-  const ADDON_INFO: Record<string, { label: string; price: string }> = {
-    contactForm: { label: "Kontaktformular", price: "3,90 €/Mo" },
-    gallery:     { label: "Bildergalerie",   price: "3,90 €/Mo" },
-    menu:        { label: "Speisekarte",     price: "3,90 €/Mo" },
-    pricelist:   { label: "Preisliste",      price: "3,90 €/Mo" },
+  const ADDON_INFO: Record<string, { label: string; priceCents: number }> = {
+    contactForm: { label: "Kontaktformular", priceCents: 390 },
+    gallery:     { label: "Bildergalerie",   priceCents: 390 },
+    menu:        { label: "Speisekarte",     priceCents: 390 },
+    pricelist:   { label: "Preisliste",      priceCents: 390 },
+    aiChat:      { label: "KI-Chat",         priceCents: 990 },
+    booking:     { label: "Terminbuchung",   priceCents: 490 },
   };
   const activeAddOns = (Object.keys(ADDON_INFO) as Array<keyof typeof ADDON_INFO>).filter(
     (k) => subAddOns[k] === true || subAddOns.features?.[k] === true
   );
-  const BASE_PRICE_CENTS = 1990; // Jahresabo-Basis (Brutto inkl. MwSt.)
-  const ADDON_PRICE_CENTS = 390;
-  const totalCents = BASE_PRICE_CENTS + activeAddOns.length * ADDON_PRICE_CENTS;
+  const BASE_PRICE_CENTS = 1990; // Monatsabo-Basis (Brutto inkl. MwSt.)
+  const totalCents = BASE_PRICE_CENTS + activeAddOns.reduce((sum, k) => sum + ADDON_INFO[k].priceCents, 0);
   const totalStr = (totalCents / 100).toFixed(2).replace(".", ",");
 
   return (
@@ -445,7 +446,7 @@ export default function AccountPage() {
                                 <span className="text-slate-300">{ADDON_INFO[key].label}</span>
                                 <span className="text-xs text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full">Aktiv</span>
                               </div>
-                              <span className="text-emerald-400 font-semibold">+{ADDON_INFO[key].price}</span>
+                              <span className="text-emerald-400 font-semibold">+{(ADDON_INFO[key].priceCents / 100).toFixed(2).replace(".", ",")} €/Mo</span>
                             </div>
                           ))}
                           {/* Total – only if add-ons active */}

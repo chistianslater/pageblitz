@@ -824,107 +824,128 @@ export const DE_CITIES: SeoCity[] = [
 
 const SHARED_CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,sans-serif;color:#111827;background:#fff;line-height:1.6}
+body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:#fff;background:#0a0a0a;line-height:1.6}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;height:auto}
 .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
 /* Nav */
-nav{background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-bottom:1px solid #e5e7eb;padding:.875rem 0;position:sticky;top:0;z-index:100}
+nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);padding:1rem 0;position:sticky;top:0;z-index:100}
 .nav-inner{display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:1.25rem;font-weight:800;color:#2563eb;letter-spacing:-.5px;display:flex;align-items:center;gap:.375rem}
-.nav-cta{background:#2563eb;color:#fff!important;padding:.5rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;transition:background .2s}
-.nav-cta:hover{background:#1d4ed8}
+.logo{font-size:1.125rem;font-weight:700;color:#fff;letter-spacing:-.5px;display:flex;align-items:center;gap:.5rem}
+.nav-cta{background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff!important;padding:.5rem 1.25rem;border-radius:999px;font-size:.875rem;font-weight:600;transition:all .2s}
+.nav-cta:hover{opacity:.9;transform:translateY(-1px)}
 /* Hero */
-.hero{background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 50%,#1d4ed8 100%);color:#fff;padding:5rem 0 4rem;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(59,130,246,.25),transparent);pointer-events:none}
-.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.9)}
-.hero h1{font-size:clamp(1.875rem,4.5vw,3rem);font-weight:800;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em}
-.hero p{font-size:1.0625rem;opacity:.85;max-width:680px;margin:0 auto 2rem;line-height:1.7}
-.btn-primary{display:inline-block;background:#16a34a;color:#fff;padding:.9375rem 2.5rem;border-radius:10px;font-size:1.0625rem;font-weight:700;transition:all .2s;box-shadow:0 4px 14px rgba(22,163,74,.4)}
-.btn-primary:hover{background:#15803d;transform:translateY(-1px);box-shadow:0 6px 20px rgba(22,163,74,.45)}
-.hero-trust{margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:.8125rem;opacity:.75}
+.hero{background:#0a0a0a;color:#fff;padding:6rem 0 5rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,rgba(233,30,140,.1),transparent);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.7)}
+.hero h1{font-size:clamp(1.875rem,4.5vw,3rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff}
+.hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:640px;margin:0 auto 2.5rem;line-height:1.7}
+.btn-primary{display:inline-block;background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;padding:.9375rem 2.5rem;border-radius:999px;font-size:1rem;font-weight:700;transition:all .2s;box-shadow:0 4px 24px rgba(233,30,140,.3)}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 32px rgba(233,30,140,.4)}
+.hero-trust{margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:.8125rem;color:rgba(255,255,255,.35)}
 .hero-trust span{display:flex;align-items:center;gap:.375rem}
+/* Stats */
+.stats{padding:2.5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;text-align:center}
+.stat-value{font-size:1.875rem;font-weight:700;color:#fff;letter-spacing:-.03em}
+.stat-label{font-size:.8125rem;color:rgba(255,255,255,.35);margin-top:.25rem}
 /* Steps */
-.steps{padding:4.5rem 0;background:#f8fafc}
-.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2rem;margin-top:3rem}
+.steps{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.section-label{text-align:center;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.3);margin-bottom:1rem}
+.section-title{text-align:center;font-size:clamp(1.5rem,3vw,2rem);font-weight:700;color:#fff;letter-spacing:-.02em;margin-bottom:.75rem}
+.section-sub{text-align:center;color:rgba(255,255,255,.4);margin-bottom:3.5rem;max-width:560px;margin-left:auto;margin-right:auto;font-size:1rem}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem}
 .step{text-align:center;padding:1.5rem 1rem}
-.step-num{width:3rem;height:3rem;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.125rem;font-weight:800;margin:0 auto 1.25rem}
-.step h3{font-size:1.0625rem;font-weight:700;margin-bottom:.5rem;color:#111827}
-.step p{color:#4b5563;font-size:.9375rem;line-height:1.65}
+.step-num{width:2.75rem;height:2.75rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;margin:0 auto 1.25rem}
+.step h3{font-size:1rem;font-weight:600;margin-bottom:.5rem;color:#fff}
+.step p{color:rgba(255,255,255,.4);font-size:.9375rem;line-height:1.65}
 /* Features */
-.features{padding:4.5rem 0}
-.section-title{text-align:center;font-size:clamp(1.5rem,3vw,2.125rem);font-weight:800;margin-bottom:.75rem;color:#111827;letter-spacing:-.02em}
-.section-sub{text-align:center;color:#6b7280;margin-bottom:3rem;max-width:600px;margin-left:auto;margin-right:auto;font-size:1.0625rem}
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1.5rem}
-.feature-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:2rem;transition:box-shadow .2s,border-color .2s}
-.feature-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);border-color:#bfdbfe}
-.feature-icon{font-size:2.25rem;margin-bottom:1rem}
-.feature-card h3{font-size:1.0625rem;font-weight:700;margin-bottom:.5rem;color:#1d4ed8}
-.feature-card p{color:#4b5563;font-size:.9375rem;line-height:1.65}
+.features{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.feature-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:2rem;transition:border-color .2s,background .2s}
+.feature-card:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.14)}
+.feature-icon{width:2.75rem;height:2.75rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1.25rem}
+.feature-card h3{font-size:1rem;font-weight:600;margin-bottom:.5rem;color:#fff}
+.feature-card p{color:rgba(255,255,255,.4);font-size:.9375rem;line-height:1.65}
 /* Add-ons */
-.addons{padding:4.5rem 0;background:#f0f9ff}
-.addons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-top:3rem}
-.addon-card{background:#fff;border:1px solid #bae6fd;border-radius:12px;padding:1.5rem;text-align:center}
-.addon-icon{font-size:1.75rem;margin-bottom:.75rem}
-.addon-card h4{font-size:.9375rem;font-weight:700;color:#0c4a6e;margin-bottom:.375rem}
-.addon-card p{font-size:.8125rem;color:#0369a1;line-height:1.5}
-.addon-price{display:inline-block;margin-top:.75rem;background:#e0f2fe;color:#0284c7;font-size:.75rem;font-weight:700;padding:.25rem .625rem;border-radius:999px}
+.addons{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.addons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;margin-top:3.5rem}
+.addon-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.5rem;text-align:center;transition:border-color .2s}
+.addon-card:hover{border-color:rgba(255,255,255,.14)}
+.addon-icon{font-size:1.5rem;margin-bottom:.75rem}
+.addon-card h4{font-size:.9375rem;font-weight:600;color:#fff;margin-bottom:.375rem}
+.addon-card p{font-size:.8125rem;color:rgba(255,255,255,.4);line-height:1.5}
+.addon-price{display:inline-block;margin-top:.75rem;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;padding:.25rem .75rem;border-radius:999px;border:1px solid rgba(255,255,255,.1)}
 /* Pricing */
-.pricing{padding:4.5rem 0}
-.pricing-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:820px;margin:3rem auto 0}
-.pricing-card{background:#fff;border:2px solid #e5e7eb;border-radius:18px;padding:2.25rem;position:relative}
-.pricing-card.featured{border-color:#2563eb;box-shadow:0 8px 32px rgba(37,99,235,.15)}
-.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#2563eb;color:#fff;font-size:.75rem;font-weight:700;padding:.3rem .875rem;border-radius:999px;white-space:nowrap}
-.pricing-name{font-size:.875rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px}
-.pricing-price{font-size:2.5rem;font-weight:800;color:#111827;margin:.5rem 0;letter-spacing:-.03em}
-.pricing-price span{font-size:1rem;color:#6b7280;font-weight:400}
-.pricing-note{font-size:.875rem;color:#6b7280;margin-bottom:1.5rem}
-.pricing-features{list-style:none}
-.pricing-features li{padding:.5rem 0;border-bottom:1px solid #f1f5f9;display:flex;align-items:flex-start;gap:.625rem;font-size:.9375rem;color:#374151}
+.pricing{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.pricing-wrapper{max-width:460px;margin:0 auto;margin-top:3.5rem}
+.pricing-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:2.5rem;position:relative}
+.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;font-size:.75rem;font-weight:700;padding:.3rem .875rem;border-radius:999px;white-space:nowrap}
+.pricing-name{font-size:.75rem;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem}
+.pricing-price{font-size:3.5rem;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1}
+.pricing-price span{font-size:1rem;color:rgba(255,255,255,.4);font-weight:400}
+.pricing-note{font-size:.875rem;color:rgba(255,255,255,.35);margin-top:.5rem;margin-bottom:2rem}
+.pricing-features{list-style:none;margin-bottom:1.5rem}
+.pricing-features li{padding:.625rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:flex-start;gap:.75rem;font-size:.9375rem;color:rgba(255,255,255,.65)}
 .pricing-features li:last-child{border-bottom:none}
-.pricing-features li::before{content:"✓";color:#16a34a;font-weight:700;flex-shrink:0;margin-top:.125rem}
-.pricing-cta{display:block;margin-top:1.75rem;text-align:center;background:#2563eb;color:#fff;padding:.875rem;border-radius:10px;font-weight:700;font-size:.9375rem;transition:background .2s}
-.pricing-cta:hover{background:#1d4ed8}
-.pricing-cta.secondary{background:#f1f5f9;color:#374151}
-.pricing-cta.secondary:hover{background:#e2e8f0}
+.pricing-features li::before{content:"✓";color:#22c55e;font-weight:700;flex-shrink:0;margin-top:.0625rem}
+.pricing-addon-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.25rem;margin-bottom:2rem}
+.pricing-addon-label{font-size:.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:.875rem}
+.pricing-addon-row{display:flex;align-items:center;justify-content:space-between;padding:.375rem 0}
+.pricing-addon-row span:first-child{font-size:.875rem;color:rgba(255,255,255,.55)}
+.pricing-addon-row span:last-child{font-size:.75rem;color:rgba(255,255,255,.3);font-weight:500}
+.pricing-cta{display:block;text-align:center;background:#fff;color:#0a0a0a;padding:1rem;border-radius:999px;font-weight:700;font-size:.9375rem;transition:all .2s;margin-top:1.5rem}
+.pricing-cta:hover{background:rgba(255,255,255,.9);transform:translateY(-1px)}
+.pricing-note-bottom{text-align:center;font-size:.75rem;color:rgba(255,255,255,.25);margin-top:.875rem}
+/* Comparison */
+.comparison{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.comp-table{max-width:820px;margin:3.5rem auto 0;border:1px solid rgba(255,255,255,.08);border-radius:20px;overflow:hidden}
+.comp-header{display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(255,255,255,.04);padding:1.25rem 2rem}
+.comp-header div{text-align:center;font-size:.875rem;font-weight:600;color:rgba(255,255,255,.45)}
+.comp-header div:first-child{text-align:left;color:rgba(255,255,255,.3)}
+.comp-header div:last-child{color:#fff}
+.comp-row{display:grid;grid-template-columns:1fr 1fr 1fr;padding:1rem 2rem;border-top:1px solid rgba(255,255,255,.05)}
+.comp-row:nth-child(even){background:rgba(255,255,255,.015)}
+.comp-row div{font-size:.875rem;text-align:center;color:rgba(255,255,255,.35);align-self:center}
+.comp-row div:first-child{text-align:left;color:rgba(255,255,255,.55);font-weight:500}
+.comp-row div:last-child{color:#22c55e;font-weight:600}
 /* FAQ */
-.faq{padding:4.5rem 0;background:#f8fafc}
-.faq-list{max-width:760px;margin:0 auto}
-details{background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:.75rem;overflow:hidden}
-details[open]{border-color:#93c5fd}
-summary{padding:1.25rem 1.5rem;cursor:pointer;font-weight:600;font-size:.9375rem;list-style:none;display:flex;justify-content:space-between;align-items:center;color:#111827;-webkit-tap-highlight-color:transparent}
+.faq{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.faq-list{max-width:680px;margin:0 auto;margin-top:3.5rem}
+details{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:.5rem;overflow:hidden}
+details[open]{border-color:rgba(255,255,255,.14)}
+summary{padding:1.25rem 1.5rem;cursor:pointer;font-weight:600;font-size:.9375rem;list-style:none;display:flex;justify-content:space-between;align-items:center;color:#fff;-webkit-tap-highlight-color:transparent}
 summary::-webkit-details-marker{display:none}
-summary::after{content:"+";font-size:1.25rem;color:#2563eb;font-weight:300;flex-shrink:0;margin-left:.75rem}
+summary::after{content:"+";font-size:1.25rem;color:rgba(255,255,255,.3);font-weight:300;flex-shrink:0;margin-left:.75rem}
 details[open] summary::after{content:"−"}
-.faq-answer{padding:0 1.5rem 1.25rem;color:#4b5563;font-size:.9375rem;line-height:1.7}
+.faq-answer{padding:0 1.5rem 1.25rem;color:rgba(255,255,255,.45);font-size:.9375rem;line-height:1.7}
 /* CTA Banner */
-.cta-banner{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:5rem 0;text-align:center}
-.cta-banner h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:800;margin-bottom:1rem;letter-spacing:-.02em}
-.cta-banner p{opacity:.75;max-width:560px;margin:0 auto 2rem;font-size:1.0625rem;line-height:1.7}
-/* Industries */
-.industries{padding:3rem 0;background:#f9fafb;border-top:1px solid #e5e7eb}
-.industries h3{text-align:center;font-size:1.125rem;font-weight:700;margin-bottom:1.5rem;color:#374151}
-.industry-links{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-width:880px;margin:0 auto}
-.industry-link{display:inline-block;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:.4375rem .875rem;font-size:.875rem;color:#374151;transition:all .15s}
-.industry-link:hover,.industry-link.active{border-color:#2563eb;color:#2563eb;background:#eff6ff}
-.industry-link.active{font-weight:600}
-/* Cities */
-.cities{padding:2.5rem 0;border-top:1px solid #e5e7eb}
-.cities h3{text-align:center;font-size:1rem;font-weight:700;margin-bottom:1.25rem;color:#374151}
-.city-links{display:flex;flex-wrap:wrap;gap:.375rem;justify-content:center;max-width:880px;margin:0 auto}
-.city-link{display:inline-block;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:.3125rem .75rem;font-size:.8125rem;color:#374151;transition:all .15s}
-.city-link:hover,.city-link.active{border-color:#2563eb;color:#2563eb;background:#eff6ff}
+.cta-banner{padding:6rem 0;text-align:center;position:relative;overflow:hidden}
+.cta-banner::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(233,30,140,.08),transparent);pointer-events:none}
+.cta-banner h2{font-size:clamp(1.5rem,3vw,2.25rem);font-weight:700;color:#fff;margin-bottom:.75rem;letter-spacing:-.02em}
+.cta-banner p{color:rgba(255,255,255,.4);max-width:500px;margin:0 auto 2rem;font-size:1rem;line-height:1.7}
+.cta-note{margin-top:.875rem;font-size:.75rem;color:rgba(255,255,255,.2)}
+/* Industries / Cities */
+.industries,.cities{padding:2.5rem 0;border-top:1px solid rgba(255,255,255,.06)}
+.industries h3,.cities h3{text-align:center;font-size:.75rem;font-weight:600;color:rgba(255,255,255,.3);margin-bottom:1.25rem;text-transform:uppercase;letter-spacing:.1em}
+.industry-links,.city-links{display:flex;flex-wrap:wrap;gap:.375rem;justify-content:center;max-width:920px;margin:0 auto}
+.industry-link,.city-link{display:inline-block;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:.3125rem .875rem;font-size:.8125rem;color:rgba(255,255,255,.45);transition:all .15s}
+.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.8);background:rgba(255,255,255,.07)}
 /* Footer */
-footer{background:#0f172a;color:#64748b;padding:2.5rem 0;text-align:center;font-size:.875rem}
-footer a{color:#94a3b8;text-decoration:underline;margin:0 .5rem}
+footer{background:#050505;color:rgba(255,255,255,.25);padding:2rem 0;text-align:center;font-size:.875rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
 /* Responsive */
+@media(max-width:768px){
+  .steps-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .comp-table{display:none}
+}
 @media(max-width:640px){
-  .hero{padding:3rem 0 2.5rem}
-  .features,.addons,.pricing,.faq,.industries,.cities{padding:2.5rem 0}
+  .hero{padding:4rem 0 3rem}
   .hero h1{font-size:1.75rem}
   .hero-trust{gap:1rem;font-size:.75rem}
-  .pricing-wrapper{grid-template-columns:1fr}
-  .steps-grid{gap:1.25rem}
+  .features,.addons,.pricing,.faq,.steps,.comparison{padding:3rem 0}
+  .stats{padding:2rem 0}
 }
 `.trim();
 
@@ -1060,6 +1081,9 @@ export function generateLandingPageHTML(
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(metaDesc)}">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script type="application/ld+json">${buildFaqSchema(industry.faqs)}</script>
   <script type="application/ld+json">${buildWebPageSchema(title, metaDesc, canonical)}</script>
   <script type="application/ld+json">${buildBreadcrumbSchema(industry, city)}</script>
@@ -1069,8 +1093,11 @@ export function generateLandingPageHTML(
 
 <nav>
   <div class="container nav-inner">
-    <a class="logo" href="/"><svg width="20" height="20" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#2563eb"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg> Pageblitz</a>
-    <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos starten</a>
+    <a class="logo" href="/">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#18181b"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg>
+      Pageblitz
+    </a>
+    <a class="nav-cta" href="https://pageblitz.de/start">Website erstellen ✦</a>
   </div>
 </nav>
 
@@ -1079,7 +1106,7 @@ export function generateLandingPageHTML(
     <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
     <h1>${escapeHtml(h1)}</h1>
     <p>${escapeHtml(industry.description)}</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten →</a>
+    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
     <div class="hero-trust">
       <span>✓ Keine Kreditkarte nötig</span>
       <span>✓ Keine Einrichtungsgebühr</span>
@@ -1088,8 +1115,20 @@ export function generateLandingPageHTML(
   </div>
 </section>
 
+<div class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div><div class="stat-value">1.200+</div><div class="stat-label">Websites erstellt</div></div>
+      <div><div class="stat-value">3 Min.</div><div class="stat-label">Durchschnittliche Zeit</div></div>
+      <div><div class="stat-value">85%</div><div class="stat-label">SEO-Performance</div></div>
+      <div><div class="stat-value">19,90€</div><div class="stat-label">Pro Monat</div></div>
+    </div>
+  </div>
+</div>
+
 <section class="steps">
   <div class="container">
+    <p class="section-label">So funktioniert's</p>
     <h2 class="section-title">In 3 Schritten zur fertigen Website</h2>
     <p class="section-sub">Kein Webdesigner, kein Warten – die KI macht alles automatisch</p>
     <div class="steps-grid">
@@ -1106,7 +1145,7 @@ export function generateLandingPageHTML(
       <div class="step">
         <div class="step-num">3</div>
         <h3>Online &amp; fertig</h3>
-        <p>Deine Website ist sofort unter deiner eigenen Adresse erreichbar – DSGVO-konform und mobiloptimiert.</p>
+        <p>Deine Website ist sofort erreichbar – DSGVO-konform, mobiloptimiert und SEO-ready.</p>
       </div>
     </div>
   </div>
@@ -1114,8 +1153,9 @@ export function generateLandingPageHTML(
 
 <section class="features">
   <div class="container">
+    <p class="section-label">Funktionen</p>
     <h2 class="section-title">Was Pageblitz für deinen ${escapeHtml(industry.displayName)}${escapeHtml(cityFull)} bietet</h2>
-    <p class="section-sub">Alle Funktionen, die du brauchst – ab 19,90 €/Monat, kein Technik-Know-how nötig</p>
+    <p class="section-sub">Alle Features, die du brauchst – ab 19,90 €/Monat, kein Technik-Know-how nötig</p>
     <div class="features-grid">
       ${featuresHtml}
     </div>
@@ -1124,32 +1164,45 @@ export function generateLandingPageHTML(
 
 <section class="addons">
   <div class="container">
-    <h2 class="section-title">Optionale Add-ons für noch mehr Funktionen</h2>
-    <p class="section-sub">Erweitere deine ${escapeHtml(industry.displayName)}-Website mit leistungsstarken Extras – aktivierbar mit einem Klick</p>
+    <p class="section-label">Optionale Add-ons</p>
+    <h2 class="section-title">Mehr Funktionen mit einem Klick</h2>
+    <p class="section-sub">Erweitere deine ${escapeHtml(industry.displayName)}-Website mit leistungsstarken Extras – jederzeit zubuchbar</p>
     <div class="addons-grid">
       <div class="addon-card">
-        <div class="addon-icon">💬</div>
-        <h4>KI-Chat</h4>
-        <p>Ein KI-Assistent beantwortet Kundenfragen rund um die Uhr – automatisch und auf dein Unternehmen trainiert.</p>
-        <span class="addon-price">+ 9,90 €/Mo</span>
+        <div class="addon-icon">🤖</div>
+        <h4>KI-Chat Assistent</h4>
+        <p>Beantwortet Kundenfragen rund um die Uhr – automatisch und auf dein Unternehmen trainiert.</p>
+        <span class="addon-price">+ 9,90 €/Mo.</span>
       </div>
       <div class="addon-card">
         <div class="addon-icon">📅</div>
         <h4>Terminbuchung</h4>
         <p>Kunden buchen direkt auf deiner Website einen Termin – ohne Anruf, ohne Wartezeit.</p>
-        <span class="addon-price">+ 4,90 €/Mo</span>
+        <span class="addon-price">+ 4,90 €/Mo.</span>
+      </div>
+      <div class="addon-card">
+        <div class="addon-icon">✉️</div>
+        <h4>Kontaktformular</h4>
+        <p>Kundenanfragen direkt per E-Mail – DSGVO-konform und sofort einsatzbereit.</p>
+        <span class="addon-price">+ 3,90 €/Mo.</span>
       </div>
       <div class="addon-card">
         <div class="addon-icon">🖼️</div>
         <h4>Bildergalerie</h4>
         <p>Präsentiere deine Arbeiten, Produkte oder Räumlichkeiten in einer professionellen Galerie.</p>
-        <span class="addon-price">+ 3,90 €/Mo</span>
+        <span class="addon-price">+ 3,90 €/Mo.</span>
       </div>
       <div class="addon-card">
-        <div class="addon-icon">📋</div>
-        <h4>Kontaktformular</h4>
-        <p>Kundenanfragen direkt per E-Mail empfangen – mit DSGVO-konformem Formular.</p>
-        <span class="addon-price">+ 3,90 €/Mo</span>
+        <div class="addon-icon">🍽️</div>
+        <h4>Speisekarte</h4>
+        <p>Digitale Speisekarte oder Leistungsübersicht mit Preisen – immer aktuell.</p>
+        <span class="addon-price">+ 3,90 €/Mo.</span>
+      </div>
+      <div class="addon-card">
+        <div class="addon-icon">💶</div>
+        <h4>Preisliste</h4>
+        <p>Zeige dein Angebot und Preise übersichtlich auf deiner Website.</p>
+        <span class="addon-price">+ 3,90 €/Mo.</span>
       </div>
     </div>
   </div>
@@ -1157,48 +1210,65 @@ export function generateLandingPageHTML(
 
 <section class="pricing">
   <div class="container">
-    <h2 class="section-title">Faire Preise – transparent &amp; ohne Überraschungen</h2>
+    <p class="section-label">Preise</p>
+    <h2 class="section-title">Ein Preis. Alles inklusive.</h2>
     <p class="section-sub">Professionelle ${escapeHtml(industry.displayName)}-Website ohne versteckte Kosten</p>
     <div class="pricing-wrapper">
       <div class="pricing-card">
-        <div class="pricing-name">Basis-Paket</div>
+        <div class="pricing-badge">✦ Beliebt</div>
+        <div class="pricing-name">Pageblitz Pro</div>
         <div class="pricing-price">19,90 €<span>/Monat</span></div>
-        <div class="pricing-note">Inkl. 7 Tage gratis · Keine Einrichtungsgebühr</div>
+        <div class="pricing-note">Jährliche Abrechnung · Jederzeit kündbar.</div>
         <ul class="pricing-features">
-          <li>Professionelle ${escapeHtml(industry.displayName)}-Website</li>
-          <li>Von der KI in 3 Minuten erstellt</li>
-          <li>Impressum &amp; Datenschutzerklärung</li>
-          <li>Öffnungszeiten &amp; Kontaktdaten</li>
-          <li>Mobiloptimiertes Design</li>
-          <li>SSL &amp; DSGVO-konform</li>
-          <li>Subdomain (deinname.pageblitz.de)</li>
+          <li>KI-generierte ${escapeHtml(industry.displayName)}-Website</li>
+          <li>SSL-Zertifikat</li>
+          <li>DSGVO-konformer Datenschutz &amp; Impressum</li>
+          <li>Premium Cloud Hosting</li>
+          <li>Änderungen jederzeit per Chat</li>
+          <li>Chat-Support</li>
         </ul>
-        <a class="pricing-cta secondary" href="https://pageblitz.de/start">Gratis testen</a>
+        <div class="pricing-addon-box">
+          <div class="pricing-addon-label">Optionale Add-ons</div>
+          <div class="pricing-addon-row"><span>🤖 KI-Chat Assistent</span><span>+9,90 €/Mo.</span></div>
+          <div class="pricing-addon-row"><span>📅 Terminbuchung</span><span>+4,90 €/Mo.</span></div>
+          <div class="pricing-addon-row"><span>✉️ Kontaktformular</span><span>+3,90 €/Mo.</span></div>
+          <div class="pricing-addon-row"><span>🖼️ Bildergalerie</span><span>+3,90 €/Mo.</span></div>
+          <div class="pricing-addon-row"><span>🍽️ Speisekarte</span><span>+3,90 €/Mo.</span></div>
+          <div class="pricing-addon-row"><span>💶 Preisliste</span><span>+3,90 €/Mo.</span></div>
+        </div>
+        <a class="pricing-cta" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+        <div class="pricing-note-bottom">7 Tage gratis · danach 19,90 €/Mo. (jährlich) · Jederzeit kündbar</div>
       </div>
-      <div class="pricing-card featured">
-        <div class="pricing-badge">⚡ Beliebt</div>
-        <div class="pricing-name">Basis + Add-ons</div>
-        <div class="pricing-price">ab 23,80 €<span>/Monat</span></div>
-        <div class="pricing-note">Alle Basis-Features plus deine Wunsch-Extras</div>
-        <ul class="pricing-features">
-          <li>Alles aus Basis-Paket</li>
-          <li>KI-Chat (+ 9,90 €/Mo)</li>
-          <li>Terminbuchung (+ 4,90 €/Mo)</li>
-          <li>Bildergalerie (+ 3,90 €/Mo)</li>
-          <li>Kontaktformular (+ 3,90 €/Mo)</li>
-          <li>Speisekarte / Preisliste (+ 3,90 €/Mo)</li>
-          <li>Nur zahlen was du nutzt</li>
-        </ul>
-        <a class="pricing-cta" href="https://pageblitz.de/start">Jetzt starten →</a>
+    </div>
+  </div>
+</section>
+
+<section class="comparison">
+  <div class="container">
+    <p class="section-label">Vergleich</p>
+    <h2 class="section-title">Pageblitz vs. Webagentur</h2>
+    <p class="section-sub">Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen</p>
+    <div class="comp-table">
+      <div class="comp-header">
+        <div></div>
+        <div>Webagentur</div>
+        <div>Pageblitz ✦</div>
       </div>
+      <div class="comp-row"><div>Einmalige Kosten</div><div>2.000 – 8.000 €</div><div>0 €</div></div>
+      <div class="comp-row"><div>Zeit bis zur fertigen Website</div><div>4 – 12 Wochen</div><div>3 Minuten</div></div>
+      <div class="comp-row"><div>Monatliche Kosten</div><div>50 – 150 € Hosting &amp; Wartung</div><div>19,90 €*</div></div>
+      <div class="comp-row"><div>Änderungen &amp; Updates</div><div>Stundenabrechnung (~80 €/h)</div><div>Inklusive</div></div>
+      <div class="comp-row"><div>Vertragslaufzeit</div><div>Oft 12–24 Monate</div><div>1 Monat</div></div>
+      <div class="comp-row"><div>DSGVO &amp; Impressum</div><div>Meist kostenpflichtig extra</div><div>Automatisch inklusive</div></div>
+      <div class="comp-row"><div>SSL &amp; Hosting</div><div>Oft extra berechnet</div><div>Inklusive</div></div>
     </div>
   </div>
 </section>
 
 <section class="faq">
   <div class="container">
+    <p class="section-label">FAQ</p>
     <h2 class="section-title">Häufige Fragen zur ${escapeHtml(industry.displayName)}-Website</h2>
-    <p class="section-sub">Alles, was du wissen musst – auf einen Blick</p>
     <div class="faq-list">
     ${faqsHtml}
     </div>
@@ -1209,7 +1279,8 @@ export function generateLandingPageHTML(
   <div class="container">
     <h2>Jetzt ${escapeHtml(industry.displayName)}-Website erstellen${escapeHtml(cityStr)}</h2>
     <p>In 3 Minuten online. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage komplett gratis.</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">Kostenlos starten →</a>
+    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+    <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</div>
   </div>
 </section>
 
@@ -1243,12 +1314,12 @@ export function generateOverviewHTML(): string {
     "Mit Pageblitz erstellst du in 3 Minuten eine professionelle Website für dein Unternehmen. Über 17 Branchen – ab 19,90 €/Monat.";
 
   const overviewCss = SHARED_CSS + `
-.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:2.5rem}
-.industry-card{display:flex;flex-direction:column;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1.75rem 1.25rem;text-align:center;transition:all .2s}
-.industry-card:hover{border-color:#2563eb;box-shadow:0 4px 16px rgba(37,99,235,.1);transform:translateY(-2px)}
-.industry-card .icon{font-size:2.5rem;margin-bottom:.75rem}
-.industry-card h3{font-size:.9375rem;font-weight:700;color:#111827;margin-bottom:.375rem}
-.industry-card p{font-size:.8125rem;color:#6b7280;line-height:1.5}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;margin-top:3rem}
+.industry-card{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.75rem 1.25rem;text-align:center;transition:all .2s;color:#fff}
+.industry-card:hover{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.04);transform:translateY(-2px)}
+.industry-card .icon{font-size:2rem;margin-bottom:.75rem}
+.industry-card h3{font-size:.9375rem;font-weight:600;color:#fff;margin-bottom:.375rem}
+.industry-card p{font-size:.8125rem;color:rgba(255,255,255,.4);line-height:1.5}
 `;
 
   const industryCardsHtml = Object.values(SEO_INDUSTRIES)
@@ -1303,6 +1374,10 @@ export function generateOverviewHTML(): string {
   <meta property="og:url" content="${canonical}">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_DE">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script type="application/ld+json">${faqSchema}</script>
   <style>${overviewCss}</style>
 </head>
@@ -1310,24 +1385,33 @@ export function generateOverviewHTML(): string {
 
 <nav>
   <div class="container nav-inner">
-    <a class="logo" href="/">⚡ Pageblitz</a>
-    <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos starten</a>
+    <a class="logo" href="/">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#18181b"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg>
+      Pageblitz
+    </a>
+    <a class="nav-cta" href="https://pageblitz.de/start">Website erstellen ✦</a>
   </div>
 </nav>
 
 <section class="hero">
   <div class="container">
+    <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
     <h1>Website erstellen für dein Unternehmen – in 3 Minuten</h1>
-    <p>Die KI erstellt deine professionelle Website automatisch. Einfach Branche wählen, Daten eingeben – fertig. Ab 19,90 €/Monat.</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten →</a>
-    <p class="social-proof">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</p>
+    <p>Die KI erstellt deine professionelle Website automatisch. Branche wählen, Daten eingeben – fertig. Ab 19,90 €/Monat.</p>
+    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+    <div class="hero-trust">
+      <span>✓ Keine Kreditkarte nötig</span>
+      <span>✓ Keine Einrichtungsgebühr</span>
+      <span>✓ Jederzeit kündbar</span>
+    </div>
   </div>
 </section>
 
 <section class="features">
   <div class="container">
+    <p class="section-label">Branchen</p>
     <h2 class="section-title">Wähle deine Branche</h2>
-    <p class="section-sub">Wir haben für über 17 Branchen spezialisierte Website-Vorlagen – professionell, DSGVO-konform, sofort online.</p>
+    <p class="section-sub">Über 17 spezialisierte Branchen – professionell, DSGVO-konform, sofort online.</p>
     <div class="overview-grid">
     ${industryCardsHtml}
     </div>
@@ -1338,7 +1422,8 @@ export function generateOverviewHTML(): string {
   <div class="container">
     <h2>Jetzt Website erstellen – 7 Tage gratis</h2>
     <p>In 3 Minuten online. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage gratis testen.</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">Kostenlos starten →</a>
+    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+    <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</div>
   </div>
 </section>
 
