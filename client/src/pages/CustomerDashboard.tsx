@@ -5,6 +5,7 @@ import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronLeft, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
+import ContentEditorSplitView from "@/components/ContentEditorSplitView";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { FONT_OPTIONS } from "@shared/layoutConfig";
@@ -2831,6 +2832,83 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
   );
 }
 
+// ── Content Fields Accordion (Kontakt, SEO, Leistungen, Impressum) ───────────
+function ContentFieldsAccordion({ website, websiteData, business, onboardingData, makeUpdater, handleUpdate }: {
+  website: any; websiteData: any; business: any; onboardingData: any;
+  makeUpdater: (field: string) => (v: string) => Promise<void>;
+  handleUpdate: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-slate-300 hover:text-white transition-colors"
+      >
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <Settings className="w-4 h-4 text-slate-400" />
+          Detaileinstellungen (Kontakt, SEO, Leistungen, Impressum)
+        </span>
+        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+
+      {open && (
+        <div className="border-t border-slate-700/40 p-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Business Info */}
+          <div className="space-y-4">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
+              <Edit2 className="w-4 h-4 text-blue-400" /> Unternehmensdaten
+            </h3>
+            <EditableField label="Unternehmensname" value={websiteData?.businessName || business?.name || ""} onSave={makeUpdater("businessName")} />
+            <EditableField label="Tagline / Slogan" value={websiteData?.tagline || ""} multiline onSave={makeUpdater("tagline")} />
+            <EditableField label="Beschreibung" value={websiteData?.description || ""} multiline onSave={makeUpdater("description")} />
+          </div>
+
+          {/* Contact */}
+          <div className="space-y-4">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
+              <Phone className="w-4 h-4 text-blue-400" /> Kontaktdaten
+            </h3>
+            <EditableField label="Telefon" value={business?.phone || ""} icon={<Phone className="w-3 h-3" />} onSave={makeUpdater("phone")} />
+            <EditableField label="E-Mail" value={business?.email || ""} icon={<Mail className="w-3 h-3" />} onSave={makeUpdater("email")} />
+            <EditableField label="Adresse" value={business?.address || ""} icon={<MapPin className="w-3 h-3" />} onSave={makeUpdater("address")} />
+          </div>
+
+          {/* SEO */}
+          <div className="lg:col-span-2 space-y-3">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
+              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+              SEO – Google-Sichtbarkeit
+            </h3>
+            <p className="text-slate-400 text-xs">Leer lassen = automatisch generiert.</p>
+            <EditableField label="SEO-Titel" value={websiteData?.seoTitle || ""} placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`} onSave={makeUpdater("seoTitle")} />
+            <div>
+              <EditableField label="Meta-Beschreibung" value={websiteData?.seoDescription || ""} multiline placeholder={websiteData?.tagline || "Kurze Beschreibung (max. 155 Zeichen)"} onSave={makeUpdater("seoDescription")} />
+              <p className="text-slate-500 text-xs mt-1">{(websiteData?.seoDescription || "").length}/155{(websiteData?.seoDescription || "").length > 155 && <span className="text-amber-400 ml-1">⚠ zu lang</span>}</p>
+            </div>
+          </div>
+
+          {/* Services */}
+          <div className="lg:col-span-2">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm mb-3">
+              <Sparkles className="w-4 h-4 text-violet-400" /> Leistungen & USP
+            </h3>
+            <ServicesEditor websiteId={website.id} initialServices={onboardingData?.topServices || []} initialUsp={onboardingData?.usp || websiteData?.usp} onUpdate={handleUpdate} />
+          </div>
+
+          {/* Legal */}
+          <div className="lg:col-span-2">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm mb-3">
+              <Settings className="w-4 h-4 text-amber-400" /> Impressum-Daten
+            </h3>
+            <LegalEditor websiteId={website.id} initialData={{ legalOwner: onboardingData?.legalOwner || "", legalStreet: onboardingData?.legalStreet || "", legalZip: onboardingData?.legalZip || "", legalCity: onboardingData?.legalCity || "", legalEmail: onboardingData?.legalEmail || "", legalPhone: onboardingData?.legalPhone || "", legalVatId: onboardingData?.legalVatId || "" }} onUpdate={handleUpdate} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -3294,129 +3372,28 @@ export default function CustomerDashboard() {
           </div>
         )}
 
-        {/* Content Tab */}
+        {/* Content Tab — Split View */}
         {activeTab === "content" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* KI-Inhaltseditor */}
-            <div className="lg:col-span-2">
-              <AiContentEditor websiteId={website.id} onUpdate={handleUpdate} />
-            </div>
+          <div className="space-y-4">
+            {/* KI Split-View Editor */}
+            <ContentEditorSplitView
+              websiteId={website.id}
+              websiteData={websiteData}
+              colorScheme={colorScheme}
+              website={website}
+              business={business}
+              onUpdate={handleUpdate}
+            />
 
-            {/* Business Info */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
-              <h2 className="text-white font-semibold flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-blue-400" />
-                Unternehmensdaten
-              </h2>
-              <EditableField
-                label="Unternehmensname"
-                value={websiteData?.businessName || business?.name || ""}
-                onSave={makeUpdater("businessName")}
-              />
-              <EditableField
-                label="Tagline / Slogan"
-                value={websiteData?.tagline || ""}
-                multiline
-                onSave={makeUpdater("tagline")}
-              />
-              <EditableField
-                label="Beschreibung"
-                value={websiteData?.description || ""}
-                multiline
-                onSave={makeUpdater("description")}
-              />
-            </div>
-
-            {/* Contact Info */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
-              <h2 className="text-white font-semibold flex items-center gap-2">
-                <Phone className="w-4 h-4 text-blue-400" />
-                Kontaktdaten
-              </h2>
-              <EditableField
-                label="Telefon"
-                value={business?.phone || ""}
-                icon={<Phone className="w-3 h-3" />}
-                onSave={makeUpdater("phone")}
-              />
-              <EditableField
-                label="E-Mail"
-                value={business?.email || ""}
-                icon={<Mail className="w-3 h-3" />}
-                onSave={makeUpdater("email")}
-              />
-              <EditableField
-                label="Adresse"
-                value={business?.address || ""}
-                icon={<MapPin className="w-3 h-3" />}
-                onSave={makeUpdater("address")}
-              />
-            </div>
-
-            {/* SEO */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 lg:col-span-2">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
-                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-                SEO – Sichtbarkeit in Google
-              </h2>
-              <p className="text-slate-400 text-xs mb-4">Wird in Google-Suchergebnissen als Titel und Beschreibung angezeigt. Leer lassen = automatisch generiert.</p>
-              <div className="space-y-4">
-                <EditableField
-                  label="SEO-Titel (Google-Titel)"
-                  value={websiteData?.seoTitle || ""}
-                  placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`}
-                  onSave={makeUpdater("seoTitle")}
-                />
-                <div>
-                  <EditableField
-                    label="Meta-Beschreibung (Google-Snippet)"
-                    value={websiteData?.seoDescription || ""}
-                    multiline
-                    placeholder={websiteData?.tagline || "Kurze Beschreibung für Suchmaschinen (max. 155 Zeichen)"}
-                    onSave={makeUpdater("seoDescription")}
-                  />
-                  <p className="text-slate-500 text-xs mt-1">
-                    {(websiteData?.seoDescription || "").length}/155 Zeichen
-                    {(websiteData?.seoDescription || "").length > 155 && <span className="text-amber-400 ml-1">⚠ zu lang</span>}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Services */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 lg:col-span-2">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                <Sparkles className="w-4 h-4 text-violet-400" />
-                Leistungen & USP
-              </h2>
-              <ServicesEditor
-                websiteId={website.id}
-                initialServices={onboardingData?.topServices || []}
-                initialUsp={onboardingData?.usp || websiteData?.usp}
-                onUpdate={handleUpdate}
-              />
-            </div>
-
-            {/* Legal Data */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 lg:col-span-2">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                <Settings className="w-4 h-4 text-amber-400" />
-                Impressum-Daten
-              </h2>
-              <LegalEditor
-                websiteId={website.id}
-                initialData={{
-                  legalOwner: onboardingData?.legalOwner || "",
-                  legalStreet: onboardingData?.legalStreet || "",
-                  legalZip: onboardingData?.legalZip || "",
-                  legalCity: onboardingData?.legalCity || "",
-                  legalEmail: onboardingData?.legalEmail || "",
-                  legalPhone: onboardingData?.legalPhone || "",
-                  legalVatId: onboardingData?.legalVatId || "",
-                }}
-                onUpdate={handleUpdate}
-              />
-            </div>
+            {/* Strukturierte Felder — ausklappbar */}
+            <ContentFieldsAccordion
+              website={website}
+              websiteData={websiteData}
+              business={business}
+              onboardingData={onboardingData}
+              makeUpdater={makeUpdater}
+              handleUpdate={handleUpdate}
+            />
           </div>
         )}
 
