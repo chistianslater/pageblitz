@@ -929,6 +929,31 @@ function buildWebPageSchema(
   });
 }
 
+function buildBreadcrumbSchema(industry: SeoIndustry, city?: SeoCity): string {
+  const items: Array<{ position: number; name: string; item?: string }> = [
+    { position: 1, name: "Startseite", item: "https://pageblitz.de" },
+    { position: 2, name: "Website erstellen", item: "https://pageblitz.de/website-erstellen" },
+    {
+      position: 3,
+      name: `Website für ${industry.displayName}`,
+      item: `https://pageblitz.de/website-erstellen/${industry.slug}`,
+    },
+  ];
+  if (city) {
+    items.push({ position: 4, name: city.name });
+  }
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((i) => ({
+      "@type": "ListItem",
+      position: i.position,
+      name: i.name,
+      ...(i.item ? { item: i.item } : {}),
+    })),
+  });
+}
+
 // ── HTML generator ────────────────────────────────────────────────────────────
 
 export function generateLandingPageHTML(
@@ -1004,6 +1029,7 @@ export function generateLandingPageHTML(
   <meta name="twitter:description" content="${escapeHtml(metaDesc)}">
   <script type="application/ld+json">${buildFaqSchema(industry.faqs)}</script>
   <script type="application/ld+json">${buildWebPageSchema(title, metaDesc, canonical)}</script>
+  <script type="application/ld+json">${buildBreadcrumbSchema(industry, city)}</script>
   <style>${SHARED_CSS}</style>
 </head>
 <body>
