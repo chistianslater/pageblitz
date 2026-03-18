@@ -2020,9 +2020,23 @@ function StepChip({ done, label, onClick }: { done: boolean; label: string; onCl
   );
 }
 
+// ── Booking / Appointments constants ─────────────────────────────────────────
+const DAY_LABELS: Record<string, string> = { mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa", sun: "So" };
+const DAY_NAMES: Record<string, string> = { mon: "Montag", tue: "Dienstag", wed: "Mittwoch", thu: "Donnerstag", fri: "Freitag", sat: "Samstag", sun: "Sonntag" };
+const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DEFAULT_SCHEDULE = {
+  mon: { enabled: true, start: "09:00", end: "17:00" },
+  tue: { enabled: true, start: "09:00", end: "17:00" },
+  wed: { enabled: true, start: "09:00", end: "17:00" },
+  thu: { enabled: true, start: "09:00", end: "17:00" },
+  fri: { enabled: true, start: "09:00", end: "17:00" },
+  sat: { enabled: false, start: "09:00", end: "12:00" },
+  sun: { enabled: false, start: "09:00", end: "12:00" },
+};
+
 // ── AI Chat Add-on Section ───────────────────────────
 // ── Booking Add-on Section (in Add-ons tab) ────────────
-function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine, purchasedAddOns }: {
+function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onGoToTermine, purchasedAddOns }: {
   websiteId: number;
   website: any;
   onUpdate: () => void;
@@ -2033,6 +2047,15 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine, purc
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const isPurchased = !!purchasedAddOns["booking"];
+
+  // Settings form state
+  const [schedule, setSchedule] = useState<Record<string, { enabled: boolean; start: string; end: string }>>(DEFAULT_SCHEDULE);
+  const [duration, setDuration] = useState(30);
+  const [buffer, setBuffer] = useState(0);
+  const [advance, setAdvance] = useState(30);
+  const [bookingTitle, setBookingTitle] = useState("Terminbuchung");
+  const [bookingDescription, setBookingDescription] = useState("");
+  const [notifEmail, setNotifEmail] = useState("");
 
   const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
     onSuccess: () => { setConfirmOpen(false); setSaving(false); setEnabled(true); onUpdate(); toast.success("Terminbuchung freigeschaltet!"); },
@@ -2046,22 +2069,50 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine, purc
 
   const { data: bookingData } = trpc.customer.getBookingSettings.useQuery({ websiteId });
 
+  // Populate settings form from fetched data
+  useEffect(() => {
+    if (bookingData?.settings) {
+      const s = bookingData.settings;
+      if (s.weeklySchedule) setSchedule(s.weeklySchedule as any);
+      if (s.durationMinutes != null) setDuration(s.durationMinutes);
+      if (s.bufferMinutes != null) setBuffer(s.bufferMinutes);
+      if (s.advanceDays != null) setAdvance(s.advanceDays);
+      if (s.title) setBookingTitle(s.title);
+      if (s.description != null) setBookingDescription(s.description ?? "");
+      if (s.notificationEmail != null) setNotifEmail(s.notificationEmail ?? "");
+    }
+  }, [bookingData]);
+
   const handleToggle = () => {
     if (!isPurchased) { setConfirmOpen(true); return; }
     const newVal = !enabled;
     setEnabled(newVal);
     setSaving(true);
-    const s = bookingData?.settings;
     saveSettingsMutation.mutate({
       websiteId,
       enabled: newVal,
-      weeklySchedule: (s?.weeklySchedule as any) ?? { mon: { enabled: true, start: "09:00", end: "17:00" }, tue: { enabled: true, start: "09:00", end: "17:00" }, wed: { enabled: true, start: "09:00", end: "17:00" }, thu: { enabled: true, start: "09:00", end: "17:00" }, fri: { enabled: true, start: "09:00", end: "17:00" }, sat: { enabled: false, start: "09:00", end: "12:00" }, sun: { enabled: false, start: "09:00", end: "12:00" } },
-      durationMinutes: s?.durationMinutes ?? 30,
-      bufferMinutes: s?.bufferMinutes ?? 0,
-      advanceDays: s?.advanceDays ?? 30,
-      title: s?.title ?? "Terminbuchung",
-      description: s?.description ?? undefined,
-      notificationEmail: s?.notificationEmail ?? null,
+      weeklySchedule: schedule as any,
+      durationMinutes: duration,
+      bufferMinutes: buffer,
+      advanceDays: advance,
+      title: bookingTitle,
+      description: bookingDescription || undefined,
+      notificationEmail: notifEmail || null,
+    });
+  };
+
+  const handleSaveSettings = () => {
+    setSaving(true);
+    saveSettingsMutation.mutate({
+      websiteId,
+      enabled,
+      weeklySchedule: schedule as any,
+      durationMinutes: duration,
+      bufferMinutes: buffer,
+      advanceDays: advance,
+      title: bookingTitle,
+      description: bookingDescription || undefined,
+      notificationEmail: notifEmail || null,
     });
   };
 
@@ -2089,27 +2140,153 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine, purc
             </button>
           </div>
         ) : (
-          <div className={`rounded-xl p-4 border transition-all ${enabled ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-white text-sm font-medium">Terminbuchung aktivieren</div>
-                <div className="text-slate-400 text-xs mt-0.5">Besucher können direkt auf deiner Website Termine buchen</div>
+          <div className="space-y-4">
+            <div className={`rounded-xl p-4 border transition-all ${enabled ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-white text-sm font-medium">Terminbuchung aktivieren</div>
+                  <div className="text-slate-400 text-xs mt-0.5">Besucher können direkt auf deiner Website Termine buchen</div>
+                </div>
+                <button
+                  onClick={handleToggle}
+                  disabled={saving}
+                  className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
+                >
+                  <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
+                </button>
               </div>
-              <button
-                onClick={handleToggle}
-                disabled={saving}
-                className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
-              >
-                <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
-              </button>
+              {enabled && (
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <Check className="w-3 h-3 text-emerald-400" />
+                  <span className="text-emerald-400">Aktiviert</span>
+                </div>
+              )}
             </div>
+
+            {/* Inline settings form — shown when purchased & enabled */}
             {enabled && (
-              <div className="mt-3 flex items-center gap-2 text-sm">
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400">Aktiviert</span>
-                <span className="text-slate-500">·</span>
-                <button onClick={onGoToTermine} className="text-blue-400 hover:text-blue-300 transition-colors">
-                  Verfügbarkeit & Termine verwalten →
+              <div className="space-y-5 pt-1">
+                {/* Allgemein */}
+                <div className="space-y-3">
+                  <h3 className="text-white text-sm font-semibold flex items-center gap-2">
+                    <Settings className="w-3.5 h-3.5 text-slate-400" />
+                    Allgemein
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Titel</label>
+                      <input
+                        type="text"
+                        value={bookingTitle}
+                        onChange={e => setBookingTitle(e.target.value)}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                        placeholder="Terminbuchung"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Benachrichtigungs-E-Mail</label>
+                      <input
+                        type="email"
+                        value={notifEmail}
+                        onChange={e => setNotifEmail(e.target.value)}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                        placeholder="du@beispiel.de"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-slate-400 text-xs font-medium block mb-1">Beschreibung (optional)</label>
+                    <textarea
+                      value={bookingDescription}
+                      onChange={e => setBookingDescription(e.target.value)}
+                      rows={2}
+                      className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors resize-none placeholder-slate-500"
+                      placeholder="Kurze Beschreibung für deine Kunden…"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Dauer (Min.)</label>
+                      <select
+                        value={duration}
+                        onChange={e => setDuration(Number(e.target.value))}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      >
+                        {[15, 20, 30, 45, 60, 90, 120].map(v => <option key={v} value={v}>{v} Min.</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Puffer (Min.)</label>
+                      <select
+                        value={buffer}
+                        onChange={e => setBuffer(Number(e.target.value))}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      >
+                        {[0, 5, 10, 15, 20, 30].map(v => <option key={v} value={v}>{v} Min.</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Vorlauf (Tage)</label>
+                      <select
+                        value={advance}
+                        onChange={e => setAdvance(Number(e.target.value))}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      >
+                        {[7, 14, 21, 30, 60, 90].map(v => <option key={v} value={v}>{v} Tage</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Wochenplan */}
+                <div className="space-y-3">
+                  <h3 className="text-white text-sm font-semibold flex items-center gap-2">
+                    <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
+                    Verfügbarkeit
+                  </h3>
+                  <div className="space-y-2">
+                    {DAY_ORDER.map(day => {
+                      const slot = schedule[day] ?? { enabled: false, start: "09:00", end: "17:00" };
+                      return (
+                        <div key={day} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${slot.enabled ? "border-blue-500/30 bg-blue-500/5" : "border-slate-700/40 bg-slate-900/30 opacity-60"}`}>
+                          <button
+                            onClick={() => setSchedule(prev => ({ ...prev, [day]: { ...slot, enabled: !slot.enabled } }))}
+                            className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${slot.enabled ? "bg-blue-500" : "bg-slate-600"}`}
+                          >
+                            <span className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: slot.enabled ? "18px" : "2px" }} />
+                          </button>
+                          <span className="text-slate-300 text-xs font-medium w-6 flex-shrink-0">{DAY_LABELS[day]}</span>
+                          {slot.enabled ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <input
+                                type="time"
+                                value={slot.start}
+                                onChange={e => setSchedule(prev => ({ ...prev, [day]: { ...slot, start: e.target.value } }))}
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs outline-none focus:border-blue-500 transition-colors"
+                              />
+                              <span className="text-slate-500 text-xs">–</span>
+                              <input
+                                type="time"
+                                value={slot.end}
+                                onChange={e => setSchedule(prev => ({ ...prev, [day]: { ...slot, end: e.target.value } }))}
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs outline-none focus:border-blue-500 transition-colors"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 text-xs flex-1">Nicht verfügbar</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={saving || saveSettingsMutation.isPending}
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {(saving || saveSettingsMutation.isPending) ? <><Loader2 className="w-4 h-4 animate-spin" /> Speichern…</> : "Einstellungen speichern"}
                 </button>
               </div>
             )}
@@ -3136,20 +3313,6 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
 }
 
 // ── Appointments Tab ───────────────────────────────────
-const DAY_LABELS: Record<string, string> = { mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa", sun: "So" };
-const DAY_NAMES: Record<string, string> = { mon: "Montag", tue: "Dienstag", wed: "Mittwoch", thu: "Donnerstag", fri: "Freitag", sat: "Samstag", sun: "Sonntag" };
-const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-
-const DEFAULT_SCHEDULE = {
-  mon: { enabled: true, start: "09:00", end: "17:00" },
-  tue: { enabled: true, start: "09:00", end: "17:00" },
-  wed: { enabled: true, start: "09:00", end: "17:00" },
-  thu: { enabled: true, start: "09:00", end: "17:00" },
-  fri: { enabled: true, start: "09:00", end: "17:00" },
-  sat: { enabled: false, start: "09:00", end: "12:00" },
-  sun: { enabled: false, start: "09:00", end: "12:00" },
-};
-
 function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
   const { data: bookingData, isLoading: bookingLoading } = trpc.customer.getBookingSettings.useQuery({ websiteId });
   const { data: appointmentsData, isLoading: appointmentsLoading, refetch: refetchAppointments } = trpc.customer.getAppointments.useQuery({ websiteId, upcoming: true });
@@ -3174,23 +3337,14 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
 
   return (
     <div className="space-y-6">
-      {/* Header with settings link */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-white text-lg font-semibold flex items-center gap-2">
-            <CalendarCheck className="w-5 h-5 text-blue-400" />
-            Termine
-            {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
-          </h2>
-          <p className="text-slate-400 text-sm mt-0.5">Eingehende Buchungen von deiner Website.</p>
-        </div>
-        <button
-          onClick={onGoToAddons}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white border border-slate-700/50 hover:border-slate-600 bg-slate-800/60 hover:bg-slate-700/60 px-3 py-1.5 rounded-lg transition-colors"
-        >
-          <Settings className="w-3.5 h-3.5" />
-          Terminbuchung konfigurieren
-        </button>
+      {/* Header */}
+      <div>
+        <h2 className="text-white text-lg font-semibold flex items-center gap-2">
+          <CalendarCheck className="w-5 h-5 text-blue-400" />
+          Termine
+          {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
+        </h2>
+        <p className="text-slate-400 text-sm mt-0.5">Eingehende Buchungen von deiner Website.</p>
       </div>
 
       {!enabled ? (
@@ -3799,35 +3953,60 @@ export default function CustomerDashboard() {
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="border-b border-slate-700/50 bg-slate-900/50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-1">
+      {/* Mobile Tab Navigation (icon + label, scrollable) */}
+      <div className="lg:hidden border-b border-slate-700/50 bg-slate-900/50 overflow-x-auto scrollbar-hide">
+        <div className="flex px-2 min-w-max">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[10px] font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-blue-400 border-blue-400"
+                  : "text-slate-500 border-transparent hover:text-white"
+              }`}
+            >
+              <span className="[&>svg]:w-4 [&>svg]:h-4">{tab.icon}</span>
+              {tab.label}
+              {tab.badge && tab.badge > 0 ? (
+                <span className="absolute mt-[-2px] ml-3 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-bold leading-none">
+                  {tab.badge > 99 ? "99+" : tab.badge}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main layout: sidebar (desktop) + content */}
+      <div className="flex flex-1 min-h-0">
+        {/* Desktop Sidebar */}
+        <nav className="hidden lg:flex flex-col w-52 flex-shrink-0 bg-slate-900/40 border-r border-slate-700/50 min-h-[calc(100vh-120px)]">
+          <div className="p-3 space-y-0.5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
                   activeTab === tab.id
-                    ? "text-blue-400 border-blue-400 bg-blue-500/10"
-                    : "text-slate-400 border-transparent hover:text-white hover:bg-slate-800/50"
+                    ? "bg-blue-500/15 text-blue-400"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                 }`}
               >
                 {tab.icon}
-                {tab.label}
-                {tab.badge && tab.badge > 0 ? (
-                  <span className="ml-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
+                <span className="flex-1">{tab.label}</span>
+                {tab.badge && tab.badge > 0 && (
+                  <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                     {tab.badge > 99 ? "99+" : tab.badge}
                   </span>
-                ) : null}
+                )}
               </button>
             ))}
           </div>
-        </div>
-      </div>
+        </nav>
 
-      {/* Tab Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Tab Content */}
+        <div className="flex-1 min-w-0 px-4 lg:px-6 py-4 lg:py-6">
         {/* Preview Tab */}
         {activeTab === "preview" && (
           <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
@@ -4414,7 +4593,8 @@ export default function CustomerDashboard() {
             )}
           </div>
         )}
-      </div>
+        </div>{/* end flex-1 content */}
+      </div>{/* end flex row (sidebar + content) */}
 
       {/* ── Setup-Modal ── */}
       {setupOpen && (
