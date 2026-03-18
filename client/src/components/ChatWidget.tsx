@@ -172,15 +172,26 @@ export default function ChatWidget({
       {/* Proactive bubble */}
       {proactiveVisible && !open && (
         <div
-          className="fixed bottom-24 right-6 z-[9998] max-w-[200px] cursor-pointer"
-          onClick={handleOpen}
+          className="fixed bottom-24 right-6 z-[9998] max-w-[220px]"
           style={{ animation: "fadeSlideIn 0.4s ease-out" }}
         >
           <div
-            className="rounded-2xl rounded-br-sm px-4 py-2 text-sm shadow-lg"
+            className="relative rounded-2xl rounded-br-sm px-4 py-3 pr-8 text-sm shadow-lg cursor-pointer"
             style={{ backgroundColor: primaryColor, color: textOnPrimary }}
+            onClick={handleOpen}
           >
             {welcomeMessage || `Hallo! Kann ich dir helfen?`}
+            {/* Dismiss button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setProactiveVisible(false); }}
+              className="absolute top-1.5 right-1.5 w-5 h-5 flex items-center justify-center rounded-full opacity-50 hover:opacity-100 transition-opacity"
+              style={{ color: textOnPrimary }}
+              aria-label="Schließen"
+            >
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                <path d="M1 1L7 7M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
           </div>
         </div>
       )}
