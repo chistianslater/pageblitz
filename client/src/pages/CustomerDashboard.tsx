@@ -8,7 +8,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import ContentEditorSplitView from "@/components/ContentEditorSplitView";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
-import { FONT_OPTIONS } from "@shared/layoutConfig";
+import { FONT_OPTIONS, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FONTS } from "@shared/layoutConfig";
 
 // ── Layout meta (shared with OnboardingChat variant picker) ──────────────────
 const LAYOUT_LABELS_DASH: Record<string, string> = {
@@ -2340,6 +2340,380 @@ function LayoutSwitcherCard({ websiteId, currentLayout, onUpdate }: {
   );
 }
 
+// ── Design Studio (split-view: live preview + design controls) ────────────
+function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, business, onUpdate, setImagePicker }: {
+  website: any;
+  websiteData: any;
+  heroImageUrl?: string;
+  aboutImageUrl?: string;
+  business?: any;
+  onUpdate: () => void;
+  setImagePicker: (v: { slot: "hero" | "about"; websiteId: number }) => void;
+}) {
+  // ── Draft state (live preview, not yet saved) ──────────────────────────
+  const savedLayout = (website as any).layoutStyle || "modern";
+  const savedColors = (website.colorScheme as any) || {};
+  const savedTokens = ((websiteData as any)?.designTokens) || {};
+
+  const [draftLayout, setDraftLayout] = useState<string>(savedLayout);
+  const [draftColors, setDraftColors] = useState<Record<string, string>>({
+    primary:    savedColors.primary    || "#3B82F6",
+    secondary:  savedColors.secondary  || "#F1F5F9",
+    accent:     savedColors.accent     || "#8B5CF6",
+    background: savedColors.background || "#FFFFFF",
+    text:       savedColors.text       || "#1E293B",
+  });
+  const [draftFonts, setDraftFonts] = useState({
+    headlineFont: savedTokens.headlineFont || "",
+    bodyFont:     savedTokens.bodyFont     || "",
+    headlineSize: savedTokens.headlineSize || "large",
+  });
+  const [openSection, setOpenSection] = useState<string>("layout");
+
+  // Sync when website changes after save
+  useEffect(() => {
+    setDraftLayout((website as any).layoutStyle || "modern");
+    const cs = (website.colorScheme as any) || {};
+    setDraftColors({
+      primary:    cs.primary    || "#3B82F6",
+      secondary:  cs.secondary  || "#F1F5F9",
+      accent:     cs.accent     || "#8B5CF6",
+      background: cs.background || "#FFFFFF",
+      text:       cs.text       || "#1E293B",
+    });
+    const dt = ((websiteData as any)?.designTokens) || {};
+    setDraftFonts({ headlineFont: dt.headlineFont || "", bodyFont: dt.bodyFont || "", headlineSize: dt.headlineSize || "large" });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [website.colorScheme, website.layoutStyle, websiteData?.designTokens]);
+
+  const isDirty = draftLayout !== savedLayout
+    || JSON.stringify(draftColors) !== JSON.stringify({ primary: savedColors.primary || "#3B82F6", secondary: savedColors.secondary || "#F1F5F9", accent: savedColors.accent || "#8B5CF6", background: savedColors.background || "#FFFFFF", text: savedColors.text || "#1E293B" })
+    || JSON.stringify(draftFonts) !== JSON.stringify({ headlineFont: savedTokens.headlineFont || "", bodyFont: savedTokens.bodyFont || "", headlineSize: savedTokens.headlineSize || "large" });
+
+  // ── Scale for live preview ─────────────────────────────────────────────
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(0.45);
+  useEffect(() => {
+    const el = previewContainerRef.current;
+    if (!el) return;
+    const update = () => setPreviewScale(el.clientWidth / 1280);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // ── Mutations ──────────────────────────────────────────────────────────
+  const changeLayout  = trpc.customer.changeLayout.useMutation();
+  const updateDesign  = trpc.customer.updateDesign.useMutation();
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (draftLayout !== savedLayout) {
+        await changeLayout.mutateAsync({ websiteId: website.id, layoutStyle: draftLayout });
+      }
+      await updateDesign.mutateAsync({
+        websiteId: website.id,
+        colorScheme: draftColors as any,
+        designTokens: {
+          ...(draftFonts.headlineFont ? { headlineFont: draftFonts.headlineFont } : {}),
+          ...(draftFonts.bodyFont     ? { bodyFont:     draftFonts.bodyFont }     : {}),
+          headlineSize: draftFonts.headlineSize,
+        },
+      });
+      toast.success("Design gespeichert");
+      onUpdate();
+    } catch {
+      toast.error("Fehler beim Speichern");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    setDraftLayout(savedLayout);
+    setDraftColors({ primary: savedColors.primary || "#3B82F6", secondary: savedColors.secondary || "#F1F5F9", accent: savedColors.accent || "#8B5CF6", background: savedColors.background || "#FFFFFF", text: savedColors.text || "#1E293B" });
+    setDraftFonts({ headlineFont: savedTokens.headlineFont || "", bodyFont: savedTokens.bodyFont || "", headlineSize: savedTokens.headlineSize || "large" });
+  };
+
+  // ── Color preset palettes (derived from color schemes of all 18 layouts) ──
+  const COLOR_PRESETS = Object.entries(DEFAULT_LAYOUT_COLOR_SCHEMES).map(([key, cs]) => ({
+    key,
+    label: LAYOUT_LABELS_DASH[key] ?? key,
+    primary: (cs as any).primary,
+    accent: (cs as any).accent,
+    background: (cs as any).background,
+  }));
+
+  // ── Section accordion helper ───────────────────────────────────────────
+  const Section = ({ id, icon, title, children }: { id: string; icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+    <div className="border border-slate-700/50 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpenSection(s => s === id ? "" : id)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/60 hover:bg-slate-800 transition-colors text-left"
+      >
+        <span className="flex items-center gap-2 text-white text-sm font-medium">{icon}{title}</span>
+        <svg className={`w-4 h-4 text-slate-400 transition-transform ${openSection === id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {openSection === id && <div className="px-4 py-4 bg-slate-900/60 space-y-3">{children}</div>}
+    </div>
+  );
+
+  return (
+    <div className="flex h-[calc(100vh-220px)] min-h-[500px] rounded-2xl border border-slate-700/50 overflow-hidden">
+
+      {/* ── LEFT: Live preview ─────────────────────────────────────────── */}
+      <div ref={previewContainerRef} className="flex-1 min-w-0 bg-slate-950 overflow-hidden relative">
+        <div style={{ width: 1280, transformOrigin: "top left", transform: `scale(${previewScale})`, pointerEvents: "none", userSelect: "none" }}>
+          <WebsiteRenderer
+            websiteData={websiteData}
+            colorScheme={draftColors as any}
+            heroImageUrl={heroImageUrl}
+            aboutImageUrl={aboutImageUrl}
+            layoutStyle={draftLayout}
+            headlineSize={draftFonts.headlineSize as any}
+            headlineFontOverride={draftFonts.headlineFont || undefined}
+            businessPhone={business?.phone || undefined}
+            businessAddress={business?.address || undefined}
+            businessEmail={business?.email || undefined}
+            slug={website.slug}
+            isLoading={false}
+            contactFormLocked={false}
+          />
+        </div>
+        {/* Fade at bottom */}
+        <div className="absolute bottom-0 inset-x-0 h-20 pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent, rgba(2,6,23,0.95))" }} />
+        {/* Draft indicator */}
+        {isDirty && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium pointer-events-none">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            Vorschau — noch nicht gespeichert
+          </div>
+        )}
+      </div>
+
+      {/* ── DIVIDER ──────────────────────────────────────────────────────── */}
+      <div className="w-px bg-slate-700/50 flex-shrink-0" />
+
+      {/* ── RIGHT: Design controls ───────────────────────────────────────── */}
+      <div className="w-72 xl:w-80 flex-shrink-0 bg-slate-900 flex flex-col">
+
+        {/* Sticky header */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-700/50 bg-slate-900">
+          <span className="text-white font-semibold text-sm flex items-center gap-2">
+            <Palette className="w-4 h-4 text-blue-400" />
+            Design
+          </span>
+          <div className="flex items-center gap-2">
+            {isDirty && (
+              <button onClick={handleDiscard} className="text-slate-400 hover:text-white text-xs transition-colors">Verwerfen</button>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={saving || !isDirty}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
+            >
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              Speichern
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable sections */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+
+          {/* ── LAYOUT ── */}
+          <Section id="layout" icon={<Layers className="w-4 h-4 text-blue-400" />} title="Layout">
+            {LAYOUT_FAMILIES_DASH.map(fam => (
+              <div key={fam.label}>
+                <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">{fam.label}</div>
+                <div className="grid grid-cols-3 gap-1.5 mb-3">
+                  {fam.layouts.map(ls => (
+                    <button
+                      key={ls}
+                      type="button"
+                      onClick={() => setDraftLayout(ls)}
+                      className={`py-2 px-1 rounded-lg text-xs font-medium transition-all text-center ${
+                        draftLayout === ls
+                          ? "bg-blue-600 text-white ring-1 ring-blue-400/50"
+                          : "bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/50"
+                      }`}
+                    >
+                      {LAYOUT_LABELS_DASH[ls] ?? ls}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </Section>
+
+          {/* ── FARBEN ── */}
+          <Section id="farben" icon={<Palette className="w-4 h-4 text-pink-400" />} title="Farben">
+            {/* Quick presets */}
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Schnell-Paletten</div>
+              <div className="flex flex-wrap gap-2">
+                {COLOR_PRESETS.map(p => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    title={p.label}
+                    onClick={() => {
+                      const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as any)[p.key] || {};
+                      setDraftColors({
+                        primary:    cs.primary    || draftColors.primary,
+                        secondary:  cs.secondary  || draftColors.secondary,
+                        accent:     cs.accent     || draftColors.accent,
+                        background: cs.background || draftColors.background,
+                        text:       cs.text       || draftColors.text,
+                      });
+                    }}
+                    className="flex gap-0.5 rounded-md overflow-hidden ring-1 ring-slate-600/50 hover:ring-blue-400/50 transition-all"
+                  >
+                    <div style={{ width: 14, height: 22, background: p.primary }} />
+                    <div style={{ width: 14, height: 22, background: p.accent }} />
+                    <div style={{ width: 14, height: 22, background: p.background }} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Individual pickers */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {[
+                { key: "primary",    label: "Primär" },
+                { key: "accent",     label: "Akzent" },
+                { key: "background", label: "Hintergrund" },
+                { key: "text",       label: "Text" },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center gap-2 bg-slate-800/60 rounded-lg px-2.5 py-2">
+                  <input
+                    type="color"
+                    value={(draftColors as any)[key] || "#000000"}
+                    onChange={e => setDraftColors(c => ({ ...c, [key]: e.target.value }))}
+                    className="w-7 h-7 rounded cursor-pointer border-0 p-0 flex-shrink-0"
+                  />
+                  <div>
+                    <div className="text-[10px] text-slate-400">{label}</div>
+                    <div className="text-[10px] text-slate-500 font-mono">{(draftColors as any)[key]}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* ── SCHRIFTEN ── */}
+          <Section id="schriften" icon={<Type className="w-4 h-4 text-violet-400" />} title="Schriften">
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-slate-400 mb-1.5 block">Überschriften</label>
+                <select
+                  value={draftFonts.headlineFont}
+                  onChange={e => setDraftFonts(f => ({ ...f, headlineFont: e.target.value }))}
+                  className="w-full bg-slate-800/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 outline-none focus:border-blue-500"
+                >
+                  <option value="">Layout-Standard</option>
+                  <optgroup label="── Serifenschriften ──">
+                    {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                  <optgroup label="── Serifenlose ──">
+                    {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1.5 block">Fließtext</label>
+                <select
+                  value={draftFonts.bodyFont}
+                  onChange={e => setDraftFonts(f => ({ ...f, bodyFont: e.target.value }))}
+                  className="w-full bg-slate-800/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 outline-none focus:border-blue-500"
+                >
+                  <option value="">Layout-Standard</option>
+                  <optgroup label="── Serifenschriften ──">
+                    {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                  <optgroup label="── Serifenlose ──">
+                    {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1.5 block">Schriftgröße Überschriften</label>
+                <div className="flex gap-2">
+                  {[{ v: "small", l: "Normal" }, { v: "medium", l: "Groß" }, { v: "large", l: "Sehr groß" }].map(({ v, l }) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setDraftFonts(f => ({ ...f, headlineSize: v }))}
+                      className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                        draftFonts.headlineSize === v
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-800/60 text-slate-300 hover:bg-slate-700 border border-slate-700/50"
+                      }`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          {/* ── LOGO ── */}
+          <Section id="logo" icon={<Upload className="w-4 h-4 text-emerald-400" />} title="Logo">
+            <LogoUploadCard websiteId={website.id} logoUrl={(websiteData as any)?.logoImageUrl} onUpdate={onUpdate} />
+          </Section>
+
+          {/* ── BILDER ── */}
+          <Section id="bilder" icon={<Image className="w-4 h-4 text-orange-400" />} title="Bilder">
+            <div className="space-y-3">
+              {/* Hero */}
+              <div>
+                <div className="text-xs text-slate-400 mb-1.5">Hauptbild</div>
+                <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-800/60 border border-slate-700/50">
+                  {heroImageUrl
+                    ? <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
+                    : <div className="flex items-center justify-center h-full"><Image className="w-6 h-6 text-slate-600" /></div>
+                  }
+                </div>
+                <button
+                  onClick={() => setImagePicker({ slot: "hero", websiteId: website.id })}
+                  className="mt-2 w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Bild ändern
+                </button>
+              </div>
+              {/* About */}
+              <div>
+                <div className="text-xs text-slate-400 mb-1.5">Über-uns-Bild</div>
+                <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-800/60 border border-slate-700/50">
+                  {aboutImageUrl
+                    ? <img src={aboutImageUrl} alt="Über uns" className="w-full h-full object-cover" />
+                    : <div className="flex items-center justify-center h-full"><Image className="w-6 h-6 text-slate-600" /></div>
+                  }
+                </div>
+                <button
+                  onClick={() => setImagePicker({ slot: "about", websiteId: website.id })}
+                  className="mt-2 w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Bild ändern
+                </button>
+              </div>
+            </div>
+          </Section>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Logo Upload Card ──────────────────────────────────
 function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; logoUrl?: string; onUpdate: () => void }) {
   const [uploading, setUploading] = useState(false);
@@ -3129,11 +3503,6 @@ export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("preview");
   const [previewKey, setPreviewKey] = useState(0);
   const [imagePicker, setImagePicker] = useState<{ slot: "hero" | "about"; websiteId: number } | null>(null);
-  // Layout preview state — tracks what's currently shown (may differ from saved)
-  const [previewLayoutOverride, setPreviewLayoutOverride] = useState<string | null>(null);
-  const [layoutSaving, setLayoutSaving] = useState(false);
-  const changeLayoutMutation = trpc.customer.changeLayout.useMutation();
-
   const { data: myWebsites, isLoading, refetch } = trpc.customer.getMyWebsites.useQuery(
     undefined,
     { enabled: !!user }
@@ -3570,7 +3939,7 @@ export default function CustomerDashboard() {
                       colorScheme={colorScheme}
                       heroImageUrl={website.heroImageUrl || undefined}
                       aboutImageUrl={(website as any).aboutImageUrl || undefined}
-                      layoutStyle={previewLayoutOverride ?? (website as any).layoutStyle ?? undefined}
+                      layoutStyle={(website as any).layoutStyle || undefined}
                       businessPhone={business?.phone || undefined}
                       businessAddress={business?.address || undefined}
                       businessEmail={business?.email || undefined}
@@ -3578,65 +3947,6 @@ export default function CustomerDashboard() {
                       contactFormLocked={false}
                     />
                   </div>
-                  {/* Floating layout switcher */}
-                  {(() => {
-                    const ALL_LAYOUTS = ["aurora","flux","bold","dynamic","nexus","vibrant","elegant","luxury","natural","craft","forge","clean","fresh","warm","trust","modern","clay","pulse"];
-                    const saved = (website as any).layoutStyle || "modern";
-                    const current = previewLayoutOverride ?? saved;
-                    const idx = ALL_LAYOUTS.indexOf(current);
-                    const prev = ALL_LAYOUTS[(idx - 1 + ALL_LAYOUTS.length) % ALL_LAYOUTS.length];
-                    const next = ALL_LAYOUTS[(idx + 1) % ALL_LAYOUTS.length];
-                    const isDirty = previewLayoutOverride !== null && previewLayoutOverride !== saved;
-                    return (
-                      <div className="sticky bottom-4 flex justify-center pointer-events-none z-20">
-                        <div className="pointer-events-auto flex items-center gap-1 px-1.5 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/60 shadow-2xl shadow-black/50">
-                          <button
-                            onClick={() => setPreviewLayoutOverride(prev)}
-                            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-700/60 text-slate-400 hover:text-white transition-colors"
-                          >
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="px-2 text-xs font-semibold text-white min-w-[72px] text-center">
-                            {LAYOUT_LABELS_DASH[current] ?? current}
-                          </span>
-                          <button
-                            onClick={() => setPreviewLayoutOverride(next)}
-                            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-700/60 text-slate-400 hover:text-white transition-colors"
-                          >
-                            <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
-                          </button>
-                          {isDirty && (
-                            <>
-                              <div className="w-px h-4 bg-slate-700 mx-0.5" />
-                              <button
-                                onClick={async () => {
-                                  setLayoutSaving(true);
-                                  try {
-                                    await changeLayoutMutation.mutateAsync({ websiteId: website.id, layoutStyle: previewLayoutOverride! });
-                                    toast.success("Layout gespeichert");
-                                    setPreviewLayoutOverride(null);
-                                    handleUpdate();
-                                  } catch { toast.error("Fehler"); }
-                                  finally { setLayoutSaving(false); }
-                                }}
-                                disabled={layoutSaving}
-                                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-[11px] font-semibold transition-colors"
-                              >
-                                {layoutSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                                Übernehmen
-                              </button>
-                              <button
-                                onClick={() => setPreviewLayoutOverride(null)}
-                                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-700/60 text-slate-400 hover:text-white transition-colors"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
                 </>
               ) : (
                 <div className="flex items-center justify-center h-64 text-slate-500">
@@ -3676,93 +3986,16 @@ export default function CustomerDashboard() {
         )}
 
         {/* Design Tab */}
-        {activeTab === "design" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                  <Palette className="w-4 h-4 text-blue-400" />
-                  Design-Einstellungen
-                </h2>
-                <DesignEditor
-                  websiteId={website.id}
-                  website={website}
-                  onUpdate={handleUpdate}
-                />
-              </div>
-            </div>
-            <div className="space-y-4">
-              {/* Layout Switcher */}
-              <LayoutSwitcherCard
-                websiteId={website.id}
-                currentLayout={(website as any).layoutStyle || "modern"}
-                onUpdate={handleUpdate}
-              />
-
-              {/* Logo Upload */}
-              <LogoUploadCard websiteId={website.id} logoUrl={(websiteData as any)?.logoImageUrl} onUpdate={handleUpdate} />
-
-              {/* Hero Image */}
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
-                <h3 className="text-white font-medium flex items-center gap-2">
-                  <Image className="w-4 h-4 text-blue-400" />
-                  Hauptbild
-                </h3>
-                {website.heroImageUrl ? (
-                  <div className="relative rounded-xl overflow-hidden aspect-video">
-                    <img src={website.heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => updateMutation.mutate({ websiteId: website.id, patch: { heroPhotoUrl: "" } })}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="aspect-video rounded-xl bg-slate-700/40 border-2 border-dashed border-slate-600 flex items-center justify-center">
-                    <Image className="w-8 h-8 text-slate-500" />
-                  </div>
-                )}
-                <button
-                  onClick={() => setImagePicker({ slot: "hero", websiteId: website.id })}
-                  className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Bild ändern
-                </button>
-              </div>
-
-              {/* About Image */}
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
-                <h3 className="text-white font-medium flex items-center gap-2">
-                  <Image className="w-4 h-4 text-violet-400" />
-                  Über-uns-Bild
-                </h3>
-                {(website as any).aboutImageUrl ? (
-                  <div className="relative rounded-xl overflow-hidden aspect-video">
-                    <img src={(website as any).aboutImageUrl} alt="Über uns" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => updateMutation.mutate({ websiteId: website.id, patch: { aboutPhotoUrl: "" } })}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="aspect-video rounded-xl bg-slate-700/40 border-2 border-dashed border-slate-600 flex items-center justify-center">
-                    <Image className="w-8 h-8 text-slate-500" />
-                  </div>
-                )}
-                <button
-                  onClick={() => setImagePicker({ slot: "about", websiteId: website.id })}
-                  className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Bild ändern
-                </button>
-              </div>
-            </div>
-          </div>
+        {activeTab === "design" && websiteData && (
+          <DesignStudio
+            website={website}
+            websiteData={websiteData}
+            heroImageUrl={website.heroImageUrl || undefined}
+            aboutImageUrl={(website as any).aboutImageUrl || undefined}
+            business={business}
+            onUpdate={handleUpdate}
+            setImagePicker={setImagePicker}
+          />
         )}
 
         {/* Structure Tab */}
