@@ -11,7 +11,7 @@ import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory, CATEGORY_GROUPS } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
-import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, DEFAULT_LAYOUT_COLOR_SCHEMES, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
+import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FONTS, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
 import { getGalleryImages, getHeroImageUrl, getAboutImageUrl, getRawIndustryColors } from "@shared/industryImages";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -63,196 +63,221 @@ function getVariantLayouts(industryKey: string, round: number): string[] {
   return families.map((family) => family[round % family.length]);
 }
 
-/** Friendly names for each layout style shown in the picker. */
+/** Friendly display names per layout style. */
 const LAYOUT_LABELS: Record<string, string> = {
-  aurora: "Aurora",  nexus: "Nexus",    bold: "Bold",   flux: "Flux",    dynamic: "Dynamic",
-  forge: "Forge",    elegant: "Elegant", luxury: "Luxury", natural: "Natural", craft: "Craft",
-  clay: "Clay",      pulse: "Pulse",    fresh: "Fresh", clean: "Clean",  warm: "Warm", modern: "Modern",
-  vibrant: "Vibrant", trust: "Trust",
+  aurora: "Aurora",  nexus: "Nexus",    bold: "Bold",    flux: "Flux",    dynamic: "Dynamic",
+  forge: "Forge",    elegant: "Elegant",luxury: "Luxury", natural: "Natural", craft: "Craft",
+  clay: "Clay",      pulse: "Pulse",    fresh: "Fresh",  clean: "Clean",  warm: "Warm", modern: "Modern",
+  vibrant: "Vibrant",trust: "Trust",
 };
 
-/** Short vibe descriptor shown under each variant card. */
+/** Short mood line shown under each card. */
 const LAYOUT_VIBES: Record<string, string> = {
-  aurora:  "Kosmisch · Dunkel",    nexus:   "Präzise · Navy",       bold:    "Kraftvoll · Schwarz-Gold",
-  flux:    "Avant-Garde · Gold",   dynamic: "Kinetisch · Diagonal", forge:   "Artisan · Eleganz",
-  elegant: "Éditoriel · Warm",     luxury:  "Premium · Cinématique",natural: "Organisch · Erdtöne",
-  craft:   "Industrial · Handwerk",clay:    "Soft · Rosé",          pulse:   "Clean · Medical",
-  fresh:   "Frisch · Luftig",      clean:   "Minimal · Weißraum",   warm:    "Herzlich · Küche",
-  modern:  "Tech · Asymmetrisch",  vibrant: "Neon · Energie",       trust:   "Vertrauensvoll · Blau",
+  aurora:  "Dunkel · Kosmisch",    nexus:   "Sauber · Navy",        bold:    "Stark · Schwarz-Gold",
+  flux:    "Dunkel · Warmes Gold", dynamic: "Energie · Diagonal",   forge:   "Edel · Zeitlos",
+  elegant: "Warm · Éditoriel",     luxury:  "Premium · Cinématisch",natural: "Organisch · Erdtöne",
+  craft:   "Handwerk · Industrial",clay:    "Soft · Verspielt",     pulse:   "Hell · Vertrauensvoll",
+  fresh:   "Frisch · Luftig",      clean:   "Klar · Minimalistisch",warm:    "Herzlich · Einladend",
+  modern:  "Modern · Asymmetrisch",vibrant: "Neon · Energie",       trust:   "Klassisch · Professionell",
 };
 
-/** Single preview card for one layout variant. */
-function VariantCard({ layoutStyle, websiteData, heroImageUrl, aboutImageUrl, isSelected, onClick }: {
+/**
+ * Design mood card — shows colour, typography and layout feel
+ * without needing real customer content.
+ */
+function VariantCard({ layoutStyle, isSelected, onClick }: {
   layoutStyle: string;
-  websiteData: any;
-  heroImageUrl?: string;
-  aboutImageUrl?: string;
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layoutStyle];
-  const SCALE = 0.28;
-  const RENDER_W = 1100;
-  const CONTAINER_W = Math.round(RENDER_W * SCALE); // ~308px
-  const CONTAINER_H = Math.round(780 * SCALE);        // ~218px
+  const cs   = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layoutStyle] ?? (DEFAULT_LAYOUT_COLOR_SCHEMES as any).modern;
+  const font = (LAYOUT_FONTS as Record<string, any>)[layoutStyle]                 ?? (LAYOUT_FONTS as any).modern;
+
+  // Detect visually dark backgrounds (so we can style the border correctly)
+  const isDarkBg = ["aurora","flux","bold","dynamic","vibrant"].includes(layoutStyle);
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-200 focus:outline-none ${
-        isSelected
-          ? "ring-4 ring-blue-400 ring-offset-2 ring-offset-slate-950 scale-[1.03] shadow-2xl shadow-blue-500/30"
-          : "ring-1 ring-slate-700 hover:ring-slate-500 hover:scale-[1.02]"
-      }`}
-      style={{ width: CONTAINER_W, height: CONTAINER_H + 52 }}
+      className="flex-shrink-0 rounded-2xl overflow-hidden transition-all duration-200 focus:outline-none text-left"
+      style={{
+        width: 224,
+        boxShadow: isSelected
+          ? `0 0 0 3px #60a5fa, 0 20px 40px -8px ${cs.primary}55`
+          : `0 0 0 1px ${isDarkBg ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`,
+        transform: isSelected ? "scale(1.04)" : "scale(1)",
+        background: cs.background,
+      }}
     >
-      {/* Scaled-down live preview */}
-      <div style={{ width: CONTAINER_W, height: CONTAINER_H, overflow: "hidden", position: "relative" }}>
-        <div
-          style={{
-            width: RENDER_W,
-            height: Math.round(CONTAINER_H / SCALE),
-            transform: `scale(${SCALE})`,
-            transformOrigin: "top left",
-            pointerEvents: "none",
-            userSelect: "none",
-          }}
-        >
-          <WebsiteRenderer
-            websiteData={websiteData}
-            colorScheme={cs}
-            heroImageUrl={heroImageUrl}
-            aboutImageUrl={aboutImageUrl}
-            layoutStyle={layoutStyle}
-            isLoading={false}
-          />
+      {/* ── Top accent bar ── */}
+      <div style={{ height: 3, background: `linear-gradient(90deg, ${cs.primary}, ${cs.accent})` }} />
+
+      {/* ── Mock nav ── */}
+      <div style={{ background: cs.primary, padding: "9px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontFamily: font.headlineCss, color: cs.onPrimary, fontSize: 10, fontWeight: 700, letterSpacing: "0.05em" }}>
+          IHR UNTERNEHMEN
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {[36, 28, 32].map((w, i) => (
+            <div key={i} style={{ width: w, height: 5, background: `${cs.onPrimary}30`, borderRadius: 2 }} />
+          ))}
         </div>
       </div>
 
-      {/* Label bar */}
-      <div
-        className={`absolute bottom-0 inset-x-0 px-3 py-2.5 text-left transition-colors ${
-          isSelected ? "bg-blue-600" : "bg-slate-900/95"
-        }`}
-      >
-        <p className="text-white text-xs font-bold leading-tight">{LAYOUT_LABELS[layoutStyle] ?? layoutStyle}</p>
-        <p className={`text-xs leading-tight mt-0.5 ${isSelected ? "text-blue-200" : "text-slate-400"}`}>
-          {LAYOUT_VIBES[layoutStyle] ?? ""}
-        </p>
+      {/* ── Mock hero ── */}
+      <div style={{ padding: "18px 14px 14px", background: cs.background }}>
+        {/* Headline in the actual layout font */}
+        <div style={{ fontFamily: font.headlineCss, color: cs.text, fontSize: 19, fontWeight: 900, lineHeight: 1.1, marginBottom: 10 }}>
+          Ihr Stil.<br />
+          <span style={{ color: cs.primary }}>Ihr Auftritt.</span>
+        </div>
+        {/* Body text placeholder bars */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 14 }}>
+          <div style={{ width: "85%", height: 5, background: `${cs.textLight}40`, borderRadius: 3 }} />
+          <div style={{ width: "68%", height: 5, background: `${cs.textLight}2a`, borderRadius: 3 }} />
+          <div style={{ width: "75%", height: 5, background: `${cs.textLight}20`, borderRadius: 3 }} />
+        </div>
+        {/* CTA button */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "7px 13px", borderRadius: 6, fontFamily: font.bodyCss,
+          background: cs.accent, color: cs.onAccent, fontSize: 10, fontWeight: 700,
+        }}>
+          Mehr erfahren →
+        </div>
       </div>
 
-      {/* Selected checkmark */}
-      {isSelected && (
-        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-blue-400 flex items-center justify-center shadow-lg">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+      {/* ── Mock service cards ── */}
+      <div style={{ background: cs.surface, padding: "10px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+        {[1, 2, 3].map((i) => (
+          <div key={i} style={{ background: cs.background, borderRadius: 6, padding: "8px 6px", border: `1px solid ${cs.primary}18` }}>
+            <div style={{ width: 14, height: 14, background: `${cs.accent}60`, borderRadius: 3, marginBottom: 5 }} />
+            <div style={{ width: "80%", height: 4, background: `${cs.textLight}35`, borderRadius: 2, marginBottom: 3 }} />
+            <div style={{ width: "55%", height: 3, background: `${cs.textLight}22`, borderRadius: 2 }} />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Colour swatches ── */}
+      <div style={{ background: cs.surface, padding: "8px 14px 10px", display: "flex", alignItems: "center", gap: 5, borderTop: `1px solid ${cs.primary}14` }}>
+        {[cs.primary, cs.accent, cs.secondary, cs.background].map((c, i) => (
+          <div key={i} style={{
+            width: 13, height: 13, borderRadius: 3, background: c,
+            border: `1px solid ${cs.text}18`,
+          }} />
+        ))}
+        <div style={{ marginLeft: "auto", fontFamily: font.bodyCss, fontSize: 9, color: cs.textLight, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+          {font.headlineFont}
         </div>
-      )}
+      </div>
+
+      {/* ── Label footer ── */}
+      <div style={{
+        padding: "10px 14px 12px",
+        background: isSelected ? "#2563eb" : cs.background,
+        borderTop: `1px solid ${isSelected ? "transparent" : cs.primary + "18"}`,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div>
+          <div style={{ fontFamily: font.headlineCss, color: isSelected ? "white" : cs.text, fontSize: 13, fontWeight: 800, marginBottom: 1 }}>
+            {LAYOUT_LABELS[layoutStyle] ?? layoutStyle}
+          </div>
+          <div style={{ fontFamily: font.bodyCss, color: isSelected ? "#bfdbfe" : cs.textLight, fontSize: 10 }}>
+            {LAYOUT_VIBES[layoutStyle] ?? ""}
+          </div>
+        </div>
+        {isSelected && (
+          <div style={{ width: 22, height: 22, borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="3.5">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+      </div>
     </button>
   );
 }
 
-/** Full-screen variant picker shown after generation completes. */
-function VariantPickerScreen({ websiteData, websiteId, heroImageUrl, aboutImageUrl, industryKey, onConfirm, onSkip }: {
-  websiteData: any;
+/** Full-screen design picker shown immediately after generation completes. */
+function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
   websiteId: number;
-  heroImageUrl?: string;
-  aboutImageUrl?: string;
   industryKey: string;
   onConfirm: (layoutStyle: string) => void;
   onSkip: () => void;
 }) {
   const [round, setRound] = useState(0);
-  const [selected, setSelected] = useState<string | null>(() => getVariantLayouts(industryKey, 0)[0]);
+  const [selected, setSelected] = useState<string>(() => getVariantLayouts(industryKey, 0)[0]);
   const selectMutation = trpc.selfService.selectWebsiteTemplate.useMutation();
 
   const variants = getVariantLayouts(industryKey, round);
 
-  // Keep selection valid when round changes
   const handleOtherLayouts = () => {
-    const nextRound = round + 1;
-    setRound(nextRound);
-    setSelected(getVariantLayouts(industryKey, nextRound)[0]);
+    const next = round + 1;
+    setRound(next);
+    setSelected(getVariantLayouts(industryKey, next)[0]);
   };
 
   const handleConfirm = async () => {
-    if (!selected) return;
     const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected];
     try {
       await selectMutation.mutateAsync({ websiteId, layoutStyle: selected, colorScheme: cs ?? undefined });
-    } catch {
-      // Non-critical: if saving fails we still continue
-    }
+    } catch { /* non-critical */ }
     onConfirm(selected);
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col select-none">
-      {/* Header */}
-      <div className="flex-shrink-0 pt-10 pb-5 px-6 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-xs font-semibold mb-3">
+    <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col overflow-hidden select-none">
+      {/* ── Header ── */}
+      <div className="flex-shrink-0 pt-10 pb-4 px-6 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/25 text-blue-400 text-xs font-semibold mb-3 tracking-wide">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
           </svg>
-          Design-Auswahl
+          Design wählen
         </div>
-        <h1 className="text-2xl font-bold text-white mb-1.5">Welches Design gefällt dir?</h1>
-        <p className="text-slate-400 text-sm max-w-md mx-auto">
-          Alle drei haben denselben Inhalt — nur Stil, Typografie und Farbgebung unterscheiden sich.
+        <h1 className="text-2xl font-bold text-white mb-1">Welcher Stil passt zu dir?</h1>
+        <p className="text-slate-400 text-sm">
+          Farben, Schriften und Stimmung — du kannst jederzeit wechseln.
         </p>
       </div>
 
-      {/* Preview cards — horizontally scrollable */}
-      <div className="flex-1 flex items-center justify-center min-h-0 px-4">
-        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 max-w-full justify-center items-center">
+      {/* ── Cards ── */}
+      <div className="flex-1 flex items-center justify-center min-h-0 px-4 overflow-hidden">
+        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory py-3 px-1 max-w-full items-center justify-center">
           {variants.map((ls) => (
-            <div key={ls} className="snap-center flex-shrink-0">
-              <VariantCard
-                layoutStyle={ls}
-                websiteData={websiteData}
-                heroImageUrl={heroImageUrl}
-                aboutImageUrl={aboutImageUrl}
-                isSelected={selected === ls}
-                onClick={() => setSelected(ls)}
-              />
+            <div key={ls} className="snap-center">
+              <VariantCard layoutStyle={ls} isSelected={selected === ls} onClick={() => setSelected(ls)} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex-shrink-0 flex flex-col items-center gap-3 px-6 pb-10 pt-4">
+      {/* ── Actions ── */}
+      <div className="flex-shrink-0 flex flex-col items-center gap-3 px-6 pb-10 pt-3">
         <button
           type="button"
           onClick={handleConfirm}
-          disabled={!selected || selectMutation.isPending}
-          className="w-full max-w-sm py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
+          disabled={selectMutation.isPending}
+          className="w-full max-w-xs py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
         >
           {selectMutation.isPending ? (
-            <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Speichere…</>
+            <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Wird gespeichert…</>
           ) : (
             <>Dieses Design übernehmen <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></>
           )}
         </button>
-
         <button
           type="button"
           onClick={handleOtherLayouts}
-          className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-sm font-medium transition-colors py-1"
+          className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium transition-colors py-1"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Andere Designs zeigen
+          Andere Stile zeigen
         </button>
-
-        <button
-          type="button"
-          onClick={onSkip}
-          className="text-slate-600 hover:text-slate-400 text-xs transition-colors"
-        >
+        <button type="button" onClick={onSkip} className="text-slate-600 hover:text-slate-400 text-xs transition-colors">
           Überspringen
         </button>
       </div>
@@ -2661,17 +2686,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const slug = siteData?.website?.slug;
 
   // ── Variant picker (shown once after generation completes) ───────────────
-  if (showVariantPicker && websiteData && websiteId) {
+  if (showVariantPicker && websiteId) {
     const industryKey: string = ((siteData?.website as any)?.industry as string) || "general";
     return (
       <VariantPickerScreen
-        websiteData={websiteData}
         websiteId={websiteId}
-        heroImageUrl={heroImageUrl}
-        aboutImageUrl={aboutImageUrl}
         industryKey={industryKey}
-        onConfirm={(_selectedLayout) => {
-          // Reload the page so the chat loads fresh with the chosen layout
+        onConfirm={() => {
           setShowVariantPicker(false);
           window.location.href = window.location.href;
         }}
