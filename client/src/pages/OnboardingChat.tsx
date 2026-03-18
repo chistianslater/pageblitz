@@ -139,10 +139,10 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, aboutImageU
     <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col overflow-hidden select-none">
 
       {/* ── Header ── */}
-      <div className="flex-shrink-0 pt-8 pb-3 px-6 text-center">
+      <div className="flex-shrink-0 pt-6 pb-2 px-6 text-center">
         <h1 className="text-xl font-bold text-white mb-1">Welcher Stil passt zu dir?</h1>
-        <p className="text-slate-400 text-xs max-w-xs mx-auto leading-relaxed">
-          Wähl einen Startpunkt — Farben, Schriften und alle Inhalte kannst du danach frei anpassen.
+        <p className="text-slate-400 text-xs max-w-sm mx-auto leading-relaxed">
+          Farben, Schriften und Inhalte lassen sich danach jederzeit anpassen.
         </p>
       </div>
 
