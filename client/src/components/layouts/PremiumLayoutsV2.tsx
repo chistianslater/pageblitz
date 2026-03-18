@@ -1067,20 +1067,20 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
         {/* When form is disabled: single centered info column; when enabled: 2-column grid with form */}
         <div className={locked ? 'max-w-xl mx-auto' : 'grid md:grid-cols-2 gap-12 items-start'}>
           {/* Left / only column: contact info items */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0 overflow-hidden">
             {(address || isLoading) && (
               <Skeleton isLoading={isLoading} className="w-full h-20">
                 <div className="flex items-start gap-4">
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <MapPin size={18} style={{ color: safeCs.primary }} />
                   </div>
-                  <div>
+                  <div className="min-w-0 overflow-hidden">
                     <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Adresse</p>
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address ?? '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`${textSub} transition-colors hover:opacity-80`}
+                      className={`${textSub} transition-colors hover:opacity-80 break-words`}
                       style={textSubStyle}
                       onMouseEnter={(e) => (e.currentTarget.style.color = safeCs.primary)}
                       onMouseLeave={(e) => (e.currentTarget.style.color = textSubStyle.color || '')}
@@ -1118,9 +1118,9 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <div className="flex items-center justify-center shrink-0" style={{ width: '2.5rem', height: '2.5rem', borderRadius: config.iconRadius, backgroundColor: iconBg }}>
                     <Clock size={18} style={{ color: safeCs.primary }} />
                   </div>
-                  <div>
+                  <div className="min-w-0 overflow-hidden">
                     <p className={`mb-2 text-lg ${textMain}`} style={{ ...textMainStyle, fontFamily: displayFont, fontWeight: 600 }}>Öffnungszeiten</p>
-                    <p className={`whitespace-pre-line ${textSub}`} style={textSubStyle}>{hours}</p>
+                    <p className={`whitespace-pre-line break-words ${textSub}`} style={textSubStyle}>{hours}</p>
                   </div>
                 </div>
               </Skeleton>
