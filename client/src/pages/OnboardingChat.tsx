@@ -2743,50 +2743,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </button>
           </div>
 
-          {/* Website content — three cases:
-              1. Live data available → WebsiteRenderer (shows unsaved draft)
-              2. Only previewToken → iframe fallback (shows saved version)
-              3. Neither → loading spinner                                   */}
-          {liveWebsiteData && colorScheme ? (
-            <div
-              className="flex-1 overflow-auto bg-white"
-              onClick={(e) => {
-                const anchor = (e.target as HTMLElement).closest("a");
-                if (!anchor) return;
-                const href = anchor.getAttribute("href");
-                if (!href || href.startsWith("#") || href.startsWith("tel:") || href.startsWith("mailto:")) return;
-                e.preventDefault();
-                window.open(anchor.href || href, "_blank", "noopener");
-              }}
-            >
-              <WebsiteRenderer
-                websiteData={liveWebsiteData}
-                businessCategory={data.businessCategory || (business as any)?.category || undefined}
-                colorScheme={{ ...colorScheme, ...data.colorScheme } as any}
-                heroImageUrl={data.heroPhotoUrl || heroImageUrl}
-                aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
-                layoutStyle={layoutStyle}
-                headlineFontOverride={data.headlineFont || undefined}
-                headlineSize={data.headlineSize}
-                isLoading={false}
-              />
-              {_addOnAiChat && (
-                <ChatWidget
-                  slug={siteData?.website?.slug || "preview"}
-                  primaryColor={(data.colorScheme as any)?.primary || colorScheme?.primary || "#2563eb"}
-                  businessName={liveWebsiteData.businessName || data.businessName || "Assistent"}
-                  welcomeMessage={data.chatWelcomeMessage || undefined}
-                  addOnBooking={!!data.addOnBooking}
-                  onBookingRequest={() => {}}
-                />
-              )}
-            </div>
-          ) : previewToken ? (
-            /* Fallback: saved preview via iframe — navigation stays isolated */
+          {/* Website content — always use iframe so that:
+              • position:fixed navbars inside layouts are confined to the
+                iframe viewport and can NEVER overlap our chrome bar / close
+                buttons in the parent window
+              • no browser-history side-effects from in-page navigation
+              If the preview URL isn't available yet, show a spinner.        */}
+          {previewToken ? (
             <iframe
+              key={previewToken}
               src={`/preview/${previewToken}`}
-              className="flex-1 w-full border-0 bg-white"
+              className="flex-1 w-full border-0"
               title="Website Vorschau"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             />
           ) : (
             <div className="flex-1 flex items-center justify-center bg-slate-950">
