@@ -1126,8 +1126,10 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       }
     }
 
-    // If no real reviews were injected, keep AI-generated testimonials as editable placeholders.
-    // (They will be visually distinguished in the frontend via the missing isRealReview flag.)
+    // Strip testimonials if no real reviews could be injected – never show AI-generated fake reviews
+    if (!injectedRealReviewsSS && websiteData.sections) {
+      websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
+    }
 
     // Inject real contact data from business record (overrides any AI-generated contact section)
     if (websiteData.sections) {
@@ -1702,7 +1704,10 @@ export const appRouter = router({
           }
         }
 
-        // If no real reviews injected, keep AI-generated testimonials as editable placeholders.
+        // Strip testimonials if no real reviews could be injected – never show AI-generated fake reviews
+        if (!injectedRealReviews && websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
+        }
 
         // Strip LLM stats + inject industry-specific process section
         if (websiteData.sections) {
@@ -1888,7 +1893,10 @@ export const appRouter = router({
           }
         }
 
-        // If no real reviews injected, keep AI-generated testimonials as editable placeholders.
+        // Strip testimonials if no real reviews could be injected – never show AI-generated fake reviews
+        if (!injectedRealReviews && websiteData.sections) {
+          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
+        }
 
         // Strip LLM stats + inject industry-specific process section
         if (websiteData.sections) {
