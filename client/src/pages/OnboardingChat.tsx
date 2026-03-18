@@ -2702,9 +2702,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     >
 
       {/* ── Fullscreen preview overlay ──────────────────────────────────── */}
-      {showFullPreview && liveWebsiteData && colorScheme && (
+      {/* Condition: only showFullPreview — data availability is handled inside
+          so the overlay ALWAYS renders when the button is pressed. */}
+      {showFullPreview && (
         <div className="fixed inset-0 z-[9999] flex flex-col bg-black">
-          {/* Browser chrome bar – safe-area-top so it clears the notch/status bar */}
+          {/* Browser chrome bar */}
           <div
             className="flex items-center gap-3 px-4 bg-slate-900 border-b border-slate-700 flex-shrink-0"
             style={{
@@ -2732,7 +2734,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             >
               <X className="w-3 h-3" /> Schließen
             </button>
-            {/* Mobile close button in header (larger tap target) */}
+            {/* Mobile close button */}
             <button
               onClick={() => setShowFullPreview(false)}
               className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-colors flex-shrink-0"
@@ -2740,46 +2742,62 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <X className="w-5 h-5" />
             </button>
           </div>
-          {/* Scrollable website – renders the same live data as the right-side preview
-              so all active add-ons (gallery, contact form, …) are always visible.
-              onClick intercepts any anchor navigation so internal links can't
-              navigate the parent window away from the OnboardingChat. */}
-          <div
-            className="flex-1 overflow-auto bg-white"
-            onClick={(e) => {
-              const anchor = (e.target as HTMLElement).closest("a");
-              if (!anchor) return;
-              const href = anchor.getAttribute("href");
-              if (!href || href.startsWith("#") || href.startsWith("tel:") || href.startsWith("mailto:")) return;
-              // Open every navigating link in a new tab instead of leaving the chat
-              e.preventDefault();
-              window.open(anchor.href || href, "_blank", "noopener");
-            }}
-          >
-            <WebsiteRenderer
-              websiteData={liveWebsiteData}
-              businessCategory={data.businessCategory || (business as any)?.category || undefined}
-              colorScheme={{ ...colorScheme, ...data.colorScheme } as any}
-              heroImageUrl={data.heroPhotoUrl || heroImageUrl}
-              aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
-              layoutStyle={layoutStyle}
-              headlineFontOverride={data.headlineFont || undefined}
-              headlineSize={data.headlineSize}
-              isLoading={false}
-            />
-            {_addOnAiChat && liveWebsiteData && (
-              <ChatWidget
-                slug={siteData?.website?.slug || "preview"}
-                primaryColor={(data.colorScheme as any)?.primary || colorScheme?.primary || "#2563eb"}
-                businessName={liveWebsiteData.businessName || data.businessName || "Assistent"}
-                welcomeMessage={data.chatWelcomeMessage || undefined}
-                addOnBooking={!!data.addOnBooking}
-                onBookingRequest={() => {}}
+
+          {/* Website content — three cases:
+              1. Live data available → WebsiteRenderer (shows unsaved draft)
+              2. Only previewToken → iframe fallback (shows saved version)
+              3. Neither → loading spinner                                   */}
+          {liveWebsiteData && colorScheme ? (
+            <div
+              className="flex-1 overflow-auto bg-white"
+              onClick={(e) => {
+                const anchor = (e.target as HTMLElement).closest("a");
+                if (!anchor) return;
+                const href = anchor.getAttribute("href");
+                if (!href || href.startsWith("#") || href.startsWith("tel:") || href.startsWith("mailto:")) return;
+                e.preventDefault();
+                window.open(anchor.href || href, "_blank", "noopener");
+              }}
+            >
+              <WebsiteRenderer
+                websiteData={liveWebsiteData}
+                businessCategory={data.businessCategory || (business as any)?.category || undefined}
+                colorScheme={{ ...colorScheme, ...data.colorScheme } as any}
+                heroImageUrl={data.heroPhotoUrl || heroImageUrl}
+                aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
+                layoutStyle={layoutStyle}
+                headlineFontOverride={data.headlineFont || undefined}
+                headlineSize={data.headlineSize}
+                isLoading={false}
               />
-            )}
-          </div>
-          {/* Mobile back bar – OUTSIDE overflow-auto so it's never covered by website content.
-              paddingBottom clears the iOS home indicator. */}
+              {_addOnAiChat && (
+                <ChatWidget
+                  slug={siteData?.website?.slug || "preview"}
+                  primaryColor={(data.colorScheme as any)?.primary || colorScheme?.primary || "#2563eb"}
+                  businessName={liveWebsiteData.businessName || data.businessName || "Assistent"}
+                  welcomeMessage={data.chatWelcomeMessage || undefined}
+                  addOnBooking={!!data.addOnBooking}
+                  onBookingRequest={() => {}}
+                />
+              )}
+            </div>
+          ) : previewToken ? (
+            /* Fallback: saved preview via iframe — navigation stays isolated */
+            <iframe
+              src={`/preview/${previewToken}`}
+              className="flex-1 w-full border-0 bg-white"
+              title="Website Vorschau"
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-slate-950">
+              <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+            </div>
+          )}
+
+          {/* Mobile back bar */}
           <div
             className="lg:hidden bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/60 flex-shrink-0"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
