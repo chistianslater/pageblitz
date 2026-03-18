@@ -106,7 +106,15 @@ export default function PreviewPage() {
   };
 
   return (
-    <div>
+    <div className="pageblitz-preview-root">
+      {/* Shift all layout fixed-navbars below the preview bar.
+          Layout navbars use `fixed top-0 z-50` (Tailwind → top:0px, specificity 0,0,1).
+          `.pageblitz-preview-root nav` has specificity 0,1,1 → wins without !important. */}
+      <style>{`
+        .pageblitz-preview-root nav { top: 52px; }
+        html:has(.pageblitz-preview-root) { scroll-padding-top: 52px; }
+      `}</style>
+
       {/* Preview Banner with Color Picker */}
       <div className="sticky top-0 z-[60] bg-gray-900 text-white py-3 px-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
