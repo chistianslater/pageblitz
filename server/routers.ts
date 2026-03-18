@@ -594,7 +594,7 @@ REGELN:
 1. ALLE TEXTE AUF DEUTSCH
 2. KEINE generischen Phrasen wie "Ihr Partner für..."
 3. Der KUNDE ist der Held, ${business.name} ist der Guide
-4. Authentische deutsche Kundennamen in Testimonials
+4. Testimonials: glaubwürdige deutsche Namen + branchenspezifische Texte (echte GMB-Reviews werden danach automatisch eingefügt falls vorhanden)
 5. ANREDE: ${addressingMode === 'Sie' ? 'Besucher IMMER siezen – "Wir helfen Ihnen", "Ihre Website", "Sie profitieren" – KEIN "du/dein/dir"' : 'Besucher IMMER duzen – "Wir helfen dir", "deine Website", "du profitierst" – KEIN "Sie/Ihnen/Ihr"'}
 ${isRegenerate ? "6. ANDERE Perspektive als zuvor wählen" : ""}
 
@@ -631,6 +631,26 @@ JSON-AUSGABE:
         {"step": "1", "title": "Schritt 1 Titel", "description": "1 Satz – branchenspezifisch, wie der Kunde Kontakt aufnimmt"},
         {"step": "2", "title": "Schritt 2 Titel", "description": "1 Satz – was beim Beratungs- oder Planungsgespräch passiert"},
         {"step": "3", "title": "Schritt 3 Titel", "description": "1 Satz – das konkrete Ergebnis, das der Kunde erhält"}
+      ]
+    },
+    {
+      "type": "testimonials",
+      "headline": "Das sagen unsere Kunden",
+      "items": [
+        {"title": "Kurzer Teaser max 8 Wörter", "description": "Authentische Kundenstimme 2-3 Sätze – branchenspezifisch, konkret, kein Marketingsprech", "author": "Typisch deutscher Vorname + Nachname", "rating": 5},
+        {"title": "Kurzer Teaser max 8 Wörter", "description": "Authentische Kundenstimme 2-3 Sätze – ein anderer Aspekt des Angebots", "author": "Typisch deutscher Vorname + Nachname", "rating": 5},
+        {"title": "Kurzer Teaser max 8 Wörter", "description": "Authentische Kundenstimme 2-3 Sätze – Ergebnis aus Kundenperspektive", "author": "Typisch deutscher Vorname + Nachname", "rating": 5}
+      ]
+    },
+    {
+      "type": "faq",
+      "headline": "Häufige Fragen",
+      "items": [
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 1?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze – kein Werbesprech"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 2?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 3?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 4?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 5?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"}
       ]
     },
     {
@@ -1106,10 +1126,8 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       }
     }
 
-    // Remove testimonials if they are not real reviews (AI hallucinations)
-    if (!injectedRealReviewsSS && websiteData.sections) {
-      websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
-    }
+    // If no real reviews were injected, keep AI-generated testimonials as editable placeholders.
+    // (They will be visually distinguished in the frontend via the missing isRealReview flag.)
 
     // Inject real contact data from business record (overrides any AI-generated contact section)
     if (websiteData.sections) {
@@ -1684,10 +1702,7 @@ export const appRouter = router({
           }
         }
 
-        // Remove testimonials if they are not real reviews (AI hallucinations)
-        if (!injectedRealReviews && websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
-        }
+        // If no real reviews injected, keep AI-generated testimonials as editable placeholders.
 
         // Strip LLM stats + inject industry-specific process section
         if (websiteData.sections) {
@@ -1873,10 +1888,7 @@ export const appRouter = router({
           }
         }
 
-        // Remove testimonials if they are not real reviews (AI hallucinations)
-        if (!injectedRealReviews && websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
-        }
+        // If no real reviews injected, keep AI-generated testimonials as editable placeholders.
 
         // Strip LLM stats + inject industry-specific process section
         if (websiteData.sections) {

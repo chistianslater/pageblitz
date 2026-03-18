@@ -2761,10 +2761,72 @@ function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, h
   );
 }
 
+// ── FAQ SECTION ───────────────────────────────────────────────────
+function FaqSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
+  const safeCs = cs || {};
+  const faq = sec(websiteData, 'faq');
+  const items: any[] = faq?.items || [];
+  if (!isLoading && items.length === 0) return null;
+
+  const [openIdx, setOpenIdx] = React.useState<number | null>(null);
+  const headline = faq?.headline || 'Häufige Fragen';
+  const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.7)') : (safeCs.textLight || '#737373');
+  const sectionBgStyle = dark
+    ? { backgroundColor: safeCs.darkBackground || '#0a0a0a' }
+    : { backgroundColor: safeCs.background || '#fafafa' };
+  const sectionBgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : 'bg-neutral-50';
+  const borderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+  const iconBg = `${safeCs.primary || '#3b82f6'}18`;
+
+  return (
+    <section id="faq" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
+      <div className="max-w-3xl mx-auto">
+        <Skeleton isLoading={isLoading} className="w-64 h-10 mb-12">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="mb-12">
+            {headline}
+          </h2>
+        </Skeleton>
+        <div className="space-y-3">
+          {items.map((item: any, i: number) => (
+            <Skeleton key={i} isLoading={isLoading} className="h-16">
+              <div
+                className="rounded-xl overflow-hidden cursor-pointer select-none"
+                style={{ border: `1px solid ${borderColor}`, backgroundColor: dark ? 'rgba(255,255,255,0.04)' : (safeCs.surface || '#ffffff') }}
+                onClick={() => setOpenIdx(openIdx === i ? null : i)}
+              >
+                <div className="flex items-center justify-between gap-4 px-6 py-4">
+                  <span style={{ fontFamily: displayFont, fontWeight: 600, color: textColor, fontSize: '0.95rem' }}>
+                    {item.question}
+                  </span>
+                  <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-transform duration-200"
+                    style={{ backgroundColor: iconBg, transform: openIdx === i ? 'rotate(45deg)' : 'none' }}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M7 1v12M1 7h12" stroke={safeCs.primary || '#3b82f6'} strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                </div>
+                {openIdx === i && (
+                  <div className="px-6 pb-5">
+                    <p style={{ fontFamily: bodyFont, color: textMuted, fontSize: '0.9rem', lineHeight: 1.7 }}>
+                      {item.answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Skeleton>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── DYNAMIC ADD-ON SECTIONS RENDERER ─────────────────────────────
 function DynamicAddonSections({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   return (
     <>
+      <FaqSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} dark={dark} />
       <GallerySection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} dark={dark} />
       <MenuSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} dark={dark} />
       <PricelistSection websiteData={websiteData} cs={cs} isLoading={isLoading} displayFont={displayFont} bodyFont={bodyFont} headlineSize={headlineSize} dark={dark} />
