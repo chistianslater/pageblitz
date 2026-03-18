@@ -562,7 +562,7 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
             </div>
           </Skeleton>
         </motion.div>
-        <div>
+        <div className="text-center lg:text-left">
           <Skeleton isLoading={isLoading} className="w-full h-36 mb-8">
             <span className="text-xs uppercase tracking-[0.3em] mb-6 block font-bold" style={{ color: safeCs.primary }}>Über uns</span>
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase mb-8">
@@ -586,7 +586,7 @@ function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   return (
     <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-900 text-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-[55%_45%] gap-16 items-center">
-        <div>
+        <div className="text-center lg:text-left">
           <Skeleton isLoading={isLoading} className="w-full min-h-16 mb-10">
             <div className="inline-block px-4 py-1 rounded-full border border-white/20 mb-6 text-xs uppercase tracking-widest font-bold">Die Story</div>
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase italic mb-8">
@@ -2618,7 +2618,7 @@ export function PremiumLayoutV2({
       <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
         <section id="about" className="py-24 md:py-32 px-6 bg-[#F7F9FC] scroll-mt-20">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center">
-            <div>
+            <div className="text-center lg:text-left">
               <Skeleton isLoading={isLoading} className="w-full h-32 mb-8">
                 <span style={{ fontFamily: BODY, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.3em', color: safeCs.primary }} className="uppercase block mb-4 tracking-[0.3em]">Ihr vertrauensvoller Partner</span>
                 <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }}>{aboutHeadline}</h2>
@@ -3165,7 +3165,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
         <section id="about" className="py-24 md:py-32 px-6 bg-white scroll-mt-20">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-            <div>
+            <div className="text-center lg:text-left">
               <Skeleton isLoading={isLoading} className="w-full min-h-[8rem] mb-8">
                 <blockquote style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', lineHeight: 1.3, color: textColor }} className="mb-0">
                   "{aboutHeadline}"
@@ -3374,8 +3374,8 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       <div style={{ order: getSecOrder(websiteData, 'about', 30) }}>
         <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-            <div>
-              {!isLoading && <div className="w-12 h-0.5 mb-8" style={{ backgroundColor: primaryColor }} />}
+            <div className="text-center lg:text-left">
+              {!isLoading && <div className="w-12 h-0.5 mb-8 mx-auto lg:mx-0" style={{ backgroundColor: primaryColor }} />}
               <Skeleton isLoading={isLoading} className="w-full min-h-[6rem] mb-6">
                 <h2 style={{ fontFamily: DISPLAY, fontWeight: 400, letterSpacing: '0.04em', fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1, color: textColor }} className="uppercase mb-0">
                   {aboutHeadline}
@@ -3581,14 +3581,16 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
       {/* ABOUT */}
       <section id="about" className="relative z-10 py-24 px-6">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }} className="text-center lg:text-left">
             <p style={{ color:accentColor, fontFamily:BODY, fontSize:'0.7rem', letterSpacing:'0.2em', fontWeight:700 }} className="uppercase mb-4">Über uns</p>
             <h2 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:getSectionHeadlineSize(headlineSize,'about'), letterSpacing:'-0.02em', color:TXT }} className="mb-6">{aboutHeadline}</h2>
-            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
-            <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
-              className="px-8 py-3.5 rounded-full text-sm hover:scale-105 transition-transform whitespace-nowrap">
-              {heroCta}
-            </button>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8 }} className="mb-8">{aboutContent}</p>
+            <div className="flex justify-center lg:justify-start">
+              <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
+                className="px-8 py-3.5 rounded-full text-sm hover:scale-105 transition-transform whitespace-nowrap">
+                {heroCta}
+              </button>
+            </div>
           </motion.div>
           <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
             <Skeleton isLoading={isLoading} className="min-h-[400px] rounded-3xl">
@@ -3751,14 +3753,16 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
                   </div>}
             </Skeleton>
           </motion.div>
-          <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
+          <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }} className="text-center lg:text-left">
             <p style={{ color:accentColor, fontFamily:BODY, fontSize:'0.7rem', letterSpacing:'0.2em', fontWeight:700 }} className="uppercase mb-4">Über uns</p>
             <h2 style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:getSectionHeadlineSize(headlineSize,'about'), letterSpacing:'-0.03em', color:TXT }} className="mb-6">{aboutHeadline}</h2>
-            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
-            <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
-              className="px-8 py-3.5 rounded-full text-sm hover:opacity-90 transition-opacity whitespace-nowrap">
-              {heroCta}
-            </button>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8 }} className="mb-8">{aboutContent}</p>
+            <div className="flex justify-center lg:justify-start">
+              <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
+                className="px-8 py-3.5 rounded-full text-sm hover:opacity-90 transition-opacity whitespace-nowrap">
+                {heroCta}
+              </button>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -3932,14 +3936,16 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       {/* ABOUT */}
       <section id="about" className="relative z-10 py-20 px-6">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+          <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8 }} className="text-center lg:text-left">
             <h2 style={{ fontFamily:DISPLAY, fontWeight:900, fontSize:getSectionHeadlineSize(headlineSize,'about'), color:TXT }} className="mb-6">{aboutHeadline}</h2>
-            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, maxWidth:'55ch' }} className="mb-8">{aboutContent}</p>
-            <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
-              borderRadius:'50px', boxShadow:`0 10px 25px ${primaryColor}45` }}
-              className="px-8 py-3.5 text-sm hover:scale-105 transition-transform whitespace-nowrap">
-              {heroCta}
-            </button>
+            <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8 }} className="mb-8">{aboutContent}</p>
+            <div className="flex justify-center lg:justify-start">
+              <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
+                borderRadius:'50px', boxShadow:`0 10px 25px ${primaryColor}45` }}
+                className="px-8 py-3.5 text-sm hover:scale-105 transition-transform whitespace-nowrap">
+                {heroCta}
+              </button>
+            </div>
           </motion.div>
           <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
             <Skeleton isLoading={isLoading} className="min-h-[400px] rounded-[40px]">
@@ -4103,16 +4109,18 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       {/* ABOUT */}
       <section id="about" className="py-20 px-8 lg:px-16" style={{ borderTop:`2px solid ${TXT}`, borderBottom:`2px solid ${TXT}` }}>
         <div className="max-w-7xl mx-auto grid lg:grid-cols-[40%_60%] gap-16 items-start">
-          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.8 }}>
+          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.8 }} className="text-center lg:text-left">
             <h2 style={{ fontFamily:DISPLAY, fontWeight:300, fontSize:getSectionHeadlineSize(headlineSize,'about'),
               textTransform:'uppercase' as const, letterSpacing:'-0.02em', color:TXT }} className="mb-8">
               {aboutHeadline}
             </h2>
             <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8, fontSize:'0.95rem' }} className="mb-8">{aboutContent}</p>
-            <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
-              className="px-8 py-3.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
-              {heroCta}
-            </button>
+            <div className="flex justify-center lg:justify-start">
+              <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
+                className="px-8 py-3.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
+                {heroCta}
+              </button>
+            </div>
           </motion.div>
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.8, delay:0.2 }}>
             <Skeleton isLoading={isLoading} className="min-h-[420px]">
