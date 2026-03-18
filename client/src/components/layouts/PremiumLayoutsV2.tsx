@@ -115,38 +115,17 @@ function safeTextForBg(color: string | undefined, onLightBg: boolean): string {
   return color;
 }
 
-/** Calculate font size based on headlineSize preference */
-const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 'clamp(3rem, 8vw, 7rem)') => {
-  const sizeMap: Record<string, Record<string, string>> = {
-    large: {
-      'clamp(3rem, 8vw, 7rem)': 'clamp(3rem, 8vw, 7rem)',
-      'clamp(3.5rem, 9vw, 8rem)': 'clamp(3.5rem, 9vw, 8rem)',
-      'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.8rem, 5.5vw, 5.5rem)', // Premium
-      'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(2.5rem, 3.5vw, 4.5rem)', // HeroVariantA
-      'clamp(3rem, 5vw, 6rem)':        'clamp(3rem, 5vw, 6rem)',        // HeroVariantB
-      'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(2.8rem, 4.5vw, 6rem)',   // HeroVariantC
-      'clamp(2rem, 5vw, 5rem)':        'clamp(2rem, 5vw, 5rem)',        // Flux
-    },
-    medium: {
-      'clamp(3rem, 8vw, 7rem)': 'clamp(2.5rem, 6vw, 5rem)',
-      'clamp(3.5rem, 9vw, 8rem)': 'clamp(3rem, 7vw, 6rem)',
-      'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2.4rem, 4.5vw, 4.5rem)',
-      'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(2rem, 2.8vw, 3.5rem)',
-      'clamp(3rem, 5vw, 6rem)':        'clamp(2.4rem, 4vw, 5rem)',
-      'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(2.2rem, 3.5vw, 4.5rem)',
-      'clamp(2rem, 5vw, 5rem)':        'clamp(1.6rem, 4vw, 4rem)',      // Flux
-    },
-    small: {
-      'clamp(3rem, 8vw, 7rem)': 'clamp(2rem, 5vw, 4rem)',
-      'clamp(3.5rem, 9vw, 8rem)': 'clamp(2.5rem, 6vw, 5rem)',
-      'clamp(2.8rem, 5.5vw, 5.5rem)': 'clamp(2rem, 4vw, 3.5rem)',
-      'clamp(2.5rem, 3.5vw, 4.5rem)': 'clamp(1.8rem, 2.2vw, 2.8rem)',
-      'clamp(3rem, 5vw, 6rem)':        'clamp(2rem, 3.2vw, 4rem)',
-      'clamp(2.8rem, 4.5vw, 6rem)':   'clamp(1.8rem, 2.8vw, 3.8rem)',
-      'clamp(2rem, 5vw, 5rem)':        'clamp(1.3rem, 3vw, 3.2rem)',    // Flux
-    },
-  };
-  return sizeMap[headlineSize]?.[baseSize] || baseSize;
+/** Calculate font size based on headlineSize preference.
+ *  Works with any clamp() value — no lookup table, just math.
+ *  medium ≈ 80 %, small ≈ 65 % of the base size. */
+const getHeadlineFontSize = (headlineSize: string = 'large', baseSize: string = 'clamp(3rem, 8vw, 7rem)'): string => {
+  const scale = headlineSize === 'small' ? 0.65 : headlineSize === 'medium' ? 0.80 : 1.0;
+  if (scale === 1.0) return baseSize;
+  // Parse clamp(min, preferred, max) — tolerant of optional spaces
+  const m = baseSize.match(/clamp\(\s*([\d.]+)(rem|vw|em|px)\s*,\s*([\d.]+)(rem|vw|em|px)\s*,\s*([\d.]+)(rem|vw|em|px)\s*\)/);
+  if (!m) return baseSize; // non-clamp value (e.g. plain rem) — return as-is
+  const r = (n: number) => Math.round(n * 100) / 100;
+  return `clamp(${r(+m[1] * scale)}${m[2]}, ${r(+m[3] * scale)}${m[4]}, ${r(+m[5] * scale)}${m[6]})`;
 };
 
 /** Calculate section headline sizes based on headlineSize preference */
