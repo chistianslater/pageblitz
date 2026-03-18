@@ -97,8 +97,11 @@ function Router() {
     );
   }
 
+  // key={location} forces Suspense to unmount/remount on every navigation.
+  // Without it React 18 concurrent mode keeps the OLD page visible while
+  // the new lazy component loads → URL changes but screen stays the same.
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense key={location} fallback={<PageLoader />}>
       <Switch>
         <Route path="/" component={LandingPage} />
         <Route path="/impressum" component={PageblitzImpressum} />
