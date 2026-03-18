@@ -1860,7 +1860,7 @@ export default function LandingPage() {
                   Jetzt GMB-Daten importieren
                   <ArrowRight className="w-4 h-4" />
                 </button>
-                <span className={`text-xs ${isDark ? "text-white/30" : "text-slate-400"}`}>Kostenlos ausprobieren · kein Kreditkarte nötig</span>
+                <span className={`text-xs ${isDark ? "text-white/30" : "text-slate-400"}`}>7 Tage kostenlos testen · danach 19,90 €/Mo.</span>
               </div>
             </div>
           </motion.div>
@@ -1998,7 +1998,7 @@ export default function LandingPage() {
                     <span className="text-2xl">⚡</span>
                     <div className="text-left">
                       <div className="text-white text-sm font-medium">Jetzt kostenlos starten</div>
-                      <div className="text-white/40 text-xs font-mono mt-0.5">7 Tage gratis · keine Kreditkarte</div>
+                      <div className="text-white/40 text-xs font-mono mt-0.5">7 Tage gratis testen · dann 19,90 €/Mo.</div>
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all duration-200" />
