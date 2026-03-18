@@ -10,6 +10,28 @@ import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { FONT_OPTIONS } from "@shared/layoutConfig";
 
+// ── Layout meta (shared with OnboardingChat variant picker) ──────────────────
+const LAYOUT_LABELS_DASH: Record<string, string> = {
+  aurora: "Aurora",  nexus: "Nexus",    bold: "Bold",    flux: "Flux",    dynamic: "Dynamic",
+  forge: "Forge",    elegant: "Elegant",luxury: "Luxury", natural: "Natural", craft: "Craft",
+  clay: "Clay",      pulse: "Pulse",    fresh: "Fresh",  clean: "Clean",  warm: "Warm",
+  modern: "Modern",  vibrant: "Vibrant",trust: "Trust",
+};
+const LAYOUT_VIBES_DASH: Record<string, string> = {
+  aurora:  "Dunkel · Kosmisch",    nexus:   "Präzise · Navy",        bold:    "Stark · Schwarz-Gold",
+  flux:    "Dunkel · Warmes Gold", dynamic: "Energie · Diagonal",    forge:   "Edel · Zeitlos",
+  elegant: "Warm · Éditoriel",     luxury:  "Premium · Cinématisch", natural: "Organisch · Erdtöne",
+  craft:   "Handwerk · Industrial",clay:    "Soft · Verspielt",      pulse:   "Hell · Vertrauensvoll",
+  fresh:   "Frisch · Luftig",      clean:   "Klar · Minimalistisch", warm:    "Herzlich · Einladend",
+  modern:  "Modern · Asymmetrisch",vibrant: "Neon · Energie",        trust:   "Klassisch · Professionell",
+};
+// All 18 layouts grouped by visual family for the switcher
+const LAYOUT_FAMILIES_DASH = [
+  { label: "Dunkel & Bold",    layouts: ["aurora", "flux", "bold", "dynamic", "nexus", "vibrant"] },
+  { label: "Edel & Klassisch", layouts: ["elegant", "luxury", "natural", "craft", "forge"] },
+  { label: "Hell & Modern",    layouts: ["clean", "fresh", "warm", "trust", "modern", "clay", "pulse"] },
+];
+
 // ── Types ───────────────────────────────────────────
 type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads" | "appointments";
 
@@ -2238,6 +2260,86 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
   );
 }
 
+// ── Layout Switcher Card ───────────────────────────────
+function LayoutSwitcherCard({ websiteId, currentLayout, onUpdate }: {
+  websiteId: number;
+  currentLayout: string;
+  onUpdate: () => void;
+}) {
+  const [selected, setSelected] = useState(currentLayout);
+  const [saving, setSaving] = useState(false);
+  const changeLayout = trpc.customer.changeLayout.useMutation();
+  const isDirty = selected !== currentLayout;
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await changeLayout.mutateAsync({ websiteId, layoutStyle: selected });
+      toast.success("Layout gespeichert");
+      onUpdate();
+    } catch {
+      toast.error("Fehler beim Speichern");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-white font-medium flex items-center gap-2">
+          <Layers className="w-4 h-4 text-violet-400" />
+          Layout
+        </h3>
+        {isDirty && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold transition-colors"
+          >
+            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+            Speichern
+          </button>
+        )}
+      </div>
+
+      {/* Currently active */}
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-700/40 border border-slate-600/50">
+        <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+        <span className="text-white text-sm font-medium">{LAYOUT_LABELS_DASH[selected] ?? selected}</span>
+        <span className="text-slate-400 text-xs ml-1">{LAYOUT_VIBES_DASH[selected]}</span>
+      </div>
+
+      {/* Family groups */}
+      <div className="space-y-3">
+        {LAYOUT_FAMILIES_DASH.map(fam => (
+          <div key={fam.label}>
+            <div className="text-slate-500 text-[10px] uppercase tracking-widest font-semibold mb-1.5">{fam.label}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {fam.layouts.map(ls => (
+                <button
+                  key={ls}
+                  onClick={() => setSelected(ls)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selected === ls
+                      ? "bg-blue-600 text-white ring-2 ring-blue-400/50"
+                      : "bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50"
+                  }`}
+                >
+                  {LAYOUT_LABELS_DASH[ls] ?? ls}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-slate-500 text-[11px] leading-relaxed">
+        Farben, Schriften & Stil bleiben erhalten. Nur die Struktur ändert sich.
+      </p>
+    </div>
+  );
+}
+
 // ── Logo Upload Card ──────────────────────────────────
 function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; logoUrl?: string; onUpdate: () => void }) {
   const [uploading, setUploading] = useState(false);
@@ -3525,6 +3627,13 @@ export default function CustomerDashboard() {
               </div>
             </div>
             <div className="space-y-4">
+              {/* Layout Switcher */}
+              <LayoutSwitcherCard
+                websiteId={website.id}
+                currentLayout={(website as any).layoutStyle || "modern"}
+                onUpdate={handleUpdate}
+              />
+
               {/* Logo Upload */}
               <LogoUploadCard websiteId={website.id} logoUrl={(websiteData as any)?.logoImageUrl} onUpdate={handleUpdate} />
 

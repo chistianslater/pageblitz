@@ -2978,6 +2978,19 @@ Kontext: ${input.context}`,
         return { url: result.url };
       }),
 
+    changeLayout: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        layoutStyle: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        await updateWebsite(input.websiteId, { layoutStyle: input.layoutStyle });
+        return { success: true };
+      }),
+
     getImageSuggestions: protectedProcedure
       .input(z.object({ websiteId: z.number() }))
       .query(async ({ ctx, input }) => {

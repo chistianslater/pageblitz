@@ -133,7 +133,7 @@ const getSectionHeadlineSize = (headlineSize: string = 'large', type: 'services'
   const sizes = {
     large: {
       services: 'clamp(2.4rem, 5vw, 3.8rem)',
-      about: 'clamp(2.1rem, 4vw, 3.2rem)',
+      about: 'clamp(1.8rem, 3.2vw, 2.6rem)',
       testimonials: 'clamp(2rem, 3.8vw, 3rem)',
       contact: 'clamp(2rem, 3.8vw, 3rem)',
     },
@@ -586,9 +586,9 @@ function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
     <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-900 text-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-[55%_45%] gap-16 items-center">
         <div>
-          <Skeleton isLoading={isLoading} className="w-full h-32 mb-10">
+          <Skeleton isLoading={isLoading} className="w-full min-h-16 mb-10">
             <div className="inline-block px-4 py-1 rounded-full border border-white/20 mb-6 text-xs uppercase tracking-widest font-bold">Die Story</div>
-            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase italic">
+            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase italic mb-8">
               {aboutHeadline}
             </h2>
           </Skeleton>
