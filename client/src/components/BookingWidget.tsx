@@ -423,7 +423,7 @@ export default function BookingWidget({ slug, primaryColor = "#2563eb", onClose,
               )}
             </div>
           )}
-        </motion.div>
+        </div>
       </motion.div>
     </motion.div>
   );
