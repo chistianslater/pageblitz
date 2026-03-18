@@ -24,23 +24,27 @@ function getLayoutComponent(category: string = "", layoutStyle?: string | null):
   // If explicit layoutStyle is provided (from admin/dashboard), use it directly
   if (layoutStyle) {
     const style = layoutStyle.toLowerCase();
-    if (style.includes('bold')) return BoldLayoutV2;
-    if (style.includes('elegant')) return ElegantLayoutV2;
-    if (style.includes('clean')) return CleanLayoutV2;
-    if (style.includes('craft')) return CraftLayoutV2;
-    if (style.includes('dynamic')) return DynamicLayoutV2;
-    if (style.includes('fresh')) return FreshLayoutV2;
-    if (style.includes('luxury')) return LuxuryLayoutV2;
-    if (style.includes('modern')) return ModernLayoutV2;
-    if (style.includes('natural')) return NaturalLayoutV2;
-  if (style.includes('eden')) return EdenLayoutV2;
-  if (style.includes('apex')) return ApexLayoutV2;
-  if (style.includes('aurora')) return AuroraLayoutV2;
-  if (style.includes('nexus')) return NexusLayoutV2;
-  if (style.includes('clay')) return ClayLayoutV2;
-  if (style.includes('forge')) return ForgeLayoutV2;
-  if (style.includes('pulse')) return PulseLayoutV2;
-  if (style.includes('flux')) return FluxLayoutV2;
+    if (style === 'bold')    return BoldLayoutV2;
+    if (style === 'elegant') return ElegantLayoutV2;
+    if (style === 'clean')   return CleanLayoutV2;
+    if (style === 'craft')   return CraftLayoutV2;
+    if (style === 'dynamic') return DynamicLayoutV2;
+    if (style === 'fresh')   return FreshLayoutV2;
+    if (style === 'luxury')  return LuxuryLayoutV2;
+    if (style === 'modern')  return ModernLayoutV2;
+    if (style === 'natural') return NaturalLayoutV2;
+    if (style === 'eden')    return EdenLayoutV2;
+    if (style === 'apex')    return ApexLayoutV2;
+    if (style === 'aurora')  return AuroraLayoutV2;
+    if (style === 'nexus')   return NexusLayoutV2;
+    if (style === 'clay')    return ClayLayoutV2;
+    if (style === 'forge')   return ForgeLayoutV2;
+    if (style === 'pulse')   return PulseLayoutV2;
+    if (style === 'flux')    return FluxLayoutV2;
+    // Aliased styles — unique structure + their own colour scheme
+    if (style === 'warm')    return ElegantLayoutV2;   // warm serif editorial
+    if (style === 'trust')   return PulseLayoutV2;     // clean card-based professional
+    if (style === 'vibrant') return DynamicLayoutV2;   // energetic diagonal cuts
   }
   
   // Fallback: determine by business category
