@@ -2827,11 +2827,27 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
 
   function downloadTranscriptJson(transcript: any) {
     const messages = (transcript.messages as Array<{ role: string; content: string }>) ?? [];
-    const blob = new Blob([JSON.stringify({ sessionId: transcript.sessionId, visitorName: transcript.visitorName, createdAt: transcript.createdAt, messages }, null, 2)], { type: "application/json" });
+    const date = transcript.createdAt
+      ? new Date(transcript.createdAt).toLocaleString("de-DE")
+      : "";
+    const visitorName = transcript.visitorName || "Unbekannt";
+    const lines: string[] = [
+      `Chat-Gespräch`,
+      `──────────────────────────────`,
+      `Besucher:  ${visitorName}`,
+      `Datum:     ${date}`,
+      `──────────────────────────────`,
+      "",
+      ...messages.map((m) => {
+        const role = m.role === "assistant" ? "Bot" : "Besucher";
+        return `[${role}]\n${m.content}\n`;
+      }),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `chat-${transcript.sessionId.slice(0, 8)}.json`;
+    a.download = `chat-${visitorName.replace(/\s+/g, "-")}-${transcript.sessionId.slice(0, 6)}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   }
