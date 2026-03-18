@@ -580,46 +580,69 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   );
 }
 
-function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize, businessCategory }: any) {
-  // Don't render if no about content
+function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, displayFont, bodyFont, headlineSize }: any) {
+  const safeCs = cs || {};
+  const primary = safeCs.primary || '#6366f1';
   if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
-    <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20 bg-neutral-900 text-white">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-[55%_45%] gap-16 items-center">
-        <div className="text-center lg:text-left">
-          <Skeleton isLoading={isLoading} className="w-full min-h-16 mb-10">
-            <div className="inline-block px-4 py-1 rounded-full border border-white/20 mb-6 text-xs uppercase tracking-widest font-bold">Die Story</div>
-            <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1 }} className="uppercase italic mb-8">
+    <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20 relative overflow-hidden" style={{ backgroundColor: '#111111' }}>
+      {/* Subtle primary glow — ties section to layout's color identity */}
+      <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none" style={{ background: `radial-gradient(circle, ${primary}1a 0%, transparent 65%)`, transform: 'translate(25%, -25%)' }} />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] pointer-events-none" style={{ background: `radial-gradient(circle, ${primary}0d 0%, transparent 70%)`, transform: 'translate(-30%, 30%)' }} />
+
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_380px] gap-16 lg:gap-24 items-center relative z-10">
+        {/* Text */}
+        <motion.div
+          className="text-center lg:text-left"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          {/* Eyebrow with accent line */}
+          <div className="flex items-center gap-3 mb-8 justify-center lg:justify-start">
+            <div className="w-8 h-px flex-shrink-0" style={{ backgroundColor: primary }} />
+            <span className="text-[11px] uppercase tracking-[0.25em] font-semibold" style={{ color: primary }}>Über uns</span>
+          </div>
+
+          <Skeleton isLoading={isLoading} className="w-full h-32 mb-6">
+            <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'about'), lineHeight: 1.1, color: '#ffffff' }} className="mb-8">
               {aboutHeadline}
             </h2>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-full h-24 mb-12">
-            <p style={{ fontFamily: bodyFont }} className="text-white/60 text-xl leading-relaxed font-light">
+
+          <Skeleton isLoading={isLoading} className="w-full h-24 mb-10">
+            <p style={{ fontFamily: bodyFont, lineHeight: 1.85 }} className="text-white/55 text-lg">
               {aboutContent}
             </p>
           </Skeleton>
-          <div className="h-px w-full bg-gradient-to-r from-white/20 to-transparent" />
-        </div>
+
+          <div className="h-px w-12 mx-auto lg:mx-0" style={{ backgroundColor: `${primary}50` }} />
+        </motion.div>
+
+        {/* Image — portrait format with offset accent frame */}
         <motion.div
-          className="relative"
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          className="relative mx-auto lg:mx-0"
+          style={{ maxWidth: '380px', width: '100%' }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <Skeleton isLoading={isLoading} className="aspect-square rounded-full overflow-hidden shadow-2xl border-8 border-white/5">
-            <div className="photo-frame photo-frame-dark aspect-square rounded-full overflow-hidden">
-              <img src={aboutImg} className="photo-editorial w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="" />
+          {/* Offset accent frame */}
+          <div className="absolute rounded-2xl" style={{ inset: 0, transform: 'translate(10px, 10px)', border: `1px solid ${primary}35`, borderRadius: '1rem', pointerEvents: 'none' }} />
+
+          <Skeleton isLoading={isLoading} className="rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+            <div className="rounded-2xl overflow-hidden relative" style={{ aspectRatio: '3/4' }}>
+              <img
+                src={aboutImg}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                style={{ filter: 'grayscale(15%) contrast(1.05)', display: 'block' }}
+                alt=""
+              />
+              <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 50%)' }} />
             </div>
           </Skeleton>
-          {(() => {
-            const DecoIcon = getCategoryIconSet(businessCategory)[0] as any;
-            return (
-              <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full border-4 border-white/10 flex items-center justify-center backdrop-blur-xl">
-                <DecoIcon size={48} className="text-white/20" />
-              </div>
-            );
-          })()}
         </motion.div>
       </div>
     </section>
