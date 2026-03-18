@@ -3129,6 +3129,10 @@ export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("preview");
   const [previewKey, setPreviewKey] = useState(0);
   const [imagePicker, setImagePicker] = useState<{ slot: "hero" | "about"; websiteId: number } | null>(null);
+  // Layout preview state — tracks what's currently shown (may differ from saved)
+  const [previewLayoutOverride, setPreviewLayoutOverride] = useState<string | null>(null);
+  const [layoutSaving, setLayoutSaving] = useState(false);
+  const changeLayoutMutation = trpc.customer.changeLayout.useMutation();
 
   const { data: myWebsites, isLoading, refetch } = trpc.customer.getMyWebsites.useQuery(
     undefined,
@@ -3557,22 +3561,83 @@ export default function CustomerDashboard() {
                 </a>
               )}
             </div>
-            <div className="overflow-auto max-h-[calc(100vh-280px)]">
+            <div className="relative overflow-auto max-h-[calc(100vh-280px)]">
               {websiteData ? (
-                <div key={previewKey} style={{ zoom: 0.85, contain: "layout" }}>
-                  <WebsiteRenderer
-                    websiteData={websiteData}
-                    colorScheme={colorScheme}
-                    heroImageUrl={website.heroImageUrl || undefined}
-                    aboutImageUrl={(website as any).aboutImageUrl || undefined}
-                    layoutStyle={(website as any).layoutStyle || undefined}
-                    businessPhone={business?.phone || undefined}
-                    businessAddress={business?.address || undefined}
-                    businessEmail={business?.email || undefined}
-                    slug={website.slug}
-                    contactFormLocked={false}
-                  />
-                </div>
+                <>
+                  <div key={previewKey} style={{ zoom: 0.85, contain: "layout" }}>
+                    <WebsiteRenderer
+                      websiteData={websiteData}
+                      colorScheme={colorScheme}
+                      heroImageUrl={website.heroImageUrl || undefined}
+                      aboutImageUrl={(website as any).aboutImageUrl || undefined}
+                      layoutStyle={previewLayoutOverride ?? (website as any).layoutStyle ?? undefined}
+                      businessPhone={business?.phone || undefined}
+                      businessAddress={business?.address || undefined}
+                      businessEmail={business?.email || undefined}
+                      slug={website.slug}
+                      contactFormLocked={false}
+                    />
+                  </div>
+                  {/* Floating layout switcher */}
+                  {(() => {
+                    const ALL_LAYOUTS = ["aurora","flux","bold","dynamic","nexus","vibrant","elegant","luxury","natural","craft","forge","clean","fresh","warm","trust","modern","clay","pulse"];
+                    const saved = (website as any).layoutStyle || "modern";
+                    const current = previewLayoutOverride ?? saved;
+                    const idx = ALL_LAYOUTS.indexOf(current);
+                    const prev = ALL_LAYOUTS[(idx - 1 + ALL_LAYOUTS.length) % ALL_LAYOUTS.length];
+                    const next = ALL_LAYOUTS[(idx + 1) % ALL_LAYOUTS.length];
+                    const isDirty = previewLayoutOverride !== null && previewLayoutOverride !== saved;
+                    return (
+                      <div className="sticky bottom-4 flex justify-center pointer-events-none z-20">
+                        <div className="pointer-events-auto flex items-center gap-1 px-1.5 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/60 shadow-2xl shadow-black/50">
+                          <button
+                            onClick={() => setPreviewLayoutOverride(prev)}
+                            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-700/60 text-slate-400 hover:text-white transition-colors"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="px-2 text-xs font-semibold text-white min-w-[72px] text-center">
+                            {LAYOUT_LABELS_DASH[current] ?? current}
+                          </span>
+                          <button
+                            onClick={() => setPreviewLayoutOverride(next)}
+                            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-700/60 text-slate-400 hover:text-white transition-colors"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
+                          </button>
+                          {isDirty && (
+                            <>
+                              <div className="w-px h-4 bg-slate-700 mx-0.5" />
+                              <button
+                                onClick={async () => {
+                                  setLayoutSaving(true);
+                                  try {
+                                    await changeLayoutMutation.mutateAsync({ websiteId: website.id, layoutStyle: previewLayoutOverride! });
+                                    toast.success("Layout gespeichert");
+                                    setPreviewLayoutOverride(null);
+                                    handleUpdate();
+                                  } catch { toast.error("Fehler"); }
+                                  finally { setLayoutSaving(false); }
+                                }}
+                                disabled={layoutSaving}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-[11px] font-semibold transition-colors"
+                              >
+                                {layoutSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                Übernehmen
+                              </button>
+                              <button
+                                onClick={() => setPreviewLayoutOverride(null)}
+                                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-700/60 text-slate-400 hover:text-white transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
               ) : (
                 <div className="flex items-center justify-center h-64 text-slate-500">
                   <div className="text-center">
