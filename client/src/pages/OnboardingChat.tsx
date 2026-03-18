@@ -1245,9 +1245,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   });
 
   // Progressive reveal: hero area clears after Du/Sie is confirmed.
-  // Always starts as false – no localStorage, so overlay is always present on every page load
-  // until the user explicitly selects Du or Sie in the current session.
-  const [heroRevealed, setHeroRevealed] = useState(false);
+  // On resume: if content generation already completed, Du/Sie was definitely answered → skip overlay.
+  const [heroRevealed, setHeroRevealed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      if (saved === 'complete') return true;
+    }
+    return false;
+  });
+
+  // Safety net: if existingOnboarding loads with addressingMode already set, lift the overlay.
+  // Handles the case where user reloads mid-flow past the Du/Sie step.
+  useEffect(() => {
+    if (!heroRevealed && (existingOnboarding as any)?.addressingMode) {
+      setHeroRevealed(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(existingOnboarding as any)?.addressingMode]);
 
   // Progressive reveal: lower content area clears after text generation finishes.
   // On resume: skip overlay only if fully complete.
