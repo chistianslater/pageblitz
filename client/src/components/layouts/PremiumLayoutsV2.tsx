@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { trpc } from '@/lib/trpc';
 import { motion } from 'framer-motion';
 import {
@@ -1391,10 +1392,10 @@ function MobileMenu({
         Menü
       </button>
 
-      {/* Overlay */}
-      {open && (
+      {/* Overlay — rendered via portal to escape nav's backdrop-filter stacking context */}
+      {open && ReactDOM.createPortal(
         <div
-          className="fixed inset-0 z-[100] flex flex-col"
+          className="fixed inset-0 z-[9999] flex flex-col"
           style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(20px)' }}
         >
           {/* Top bar */}
@@ -1441,7 +1442,8 @@ function MobileMenu({
           <div className="px-8 pb-8 text-white/20 text-xs">
             © {new Date().getFullYear()}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
