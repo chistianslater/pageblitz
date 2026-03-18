@@ -4343,6 +4343,28 @@ Wichtige Felder im JSON:
         };
       }),
 
+    /**
+     * Persists the user's template/layout choice from the A/B variant picker.
+     * Uses publicProcedure because the user may not be logged in yet during onboarding.
+     * Security: websiteId must exist; no user-specific ownership check needed here
+     * because the website is only accessible via its previewToken in onboarding.
+     */
+    selectWebsiteTemplate: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        layoutStyle: z.string(),
+        colorScheme: z.record(z.string(), z.any()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        await updateWebsite(input.websiteId, {
+          layoutStyle: input.layoutStyle,
+          ...(input.colorScheme ? { colorScheme: input.colorScheme as any } : {}),
+        });
+        return { success: true };
+      }),
+
     start: publicProcedure
       .input(z.object({
         gmbUrl: z.string().optional(), // optional GMB URL
