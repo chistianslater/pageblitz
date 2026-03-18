@@ -2468,8 +2468,8 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
     <div className="flex h-[calc(100vh-220px)] min-h-[500px] rounded-2xl border border-slate-700/50 overflow-hidden">
 
       {/* ── LEFT: Live preview ─────────────────────────────────────────── */}
-      <div ref={previewContainerRef} className="flex-1 min-w-0 bg-slate-950 overflow-hidden relative">
-        <div style={{ width: 1280, transformOrigin: "top left", transform: `scale(${previewScale})`, pointerEvents: "none", userSelect: "none" }}>
+      <div ref={previewContainerRef} className="flex-1 min-w-0 bg-slate-950 overflow-y-auto relative">
+        <div style={{ zoom: previewScale, pointerEvents: "none", userSelect: "none" }}>
           <WebsiteRenderer
             websiteData={websiteData}
             colorScheme={draftColors as any}
@@ -2486,13 +2486,13 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
             contactFormLocked={false}
           />
         </div>
-        {/* Fade at bottom */}
-        <div className="absolute bottom-0 inset-x-0 h-20 pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent, rgba(2,6,23,0.95))" }} />
-        {/* Draft indicator */}
+        {/* Draft indicator — bottom so it doesn't cover the nav */}
         {isDirty && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium pointer-events-none">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            Vorschau — noch nicht gespeichert
+          <div className="sticky bottom-4 flex justify-center pointer-events-none">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium backdrop-blur-sm">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Vorschau — noch nicht gespeichert
+            </div>
           </div>
         )}
       </div>
