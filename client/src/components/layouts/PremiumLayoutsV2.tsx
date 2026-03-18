@@ -1348,6 +1348,105 @@ const NavLinks = ({ textClass = "text-inherit" }: { textClass?: string }) => (
   </div>
 );
 
+// ── MOBILE MENU ──────────────────────────────────────────────────
+function MobileMenu({
+  businessName,
+  accentColor,
+  isDark,
+}: {
+  businessName?: string;
+  accentColor?: string;
+  isDark?: boolean;
+}) {
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  const links = [
+    { label: 'Leistungen', href: '#services' },
+    { label: 'Über uns', href: '#about' },
+    { label: 'Kontakt', href: '#contact' },
+  ];
+
+  return (
+    <>
+      {/* Trigger button — pill style, mobile only */}
+      <button
+        onClick={() => setOpen(true)}
+        className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-current/20 text-[11px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity"
+        aria-label="Menü öffnen"
+        style={{ color: isDark ? '#ffffff' : undefined }}
+      >
+        <span className="flex flex-col gap-[3px] w-3.5">
+          <span className="block h-px bg-current w-full" />
+          <span className="block h-px bg-current w-2/3 ml-auto" />
+        </span>
+        Menü
+      </button>
+
+      {/* Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col"
+          style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(20px)' }}
+        >
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-6 py-5">
+            <span className="text-white font-medium text-lg truncate max-w-[70%]">{businessName}</span>
+            <button
+              onClick={() => setOpen(false)}
+              className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:border-white/40 transition-all"
+              aria-label="Menü schließen"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Nav links — large, centered */}
+          <div className="flex-1 flex flex-col justify-center px-8 gap-2">
+            {links.map((link, i) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="group flex items-center justify-between py-4 border-b border-white/10 text-white/60 hover:text-white transition-colors"
+                style={{ animationDelay: `${i * 50}ms` }}
+              >
+                <span className="text-2xl font-light tracking-tight">{link.label}</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 group-hover:translate-x-0 duration-200">
+                  <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </a>
+            ))}
+            <a
+              href="#contact"
+              onClick={() => setOpen(false)}
+              className="mt-6 py-4 rounded-2xl text-center text-sm font-semibold transition-all"
+              style={{ background: accentColor || '#3b82f6', color: '#fff' }}
+            >
+              Jetzt kontaktieren
+            </a>
+          </div>
+
+          {/* Bottom hint */}
+          <div className="px-8 pb-8 text-white/20 text-xs">
+            © {new Date().getFullYear()}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ── FOOTER CONTACT BLOCK ─────────────────────────────────────────
 function FooterContact({ websiteData, textClass }: { websiteData: any, textClass: string }) {
   const phone = getContactItem(websiteData, 'Phone');
@@ -1513,9 +1612,12 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 900, letterSpacing: '0.06em', fontSize: '1.25rem', fontStyle: 'italic' }} className="uppercase truncate block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs uppercase hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-3 text-xs uppercase hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={true} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
@@ -1607,9 +1709,12 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '0.02em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
@@ -1706,9 +1811,12 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
@@ -1799,9 +1907,12 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 700, fontSize: '1.3rem', letterSpacing: '-0.01em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em', color: safeCs.onPrimary || '#ffffff' }} className="px-7 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.06em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-7 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
@@ -1893,9 +2004,12 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontSize: '1.6rem', letterSpacing: '0.08em' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-8 py-2.5 text-xs uppercase whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={true} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
@@ -1987,9 +2101,12 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.4rem', fontWeight: 300 }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[110px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[110px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 300, color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs rounded-full whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
@@ -2082,9 +2199,12 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.45rem', fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-white" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-          <button onClick={scrollToContact} style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff' }} className="px-8 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
+            <button onClick={scrollToContact} style={{ fontFamily: BODY, fontWeight: 400, letterSpacing: '0.25em', fontSize: '0.65rem', backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-8 py-3 rounded-full uppercase hover:bg-white transition-all shadow-2xl whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={true} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={true} />
@@ -2176,9 +2296,12 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', fontStyle: 'italic' }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
@@ -2272,9 +2395,12 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
           </div>
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
+        </div>
       </nav>
 
       <Hero websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} heroImageUrl={heroImageUrl} heroCta={heroCta} hl={hl} headlineSize={headlineSize} dark={false} />
@@ -2378,9 +2504,12 @@ export function PremiumLayoutV2({
             : <span style={{ fontFamily: resolveLogoFont(websiteData, DISPLAY), fontStyle: 'italic', fontSize: '1.3rem', fontWeight: 400 }} className="whitespace-nowrap block">{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-800" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
+        </div>
       </nav>
 
       {/* HERO: Dynamic colored left panel / white right panel */}
@@ -2870,9 +2999,12 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             : <span style={{ fontFamily: DISPLAY, fontSize: '1.25rem', fontWeight: 400, fontStyle: 'italic' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={false} />
+        </div>
       </nav>
 
       {/* HERO */}
@@ -3076,9 +3208,12 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             : <span style={{ fontFamily: DISPLAY, fontSize: '1.4rem', letterSpacing: '0.08em' }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={false} />
+        </div>
       </nav>
 
       {/* HERO */}
@@ -3309,12 +3444,15 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
             : <span style={{ fontFamily: DISPLAY, fontWeight:700, fontSize:'1.2rem', letterSpacing:'-0.03em', color: TXT }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-slate-400" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
-            className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap shadow-lg">
-            {heroCta}
-          </button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
+              className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap shadow-lg">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={true} />
+        </div>
       </nav>
 
       {/* HERO */}
@@ -3472,12 +3610,15 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
             : <span style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.15rem', letterSpacing:'-0.03em', color:TXT }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-600" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
-            className="px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap">
-            {heroCta}
-          </button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:600, color:'#ffffff' }}
+              className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider rounded-full hover:opacity-90 transition-opacity whitespace-nowrap">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={false} />
+        </div>
       </nav>
 
       {/* BENTO GRID HERO */}
@@ -3652,13 +3793,16 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             : <span style={{ fontFamily:DISPLAY, fontWeight:800, fontSize:'1.2rem', color:primaryColor }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-500" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
-            borderRadius:'50px', boxShadow:`0 8px 20px ${primaryColor}45` }}
-            className="px-6 py-2.5 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
-            {heroCta}
-          </button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
+              borderRadius:'50px', boxShadow:`0 8px 20px ${primaryColor}45` }}
+              className="hidden md:block px-6 py-2.5 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={false} />
+        </div>
       </nav>
 
       {/* HERO */}
@@ -3817,12 +3961,15 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
             : <span style={{ fontFamily:DISPLAY, fontWeight:600, fontSize:'1.1rem', letterSpacing:'0.04em', textTransform:'uppercase' as const }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-neutral-700" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
-            className="px-6 py-2.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
-            {heroCta}
-          </button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
+              className="hidden md:block px-6 py-2.5 text-xs uppercase hover:opacity-80 transition-opacity whitespace-nowrap">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={false} />
+        </div>
       </nav>
 
       {/* HERO – oversized typo + full image */}
@@ -3992,13 +4139,16 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
             : <span style={{ fontFamily:DISPLAY, fontWeight:700, fontSize:'1.2rem', color:TXT }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-slate-600" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY,
-            fontWeight:600, color:'#fff', boxShadow:`0 6px 18px ${primaryColor}50`, borderRadius:'50px' }}
-            className="px-6 py-2.5 text-xs uppercase tracking-wider hover:scale-105 transition-transform whitespace-nowrap">
-            {heroCta}
-          </button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY,
+              fontWeight:600, color:'#fff', boxShadow:`0 6px 18px ${primaryColor}50`, borderRadius:'50px' }}
+              className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider hover:scale-105 transition-transform whitespace-nowrap">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={false} />
+        </div>
       </nav>
 
       {/* HERO */}
@@ -4162,13 +4312,16 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
                 textTransform:'uppercase' as const, color:primaryColor }}>{websiteData.businessName}</span>}
         </Skeleton>
         <NavLinks textClass="text-amber-200/60" />
-        <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
-          <button onClick={scrollToContact} style={{ border:`1px solid ${primaryColor}`, color:primaryColor, fontFamily:BODY, fontWeight:500,
-            letterSpacing:'0.1em', backgroundColor:'transparent' }}
-            className="px-6 py-2.5 text-xs uppercase hover:bg-amber-400/10 transition-colors whitespace-nowrap">
-            {heroCta}
-          </button>
-        </Skeleton>
+        <div className="flex items-center gap-3">
+          <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
+            <button onClick={scrollToContact} style={{ border:`1px solid ${primaryColor}`, color:primaryColor, fontFamily:BODY, fontWeight:500,
+              letterSpacing:'0.1em', backgroundColor:'transparent' }}
+              className="hidden md:block px-6 py-2.5 text-xs uppercase hover:bg-amber-400/10 transition-colors whitespace-nowrap">
+              {heroCta}
+            </button>
+          </Skeleton>
+          <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={true} />
+        </div>
       </nav>
 
       {/* CINEMATIC HERO */}

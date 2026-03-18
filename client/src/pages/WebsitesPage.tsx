@@ -102,9 +102,12 @@ export default function WebsitesPage() {
   const allWebsites = websiteData?.websites || [];
   const allBusinesses = businessData?.businesses || [];
 
-  // Tab 1: GMB-Backlog – businesses without a generated website
+  // Tab 1: GMB-Backlog – only real GMB businesses (with placeId) without a generated website
   const businessesWithoutWebsite = allBusinesses.filter(b =>
-    !allWebsites.some((w: any) => w.businessId === b.id)
+    !allWebsites.some((w: any) => w.businessId === b.id) &&
+    b.placeId &&
+    !b.placeId.startsWith("self-") &&
+    !b.placeId.startsWith("email-")
   );
 
   // Tab 2: Admin-generated
