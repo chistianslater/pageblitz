@@ -1327,10 +1327,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [siteData?.website?.websiteData, initialized]);
 
   // ── Persist current step across page reloads ────────────────────────────
-  // Save step whenever it changes
+  // Save step whenever it changes.
+  // Only remove on 'checkout' (payment completed) – NOT on 'preview', so that
+  // reloading or re-opening the link returns the user to the preview step instead
+  // of restarting from the beginning.
   useEffect(() => {
     if (!onboardingStorageKey) return;
-    if (currentStep === 'checkout' || currentStep === 'preview') {
+    if (currentStep === 'checkout') {
       localStorage.removeItem(onboardingStorageKey);
     } else if (currentStep !== 'welcome') {
       localStorage.setItem(onboardingStorageKey, currentStep);
