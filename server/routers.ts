@@ -2626,6 +2626,30 @@ Kontext: ${input.context}`,
           });
         }
 
+        // If brandLogo changed, persist logoFont / logoImageUrl into websiteData
+        if (safeData.brandLogo !== undefined && safeData.brandLogo !== null) {
+          const currentWd = website.websiteData ? JSON.parse(JSON.stringify(website.websiteData)) : null;
+          if (currentWd) {
+            if (typeof safeData.brandLogo === 'string' && safeData.brandLogo.startsWith("font:")) {
+              currentWd.logoFont = safeData.brandLogo.replace("font:", "");
+              delete currentWd.logoImageUrl;
+            } else if (typeof safeData.brandLogo === 'string' && safeData.brandLogo.startsWith("url:")) {
+              currentWd.logoImageUrl = safeData.brandLogo.replace("url:", "");
+              delete currentWd.logoFont;
+            }
+            await updateWebsite(input.websiteId, { websiteData: currentWd });
+          }
+        }
+
+        // If headlineFont changed, persist into websiteData.designTokens
+        if (safeData.headlineFont) {
+          const currentWd = website.websiteData ? JSON.parse(JSON.stringify(website.websiteData)) : null;
+          if (currentWd) {
+            currentWd.designTokens = { ...(currentWd.designTokens || {}), headlineFont: safeData.headlineFont };
+            await updateWebsite(input.websiteId, { websiteData: currentWd });
+          }
+        }
+
         // If colorScheme changed, immediately update colorScheme in generated_websites
         // so the Preview page shows the same colors as the Onboarding Chat live preview.
         if (safeData.colorScheme) {
