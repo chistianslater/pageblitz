@@ -40,11 +40,22 @@ const SKIP_KEYS = new Set([
   "seoTitle", "seoDescription", "hiddenSections",
 ]);
 
+/** Normalize text for comparison: collapse whitespace, trim */
+function normalizeText(t: string): string {
+  return t.replace(/\s+/g, " ").trim();
+}
+
 /** Walk `data` and return the dot/bracket path to the first string that
- *  matches `text`. Returns null if not found. */
+ *  matches `text` (exact, whitespace-normalized, or whitespace-stripped). */
 function findFieldPath(data: any, text: string, path = ""): string | null {
   if (typeof data === "string") {
-    return data.trim() === text.trim() ? (path || ".") : null;
+    const a = normalizeText(data);
+    const b = normalizeText(text);
+    // 1. Exact or whitespace-normalized match
+    if (a === b) return path || ".";
+    // 2. Stripped whitespace match (handles split-span headlines like "Dein Fest,UnserGenuss")
+    if (a.replace(/\s/g, "") === b.replace(/\s/g, "") && a.length > 3) return path || ".";
+    return null;
   }
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
@@ -138,6 +149,19 @@ function useInlineHoverStyle(active: boolean) {
         background: rgba(245,158,11,0.06) !important;
         cursor: text !important;
         min-width: 4px;
+      }
+      .pb-preview-inner h1[contenteditable="true"],
+      .pb-preview-inner h2[contenteditable="true"],
+      .pb-preview-inner h3[contenteditable="true"],
+      .pb-preview-inner h4[contenteditable="true"],
+      .pb-preview-inner h5[contenteditable="true"],
+      .pb-preview-inner h6[contenteditable="true"],
+      .pb-preview-inner span[contenteditable="true"],
+      .pb-preview-inner a[contenteditable="true"],
+      .pb-preview-inner button[contenteditable="true"],
+      .pb-preview-inner li[contenteditable="true"] {
+        white-space: nowrap !important;
+        display: inline-block !important;
       }
     ` : "";
     return () => { if (el) el.textContent = ""; };
@@ -402,36 +426,38 @@ export default function ContentEditorSplitView({
   const inlineClickHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
   useEffect(() => {
     inlineClickHandlerRef.current = (e: MouseEvent) => {
-      const raw = e.target as HTMLElement | null;
-      if (!raw) return;
-      if (raw.tagName === "INPUT" || raw.tagName === "TEXTAREA" || raw.tagName === "SELECT") return;
+      // Skip form inputs
+      const directTarget = e.target as HTMLElement | null;
+      if (!directTarget) return;
+      const tag0 = directTarget.tagName;
+      if (tag0 === "INPUT" || tag0 === "TEXTAREA" || tag0 === "SELECT") return;
 
-      // Build candidate list: start from the clicked element, walk up through ancestors
-      // Stop at section boundaries to avoid accidentally editing container divs
       const TEXT_TAGS = new Set(["h1","h2","h3","h4","h5","h6","p","span","a","li","button","label","strong","em","small"]);
-      const STOP_TAGS = new Set(["section","article","nav","header","footer","main","aside","div"]);
 
-      // Collect candidates: the clicked element + its text-tag ancestors (until a stop tag)
+      // Use elementsFromPoint to collect ALL elements at the click coordinate,
+      // ordered from topmost (visually on top) to bottommost.
+      // This bypasses hero gradient/overlay divs that would otherwise intercept e.target.
+      const allEls = document.elementsFromPoint(e.clientX, e.clientY);
+
+      // Find the .pb-preview-inner container so we only consider elements inside it
+      const previewInner = previewScrollRef.current?.querySelector(".pb-preview-inner");
+      if (!previewInner) return;
+
+      // Build candidate list: text-tag elements inside the preview
       const candidates: HTMLElement[] = [];
-      let cur: HTMLElement | null = raw;
-      while (cur && cur !== previewScrollRef.current) {
-        const tag = cur.tagName.toLowerCase();
-        if (STOP_TAGS.has(tag)) break;
-        if (TEXT_TAGS.has(tag)) candidates.push(cur);
-        cur = cur.parentElement;
-      }
-      // If no text-tag found, try the raw target itself (might be a div with direct text)
-      if (candidates.length === 0 && (raw.textContent ?? "").trim().length >= 2) {
-        candidates.push(raw);
+      for (const el of allEls) {
+        if (!(el instanceof HTMLElement)) continue;
+        if (!previewInner.contains(el)) continue;
+        if (!TEXT_TAGS.has(el.tagName.toLowerCase())) continue;
+        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") continue;
+        candidates.push(el);
       }
 
-      // Find the most specific element whose text maps to a data field
+      // Try each candidate (innermost/topmost first) to find one that maps to a data field
       for (const el of candidates) {
-        // Skip if already editing
-        if (el === inlineActiveRef.current?.el) return;
+        if (el === inlineActiveRef.current?.el) return; // clicking the active element
 
-        // Use only the element's own direct text content (not all descendants)
-        // to avoid matching container text that concatenates multiple fields
+        // Own direct text nodes only (avoids matching a container that concatenates children)
         const ownText = Array.from(el.childNodes)
           .filter(n => n.nodeType === Node.TEXT_NODE)
           .map(n => n.textContent ?? "")
@@ -440,27 +466,20 @@ export default function ContentEditorSplitView({
 
         const fullText = (el.textContent ?? "").trim();
 
-        // Try own text first (leaf), then full text
-        const textToSearch = ownText.length >= 2 ? ownText : fullText;
-        if (textToSearch.length < 2) continue;
+        // Prefer own text (leaf); fallback to full text (handles e.g. <a><span>text</span></a>)
+        const textsToTry = ownText.length >= 2
+          ? [ownText, fullText]
+          : fullText.length >= 2 ? [fullText] : [];
 
-        const path = findFieldPath(localDataRef.current, textToSearch);
-        if (!path) {
-          // Also try full text if own text didn't match
-          if (ownText !== fullText && fullText.length >= 2) {
-            const pathFull = findFieldPath(localDataRef.current, fullText);
-            if (pathFull) {
-              if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
-              activateInlineEdit(el, pathFull, fullText);
-              return;
-            }
+        for (const text of textsToTry) {
+          if (text.length < 2) continue;
+          const path = findFieldPath(localDataRef.current, text);
+          if (path) {
+            if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
+            activateInlineEdit(el, path, text);
+            return;
           }
-          continue;
         }
-
-        if (inlineActiveRef.current) finishInlineEdit(inlineActiveRef.current);
-        activateInlineEdit(el, path, textToSearch);
-        return;
       }
     };
   }, [activateInlineEdit, finishInlineEdit]);

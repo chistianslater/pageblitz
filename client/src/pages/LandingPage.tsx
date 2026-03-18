@@ -1814,6 +1814,59 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* GMB Feature Callout */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute left-1/4 top-0 w-96 h-96 bg-violet-500/8 blur-[120px] rounded-full" />
+          <div className="absolute right-1/4 bottom-0 w-64 h-64 bg-blue-500/8 blur-[100px] rounded-full" />
+        </div>
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className={`rounded-3xl border p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-violet-50/60 border-violet-200/60"}`}
+          >
+            {/* Left: Google Maps icon + illustration */}
+            <div className="flex-shrink-0 relative">
+              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl flex items-center justify-center shadow-xl ${isDark ? "bg-[#1a1a2e] border border-white/10" : "bg-white border border-violet-100"}`}>
+                <svg viewBox="0 0 48 48" className="w-14 h-14 md:w-20 md:h-20" fill="none">
+                  <path d="M24 4C15.163 4 8 11.163 8 20c0 10.5 16 28 16 28s16-17.5 16-28c0-8.837-7.163-16-16-16z" fill="#EA4335"/>
+                  <circle cx="24" cy="20" r="6" fill="white"/>
+                </svg>
+              </div>
+              <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ${isDark ? "bg-emerald-500 text-white" : "bg-emerald-500 text-white"}`}>
+                1
+              </div>
+            </div>
+
+            {/* Right: Text */}
+            <div className="flex-1 text-center md:text-left">
+              <div className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4 ${isDark ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "bg-violet-100 text-violet-700 border border-violet-200"}`}>
+                <span>⚡</span> 1-Klick Import
+              </div>
+              <h3 className={`text-2xl md:text-3xl font-semibold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"}`}>
+                Google My Business?<br />Einfach einfügen – fertig.
+              </h3>
+              <p className={`text-base leading-relaxed mb-6 max-w-lg ${isDark ? "text-white/55" : "text-slate-600"}`}>
+                Du hast bereits ein Google-Profil? Dann ist deine Website in 3 Minuten fertig. Einfach deinen <strong className={isDark ? "text-white/80" : "text-slate-800"}>Google My Business Link</strong> einfügen – Name, Adresse, Öffnungszeiten, Fotos und Bewertungen werden automatisch übernommen. Kein Abtippen, kein Aufwand.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center md:justify-start justify-center gap-3">
+                <button
+                  onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
+                  className={`flex items-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-full transition-all ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-600 text-white hover:bg-violet-700"}`}
+                >
+                  Jetzt GMB-Daten importieren
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <span className={`text-xs ${isDark ? "text-white/30" : "text-slate-400"}`}>Kostenlos ausprobieren · kein Kreditkarte nötig</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-32 relative">
         <div className="max-w-7xl mx-auto px-6">

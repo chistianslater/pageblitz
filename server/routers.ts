@@ -33,7 +33,6 @@ import { generateImage } from "./_core/imageGeneration";
 import { notifyOwner } from "./_core/notification";
 import { TRPCError } from "@trpc/server";
 import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutStyle, getLayoutPool, getIndustryImages, getContrastColor } from "./industryImages";
-import { uploadPhoto } from "./onboardingUpload";
 import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
@@ -2956,6 +2955,29 @@ Kontext: ${input.context}`,
       return results;
     }),
 
+    // Upload logo from the customer dashboard (authenticated)
+    uploadLogoForWebsite: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        imageData: z.string(),
+        mimeType: z.string().default("image/png"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const result = await uploadLogo(input.imageData, input.mimeType, input.websiteId);
+        // Store logo URL in websiteData.logoImageUrl (where layouts read it from)
+        const websiteData = (row.website.websiteData as any) || {};
+        await updateWebsite(input.websiteId, {
+          websiteData: { ...websiteData, logoImageUrl: result.url },
+        });
+        // Also keep onboarding in sync
+        await updateOnboarding(input.websiteId, { logoUrl: result.url, updatedAt: Date.now() });
+        return { url: result.url };
+      }),
+
     getImageSuggestions: protectedProcedure
       .input(z.object({ websiteId: z.number() }))
       .query(async ({ ctx, input }) => {
@@ -3004,6 +3026,21 @@ Kontext: ${input.context}`,
           .update(chatLeads)
           .set({ readAt: new Date() })
           .where(eqDrizzle(chatLeads.id, input.leadId));
+
+        return { success: true };
+      }),
+
+    deleteChatLead: protectedProcedure
+      .input(z.object({ leadId: z.number(), websiteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const _db = await getDb();
+        if (_db) await _db
+          .delete(chatLeads)
+          .where(andDrizzle(eqDrizzle(chatLeads.id, input.leadId), eqDrizzle(chatLeads.websiteId, input.websiteId)));
 
         return { success: true };
       }),
@@ -3169,7 +3206,11 @@ Kontext: ${input.context}`,
       }),
 
     cancelAppointmentByOwner: protectedProcedure
-      .input(z.object({ appointmentId: z.number(), websiteId: z.number() }))
+      .input(z.object({
+        appointmentId: z.number(),
+        websiteId: z.number(),
+        cancelMessage: z.string().max(1000).optional(),
+      }))
       .mutation(async ({ ctx, input }) => {
         const rows = await getWebsitesByUserId(ctx.user.id);
         const row = rows.find(r => r.website.id === input.websiteId);
@@ -3178,9 +3219,30 @@ Kontext: ${input.context}`,
         const _db = await getDb();
         if (!_db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+        // Get appointment details for the cancellation email
+        const [appt] = await _db.select().from(appointments)
+          .where(andDrizzle(eqDrizzle(appointments.id, input.appointmentId), eqDrizzle(appointments.websiteId, input.websiteId)))
+          .limit(1);
+        if (!appt) throw new TRPCError({ code: "NOT_FOUND" });
+
         await _db.update(appointments)
           .set({ status: "cancelled" })
           .where(andDrizzle(eqDrizzle(appointments.id, input.appointmentId), eqDrizzle(appointments.websiteId, input.websiteId)));
+
+        // Send cancellation email to visitor
+        try {
+          const { sendAppointmentCancellationEmail } = await import("./_core/email");
+          await sendAppointmentCancellationEmail({
+            to: appt.email,
+            visitorName: appt.visitorName,
+            appointmentDate: appt.appointmentDate,
+            appointmentTime: appt.appointmentTime,
+            businessName: (row.website.websiteData as any)?.businessName || "Ihr Dienstleister",
+            cancelMessage: input.cancelMessage,
+          });
+        } catch (e) {
+          console.error("[cancelAppointment] Email failed:", e);
+        }
 
         return { success: true };
       }),
@@ -3290,6 +3352,7 @@ Kontext: ${input.context}`,
           address: z.string().optional(),
           heroPhotoUrl: z.string().optional(),
           aboutPhotoUrl: z.string().optional(),
+          logoUrl: z.string().optional(),
           brandColor: z.string().optional(),
           brandSecondaryColor: z.string().optional(),
           sections: z.array(z.any()).optional(),
@@ -3306,7 +3369,7 @@ Kontext: ${input.context}`,
         const website = owned.website;
         // Patch websiteData
         const websiteData = (website.websiteData as any) || {};
-        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl, sections, hiddenSections, seoTitle, seoDescription } = input.patch;
+        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl, logoUrl, sections, hiddenSections, seoTitle, seoDescription } = input.patch;
         if (tagline !== undefined) websiteData.tagline = tagline;
         if (description !== undefined) websiteData.description = description;
         if (businessName !== undefined) websiteData.businessName = businessName;
@@ -3336,6 +3399,7 @@ Kontext: ${input.context}`,
         const updateData: any = { websiteData, colorScheme };
         if (heroPhotoUrl !== undefined) updateData.heroImageUrl = heroPhotoUrl;
         if (aboutPhotoUrl !== undefined) updateData.aboutImageUrl = aboutPhotoUrl;
+        if (logoUrl !== undefined) websiteData.logoImageUrl = logoUrl === "" ? undefined : logoUrl;
         // Patch business contact info
         if (phone !== undefined || email !== undefined || address !== undefined) {
           const biz = await getBusinessById(website.businessId);

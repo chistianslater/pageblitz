@@ -2238,15 +2238,92 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
   );
 }
 
+// ── Logo Upload Card ──────────────────────────────────
+function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; logoUrl?: string; onUpdate: () => void }) {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const uploadLogoMutation = trpc.customer.uploadLogoForWebsite.useMutation({
+    onSuccess: () => { toast.success("Logo gespeichert"); onUpdate(); setUploading(false); },
+    onError: (e: any) => { toast.error("Upload fehlgeschlagen: " + e.message); setUploading(false); },
+  });
+  const removeLogoMutation = trpc.customer.updateWebsiteContent.useMutation({ onSuccess: () => onUpdate() });
+
+  const handleFile = (file: File) => {
+    if (file.size > 2 * 1024 * 1024) { toast.error("Logo darf maximal 2 MB groß sein"); return; }
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadLogoMutation.mutate({ websiteId, imageData: base64, mimeType: file.type });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) handleFile(file);
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
+      <h3 className="text-white font-medium flex items-center gap-2">
+        <Upload className="w-4 h-4 text-amber-400" />
+        Logo
+      </h3>
+      {logoUrl ? (
+        <div className="relative bg-slate-700/30 rounded-xl p-4 flex items-center justify-center min-h-[80px]">
+          <img src={logoUrl} alt="Logo" className="max-h-16 max-w-full object-contain" />
+          <button
+            onClick={() => removeLogoMutation.mutate({ websiteId, patch: { logoUrl: "" } })}
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
+        <div
+          className="border-2 border-dashed border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-amber-500/50 hover:bg-amber-500/5 transition-all"
+          onClick={() => fileRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+        >
+          {uploading ? (
+            <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
+          ) : (
+            <>
+              <Upload className="w-6 h-6 text-slate-500" />
+              <p className="text-slate-400 text-xs text-center">Logo hochladen<br /><span className="text-slate-600">PNG, SVG oder JPG · max. 2 MB</span></p>
+            </>
+          )}
+        </div>
+      )}
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+      {logoUrl && (
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors disabled:opacity-50"
+        >
+          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          Logo ersetzen
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Chat Leads Tab ────────────────────────────────────
 function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
-  const { data, isLoading } = trpc.customer.getChatLeads.useQuery({ websiteId });
+  const { data, isLoading, refetch: refetchLeads } = trpc.customer.getChatLeads.useQuery({ websiteId });
   const { data: transcriptData, isLoading: transcriptsLoading } = trpc.customer.getChatTranscripts.useQuery({ websiteId });
-  const markRead = trpc.customer.markChatLeadRead.useMutation();
+  const markRead = trpc.customer.markChatLeadRead.useMutation({ onSuccess: () => refetchLeads() });
+  const deleteLead = trpc.customer.deleteChatLead.useMutation({ onSuccess: () => refetchLeads() });
   const deleteTranscript = trpc.customer.deleteChatTranscript.useMutation();
   const aiChatEnabled = !!(website as any).addOnAiChat;
   const [activeSubTab, setActiveSubTab] = useState<"leads" | "transcripts">("leads");
   const [expandedTranscript, setExpandedTranscript] = useState<number | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   if (!aiChatEnabled) {
     return (
@@ -2371,6 +2448,28 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                         className="text-xs text-slate-400 hover:text-white transition-colors"
                       >
                         Als gelesen markieren
+                      </button>
+                    )}
+                    {deleteConfirmId === lead.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">Löschen?</span>
+                        <button
+                          onClick={() => { deleteLead.mutate({ leadId: lead.id, websiteId }); setDeleteConfirmId(null); }}
+                          className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          Ja
+                        </button>
+                        <button onClick={() => setDeleteConfirmId(null)} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                          Nein
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirmId(lead.id)}
+                        className="p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        title="Lead löschen"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -2507,7 +2606,7 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
     onError: (e: any) => toast.error("Fehler: " + e.message),
   });
   const cancelMutation = trpc.customer.cancelAppointmentByOwner.useMutation({
-    onSuccess: () => { toast.success("Termin abgesagt"); refetchAppointments(); },
+    onSuccess: () => { toast.success("Termin abgesagt – E-Mail wurde versendet"); refetchAppointments(); setCancelConfirmId(null); setCancelMessage(""); },
     onError: () => toast.error("Fehler beim Absagen"),
   });
 
@@ -2520,6 +2619,7 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
   const [description, setDescription] = useState("");
   const [notifEmail, setNotifEmail] = useState("");
   const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null);
+  const [cancelMessage, setCancelMessage] = useState("");
   const [showPast, setShowPast] = useState(false);
   const { data: pastData, refetch: refetchPast } = trpc.customer.getAppointments.useQuery(
     { websiteId, upcoming: false },
@@ -2771,17 +2871,28 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
                     {a.status !== "cancelled" && (
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
                         {isCancelling ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-400">Sicher?</span>
-                            <button
-                              onClick={() => { cancelMutation.mutate({ appointmentId: a.id, websiteId }); setCancelConfirmId(null); }}
-                              className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
-                            >
-                              Ja, absagen
-                            </button>
-                            <button onClick={() => setCancelConfirmId(null)} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-                              Abbrechen
-                            </button>
+                          <div className="flex flex-col items-end gap-2 min-w-[200px]">
+                            <p className="text-xs text-slate-400 self-start">Nachricht an Kunden (optional):</p>
+                            <textarea
+                              value={cancelMessage}
+                              onChange={e => setCancelMessage(e.target.value)}
+                              placeholder="z.B. Ich bin leider erkrankt und melde mich bald..."
+                              rows={2}
+                              className="w-full bg-slate-700/60 text-white text-xs px-2.5 py-2 rounded-lg border border-slate-600 outline-none resize-none placeholder-slate-500 focus:border-red-500/60"
+                            />
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => { cancelMutation.mutate({ appointmentId: a.id, websiteId, cancelMessage: cancelMessage.trim() || undefined }); }}
+                                disabled={cancelMutation.isPending}
+                                className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                              >
+                                {cancelMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CalendarX className="w-3 h-3" />}
+                                Termin absagen
+                              </button>
+                              <button onClick={() => { setCancelConfirmId(null); setCancelMessage(""); }} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                                Abbrechen
+                              </button>
+                            </div>
                           </div>
                         ) : (
                           <button
@@ -3414,6 +3525,9 @@ export default function CustomerDashboard() {
               </div>
             </div>
             <div className="space-y-4">
+              {/* Logo Upload */}
+              <LogoUploadCard websiteId={website.id} logoUrl={(websiteData as any)?.logoImageUrl} onUpdate={handleUpdate} />
+
               {/* Hero Image */}
               <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
                 <h3 className="text-white font-medium flex items-center gap-2">
