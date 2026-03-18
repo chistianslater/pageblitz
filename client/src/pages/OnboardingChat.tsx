@@ -96,7 +96,8 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, aboutImageU
   onConfirm: (layoutStyle: string) => void;
   onSkip: () => void;
 }) {
-  const [round, setRound]       = useState(0);
+  // Random start so every generation shows a fresh set of 3 layouts
+  const [round, setRound]       = useState(() => Math.floor(Math.random() * 5));
   const [activeIdx, setActiveIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale]       = useState(0.4);
