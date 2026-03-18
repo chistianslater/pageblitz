@@ -1,4 +1,5 @@
 import "dotenv/config";
+import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -52,6 +53,10 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // ── Compression (gzip/brotli) for all text responses ──────────────────────
+  app.use(compression({ threshold: 1024 }));
+
   // Stripe webhook MUST be registered BEFORE express.json() for signature verification
   registerStripeWebhook(app);
   // Configure body parser with larger size limit for file uploads
@@ -116,13 +121,17 @@ async function startServer() {
   });
 
   // Programmatic landing pages – served as full HTML (no JS dependency for crawlers)
+  const LANDING_CACHE = "public, max-age=3600, stale-while-revalidate=86400";
+
   app.get("/website-erstellen", (_req, res) => {
+    res.setHeader("Cache-Control", LANDING_CACHE);
     res.type("text/html").send(generateOverviewHTML());
   });
 
   app.get("/website-erstellen/:industry", (req, res) => {
     const ind = SEO_INDUSTRIES[req.params.industry];
     if (!ind) return res.redirect(301, "/website-erstellen");
+    res.setHeader("Cache-Control", LANDING_CACHE);
     res.type("text/html").send(generateLandingPageHTML(ind));
   });
 
@@ -130,6 +139,7 @@ async function startServer() {
     const ind = SEO_INDUSTRIES[req.params.industry];
     const city = DE_CITIES.find((c) => c.slug === req.params.city);
     if (!ind) return res.redirect(301, "/website-erstellen");
+    res.setHeader("Cache-Control", LANDING_CACHE);
     res.type("text/html").send(generateLandingPageHTML(ind, city));
   });
 

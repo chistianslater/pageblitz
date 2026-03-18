@@ -783,6 +783,666 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
   },
+
+  elektriker: {
+    slug: "elektriker",
+    displayName: "Elektriker",
+    title: "Website für Elektriker erstellen",
+    h1Template: "KI-Website für deinen Elektrobetrieb{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Elektriker ab 19,90 €/Monat. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – sofort online.",
+    keywords: ["Website Elektriker", "Elektriker Website erstellen", "Homepage Elektrobetrieb"],
+    features: [
+      {
+        icon: "⚡",
+        title: "Notdienst-Kontakt",
+        text: "Hebe deinen 24/7-Notdienst hervor und stelle sicher, dass Kunden dich in dringenden Situationen schnell erreichen.",
+      },
+      {
+        icon: "🔌",
+        title: "Leistungsübersicht",
+        text: "Präsentiere deine Leistungen – von Neuinstallationen über Reparaturen bis hin zu Smart-Home-Lösungen.",
+      },
+      {
+        icon: "🏆",
+        title: "Referenzprojekte",
+        text: "Zeige abgeschlossene Projekte und Kundenbewertungen, um Vertrauen bei neuen Auftraggebern aufzubauen.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für einen Elektriker?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Elektriker-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meinen Notdienst auf der Website hervorheben?", a: "Ja. Notdienst-Hinweis, Telefonnummer und Kontaktformular sind per KI automatisch eingebunden." },
+      { q: "Brauche ich technisches Wissen für meine Elektriker-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  maler: {
+    slug: "maler",
+    displayName: "Malerbetrieb",
+    title: "Website für Malerbetrieb erstellen",
+    h1Template: "KI-Website für deinen Malerbetrieb{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Malerbetriebe ab 19,90 €/Monat. Vorher-Nachher-Galerie, Leistungen und Kontaktformular – von der KI erstellt.",
+    keywords: ["Website Maler", "Malerbetrieb Website erstellen", "Homepage Malermeister"],
+    features: [
+      {
+        icon: "🎨",
+        title: "Vorher-Nachher-Galerie",
+        text: "Überzeuge Interessenten mit beeindruckenden Vorher-Nachher-Fotos deiner Streich- und Renovierungsarbeiten.",
+      },
+      {
+        icon: "🖌️",
+        title: "Leistungsspektrum",
+        text: "Präsentiere alle Angebote – Innen- und Außenanstrich, Tapezierarbeiten, Fassadensanierung und mehr.",
+      },
+      {
+        icon: "📋",
+        title: "Kostenvoranschlag-Anfrage",
+        text: "Kunden können direkt über das Kontaktformular einen unverbindlichen Kostenvoranschlag anfordern.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für einen Malerbetrieb?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Maler-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich eigene Fotos meiner Malerarbeiten hochladen?", a: "Ja. Im Kundenbereich lassen sich Bilder jederzeit ergänzen oder austauschen." },
+      { q: "Brauche ich technisches Wissen für meine Maler-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  klempner: {
+    slug: "klempner",
+    displayName: "Klempner",
+    title: "Website für Klempner erstellen",
+    h1Template: "KI-Website für deinen Klempnerbetrieb{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Klempner ab 19,90 €/Monat. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – sofort online.",
+    keywords: ["Website Klempner", "Klempner Website erstellen", "Homepage Sanitärbetrieb"],
+    features: [
+      {
+        icon: "🔧",
+        title: "24/7-Notdienst sichtbar machen",
+        text: "Zeige deine Notdienst-Nummer prominent – damit Kunden bei Rohrbruch oder Verstopfung sofort auf dich zählen.",
+      },
+      {
+        icon: "🚿",
+        title: "Leistungen klar darstellen",
+        text: "Von Rohrreparatur über Heizungsservice bis hin zur Badsanierung – alle Angebote auf einen Blick.",
+      },
+      {
+        icon: "⭐",
+        title: "Kundenbewertungen einbinden",
+        text: "Baue Vertrauen auf, indem du zufriedene Kundenstimmen und Referenzprojekte auf deiner Website präsentierst.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für einen Klempner?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Klempner-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meinen Notdienst auf der Website besonders betonen?", a: "Ja. Notdiensthinweis und direkte Telefonnummer werden automatisch prominent platziert." },
+      { q: "Brauche ich technisches Wissen für meine Klempner-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  gaertner: {
+    slug: "gaertner",
+    displayName: "Gärtner",
+    title: "Website für Gärtner erstellen",
+    h1Template: "KI-Website für deinen Gärtnereibetrieb{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Gärtner ab 19,90 €/Monat. Mit Saisondiensten, Bildergalerie und Kontaktformular – von der KI in Minuten erstellt.",
+    keywords: ["Website Gärtner", "Gärtnerei Website erstellen", "Homepage Gartenservice"],
+    features: [
+      {
+        icon: "🌿",
+        title: "Saisonale Leistungen",
+        text: "Präsentiere dein Angebot nach Jahreszeiten – Rasenpflege, Baum­schnitt, Winterdienst und Gartenneugestaltung.",
+      },
+      {
+        icon: "📸",
+        title: "Garten-Galerie",
+        text: "Zeige angelegte Gärten und Referenzprojekte in einer ansprechenden Bildergalerie.",
+      },
+      {
+        icon: "📅",
+        title: "Anfrage für Saisonarbeiten",
+        text: "Kunden buchen direkt über das Kontaktformular – ideal für wiederkehrende Pflege­aufträge.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für einen Gärtner?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Gärtner-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich saisonale Angebote wie Winterdienst hervorheben?", a: "Ja. Texte und Angebote lassen sich im Kundenbereich jederzeit aktualisieren." },
+      { q: "Brauche ich technisches Wissen für meine Gärtner-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  tierarzt: {
+    slug: "tierarzt",
+    displayName: "Tierarzt",
+    title: "Website für Tierarzt erstellen",
+    h1Template: "KI-Website für deine Tierarztpraxis{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Tierarztpraxen ab 19,90 €/Monat. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – sofort online.",
+    keywords: ["Website Tierarzt", "Tierarztpraxis Website erstellen", "Homepage Veterinär"],
+    features: [
+      {
+        icon: "🐾",
+        title: "Behandlungsangebote",
+        text: "Informiere Tierhalter über dein Leistungsspektrum – Vorsorge, Impfungen, Operationen und Zahnarztleistungen für Tiere.",
+      },
+      {
+        icon: "🚨",
+        title: "Notfallkontakt",
+        text: "Stelle sicher, dass der Notfallkontakt und die Vertretungsregelung für Tierhalter immer gut sichtbar sind.",
+      },
+      {
+        icon: "📝",
+        title: "Online-Terminanfrage",
+        text: "Kunden können unkompliziert über das Kontaktformular einen Termin anfragen – rund um die Uhr.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für eine Tierarztpraxis?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Tierarzt-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich Notfallzeiten und Vertretungen auf der Website angeben?", a: "Ja. Alle Texte, Öffnungszeiten und Kontaktdaten lassen sich jederzeit anpassen." },
+      { q: "Brauche ich technisches Wissen für meine Tierarzt-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  apotheke: {
+    slug: "apotheke",
+    displayName: "Apotheke",
+    title: "Website für Apotheke erstellen",
+    h1Template: "KI-Website für deine Apotheke{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Apotheken ab 19,90 €/Monat. Mit Öffnungszeiten, Notdienst-Hinweis und Leistungsübersicht – von der KI erstellt.",
+    keywords: ["Website Apotheke", "Apotheke Website erstellen", "Homepage Apotheke"],
+    features: [
+      {
+        icon: "💊",
+        title: "Leistungen & Services",
+        text: "Stelle deine Services vor – Medikamenten­bestellung, Blutdruckmessung, Reiseimpf­beratung und mehr.",
+      },
+      {
+        icon: "🕐",
+        title: "Öffnungszeiten & Notdienst",
+        text: "Zeige aktuelle Öffnungszeiten und Notdienstinformationen prominent – damit Kunden immer informiert sind.",
+      },
+      {
+        icon: "📍",
+        title: "Standort & Anfahrt",
+        text: "Integriere Adresse und Anfahrtsbeschreibung, damit Kunden dich schnell und einfach finden.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für eine Apotheke?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Apotheken-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich den Notdienst-Kalender auf der Website einbinden?", a: "Notdiensthinweise lassen sich als Text jederzeit im Kundenbereich aktualisieren." },
+      { q: "Brauche ich technisches Wissen für meine Apotheken-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  yogastudio: {
+    slug: "yogastudio",
+    displayName: "Yogastudio",
+    title: "Website für Yogastudio erstellen",
+    h1Template: "KI-Website für dein Yogastudio{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Yogastudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – sofort online.",
+    keywords: ["Website Yogastudio", "Yogastudio Website erstellen", "Homepage Yoga"],
+    features: [
+      {
+        icon: "🧘",
+        title: "Kursübersicht",
+        text: "Präsentiere dein Kursangebot übersichtlich – Hatha, Vinyasa, Yin Yoga und mehr inklusive Schwierigkeitsgrad.",
+      },
+      {
+        icon: "👩‍🏫",
+        title: "Lehrer-Profile",
+        text: "Stelle dein Team mit kurzen Biografien vor und schaffe eine persönliche Verbindung zu potenziellen Teilnehmern.",
+      },
+      {
+        icon: "📱",
+        title: "Kursanfrage & Probestunde",
+        text: "Interessenten können direkt eine Probestunde buchen – einfach über das integrierte Kontaktformular.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für ein Yogastudio?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Yogastudio-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meinen Kursplan auf der Website veröffentlichen?", a: "Ja. Kursbeschreibungen und Zeiten lassen sich im Kundenbereich jederzeit aktualisieren." },
+      { q: "Brauche ich technisches Wissen für meine Yogastudio-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  fahrschule: {
+    slug: "fahrschule",
+    displayName: "Fahrschule",
+    title: "Website für Fahrschule erstellen",
+    h1Template: "KI-Website für deine Fahrschule{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Fahrschulen ab 19,90 €/Monat. Mit Preisliste, Führerscheinklassen und Online-Anmeldeformular – von der KI erstellt.",
+    keywords: ["Website Fahrschule", "Fahrschule Website erstellen", "Homepage Fahrlehrer"],
+    features: [
+      {
+        icon: "🚗",
+        title: "Führerscheinklassen im Überblick",
+        text: "Erkläre alle angebotenen Führerscheinklassen verständlich – von Klasse B über Motorrad bis hin zum LKW.",
+      },
+      {
+        icon: "💰",
+        title: "Transparente Preisliste",
+        text: "Zeige Ausbildungspreise offen und nachvollziehbar – das erhöht das Vertrauen und senkt Hemmschwellen.",
+      },
+      {
+        icon: "📝",
+        title: "Online-Anmeldung",
+        text: "Neue Fahrschüler können sich direkt über das Kontaktformular anmelden – einfach und ohne Telefonat.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für eine Fahrschule?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Fahrschul-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meine Preisliste und Führerscheinklassen selbst pflegen?", a: "Ja. Alle Inhalte lassen sich jederzeit im Kundenbereich anpassen." },
+      { q: "Brauche ich technisches Wissen für meine Fahrschul-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  "kfz-werkstatt": {
+    slug: "kfz-werkstatt",
+    displayName: "Kfz-Werkstatt",
+    title: "Website für Kfz-Werkstatt erstellen",
+    h1Template: "KI-Website für deine Kfz-Werkstatt{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Kfz-Werkstätten ab 19,90 €/Monat. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – sofort online.",
+    keywords: ["Website Kfz-Werkstatt", "Autowerkstatt Website erstellen", "Homepage Kfz-Betrieb"],
+    features: [
+      {
+        icon: "🔩",
+        title: "Leistungsübersicht",
+        text: "Zeige alle Services übersichtlich – Inspektion, TÜV-Vorbereitung, Reifenwechsel, Unfallinstandsetzung und mehr.",
+      },
+      {
+        icon: "📆",
+        title: "Online-Terminanfrage",
+        text: "Kunden buchen ihren Werkstatttermin direkt über die Website – spart Zeit und reduziert Telefonanfragen.",
+      },
+      {
+        icon: "⭐",
+        title: "Bewertungen & Vertrauen",
+        text: "Hebe positive Kundenstimmen hervor und präsentiere Marken und Zertifizierungen deiner Werkstatt.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für eine Kfz-Werkstatt?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Werkstatt-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich Sonderaktionen wie Reifenwechsel-Aktionen bewerben?", a: "Ja. Aktionen und Angebote lassen sich im Kundenbereich jederzeit aktualisieren." },
+      { q: "Brauche ich technisches Wissen für meine Werkstatt-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  schluesseldienst: {
+    slug: "schluesseldienst",
+    displayName: "Schlüsseldienst",
+    title: "Website für Schlüsseldienst erstellen",
+    h1Template: "KI-Website für deinen Schlüsseldienst{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Schlüsseldienste ab 19,90 €/Monat. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – sofort online.",
+    keywords: ["Website Schlüsseldienst", "Schlüsseldienst Website erstellen", "Homepage Schlüsselnotdienst"],
+    features: [
+      {
+        icon: "🔑",
+        title: "24/7-Notdienst hervorheben",
+        text: "Stelle deinen Rund-um-die-Uhr-Notdienst in den Mittelpunkt – damit Kunden in der Aussperrsituation sofort Hilfe finden.",
+      },
+      {
+        icon: "💡",
+        title: "Transparente Preisgestaltung",
+        text: "Informiere über Preisrahmen und Leistungsumfang – das schafft Vertrauen und hebt dich von unseriösen Anbietern ab.",
+      },
+      {
+        icon: "📍",
+        title: "Einsatzgebiet auf einen Blick",
+        text: "Zeige klar, in welchen Städten und Stadtteilen du tätig bist, damit Kunden sofort wissen, ob du für sie infrage kommst.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für einen Schlüsseldienst?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Schlüsseldienst-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich mein Einsatzgebiet und meine Preise klar kommunizieren?", a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen." },
+      { q: "Brauche ich technisches Wissen für meine Schlüsseldienst-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  architekt: {
+    slug: "architekt",
+    displayName: "Architekt",
+    title: "Website für Architekt erstellen",
+    h1Template: "KI-Website für dein Architekturbüro{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Architekturbüros ab 19,90 €/Monat. Mit Portfolio, Leistungsprofil und Kontaktmöglichkeit – von der KI erstellt.",
+    keywords: ["Website Architekt", "Architekturbüro Website erstellen", "Homepage Architekt"],
+    features: [
+      {
+        icon: "🏛️",
+        title: "Portfolio-Galerie",
+        text: "Präsentiere realisierte Projekte mit hochwertigen Fotos – von Einfamilienhäusern bis zu Gewerbeobjekten.",
+      },
+      {
+        icon: "📐",
+        title: "Leistungsprofil",
+        text: "Erkläre dein Leistungsspektrum – Planung, Baugenehmigung, Bauleitung und Innenraumgestaltung auf einen Blick.",
+      },
+      {
+        icon: "✉️",
+        title: "Projektanfrage",
+        text: "Interessenten nehmen direkt über das Kontaktformular Kontakt auf – für Erstgespräche und Machbarkeitsprüfungen.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für ein Architekturbüro?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Architekten-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich mein Projektportfolio mit eigenen Fotos befüllen?", a: "Ja. Im Kundenbereich lassen sich Bilder und Beschreibungen jederzeit ergänzen." },
+      { q: "Brauche ich technisches Wissen für meine Architekten-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  innenarchitekt: {
+    slug: "innenarchitekt",
+    displayName: "Innenarchitekt",
+    title: "Website für Innenarchitekt erstellen",
+    h1Template: "KI-Website für dein Innenarchitekturbüro{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Innenarchitekten ab 19,90 €/Monat. Mit Designportfolio, Leistungsübersicht und Kontaktformular – sofort online.",
+    keywords: ["Website Innenarchitekt", "Innenarchitektur Website erstellen", "Homepage Raumgestaltung"],
+    features: [
+      {
+        icon: "🛋️",
+        title: "Design-Portfolio",
+        text: "Zeige realisierte Raumgestaltungen mit stilvollen Fotos – von Privatwohnungen bis zu Büro- und Gastronomieprojekten.",
+      },
+      {
+        icon: "🎨",
+        title: "Designphilosophie",
+        text: "Erkläre deinen Stil und deine Herangehensweise, um die richtigen Kunden anzusprechen und zu begeistern.",
+      },
+      {
+        icon: "📐",
+        title: "Leistungen im Überblick",
+        text: "Von der Konzeptentwicklung über Materialauswahl bis zur Ausführungsplanung – präsentiere jeden Schritt deiner Arbeit.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für einen Innenarchitekten?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Innenarchitekten-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich mein Portfolio mit eigenen Raumfotos zeigen?", a: "Ja. Bilder und Projekttexte lassen sich im Kundenbereich jederzeit hochladen." },
+      { q: "Brauche ich technisches Wissen für meine Innenarchitekten-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  buchhaltung: {
+    slug: "buchhaltung",
+    displayName: "Buchhaltungsbüro",
+    title: "Website für Buchhaltungsbüro erstellen",
+    h1Template: "KI-Website für dein Buchhaltungsbüro{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Buchhaltungsbüros ab 19,90 €/Monat. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – sofort online.",
+    keywords: ["Website Buchhaltung", "Buchhaltungsbüro Website erstellen", "Homepage Buchhalter"],
+    features: [
+      {
+        icon: "📊",
+        title: "Leistungsübersicht",
+        text: "Erkläre dein Angebot verständlich – Finanzbuchhaltung, Lohnabrechnung, Jahresabschluss und Steuerberatung.",
+      },
+      {
+        icon: "🤝",
+        title: "Vertrauen aufbauen",
+        text: "Präsentiere Qualifikationen, Berufsjahre und Kundenstimmen, um seriös und kompetent zu wirken.",
+      },
+      {
+        icon: "📅",
+        title: "Beratungstermin anfragen",
+        text: "Interessenten können direkt ein Erstgespräch anfragen – per Kontaktformular, schnell und unkompliziert.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für ein Buchhaltungsbüro?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Buchhaltungs-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meine Qualifikationen und Zertifikate auf der Website zeigen?", a: "Ja. Alle Inhalte lassen sich im Kundenbereich jederzeit anpassen und ergänzen." },
+      { q: "Brauche ich technisches Wissen für meine Buchhaltungs-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  logopaedie: {
+    slug: "logopaedie",
+    displayName: "Logopädie",
+    title: "Website für Logopädie erstellen",
+    h1Template: "KI-Website für deine Logopädiepraxis{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Logopädiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – sofort online.",
+    keywords: ["Website Logopädie", "Logopädie Praxis Website", "Homepage Logopäde"],
+    features: [
+      {
+        icon: "🗣️",
+        title: "Therapieangebote",
+        text: "Erkläre dein Leistungsspektrum – Sprachtherapie für Kinder und Erwachsene, Stottern, Schlucktherapie und mehr.",
+      },
+      {
+        icon: "📋",
+        title: "Infos für Patienten",
+        text: "Beantworte häufige Fragen rund um Rezept, Kassenzulassung und Ablauf der ersten Therapiestunde.",
+      },
+      {
+        icon: "📅",
+        title: "Terminanfrage",
+        text: "Patienten können unkompliziert über das Kontaktformular einen Ersttermin anfragen.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für eine Logopädiepraxis?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Logopädie-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich auf der Website über Kassenzulassung und Rezept informieren?", a: "Ja. Alle Informationstexte lassen sich im Kundenbereich jederzeit anpassen." },
+      { q: "Brauche ich technisches Wissen für meine Logopädie-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  ergotherapie: {
+    slug: "ergotherapie",
+    displayName: "Ergotherapie",
+    title: "Website für Ergotherapie erstellen",
+    h1Template: "KI-Website für deine Ergotherapiepraxis{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Ergotherapiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Patienteninfos und Kontaktformular – sofort online.",
+    keywords: ["Website Ergotherapie", "Ergotherapie Praxis Website", "Homepage Ergotherapeut"],
+    features: [
+      {
+        icon: "🤲",
+        title: "Therapiebereiche vorstellen",
+        text: "Erkläre deine Schwerpunkte – pädiatrische Ergotherapie, neurologie, Handtherapie, psychiatrische Versorgung.",
+      },
+      {
+        icon: "📖",
+        title: "Patienteninformationen",
+        text: "Informiere über Rezeptpflicht, Kassenzulassung und den Ablauf der Therapie – verständlich und transparent.",
+      },
+      {
+        icon: "✉️",
+        title: "Terminanfrage",
+        text: "Patienten und Eltern nehmen einfach per Kontaktformular Kontakt auf – für Ersttermine und Beratung.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für eine Ergotherapiepraxis?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Ergotherapie-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meine Therapieschwerpunkte auf der Website erklären?", a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen." },
+      { q: "Brauche ich technisches Wissen für meine Ergotherapie-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  hebamme: {
+    slug: "hebamme",
+    displayName: "Hebamme",
+    title: "Website für Hebamme erstellen",
+    h1Template: "KI-Website für deine Hebammenpraxis{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Hebammen ab 19,90 €/Monat. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – sofort online.",
+    keywords: ["Website Hebamme", "Hebamme Website erstellen", "Homepage Hebammenpraxis"],
+    features: [
+      {
+        icon: "👶",
+        title: "Betreuungsangebote",
+        text: "Erkläre dein Angebot – Geburtsvorbereitungskurse, Wochenbettbetreuung, Rückbildung und Stillberatung.",
+      },
+      {
+        icon: "💛",
+        title: "Persönliche Vorstellung",
+        text: "Stelle dich mit einem herzlichen Kurzprofil vor und schaffe sofort Vertrauen bei werdenden Eltern.",
+      },
+      {
+        icon: "📝",
+        title: "Anfrage für freie Termine",
+        text: "Werdende Mütter können frühzeitig über das Kontaktformular anfragen – ideal für Kapazitätsplanung.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für eine Hebamme?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Hebammen-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meine freien Betreuungskapazitäten kommunizieren?", a: "Ja. Texte und Verfügbarkeitshinweise lassen sich im Kundenbereich jederzeit aktualisieren." },
+      { q: "Brauche ich technisches Wissen für meine Hebammen-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  pilates: {
+    slug: "pilates",
+    displayName: "Pilatesstudio",
+    title: "Website für Pilatesstudio erstellen",
+    h1Template: "KI-Website für dein Pilatesstudio{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Pilatesstudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – sofort online.",
+    keywords: ["Website Pilatesstudio", "Pilates Studio Website erstellen", "Homepage Pilates"],
+    features: [
+      {
+        icon: "🧘",
+        title: "Kursangebot",
+        text: "Stelle deine Kurse vor – Mat Pilates, Reformer, Pre- und Postnatal sowie Einzel- und Gruppentraining.",
+      },
+      {
+        icon: "💪",
+        title: "Trainer-Profile",
+        text: "Präsentiere dein Trainer-Team mit Qualifikationen und persönlicher Note – für mehr Vertrauen und Bindung.",
+      },
+      {
+        icon: "🎟️",
+        title: "Probestunde buchen",
+        text: "Neukunden können unkompliziert eine Probestunde anfragen – direkt über das Kontaktformular.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für ein Pilatesstudio?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Pilates-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich meinen Kursplan und Preise selbst aktualisieren?", a: "Ja. Alle Inhalte lassen sich im Kundenbereich jederzeit anpassen." },
+      { q: "Brauche ich technisches Wissen für meine Pilates-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  reisebuero: {
+    slug: "reisebuero",
+    displayName: "Reisebüro",
+    title: "Website für Reisebüro erstellen",
+    h1Template: "KI-Website für dein Reisebüro{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Reisebüros ab 19,90 €/Monat. Mit Reiseangeboten, Beratungsleistungen und Kontaktmöglichkeit – von der KI erstellt.",
+    keywords: ["Website Reisebüro", "Reisebüro Website erstellen", "Homepage Reisevermittlung"],
+    features: [
+      {
+        icon: "✈️",
+        title: "Reiseangebote präsentieren",
+        text: "Zeige Highlights deines Angebots – Pauschalreisen, Kreuzfahrten, Rundreisen und individuelle Urlaubsplanung.",
+      },
+      {
+        icon: "🌍",
+        title: "Reiseberatung hervorheben",
+        text: "Positioniere deine persönliche Beratungsleistung als Mehrwert gegenüber unpersönlichen Online-Buchungsportalen.",
+      },
+      {
+        icon: "📞",
+        title: "Einfache Kontaktaufnahme",
+        text: "Kunden können Reisewünsche bequem per Kontaktformular oder Telefon anfragen – für individuelle Angebote.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für ein Reisebüro?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Reisebüro-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich aktuelle Reiseangebote auf der Website veröffentlichen?", a: "Ja. Angebote und Texte lassen sich im Kundenbereich jederzeit aktualisieren." },
+      { q: "Brauche ich technisches Wissen für meine Reisebüro-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  hausreinigung: {
+    slug: "hausreinigung",
+    displayName: "Hausreinigung",
+    title: "Website für Hausreinigung erstellen",
+    h1Template: "KI-Website für deinen Hausreinigungsservice{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Hausreinigungsservices ab 19,90 €/Monat. Mit Leistungsübersicht, Preisangaben und Kontaktformular – sofort online.",
+    keywords: ["Website Hausreinigung", "Reinigungsservice Website erstellen", "Homepage Haushaltsreinigung"],
+    features: [
+      {
+        icon: "🧹",
+        title: "Leistungspaket im Überblick",
+        text: "Zeige alle Angebote – Unterhaltsreinigung, Fensterreinigung, Endreinigung und regelmäßige Haushaltshilfe.",
+      },
+      {
+        icon: "✅",
+        title: "Vertrauen & Seriosität",
+        text: "Präsentiere Kundenbewertungen, Referenzen und Versicherungshinweise für maximale Sicherheit beim Auftraggeber.",
+      },
+      {
+        icon: "📋",
+        title: "Angebot einholen",
+        text: "Interessenten können direkt über das Kontaktformular ein individuelles Angebot anfragen.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für einen Reinigungsservice?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Reinigungsservice-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich mein Einsatzgebiet und meine Leistungspakete beschreiben?", a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen." },
+      { q: "Brauche ich technisches Wissen für meine Reinigungsservice-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
+
+  fotostudio: {
+    slug: "fotostudio",
+    displayName: "Fotostudio",
+    title: "Website für Fotostudio erstellen",
+    h1Template: "KI-Website für dein Fotostudio{city} – in 3 Minuten online",
+    description:
+      "Professionelle Website für Fotostudios ab 19,90 €/Monat. Mit Portfolio, Leistungsangeboten und Buchungsanfrage – von der KI erstellt.",
+    keywords: ["Website Fotostudio", "Fotograf Website erstellen", "Homepage Fotografen"],
+    features: [
+      {
+        icon: "📷",
+        title: "Portfolio-Galerie",
+        text: "Präsentiere deine besten Aufnahmen – Porträtfotos, Businessfotos, Hochzeits- und Produktfotografie.",
+      },
+      {
+        icon: "🎬",
+        title: "Leistungsangebote",
+        text: "Erkläre dein Angebot übersichtlich – Shooting-Pakete, Locations, Bearbeitungsleistungen und Lieferzeiten.",
+      },
+      {
+        icon: "📅",
+        title: "Shooting-Anfrage",
+        text: "Kunden buchen ihren Termin direkt über das Kontaktformular – unkompliziert und ohne langes Hin und Her.",
+      },
+    ],
+    faqs: [
+      { q: "Was kostet eine Website für ein Fotostudio?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
+      { q: "Wie schnell ist meine Fotostudio-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
+      { q: "Kann ich mein Fotoportfolio mit eigenen Bildern befüllen?", a: "Ja. Im Kundenbereich lassen sich Fotos und Beschreibungen jederzeit hochladen." },
+      { q: "Brauche ich technisches Wissen für meine Fotostudio-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+    ],
+  },
 };
 
 // ── 30 deutsche Städte nach Einwohnerzahl ────────────────────────────────────
@@ -818,6 +1478,21 @@ export const DE_CITIES: SeoCity[] = [
   { name: "Kiel", slug: "kiel" },
   { name: "Rostock", slug: "rostock" },
   { name: "Freiburg", slug: "freiburg" },
+  { name: "Erfurt", slug: "erfurt" },
+  { name: "Lübeck", slug: "luebeck" },
+  { name: "Ulm", slug: "ulm" },
+  { name: "Heidelberg", slug: "heidelberg" },
+  { name: "Darmstadt", slug: "darmstadt" },
+  { name: "Kassel", slug: "kassel" },
+  { name: "Hamm", slug: "hamm" },
+  { name: "Saarbrücken", slug: "saarbruecken" },
+  { name: "Mülheim", slug: "muelheim" },
+  { name: "Krefeld", slug: "krefeld" },
+  { name: "Oberhausen", slug: "oberhausen" },
+  { name: "Mainz", slug: "mainz" },
+  { name: "Osnabrück", slug: "osnabrueck" },
+  { name: "Solingen", slug: "solingen" },
+  { name: "Herne", slug: "herne" },
 ];
 
 // ── Per-industry visual style + relevant add-ons ─────────────────────────────
