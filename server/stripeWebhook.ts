@@ -195,7 +195,7 @@ export function registerStripeWebhook(app: Express) {
 
               // Website stays active while subscription is still running (canceling = still paid)
               if (newStatus === "active" || newStatus === "canceling" || newStatus === "trialing") {
-                await updateWebsite(sub.websiteId, { status: "active" });
+                await updateWebsite(sub.websiteId, { status: "active", captureStatus: "converted" });
               }
 
               console.log(`[Webhook] Subscription updated for website ${sub.websiteId}: ${newStatus}${cancelAtPeriodEnd ? " (cancel_at_period_end)" : ""}`);

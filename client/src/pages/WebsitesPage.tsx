@@ -49,6 +49,20 @@ const captureLabels: Record<string, string> = {
   abandoned: "Abgebrochen",
 };
 
+/**
+ * Derive the logical funnel status from both website status and captureStatus.
+ * An active/trialing/canceling website is always "converted" regardless of
+ * what captureStatus says (prevents "Aktiv + Onboarding gestartet" contradiction).
+ */
+function getEffectiveCaptureStatus(w: any): string {
+  if (w.status === "active" || w.status === "canceling" || w.status === "trialing") return "converted";
+  if (w.status === "sold") {
+    // Paid but onboarding not yet marked complete → at minimum onboarding_completed
+    if (w.captureStatus === "onboarding_started" || w.captureStatus === "email_captured") return "onboarding_completed";
+  }
+  return w.captureStatus || "email_captured";
+}
+
 // ── Main Page ───────────────────────────────────────────
 export default function WebsitesPage() {
   const utils = trpc.useUtils();
@@ -609,9 +623,11 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                     </TableCell>
                     <TableCell className="text-sm">{w.industry || "–"}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={captureColors[w.captureStatus] || ""}>
-                        {captureLabels[w.captureStatus] || w.captureStatus}
-                      </Badge>
+                      {(() => { const eff = getEffectiveCaptureStatus(w); return (
+                        <Badge variant="outline" className={captureColors[eff] || ""}>
+                          {captureLabels[eff] || eff}
+                        </Badge>
+                      ); })()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={statusColors[w.status] || ""}>
