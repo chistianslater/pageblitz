@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Calendar, Clock, ChevronLeft, ChevronRight, X, Check, Loader2, CalendarCheck } from "lucide-react";
 
 interface DaySchedule { enabled: boolean; start: string; end: string; }
@@ -158,19 +159,33 @@ export default function BookingWidget({ slug, primaryColor = "#2563eb", onClose,
 
   if (loadingSettings) {
     return (
-      <div className={wrapper}>
-        <div className={`${card} flex items-center justify-center h-48`}>
+      <motion.div className={wrapper} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div className={`${card} flex items-center justify-center h-48`}
+          initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}>
           <Loader2 className="w-6 h-6 animate-spin" style={{ color: primaryColor }} />
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   }
 
   if (!settings) return null;
 
   return (
-    <div className={wrapper} onClick={inline ? undefined : (e) => e.target === e.currentTarget && onClose?.()}>
-      <div className={card}>
+    <motion.div
+      className={wrapper}
+      onClick={inline ? undefined : (e) => e.target === e.currentTarget && onClose?.()}
+      initial={inline ? false : { opacity: 0 }}
+      animate={inline ? false : { opacity: 1 }}
+      exit={inline ? undefined : { opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className={card}
+        initial={inline ? false : { opacity: 0, scale: 0.96, y: 20 }}
+        animate={inline ? false : { opacity: 1, scale: 1, y: 0 }}
+        exit={inline ? undefined : { opacity: 0, scale: 0.96, y: 20 }}
+        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100" style={{ backgroundColor: primaryColor }}>
           <div>
@@ -408,8 +423,8 @@ export default function BookingWidget({ slug, primaryColor = "#2563eb", onClose,
               )}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
