@@ -2525,6 +2525,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Patch addOnContactForm state for ContactSection lock
     (patched as any).addOnContactForm = data.addOnContactForm;
 
+    // Patch addOnBooking state so fullscreen preview shows booking section
+    (patched as any).addOnBooking = data.addOnBooking;
+
     // Patch contact form fields for dynamic form rendering
     (patched as any).contactFormFields = data.contactFormFields;
 
@@ -2731,10 +2734,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {previewToken ? `pageblitz.de/preview/${previewToken}` : "deine-website.pageblitz.de"}
               </span>
             </div>
+            {/* Desktop: "Website freischalten" CTA when on preview step */}
+            {currentStep === "preview" && (
+              <button
+                onClick={async () => {
+                  setShowFullPreview(false);
+                  addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+                  await advanceToStep("checkout");
+                }}
+                className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-xs font-semibold transition-all shadow-lg shadow-blue-500/20 flex-shrink-0"
+              >
+                <Zap className="w-3 h-3" /> Website freischalten
+              </button>
+            )}
             {/* Desktop close button */}
             <button
               onClick={() => setShowFullPreview(false)}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex-shrink-0"
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold transition-colors flex-shrink-0"
             >
               <X className="w-3 h-3" /> Schließen
             </button>
@@ -2775,13 +2791,34 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             className="lg:hidden bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/60 flex-shrink-0"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
-            <button
-              onClick={() => setShowFullPreview(false)}
-              className="w-full flex items-center justify-center gap-2 py-3 mx-3 my-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
-              style={{ width: "calc(100% - 24px)" }}
-            >
-              <ChevronLeft className="w-4 h-4" /> Zurück zum Chat
-            </button>
+            {currentStep === "preview" ? (
+              <div className="flex gap-2 px-3 py-2">
+                <button
+                  onClick={() => setShowFullPreview(false)}
+                  className="flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold transition-colors flex-shrink-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={async () => {
+                    setShowFullPreview(false);
+                    addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+                    await advanceToStep("checkout");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold transition-all shadow-lg shadow-blue-500/20"
+                >
+                  <Zap className="w-4 h-4" /> Website freischalten
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowFullPreview(false)}
+                className="w-full flex items-center justify-center gap-2 py-3 mx-3 my-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                style={{ width: "calc(100% - 24px)" }}
+              >
+                <ChevronLeft className="w-4 h-4" /> Zurück zum Chat
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -2828,7 +2865,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
 
           {/* Mobile-only progress bar + step navigation (desktop shows it in the preview panel header) */}
-          {currentStep !== "welcome" && currentStep !== "checkout" && currentStep !== "preview" && (() => {
+          {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
             const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
             const rawIdx = dynamicStepOrder.indexOf(currentStep);
             // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
@@ -5406,7 +5443,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {chatHidden ? "Chat einblenden" : "Chat ausblenden"}
             </button>
             {/* Progress bar with clickable completed steps */}
-            {currentStep !== "welcome" && currentStep !== "checkout" && currentStep !== "preview" && (() => {
+            {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
               const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
               const currentIdx = dynamicStepOrder.indexOf(currentStep);
               // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render

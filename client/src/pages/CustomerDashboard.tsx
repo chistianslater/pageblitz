@@ -33,7 +33,7 @@ const LAYOUT_FAMILIES_DASH = [
 ];
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads" | "appointments";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads" | "appointments" | "settings";
 
 interface SectionConfig {
   type: string;
@@ -987,6 +987,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [activeDetail, setActiveDetail] = useState<string | null>(null);
   const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
+  const [bookingEnabled, setBookingEnabled] = useState<boolean>(!!(website as any).addOnBooking);
+  const [aiChatEnabled, setAiChatEnabled] = useState<boolean>(!!(website as any).addOnAiChat);
   const [menuDragState, setMenuDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
   const [priceDragState, setPriceDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -1049,6 +1051,44 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   });
   // Keep ref in sync on every render — safe since refs are just mutable containers
   updateAddonsRef.current = updateAddons;
+
+  // Inline toggle mutations for Booking and AiChat overview rows
+  const saveBookingToggleMutation = trpc.customer.saveBookingSettings.useMutation({
+    onSuccess: () => { onUpdate(); },
+    onError: () => { toast.error("Speichern fehlgeschlagen"); },
+  });
+  const { data: bookingSettingsData } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+
+  const handleBookingToggle = () => {
+    if (!purchasedAddOns["booking"]) { setActiveDetail("booking"); return; }
+    const newVal = !bookingEnabled;
+    setBookingEnabled(newVal);
+    const s = bookingSettingsData?.settings;
+    saveBookingToggleMutation.mutate({
+      websiteId, enabled: newVal,
+      weeklySchedule: (s?.weeklySchedule as any) ?? { mon: { enabled: true, start: "09:00", end: "17:00" }, tue: { enabled: true, start: "09:00", end: "17:00" }, wed: { enabled: true, start: "09:00", end: "17:00" }, thu: { enabled: true, start: "09:00", end: "17:00" }, fri: { enabled: true, start: "09:00", end: "17:00" }, sat: { enabled: false, start: "09:00", end: "12:00" }, sun: { enabled: false, start: "09:00", end: "12:00" } },
+      durationMinutes: s?.durationMinutes ?? 30, bufferMinutes: s?.bufferMinutes ?? 0,
+      advanceDays: s?.advanceDays ?? 30, title: s?.title ?? "Terminbuchung",
+      description: s?.description ?? undefined, notificationEmail: s?.notificationEmail ?? null,
+    });
+  };
+
+  const handleAiChatToggle = () => {
+    if (!purchasedAddOns["aiChat"]) { setActiveDetail("aiChat"); return; }
+    const newVal = !aiChatEnabled;
+    setAiChatEnabled(newVal);
+    updateAddons.mutate({
+      websiteId,
+      addOns: {
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+        menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
+        pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+        contactForm: addons.contactForm,
+        contactFormFields: addons.contactFormFields,
+        addOnAiChat: newVal,
+      } as any,
+    });
+  };
 
   // Auto-save effect - watches for changes in addons
   useEffect(() => {
@@ -1649,7 +1689,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
           </div>
 
           {/* ── Terminbuchung ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${(website as any).addOnBooking ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${bookingEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
                 <CalendarDays className="w-5 h-5 text-violet-400" />
@@ -1658,18 +1698,28 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-white font-semibold text-sm">Terminbuchung</span>
                   <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-medium">+4,90 €/Mon</span>
-                  {(website as any).addOnBooking && <span className="text-xs text-emerald-400 flex items-center gap-0.5"><Check className="w-3 h-3" />Aktiv</span>}
                 </div>
                 <p className="text-slate-400 text-xs">Kunden buchen direkt auf deiner Website einen Termin.</p>
               </div>
-              <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap flex-shrink-0">
-                <Settings className="w-3.5 h-3.5" />Einstellungen
-              </button>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {bookingEnabled && (
+                  <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["booking"] ? (
+                  <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={bookingEnabled} onChange={handleBookingToggle} color="peer-checked:bg-violet-500" />
+                )}
+              </div>
             </div>
           </div>
 
           {/* ── KI-Chat ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${(website as any).addOnAiChat ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${aiChatEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
                 <MessageSquare className="w-5 h-5 text-fuchsia-400" />
@@ -1678,13 +1728,23 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-white font-semibold text-sm">KI-Chat</span>
                   <span className="text-xs px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 font-medium">+9,90 €/Mon</span>
-                  {(website as any).addOnAiChat && <span className="text-xs text-emerald-400 flex items-center gap-0.5"><Check className="w-3 h-3" />Aktiv</span>}
                 </div>
                 <p className="text-slate-400 text-xs">KI beantwortet Kundenfragen & erfasst Leads automatisch.</p>
               </div>
-              <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap flex-shrink-0">
-                <Settings className="w-3.5 h-3.5" />Einstellungen
-              </button>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {aiChatEnabled && (
+                  <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["aiChat"] ? (
+                  <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={aiChatEnabled} onChange={handleAiChatToggle} color="peer-checked:bg-fuchsia-500" />
+                )}
+              </div>
             </div>
           </div>
 
@@ -3091,25 +3151,13 @@ const DEFAULT_SCHEDULE = {
 };
 
 function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
-  const { data: bookingData, isLoading: bookingLoading, refetch: refetchBooking } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+  const { data: bookingData, isLoading: bookingLoading } = trpc.customer.getBookingSettings.useQuery({ websiteId });
   const { data: appointmentsData, isLoading: appointmentsLoading, refetch: refetchAppointments } = trpc.customer.getAppointments.useQuery({ websiteId, upcoming: true });
-  const saveSettingsMutation = trpc.customer.saveBookingSettings.useMutation({
-    onSuccess: () => { toast.success("Einstellungen gespeichert"); refetchBooking(); },
-    onError: (e: any) => toast.error("Fehler: " + e.message),
-  });
   const cancelMutation = trpc.customer.cancelAppointmentByOwner.useMutation({
     onSuccess: () => { toast.success("Termin abgesagt – E-Mail wurde versendet"); refetchAppointments(); setCancelConfirmId(null); setCancelMessage(""); },
     onError: () => toast.error("Fehler beim Absagen"),
   });
 
-  const [enabled, setEnabled] = useState<boolean>(false);
-  const [schedule, setSchedule] = useState<Record<string, { enabled: boolean; start: string; end: string }>>(DEFAULT_SCHEDULE);
-  const [duration, setDuration] = useState(30);
-  const [buffer, setBuffer] = useState(0);
-  const [advance, setAdvance] = useState(30);
-  const [title, setTitle] = useState("Terminbuchung");
-  const [description, setDescription] = useState("");
-  const [notifEmail, setNotifEmail] = useState("");
   const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null);
   const [cancelMessage, setCancelMessage] = useState("");
   const [showPast, setShowPast] = useState(false);
@@ -3118,192 +3166,43 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
     { enabled: showPast }
   );
 
-  useEffect(() => {
-    if (!bookingData) return;
-    setEnabled(bookingData.addOnBooking);
-    if (bookingData.settings) {
-      const s = bookingData.settings;
-      setSchedule((s.weeklySchedule as any) ?? DEFAULT_SCHEDULE);
-      setDuration(s.durationMinutes ?? 30);
-      setBuffer(s.bufferMinutes ?? 0);
-      setAdvance(s.advanceDays ?? 30);
-      setTitle(s.title ?? "Terminbuchung");
-      setDescription(s.description ?? "");
-      setNotifEmail(s.notificationEmail ?? "");
-    }
-  }, [bookingData]);
-
-  const handleSave = () => {
-    saveSettingsMutation.mutate({
-      websiteId,
-      enabled,
-      weeklySchedule: schedule,
-      durationMinutes: duration,
-      bufferMinutes: buffer,
-      advanceDays: advance,
-      title: title.trim() || "Terminbuchung",
-      description: description.trim() || undefined,
-      notificationEmail: notifEmail.trim() || null,
-    });
-  };
-
-  const setDay = (key: string, field: string, value: any) => {
-    setSchedule(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
-  };
-
   if (bookingLoading) return <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>;
 
+  const enabled = bookingData?.addOnBooking ?? false;
   const appts = appointmentsData?.appointments ?? [];
   const pastAppts = pastData?.appointments ?? [];
 
   return (
     <div className="space-y-6">
-      {/* Settings card */}
-      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-white font-semibold flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-blue-400" />
-            Terminbuchung
-            <span className="ml-1 text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">+4,90 €/Monat</span>
+      {/* Header with settings link */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-white text-lg font-semibold flex items-center gap-2">
+            <CalendarCheck className="w-5 h-5 text-blue-400" />
+            Termine
+            {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
           </h2>
-          <button
-            onClick={() => {
-              const newVal = !enabled;
-              setEnabled(newVal);
-              // Auto-save enabled/disabled state immediately
-              saveSettingsMutation.mutate({
-                websiteId,
-                enabled: newVal,
-                weeklySchedule: schedule,
-                durationMinutes: duration,
-                bufferMinutes: buffer,
-                advanceDays: advance,
-                title: title.trim() || "Terminbuchung",
-                description: description.trim() || undefined,
-                notificationEmail: notifEmail.trim() || null,
-              });
-            }}
-            className={`relative w-11 h-6 rounded-full transition-colors ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
-          >
-            <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
-          </button>
+          <p className="text-slate-400 text-sm mt-0.5">Eingehende Buchungen von deiner Website.</p>
         </div>
-
-        {enabled && (
-          <div className="space-y-5">
-            {/* Title */}
-            <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Leistungsbezeichnung</label>
-              <input
-                type="text"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                placeholder="Terminbuchung"
-                maxLength={255}
-                className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Beschreibung <span className="text-slate-600 normal-case font-normal">(optional)</span></label>
-              <textarea
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Kurze Beschreibung der Leistung..."
-                rows={2}
-                maxLength={500}
-                className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
-              />
-            </div>
-
-            {/* Duration / Buffer / Advance */}
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: "Termin-Dauer", value: duration, onChange: setDuration, options: [15, 20, 30, 45, 60, 90, 120], suffix: "Min" },
-                { label: "Pufferzeit", value: buffer, onChange: setBuffer, options: [0, 5, 10, 15, 30], suffix: "Min" },
-                { label: "Buchbar bis", value: advance, onChange: setAdvance, options: [7, 14, 21, 30, 60, 90], suffix: "Tage" },
-              ].map(({ label, value, onChange, options, suffix }) => (
-                <div key={label}>
-                  <label className="text-slate-400 text-xs font-medium block mb-1.5">{label}</label>
-                  <select
-                    value={value}
-                    onChange={e => onChange(Number(e.target.value))}
-                    className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-2 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-                  >
-                    {options.map(o => <option key={o} value={o}>{o} {suffix}</option>)}
-                  </select>
-                </div>
-              ))}
-            </div>
-
-            {/* Weekly Schedule */}
-            <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-2">Verfügbarkeit</label>
-              <div className="space-y-2">
-                {DAY_ORDER.map(key => {
-                  const day = schedule[key] ?? { enabled: false, start: "09:00", end: "17:00" };
-                  return (
-                    <div key={key} className={`flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${day.enabled ? "bg-blue-500/10 border border-blue-500/20" : "bg-slate-900/40 border border-slate-700/30"}`}>
-                      <button
-                        onClick={() => setDay(key, "enabled", !day.enabled)}
-                        className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${day.enabled ? "bg-blue-500" : "bg-slate-600"}`}
-                      >
-                        <span className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: day.enabled ? "18px" : "2px" }} />
-                      </button>
-                      <span className={`text-sm font-medium w-8 flex-shrink-0 ${day.enabled ? "text-white" : "text-slate-500"}`}>{DAY_LABELS[key]}</span>
-                      {day.enabled ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <input
-                            type="time"
-                            value={day.start}
-                            onChange={e => setDay(key, "start", e.target.value)}
-                            className="bg-slate-900/60 border border-slate-600 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
-                          />
-                          <span className="text-slate-500 text-xs">–</span>
-                          <input
-                            type="time"
-                            value={day.end}
-                            onChange={e => setDay(key, "end", e.target.value)}
-                            className="bg-slate-900/60 border border-slate-600 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
-                          />
-                        </div>
-                      ) : (
-                        <span className="text-slate-600 text-sm">Nicht verfügbar</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Notification Email */}
-            <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Benachrichtigungs-E-Mail <span className="text-slate-600 normal-case font-normal">(für neue Buchungen)</span></label>
-              <input
-                type="email"
-                value={notifEmail}
-                onChange={e => setNotifEmail(e.target.value)}
-                placeholder="deine@email.de (Standard: Account-E-Mail)"
-                maxLength={320}
-                className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-        )}
-
         <button
-          onClick={handleSave}
-          disabled={saveSettingsMutation.isPending}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+          onClick={onGoToAddons}
+          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white border border-slate-700/50 hover:border-slate-600 bg-slate-800/60 hover:bg-slate-700/60 px-3 py-1.5 rounded-lg transition-colors"
         >
-          {saveSettingsMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-          Einstellungen speichern
+          <Settings className="w-3.5 h-3.5" />
+          Terminbuchung konfigurieren
         </button>
       </div>
 
-      {/* Appointments list */}
-      {enabled && (
+      {!enabled ? (
+        <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+          <CalendarDays className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+          <p className="text-white font-medium mb-1">Terminbuchung nicht aktiv</p>
+          <p className="text-slate-400 text-sm mb-4">Aktiviere das Add-on, um Buchungen entgegenzunehmen.</p>
+          <button onClick={onGoToAddons} className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors">
+            → Zu den Add-ons
+          </button>
+        </div>
+      ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-white font-semibold flex items-center gap-2">
@@ -3724,6 +3623,7 @@ export default function CustomerDashboard() {
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
     { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
+    { id: "settings", label: "Einstellungen", icon: <Settings className="w-4 h-4" /> },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
     { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
     { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
@@ -3988,16 +3888,6 @@ export default function CustomerDashboard() {
               business={business}
               onUpdate={handleUpdate}
             />
-
-            {/* Strukturierte Felder — ausklappbar */}
-            <ContentFieldsAccordion
-              website={website}
-              websiteData={websiteData}
-              business={business}
-              onboardingData={onboardingData}
-              makeUpdater={makeUpdater}
-              handleUpdate={handleUpdate}
-            />
           </div>
         )}
 
@@ -4012,6 +3902,94 @@ export default function CustomerDashboard() {
             onUpdate={handleUpdate}
             setImagePicker={setImagePicker}
           />
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === "settings" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            {/* Kontaktdaten */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <Phone className="w-4 h-4 text-blue-400" />
+                Kontaktdaten
+              </h2>
+              <p className="text-slate-400 text-xs -mt-2">Werden im Kontakt-Bereich deiner Website angezeigt.</p>
+              <EditableField label="Telefon" value={business?.phone || ""} icon={<Phone className="w-3 h-3" />} onSave={makeUpdater("phone")} />
+              <EditableField label="E-Mail" value={business?.email || ""} icon={<Mail className="w-3 h-3" />} onSave={makeUpdater("email")} />
+              <EditableField label="Adresse" value={business?.address || ""} icon={<MapPin className="w-3 h-3" />} onSave={makeUpdater("address")} />
+            </div>
+
+            {/* SEO */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                </svg>
+                SEO – Google-Sichtbarkeit
+              </h2>
+              <p className="text-slate-400 text-xs -mt-2">Leer lassen = automatisch generiert.</p>
+              <EditableField
+                label="SEO-Titel"
+                value={websiteData?.seoTitle || ""}
+                placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`}
+                onSave={makeUpdater("seoTitle")}
+              />
+              <div>
+                <EditableField
+                  label="Meta-Beschreibung"
+                  value={websiteData?.seoDescription || ""}
+                  multiline
+                  placeholder={websiteData?.tagline || "Kurze Beschreibung (max. 155 Zeichen)"}
+                  onSave={makeUpdater("seoDescription")}
+                />
+                <p className="text-slate-500 text-xs mt-1">
+                  {(websiteData?.seoDescription || "").length}/155
+                  {(websiteData?.seoDescription || "").length > 155 && (
+                    <span className="text-amber-400 ml-1">⚠ zu lang</span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Leistungen & USP */}
+            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-violet-400" />
+                Leistungen & USP
+              </h2>
+              <p className="text-slate-400 text-xs mb-4">Deine Kernleistungen und Alleinstellungsmerkmale – erscheinen in der Leistungs-Sektion.</p>
+              <ServicesEditor
+                websiteId={website.id}
+                initialServices={onboardingData?.topServices || []}
+                initialUsp={onboardingData?.usp || websiteData?.usp}
+                onUpdate={handleUpdate}
+              />
+            </div>
+
+            {/* Impressum */}
+            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                <Settings className="w-4 h-4 text-amber-400" />
+                Impressum-Daten
+              </h2>
+              <p className="text-slate-400 text-xs mb-4">Pflichtangaben für Impressum und Datenschutzerklärung.</p>
+              <LegalEditor
+                websiteId={website.id}
+                initialData={{
+                  legalOwner: onboardingData?.legalOwner || "",
+                  legalStreet: onboardingData?.legalStreet || "",
+                  legalZip: onboardingData?.legalZip || "",
+                  legalCity: onboardingData?.legalCity || "",
+                  legalEmail: onboardingData?.legalEmail || "",
+                  legalPhone: onboardingData?.legalPhone || "",
+                  legalVatId: onboardingData?.legalVatId || "",
+                }}
+                onUpdate={handleUpdate}
+              />
+            </div>
+
+          </div>
         )}
 
         {/* Structure Tab */}
@@ -4123,11 +4101,12 @@ export default function CustomerDashboard() {
 
         {/* Domain Tab */}
         {activeTab === "domain" && website && (
-          <div className="space-y-6 max-w-xl">
+          <div className="space-y-6">
             <div>
               <h2 className="text-white text-lg font-semibold">Domain & Adresse</h2>
               <p className="text-slate-400 text-sm mt-0.5">Verwalte die Web-Adresse deiner Website.</p>
             </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Subdomain */}
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
@@ -4241,6 +4220,7 @@ export default function CustomerDashboard() {
                 </div>
               )}
             </div>
+            </div>{/* end grid */}
           </div>
         )}
 

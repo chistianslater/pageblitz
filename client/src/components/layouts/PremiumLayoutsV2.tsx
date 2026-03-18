@@ -3143,7 +3143,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 1.0 }}
-          className="relative flex items-center justify-center p-8 lg:p-12 min-h-[60vw] lg:min-h-0"
+          className="relative flex items-center justify-center p-8 lg:p-12 min-h-[60vw] lg:min-h-0 z-0"
         >
           <Skeleton isLoading={isLoading} className="w-full h-full rounded-2xl overflow-hidden">
             <div className="relative w-full h-full min-h-[50vw] lg:min-h-0" style={{ aspectRatio: '4/3' }}>
