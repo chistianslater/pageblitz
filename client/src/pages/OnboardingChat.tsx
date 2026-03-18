@@ -164,7 +164,7 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, aboutImageU
         <div
           ref={containerRef}
           className="flex-1 min-w-0 rounded-xl overflow-hidden relative"
-          style={{ height: "min(58vh, 500px)", boxShadow: `0 0 0 2px ${cs?.primary ?? "#6366f1"}55, 0 24px 48px -12px rgba(0,0,0,0.7)` }}
+          style={{ height: "min(68vh, 620px)", boxShadow: `0 0 0 2px ${cs?.primary ?? "#6366f1"}55, 0 24px 48px -12px rgba(0,0,0,0.7)` }}
         >
           {/* Rendered layout — scaled to fit container width */}
           <div style={{ width: 1280, transformOrigin: "top left", transform: `scale(${scale})`, pointerEvents: "none", userSelect: "none" }}>
