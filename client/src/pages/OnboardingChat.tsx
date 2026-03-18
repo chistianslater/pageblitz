@@ -140,9 +140,9 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, aboutImageU
 
       {/* ── Header ── */}
       <div className="flex-shrink-0 pt-8 pb-3 px-6 text-center">
-        <h1 className="text-xl font-bold text-white mb-0.5">Welcher Stil passt zu dir?</h1>
-        <p className="text-slate-400 text-xs">
-          Deine Inhalte, drei verschiedene Designs — du kannst jederzeit wechseln.
+        <h1 className="text-xl font-bold text-white mb-1">Welcher Stil passt zu dir?</h1>
+        <p className="text-slate-400 text-xs max-w-xs mx-auto leading-relaxed">
+          Wähl einen Startpunkt — Farben, Schriften und alle Inhalte kannst du danach frei anpassen.
         </p>
       </div>
 
@@ -210,6 +210,14 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, aboutImageU
           <span className="text-white text-sm font-bold">{LAYOUT_LABELS[selected] ?? selected}</span>
           <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
         </div>
+      </div>
+
+      {/* ── Reassurance hint ── */}
+      <div className="flex-shrink-0 flex items-center justify-center gap-1.5 pt-1 pb-0">
+        <svg className="w-3 h-3 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-2.828 1.172H7v-2a4 4 0 011.172-2.828z"/>
+        </svg>
+        <span className="text-slate-500 text-xs">Farben &amp; Inhalte jederzeit änderbar</span>
       </div>
 
       {/* ── Actions ── */}
