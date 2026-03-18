@@ -7,7 +7,7 @@
 import React, { useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { trpc } from '@/lib/trpc';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone, Star, Zap,
   Award, Clock, MapPin, Utensils, Flower,
@@ -1392,57 +1392,92 @@ function MobileMenu({
         Menü
       </button>
 
-      {/* Overlay — rendered via portal to escape nav's backdrop-filter stacking context */}
-      {open && ReactDOM.createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex flex-col"
-          style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(20px)' }}
-        >
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-6 py-5">
-            <span className="text-white font-medium text-lg truncate max-w-[70%]">{businessName}</span>
-            <button
-              onClick={() => setOpen(false)}
-              className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:border-white/40 transition-all"
-              aria-label="Menü schließen"
+      {/* Overlay — portal escapes nav's backdrop-filter stacking context */}
+      {ReactDOM.createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              key="mobile-nav"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="fixed inset-0 z-[9999] flex flex-col"
+              style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(24px)' }}
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Nav links — large, centered */}
-          <div className="flex-1 flex flex-col justify-center px-8 gap-2">
-            {links.map((link, i) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="group flex items-center justify-between py-4 border-b border-white/10 text-white/60 hover:text-white transition-colors"
-                style={{ animationDelay: `${i * 50}ms` }}
+              {/* Top bar */}
+              <motion.div
+                className="flex items-center justify-between px-6 py-5"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
               >
-                <span className="text-2xl font-light tracking-tight">{link.label}</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 group-hover:translate-x-0 duration-200">
-                  <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </a>
-            ))}
-            <a
-              href="#contact"
-              onClick={() => setOpen(false)}
-              className="mt-6 py-4 rounded-2xl text-center text-sm font-semibold transition-all"
-              style={{ background: accentColor || '#3b82f6', color: '#fff' }}
-            >
-              Jetzt kontaktieren
-            </a>
-          </div>
+                <span className="text-white font-medium text-lg truncate max-w-[70%]">{businessName}</span>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:border-white/40 transition-all"
+                  aria-label="Menü schließen"
+                >
+                  <motion.svg
+                    width="14" height="14" viewBox="0 0 14 14" fill="none"
+                    initial={{ rotate: -45, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    transition={{ delay: 0.15, duration: 0.25 }}
+                  >
+                    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </motion.svg>
+                </button>
+              </motion.div>
 
-          {/* Bottom hint */}
-          <div className="px-8 pb-8 text-white/20 text-xs">
-            © {new Date().getFullYear()}
-          </div>
-        </div>,
+              {/* Nav links — staggered slide-up */}
+              <div className="flex-1 flex flex-col justify-center px-8 gap-2">
+                {links.map((link, i) => (
+                  <motion.a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className="group flex items-center justify-between py-4 border-b border-white/10 text-white/50 hover:text-white transition-colors"
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 + i * 0.07, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  >
+                    <span className="text-3xl font-light tracking-tight">{link.label}</span>
+                    <motion.svg
+                      width="18" height="18" viewBox="0 0 16 16" fill="none"
+                      className="text-white/30 group-hover:text-white/80 transition-colors"
+                      initial={{ x: -6, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 + i * 0.07, duration: 0.3 }}
+                    >
+                      <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </motion.svg>
+                  </motion.a>
+                ))}
+                <motion.a
+                  href="#contact"
+                  onClick={() => setOpen(false)}
+                  className="mt-8 py-4 rounded-2xl text-center text-sm font-semibold"
+                  style={{ background: accentColor || '#3b82f6', color: '#fff' }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 + links.length * 0.07, duration: 0.35 }}
+                >
+                  Jetzt kontaktieren
+                </motion.a>
+              </div>
+
+              {/* Bottom */}
+              <motion.div
+                className="px-8 pb-8 text-white/15 text-xs"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.3 }}
+              >
+                © {new Date().getFullYear()}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </>
