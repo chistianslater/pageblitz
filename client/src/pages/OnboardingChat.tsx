@@ -4503,7 +4503,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             >
                 {!gmbÜbernommenEditMode ? (
                   <div className="space-y-2">
-                    {/* Preview of the data to be imported */}
+                    {/* Name field — always required, GMB doesn't provide this */}
+                    <div className="bg-slate-800/80 border border-amber-500/30 rounded-xl px-3 py-2.5 space-y-2">
+                      <p className="text-xs text-amber-300 font-medium">👤 Pflichtangabe für Impressum</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 w-14 flex-shrink-0">Inhaber</span>
+                        <input
+                          type="text"
+                          value={data.legalOwner || ""}
+                          onChange={(e) => setData((p) => ({ ...p, legalOwner: e.target.value }))}
+                          placeholder="Vorname Nachname"
+                          className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-amber-500 placeholder-slate-500"
+                        />
+                      </div>
+                    </div>
+                    {/* Preview of the GMB data to be imported */}
                     {(() => {
                       const parts = business.address ? business.address.split(",") : [];
                       const street = parts[0]?.trim() || "";
@@ -4513,6 +4527,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       const city = zipCityMatch?.[2] || "";
                       return (
                         <div className="bg-slate-800/60 border border-slate-600/40 rounded-xl px-3 py-2.5 space-y-1">
+                          <p className="text-[10px] text-slate-500 mb-1">Aus Google übernommen:</p>
                           {street && <p className="text-xs text-slate-300">📍 {street}{zip && city ? `, ${zip} ${city}` : ""}</p>}
                           {business.phone && <p className="text-xs text-slate-300">📞 {business.phone}</p>}
                           {business.email && <p className="text-xs text-slate-300">✉️ {business.email}</p>}
@@ -4521,6 +4536,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     })()}
                     <button
                       onClick={async () => {
+                        if (!data.legalOwner || data.legalOwner.trim().split(/\s+/).length < 2) {
+                          toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
+                          return;
+                        }
                         const parts = business.address ? business.address.split(",") : [];
                         const street = parts[0]?.trim() || "";
                         const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
@@ -4538,6 +4557,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           legalEmail: email || p.legalEmail,
                         }));
                         const summary = [
+                          `Inhaber: ${data.legalOwner.trim()}`,
                           street && `Straße: ${street}`,
                           zip && city && `PLZ/Stadt: ${zip} ${city}`,
                           phone && `Telefon: ${phone}`,
@@ -4545,6 +4565,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         ].filter(Boolean).join(" · ");
                         addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
                         const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                        await trySaveStep(stepIdx, { legalOwner: data.legalOwner.trim() });
                         if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
                         if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
                         if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
@@ -4569,6 +4590,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       </button>
                     </div>
                     {[
+                      { label: "Inhaber", key: "legalOwner" as const, placeholder: "Vorname Nachname" },
                       { label: "Straße", key: "legalStreet" as const, placeholder: "Musterstraße 1" },
                       { label: "PLZ", key: "legalZip" as const, placeholder: "12345" },
                       { label: "Stadt", key: "legalCity" as const, placeholder: "Musterstadt" },
@@ -4588,8 +4610,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     ))}
                     <button
                       onClick={async () => {
+                        if (!data.legalOwner || data.legalOwner.trim().split(/\s+/).length < 2) {
+                          toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
+                          return;
+                        }
                         setGmbÜbernommenEditMode(false);
                         const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                        await trySaveStep(stepIdx, { legalOwner: data.legalOwner.trim() });
                         if (data.legalStreet) await trySaveStep(stepIdx + 1, { legalStreet: data.legalStreet });
                         if (data.legalZip && data.legalCity) await trySaveStep(stepIdx + 2, { legalZip: data.legalZip, legalCity: data.legalCity });
                         if (data.legalEmail) await trySaveStep(stepIdx + 3, { legalEmail: data.legalEmail });
