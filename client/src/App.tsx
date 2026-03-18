@@ -22,7 +22,6 @@ const SearchPage           = lazy(() => import("./pages/SearchPage"));
 const WebsitesPage         = lazy(() => import("./pages/WebsitesPage"));
 const OutreachPage         = lazy(() => import("./pages/OutreachPage"));
 const StatsPage            = lazy(() => import("./pages/StatsPage"));
-const TemplatesPage        = lazy(() => import("./pages/TemplatesPage"));
 const LeadsPage            = lazy(() => import("./pages/LeadsPage"));
 const PreviewPage          = lazy(() => import("./pages/PreviewPage"));
 const OnboardingWizard     = lazy(() => import("./pages/OnboardingWizard"));
@@ -56,7 +55,6 @@ function AdminRouter() {
             <Route path="/admin/websites" component={WebsitesPage} />
             <Route path="/admin/outreach" component={OutreachPage} />
             <Route path="/admin/stats" component={StatsPage} />
-            <Route path="/admin/templates" component={TemplatesPage} />
             <Route path="/admin/leads" component={LeadsPage} />
             <Route path="/admin/layouts" component={LayoutOverviewPage} />
             <Route component={NotFound} />
