@@ -159,6 +159,23 @@ async function getGmbPhotos(placeId: string, maxPhotos = 6): Promise<string[]> {
   }
 }
 
+/**
+ * Fetch up to 5 reviews from Google Places API for a given placeId.
+ * Returns empty array on failure or when placeId is a non-GMB placeholder.
+ */
+async function getGmbReviews(placeId: string): Promise<Array<{ author_name: string; rating: number; text: string; time: number }>> {
+  if (!placeId || placeId.startsWith("self-") || placeId.startsWith("email-")) return [];
+  try {
+    const details = await makeRequest<PlaceDetailsResult>(
+      "/maps/api/place/details/json",
+      { place_id: placeId, fields: "reviews", language: "de" }
+    );
+    return details?.result?.reviews || [];
+  } catch {
+    return [];
+  }
+}
+
 // ── Design Archetype Definitions ─────────────────────
 // Each archetype has concrete CSS rules (promptInstruction) that force the AI to produce
 // visually distinct, award-winning designs – not generic templates.
@@ -1101,7 +1118,17 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     if (business.rating) websiteData.googleRating = parseFloat(business.rating);
     if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
-    const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+    // Use stored reviews; fetch fresh from Places API if not stored yet (backwards-compat for old records)
+    let storedReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+    if ((!storedReviews || storedReviews.length === 0) && business.placeId) {
+      const fresh = await getGmbReviews(business.placeId);
+      if (fresh.length > 0) {
+        storedReviews = fresh;
+        // Persist for future generations
+        await updateBusiness(business.id, { googleReviews: fresh } as any);
+      }
+    }
+    const realReviews = storedReviews;
     let injectedRealReviewsSS = false;
     if (realReviews && realReviews.length > 0 && websiteData.sections) {
       const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
@@ -1678,8 +1705,13 @@ export const appRouter = router({
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
-        // Inject real Google reviews into testimonials section if available
-        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        // Inject real Google reviews – fetch fresh if not stored yet (backwards-compat)
+        let storedReviewsRegen = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        if ((!storedReviewsRegen || storedReviewsRegen.length === 0) && business.placeId) {
+          const fresh = await getGmbReviews(business.placeId);
+          if (fresh.length > 0) { storedReviewsRegen = fresh; await updateBusiness(business.id, { googleReviews: fresh } as any); }
+        }
+        const realReviews = storedReviewsRegen;
         let injectedRealReviews = false;
         if (realReviews && realReviews.length > 0 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
@@ -1867,8 +1899,13 @@ export const appRouter = router({
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
-        // Inject real Google reviews into testimonials section if available
-        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        // Inject real Google reviews – fetch fresh if not stored yet (backwards-compat)
+        let storedReviewsRegen2 = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        if ((!storedReviewsRegen2 || storedReviewsRegen2.length === 0) && business.placeId) {
+          const fresh2 = await getGmbReviews(business.placeId);
+          if (fresh2.length > 0) { storedReviewsRegen2 = fresh2; await updateBusiness(business.id, { googleReviews: fresh2 } as any); }
+        }
+        const realReviews = storedReviewsRegen2;
         let injectedRealReviews = false;
         if (realReviews && realReviews.length > 0 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");

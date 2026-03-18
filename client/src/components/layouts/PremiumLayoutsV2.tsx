@@ -2782,8 +2782,8 @@ function FaqSection({ websiteData, cs, isLoading, displayFont, bodyFont, headlin
   return (
     <section id="faq" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-3xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-64 h-10 mb-12">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="mb-12">
+        <Skeleton isLoading={isLoading} className="w-64 h-10 mb-10">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', lineHeight: 1.15, color: textColor, marginBottom: '2.5rem' }}>
             {headline}
           </h2>
         </Skeleton>
