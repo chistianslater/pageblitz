@@ -153,7 +153,7 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, aboutImageU
         <button
           type="button"
           onClick={goPrev}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center transition-colors"
+          className="flex-shrink-0 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 flex items-center justify-center transition-colors"
         >
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -186,7 +186,7 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, aboutImageU
         <button
           type="button"
           onClick={goNext}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center transition-colors"
+          className="flex-shrink-0 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 flex items-center justify-center transition-colors"
         >
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
