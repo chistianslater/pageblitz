@@ -2741,8 +2741,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </button>
           </div>
           {/* Scrollable website – renders the same live data as the right-side preview
-              so all active add-ons (gallery, contact form, …) are always visible */}
-          <div className="flex-1 overflow-auto bg-white">
+              so all active add-ons (gallery, contact form, …) are always visible.
+              onClick intercepts any anchor navigation so internal links can't
+              navigate the parent window away from the OnboardingChat. */}
+          <div
+            className="flex-1 overflow-auto bg-white"
+            onClick={(e) => {
+              const anchor = (e.target as HTMLElement).closest("a");
+              if (!anchor) return;
+              const href = anchor.getAttribute("href");
+              if (!href || href.startsWith("#") || href.startsWith("tel:") || href.startsWith("mailto:")) return;
+              // Open every navigating link in a new tab instead of leaving the chat
+              e.preventDefault();
+              window.open(anchor.href || href, "_blank", "noopener");
+            }}
+          >
             <WebsiteRenderer
               websiteData={liveWebsiteData}
               businessCategory={data.businessCategory || (business as any)?.category || undefined}
