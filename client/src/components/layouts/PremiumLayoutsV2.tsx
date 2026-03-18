@@ -920,48 +920,117 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
     labelSize: string;
     iconRadius: string;
     cardRadius: string;
+    showCardBorder: boolean;
+    cardShadow?: string;
   }> = {
     bold: {
       inputRadius: '0', inputPadding: '0.875rem 1rem', inputFontSize: '1rem',
       buttonRadius: '0', buttonStyle: 'uppercase', buttonPadding: '1rem 1.5rem',
       labelTransform: 'uppercase', labelSize: '0.65rem',
       iconRadius: '0', cardRadius: '0',
+      showCardBorder: false,
     },
     elegant: {
       inputRadius: '1rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.95rem',
       buttonRadius: '9999px', buttonStyle: 'normal', buttonPadding: '0.875rem 1.5rem',
       labelTransform: 'uppercase', labelSize: '0.65rem',
       iconRadius: '0.75rem', cardRadius: '1.5rem',
+      showCardBorder: true,
     },
     modern: {
       inputRadius: '0.75rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.9rem',
       buttonRadius: '0.75rem', buttonStyle: 'normal', buttonPadding: '0.875rem 1.5rem',
       labelTransform: 'uppercase', labelSize: '0.7rem',
       iconRadius: '0.75rem', cardRadius: '1rem',
+      showCardBorder: true,
     },
     luxury: {
       inputRadius: '0.5rem', inputPadding: '0.875rem 1.25rem', inputFontSize: '0.95rem',
       buttonRadius: '9999px', buttonStyle: 'uppercase', buttonPadding: '1rem 2rem',
       labelTransform: 'uppercase', labelSize: '0.65rem',
       iconRadius: '0.5rem', cardRadius: '1rem',
+      showCardBorder: false,
     },
     craft: {
       inputRadius: '0.25rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.9rem',
       buttonRadius: '0.25rem', buttonStyle: 'uppercase', buttonPadding: '0.875rem 1.5rem',
       labelTransform: 'uppercase', labelSize: '0.7rem',
       iconRadius: '0.25rem', cardRadius: '0.5rem',
+      showCardBorder: true,
     },
     fresh: {
       inputRadius: '1rem', inputPadding: '0.75rem 1.25rem', inputFontSize: '0.95rem',
       buttonRadius: '9999px', buttonStyle: 'normal', buttonPadding: '0.875rem 2rem',
       labelTransform: 'normal', labelSize: '0.75rem',
       iconRadius: '1rem', cardRadius: '1.5rem',
+      showCardBorder: false,
+      cardShadow: '0 4px 24px rgba(0,0,0,0.06)',
     },
     clean: {
       inputRadius: '0.375rem', inputPadding: '0.625rem 0.875rem', inputFontSize: '0.875rem',
       buttonRadius: '0.375rem', buttonStyle: 'uppercase', buttonPadding: '0.75rem 1.25rem',
       labelTransform: 'uppercase', labelSize: '0.65rem',
       iconRadius: '0.375rem', cardRadius: '0.75rem',
+      showCardBorder: true,
+    },
+    // ── Newer layout templates ──────────────────────────────────────
+    warm: {
+      inputRadius: '1.25rem', inputPadding: '0.75rem 1.25rem', inputFontSize: '0.95rem',
+      buttonRadius: '9999px', buttonStyle: 'normal', buttonPadding: '0.875rem 2rem',
+      labelTransform: 'normal', labelSize: '0.8rem',
+      iconRadius: '1rem', cardRadius: '1.75rem',
+      showCardBorder: false,
+      cardShadow: '0 4px 24px rgba(0,0,0,0.06)',
+    },
+    aurora: {
+      // Dark cosmic – no harsh border, subtle glassy card
+      inputRadius: '0.5rem', inputPadding: '0.875rem 1rem', inputFontSize: '0.95rem',
+      buttonRadius: '0.5rem', buttonStyle: 'normal', buttonPadding: '1rem 1.5rem',
+      labelTransform: 'normal', labelSize: '0.75rem',
+      iconRadius: '0.5rem', cardRadius: '0.75rem',
+      showCardBorder: false,
+    },
+    nexus: {
+      // Light portfolio – clean geometric, thin border intentional
+      inputRadius: '0.5rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.9rem',
+      buttonRadius: '0.5rem', buttonStyle: 'normal', buttonPadding: '0.875rem 1.5rem',
+      labelTransform: 'normal', labelSize: '0.75rem',
+      iconRadius: '0.5rem', cardRadius: '0.75rem',
+      showCardBorder: true,
+    },
+    clay: {
+      // Claymorphism – very rounded, no border, soft shadow
+      inputRadius: '1.75rem', inputPadding: '0.75rem 1.25rem', inputFontSize: '0.95rem',
+      buttonRadius: '9999px', buttonStyle: 'normal', buttonPadding: '0.875rem 2rem',
+      labelTransform: 'normal', labelSize: '0.8rem',
+      iconRadius: '1.25rem', cardRadius: '2rem',
+      showCardBorder: false,
+      cardShadow: '0 8px 32px rgba(0,0,0,0.08)',
+    },
+    forge: {
+      // Brutalist editorial – sharp, uppercase, intentional hard border
+      inputRadius: '0', inputPadding: '0.875rem 1rem', inputFontSize: '0.9rem',
+      buttonRadius: '0', buttonStyle: 'uppercase', buttonPadding: '1rem 1.5rem',
+      labelTransform: 'uppercase', labelSize: '0.65rem',
+      iconRadius: '0', cardRadius: '0',
+      showCardBorder: true,
+    },
+    pulse: {
+      // Neumorphism – soft, no traditional border, gentle shadow
+      inputRadius: '0.75rem', inputPadding: '0.75rem 1rem', inputFontSize: '0.9rem',
+      buttonRadius: '0.75rem', buttonStyle: 'normal', buttonPadding: '0.875rem 1.5rem',
+      labelTransform: 'normal', labelSize: '0.75rem',
+      iconRadius: '0.75rem', cardRadius: '1.25rem',
+      showCardBorder: false,
+      cardShadow: '4px 4px 12px rgba(0,0,0,0.06), -4px -4px 12px rgba(255,255,255,0.65)',
+    },
+    flux: {
+      // Dark warm gold – no border, glassy card
+      inputRadius: '0.5rem', inputPadding: '0.875rem 1rem', inputFontSize: '0.95rem',
+      buttonRadius: '0.5rem', buttonStyle: 'normal', buttonPadding: '1rem 1.5rem',
+      labelTransform: 'normal', labelSize: '0.75rem',
+      iconRadius: '0.5rem', cardRadius: '0.75rem',
+      showCardBorder: false,
     },
   };
 
@@ -1060,8 +1129,8 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
           {/* Right column: contact form – only rendered when the add-on is active */}
           {!locked && (
             <div className="relative">
-              <div className={`border ${cardBgClass} ${border}`}
-                style={{ ...cardBgStyle, ...borderStyle, borderRadius: config.cardRadius, padding: '1.5rem' }}>
+              <div className={`${config.showCardBorder ? 'border' : ''} ${cardBgClass} ${border}`}
+                style={{ ...cardBgStyle, ...(config.showCardBorder ? borderStyle : {}), borderRadius: config.cardRadius, padding: '1.5rem', ...(config.cardShadow ? { boxShadow: config.cardShadow } : {}) }}>
                 <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
                   {formFields.map((field: any) => (
                     <div key={field.id}>
@@ -3298,7 +3367,7 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
 
       <TestimonialsSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={true} variant={1} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
-      <ContactSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.02em' }} template="modern" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.02em' }} template="aurora" headlineSize={headlineSize} />
       <DynamicFooter websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} footerText={footerText} variant="minimal" logoStyle={{ fontFamily:DISPLAY, fontWeight:700, letterSpacing:'-0.02em' }} />
     </div>
   );
@@ -3456,7 +3525,7 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={false} variant={0} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.03em' }} template="modern" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.03em' }} template="nexus" headlineSize={headlineSize} />
       <DynamicFooter websiteData={websiteData} cs={safeCs} isLoading={isLoading} footerText={footerText} variant="default" logoStyle={{ fontFamily:DISPLAY, fontWeight:700, letterSpacing:'-0.03em' }} />
     </div>
   );
@@ -3643,7 +3712,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Das sagen unsere Kunden'} dark={false} variant={0} serif={false} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight:900 }} template="modern" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight:900 }} template="clay" headlineSize={headlineSize} />
       <DynamicFooter websiteData={websiteData} cs={safeCs} isLoading={isLoading} footerText={footerText} variant="default" logoStyle={{ fontFamily:DISPLAY, fontWeight:900 }} />
     </div>
   );
@@ -3814,7 +3883,7 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Referenzen'} dark={false} variant={0} serif={true} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
-      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight:300, textTransform:'uppercase' as const, letterSpacing:'-0.02em' }} template="modern" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ fontWeight:300, textTransform:'uppercase' as const, letterSpacing:'-0.02em' }} template="forge" headlineSize={headlineSize} />
       <DynamicFooter websiteData={websiteData} cs={safeCs} isLoading={isLoading} footerText={footerText} variant="default" showBorder={true} logoStyle={{ fontFamily:DISPLAY, fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.04em' }} />
     </div>
   );
@@ -3985,7 +4054,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
       <TestimonialsSection websiteData={websiteData} cs={{ ...safeCs, surface:NEU, background:NEU }} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={false} variant={0} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={{ ...safeCs, surface:NEU, background:NEU }} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
-      <ContactSection websiteData={websiteData} cs={{ ...safeCs, background:NEU, surface:NEU }} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{}} template="modern" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={{ ...safeCs, background:NEU, surface:NEU }} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{}} template="pulse" headlineSize={headlineSize} />
       <DynamicFooter websiteData={websiteData} cs={{ ...safeCs, background:NEU }} isLoading={isLoading} footerText={footerText} variant="default" logoStyle={{ fontFamily:DISPLAY, fontWeight:700 }} />
     </div>
   );
@@ -4172,7 +4241,7 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
       <TestimonialsSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Stimmen'} dark={true} variant={1} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
-      <ContactSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ textTransform:'uppercase' as const, letterSpacing:'-0.02em', fontWeight:800 }} template="modern" headlineSize={headlineSize} />
+      <ContactSection websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} dark={true} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ textTransform:'uppercase' as const, letterSpacing:'-0.02em', fontWeight:800 }} template="flux" headlineSize={headlineSize} />
       <DynamicFooter websiteData={websiteData} cs={{ ...safeCs, primary:primaryColor, text:TXT, textLight:TXT_M }} isLoading={isLoading} footerText={footerText} variant="minimal" logoStyle={{ fontFamily:DISPLAY, fontWeight:800, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:primaryColor }} />
     </div>
   );
