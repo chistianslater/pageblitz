@@ -3902,6 +3902,11 @@ export default function CustomerDashboard() {
     onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
   });
 
+  const updateShowBrandingMutation = trpc.customer.updateShowBranding.useMutation({
+    onSuccess: () => { refetch(); toast.success("Einstellung gespeichert"); },
+    onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
+  });
+
   const handleUpdate = () => {
     refetch();
     setPreviewKey((k) => k + 1);
@@ -4439,6 +4444,42 @@ export default function CustomerDashboard() {
                 onUpdate={handleUpdate}
               />
             </div>
+
+            {/* Pageblitz Branding */}
+            {subscription && (
+              <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                  <Globe className="w-4 h-4 text-slate-400" />
+                  Pageblitz-Branding
+                </h2>
+                <p className="text-slate-400 text-xs mb-4">Steuere, ob ein kleiner Hinweis auf Pageblitz im Footer deiner Website erscheint.</p>
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative mt-0.5">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={(website as any).showBranding !== false}
+                      onChange={(e) => {
+                        updateShowBrandingMutation.mutate({ websiteId: website.id, showBranding: e.target.checked });
+                      }}
+                    />
+                    <div
+                      className={`w-10 h-6 rounded-full transition-colors ${(website as any).showBranding !== false ? 'bg-blue-600' : 'bg-slate-600'}`}
+                      onClick={() => {
+                        const current = (website as any).showBranding !== false;
+                        updateShowBrandingMutation.mutate({ websiteId: website.id, showBranding: !current });
+                      }}
+                    >
+                      <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${(website as any).showBranding !== false ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-white text-sm font-medium">Pageblitz-Branding im Footer anzeigen</span>
+                    <p className="text-slate-400 text-xs mt-0.5">Zeigt einen kleinen "Erstellt mit Pageblitz"-Link im Footer deiner Website.</p>
+                  </div>
+                </label>
+              </div>
+            )}
 
           </div>
         )}

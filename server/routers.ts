@@ -2044,6 +2044,8 @@ export const appRouter = router({
         // Inject ID into websiteData for stable randomization seed in frontend
         if (website.websiteData) {
           (website.websiteData as any).id = website.id;
+          // Inject showBranding so layout components can read it from websiteData
+          (website.websiteData as any).showBranding = website.showBranding !== false;
         }
 
         return { website, business, redirectToSlug };
@@ -2085,26 +2087,60 @@ export const appRouter = router({
     send: adminProcedure
       .input(z.object({
         businessId: z.number(),
-        websiteId: z.number(),
+        websiteId: z.number().optional(),
         recipientEmail: z.string().email(),
         subject: z.string(),
         body: z.string(),
+        variant: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
+        // Create DB record first (draft status)
         const emailId = await createOutreachEmail({
           businessId: input.businessId,
           websiteId: input.websiteId,
           recipientEmail: input.recipientEmail,
           subject: input.subject,
           body: input.body,
-          status: "sent",
-          sentAt: new Date(),
+          status: "draft",
+          variant: input.variant ?? "baseline",
         });
+
+        // Convert plain text body to simple HTML
+        const htmlBody = `<!DOCTYPE html>
+<html><body style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;color:#1a1a1a;line-height:1.7;font-size:15px">
+${input.body.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}
+<br>
+<p style="color:#9ca3af;font-size:12px;border-top:1px solid #f0f0f0;padding-top:16px;margin-top:32px">
+Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
+<a href="https://pageblitz.de" style="color:#6366f1">pageblitz.de</a> ·
+<a href="mailto:christian@pageblitz.de?subject=Abmelden" style="color:#9ca3af">Abmelden</a>
+</p>
+</body></html>`;
+
+        // Actually send the email via Resend
+        const { sendEmail } = await import("./_core/email");
+        const sendResult = await sendEmail({
+          to: input.recipientEmail,
+          subject: input.subject,
+          html: htmlBody,
+          text: input.body,
+        });
+
+        // Update DB record with result
+        const { updateOutreachEmail } = await import("./db");
+        if (sendResult.success) {
+          await updateOutreachEmail(emailId, {
+            status: "sent",
+            sentAt: new Date(),
+            resendEmailId: sendResult.id ?? null,
+          });
+        }
+
         await notifyOwner({
           title: `Outreach E-Mail gesendet`,
           content: `E-Mail an ${input.recipientEmail} gesendet.\nBetreff: ${input.subject}`,
         });
-        return { emailId, success: true };
+        return { emailId, success: sendResult.success, error: sendResult.error };
       }),
 
     list: adminProcedure
@@ -3031,6 +3067,8 @@ Kontext: ${input.context}`,
           // (mirrors the same injection in website.get so preview matches live site)
           if (row.website.websiteData) {
             (row.website.websiteData as any).id = row.website.id;
+            // Inject showBranding so layout components can read it from websiteData
+            (row.website.websiteData as any).showBranding = row.website.showBranding !== false;
           }
           return { website: row.website, subscription: row.subscription, business };
         })
@@ -4251,6 +4289,16 @@ Wichtige Felder im JSON:
         const owned = rows.find((r) => r.website.id === input.websiteId);
         if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
         await updateWebsite(input.websiteId, { contactEmail: input.contactEmail || null } as any);
+        return { success: true };
+      }),
+
+    updateShowBranding: protectedProcedure
+      .input(z.object({ websiteId: z.number(), showBranding: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        await updateWebsite(input.websiteId, { showBranding: input.showBranding } as any);
         return { success: true };
       }),
 

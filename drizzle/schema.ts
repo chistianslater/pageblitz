@@ -92,6 +92,8 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),
   chatUsageCount: int("chatUsageCount").default(0),
   chatUsageResetAt: timestamp("chatUsageResetAt"),
+  // Branding
+  showBranding: boolean("showBranding").default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -198,11 +200,33 @@ export const outreachEmails = mysqlTable("outreach_emails", {
   body: text("body"),
   status: mysqlEnum("status", ["draft", "sent", "opened", "replied", "bounced"]).default("draft").notNull(),
   sentAt: timestamp("sentAt"),
+  variant: varchar("variant", { length: 100 }).default("baseline"),
+  resendEmailId: varchar("resendEmailId", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type OutreachEmail = typeof outreachEmails.$inferSelect;
 export type InsertOutreachEmail = typeof outreachEmails.$inferInsert;
+
+export const outreachExperiments = mysqlTable("outreach_experiments", {
+  id: int("id").autoincrement().primaryKey(),
+  baselineVariant: varchar("baselineVariant", { length: 100 }).notNull(),
+  challengerVariant: varchar("challengerVariant", { length: 100 }).notNull(),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  endedAt: timestamp("endedAt"),
+  winner: varchar("winner", { length: 100 }),
+  status: mysqlEnum("status", ["running", "completed", "aborted"]).default("running").notNull(),
+  hypothesis: text("hypothesis"),
+  baselineSends: int("baselineSends").default(0),
+  challengerSends: int("challengerSends").default(0),
+  baselineOpens: int("baselineOpens").default(0),
+  challengerOpens: int("challengerOpens").default(0),
+  baselineReplies: int("baselineReplies").default(0),
+  challengerReplies: int("challengerReplies").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type OutreachExperiment = typeof outreachExperiments.$inferSelect;
+export type InsertOutreachExperiment = typeof outreachExperiments.$inferInsert;
 
 export const templateUploads = mysqlTable("template_uploads", {
   id: int("id").autoincrement().primaryKey(),

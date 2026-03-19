@@ -29,7 +29,9 @@ import {
   extractCity,
   escapeHtml,
 } from "../seo/metaInjection";
-import { listActiveWebsites, getWebsiteBySlugWithBusiness } from "../db";
+import { listActiveWebsites, getWebsiteBySlugWithBusiness, updateOutreachEmail } from "../db";
+import { outreachEmails } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -59,6 +61,36 @@ async function startServer() {
 
   // Stripe webhook MUST be registered BEFORE express.json() for signature verification
   registerStripeWebhook(app);
+
+  // Resend webhook for outreach email tracking (open/bounce events)
+  app.post("/api/webhooks/resend", express.json(), async (req, res) => {
+    try {
+      const { type, data } = req.body ?? {};
+      if (!type || !data?.email_id) {
+        res.json({ ok: true });
+        return;
+      }
+      const db = await (await import("../db")).getDb();
+      if (db) {
+        if (type === "email.opened" || type === "email.clicked") {
+          await db.update(outreachEmails)
+            .set({ status: "opened" })
+            .where(eq(outreachEmails.resendEmailId, data.email_id));
+        } else if (type === "email.bounced") {
+          await db.update(outreachEmails)
+            .set({ status: "bounced" })
+            .where(eq(outreachEmails.resendEmailId, data.email_id));
+        } else if (type === "email.complained") {
+          await db.update(outreachEmails)
+            .set({ status: "bounced" })
+            .where(eq(outreachEmails.resendEmailId, data.email_id));
+        }
+      }
+    } catch (err) {
+      console.error("[Resend Webhook] Error:", err);
+    }
+    res.json({ ok: true });
+  });
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

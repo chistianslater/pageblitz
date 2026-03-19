@@ -1,4 +1,4 @@
-import { eq, desc, sql, and, like, gte } from "drizzle-orm";
+import { eq, desc, sql, and, like, gte, isNotNull, notInArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import crypto from "crypto";
 import {
@@ -6,6 +6,7 @@ import {
   businesses, InsertBusiness, Business,
   generatedWebsites, InsertGeneratedWebsite, GeneratedWebsite,
   outreachEmails, InsertOutreachEmail, OutreachEmail,
+  outreachExperiments, InsertOutreachExperiment, OutreachExperiment,
   templateUploads, InsertTemplateUpload, TemplateUpload,
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
@@ -750,4 +751,56 @@ export async function deleteChatTranscriptById(id: number): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db.delete(chatTranscripts).where(eq(chatTranscripts.id, id));
+}
+
+// ── Outreach Experiments ──────────────────────────────────────────────────────
+
+export async function getActiveExperiment(): Promise<OutreachExperiment | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(outreachExperiments)
+    .where(eq(outreachExperiments.status, "running")).limit(1);
+  return row ?? null;
+}
+
+export async function createExperiment(data: InsertOutreachExperiment): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(outreachExperiments).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function updateExperiment(id: number, data: Partial<InsertOutreachExperiment>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(outreachExperiments).set(data).where(eq(outreachExperiments.id, id));
+}
+
+export async function getExperimentStats(experimentId: number): Promise<OutreachExperiment | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(outreachExperiments)
+    .where(eq(outreachExperiments.id, experimentId)).limit(1);
+  return row ?? null;
+}
+
+export async function listExperiments(): Promise<OutreachExperiment[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(outreachExperiments)
+    .orderBy(desc(outreachExperiments.createdAt)).limit(20);
+}
+
+export async function getBusinessesForOutreach(limit: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const contacted = db.select({ businessId: outreachEmails.businessId }).from(outreachEmails);
+  return db.select().from(businesses)
+    .where(
+      and(
+        isNotNull(businesses.email),
+        notInArray(businesses.id, contacted)
+      )
+    )
+    .limit(limit);
 }

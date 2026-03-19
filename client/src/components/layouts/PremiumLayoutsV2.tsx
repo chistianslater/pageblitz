@@ -1608,6 +1608,21 @@ function DynamicFooter({ websiteData, cs, isLoading, footerText, variant = 'defa
           <a href={datenschutzHref} className="hover:opacity-100 transition-opacity" style={{ '--hover-color': safeCs.primary } as React.CSSProperties}>Datenschutz</a>
         </div>
       </div>
+      {websiteData.showBranding !== false && (
+        <div className="max-w-7xl mx-auto w-full text-center pt-4 border-t mt-4" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <a
+            href="https://pageblitz.de"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs transition-opacity"
+            style={{ color: 'inherit', textDecoration: 'none', opacity: 0.35 }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.65')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '0.35')}
+          >
+            Erstellt mit Pageblitz
+          </a>
+        </div>
+      )}
     </footer>
   );
 }
@@ -1819,6 +1834,21 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-white/10">
           <p className="text-white/20 text-xs text-center break-words">{footerText}</p>
         </div>
+        {websiteData.showBranding !== false && (
+          <div className="max-w-7xl mx-auto text-center pt-4 border-t border-white/[0.08] mt-4">
+            <a
+              href="https://pageblitz.de"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs transition-opacity"
+              style={{ color: 'inherit', textDecoration: 'none', opacity: 0.35 }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.65')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '0.35')}
+            >
+              Erstellt mit Pageblitz
+            </a>
+          </div>
+        )}
       </footer>
     </div>
   );
