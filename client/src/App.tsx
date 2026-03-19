@@ -29,6 +29,7 @@ const OnboardingChat       = lazy(() => import("./pages/OnboardingChat"));
 const CustomerDashboard    = lazy(() => import("./pages/CustomerDashboard"));
 const AccountPage          = lazy(() => import("./pages/AccountPage"));
 const LayoutOverviewPage   = lazy(() => import("./pages/LayoutOverviewPage"));
+const PipelinePage         = lazy(() => import("./pages/PipelinePage"));
 const LayoutPreviewStandalone = lazy(() => import("./pages/LayoutPreviewStandalone"));
 const LoginPage            = lazy(() => import("./pages/LoginPage"));
 const CustomerLoginPage    = lazy(() => import("./pages/CustomerLoginPage"));
@@ -64,6 +65,7 @@ function AdminRouter() {
               <Route path="/admin/leads" component={LeadsPage} />
               <Route path="/admin/businesses" component={BusinessesPage} />
               <Route path="/admin/layouts" component={LayoutOverviewPage} />
+              <Route path="/admin/pipeline" component={PipelinePage} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>

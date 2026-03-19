@@ -252,6 +252,13 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+
+    // Start automated outreach pipeline scheduler
+    import("../outreachPipeline")
+      .then(({ startPipelineScheduler }) => {
+        startPipelineScheduler();
+      })
+      .catch((e) => console.error("[Pipeline] Failed to start:", e));
   });
 }
 

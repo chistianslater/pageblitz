@@ -962,7 +962,7 @@ function getFallbackWebsiteData(business: any, category: string, colorScheme: an
  * Runs website generation in the background.
  * Updates job progress and status in the database.
  */
-async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<void> {
+export async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<void> {
   try {
     // Update job status to processing
     await updateGenerationJob(jobId, { status: "processing", progress: 10 });
@@ -2422,6 +2422,34 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
         const total = await countOutreachEmails();
         return { emails, total };
       }),
+
+    getPipelineStatus: adminProcedure.query(async () => {
+      const { loadState } = await import("./outreachPipeline");
+      return loadState();
+    }),
+
+    setPipelineConfig: adminProcedure
+      .input(z.object({
+        enabled: z.boolean().optional(),
+        dailyLimit: z.number().min(1).max(500).optional(),
+        batchSize: z.number().min(1).max(50).optional(),
+        intervalMinutes: z.number().min(5).max(1440).optional(),
+        targetCitySlugs: z.array(z.string()).optional(),
+        targetIndustryKeys: z.array(z.string()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { loadState, saveState } = await import("./outreachPipeline");
+        const state = loadState();
+        state.config = { ...state.config, ...input };
+        saveState(state);
+        return { success: true, config: state.config };
+      }),
+
+    triggerPipeline: adminProcedure.mutation(async () => {
+      const { runPipelineCycle } = await import("./outreachPipeline");
+      const result = await runPipelineCycle();
+      return result;
+    }),
   }),
 
   // ── Admin: Template Uploads ───────────────────────

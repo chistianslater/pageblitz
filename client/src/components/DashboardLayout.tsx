@@ -36,6 +36,7 @@ const menuItems = [
   { icon: Mail, label: "Outreach", path: "/admin/outreach" },
   { icon: BarChart3, label: "Statistiken", path: "/admin/stats" },
   { icon: Palette, label: "Layout-Vorschau", path: "/admin/layouts" },
+  { icon: Zap, label: "Pipeline", path: "/admin/pipeline" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
