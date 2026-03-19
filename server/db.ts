@@ -282,7 +282,28 @@ export async function createOutreachEmail(data: InsertOutreachEmail) {
 export async function listOutreachEmails(limit = 50, offset = 0) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(outreachEmails).orderBy(desc(outreachEmails.createdAt)).limit(limit).offset(offset);
+  return db
+    .select({
+      id: outreachEmails.id,
+      businessId: outreachEmails.businessId,
+      websiteId: outreachEmails.websiteId,
+      recipientEmail: outreachEmails.recipientEmail,
+      subject: outreachEmails.subject,
+      body: outreachEmails.body,
+      status: outreachEmails.status,
+      previewUrl: outreachEmails.previewUrl,
+      sentAt: outreachEmails.sentAt,
+      variant: outreachEmails.variant,
+      createdAt: outreachEmails.createdAt,
+      businessName: businesses.name,
+      businessWebsite: businesses.website,
+      leadType: businesses.leadType,
+    })
+    .from(outreachEmails)
+    .leftJoin(businesses, eq(outreachEmails.businessId, businesses.id))
+    .orderBy(desc(outreachEmails.createdAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function countOutreachEmails() {

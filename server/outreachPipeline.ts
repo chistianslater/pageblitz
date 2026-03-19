@@ -22,6 +22,7 @@ import { nanoid } from "nanoid";
 import { getHeroImageUrl, getIndustryColorScheme, getLayoutPool } from "./industryImages";
 import { getNextLayoutForIndustry } from "./db";
 import { invokeLLM } from "./_core/llm";
+import { analyzeWebsite } from "./websiteAnalysis";
 
 // ── State file ────────────────────────────────────────────────────────────────
 
@@ -310,9 +311,10 @@ export async function runPipelineCycle(): Promise<{
         })();
 
         if (existing) {
-          // Already in DB – check if website already generated
+          // Already in DB – skip if website already generated or leadType is "unknown" (good website)
           const alreadyGenerated = await getWebsiteByBusinessId(existing.id);
           if (alreadyGenerated) continue;
+          if (existing.leadType === "unknown") continue; // decent website, not a target
 
           if (existing.email) {
             toQueue.push(existing.id);
@@ -356,7 +358,23 @@ export async function runPipelineCycle(): Promise<{
 
         const r = details?.result;
         const category = extractGmbCategory(place.types || r?.types || []);
-        const hasWebsite = !!(r?.website);
+        const websiteUrl = r?.website || null;
+
+        // ── Website quality analysis ──────────────────────────────────────────
+        // Run BEFORE saving so we can store the correct leadType immediately.
+        // Skip businesses whose website looks modern/good (leadType = "unknown").
+        let leadType: "no_website" | "outdated_website" | "poor_website" | "unknown" = "no_website";
+        if (websiteUrl) {
+          try {
+            const analysis = await analyzeWebsite(websiteUrl);
+            leadType = analysis.leadType;
+          } catch {
+            leadType = "unknown"; // can't analyse → skip to be safe
+          }
+          // Only proceed if website is genuinely bad or outdated.
+          // "unknown" means decent website → not a good lead, skip.
+          if (leadType === "unknown") continue;
+        }
 
         const businessId = await upsertBusiness({
           placeId: place.place_id,
@@ -364,19 +382,19 @@ export async function runPipelineCycle(): Promise<{
           address: r?.formatted_address || place.formatted_address || null,
           phone: r?.formatted_phone_number || null,
           email: null,
-          website: r?.website || null,
+          website: websiteUrl,
           category,
           rating: r?.rating ?? place.rating ?? null,
           reviewCount: r?.user_ratings_total ?? 0,
           lat: place.geometry?.location?.lat ?? null,
           lng: place.geometry?.location?.lng ?? null,
-          leadType: hasWebsite ? "unknown" : "no_website",
+          leadType,
         });
 
-        // Scrape email from website
-        if (r?.website) {
+        // Scrape email from website (only if they have one and it's a bad lead)
+        if (websiteUrl) {
           try {
-            const email = await scrapeEmailFromWebsite(r.website);
+            const email = await scrapeEmailFromWebsite(websiteUrl);
             if (email && email.includes("@")) {
               const mxOk = await hasMxRecord(email);
               if (mxOk) {
@@ -440,6 +458,9 @@ export async function runPipelineCycle(): Promise<{
             )
           );
 
+        // Status "generating" while website builds → auto-transitions to "draft"
+        // after generation completes. Admin must manually approve ("queued") before
+        // the orchestrator will send the email. No email goes out without approval.
         await createOutreachEmail({
           businessId,
           websiteId,

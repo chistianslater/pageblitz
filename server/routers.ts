@@ -1207,7 +1207,8 @@ export async function runWebsiteGeneration(jobId: number, websiteId: number): Pr
 
     console.log(`[Generation Job ${jobId}] Completed successfully for website ${websiteId}${useFallback ? " (mit Fallback)" : ""}`);
 
-    // If this website was generated as part of outreach, mark the email as queued
+    // If this website was generated as part of outreach, move email to "draft"
+    // so the admin can review website + email before manually approving to send.
     try {
       const linkedEmail = await getOutreachEmailByWebsiteId(websiteId);
       if (linkedEmail && linkedEmail.status === "generating") {
@@ -1216,10 +1217,10 @@ export async function runWebsiteGeneration(jobId: number, websiteId: number): Pr
           ? `https://pageblitz.de/preview/${completedWebsite.previewToken}`
           : null;
         await updateOutreachEmail(linkedEmail.id, {
-          status: "queued",
+          status: "draft",   // ← admin must approve before sending
           previewUrl: previewUrl ?? undefined,
         });
-        console.log(`[Generation Job ${jobId}] Outreach email ${linkedEmail.id} marked as queued`);
+        console.log(`[Generation Job ${jobId}] Outreach email ${linkedEmail.id} marked as draft (awaiting approval)`);
       }
     } catch (e) {
       // Non-critical: don't fail the generation job
@@ -2421,6 +2422,20 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
         const emails = await listOutreachEmails(input?.limit || 50, input?.offset || 0);
         const total = await countOutreachEmails();
         return { emails, total };
+      }),
+
+    // Approve selected draft emails → status "queued" so orchestrator will send them
+    approve: adminProcedure
+      .input(z.object({ emailIds: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        let approved = 0;
+        for (const id of input.emailIds) {
+          try {
+            await updateOutreachEmail(id, { status: "queued" });
+            approved++;
+          } catch {}
+        }
+        return { approved };
       }),
 
     getPipelineStatus: adminProcedure.query(async () => {
