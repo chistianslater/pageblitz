@@ -1755,9 +1755,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return;
         }
 
-        // If no localStorage, check if we have stepCurrent from database
+        // If no localStorage, check if we have stepCurrent from database.
+        // Exception: for admin-generated outreach websites, NEVER restore from DB step
+        // on first customer visit (localStorage empty = fresh customer). The admin
+        // generation process may have written a stepCurrent that would skip the
+        // entire customization flow for the prospect.
+        const isAdminFreshVisit = source === "admin" && !savedStep;
         const dbStepCurrent = existingOnboarding?.stepCurrent;
-        if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
+        if (!isAdminFreshVisit && dbStepCurrent !== undefined && dbStepCurrent !== null) {
           // Map step number to ChatStep (only resume if user has actually progressed past step 0)
           const stepIndex = dbStepCurrent;
           if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
@@ -1781,18 +1786,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         if (source === "admin" && !hasEmail) {
           setCurrentStep("email");
           await addBotMessage(
-            "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**.",
+            "Hallo! 👋 Wir haben deine fertige Website bereits für dich erstellt. Damit du sie aktivieren kannst, brauchen wir zuerst deine **E-Mail-Adresse**.",
             800
           );
-        } else if (source === "external" && (business as any)?.category) {
-          // GMB user: pre-select the category but let the user confirm or change it
+        } else if ((source === "admin" || source === "external") && (business as any)?.category) {
+          // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
           const translatedCategory = translateGmbCategory((business as any).category);
           setData((p) => ({ ...p, businessCategory: translatedCategory }));
           setCurrentStep("businessCategory");
-          await addBotMessage(
-            `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`,
-            800
-          );
+          const greeting = source === "admin"
+            ? `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`
+            : `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`;
+          await addBotMessage(greeting, 800);
         } else {
           setCurrentStep("businessCategory");
           await addBotMessage(getStepPrompt("businessCategory"), 800);
@@ -1802,8 +1807,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, onboardingStorageKey]);
 
+  // ── Admin-generated websites: show content immediately (no skeleton) ────
+  // For outreach websites (source === "admin"), the content is already fully generated
+  // by the admin pipeline. Skip the skeleton phase and show the real website right away
+  // so the prospect sees their actual page during onboarding.
+  useEffect(() => {
+    if (siteData?.website?.source === "admin" && (contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || contentPhase === 'texts')) {
+      setContentPhase('complete');
+      setCategoryConfirmed(true);
+      if (previewToken || websiteIdProp) {
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+      }
+    }
+  }, [siteData?.website?.source]);
+
   // ── Progressive content revelation based on user input ─────────
-  
+
   // Phase 1: When businessCategory is explicitly confirmed by user -> show colors
   // Uses categoryConfirmed (not data.businessCategory) to avoid revealing the website
   // before the user has answered the category question (prevents premature skeleton exit
