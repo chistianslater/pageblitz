@@ -29,6 +29,7 @@ import {
   TrendingDown,
   CheckCircle2,
   Mail,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -181,7 +182,25 @@ export default function BusinessesPage() {
     }, 300);
   };
 
+  const utils = trpc.useUtils();
+
   const { data: statsData } = trpc.business.stats.useQuery();
+
+  const bulkDeleteMutation = trpc.business.bulkDelete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.deleted} ${data.deleted === 1 ? "Eintrag" : "Einträge"} gelöscht`);
+      setSelectedIds(new Set());
+      utils.business.list.invalidate();
+      utils.business.stats.invalidate();
+    },
+    onError: (err) => toast.error("Löschen fehlgeschlagen: " + err.message),
+  });
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`${selectedIds.size} ${selectedIds.size === 1 ? "Eintrag" : "Einträge"} wirklich löschen?`)) return;
+    bulkDeleteMutation.mutate({ ids: Array.from(selectedIds) });
+  };
 
   const { data, isLoading } = trpc.business.list.useQuery({
     limit: LIMIT,
@@ -430,7 +449,17 @@ export default function BusinessesPage() {
               className="gap-2"
             >
               <Mail className="h-4 w-4" />
-              In Outreach-Warteschlange aufnehmen
+              In Outreach-Warteschlange
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Löschen
             </Button>
             <Button
               variant="ghost"

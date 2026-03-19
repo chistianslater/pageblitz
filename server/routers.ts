@@ -1299,16 +1299,28 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const searchQuery = `${input.query} in ${input.region}`;
-        const placesResult = await makeRequest<PlacesSearchResult>(
-          "/maps/api/place/textsearch/json",
-          { query: searchQuery, language: "de" }
-        );
-        if (placesResult.status !== "OK" || !placesResult.results?.length) {
-          return { results: [], total: 0 };
+
+        // Fetch up to 3 pages (max 60 results) using next_page_token
+        const allPlaces: PlacesSearchResult["results"] = [];
+        let pageToken: string | undefined = undefined;
+        for (let page = 0; page < 3; page++) {
+          const params: Record<string, string> = { query: searchQuery, language: "de" };
+          if (pageToken) params.pagetoken = pageToken;
+          const placesResult = await makeRequest<PlacesSearchResult>(
+            "/maps/api/place/textsearch/json", params
+          );
+          if (placesResult.status !== "OK" || !placesResult.results?.length) break;
+          allPlaces.push(...placesResult.results);
+          if (!placesResult.next_page_token) break;
+          pageToken = placesResult.next_page_token;
+          // Google requires a short delay before using next_page_token
+          await new Promise(r => setTimeout(r, 2000));
         }
+
+        if (!allPlaces.length) return { results: [], total: 0 };
+
         const detailedResults = [];
-        const limitedResults = placesResult.results.slice(0, 20);
-        for (const place of limitedResults) {
+        for (const place of allPlaces) {
           try {
             const details = await makeRequest<PlaceDetailsResult>(
               "/maps/api/place/details/json",
@@ -1317,9 +1329,7 @@ export const appRouter = router({
             const hasWebsite = !!(details.result?.website);
             const category = extractGmbCategory(place.types) || input.query;
             const websiteUrl = details.result?.website || null;
-
-            // Determine initial lead type
-            let leadType: "no_website" | "outdated_website" | "poor_website" | "unknown" = hasWebsite ? "unknown" : "no_website";
+            const leadType: "no_website" | "outdated_website" | "poor_website" | "unknown" = hasWebsite ? "unknown" : "no_website";
 
             detailedResults.push({
               placeId: place.place_id,
@@ -1355,12 +1365,92 @@ export const appRouter = router({
           }
         }
 
-        // Filter: if includeOutdated is false, only return businesses without website
         const filtered = input.includeOutdated
           ? detailedResults
           : detailedResults.filter(r => !r.hasWebsite);
 
         return { results: filtered, total: filtered.length };
+      }),
+
+    // Bulk crawl: search all districts of a city automatically
+    gmbBulkCrawl: adminProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        city: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        const CITY_DISTRICTS: Record<string, string[]> = {
+          münchen: ["Schwabing","Maxvorstadt","Neuhausen","Pasing","Sendling","Haidhausen","Giesing","Bogenhausen","Milbertshofen","Moosach","Laim","Nymphenburg","Schwabing-West","Au","Glockenbachviertel","Ludwigsvorstadt","Isarvorstadt","Berg am Laim","Ramersdorf","Trudering"],
+          berlin: ["Mitte","Prenzlauer Berg","Friedrichshain","Kreuzberg","Neukölln","Tempelhof","Schöneberg","Charlottenburg","Wilmersdorf","Steglitz","Zehlendorf","Spandau","Reinickendorf","Pankow","Weißensee","Lichtenberg","Marzahn","Hellersdorf","Köpenick","Treptow"],
+          hamburg: ["Altona","Eimsbüttel","Harburg","Bergedorf","Wandsbek","Nord","Mitte","Barmbek","Rahlstedt","Bramfeld","Steilshoop","Dulsberg","Hammerbrook","Rothenburgsort","Billstedt","Horn","Borgfelde","Hamm","Uhlenhorst","Winterhude"],
+          köln: ["Innenstadt","Deutz","Nippes","Ehrenfeld","Lindenthal","Rodenkirchen","Chorweiler","Porz","Kalk","Mühlheim"],
+          frankfurt: ["Sachsenhausen","Bornheim","Nordend","Westend","Bockenheim","Gallus","Niederrad","Höchst","Sossenheim","Rödelheim","Dornbusch","Preungesheim","Fechenheim","Ostend","Bahnhofsviertel"],
+          düsseldorf: ["Altstadt","Carlstadt","Flingern","Derendorf","Pempelfort","Golzheim","Bilk","Friedrichstadt","Oberbilk","Eller","Gerresheim","Garath","Benrath","Urdenbach","Volmerswerth"],
+          stuttgart: ["Mitte","Nord","Süd","West","Ost","Bad Cannstatt","Zuffenhausen","Vaihingen","Möhringen","Mühlhausen","Hedelfingen","Obertürkheim","Wangen","Untertürkheim","Degerloch"],
+          dortmund: ["Innenstadt","Eving","Scharnhorst","Brackel","Aplerbeck","Hörde","Hombruch","Lütgendortmund","Huckarde","Mengede"],
+          essen: ["Stadtmitte","Rüttenscheid","Bredeney","Werden","Kettwig","Steele","Karnap","Altenessen","Katernberg","Stoppenberg"],
+          leipzig: ["Zentrum","Gohlis","Connewitz","Plagwitz","Lindenau","Grünau","Mockau","Eutritzsch","Reudnitz","Volkmarsdorf"],
+          dresden: ["Altstadt","Neustadt","Pieschen","Klotzsche","Loschwitz","Blasewitz","Leuben","Prohlis","Plauen","Cotta"],
+          duisburg: ["Duisburg-Mitte","Rheinhausen","Homberg","Walsum","Hamborn","Meiderich","Ruhrort","Neudorf","Buchholz","Großenbaum"],
+          bochum: ["Innenstadt","Wattenscheid","Hamme","Hordel","Riemke","Grumme","Altenbochum","Langendreer","Wiemelhausen","Weitmar"],
+          nürnberg: ["Altstadt","Gostenhof","Maxfeld","Schoppershof","Erlenstegen","Wöhrd","Tafelhof","Steinbühl","Gibitzenhof","Langwasser"],
+        };
+
+        const cityKey = input.city.toLowerCase().trim();
+        const districts = CITY_DISTRICTS[cityKey] || [];
+
+        // Always include the city itself as the first search
+        const searchTargets = [input.city, ...districts.map(d => `${d}, ${input.city}`)];
+
+        const seenPlaceIds = new Set<string>();
+        const allDetailedResults: any[] = [];
+
+        for (const target of searchTargets) {
+          try {
+            const params: Record<string, string> = { query: `${input.query} in ${target}`, language: "de" };
+            const placesResult = await makeRequest<PlacesSearchResult>("/maps/api/place/textsearch/json", params);
+            if (placesResult.status !== "OK" || !placesResult.results?.length) continue;
+
+            const places = placesResult.results;
+            // Also fetch page 2 if available
+            if (placesResult.next_page_token) {
+              await new Promise(r => setTimeout(r, 2000));
+              const p2 = await makeRequest<PlacesSearchResult>("/maps/api/place/textsearch/json", { pagetoken: placesResult.next_page_token });
+              if (p2.status === "OK" && p2.results?.length) places.push(...p2.results);
+            }
+
+            for (const place of places) {
+              if (seenPlaceIds.has(place.place_id)) continue;
+              seenPlaceIds.add(place.place_id);
+
+              try {
+                const details = await makeRequest<PlaceDetailsResult>(
+                  "/maps/api/place/details/json",
+                  { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+                );
+                const hasWebsite = !!(details.result?.website);
+                allDetailedResults.push({
+                  placeId: place.place_id,
+                  name: details.result?.name || place.name,
+                  address: details.result?.formatted_address || place.formatted_address,
+                  phone: details.result?.formatted_phone_number || null,
+                  website: details.result?.website || null,
+                  rating: details.result?.rating || place.rating || null,
+                  reviewCount: details.result?.user_ratings_total || place.user_ratings_total || 0,
+                  category: extractGmbCategory(place.types) || input.query,
+                  lat: place.geometry?.location?.lat,
+                  lng: place.geometry?.location?.lng,
+                  openingHours: details.result?.opening_hours?.weekday_text || [],
+                  hasWebsite,
+                  leadType: hasWebsite ? "unknown" : "no_website",
+                  reviews: details.result?.reviews || [],
+                });
+              } catch { /* skip failed detail lookups */ }
+            }
+          } catch { /* skip failed district searches */ }
+        }
+
+        return { results: allDetailedResults, total: allDetailedResults.length };
       }),
 
     // User-facing GMB search (no admin required)
