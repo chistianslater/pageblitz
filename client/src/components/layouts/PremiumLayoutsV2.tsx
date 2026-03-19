@@ -237,7 +237,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-8">
           <p style={{ fontFamily: bodyFont, color: textMuted }}
-            className="text-lg leading-relaxed max-w-sm mb-12">
+            className="text-lg leading-relaxed max-w-sm mb-16">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
@@ -321,7 +321,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-10">
           <p style={{ fontFamily: bodyFont, color: textMuted }}
-            className="text-xl max-w-2xl mx-auto italic leading-relaxed mb-12">
+            className="text-xl max-w-2xl mx-auto italic leading-relaxed mb-16">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
@@ -409,7 +409,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           <div className="max-w-2xl">
             <Skeleton isLoading={isLoading} className="w-full min-h-[5rem] mb-8">
               <p style={{ fontFamily: bodyFont, color: textMuted, borderLeft: `3px solid ${primaryColor}` }}
-                className="text-lg lg:text-xl font-light leading-relaxed pl-6 mb-12">
+                className="text-lg lg:text-xl font-light leading-relaxed pl-6 mb-16">
                 {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
               </p>
             </Skeleton>
