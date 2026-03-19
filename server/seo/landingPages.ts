@@ -1546,26 +1546,26 @@ function getRelevantAddons(slug: string): AddonDef[] {
   };
 
   const SETS: Record<string, (keyof typeof ALL)[]> = {
-    restaurant:     ["aiChat", "booking", "contact", "gallery", "menu", "pricelist"],
-    baeckerei:      ["contact", "gallery", "menu", "pricelist"],
+    restaurant:     ["aiChat", "booking", "contact", "gallery", "team", "menu", "pricelist"],
+    baeckerei:      ["contact", "gallery", "team", "menu", "pricelist"],
     zahnarzt:       ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
     arzt:           ["aiChat", "booking", "contact", "team", "pricelist"],
     physiotherapie: ["aiChat", "booking", "contact", "team", "pricelist"],
     fitness:        ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    friseur:        ["aiChat", "booking", "contact", "gallery", "pricelist"],
-    kosmetik:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
-    nagelstudio:    ["aiChat", "booking", "contact", "gallery", "pricelist"],
-    hundesalon:     ["aiChat", "booking", "contact", "gallery", "pricelist"],
-    handwerk:       ["aiChat", "contact", "gallery", "pricelist"],
-    reinigung:      ["aiChat", "contact", "pricelist"],
+    friseur:        ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    kosmetik:       ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    nagelstudio:    ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    hundesalon:     ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    handwerk:       ["aiChat", "contact", "gallery", "team", "pricelist"],
+    reinigung:      ["aiChat", "contact", "team", "pricelist"],
     immobilien:     ["aiChat", "contact", "gallery", "team"],
     rechtsanwalt:   ["aiChat", "booking", "contact", "team"],
     steuerberater:  ["aiChat", "booking", "contact", "team"],
-    fotograf:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    fotograf:       ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
     musikschule:    ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
   };
 
-  const keys = SETS[slug] ?? ["aiChat", "booking", "contact", "gallery", "pricelist"];
+  const keys = SETS[slug] ?? ["aiChat", "booking", "contact", "gallery", "team", "pricelist"];
   return keys.map((k) => ALL[k]);
 }
 
@@ -1955,7 +1955,7 @@ export function generateLandingPageHTML(
 <section class="hero">
   <div class="hero-orb orb-tl"></div>
   <div class="hero-orb orb-br"></div>
-  <div class="container" style="position:relative;z-index:1">
+  <div class="container" style="position:relative;z-index:1;text-align:center">
     <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
     <h1>${escapeHtml(h1)}</h1>
     <p>${escapeHtml(industry.description)}</p>

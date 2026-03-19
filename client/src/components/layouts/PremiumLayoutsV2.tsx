@@ -21,15 +21,12 @@ import { getVariantIndex } from '../../lib/layoutUtils';
 
 // ── SKELETON ────────────────────────────────────────────────────
 const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
+  if (!isLoading) return <>{children}</>;
   return (
     <div className={className}>
-      {isLoading ? (
-        <div className="bg-neutral-200 animate-pulse rounded-lg overflow-hidden w-full h-full" style={{ minHeight: 'inherit' }}>
-          <div className="opacity-0 pointer-events-none">{children}</div>
-        </div>
-      ) : (
-        children
-      )}
+      <div className="bg-neutral-200 animate-pulse rounded-lg overflow-hidden w-full h-full" style={{ minHeight: 'inherit' }}>
+        <div className="opacity-0 pointer-events-none">{children}</div>
+      </div>
     </div>
   );
 };
