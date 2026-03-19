@@ -4511,7 +4511,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {/* Einzelgalerie */}
               {data.addOnGalleryData.mode !== 'albums' && (
                 <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-4">
-                  <p className="text-slate-400 text-xs font-medium">Bilder auswählen (max. 12):</p>
+                  <p className="text-slate-400 text-xs font-medium">Bilder auswählen:</p>
                   <MultiPhotoSelector
                     websiteId={String(websiteId || "")}
                     selectedPhotos={data.addOnGalleryData.images}
@@ -6047,7 +6047,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
     if (!gmbData?.photos?.length) return;
     if (selectedPhotos.length > 0) { gmbInitializedRef.current = true; return; }
     gmbInitializedRef.current = true;
-    onUpdate(gmbData.photos.slice(0, 12));
+    onUpdate(gmbData.photos);
   }, [gmbData]);
 
   const photos = suggestionsData?.suggestions || [];
@@ -6056,10 +6056,6 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
     if (selectedPhotos.includes(url)) {
       onUpdate(selectedPhotos.filter(u => u !== url));
     } else {
-      if (selectedPhotos.length >= 12) {
-        toast.error("Maximal 12 Bilder erlaubt.");
-        return;
-      }
       onUpdate([...selectedPhotos, url]);
     }
   };
