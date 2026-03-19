@@ -4182,7 +4182,16 @@ Wichtige Felder im JSON:
       .input(z.object({
         websiteId: z.number(),
         addOns: z.object({
-          gallery: z.object({ enabled: z.boolean(), photos: z.array(z.string()).optional() }).optional(),
+          gallery: z.object({
+            enabled: z.boolean(),
+            photos: z.array(z.string()).optional(),
+            mode: z.enum(['single', 'albums']).optional(),
+            albums: z.array(z.object({
+              id: z.string(),
+              name: z.string(),
+              images: z.array(z.string()),
+            })).optional(),
+          }).optional(),
           menu: z.object({
             enabled: z.boolean(),
             categories: z.array(z.object({
@@ -4247,23 +4256,34 @@ Wichtige Felder im JSON:
         const websiteData = (website.websiteData as any) || {};
         let sections = Array.isArray(websiteData.sections) ? websiteData.sections : [];
 
-        // Handle gallery - convert photos to items format expected by layouts
+        // Handle gallery
         if (input.addOns.gallery?.enabled) {
           const hasGallery = sections.some((s: any) => s.type === "gallery");
-          const galleryItems = input.addOns.gallery.photos?.map((url: string) => ({ imageUrl: url, title: "" })) || [];
-          if (!hasGallery) {
-            sections.push({
+          const mode = input.addOns.gallery.mode || 'single';
+          const albums = input.addOns.gallery.albums || [];
+          let gallerySection: any;
+          if (mode === 'albums') {
+            gallerySection = {
               type: "gallery",
               headline: "Galerie",
-              items: galleryItems,
-            });
+              mode: "albums",
+              albums,
+              items: [],
+            };
           } else {
-            sections = sections.map((s: any) => {
-              if (s.type === "gallery") {
-                return { ...s, items: galleryItems };
-              }
-              return s;
-            });
+            const galleryItems = (input.addOns.gallery.photos || []).map((url: string) => ({ imageUrl: url, title: "" }));
+            gallerySection = {
+              type: "gallery",
+              headline: "Galerie",
+              mode: "single",
+              albums: [],
+              items: galleryItems,
+            };
+          }
+          if (!hasGallery) {
+            sections.push(gallerySection);
+          } else {
+            sections = sections.map((s: any) => s.type === "gallery" ? { ...s, ...gallerySection } : s);
           }
         } else if (input.addOns.gallery?.enabled === false) {
           sections = sections.filter((s: any) => s.type !== "gallery");

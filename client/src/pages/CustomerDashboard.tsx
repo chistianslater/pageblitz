@@ -41,6 +41,12 @@ interface SectionConfig {
   enabled: boolean;
 }
 
+interface GalleryAlbum {
+  id: string;
+  name: string;
+  images: string[]; // first image = cover
+}
+
 // ── Helpers ───────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
@@ -945,6 +951,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     gallery: {
       enabled: onboarding?.addOnGallery || false,
       photos: (existingGallery?.items?.map((item: any) => item.imageUrl || item) || []) as string[],
+      mode: ((existingGallery as any)?.mode || 'single') as 'single' | 'albums',
+      albums: ((existingGallery as any)?.albums || []) as GalleryAlbum[],
     },
     menu: {
       enabled: onboarding?.addOnMenu || false,
@@ -1080,7 +1088,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     updateAddons.mutate({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
         menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
         pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
@@ -1112,7 +1120,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
       updateAddonsRef.current.mutate({
         websiteId,
         addOns: {
-          gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+          gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
           menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
           pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
           contactForm: addons.contactForm,
@@ -1139,7 +1147,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     await updateAddons.mutateAsync({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
         menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
         pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
@@ -1160,7 +1168,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     await updateAddons.mutateAsync({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
         menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
         pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
@@ -1187,7 +1195,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     updateAddonsRef.current.mutate({
       websiteId,
       addOns: {
-        gallery: newAddons.gallery.enabled ? { enabled: true, photos: newAddons.gallery.photos } : { enabled: false },
+        gallery: newAddons.gallery.enabled ? { enabled: true, photos: newAddons.gallery.photos, mode: newAddons.gallery.mode, albums: newAddons.gallery.albums } : { enabled: false },
         menu: newAddons.menu.enabled ? { enabled: true, categories: newAddons.menu.categories } : { enabled: false },
         pricelist: newAddons.pricelist.enabled ? { enabled: true, categories: newAddons.pricelist.categories } : { enabled: false },
         contactForm: newAddons.contactForm,
@@ -1238,6 +1246,60 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
       gallery: { ...addons.gallery, photos: addons.gallery.photos.filter((_, i) => i !== idx) },
     });
     // Auto-save will be triggered by useEffect
+  };
+
+  const addAlbumPhoto = async (albumIdx: number, file: File) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
+        if (result?.url) {
+          setAddons(prev => {
+            const albums = [...prev.gallery.albums];
+            albums[albumIdx] = { ...albums[albumIdx], images: [...(albums[albumIdx].images || []), result.url] };
+            return { ...prev, gallery: { ...prev.gallery, albums } };
+          });
+          toast.success("Bild hochgeladen");
+        }
+      } catch (error: any) {
+        toast.error("Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler"));
+      } finally {
+        setUploading(false);
+      }
+    };
+    reader.onerror = () => { toast.error("Fehler beim Lesen der Datei"); setUploading(false); };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAlbumPhoto = (albumIdx: number, photoIdx: number) => {
+    setAddons(prev => {
+      const albums = [...prev.gallery.albums];
+      albums[albumIdx] = { ...albums[albumIdx], images: albums[albumIdx].images.filter((_, i) => i !== photoIdx) };
+      return { ...prev, gallery: { ...prev.gallery, albums } };
+    });
+  };
+
+  const addAlbum = () => {
+    const newAlbum: GalleryAlbum = { id: `album-${Date.now()}`, name: '', images: [] };
+    setAddons(prev => ({ ...prev, gallery: { ...prev.gallery, albums: [...prev.gallery.albums, newAlbum] } }));
+  };
+
+  const removeAlbum = (albumIdx: number) => {
+    setAddons(prev => ({
+      ...prev,
+      gallery: { ...prev.gallery, albums: prev.gallery.albums.filter((_, i) => i !== albumIdx) }
+    }));
+  };
+
+  const updateAlbumName = (albumIdx: number, name: string) => {
+    setAddons(prev => {
+      const albums = [...prev.gallery.albums];
+      albums[albumIdx] = { ...albums[albumIdx], name };
+      return { ...prev, gallery: { ...prev.gallery, albums } };
+    });
   };
 
   // Menu category functions
@@ -1407,29 +1469,127 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                 </div>
                 Bildergalerie verwalten
               </h3>
-              {addons.gallery.photos.length > 0 && (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {addons.gallery.photos.map((photo, idx) => (
-                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
-                      <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-                      <button onClick={() => removeGalleryPhoto(idx)} className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+
+              {/* Mode switcher */}
+              <div className="space-y-2">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Galerie-Typ</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['single', 'albums'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => setAddons(prev => ({ ...prev, gallery: { ...prev.gallery, mode } }))}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
+                        addons.gallery.mode === mode
+                          ? 'bg-pink-600/20 border-pink-500/60 text-white'
+                          : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {mode === 'single' ? (
+                        <>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                          Einzelgalerie
+                        </>
+                      ) : (
+                        <>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="10" rx="1"/><rect x="3" y="16" width="8" height="5" rx="1"/><rect x="13" y="16" width="8" height="5" rx="1"/></svg>
+                          Alben
+                        </>
+                      )}
+                    </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Single gallery */}
+              {addons.gallery.mode !== 'albums' && (
+                <div className="space-y-3">
+                  {addons.gallery.photos.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {addons.gallery.photos.map((photo, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
+                          <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
+                          <button onClick={() => removeGalleryPhoto(idx)} className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
+                    <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addGalleryPhoto(file); }} />
+                    <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
+                      {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
+                      <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
+                    </div>
+                  </label>
+                </div>
               )}
-              <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
-                <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addGalleryPhoto(file); }} />
-                <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
-                  {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
+
+              {/* Album mode */}
+              {addons.gallery.mode === 'albums' && (
+                <div className="space-y-3">
+                  {addons.gallery.albums.map((album, albumIdx) => (
+                    <div key={album.id} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
+                      {/* Album header */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <p className="text-slate-500 text-[10px] font-mono mb-1">Album {albumIdx + 1}</p>
+                          <input
+                            type="text"
+                            value={album.name}
+                            onChange={(e) => updateAlbumName(albumIdx, e.target.value)}
+                            placeholder="z.B. Hochzeiten"
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-pink-500"
+                          />
+                        </div>
+                        <button onClick={() => removeAlbum(albumIdx)} className="mt-5 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {/* Cover preview */}
+                      {album.images.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <img src={album.images[0]} alt="Cover" className="w-10 h-10 rounded-lg object-cover border border-slate-600" />
+                          <p className="text-slate-500 text-[10px]">Albumbild: erstes Foto</p>
+                        </div>
+                      )}
+                      {/* Photos grid */}
+                      {album.images.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2">
+                          {album.images.map((photo, photoIdx) => (
+                            <div key={photoIdx} className="relative aspect-square rounded-lg overflow-hidden group bg-slate-700/50">
+                              <img src={photo} alt={`Album ${albumIdx + 1} Foto ${photoIdx + 1}`} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
+                              <button onClick={() => removeAlbumPhoto(albumIdx, photoIdx)} className="absolute top-1 right-1 p-1 rounded-md bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Upload for this album */}
+                      <label className={`flex items-center gap-2 justify-center text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/40 border border-dashed border-slate-600 hover:border-slate-500 rounded-lg px-4 py-3 cursor-pointer transition-all text-xs ${uploading ? "opacity-50" : ""}`}>
+                        <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addAlbumPhoto(albumIdx, file); e.target.value = ""; }} />
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin text-pink-400" /> : <Upload className="w-4 h-4" />}
+                        {uploading ? "Wird hochgeladen..." : "Foto hinzufügen"}
+                      </label>
+                    </div>
+                  ))}
+
+                  {/* Add album button */}
+                  <button
+                    onClick={addAlbum}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-pink-500/50 text-sm transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Album hinzufügen
+                  </button>
                 </div>
-                <div className="text-center">
-                  <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
-                  <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
-                </div>
-              </label>
+              )}
             </div>
           )}
 
