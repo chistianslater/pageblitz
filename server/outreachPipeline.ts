@@ -179,7 +179,7 @@ function extractGmbCategory(types: string[] = []): string {
 
 let pipelineTimer: NodeJS.Timeout | null = null;
 
-export async function runPipelineCycle(): Promise<{
+export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
   queued: number;
   found: number;
   emailsFound: number;
@@ -191,7 +191,8 @@ export async function runPipelineCycle(): Promise<{
     return { queued: 0, found: 0, emailsFound: 0, msg: "Already running" };
   }
 
-  if (!state.config.enabled) {
+  // Allow manual trigger to bypass enabled check
+  if (!state.config.enabled && !opts?.forceRun) {
     return { queued: 0, found: 0, emailsFound: 0, msg: "Pipeline disabled" };
   }
 

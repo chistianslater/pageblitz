@@ -2461,8 +2461,9 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
       }),
 
     triggerPipeline: adminProcedure.mutation(async () => {
+      // Manual trigger always runs, even if pipeline is disabled
       const { runPipelineCycle } = await import("./outreachPipeline");
-      const result = await runPipelineCycle();
+      const result = await runPipelineCycle({ forceRun: true });
       return result;
     }),
   }),

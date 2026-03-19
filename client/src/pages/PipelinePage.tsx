@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -75,7 +76,11 @@ export default function PipelinePage() {
   });
 
   const trigger = trpc.outreach.triggerPipeline.useMutation({
-    onSuccess: () => utils.outreach.getPipelineStatus.invalidate(),
+    onSuccess: (res) => {
+      utils.outreach.getPipelineStatus.invalidate();
+      toast.success(`Lauf abgeschlossen: ${res.msg}`);
+    },
+    onError: (e) => toast.error(`Fehler: ${e.message}`),
   });
 
   // Local edit state – synced from server
