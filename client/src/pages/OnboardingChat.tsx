@@ -2259,20 +2259,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
-          // For admin-generated websites: save as customerEmail in DB + set captureStatus
+          // For admin-generated websites: save as customerEmail in DB + start from businessCategory.
+          // existingOnboarding may pre-fill data.businessCategory from the admin generation, but
+          // the customer has never confirmed anything – always start the customization flow fresh.
           const isAdminSite = siteData?.website?.source === "admin";
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
-          // Only do the "capture email → businessCategory" flow when user is at the
-          // BEGINNING of the onboarding (businessCategory not yet set).
-          // If they've already gone through all content steps, go to the normal next step.
-          const isAtStart = !data.businessCategory;
-          if (isAdminSite && !alreadyHasEmail && websiteId && isAtStart) {
+          if (isAdminSite && !alreadyHasEmail && websiteId) {
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val },
               {
                 onSuccess: async () => {
                   toast.success("E-Mail gespeichert! ✅");
-                  // Advance to businessCategory (user is starting the flow)
+                  // Refetch siteData so hasCustomerEmail becomes true and the email
+                  // step is removed from dynamicStepOrder (won't appear again later)
+                  refetchSiteData();
+                  // Always start the full customization flow from businessCategory
                   await advanceToStep("businessCategory");
                 },
                 onError: () => {
