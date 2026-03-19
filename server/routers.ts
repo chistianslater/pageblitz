@@ -6,6 +6,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import {
   upsertBusiness, getBusinessById, listBusinesses, countBusinesses, updateBusiness,
+  getBusinessIdsWithWebsite,
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
   listWebsites, countWebsites, updateWebsite,
   createOutreachEmail, listOutreachEmails, countOutreachEmails,
@@ -1638,11 +1639,17 @@ export const appRouter = router({
         search: z.string().optional(),
       }).optional())
       .query(async ({ input }) => {
-        // Fetch a broad set and filter in-memory (DB is small enough for now)
-        const all = await listBusinesses(10000, 0);
+        const [all, customerIds] = await Promise.all([
+          listBusinesses(10000, 0),
+          getBusinessIdsWithWebsite(),
+        ]);
 
-        // Only show GMB-sourced businesses (real Google Place IDs start with "ChIJ")
-        let filtered = all.filter(b => b.placeId != null && b.placeId.startsWith("ChIJ"));
+        // Only GMB-sourced leads: real ChIJ placeId AND no Pageblitz website yet
+        let filtered = all.filter(b =>
+          b.placeId != null &&
+          b.placeId.startsWith("ChIJ") &&
+          !customerIds.has(b.id)
+        );
         const total = filtered.length;
 
         if (input?.leadType && input.leadType !== "all") {
@@ -1697,9 +1704,15 @@ export const appRouter = router({
       }),
 
     stats: adminProcedure.query(async () => {
-      const all = await listBusinesses(10000, 0);
-      // Only count GMB-sourced businesses
-      const gmb = all.filter(b => b.placeId != null && b.placeId.startsWith("ChIJ"));
+      const [all, customerIds] = await Promise.all([
+        listBusinesses(10000, 0),
+        getBusinessIdsWithWebsite(),
+      ]);
+      const gmb = all.filter(b =>
+        b.placeId != null &&
+        b.placeId.startsWith("ChIJ") &&
+        !customerIds.has(b.id)
+      );
       const noWebsite = gmb.filter(b => b.leadType === "no_website").length;
       const outdated = gmb.filter(b => b.leadType === "outdated_website").length;
       const poor = gmb.filter(b => b.leadType === "poor_website").length;

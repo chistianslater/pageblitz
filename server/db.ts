@@ -183,6 +183,14 @@ export async function getWebsiteByBusinessId(businessId: number) {
   return result[0];
 }
 
+/** Returns the set of businessIds that already have a generated website (= Pageblitz customers). */
+export async function getBusinessIdsWithWebsite(): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db.select({ businessId: generatedWebsites.businessId }).from(generatedWebsites);
+  return new Set(rows.map(r => r.businessId).filter((id): id is number => id != null));
+}
+
 export async function listWebsites(limit = 50, offset = 0) {
   const db = await getDb();
   if (!db) return [];
