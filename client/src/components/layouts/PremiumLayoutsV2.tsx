@@ -2717,33 +2717,71 @@ export function PremiumLayoutV2({
 // ================================================================
 
 // ── GALLERY SECTION ──────────────────────────────────────────────
+function GalleryMasonry({ items, displayFont, cs, dark }: { items: any[]; displayFont: string; cs: any; dark: boolean }) {
+  const safeCs = cs || {};
+  const [lightboxSrc, setLightboxSrc] = React.useState<string | null>(null);
+  const cols = items.length <= 3 ? 2 : items.length <= 8 ? 3 : 4;
+  return (
+    <>
+      <div style={{ columnCount: cols, columnGap: '6px' }}>
+        {items.map((item: any, i: number) => {
+          const src = item.imageUrl || item;
+          return (
+            <div key={i} onClick={() => setLightboxSrc(src)}
+              className="relative overflow-hidden rounded-lg group cursor-zoom-in"
+              style={{ breakInside: 'avoid', marginBottom: '6px', display: 'block' }}>
+              <img src={src} alt={`Galerie-Bild ${i + 1}`} className="w-full block object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {lightboxSrc && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm" onClick={() => setLightboxSrc(null)}>
+          <button onClick={() => setLightboxSrc(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <img src={lightboxSrc} alt="Vollbild" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+    </>
+  );
+}
+
 function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, headlineSize, dark = false }: any) {
   const safeCs = cs || {};
   const gallery = sec(websiteData, 'gallery');
   const items = gallery?.items || [];
+  const albums: any[] = gallery?.albums || [];
+  const isAlbumMode = gallery?.mode === 'albums' && albums.length > 0;
   const headline = gallery?.headline || 'Unsere Galerie';
-  const [lightboxSrc, setLightboxSrc] = React.useState<string | null>(null);
+  const [openAlbum, setOpenAlbum] = React.useState<any | null>(null);
 
-  if (items.length === 0) return null;
+  // Nothing to show
+  if (!isAlbumMode && items.length === 0) return null;
+  if (isAlbumMode && albums.length === 0) return null;
 
   const textColor = dark ? (safeCs.lightText || '#ffffff') : (safeCs.text || '#171717');
+  const textMuted = dark ? (safeCs.lightTextMuted || 'rgba(255,255,255,0.65)') : (safeCs.textLight || '#737373');
   const bgClass = dark ? (safeCs.darkBackground ? '' : 'bg-neutral-900') : '';
   const bgStyle = dark
     ? { backgroundColor: safeCs.darkBackground || '#0a0a0a' }
     : { backgroundColor: safeCs.surface || '#fafafa' };
 
-  // Number of masonry columns based on gallery size
   const cols = items.length <= 3 ? 2 : items.length <= 8 ? 3 : 4;
 
-  // Loading skeleton: show uniform placeholder tiles
   if (isLoading) {
     return (
       <section id="galerie" className={`py-16 px-6 scroll-mt-20 ${bgClass}`} style={bgStyle}>
         <div className="max-w-6xl mx-auto">
           <div className="w-48 h-8 rounded-lg bg-current opacity-10 mb-8" />
-          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-            {Array.from({ length: Math.min(items.length || 6, 9) }).map((_, i) => (
-              <div key={i} className="rounded-lg bg-current opacity-[0.07]" style={{ aspectRatio: i % 3 === 0 ? '4/5' : i % 3 === 1 ? '3/4' : '1/1', minHeight: 120 }} />
+          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${isAlbumMode ? 3 : cols}, 1fr)` }}>
+            {Array.from({ length: isAlbumMode ? Math.min(albums.length || 3, 6) : Math.min(items.length || 6, 9) }).map((_, i) => (
+              <div key={i} className="rounded-xl bg-current opacity-[0.07]" style={{ aspectRatio: '4/3', minHeight: 120 }} />
             ))}
           </div>
         </div>
@@ -2754,65 +2792,57 @@ function GallerySection({ websiteData, cs, isLoading, displayFont, bodyFont, hea
   return (
     <section id="galerie" className={`py-16 px-6 scroll-mt-20 ${bgClass}`} style={bgStyle}>
       <div className="max-w-6xl mx-auto">
-        {/* Headline */}
-        <h2 className="mb-8" style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
-          {headline}
-        </h2>
+        {/* Headline + optional back-button in album detail view */}
+        <div className="flex items-center gap-4 mb-8">
+          {openAlbum && (
+            <button onClick={() => setOpenAlbum(null)}
+              className="flex items-center gap-1.5 text-sm transition-opacity hover:opacity-70"
+              style={{ color: safeCs.primary || '#3b82f6', fontFamily: displayFont }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Alle Alben
+            </button>
+          )}
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
+            {openAlbum ? openAlbum.name : headline}
+          </h2>
+        </div>
 
-        {/* CSS Columns masonry – images stack naturally without forced aspect-ratio */}
-        <div
-          style={{
-            columnCount: cols,
-            columnGap: '6px',
-          }}
-        >
-          {items.map((item: any, i: number) => {
-            const src = item.imageUrl || item;
-            const alt = `Galerie-Bild ${i + 1}`;
-            return (
-              <div
-                key={i}
-                onClick={() => setLightboxSrc(src)}
-                className="relative overflow-hidden rounded-lg group cursor-zoom-in"
-                style={{ breakInside: 'avoid', marginBottom: '6px', display: 'block' }}
-              >
-                <img
-                  src={src}
-                  alt={alt}
-                  className="w-full block object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-                {/* Subtle zoom icon on hover – no text */}
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        {/* Album detail view */}
+        {openAlbum && (
+          <GalleryMasonry items={(openAlbum.images || []).map((url: string) => ({ imageUrl: url }))} displayFont={displayFont} cs={safeCs} dark={dark} />
+        )}
+
+        {/* Album grid */}
+        {isAlbumMode && !openAlbum && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {albums.map((album: any, i: number) => {
+              const cover = album.images?.[0];
+              const count = album.images?.length || 0;
+              return (
+                <div key={album.id || i} onClick={() => setOpenAlbum(album)}
+                  className="group relative overflow-hidden rounded-2xl cursor-pointer"
+                  style={{ aspectRatio: '4/3' }}>
+                  {cover
+                    ? <img src={cover} alt={album.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                    : <div className="absolute inset-0 bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={textMuted} strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      </div>
+                  }
+                  {/* Dark overlay with name */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent flex flex-col justify-end p-4">
+                    <p style={{ fontFamily: displayFont, fontWeight: 700, color: '#ffffff', fontSize: '1.1rem', lineHeight: 1.2 }}>{album.name || `Album ${i + 1}`}</p>
+                    <p style={{ fontFamily: bodyFont, color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', marginTop: '2px' }}>{count} {count === 1 ? 'Foto' : 'Fotos'}</p>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+        )}
 
-          {/* Lightbox */}
-          {lightboxSrc && (
-            <div
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
-              onClick={() => setLightboxSrc(null)}
-            >
-              <button
-                onClick={() => setLightboxSrc(null)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-              <img
-                src={lightboxSrc}
-                alt="Vollbild"
-                className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          )}
-        </div>
+        {/* Single gallery (flat masonry) */}
+        {!isAlbumMode && (
+          <GalleryMasonry items={items} displayFont={displayFont} cs={safeCs} dark={dark} />
+        )}
       </div>
     </section>
   );

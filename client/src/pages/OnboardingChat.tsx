@@ -502,6 +502,12 @@ interface SubPage {
   description: string;
 }
 
+interface GalleryAlbum {
+  id: string;
+  name: string;
+  images: string[]; // first image = cover
+}
+
 interface MenuItem {
   name: string;
   description: string;
@@ -561,7 +567,7 @@ interface OnboardingData {
   addOnContactForm: boolean;
   contactFormFields: { id: string; label: string; placeholder: string; type: "text" | "email" | "textarea" | "select"; required: boolean; options?: string[] }[];
   addOnGallery: boolean;
-  addOnGalleryData: { headline?: string; images: string[] };
+  addOnGalleryData: { headline?: string; mode?: 'single' | 'albums'; images: string[]; albums: GalleryAlbum[] };
   addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
   addOnMenuData: { headline?: string; categories: MenuCategory[] };
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
@@ -959,7 +965,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
     ],
     addOnGallery: false,
-    addOnGalleryData: { headline: "Unsere Galerie", images: [] },
+    addOnGalleryData: { headline: "Unsere Galerie", mode: 'single', images: [], albums: [] },
     addOnMenu: false,
     addOnMenuData: { headline: "Unsere Speisekarte", categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
     addOnPricelist: false,
@@ -1109,18 +1115,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }));
     }
-    // Note: Gallery data is stored in the database but the field name may differ
-    // The gallery images are stored via photoUrls or addOnGalleryData
-    const galleryImages = (existingOnboarding as any).photoUrls || (existingOnboarding as any).addOnGalleryData?.images || [];
-    if (galleryImages.length > 0) {
-      setData(p => ({
-        ...p,
-        addOnGalleryData: {
-          ...p.addOnGalleryData,
-          images: galleryImages
-        }
-      }));
-    }
+    // Gallery: restore images, mode and albums
+    const savedGallery = (existingOnboarding as any).addOnGalleryData as any;
+    const galleryImages = (existingOnboarding as any).photoUrls || savedGallery?.images || [];
+    const galleryMode = savedGallery?.mode || 'single';
+    const galleryAlbums: GalleryAlbum[] = savedGallery?.albums || [];
+    setData(p => ({
+      ...p,
+      addOnGalleryData: {
+        headline: savedGallery?.headline || p.addOnGalleryData.headline,
+        mode: galleryMode,
+        images: galleryImages.length > 0 ? galleryImages : p.addOnGalleryData.images,
+        albums: galleryAlbums.length > 0 ? galleryAlbums : p.addOnGalleryData.albums,
+      }
+    }));
 
     // Restore section order and visibility from hideSections step
     const rawSectionOrder = (existingOnboarding as any).sectionOrder;
@@ -2465,25 +2473,40 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Add or update Gallery section if active
     if (data.addOnGallery && !hiddenSections.has("gallery")) {
-      // Priority: user-selected images → GMB photos → stock fallback
-      const gmbFallback = earlyGmbData?.photos?.length ? earlyGmbData.photos : null;
-      const fallbackImages = gmbFallback || getGalleryImages(data.businessCategory, data.businessName);
-      const galleryImages = data.addOnGalleryData.images.length > 0
-        ? data.addOnGalleryData.images
-        : fallbackImages;
-
-      const galleryItems = galleryImages.map((img, i) => ({ 
-        title: `Projekt ${i + 1}`, 
-        imageUrl: img 
-      }));
-
+      const isAlbumMode = data.addOnGalleryData.mode === 'albums';
       const existingGalleryIdx = patched.sections.findIndex(s => s.type === "gallery");
-      const gallerySection = {
-        type: "gallery" as const,
-        headline: data.addOnGalleryData.headline || "Unsere Galerie",
-        content: "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
-        items: galleryItems as any
-      };
+
+      let gallerySection: any;
+      if (isAlbumMode) {
+        // Album mode: save albums array; cover = first image of each album
+        gallerySection = {
+          type: "gallery" as const,
+          headline: data.addOnGalleryData.headline || "Unsere Galerie",
+          content: "",
+          mode: "albums",
+          albums: data.addOnGalleryData.albums,
+          items: [], // empty in album mode
+        };
+      } else {
+        // Single mode: flat masonry grid
+        const gmbFallback = earlyGmbData?.photos?.length ? earlyGmbData.photos : null;
+        const fallbackImages = gmbFallback || getGalleryImages(data.businessCategory, data.businessName);
+        const galleryImages = data.addOnGalleryData.images.length > 0
+          ? data.addOnGalleryData.images
+          : fallbackImages;
+        const galleryItems = galleryImages.map((img: string, i: number) => ({
+          title: `Projekt ${i + 1}`,
+          imageUrl: img,
+        }));
+        gallerySection = {
+          type: "gallery" as const,
+          headline: data.addOnGalleryData.headline || "Unsere Galerie",
+          content: "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
+          mode: "single",
+          albums: [],
+          items: galleryItems,
+        };
+      }
 
       if (existingGalleryIdx > -1) {
         patched.sections[existingGalleryIdx] = gallerySection;
@@ -4444,32 +4467,129 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-4"
             >
-                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
-                  <input
-                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
-                    value={data.addOnGalleryData.headline}
-                    onChange={(e) => {
-                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, headline: e.target.value } }));
-                    }}
-                    placeholder="z.B. Unsere Galerie"
-                  />
-                </div>
+              {/* Überschrift */}
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
+                <input
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                  value={data.addOnGalleryData.headline}
+                  onChange={(e) => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, headline: e.target.value } }))}
+                  placeholder="z.B. Unsere Galerie"
+                />
+              </div>
 
+              {/* Modus-Switch */}
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Galerie-Typ</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['single', 'albums'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, mode } }))}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
+                        data.addOnGalleryData.mode === mode
+                          ? 'bg-blue-600/20 border-blue-500/60 text-white'
+                          : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {mode === 'single' ? (
+                        <>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                          Einzelgalerie
+                        </>
+                      ) : (
+                        <>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="10" rx="1"/><rect x="3" y="16" width="8" height="5" rx="1"/><rect x="13" y="16" width="8" height="5" rx="1"/></svg>
+                          Alben
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Einzelgalerie */}
+              {data.addOnGalleryData.mode !== 'albums' && (
                 <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-4">
-                  <p className="text-slate-400 text-xs font-medium">Bilder für die Galerie auswählen (max. 12):</p>
-                  
+                  <p className="text-slate-400 text-xs font-medium">Bilder auswählen (max. 12):</p>
                   <MultiPhotoSelector
                     websiteId={String(websiteId || "")}
                     selectedPhotos={data.addOnGalleryData.images}
-                    onUpdate={(urls) => {
-                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, images: urls } }));
-                    }}
+                    onUpdate={(urls) => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, images: urls } }))}
                     industry={data.businessCategory}
                   />
-
-                  {/* Weiter-Button im fixen Bottom-Bar */}
                 </div>
+              )}
+
+              {/* Alben-Modus */}
+              {data.addOnGalleryData.mode === 'albums' && (
+                <div className="space-y-3">
+                  {data.addOnGalleryData.albums.map((album, albumIdx) => (
+                    <div key={album.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                      {/* Album-Header */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Album {albumIdx + 1}</p>
+                          <input
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                            value={album.name}
+                            onChange={(e) => {
+                              const updated = [...data.addOnGalleryData.albums];
+                              updated[albumIdx] = { ...updated[albumIdx], name: e.target.value };
+                              setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
+                            }}
+                            placeholder="z.B. Hochzeiten"
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = data.addOnGalleryData.albums.filter((_, i) => i !== albumIdx);
+                            setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
+                          }}
+                          className="mt-5 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg>
+                        </button>
+                      </div>
+
+                      {/* Cover-Vorschau */}
+                      {album.images.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <img src={album.images[0]} alt="Cover" className="w-12 h-12 rounded-lg object-cover border border-slate-600/50" />
+                          <p className="text-slate-400 text-[10px]">Albumbild: erstes Foto</p>
+                        </div>
+                      )}
+
+                      {/* Fotos für dieses Album */}
+                      <div>
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2">Fotos ({album.images.length})</p>
+                        <MultiPhotoSelector
+                          websiteId={String(websiteId || "")}
+                          selectedPhotos={album.images}
+                          onUpdate={(urls) => {
+                            const updated = [...data.addOnGalleryData.albums];
+                            updated[albumIdx] = { ...updated[albumIdx], images: urls };
+                            setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
+                          }}
+                          industry={data.businessCategory}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Album hinzufügen */}
+                  <button
+                    onClick={() => {
+                      const newAlbum: GalleryAlbum = { id: `album-${Date.now()}`, name: '', images: [] };
+                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: [...p.addOnGalleryData.albums, newAlbum] } }));
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-blue-500/50 text-sm transition-all"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Album hinzufügen
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -5386,7 +5506,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   addUserMessage(count > 0 ? `${count} Bilder für die Galerie ausgewählt ✓` : "Standard-Bilder für die Galerie behalten");
                   await trySaveStep(STEP_ORDER.indexOf("editGallery"), {
                     galleryHeadline: data.addOnGalleryData.headline,
-                    galleryImages: data.addOnGalleryData.images
+                    galleryImages: data.addOnGalleryData.images,
+                    galleryMode: data.addOnGalleryData.mode,
+                    galleryAlbums: data.addOnGalleryData.albums,
+                    addOnGalleryData: data.addOnGalleryData,
                   });
                   await goToNextStep();
                 }}
