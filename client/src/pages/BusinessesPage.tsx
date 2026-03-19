@@ -31,6 +31,11 @@ import {
   Mail,
   Trash2,
   Loader2,
+  ScanSearch,
+  AlertCircle,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -205,7 +210,35 @@ export default function BusinessesPage() {
 
   const queueForOutreachMutation = trpc.outreach.queueBusinesses.useMutation({
     onSuccess: (data) => {
-      toast.success(`${data.queued} Websites werden generiert und dann als Outreach-Queue eingetragen.${data.skipped > 0 ? ` ${data.skipped} bereits vorhanden.` : ""}`);
+      const parts = [];
+      if (data.queued > 0) parts.push(`${data.queued} in Queue`);
+      if (data.skipped > 0) parts.push(`${data.skipped} bereits vorhanden`);
+      if ((data as any).noEmail > 0) parts.push(`${(data as any).noEmail} ohne E-Mail übersprungen`);
+      toast.success(parts.join(" · ") || "Fertig");
+      setSelectedIds(new Set());
+      utils.business.list.invalidate();
+    },
+    onError: (err) => toast.error("Fehler: " + err.message),
+  });
+
+  const [editEmailId, setEditEmailId] = useState<number | null>(null);
+  const [editEmailValue, setEditEmailValue] = useState("");
+  const updateEmailMutation = trpc.business.updateEmail.useMutation({
+    onSuccess: () => {
+      toast.success("E-Mail gespeichert");
+      setEditEmailId(null);
+      utils.business.list.invalidate();
+    },
+    onError: (err) => toast.error("Fehler: " + err.message),
+  });
+
+  const scrapeEmailsMutation = trpc.business.scrapeEmails.useMutation({
+    onSuccess: (data) => {
+      const parts = [];
+      if (data.found > 0) parts.push(`${data.found} E-Mails gefunden`);
+      if (data.skipped > 0) parts.push(`${data.skipped} bereits vorhanden`);
+      if (data.failed > 0) parts.push(`${data.failed} nicht gefunden`);
+      toast.success(parts.join(" · ") || "Fertig");
       setSelectedIds(new Set());
       utils.business.list.invalidate();
     },
@@ -362,25 +395,45 @@ export default function BusinessesPage() {
                   {extractCity(b.address)}
                 </TableCell>
                 <TableCell>
-                  {b.phone ? (
-                    <a
-                      href={`tel:${b.phone}`}
-                      className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-                    >
-                      <Phone className="h-3 w-3 shrink-0" />
-                      <span className="truncate max-w-[120px]">{b.phone}</span>
-                    </a>
-                  ) : b.email ? (
-                    <a
-                      href={`mailto:${b.email}`}
-                      className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-                    >
-                      <Mail className="h-3 w-3 shrink-0" />
-                      <span className="truncate max-w-[120px]">{b.email}</span>
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">–</span>
-                  )}
+                  <div className="space-y-1">
+                    {/* Email status */}
+                    {editEmailId === b.id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          autoFocus
+                          value={editEmailValue}
+                          onChange={(e) => setEditEmailValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") updateEmailMutation.mutate({ id: b.id, email: editEmailValue });
+                            if (e.key === "Escape") setEditEmailId(null);
+                          }}
+                          className="text-xs px-2 py-1 rounded bg-muted border border-border outline-none w-36"
+                          placeholder="email@domain.de"
+                        />
+                        <button onClick={() => updateEmailMutation.mutate({ id: b.id, email: editEmailValue })} className="text-emerald-500 hover:text-emerald-400"><Check className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => setEditEmailId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                      </div>
+                    ) : b.email ? (
+                      <div className="flex items-center gap-1 group">
+                        <Mail className="h-3 w-3 text-emerald-500 shrink-0" />
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400 truncate max-w-[130px]">{b.email}</span>
+                        <button onClick={() => { setEditEmailId(b.id); setEditEmailValue(b.email || ""); }} className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"><Edit2 className="h-2.5 w-2.5 text-muted-foreground hover:text-foreground" /></button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 group">
+                        <AlertCircle className="h-3 w-3 text-amber-500 shrink-0" />
+                        <span className="text-xs text-amber-600 dark:text-amber-400">Keine E-Mail</span>
+                        <button onClick={() => { setEditEmailId(b.id); setEditEmailValue(""); }} className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 text-xs text-blue-400 hover:text-blue-300">+</button>
+                      </div>
+                    )}
+                    {/* Phone secondary */}
+                    {b.phone && (
+                      <a href={`tel:${b.phone}`} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+                        <Phone className="h-2.5 w-2.5 shrink-0" />
+                        <span className="truncate max-w-[130px]">{b.phone}</span>
+                      </a>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   {b.website ? (
@@ -450,6 +503,17 @@ export default function BusinessesPage() {
             <span className="text-sm font-medium">
               {selectedIds.size} {selectedIds.size === 1 ? "ausgewählt" : "ausgewählt"}
             </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => scrapeEmailsMutation.mutate({ ids: Array.from(selectedIds) })}
+              disabled={scrapeEmailsMutation.isPending}
+              className="gap-2"
+              title="Impressum / Kontaktseite der Website nach E-Mail-Adressen durchsuchen"
+            >
+              {scrapeEmailsMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanSearch className="h-4 w-4" />}
+              E-Mails finden
+            </Button>
             <Button
               size="sm"
               onClick={handleQueueForOutreach}

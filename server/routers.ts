@@ -1722,6 +1722,47 @@ export const appRouter = router({
         return { deleted };
       }),
 
+    scrapeEmails: adminProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        const { scrapeEmailFromWebsite, hasMxRecord } = await import("./emailScraper");
+        let found = 0;
+        let skipped = 0;
+        let failed = 0;
+
+        for (const id of input.ids) {
+          try {
+            const business = await getBusinessById(id);
+            if (!business) { skipped++; continue; }
+            // Already has a valid email – skip
+            if (business.email && business.email.includes("@")) { skipped++; continue; }
+            // No website URL to scrape from
+            if (!business.website) { failed++; continue; }
+
+            const email = await scrapeEmailFromWebsite(business.website);
+            if (!email) { failed++; continue; }
+
+            // Basic MX check
+            const mxOk = await hasMxRecord(email);
+            if (!mxOk) { failed++; continue; }
+
+            await updateBusiness(id, { email });
+            found++;
+          } catch (_) {
+            failed++;
+          }
+        }
+
+        return { found, skipped, failed };
+      }),
+
+    updateEmail: adminProcedure
+      .input(z.object({ id: z.number(), email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        await updateBusiness(input.id, { email: input.email });
+        return { success: true };
+      }),
+
     stats: adminProcedure.query(async () => {
       const [all, customerIds] = await Promise.all([
         listBusinesses(10000, 0),
@@ -2236,10 +2277,17 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         let queued = 0;
         let skipped = 0;
+        let noEmail = 0;
 
         for (const businessId of input.businessIds) {
           const business = await getBusinessById(businessId);
           if (!business) continue;
+
+          // Skip businesses without a valid email address
+          if (!business.email || !business.email.includes("@")) {
+            noEmail++;
+            continue;
+          }
 
           const existing = await getWebsiteByBusinessId(businessId);
 
@@ -2305,7 +2353,7 @@ export const appRouter = router({
           }
         }
 
-        return { queued, skipped };
+        return { queued, skipped, noEmail };
       }),
 
     send: adminProcedure
