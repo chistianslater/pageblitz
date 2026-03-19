@@ -1540,6 +1540,7 @@ function getRelevantAddons(slug: string): AddonDef[] {
     booking:   { icon: "📅", title: "Terminbuchung",       desc: "Kunden buchen direkt auf deiner Website einen Termin – ohne Anruf, ohne Wartezeit.",      price: "+ 4,90 €/Mo." },
     contact:   { icon: "✉️", title: "Kontaktformular",     desc: "Kundenanfragen direkt per E-Mail – DSGVO-konform und sofort einsatzbereit.",               price: "+ 3,90 €/Mo." },
     gallery:   { icon: "🖼️", title: "Bildergalerie",       desc: "Präsentiere deine Arbeiten, Räumlichkeiten oder Produkte in einer professionellen Galerie.", price: "+ 3,90 €/Mo." },
+    team:      { icon: "👥", title: "Team-Sektion",        desc: "Stelle dein Team mit Fotos, Namen und Positionen professionell vor.",                        price: "+ 3,90 €/Mo." },
     menu:      { icon: "🍽️", title: "Speisekarte",         desc: "Digitale Speisekarte mit Kategorien, Beschreibungen und Preisen – immer aktuell.",          price: "+ 3,90 €/Mo." },
     pricelist: { icon: "💶", title: "Preisliste",           desc: "Zeige dein Leistungsangebot und deine Preise übersichtlich auf der Website.",               price: "+ 3,90 €/Mo." },
   };
@@ -1547,21 +1548,21 @@ function getRelevantAddons(slug: string): AddonDef[] {
   const SETS: Record<string, (keyof typeof ALL)[]> = {
     restaurant:     ["aiChat", "booking", "contact", "gallery", "menu", "pricelist"],
     baeckerei:      ["contact", "gallery", "menu", "pricelist"],
-    zahnarzt:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
-    arzt:           ["aiChat", "booking", "contact", "pricelist"],
-    physiotherapie: ["aiChat", "booking", "contact", "pricelist"],
-    fitness:        ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    zahnarzt:       ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    arzt:           ["aiChat", "booking", "contact", "team", "pricelist"],
+    physiotherapie: ["aiChat", "booking", "contact", "team", "pricelist"],
+    fitness:        ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
     friseur:        ["aiChat", "booking", "contact", "gallery", "pricelist"],
     kosmetik:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
     nagelstudio:    ["aiChat", "booking", "contact", "gallery", "pricelist"],
     hundesalon:     ["aiChat", "booking", "contact", "gallery", "pricelist"],
     handwerk:       ["aiChat", "contact", "gallery", "pricelist"],
     reinigung:      ["aiChat", "contact", "pricelist"],
-    immobilien:     ["aiChat", "contact", "gallery"],
-    rechtsanwalt:   ["aiChat", "booking", "contact"],
-    steuerberater:  ["aiChat", "booking", "contact"],
+    immobilien:     ["aiChat", "contact", "gallery", "team"],
+    rechtsanwalt:   ["aiChat", "booking", "contact", "team"],
+    steuerberater:  ["aiChat", "booking", "contact", "team"],
     fotograf:       ["aiChat", "booking", "contact", "gallery", "pricelist"],
-    musikschule:    ["aiChat", "booking", "contact", "gallery", "pricelist"],
+    musikschule:    ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
   };
 
   const keys = SETS[slug] ?? ["aiChat", "booking", "contact", "gallery", "pricelist"];
@@ -1591,11 +1592,11 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;z-index:1}
 .hero-text{text-align:left}
 .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.7)}
-.hero h1{font-size:clamp(1.875rem,3.5vw,2.75rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff;text-align:left}
-.hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:520px;margin:0 0 2.5rem;line-height:1.7}
+.hero h1{font-size:clamp(1.875rem,3.5vw,2.75rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff;text-align:center}
+.hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:520px;margin:0 auto 2.5rem;line-height:1.7}
 .btn-primary{display:inline-block;background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;padding:.9375rem 2.5rem;border-radius:999px;font-size:1rem;font-weight:700;transition:all .2s;box-shadow:0 4px 24px rgba(233,30,140,.3)}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 32px rgba(233,30,140,.4)}
-.hero-trust{margin-top:1.5rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;font-size:.8125rem;color:rgba(255,255,255,.35)}
+.hero-trust{margin-top:1.5rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;font-size:.8125rem;color:rgba(255,255,255,.35);justify-content:center}
 .hero-trust span{display:flex;align-items:center;gap:.375rem}
 /* Hero right: mini browser */
 .hero-browser{border-radius:12px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08);background:#111;transform:perspective(1000px) rotateY(-6deg) rotateX(2deg);transition:transform .4s ease}
@@ -1651,6 +1652,10 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .addon-card h4{font-size:.9375rem;font-weight:600;color:#fff;margin-bottom:.375rem}
 .addon-card p{font-size:.8125rem;color:rgba(255,255,255,.4);line-height:1.5}
 .addon-price{display:inline-block;margin-top:.75rem;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;padding:.25rem .75rem;border-radius:999px;border:1px solid rgba(255,255,255,.1)}
+/* Addon expand */
+.addon-more{display:none}
+.addon-expand-btn{display:block;margin:1.25rem auto 0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);padding:.625rem 1.5rem;border-radius:999px;font-size:.875rem;cursor:pointer;transition:all .2s}
+.addon-expand-btn:hover{background:rgba(255,255,255,.1);color:#fff}
 /* Pricing */
 .pricing{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .pricing-wrapper{max-width:460px;margin:0 auto;margin-top:3.5rem}
@@ -1867,11 +1872,10 @@ export function generateLandingPageHTML(
   // Industry-relevant add-ons
   const relevantAddons = getRelevantAddons(industry.slug);
   const addonsHtml = relevantAddons
-    .map(
-      (a) =>
-        `<div class="addon-card"><div class="addon-icon">${a.icon}</div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.desc)}</p><span class="addon-price">${escapeHtml(a.price)}</span></div>`
-    )
+    .map((a, i) => `<div class="addon-card${i >= 3 ? ' addon-more' : ''}"><div class="addon-icon">${a.icon}</div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.desc)}</p><span class="addon-price">${escapeHtml(a.price)}</span></div>`)
     .join("\n      ");
+
+  const showExpandBtn = relevantAddons.length > 3;
 
   // Pricing add-ons list (matches relevant ones)
   const pricingAddonsHtml = relevantAddons
@@ -1951,46 +1955,15 @@ export function generateLandingPageHTML(
 <section class="hero">
   <div class="hero-orb orb-tl"></div>
   <div class="hero-orb orb-br"></div>
-  <div class="container">
-    <div class="hero-inner">
-      <div class="hero-text">
-        <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
-        <h1>${escapeHtml(h1)}</h1>
-        <p>${escapeHtml(industry.description)}</p>
-        <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
-        <div class="hero-trust">
-          <span>✓ Keine Kreditkarte nötig</span>
-          <span>✓ Keine Einrichtungsgebühr</span>
-          <span>✓ Jederzeit kündbar</span>
-        </div>
-      </div>
-      <div class="hero-browser" aria-hidden="true">
-        <div class="hb-chrome">
-          <div class="hb-dots">
-            <div class="hb-dot r"></div>
-            <div class="hb-dot a"></div>
-            <div class="hb-dot g"></div>
-          </div>
-          <div class="hb-url">
-            <span>🔒</span>
-            <span>${escapeHtml(mockUrl)}</span>
-          </div>
-        </div>
-        <div class="hb-hero">
-          <img class="hb-hero-img" src="${style.previewPhoto}" alt="${escapeHtml(mockBusinessName)}" loading="lazy">
-          <div class="hb-hero-overlay"></div>
-          <div class="hb-hero-content">
-            <div class="hb-eyebrow" style="background:${style.accent}"></div>
-            <div class="hb-title">${escapeHtml(mockBusinessName)}</div>
-            <div class="hb-sub"></div>
-            <div class="hb-sub2"></div>
-            <div class="hb-cta" style="background:${style.accent}">Jetzt Termin buchen →</div>
-          </div>
-        </div>
-        <div class="hb-services">
-          ${industry.features.slice(0, 3).map(f => `<div class="hb-card"><div class="hb-card-icon">${f.icon}</div><div class="hb-card-l1"></div><div class="hb-card-l2"></div></div>`).join('\n          ')}
-        </div>
-      </div>
+  <div class="container" style="position:relative;z-index:1">
+    <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
+    <h1>${escapeHtml(h1)}</h1>
+    <p>${escapeHtml(industry.description)}</p>
+    <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
+    <div class="hero-trust">
+      <span>✓ Keine Kreditkarte nötig</span>
+      <span>✓ Keine Einrichtungsgebühr</span>
+      <span>✓ Jederzeit kündbar</span>
     </div>
   </div>
 </section>
@@ -2097,6 +2070,7 @@ export function generateLandingPageHTML(
     <div class="addons-grid">
       ${addonsHtml}
     </div>
+    ${showExpandBtn ? `<button class="addon-expand-btn" id="addon-expand-btn" onclick="expandAddons()">Weitere Add-ons anzeigen ↓</button>` : ''}
   </div>
 </section>
 
@@ -2116,12 +2090,12 @@ export function generateLandingPageHTML(
         </div>
 
         <div id="price-monthly" style="display:none">
-          <div class="pricing-price">19,90 €<span>/Monat</span></div>
+          <div class="pricing-price">24,90 €<span>/Monat</span></div>
           <div class="pricing-note">Monatliche Abrechnung · Jederzeit kündbar.</div>
         </div>
         <div id="price-yearly">
-          <div class="pricing-price">15,92 €<span>/Monat</span></div>
-          <div class="pricing-note">190,99 €/Jahr · 2 Monate geschenkt · Jederzeit kündbar.</div>
+          <div class="pricing-price">19,90 €<span>/Monat</span></div>
+          <div class="pricing-note">238,80 €/Jahr · 2 Monate gespart · Jederzeit kündbar.</div>
         </div>
         <ul class="pricing-features">
           <li>KI-generierte ${escapeHtml(industry.displayName)}-Website</li>
@@ -2136,8 +2110,8 @@ export function generateLandingPageHTML(
           ${pricingAddonsHtml}
         </div>
         <a class="pricing-cta" href="https://pageblitz.de/start" style="background:${style.accent};color:#fff">7 Tage gratis starten</a>
-        <div class="pricing-note-bottom" id="note-bottom-monthly" style="display:none">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</div>
-        <div class="pricing-note-bottom" id="note-bottom-yearly">7 Tage gratis · danach 15,92 €/Mo. (190,99 €/Jahr) · Jederzeit kündbar</div>
+        <div class="pricing-note-bottom" id="note-bottom-monthly" style="display:none">7 Tage gratis · danach 24,90 €/Mo. · Jederzeit kündbar</div>
+        <div class="pricing-note-bottom" id="note-bottom-yearly">7 Tage gratis · danach 19,90 €/Mo. (238,80 €/Jahr) · Jederzeit kündbar</div>
       </div>
     </div>
   </div>
@@ -2210,6 +2184,11 @@ function setBilling(plan){
   document.getElementById('price-yearly').style.display = isYearly ? 'block' : 'none';
   document.getElementById('note-bottom-monthly').style.display = isYearly ? 'none' : 'block';
   document.getElementById('note-bottom-yearly').style.display = isYearly ? 'block' : 'none';
+}
+function expandAddons(){
+  document.querySelectorAll('.addon-more').forEach(function(el){el.style.display='block'});
+  var btn = document.getElementById('addon-expand-btn');
+  if(btn) btn.style.display='none';
 }
 </script>
 </body>
