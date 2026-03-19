@@ -46,29 +46,47 @@ function PageLoader() {
   );
 }
 
+// AdminSwitch lives INSIDE DashboardLayout and reads useLocation() itself.
+// This guarantees the Suspense key={location} update happens within the same
+// render tree as the location subscriber – no prop-threading through lazy
+// DashboardLayout that might swallow the update.
+function AdminSwitch() {
+  const [location] = useLocation();
+  return (
+    <Suspense key={location} fallback={
+      <div className="flex items-center justify-center h-64">
+        <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
+      </div>
+    }>
+      <Switch>
+        <Route path="/admin" component={Home} />
+        <Route path="/admin/search" component={SearchPage} />
+        <Route path="/admin/websites" component={WebsitesPage} />
+        <Route path="/admin/outreach" component={OutreachPage} />
+        <Route path="/admin/stats" component={StatsPage} />
+        <Route path="/admin/leads" component={LeadsPage} />
+        <Route path="/admin/businesses" component={BusinessesPage} />
+        <Route path="/admin/layouts" component={LayoutOverviewPage} />
+        <Route path="/admin/pipeline" component={PipelinePage} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
+  );
+}
+
 function AdminRouter() {
   // DashboardLayout is wrapped in its own Suspense (no key) so it loads once
-  // and stays mounted across admin sub-navigations. The inner Suspense carries
-  // key={location} so only the page content swaps – the sidebar never remounts.
-  const [location] = useLocation();
+  // and stays mounted across admin sub-navigations. AdminSwitch inside
+  // DashboardLayout reads useLocation() itself and owns the key={location}
+  // Suspense – avoids prop-threading issues with lazy-loaded DashboardLayout.
   return (
     <AdminRoute>
       <Suspense fallback={<PageLoader />}>
         <DashboardLayout>
-          <Suspense key={location} fallback={<PageLoader />}>
-            <Switch>
-              <Route path="/admin" component={Home} />
-              <Route path="/admin/search" component={SearchPage} />
-              <Route path="/admin/websites" component={WebsitesPage} />
-              <Route path="/admin/outreach" component={OutreachPage} />
-              <Route path="/admin/stats" component={StatsPage} />
-              <Route path="/admin/leads" component={LeadsPage} />
-              <Route path="/admin/businesses" component={BusinessesPage} />
-              <Route path="/admin/layouts" component={LayoutOverviewPage} />
-              <Route path="/admin/pipeline" component={PipelinePage} />
-              <Route component={NotFound} />
-            </Switch>
-          </Suspense>
+          <AdminSwitch />
         </DashboardLayout>
       </Suspense>
     </AdminRoute>
