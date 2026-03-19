@@ -672,12 +672,12 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
     return (
       <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
-          <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto">
+          <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto mb-8">
             <h2 className={`text-3xl md:text-4xl text-center ${textMain}`} style={{ ...hs, ...textMainStyle }}>
               {process?.headline || "In 3 Schritten zu Ihrem Ziel"}
             </h2>
           </Skeleton>
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12 mt-16">
+          <div className="grid md:grid-cols-3 gap-8 md:gap-12 mt-12">
             {items.map((item: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-44">
                 <div className="flex flex-col items-center text-center relative">
@@ -686,7 +686,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                       style={{ borderColor: safeCs.primary + '40' }} />
                   )}
                   <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-4 z-10"
-                    style={{ backgroundColor: safeCs.primary, color: safeCs.onPrimary || '#ffffff', ...hs }}>
+                    style={{ backgroundColor: safeCs.primary || '#3b82f6', color: safeCs.onPrimary || '#ffffff', boxShadow: `0 0 0 4px ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`, ...hs }}>
                     {item.step}
                   </div>
                   <h3 className={`text-lg mb-2 ${textMain}`} style={{ ...hs, ...textMainStyle }}>{item.title}</h3>
@@ -704,14 +704,15 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   return (
     <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={{ ...bgStyle, fontFamily: bodyFont }}>
       <div className="max-w-4xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-12">
+        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-16">
           <h2 className={`text-3xl md:text-4xl text-center mb-0 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
             {process?.headline || "Ihr Weg zu uns"}
           </h2>
         </Skeleton>
         <div className="relative">
           {/* Line centered at 50% (-translate-x-1/2 shifts line's center to 50%) */}
-          <div className="absolute left-[35px] md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5 bg-neutral-200" />
+          <div className="absolute left-[35px] md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5"
+            style={{ backgroundColor: dark ? 'rgba(255,255,255,0.2)' : '#e5e7eb' }} />
           <div className="space-y-16">
             {items.map((item: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-32">
@@ -731,8 +732,8 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                     )}
                   </div>
                   {/* Circle – shrink-0 so both flex-1 halves are equal → center at 50% */}
-                  <div className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0 shadow-lg mr-5 md:mr-0"
-                    style={{ backgroundColor: safeCs.primary }}>
+                  <div className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shrink-0 shadow-lg mr-5 md:mr-0"
+                    style={{ backgroundColor: safeCs.primary || '#3b82f6', color: safeCs.onPrimary || '#ffffff', boxShadow: `0 0 0 4px ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
                     {item.step}
                   </div>
                   {/* Right slot – flex-1: fills remaining space on mobile + equal half on desktop */}
@@ -2105,7 +2106,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         <GoogleTrustBadge websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={true} />
       </div>
 
-      <div style={{ order: getSecOrder(websiteData, 'services', 20) }}>
+      <div style={{ order: getSecOrder(websiteData, 'services', 20), borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '2rem' }}>
         <Services websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={true} />
       </div>
 
@@ -2635,21 +2636,19 @@ export function PremiumLayoutV2({
         {services.length > 0 && (
           <section id="services" className="py-24 md:py-32 px-6 scroll-mt-20">
             <div className="max-w-7xl mx-auto">
-              <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[6rem] mb-24">
+              <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[6rem] mb-16">
                 <h2 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1 }} className="mb-0">
                   Unsere <span style={{ color: safeCs.primary }}>Leistungen</span>
                 </h2>
               </Skeleton>
               <div className="grid md:grid-cols-3 gap-8">
                 {services.map((service: any, i: number) => (
-                  <Skeleton key={i} isLoading={isLoading} className="min-h-[18rem]">
-                    <div className="p-10 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col justify-between" style={{ borderTop: `4px solid ${safeCs.primary}` }}>
-                      <div>
-                        <Target size={28} style={{ color: safeCs.primary }} className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity" />
-                        <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: '1.6rem', lineHeight: 1.2 }} className="mb-4">{service.title}</h3>
-                        <p style={{ fontFamily: BODY, fontWeight: 400, fontSize: '0.9rem' }} className="text-neutral-500 leading-relaxed">{service.description}</p>
-                      </div>
-                      <div className="mt-8 flex items-center gap-3 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" style={{ color: safeCs.primary }}>
+                  <Skeleton key={i} isLoading={isLoading} className="min-h-[14rem]">
+                    <div className="p-8 border border-neutral-100 hover:shadow-2xl transition-all duration-500 bg-white group flex flex-col gap-4" style={{ borderTop: `4px solid ${safeCs.primary}` }}>
+                      <Target size={28} style={{ color: safeCs.primary }} className="opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <h3 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, fontSize: '1.5rem', lineHeight: 1.2 }}>{service.title}</h3>
+                      <p style={{ fontFamily: BODY, fontWeight: 400, fontSize: '0.9rem' }} className="text-neutral-500 leading-relaxed flex-1">{service.description}</p>
+                      <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" style={{ color: safeCs.primary }}>
                         <span>Mehr erfahren</span><ArrowRight size={14} />
                       </div>
                     </div>
