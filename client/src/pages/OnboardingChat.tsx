@@ -2631,7 +2631,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     testimonials: { label: "Kundenstimmen",         emoji: "⭐" },
     gallery:      { label: "Bildergalerie",         emoji: "🖼️" },
     contact:      { label: "Kontaktbereich",        emoji: "📬" },
-    cta:          { label: "Direktkontakt-Banner",  emoji: "🎯" },
+    // cta: not rendered by any layout – intentionally excluded
     features:     { label: "Vorteile",              emoji: "✅" },
     team:         { label: "Team",                  emoji: "👥" },
     faq:          { label: "FAQ",                   emoji: "❓" },

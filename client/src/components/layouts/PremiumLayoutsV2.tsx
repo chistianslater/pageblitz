@@ -207,7 +207,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="grid lg:grid-cols-[45%_55%] min-h-screen overflow-hidden">
+    <section id="hero" className="grid lg:grid-cols-[52%_48%] min-h-screen overflow-hidden">
       {/* LEFT: Text Panel */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
@@ -228,7 +228,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
         <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-6">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.5rem, 3.5vw, 4.5rem)'), color: textColor }}
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.2rem, 3.2vw, 4rem)'), color: textColor, overflowWrap: 'break-word', wordBreak: 'break-word' }}
             className="uppercase tracking-tight mb-6">
             {hl.main}<br />
             <span style={{ color: primaryColor }}>{hl.last}</span>
@@ -2940,10 +2940,10 @@ function PricelistSection({ websiteData, cs, isLoading, displayFont, bodyFont, h
   const borderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
 
   return (
-    <section id="preise" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
+    <section id="preise" className={`py-16 md:py-24 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-4xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-16">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }}>
+        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[4rem] mb-10">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor, marginBottom: '2.5rem' }}>
             {headline}
           </h2>
         </Skeleton>
