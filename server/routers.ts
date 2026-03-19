@@ -57,7 +57,7 @@ const PRICING = {
   addonBooking: 490,  // 4,90 € Terminbuchung
 } as const;
 
-type AddOnKey = "contactForm" | "gallery" | "menu" | "pricelist" | "aiChat" | "booking";
+type AddOnKey = "contactForm" | "gallery" | "menu" | "pricelist" | "aiChat" | "booking" | "team";
 const ADDON_NAMES: Record<AddOnKey, string> = {
   contactForm: "Kontaktformular",
   gallery:     "Bildergalerie",
@@ -65,11 +65,13 @@ const ADDON_NAMES: Record<AddOnKey, string> = {
   pricelist:   "Preisliste",
   aiChat:      "KI-Chat",
   booking:     "Terminbuchung",
+  team:        "Team",
 };
 
 function addonPrice(key: AddOnKey): number {
   if (key === "aiChat")   return PRICING.addonAiChat;
   if (key === "booking")  return PRICING.addonBooking;
+  if (key === "team")     return PRICING.addon; // 3,90 €
   return PRICING.addon;
 }
 
@@ -3274,6 +3276,49 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    // ── Team Members ──────────────────────────────────────────────────────────
+    getTeamMembers: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        return {
+          members: ((row.website as any).addOnTeamData as any[]) || [],
+          enabled: !!(row.website as any).addOnTeam,
+        };
+      }),
+
+    saveTeamMembers: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        enabled: z.boolean(),
+        members: z.array(z.object({
+          id: z.string(),
+          name: z.string(),
+          role: z.string(),
+          photo: z.string().optional(),
+          email: z.string().optional(),
+          phone: z.string().optional(),
+          bio: z.string().optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const currentWd = row.website.websiteData ? JSON.parse(JSON.stringify(row.website.websiteData)) : {};
+        currentWd.teamMembers = input.enabled ? input.members : [];
+
+        await updateWebsite(input.websiteId, {
+          addOnTeam: input.enabled,
+          addOnTeamData: input.members,
+          websiteData: currentWd,
+        } as any);
+        return { ok: true };
+      }),
+
     getAppointments: protectedProcedure
       .input(z.object({ websiteId: z.number(), upcoming: z.boolean().optional().default(true) }))
       .query(async ({ ctx, input }) => {
@@ -4050,7 +4095,7 @@ Wichtige Felder im JSON:
     purchaseAddon: protectedProcedure
       .input(z.object({
         websiteId: z.number(),
-        addonKey: z.enum(["contactForm", "gallery", "menu", "pricelist", "aiChat", "booking"]),
+        addonKey: z.enum(["contactForm", "gallery", "menu", "pricelist", "aiChat", "booking", "team"]),
       }))
       .mutation(async ({ input, ctx }) => {
         const rows = await getWebsitesByUserId(ctx.user.id);
@@ -4159,10 +4204,11 @@ Wichtige Felder im JSON:
           addOnPricelist: true,
           addOnBooking: true,
           addOnAiChat: true,
-        });
+          addOnTeam: true,
+        } as any);
         // Create or update subscription with all add-ons enabled
         const existing = await getSubscriptionByWebsiteId(input.websiteId);
-        const allAddOns = { contactForm: true, gallery: true, menu: true, pricelist: true, booking: true, aiChat: true };
+        const allAddOns = { contactForm: true, gallery: true, menu: true, pricelist: true, booking: true, aiChat: true, team: true };
         if (existing) {
           await updateSubscriptionByWebsiteId(input.websiteId, {
             userId: input.userId,

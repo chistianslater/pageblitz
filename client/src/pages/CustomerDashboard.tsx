@@ -1748,6 +1748,9 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
             </div>
           </div>
 
+          {/* ── Team ── */}
+          <TeamAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} purchasedAddOns={purchasedAddOns} />
+
           {/* ── Purchase confirmation modal ── */}
           {confirmAddon && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -2486,6 +2489,268 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                 onClick={() => { setSaving(true); purchaseAddonMutation.mutate({ websiteId, addonKey: "aiChat" }); }}
                 disabled={purchaseAddonMutation.isPending}
                 className="flex-1 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Team Add-on Section ────────────────────────────────
+interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  photo?: string;
+  email?: string;
+  phone?: string;
+  bio?: string;
+}
+
+function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
+  websiteId: number;
+  website: any;
+  onUpdate: () => void;
+  purchasedAddOns: Record<string, boolean>;
+}) {
+  const isPurchased = !!purchasedAddOns["team"];
+  const { data: teamData, refetch: refetchTeam } = trpc.customer.getTeamMembers.useQuery({ websiteId }, { enabled: isPurchased });
+  const [enabled, setEnabled] = useState<boolean>(!!(website as any).addOnTeam);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploadingIdx] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
+  const saveTeamMutation = trpc.customer.saveTeamMembers.useMutation({
+    onSuccess: () => { setSaving(false); setDirty(false); onUpdate(); refetchTeam(); toast.success("Team gespeichert"); },
+    onError: (e: any) => { setSaving(false); toast.error("Fehler: " + e.message); },
+  });
+  const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
+    onSuccess: () => { setConfirmOpen(false); onUpdate(); toast.success("Team Add-on freigeschaltet! 🎉"); },
+    onError: (e: any) => { toast.error("Fehler: " + e.message); },
+  });
+
+  // Sync remote data into local state once loaded
+  useEffect(() => {
+    if (teamData) {
+      setEnabled(teamData.enabled);
+      setMembers((teamData.members as TeamMember[]) || []);
+    }
+  }, [teamData]);
+
+  const handleToggle = () => {
+    if (!isPurchased) { setConfirmOpen(true); return; }
+    const newVal = !enabled;
+    setEnabled(newVal);
+    saveTeamMutation.mutate({ websiteId, enabled: newVal, members });
+  };
+
+  const addMember = () => {
+    const newMember: TeamMember = { id: Math.random().toString(36).slice(2), name: "", role: "" };
+    setMembers(prev => [...prev, newMember]);
+    setDirty(true);
+  };
+
+  const updateMember = (id: string, field: keyof TeamMember, value: string) => {
+    setMembers(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
+    setDirty(true);
+  };
+
+  const removeMember = (id: string) => {
+    setMembers(prev => prev.filter(m => m.id !== id));
+    setDirty(true);
+  };
+
+  const handlePhotoUpload = async (memberId: string, file: File) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    setUploadingIdx(memberId);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
+        if (result?.url) {
+          setMembers(prev => prev.map(m => m.id === memberId ? { ...m, photo: result.url } : m));
+          setDirty(true);
+          toast.success("Foto hochgeladen");
+        }
+      } catch (err: any) {
+        toast.error("Upload fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
+      } finally {
+        setUploadingIdx(null);
+      }
+    };
+    reader.onerror = () => { toast.error("Fehler beim Lesen der Datei"); setUploadingIdx(null); };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = () => {
+    setSaving(true);
+    saveTeamMutation.mutate({ websiteId, enabled, members });
+  };
+
+  // Overview row (inside AddonsEditor) — rendered inline
+  return (
+    <>
+      {/* Overview row */}
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+        <div className="p-4 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-sky-500/20 flex items-center justify-center flex-shrink-0">
+            <Users className="w-5 h-5 text-cyan-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-white font-semibold text-sm">Team</span>
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-medium">+3,90 €/Mon</span>
+              {enabled && members.length > 0 && <span className="text-xs text-cyan-400">{members.length} {members.length === 1 ? "Person" : "Personen"}</span>}
+            </div>
+            <p className="text-slate-400 text-xs">Stell dein Team mit Foto, Rolle und Kontakt vor.</p>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {!isPurchased ? (
+              <button onClick={() => setConfirmOpen(true)} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                <Lock className="w-3 h-3" />Freischalten
+              </button>
+            ) : (
+              <Toggle checked={enabled} onChange={handleToggle} color="peer-checked:bg-cyan-500" />
+            )}
+          </div>
+        </div>
+
+        {/* Inline management UI when enabled */}
+        {isPurchased && enabled && (
+          <div className="px-4 pb-4 space-y-4 border-t border-slate-700/40 pt-4">
+            {members.length > 0 && (
+              <div className="space-y-3">
+                {members.map((m) => (
+                  <div key={m.id} className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/30 space-y-3">
+                    <div className="flex items-start gap-3">
+                      {/* Photo */}
+                      <label className="relative flex-shrink-0 cursor-pointer group">
+                        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-slate-600 bg-slate-700/60 flex items-center justify-center">
+                          {uploading === m.id ? (
+                            <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
+                          ) : m.photo ? (
+                            <img src={m.photo} className="w-full h-full object-cover" alt={m.name} />
+                          ) : (
+                            <span className="text-xl font-bold text-slate-400">{m.name?.charAt(0)?.toUpperCase() || "?"}</span>
+                          )}
+                        </div>
+                        <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Upload className="w-4 h-4 text-white" />
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploading === m.id}
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(m.id, f); }}
+                        />
+                      </label>
+                      {/* Name + Role */}
+                      <div className="flex-1 grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={m.name}
+                          onChange={(e) => updateMember(m.id, "name", e.target.value)}
+                          placeholder="Name *"
+                          className="col-span-2 sm:col-span-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <input
+                          type="text"
+                          value={m.role}
+                          onChange={(e) => updateMember(m.id, "role", e.target.value)}
+                          placeholder="Position / Rolle *"
+                          className="col-span-2 sm:col-span-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <input
+                          type="email"
+                          value={m.email || ""}
+                          onChange={(e) => updateMember(m.id, "email", e.target.value)}
+                          placeholder="E-Mail (optional)"
+                          className="bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <input
+                          type="tel"
+                          value={m.phone || ""}
+                          onChange={(e) => updateMember(m.id, "phone", e.target.value)}
+                          placeholder="Telefon (optional)"
+                          className="bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <textarea
+                          value={m.bio || ""}
+                          onChange={(e) => updateMember(m.id, "bio", e.target.value.slice(0, 150))}
+                          placeholder="Kurzbio (optional, max. 150 Zeichen)"
+                          rows={2}
+                          maxLength={150}
+                          className="col-span-2 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500 resize-none"
+                        />
+                      </div>
+                      <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0 mt-0.5">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={addMember}
+                className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors py-2 px-4 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-lg border border-dashed border-cyan-500/30"
+              >
+                <Plus className="w-4 h-4" />Mitglied hinzufügen
+              </button>
+              {dirty && (
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Speichern
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Purchase confirmation modal */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-lg flex-shrink-0">👥</div>
+              <div>
+                <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                <p className="text-cyan-400 text-sm font-medium">Team</p>
+              </div>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed mb-1">
+              <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+            </p>
+            <p className="text-slate-500 text-xs leading-relaxed mb-6">
+              Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: "team" })}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
               </button>

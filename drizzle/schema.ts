@@ -84,6 +84,8 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   // Add-on flags (live state on the website) – only columns that exist in DB
   addOnBooking: boolean("addOnBooking").default(false),
   addOnAiChat: boolean("addOnAiChat").default(false),
+  addOnTeam: boolean("addOnTeam").default(false),
+  addOnTeamData: json("addOnTeamData"), // Array of team members
   addOnCalendly: boolean("addOnCalendly").default(false),
   calendlyUrl: varchar("calendlyUrl", { length: 512 }),
   // AI Chat usage tracking
@@ -166,6 +168,9 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnBooking: boolean("addOnBooking").default(false),
   // AI Chat Add-on
   addOnAiChat: boolean("addOnAiChat").default(false),
+  // Team Add-on
+  addOnTeam: boolean("addOnTeam").default(false),
+  addOnTeamData: json("addOnTeamData"), // Array of team members
   addOnCalendly: boolean("addOnCalendly").default(false),
   calendlyUrl: varchar("calendlyUrl", { length: 512 }),
   chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),
