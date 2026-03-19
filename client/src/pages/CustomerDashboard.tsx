@@ -3837,7 +3837,11 @@ function ContentFieldsAccordion({ website, websiteData, business, onboardingData
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("preview");
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const p = new URLSearchParams(window.location.search).get("tab") as Tab | null;
+    const valid: Tab[] = ["preview","content","design","settings","addons","domain","anfragen","leads","appointments","statistics"];
+    return (p && valid.includes(p)) ? p : "preview";
+  });
   const [previewKey, setPreviewKey] = useState(0);
   const [imagePicker, setImagePicker] = useState<{ slot: "hero" | "about"; websiteId: number } | null>(null);
   const { data: myWebsites, isLoading, refetch } = trpc.customer.getMyWebsites.useQuery(
@@ -4227,7 +4231,7 @@ export default function CustomerDashboard() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => { setActiveTab(tab.id); window.history.replaceState(null, "", `?tab=${tab.id}`); }}
               className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[10px] font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? "text-blue-400 border-blue-400"
@@ -4254,7 +4258,7 @@ export default function CustomerDashboard() {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); window.history.replaceState(null, "", `?tab=${tab.id}`); }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
                   activeTab === tab.id
                     ? "bg-blue-500/15 text-blue-400"

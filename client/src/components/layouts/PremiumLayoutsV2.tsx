@@ -3841,7 +3841,7 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
         {/* Service mini-cards row */}
         <div className="max-w-7xl mx-auto mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {(isLoading ? Array(4).fill({}) : services.slice(0,4)).map((service: any, i: number) => {
+          {(isLoading ? Array(4).fill({}) : services).map((service: any, i: number) => {
             const Icon = iconSet[i % iconSet.length];
             return (
               <motion.div key={i} initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ duration:0.5, delay:i*0.07 }}>
@@ -3887,7 +3887,6 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </div>
       </section>
 
-      <ServicesVariantA websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={false} variant={0} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.03em' }} template="nexus" headlineSize={headlineSize} />
