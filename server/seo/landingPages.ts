@@ -1515,20 +1515,33 @@ const INDUSTRY_STYLES: Record<string, IndustryStyle> = {
   immobilien:     { accent: "#818cf8", heroBg: "linear-gradient(135deg,#0c0c1e 0%,#141428 100%)", orb: "rgba(129,140,248,.12)", previewPhoto: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&auto=format&fit=crop" },
   rechtsanwalt:   { accent: "#6366f1", heroBg: "linear-gradient(135deg,#0a0c20 0%,#121430 100%)", orb: "rgba(99,102,241,.12)",  previewPhoto: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?w=1200&q=80&auto=format&fit=crop" },
   steuerberater:  { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#080c18 0%,#101c2c 100%)", orb: "rgba(96,165,250,.12)",  previewPhoto: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80&auto=format&fit=crop" },
-  fotograf:       { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#241e0c 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1452780212405-6f5b9509da51?w=1200&q=80&auto=format&fit=crop" },
+  fotograf:       { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#241e0c 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=80&auto=format&fit=crop" },
   physiotherapie: { accent: "#22d3ee", heroBg: "linear-gradient(135deg,#060f14 0%,#0a1a20 100%)", orb: "rgba(34,211,238,.12)",  previewPhoto: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80&auto=format&fit=crop" },
   nagelstudio:    { accent: "#c084fc", heroBg: "linear-gradient(135deg,#180a20 0%,#280e34 100%)", orb: "rgba(192,132,252,.12)", previewPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80&auto=format&fit=crop" },
   baeckerei:      { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#1c1208 0%,#2c1e08 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&q=80&auto=format&fit=crop" },
-  reinigung:      { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#08101c 0%,#0e2040 100%)", orb: "rgba(96,165,250,.12)",  previewPhoto: "https://images.unsplash.com/photo-1527515545081-5db817172677?w=1200&q=80&auto=format&fit=crop" },
+  reinigung:      { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#08101c 0%,#0e2040 100%)", orb: "rgba(96,165,250,.12)",  previewPhoto: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80&auto=format&fit=crop" },
   hundesalon:     { accent: "#a78bfa", heroBg: "linear-gradient(135deg,#100c1e 0%,#1e1434 100%)", orb: "rgba(167,139,250,.12)", previewPhoto: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1200&q=80&auto=format&fit=crop" },
-  musikschule:    { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2a1804 100%)", orb: "rgba(251,146,60,.12)",  previewPhoto: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1200&q=80&auto=format&fit=crop" },
+  musikschule:    { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2a1804 100%)", orb: "rgba(251,146,60,.12)",  previewPhoto: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=1200&q=80&auto=format&fit=crop" },
+  elektriker:     { accent: "#f59e0b", heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1a04 100%)", orb: "rgba(245,158,11,.12)",  previewPhoto: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&q=80&auto=format&fit=crop" },
+  maler:          { accent: "#14b8a6", heroBg: "linear-gradient(135deg,#041414 0%,#082020 100%)", orb: "rgba(20,184,166,.12)",  previewPhoto: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=1200&q=80&auto=format&fit=crop" },
+  klempner:       { accent: "#64748b", heroBg: "linear-gradient(135deg,#0c1018 0%,#141c28 100%)", orb: "rgba(100,116,139,.12)", previewPhoto: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&auto=format&fit=crop" },
+  gaertner:       { accent: "#22c55e", heroBg: "linear-gradient(135deg,#061408 0%,#0a2010 100%)", orb: "rgba(34,197,94,.12)",   previewPhoto: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&q=80&auto=format&fit=crop" },
+  tierarzt:       { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2c1808 100%)", orb: "rgba(251,146,60,.12)",  previewPhoto: "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=1200&q=80&auto=format&fit=crop" },
+  apotheke:       { accent: "#10b981", heroBg: "linear-gradient(135deg,#041410 0%,#082018 100%)", orb: "rgba(16,185,129,.12)",  previewPhoto: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&q=80&auto=format&fit=crop" },
+  fahrschule:     { accent: "#6366f1", heroBg: "linear-gradient(135deg,#0a0c20 0%,#121428 100%)", orb: "rgba(99,102,241,.12)",  previewPhoto: "https://images.unsplash.com/photo-1502161254066-6c74afbf07aa?w=1200&q=80&auto=format&fit=crop" },
+  architekt:      { accent: "#94a3b8", heroBg: "linear-gradient(135deg,#0c1014 0%,#141c24 100%)", orb: "rgba(148,163,184,.12)", previewPhoto: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80&auto=format&fit=crop" },
+  buchhaltung:    { accent: "#818cf8", heroBg: "linear-gradient(135deg,#0c0c1e 0%,#14142c 100%)", orb: "rgba(129,140,248,.12)", previewPhoto: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80&auto=format&fit=crop" },
+  ergotherapie:   { accent: "#06b6d4", heroBg: "linear-gradient(135deg,#040e14 0%,#081820 100%)", orb: "rgba(6,182,212,.12)",   previewPhoto: "https://images.unsplash.com/photo-1594737626072-90dc274bc2bd?w=1200&q=80&auto=format&fit=crop" },
+  hebamme:        { accent: "#f9a8d4", heroBg: "linear-gradient(135deg,#1c0a14 0%,#2c1020 100%)", orb: "rgba(249,168,212,.12)", previewPhoto: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=1200&q=80&auto=format&fit=crop" },
+  pilates:        { accent: "#8b5cf6", heroBg: "linear-gradient(135deg,#100a1e 0%,#1c1030 100%)", orb: "rgba(139,92,246,.12)",  previewPhoto: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1200&q=80&auto=format&fit=crop" },
+  fotostudio:     { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#24200c 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=80&auto=format&fit=crop" },
 };
 
 const DEFAULT_INDUSTRY_STYLE: IndustryStyle = {
   accent: "#e91e8c",
   heroBg: "linear-gradient(135deg,#1a0a14 0%,#2a1020 100%)",
   orb: "rgba(233,30,140,.12)",
-  previewPhoto: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80&auto=format&fit=crop",
+  previewPhoto: "https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1200&q=80&auto=format&fit=crop",
 };
 
 // Add-ons relevant per industry – avoids e.g. "Speisekarte" for a Zahnarzt
