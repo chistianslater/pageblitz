@@ -289,8 +289,9 @@ export default function BusinessesPage() {
               <TableHead>Name / Kategorie</TableHead>
               <TableHead>Stadt</TableHead>
               <TableHead>Telefon</TableHead>
+              <TableHead>Website</TableHead>
               <TableHead>Lead-Typ</TableHead>
-              <TableHead>Website-Alter</TableHead>
+              <TableHead>Alter</TableHead>
               <TableHead className="w-28">Score</TableHead>
               <TableHead>Outreach</TableHead>
             </TableRow>
@@ -298,7 +299,7 @@ export default function BusinessesPage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                   <div className="flex items-center justify-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     Lade Businesses…
@@ -308,7 +309,7 @@ export default function BusinessesPage() {
             )}
             {!isLoading && businesses.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                   <Building2 className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   Keine Unternehmen gefunden
                 </TableCell>
@@ -356,20 +357,23 @@ export default function BusinessesPage() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <LeadTypeBadge leadType={b.leadType ?? null} />
-                    {b.website && (
-                      <a
-                        href={b.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 truncate max-w-[160px]"
-                      >
-                        <Globe className="h-2.5 w-2.5 shrink-0" />
-                        {b.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                      </a>
-                    )}
-                  </div>
+                  {b.website ? (
+                    <a
+                      href={b.website.startsWith("http") ? b.website : `https://${b.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 max-w-[180px]"
+                      title={b.website}
+                    >
+                      <Globe className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{b.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">–</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <LeadTypeBadge leadType={b.leadType ?? null} />
                 </TableCell>
                 <TableCell>
                   <WebsiteAgeBadge age={b.websiteAge} />
