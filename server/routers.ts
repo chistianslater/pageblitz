@@ -9,7 +9,7 @@ import {
   getBusinessIdsWithWebsite,
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
   listWebsites, countWebsites, updateWebsite,
-  createOutreachEmail, listOutreachEmails, countOutreachEmails,
+  createOutreachEmail, listOutreachEmails, countOutreachEmails, getOutreachEmailByWebsiteId, updateOutreachEmail,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
@@ -1206,6 +1206,25 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     });
 
     console.log(`[Generation Job ${jobId}] Completed successfully for website ${websiteId}${useFallback ? " (mit Fallback)" : ""}`);
+
+    // If this website was generated as part of outreach, mark the email as queued
+    try {
+      const linkedEmail = await getOutreachEmailByWebsiteId(websiteId);
+      if (linkedEmail && linkedEmail.status === "generating") {
+        const completedWebsite = await getWebsiteById(websiteId);
+        const previewUrl = completedWebsite?.previewToken
+          ? `https://pageblitz.de/preview/${completedWebsite.previewToken}`
+          : null;
+        await updateOutreachEmail(linkedEmail.id, {
+          status: "queued",
+          previewUrl: previewUrl ?? undefined,
+        });
+        console.log(`[Generation Job ${jobId}] Outreach email ${linkedEmail.id} marked as queued`);
+      }
+    } catch (e) {
+      // Non-critical: don't fail the generation job
+      console.error(`[Generation Job ${jobId}] Failed to update outreach email:`, e);
+    }
   } catch (error: any) {
     console.error(`[Generation Job ${jobId}] Failed:`, error);
     await updateGenerationJob(jobId, { 
@@ -2212,6 +2231,83 @@ export const appRouter = router({
 
   // ── Admin: Outreach ────────────────────────────────
   outreach: router({
+    queueBusinesses: adminProcedure
+      .input(z.object({ businessIds: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        let queued = 0;
+        let skipped = 0;
+
+        for (const businessId of input.businessIds) {
+          const business = await getBusinessById(businessId);
+          if (!business) continue;
+
+          const existing = await getWebsiteByBusinessId(businessId);
+
+          if (existing && existing.previewToken) {
+            // Website already exists with a preview token – skip generation, create queued email
+            const previewUrl = `https://pageblitz.de/preview/${existing.previewToken}`;
+            await createOutreachEmail({
+              businessId,
+              websiteId: existing.id,
+              recipientEmail: business.email || "",
+              subject: "Ihre neue Website ist fertig",
+              body: "",
+              status: "queued",
+              previewUrl,
+            });
+            skipped++;
+          } else {
+            // No website yet – set up generation pipeline
+            const category = business.category || "Dienstleistung";
+            const industryKey = await classifyIndustry(category, business.name);
+            const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
+            const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
+            const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
+            const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
+
+            const slug = slugify(business.name) + "-" + nanoid(4);
+            const previewToken = nanoid(32);
+
+            const websiteId = await createGeneratedWebsite({
+              businessId,
+              slug,
+              status: "preview",
+              websiteData: null,
+              colorScheme,
+              industry: category,
+              previewToken,
+              addons: [],
+              heroImageUrl,
+              layoutStyle,
+            });
+
+            const jobId = await createGenerationJob({
+              websiteId,
+              status: "pending",
+              progress: 0,
+            });
+
+            // Start background generation (non-blocking)
+            runWebsiteGeneration(jobId, websiteId).catch((err) => {
+              console.error(`[Outreach Queue] Background generation failed for business ${businessId}:`, err);
+            });
+
+            await createOutreachEmail({
+              businessId,
+              websiteId,
+              recipientEmail: business.email || "",
+              subject: "Ihre neue Website ist fertig",
+              body: "",
+              status: "generating",
+            });
+
+            queued++;
+          }
+        }
+
+        return { queued, skipped };
+      }),
+
     send: adminProcedure
       .input(z.object({
         businessId: z.number(),

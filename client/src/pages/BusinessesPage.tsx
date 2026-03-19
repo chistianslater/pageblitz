@@ -30,6 +30,7 @@ import {
   CheckCircle2,
   Mail,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -202,6 +203,15 @@ export default function BusinessesPage() {
     bulkDeleteMutation.mutate({ ids: Array.from(selectedIds) });
   };
 
+  const queueForOutreachMutation = trpc.outreach.queueBusinesses.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.queued} Websites werden generiert und dann als Outreach-Queue eingetragen.${data.skipped > 0 ? ` ${data.skipped} bereits vorhanden.` : ""}`);
+      setSelectedIds(new Set());
+      utils.business.list.invalidate();
+    },
+    onError: (err) => toast.error("Fehler: " + err.message),
+  });
+
   const { data, isLoading } = trpc.business.list.useQuery({
     limit: LIMIT,
     offset,
@@ -237,11 +247,8 @@ export default function BusinessesPage() {
   };
 
   const handleQueueForOutreach = () => {
-    const count = selectedIds.size;
-    toast.info(
-      `Diese ${count} ${count === 1 ? "Unternehmen wird" : "Unternehmen werden"} beim nächsten Montag automatisch kontaktiert, sofern sie eine E-Mail-Adresse haben.`
-    );
-    setSelectedIds(new Set());
+    if (selectedIds.size === 0) return;
+    queueForOutreachMutation.mutate({ businessIds: Array.from(selectedIds) });
   };
 
   const hasMore = offset + LIMIT < total;
@@ -446,9 +453,10 @@ export default function BusinessesPage() {
             <Button
               size="sm"
               onClick={handleQueueForOutreach}
+              disabled={queueForOutreachMutation.isPending}
               className="gap-2"
             >
-              <Mail className="h-4 w-4" />
+              {queueForOutreachMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
               In Outreach-Warteschlange
             </Button>
             <Button

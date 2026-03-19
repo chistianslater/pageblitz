@@ -305,6 +305,13 @@ export async function updateOutreachEmail(id: number, data: Partial<InsertOutrea
   await db.update(outreachEmails).set(data).where(eq(outreachEmails.id, id));
 }
 
+export async function getOutreachEmailByWebsiteId(websiteId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(outreachEmails).where(eq(outreachEmails.websiteId, websiteId)).limit(1);
+  return result[0];
+}
+
 // ── Stats ──────────────────────────────────────────────
 export async function getDashboardStats() {
   const [totalBusinesses, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails] = await Promise.all([
