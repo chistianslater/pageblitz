@@ -1,8 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-html {
+html,
+body {
   scroll-behavior: smooth;
+  /* Prevent horizontal overflow / sideways scroll on mobile */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ── Animated gradient backgrounds (LandingPage sections) ──────────────── */

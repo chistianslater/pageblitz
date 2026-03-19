@@ -31,9 +31,8 @@ import LandingPageChatWidget from "@/components/LandingPageChatWidget";
 import { Button } from "@/components/ui/button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import {
-  BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
-  DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
-  NaturalLayoutV2, PremiumLayoutV2, EdenLayoutV2, ApexLayoutV2,
+  ElegantLayoutV2, CleanLayoutV2, ApexLayoutV2,
+  ForgeLayoutV2, FluxLayoutV2, AuroraLayoutV2, NexusLayoutV2,
 } from "@/components/layouts/PremiumLayoutsV2";
 import { PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
 import type { ColorScheme } from "@shared/types";
@@ -617,18 +616,13 @@ const GhostWebsiteCreation = () => {
 // --- Website Showcase Gallery with Live Layout Previews ---
 
 const LAYOUT_COMPONENTS = {
-  Bold: BoldLayoutV2,
-  Elegant: ElegantLayoutV2,
-  Clean: CleanLayoutV2,
-  Craft: CraftLayoutV2,
-  Dynamic: DynamicLayoutV2,
-  Fresh: FreshLayoutV2,
-  Luxury: LuxuryLayoutV2,
-  Modern: ModernLayoutV2,
-  Natural: NaturalLayoutV2,
-  Premium: PremiumLayoutV2,
-  Eden: EdenLayoutV2,
+  Forge: ForgeLayoutV2,
   Apex: ApexLayoutV2,
+  Clean: CleanLayoutV2,
+  Flux: FluxLayoutV2,
+  Aurora: AuroraLayoutV2,
+  Nexus: NexusLayoutV2,
+  Elegant: ElegantLayoutV2,
 };
 
 // Layout configurations matching the layout-preview pages exactly
@@ -1051,6 +1045,134 @@ const LAYOUT_CONFIG: Record<string, {
       ],
     },
   },
+  Forge: {
+    label: "Architekturbüro",
+    scheme: "forge",
+    heroImage: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Atelier Voss",
+      tagline: "Raum für Ideen. Form für Visionen.",
+      googleRating: 4.9,
+      googleReviewCount: 38,
+      businessCategory: "Architekturbüro",
+      sections: [
+        { type: "hero", headline: "Architektur, die bleibt.", subheadline: "Wir entwerfen Räume, die Geschichten erzählen – von der ersten Skizze bis zur Schlüsselübergabe, präzise und mit Haltung.", ctaText: "Projekt besprechen" },
+        { type: "services", headline: "Leistungen", items: [
+          { title: "Neubau & Entwurf", description: "Vom Einfamilienhaus bis zum Gewerbebau: durchdachte Architektur, die Funktion und Ästhetik vereint." },
+          { title: "Innenarchitektur", description: "Räume, die inspirieren. Wir gestalten Innenräume mit klarer Handschrift und nachhaltigem Anspruch." },
+          { title: "Denkmalpflege", description: "Respektvoller Umgang mit Bestand – wir erneuern Altbauten ohne ihren Charakter zu verlieren." },
+        ]},
+        { type: "about", headline: "Über uns", content: "Atelier Voss wurde 2011 in München gegründet. Seither haben wir über 80 Projekte realisiert – von privaten Wohnhäusern bis zu öffentlichen Bauten, stets mit dem Anspruch, Räume zu schaffen, die Generationen überdauern." },
+        { type: "contact", items: [
+          { icon: "MapPin", description: "München, Maxvorstadt" },
+          { icon: "Mail", description: "hallo@atelier-voss.de" },
+          { icon: "Phone", description: "+49 89 123 456 78" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–17:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Stimmen", items: [
+          { author: "Privatbauherr, München", rating: 5, description: "Atelier Voss hat unser Haus so gestaltet, wie wir es uns nie hätten vorstellen können. Absolut empfehlenswert." },
+          { author: "Gewerblicher Auftraggeber", rating: 5, description: "Professionelle Abwicklung, kreative Lösungen und ein Team, das wirklich zuhört." },
+          { author: "Denkmalschutzbehörde", rating: 5, description: "Vorbildlicher Umgang mit historischer Bausubstanz. Fachlich und ästhetisch auf höchstem Niveau." },
+        ]},
+      ],
+    },
+  },
+  Aurora: {
+    label: "Tech-Startup",
+    scheme: "aurora",
+    heroImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Lumina AI",
+      tagline: "Intelligenz, die Dein Business transformiert.",
+      googleRating: 4.9,
+      googleReviewCount: 124,
+      businessCategory: "Software & KI",
+      sections: [
+        { type: "hero", headline: "KI, die wirklich liefert.", subheadline: "Wir automatisieren Geschäftsprozesse mit maßgeschneiderten KI-Lösungen – schnell integrierbar, messbar wirkungsvoll, skalierbar von Tag eins.", ctaText: "Demo anfragen" },
+        { type: "services", headline: "Lösungen", items: [
+          { title: "Prozessautomatisierung", description: "Repetitive Workflows automatisieren wir mit KI – Sie konzentrieren sich auf das Wesentliche." },
+          { title: "Predictive Analytics", description: "Datengetriebene Entscheidungen statt Bauchgefühl: unsere Modelle prognostizieren Trends präzise." },
+          { title: "Custom LLM Integration", description: "Maßgeschneiderte Sprachmodelle für Ihren Anwendungsfall – sicher, schnell und DSGVO-konform." },
+        ]},
+        { type: "about", headline: "Über Lumina AI", content: "Gegründet 2021 in Berlin, verbindet Lumina AI tiefes ML-Know-how mit pragmatischem Unternehmensverständnis. Über 40 Unternehmen vertrauen bereits auf unsere Lösungen." },
+        { type: "contact", items: [
+          { icon: "MapPin", description: "Berlin, Mitte" },
+          { icon: "Mail", description: "hello@lumina-ai.de" },
+          { icon: "Phone", description: "+49 30 987 654 32" },
+          { icon: "Clock", description: "Mo–Fr: 09:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Feedback", items: [
+          { author: "CTO, E-Commerce GmbH", rating: 5, description: "Lumina AI hat unsere Retourenquote mit einem Modell um 31 % gesenkt. In 6 Wochen live." },
+          { author: "CEO, Logistik AG", rating: 5, description: "Endlich ein KI-Partner, der nicht nur pitcht, sondern liefert. Beeindruckende Ergebnisse." },
+          { author: "Head of Ops, SaaS Startup", rating: 5, description: "Integration in 2 Tagen, ROI in 3 Monaten. Das beste Technologie-Investment des Jahres." },
+        ]},
+      ],
+    },
+  },
+  Nexus: {
+    label: "Kreativagentur",
+    scheme: "nexus",
+    heroImage: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Studio Kontrast",
+      tagline: "Design, das Grenzen verschiebt.",
+      googleRating: 5.0,
+      googleReviewCount: 29,
+      businessCategory: "Design & Kreativ",
+      sections: [
+        { type: "hero", headline: "Marken, die im Gedächtnis bleiben.", subheadline: "Wir gestalten visuelle Identitäten für Unternehmen, die sich abheben wollen – von der Strategie bis zum fertigen Pixel.", ctaText: "Projekt starten" },
+        { type: "services", headline: "Studio", items: [
+          { title: "Brand Identity", description: "Logo, Farbe, Typografie und Tonalität – wir entwickeln Marken mit Charakter und System." },
+          { title: "UI/UX Design", description: "Digitale Erlebnisse, die konvertieren und begeistern. Nutzerzentriert, ästhetisch, pixel-präzise." },
+          { title: "Motion & Film", description: "Von Animationen bis zu Imagefilmen: wir bringen Marken in Bewegung." },
+        ]},
+        { type: "about", headline: "Über uns", content: "Studio Kontrast ist ein unabhängiges Designstudio aus Hamburg. Wir sind 8 Designer, Art Directors und Strategen – und lieben Projekte, bei denen Form und Funktion perfekt zusammenfinden." },
+        { type: "contact", items: [
+          { icon: "MapPin", description: "Hamburg, Schanzenviertel" },
+          { icon: "Mail", description: "hello@studio-kontrast.de" },
+          { icon: "Phone", description: "+49 40 234 567 89" },
+          { icon: "Clock", description: "Mo–Fr: 10:00–18:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Projekte", items: [
+          { author: "Gründerin, D2C Brand", rating: 5, description: "Studio Kontrast hat unsere Marke komplett neu erfunden. Das Ergebnis hat alle Erwartungen übertroffen." },
+          { author: "CMO, Mittelstand", rating: 5, description: "Professionell, kreativ und immer im Budget. Seltene Kombination – wir arbeiten nur noch mit ihnen." },
+          { author: "Startup-CEO", rating: 5, description: "Vom ersten Gespräch bis zur Übergabe eine Freude. Unsere neue Website hat die Conversion Rate verdoppelt." },
+        ]},
+      ],
+    },
+  },
+  Flux: {
+    label: "Event-Location",
+    scheme: "flux",
+    heroImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80&fit=crop",
+    data: {
+      businessName: "Haus Volta",
+      tagline: "Wo Abende zu Erinnerungen werden.",
+      googleRating: 4.7,
+      googleReviewCount: 203,
+      businessCategory: "Event-Location",
+      sections: [
+        { type: "hero", headline: "Dein Abend. Deine Bühne.", subheadline: "Haus Volta ist Berlins exklusivste Event-Location für Firmenevents, Premieren und private Feiern – mitten im Herz der Stadt.", ctaText: "Termin anfragen" },
+        { type: "services", headline: "Räume", items: [
+          { title: "Grand Hall", description: "600 m² für bis zu 400 Gäste. Hohe Decken, Bühne, Profi-Licht- und Tontechnik inbegriffen." },
+          { title: "Rooftop Terrace", description: "Skyline-Blick über Berlin. Ideal für Sommerfeste, Produktlaunches und After-Work-Events." },
+          { title: "Private Loft", description: "Intimes Ambiente für 20–60 Personen. Perfekt für exklusive Dinner und Teamevents." },
+        ]},
+        { type: "about", headline: "Über Haus Volta", content: "Haus Volta eröffnete 2019 in einem denkmalgeschützten Industriebau in Berlin-Mitte. Seitdem haben über 500 Events hier stattgefunden – von Konzerten bis Hauptversammlungen." },
+        { type: "contact", items: [
+          { icon: "MapPin", description: "Berlin-Mitte, Voltastraße" },
+          { icon: "Mail", description: "events@haus-volta.de" },
+          { icon: "Phone", description: "+49 30 555 123 45" },
+          { icon: "Clock", description: "Mo–So: 10:00–23:00 Uhr" },
+        ]},
+        { type: "testimonials", headline: "Stimmen", items: [
+          { author: "Event-Managerin, Tech Corp", rating: 5, description: "Haus Volta ist einfach unschlagbar. Technik, Service, Atmosphäre – alles auf höchstem Niveau." },
+          { author: "Brautpaar, Hochzeit 2024", rating: 5, description: "Der schönste Abend unseres Lebens. Das Team hat alles perfekt organisiert." },
+          { author: "Marketing Director, Agentur", rating: 5, description: "Unser Launch-Event hier war ein voller Erfolg. Alle Gäste waren begeistert von der Location." },
+        ]},
+      ],
+    },
+  },
 };
 
 // Extended color schemes with all 10 unique palettes
@@ -1198,6 +1320,50 @@ const EXTENDED_COLOR_SCHEMES: Record<string, ColorScheme> = {
     textLight: "#4A5568",
     onPrimary: "#ffffff",
   },
+  // 14. Forge - Brutalist Editorial (Architecture)
+  forge: {
+    primary: "#0a0a0a",
+    secondary: "#1a1a1a",
+    accent: "#C9A43A",
+    background: "#F5F4EF",
+    surface: "#EEEDE8",
+    text: "#0a0a0a",
+    textLight: "#5a5a5a",
+    onPrimary: "#F5F4EF",
+  },
+  // 15. Aurora - Glassmorphism Dark (Tech)
+  aurora: {
+    primary: "#22D3EE",
+    secondary: "#0e7490",
+    accent: "#818CF8",
+    background: "#0A0B1E",
+    surface: "#111827",
+    text: "#E8EEFF",
+    textLight: "rgba(232,238,255,0.6)",
+    onPrimary: "#0A0B1E",
+  },
+  // 16. Nexus - Bento Grid Dark (Creative)
+  nexus: {
+    primary: "#818CF8",
+    secondary: "#4F46E5",
+    accent: "#22D3EE",
+    background: "#0F1629",
+    surface: "#1a2035",
+    text: "#F1F5FF",
+    textLight: "rgba(241,245,255,0.6)",
+    onPrimary: "#0F1629",
+  },
+  // 17. Flux - Dark Cinematic (Events)
+  flux: {
+    primary: "#C9A43A",
+    secondary: "#8B6914",
+    accent: "#F5E6B8",
+    background: "#050508",
+    surface: "#0e0e14",
+    text: "#F5F3ED",
+    textLight: "rgba(245,243,237,0.6)",
+    onPrimary: "#050508",
+  },
 };
 
 // Get color scheme from extended list
@@ -1205,23 +1371,18 @@ const getColorScheme = (schemeId: string): ColorScheme => {
   return EXTENDED_COLOR_SCHEMES[schemeId] || EXTENDED_COLOR_SCHEMES["trust"];
 };
 
-// All available layouts (12 total – incl. EDEN & APEX)
+// Curated showcase pool: only the 7 premium layouts shown on the landing page
 const ALL_WEBSITE_EXAMPLES: Array<{ layout: keyof typeof LAYOUT_COMPONENTS }> = [
-  { layout: "Bold" },
-  { layout: "Elegant" },
-  { layout: "Clean" },
-  { layout: "Craft" },
-  { layout: "Dynamic" },
-  { layout: "Fresh" },
-  { layout: "Luxury" },
-  { layout: "Modern" },
-  { layout: "Natural" },
-  { layout: "Premium" },
-  { layout: "Eden" },
+  { layout: "Forge" },
   { layout: "Apex" },
+  { layout: "Clean" },
+  { layout: "Flux" },
+  { layout: "Aurora" },
+  { layout: "Nexus" },
+  { layout: "Elegant" },
 ];
 
-/** Pick 5 random layouts from the full pool (stable per page-load) */
+/** Pick 5 random layouts from the curated pool (stable per page-load) */
 function pickRandom5(): Array<{ layout: keyof typeof LAYOUT_COMPONENTS }> {
   const shuffled = [...ALL_WEBSITE_EXAMPLES].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, 5);
