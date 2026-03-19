@@ -46,10 +46,14 @@ function PageLoader() {
 }
 
 function AdminRouter() {
+  // key={location} on the inner Suspense ensures React unmounts the old page
+  // and shows the loader instead of keeping stale content visible while the
+  // new lazy chunk loads (React 18 concurrent mode behaviour).
+  const [location] = useLocation();
   return (
     <AdminRoute>
-      <Suspense fallback={<PageLoader />}>
-        <DashboardLayout>
+      <DashboardLayout>
+        <Suspense key={location} fallback={<PageLoader />}>
           <Switch>
             <Route path="/admin" component={Home} />
             <Route path="/admin/search" component={SearchPage} />
@@ -61,8 +65,8 @@ function AdminRouter() {
             <Route path="/admin/layouts" component={LayoutOverviewPage} />
             <Route component={NotFound} />
           </Switch>
-        </DashboardLayout>
-      </Suspense>
+        </Suspense>
+      </DashboardLayout>
     </AdminRoute>
   );
 }
