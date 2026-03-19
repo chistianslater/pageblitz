@@ -172,22 +172,28 @@ export default function PreviewPage() {
                   {/* Custom Hex Input */}
                   <div className="border-t border-gray-100 pt-3">
                     <p className="text-xs text-gray-500 mb-2">Eigene Farbe (Hex)</p>
+                    {/* Full-width color swatch — click to open native picker */}
+                    <label className="block mb-2 cursor-pointer group">
+                      <div
+                        className="w-full h-10 rounded-xl border border-gray-200 relative overflow-hidden transition-transform group-hover:scale-[1.01]"
+                        style={{ backgroundColor: /^#[0-9a-fA-F]{6}$/.test(customHex) ? customHex : '#cccccc' }}
+                      >
+                        <input
+                          type="color"
+                          value={/^#[0-9a-fA-F]{6}$/.test(customHex) ? customHex : '#cccccc'}
+                          onChange={e => setCustomHex(e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                      </div>
+                    </label>
+                    {/* Hex text + OK button */}
                     <div className="flex gap-2">
-                      <input
-                        type="color"
-                        value={customHex}
-                        onChange={e => setCustomHex(e.target.value)}
-                        className="w-10 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5"
-                      />
                       <input
                         type="text"
                         value={customHex}
-                        onChange={e => {
-                          const v = e.target.value;
-                          setCustomHex(v);
-                        }}
+                        onChange={e => setCustomHex(e.target.value)}
                         placeholder="#1565c0"
-                        className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-900 font-mono"
+                        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl text-gray-900 font-mono min-w-0"
                       />
                       <button
                         onClick={() => {
@@ -198,7 +204,7 @@ export default function PreviewPage() {
                             toast.error("Ungültiger Hex-Code. Beispiel: #1565c0");
                           }
                         }}
-                        className="px-3 py-1.5 rounded-lg text-white text-sm font-medium"
+                        className="px-4 py-2 rounded-xl text-white text-sm font-semibold flex-shrink-0"
                         style={{ backgroundColor: colorScheme.primary }}
                       >
                         OK

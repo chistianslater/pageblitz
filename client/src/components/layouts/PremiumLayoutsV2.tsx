@@ -229,7 +229,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-6">
           <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.5rem, 3.5vw, 4.5rem)'), color: textColor }}
-            className="uppercase tracking-tight mb-0">
+            className="uppercase tracking-tight mb-6">
             {hl.main}<br />
             <span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
@@ -237,12 +237,12 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-8">
           <p style={{ fontFamily: bodyFont, color: textMuted }}
-            className="text-lg leading-relaxed max-w-sm mb-0">
+            className="text-lg leading-relaxed max-w-sm mb-8">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
 
-        <div className="flex flex-wrap items-center gap-4 mt-2">
+        <div className="flex flex-wrap items-center gap-4 mt-0">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
             <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
               className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl whitespace-nowrap">
@@ -313,7 +313,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[8rem] mb-10">
           <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
-            className="uppercase tracking-tight mb-0">
+            className="uppercase tracking-tight mb-10">
             {hl.main}<br />
             <span style={{ color: primaryColor }}>{hl.last}</span>
           </h1>
@@ -321,7 +321,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-10">
           <p style={{ fontFamily: bodyFont, color: textMuted }}
-            className="text-xl max-w-2xl mx-auto italic leading-relaxed mb-0">
+            className="text-xl max-w-2xl mx-auto italic leading-relaxed mb-10">
             {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
           </p>
         </Skeleton>
@@ -384,7 +384,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
           <Skeleton isLoading={isLoading} className="w-full min-h-[12rem] mb-8">
             <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor }}
-              className="uppercase tracking-tight mb-0">
+              className="uppercase tracking-tight mb-8">
               {hl.main}<br />
               <span
                 className="relative inline-block pb-4"
@@ -409,7 +409,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           <div className="max-w-2xl">
             <Skeleton isLoading={isLoading} className="w-full min-h-[5rem] mb-8">
               <p style={{ fontFamily: bodyFont, color: textMuted, borderLeft: `3px solid ${primaryColor}` }}
-                className="text-lg lg:text-xl font-light leading-relaxed pl-6 mb-0">
+                className="text-lg lg:text-xl font-light leading-relaxed pl-6 mb-8">
                 {websiteData.sections?.find((s: any) => s.type === 'hero')?.subheadline || websiteData.tagline}
               </p>
             </Skeleton>
