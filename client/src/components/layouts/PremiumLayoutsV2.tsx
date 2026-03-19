@@ -3887,6 +3887,7 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         </div>
       </section>
 
+      <ServicesVariantA websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
       <TestimonialsSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} heading={sec(websiteData,'testimonials')?.headline||'Was Kunden sagen'} dark={false} variant={0} headlineSize={headlineSize} />
       <DynamicAddonSections websiteData={websiteData} cs={safeCs} isLoading={isLoading} displayFont={DISPLAY} bodyFont={BODY} headlineSize={headlineSize} dark={false} />
       <ContactSection websiteData={websiteData} cs={safeCs} isLoading={isLoading} dark={false} displayFont={DISPLAY} bodyFont={BODY} headlineStyle={{ letterSpacing:'-0.03em' }} template="nexus" headlineSize={headlineSize} />

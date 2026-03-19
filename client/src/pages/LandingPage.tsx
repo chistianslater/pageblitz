@@ -2413,6 +2413,7 @@ export default function LandingPage() {
                       { icon: "📅", label: "Terminbuchung", price: "+4,90 €/Mo." },
                       { icon: "✉️", label: "Kontaktformular", price: "+3,90 €/Mo." },
                       { icon: "🖼️", label: "Bildergalerie", price: "+3,90 €/Mo." },
+                      { icon: "👥", label: "Team-Sektion", price: "+3,90 €/Mo." },
                       { icon: "🍽️", label: "Speisekarte", price: "+3,90 €/Mo." },
                       { icon: "💶", label: "Preisliste", price: "+3,90 €/Mo." },
                     ].map(({ icon, label, price }) => (
