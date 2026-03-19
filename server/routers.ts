@@ -1551,8 +1551,8 @@ export const appRouter = router({
         // Fetch a broad set and filter in-memory (DB is small enough for now)
         const all = await listBusinesses(10000, 0);
 
-        // Only show GMB-sourced businesses (placeId set = came from Google Places search)
-        let filtered = all.filter(b => b.placeId != null && b.placeId !== "");
+        // Only show GMB-sourced businesses (real Google Place IDs start with "ChIJ")
+        let filtered = all.filter(b => b.placeId != null && b.placeId.startsWith("ChIJ"));
         const total = filtered.length;
 
         if (input?.leadType && input.leadType !== "all") {
@@ -1609,7 +1609,7 @@ export const appRouter = router({
     stats: adminProcedure.query(async () => {
       const all = await listBusinesses(10000, 0);
       // Only count GMB-sourced businesses
-      const gmb = all.filter(b => b.placeId != null && b.placeId !== "");
+      const gmb = all.filter(b => b.placeId != null && b.placeId.startsWith("ChIJ"));
       const noWebsite = gmb.filter(b => b.leadType === "no_website").length;
       const outdated = gmb.filter(b => b.leadType === "outdated_website").length;
       const poor = gmb.filter(b => b.leadType === "poor_website").length;
