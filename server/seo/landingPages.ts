@@ -1501,32 +1501,34 @@ interface IndustryStyle {
   accent: string;     // CTA + accent color
   heroBg: string;     // gradient for mock-browser hero
   orb: string;        // rgba for background orbs
+  previewPhoto: string;
 }
 
 const INDUSTRY_STYLES: Record<string, IndustryStyle> = {
-  friseur:        { accent: "#c8a96e", heroBg: "linear-gradient(135deg,#1c1610 0%,#2d2212 100%)", orb: "rgba(200,169,110,.13)" },
-  restaurant:     { accent: "#f97316", heroBg: "linear-gradient(135deg,#1c1008 0%,#2d1a0c 100%)", orb: "rgba(249,115,22,.12)" },
-  handwerk:       { accent: "#f59e0b", heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1e08 100%)", orb: "rgba(245,158,11,.12)" },
-  zahnarzt:       { accent: "#38bdf8", heroBg: "linear-gradient(135deg,#061828 0%,#0f2440 100%)", orb: "rgba(56,189,248,.12)" },
-  kosmetik:       { accent: "#f472b6", heroBg: "linear-gradient(135deg,#1c0a18 0%,#2d1028 100%)", orb: "rgba(244,114,182,.12)" },
-  fitness:        { accent: "#ef4444", heroBg: "linear-gradient(135deg,#1a0808 0%,#2d1010 100%)", orb: "rgba(239,68,68,.12)" },
-  arzt:           { accent: "#34d399", heroBg: "linear-gradient(135deg,#061614 0%,#0a2420 100%)", orb: "rgba(52,211,153,.12)" },
-  immobilien:     { accent: "#818cf8", heroBg: "linear-gradient(135deg,#0c0c1e 0%,#141428 100%)", orb: "rgba(129,140,248,.12)" },
-  rechtsanwalt:   { accent: "#6366f1", heroBg: "linear-gradient(135deg,#0a0c20 0%,#121430 100%)", orb: "rgba(99,102,241,.12)" },
-  steuerberater:  { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#080c18 0%,#101c2c 100%)", orb: "rgba(96,165,250,.12)" },
-  fotograf:       { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#241e0c 100%)", orb: "rgba(251,191,36,.12)" },
-  physiotherapie: { accent: "#22d3ee", heroBg: "linear-gradient(135deg,#060f14 0%,#0a1a20 100%)", orb: "rgba(34,211,238,.12)" },
-  nagelstudio:    { accent: "#c084fc", heroBg: "linear-gradient(135deg,#180a20 0%,#280e34 100%)", orb: "rgba(192,132,252,.12)" },
-  baeckerei:      { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#1c1208 0%,#2c1e08 100%)", orb: "rgba(251,191,36,.12)" },
-  reinigung:      { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#08101c 0%,#0e2040 100%)", orb: "rgba(96,165,250,.12)" },
-  hundesalon:     { accent: "#a78bfa", heroBg: "linear-gradient(135deg,#100c1e 0%,#1e1434 100%)", orb: "rgba(167,139,250,.12)" },
-  musikschule:    { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2a1804 100%)", orb: "rgba(251,146,60,.12)" },
+  friseur:        { accent: "#c8a96e", heroBg: "linear-gradient(135deg,#1c1610 0%,#2d2212 100%)", orb: "rgba(200,169,110,.13)", previewPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80&auto=format&fit=crop" },
+  restaurant:     { accent: "#f97316", heroBg: "linear-gradient(135deg,#1c1008 0%,#2d1a0c 100%)", orb: "rgba(249,115,22,.12)",  previewPhoto: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1200&q=80&auto=format&fit=crop" },
+  handwerk:       { accent: "#f59e0b", heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1e08 100%)", orb: "rgba(245,158,11,.12)",  previewPhoto: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1200&q=80&auto=format&fit=crop" },
+  zahnarzt:       { accent: "#38bdf8", heroBg: "linear-gradient(135deg,#061828 0%,#0f2440 100%)", orb: "rgba(56,189,248,.12)",  previewPhoto: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=1200&q=80&auto=format&fit=crop" },
+  kosmetik:       { accent: "#f472b6", heroBg: "linear-gradient(135deg,#1c0a18 0%,#2d1028 100%)", orb: "rgba(244,114,182,.12)", previewPhoto: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&q=80&auto=format&fit=crop" },
+  fitness:        { accent: "#ef4444", heroBg: "linear-gradient(135deg,#1a0808 0%,#2d1010 100%)", orb: "rgba(239,68,68,.12)",   previewPhoto: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80&auto=format&fit=crop" },
+  arzt:           { accent: "#34d399", heroBg: "linear-gradient(135deg,#061614 0%,#0a2420 100%)", orb: "rgba(52,211,153,.12)",  previewPhoto: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=1200&q=80&auto=format&fit=crop" },
+  immobilien:     { accent: "#818cf8", heroBg: "linear-gradient(135deg,#0c0c1e 0%,#141428 100%)", orb: "rgba(129,140,248,.12)", previewPhoto: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&auto=format&fit=crop" },
+  rechtsanwalt:   { accent: "#6366f1", heroBg: "linear-gradient(135deg,#0a0c20 0%,#121430 100%)", orb: "rgba(99,102,241,.12)",  previewPhoto: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?w=1200&q=80&auto=format&fit=crop" },
+  steuerberater:  { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#080c18 0%,#101c2c 100%)", orb: "rgba(96,165,250,.12)",  previewPhoto: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80&auto=format&fit=crop" },
+  fotograf:       { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#241e0c 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1452780212405-6f5b9509da51?w=1200&q=80&auto=format&fit=crop" },
+  physiotherapie: { accent: "#22d3ee", heroBg: "linear-gradient(135deg,#060f14 0%,#0a1a20 100%)", orb: "rgba(34,211,238,.12)",  previewPhoto: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80&auto=format&fit=crop" },
+  nagelstudio:    { accent: "#c084fc", heroBg: "linear-gradient(135deg,#180a20 0%,#280e34 100%)", orb: "rgba(192,132,252,.12)", previewPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80&auto=format&fit=crop" },
+  baeckerei:      { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#1c1208 0%,#2c1e08 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&q=80&auto=format&fit=crop" },
+  reinigung:      { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#08101c 0%,#0e2040 100%)", orb: "rgba(96,165,250,.12)",  previewPhoto: "https://images.unsplash.com/photo-1527515545081-5db817172677?w=1200&q=80&auto=format&fit=crop" },
+  hundesalon:     { accent: "#a78bfa", heroBg: "linear-gradient(135deg,#100c1e 0%,#1e1434 100%)", orb: "rgba(167,139,250,.12)", previewPhoto: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1200&q=80&auto=format&fit=crop" },
+  musikschule:    { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2a1804 100%)", orb: "rgba(251,146,60,.12)",  previewPhoto: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1200&q=80&auto=format&fit=crop" },
 };
 
 const DEFAULT_INDUSTRY_STYLE: IndustryStyle = {
   accent: "#e91e8c",
   heroBg: "linear-gradient(135deg,#1a0a14 0%,#2a1020 100%)",
   orb: "rgba(233,30,140,.12)",
+  previewPhoto: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80&auto=format&fit=crop",
 };
 
 // Add-ons relevant per industry – avoids e.g. "Speisekarte" for a Zahnarzt
@@ -1581,18 +1583,42 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .nav-cta{background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff!important;padding:.5rem 1.25rem;border-radius:999px;font-size:.875rem;font-weight:600;transition:all .2s}
 .nav-cta:hover{opacity:.9;transform:translateY(-1px)}
 /* Hero */
-.hero{background:#0a0a0a;color:#fff;padding:6rem 0 5rem;text-align:center;position:relative;overflow:hidden}
+.hero{background:#0a0a0a;color:#fff;padding:5rem 0 4rem;position:relative;overflow:hidden}
 .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,var(--orb,rgba(233,30,140,.1)),transparent);pointer-events:none}
 .hero-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);opacity:.6}
 .orb-tl{width:500px;height:500px;top:-200px;left:-150px;background:var(--orb,rgba(233,30,140,.08))}
 .orb-br{width:400px;height:400px;bottom:-150px;right:-100px;background:var(--orb,rgba(233,30,140,.06))}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;z-index:1}
+.hero-text{text-align:left}
 .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.7)}
-.hero h1{font-size:clamp(1.875rem,4.5vw,3rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff}
-.hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:640px;margin:0 auto 2.5rem;line-height:1.7}
+.hero h1{font-size:clamp(1.875rem,3.5vw,2.75rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff;text-align:left}
+.hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:520px;margin:0 0 2.5rem;line-height:1.7}
 .btn-primary{display:inline-block;background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;padding:.9375rem 2.5rem;border-radius:999px;font-size:1rem;font-weight:700;transition:all .2s;box-shadow:0 4px 24px rgba(233,30,140,.3)}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 32px rgba(233,30,140,.4)}
-.hero-trust{margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:.8125rem;color:rgba(255,255,255,.35)}
+.hero-trust{margin-top:1.5rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;font-size:.8125rem;color:rgba(255,255,255,.35)}
 .hero-trust span{display:flex;align-items:center;gap:.375rem}
+/* Hero right: mini browser */
+.hero-browser{border-radius:12px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08);background:#111;transform:perspective(1000px) rotateY(-6deg) rotateX(2deg);transition:transform .4s ease}
+.hero-browser:hover{transform:perspective(1000px) rotateY(-2deg) rotateX(1deg)}
+.hb-chrome{background:#1c1c1c;padding:.5rem .875rem;display:flex;align-items:center;gap:.625rem;border-bottom:1px solid rgba(255,255,255,.07)}
+.hb-dots{display:flex;gap:.3rem;flex-shrink:0}
+.hb-dot{width:.5rem;height:.5rem;border-radius:50%}
+.hb-dot.r{background:#ff5f57}.hb-dot.a{background:#febc2e}.hb-dot.g{background:#28c840}
+.hb-url{flex:1;background:rgba(255,255,255,.06);border-radius:5px;padding:.2rem .6rem;font-size:.6875rem;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:.3rem;max-width:280px;margin:0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb-hero{position:relative;height:180px;overflow:hidden;background:#111}
+.hb-hero-img{width:100%;height:100%;object-fit:cover;display:block;opacity:.85}
+.hb-hero-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.75) 0%,rgba(0,0,0,.35) 100%)}
+.hb-hero-content{position:absolute;inset:0;padding:1.25rem 1.5rem;display:flex;flex-direction:column;justify-content:center}
+.hb-eyebrow{height:.3rem;width:3.5rem;border-radius:99px;margin-bottom:.75rem;opacity:.9}
+.hb-title{font-size:.875rem;font-weight:700;color:#fff;letter-spacing:-.01em;line-height:1.25;margin-bottom:.375rem}
+.hb-sub{height:.3rem;width:65%;background:rgba(255,255,255,.2);border-radius:2px;margin-bottom:.25rem}
+.hb-sub2{height:.3rem;width:48%;background:rgba(255,255,255,.12);border-radius:2px;margin-bottom:.875rem}
+.hb-cta{display:inline-flex;align-items:center;border-radius:999px;padding:.3rem .875rem;font-size:.625rem;font-weight:700;color:#fff;width:fit-content}
+.hb-services{display:grid;grid-template-columns:repeat(3,1fr);gap:.375rem;padding:.875rem 1rem;background:rgba(0,0,0,.25)}
+.hb-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:.625rem .5rem}
+.hb-card-icon{font-size:.875rem;margin-bottom:.375rem}
+.hb-card-l1{height:.3rem;width:80%;background:rgba(255,255,255,.18);border-radius:2px;margin-bottom:.25rem}
+.hb-card-l2{height:.275rem;width:60%;background:rgba(255,255,255,.1);border-radius:2px}
 /* Stats */
 .stats{padding:2.5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;text-align:center}
@@ -1711,8 +1737,17 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
 .mw-card-icon{font-size:1.125rem;margin-bottom:.5rem}
 .mw-card-line1{height:.4rem;width:80%;background:rgba(255,255,255,.2);border-radius:2px;margin-bottom:.3rem}
 .mw-card-line2{height:.35rem;width:60%;background:rgba(255,255,255,.1);border-radius:2px}
+/* Billing toggle */
+.billing-toggle{display:flex;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:.25rem;gap:.25rem;max-width:340px;margin:0 auto 2.5rem}
+.billing-btn{flex:1;padding:.5rem 1rem;border-radius:999px;border:none;background:transparent;color:rgba(255,255,255,.45);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.billing-btn.active{background:#fff;color:#0a0a0a;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.billing-save{display:inline-block;background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;font-size:.625rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;margin-left:.375rem;vertical-align:middle}
 /* Responsive */
 @media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr}
+  .hero-browser{display:none}
+  .hero h1,.hero p{text-align:center}
+  .hero-trust{justify-content:center}
   .steps-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .comp-table{display:none}
@@ -1917,14 +1952,45 @@ export function generateLandingPageHTML(
   <div class="hero-orb orb-tl"></div>
   <div class="hero-orb orb-br"></div>
   <div class="container">
-    <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
-    <h1>${escapeHtml(h1)}</h1>
-    <p>${escapeHtml(industry.description)}</p>
-    <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
-    <div class="hero-trust">
-      <span>✓ Keine Kreditkarte nötig</span>
-      <span>✓ Keine Einrichtungsgebühr</span>
-      <span>✓ Jederzeit kündbar</span>
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
+        <h1>${escapeHtml(h1)}</h1>
+        <p>${escapeHtml(industry.description)}</p>
+        <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
+        <div class="hero-trust">
+          <span>✓ Keine Kreditkarte nötig</span>
+          <span>✓ Keine Einrichtungsgebühr</span>
+          <span>✓ Jederzeit kündbar</span>
+        </div>
+      </div>
+      <div class="hero-browser" aria-hidden="true">
+        <div class="hb-chrome">
+          <div class="hb-dots">
+            <div class="hb-dot r"></div>
+            <div class="hb-dot a"></div>
+            <div class="hb-dot g"></div>
+          </div>
+          <div class="hb-url">
+            <span>🔒</span>
+            <span>${escapeHtml(mockUrl)}</span>
+          </div>
+        </div>
+        <div class="hb-hero">
+          <img class="hb-hero-img" src="${style.previewPhoto}" alt="${escapeHtml(mockBusinessName)}" loading="lazy">
+          <div class="hb-hero-overlay"></div>
+          <div class="hb-hero-content">
+            <div class="hb-eyebrow" style="background:${style.accent}"></div>
+            <div class="hb-title">${escapeHtml(mockBusinessName)}</div>
+            <div class="hb-sub"></div>
+            <div class="hb-sub2"></div>
+            <div class="hb-cta" style="background:${style.accent}">Jetzt Termin buchen →</div>
+          </div>
+        </div>
+        <div class="hb-services">
+          ${industry.features.slice(0, 3).map(f => `<div class="hb-card"><div class="hb-card-icon">${f.icon}</div><div class="hb-card-l1"></div><div class="hb-card-l2"></div></div>`).join('\n          ')}
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1968,12 +2034,16 @@ export function generateLandingPageHTML(
           </div>
           <div class="mw-btn"></div>
         </div>
-        <div class="mw-hero" style="background:${style.heroBg}">
-          <div class="mw-hero-eyebrow"></div>
-          <div class="mw-hero-name">${escapeHtml(mockBusinessName)}</div>
-          <div class="mw-hero-sub"></div>
-          <div class="mw-hero-sub2"></div>
-          <div class="mw-hero-cta" style="background:${style.accent}">Jetzt Termin buchen →</div>
+        <div class="mw-hero" style="position:relative;overflow:hidden;background:#111;padding:0">
+          <img src="${style.previewPhoto}" alt="${escapeHtml(mockBusinessName)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.8;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.78) 0%,rgba(0,0,0,.35) 100%)"></div>
+          <div style="position:relative;z-index:1;padding:2.25rem 1.5rem 2rem">
+            <div class="mw-hero-eyebrow" style="background:${style.accent};opacity:1;height:.3rem;border-radius:99px;width:4rem;margin-bottom:.875rem"></div>
+            <div class="mw-hero-name">${escapeHtml(mockBusinessName)}</div>
+            <div class="mw-hero-sub"></div>
+            <div class="mw-hero-sub2"></div>
+            <div class="mw-hero-cta" style="background:${style.accent}">Jetzt Termin buchen →</div>
+          </div>
         </div>
         <div class="mw-services">
           ${mockCardsHtml}
@@ -2039,8 +2109,20 @@ export function generateLandingPageHTML(
       <div class="pricing-card">
         <div class="pricing-badge">✦ Beliebt</div>
         <div class="pricing-name">Pageblitz Pro</div>
-        <div class="pricing-price">19,90 €<span>/Monat</span></div>
-        <div class="pricing-note">Jährliche Abrechnung · Jederzeit kündbar.</div>
+
+        <div class="billing-toggle">
+          <button class="billing-btn" id="btn-monthly" onclick="setBilling('monthly')">Monatlich</button>
+          <button class="billing-btn active" id="btn-yearly" onclick="setBilling('yearly')">Jährlich <span class="billing-save">2 Monate gratis</span></button>
+        </div>
+
+        <div id="price-monthly" style="display:none">
+          <div class="pricing-price">19,90 €<span>/Monat</span></div>
+          <div class="pricing-note">Monatliche Abrechnung · Jederzeit kündbar.</div>
+        </div>
+        <div id="price-yearly">
+          <div class="pricing-price">15,92 €<span>/Monat</span></div>
+          <div class="pricing-note">190,99 €/Jahr · 2 Monate geschenkt · Jederzeit kündbar.</div>
+        </div>
         <ul class="pricing-features">
           <li>KI-generierte ${escapeHtml(industry.displayName)}-Website</li>
           <li>SSL-Zertifikat</li>
@@ -2054,7 +2136,8 @@ export function generateLandingPageHTML(
           ${pricingAddonsHtml}
         </div>
         <a class="pricing-cta" href="https://pageblitz.de/start" style="background:${style.accent};color:#fff">7 Tage gratis starten</a>
-        <div class="pricing-note-bottom">7 Tage gratis · danach 19,90 €/Mo. (jährlich) · Jederzeit kündbar</div>
+        <div class="pricing-note-bottom" id="note-bottom-monthly" style="display:none">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</div>
+        <div class="pricing-note-bottom" id="note-bottom-yearly">7 Tage gratis · danach 15,92 €/Mo. (190,99 €/Jahr) · Jederzeit kündbar</div>
       </div>
     </div>
   </div>
@@ -2118,6 +2201,17 @@ ${cityLinksHtml}
   </div>
 </footer>
 
+<script>
+function setBilling(plan){
+  var isYearly = plan === 'yearly';
+  document.getElementById('btn-monthly').classList.toggle('active', !isYearly);
+  document.getElementById('btn-yearly').classList.toggle('active', isYearly);
+  document.getElementById('price-monthly').style.display = isYearly ? 'none' : 'block';
+  document.getElementById('price-yearly').style.display = isYearly ? 'block' : 'none';
+  document.getElementById('note-bottom-monthly').style.display = isYearly ? 'none' : 'block';
+  document.getElementById('note-bottom-yearly').style.display = isYearly ? 'block' : 'none';
+}
+</script>
 </body>
 </html>`;
 }
