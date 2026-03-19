@@ -1241,6 +1241,63 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   );
 }
 
+// ── REVIEW CARD ───────────────────────────────────────────────────
+const MAX_REVIEW_CHARS = 200;
+
+function ReviewCard({ review, cs, cardBg, cardBorder }: {
+  review: { text?: string; title?: string; description?: string; author: string; rating?: number; source?: string };
+  cs: any;
+  cardBg?: string;
+  cardBorder?: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const text = review.description || review.text || review.title || '';
+  const isLong = text.length > MAX_REVIEW_CHARS;
+  const displayed = expanded || !isLong ? text : text.slice(0, MAX_REVIEW_CHARS) + '…';
+  const stars = Math.min(5, Math.max(1, review.rating || 5));
+  const safeCs = cs || {};
+
+  return (
+    <div
+      style={{ backgroundColor: cardBg || '#ffffff', border: cardBorder ? `1px solid ${cardBorder}` : undefined }}
+      className="rounded-2xl p-8 flex flex-col gap-4 shadow-sm"
+    >
+      {/* Stars */}
+      <div className="flex gap-0.5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <span key={i} style={{ color: i < stars ? '#f59e0b' : '#d1d5db', fontSize: '1rem' }}>★</span>
+        ))}
+      </div>
+      {/* Review text — always dark on white card */}
+      <p style={{ color: '#374151', lineHeight: 1.7, fontSize: '0.95rem' }} className="flex-1 italic">
+        &ldquo;{displayed}&rdquo;
+        {isLong && (
+          <button
+            onClick={() => setExpanded(e => !e)}
+            style={{ color: safeCs.primary || '#3b82f6', marginLeft: '6px' }}
+            className="text-sm font-medium hover:underline focus:outline-none not-italic"
+          >
+            {expanded ? 'Weniger' : 'Weiterlesen'}
+          </button>
+        )}
+      </p>
+      {/* Author */}
+      <div className="flex items-center gap-3 mt-auto pt-3 border-t border-gray-100">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+          style={{ backgroundColor: safeCs.primary || '#3b82f6' }}
+        >
+          {(review.author || '?')[0].toUpperCase()}
+        </div>
+        <div>
+          <div style={{ color: '#111827', fontWeight: 600, fontSize: '0.875rem' }}>{review.author}</div>
+          {review.source && <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{review.source}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── TESTIMONIALS ─────────────────────────────────────────────────
 function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false, variant = 0, serif = false, headlineSize }: any) {
   const items = sec(websiteData, 'testimonials')?.items;
@@ -1284,21 +1341,32 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
           <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {items?.length > 0 ? items.map((t: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-64">
-                <div className={`p-10 border ${border} ${dark ? (safeCs.darkSurface ? '' : 'bg-white/5') : 'bg-white shadow-sm'} hover:shadow-xl transition-all duration-500 rounded-2xl`} style={dark && safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface, borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : undefined}>
-                  <div className="flex gap-1 mb-6">
-                    {[...Array(t.rating || 5)].map((_, j) => <Star key={j} size={16} fill="currentColor" className="text-yellow-500" />)}
-                  </div>
-                  <p className={`${textSub} font-light leading-relaxed italic mb-8 text-lg`} style={textSubStyle}>"{t.description || t.title}"</p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: safeCs.primary + '20' }}>
-                      <Heart size={20} style={{ color: safeCs.primary }} />
+                {dark ? (
+                  // Dark variant: semi-transparent card, text inherits from theme (already light)
+                  <div className={`p-10 border ${border} ${safeCs.darkSurface ? '' : 'bg-white/5'} hover:shadow-xl transition-all duration-500 rounded-2xl`} style={safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface, borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : undefined}>
+                    <div className="flex gap-1 mb-6">
+                      {[...Array(t.rating || 5)].map((_, j) => <Star key={j} size={16} fill="currentColor" className="text-yellow-500" />)}
                     </div>
-                    <div>
-                      <p className={`font-bold ${textMain}`} style={textMainStyle}>{t.author}</p>
-                      <p className="text-xs uppercase tracking-widest" style={{ opacity: 0.4, color: dark ? (safeCs.lightTextMuted || '#ffffff') : (safeCs.textLight || '#737373') }}>Kunde</p>
+                    <p className="font-light leading-relaxed italic mb-8 text-lg" style={textSubStyle}>"{t.description || t.title}"</p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: safeCs.primary + '20' }}>
+                        <Heart size={20} style={{ color: safeCs.primary }} />
+                      </div>
+                      <div>
+                        <p className="font-bold" style={textMainStyle}>{t.author}</p>
+                        <p className="text-xs uppercase tracking-widest" style={{ opacity: 0.4, color: safeCs.lightTextMuted || '#ffffff' }}>Kunde</p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  // Light variant: white card — use ReviewCard to force dark text and add Weiterlesen
+                  <ReviewCard
+                    review={{ text: t.description || t.title, author: t.author, rating: t.rating }}
+                    cs={safeCs}
+                    cardBg="#ffffff"
+                    cardBorder={safeCs.border || '#e5e7eb'}
+                  />
+                )}
               </Skeleton>
             )) : null}
           </div>
@@ -1326,20 +1394,35 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
             {items?.slice(0, 2).map((t: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="min-h-[200px]">
                 <motion.div
-                  className={`p-8 md:p-10 ${dark ? (safeCs.darkSurface ? '' : 'bg-white/10') : 'bg-white shadow-2xl'} rounded-[2rem] relative overflow-visible`}
-                  style={dark && safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface } : undefined}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ delay: i * 0.15, duration: 0.5 }}
                 >
-                  <div className="absolute -top-3 -left-3 md:-top-4 md:-left-4 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg z-20" style={{ backgroundColor: safeCs.primary }}>
-                    <Star size={18} style={{ color: safeCs.onPrimary || '#ffffff' }} fill="currentColor" />
-                  </div>
-                  <div className="pt-2">
-                    <p className={`${textMain} text-base md:text-lg mb-4 italic leading-relaxed`} style={textMainStyle}>"{t.description || t.title}"</p>
-                    <p className={`font-bold ${textMain} uppercase tracking-widest text-xs md:text-sm`} style={textMainStyle}>— {t.author}</p>
-                  </div>
+                  {dark ? (
+                    <div className={`p-8 md:p-10 ${safeCs.darkSurface ? '' : 'bg-white/10'} rounded-[2rem] relative overflow-visible`}
+                      style={safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface } : undefined}>
+                      <div className="absolute -top-3 -left-3 md:-top-4 md:-left-4 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg z-20" style={{ backgroundColor: safeCs.primary }}>
+                        <Star size={18} style={{ color: safeCs.onPrimary || '#ffffff' }} fill="currentColor" />
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-base md:text-lg mb-4 italic leading-relaxed" style={textMainStyle}>"{t.description || t.title}"</p>
+                        <p className="font-bold uppercase tracking-widest text-xs md:text-sm" style={textMainStyle}>— {t.author}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="absolute -top-3 -left-3 md:-top-4 md:-left-4 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg z-20" style={{ backgroundColor: safeCs.primary }}>
+                        <Star size={18} style={{ color: safeCs.onPrimary || '#ffffff' }} fill="currentColor" />
+                      </div>
+                      <ReviewCard
+                        review={{ text: t.description || t.title, author: t.author, rating: t.rating }}
+                        cs={safeCs}
+                        cardBg="#ffffff"
+                        cardBorder={safeCs.border || '#e5e7eb'}
+                      />
+                    </div>
+                  )}
                 </motion.div>
               </Skeleton>
             ))}

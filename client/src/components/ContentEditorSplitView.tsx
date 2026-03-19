@@ -410,6 +410,21 @@ export default function ContentEditorSplitView({
         ke.preventDefault();
         el.blur();
       }
+      // Space activates button elements by default — prevent that so the user can type spaces
+      if (ke.key === " " && el.tagName === "BUTTON") {
+        ke.preventDefault();
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents();
+          const textNode = document.createTextNode(" ");
+          range.insertNode(textNode);
+          range.setStartAfter(textNode);
+          range.setEndAfter(textNode);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
       if (ke.key === "Escape") {
         el.textContent = text;
         el.contentEditable = "false";
