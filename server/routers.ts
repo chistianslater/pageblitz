@@ -1545,15 +1545,27 @@ export const appRouter = router({
         limit: z.number().default(50),
         offset: z.number().default(0),
         leadType: z.enum(["no_website", "outdated_website", "poor_website", "unknown", "all"]).default("all"),
+        search: z.string().optional(),
       }).optional())
       .query(async ({ input }) => {
-        const businesses = await listBusinesses(input?.limit || 50, input?.offset || 0);
-        const total = await countBusinesses();
-        // Filter by leadType if specified
-        const filtered = (input?.leadType && input.leadType !== "all")
-          ? businesses.filter(b => b.leadType === input.leadType)
-          : businesses;
-        return { businesses: filtered, total };
+        // Fetch a broad set and filter in-memory (DB is small enough for now)
+        const all = await listBusinesses(10000, 0);
+        const total = all.length;
+
+        let filtered = all;
+        if (input?.leadType && input.leadType !== "all") {
+          filtered = filtered.filter(b => b.leadType === input.leadType);
+        }
+        if (input?.search) {
+          const q = input.search.toLowerCase();
+          filtered = filtered.filter(b =>
+            b.name.toLowerCase().includes(q) ||
+            (b.address ?? "").toLowerCase().includes(q)
+          );
+        }
+
+        const paginated = filtered.slice(input?.offset ?? 0, (input?.offset ?? 0) + (input?.limit ?? 50));
+        return { businesses: paginated, total: filtered.length, grandTotal: total };
       }),
     get: adminProcedure
       .input(z.object({ id: z.number() }))
@@ -1591,6 +1603,15 @@ export const appRouter = router({
         }
         return { deleted };
       }),
+
+    stats: adminProcedure.query(async () => {
+      const all = await listBusinesses(10000, 0);
+      const noWebsite = all.filter(b => b.leadType === "no_website").length;
+      const outdated = all.filter(b => b.leadType === "outdated_website").length;
+      const poor = all.filter(b => b.leadType === "poor_website").length;
+      const good = all.filter(b => b.leadType === "unknown").length;
+      return { noWebsite, outdated, poor, good, total: all.length };
+    }),
   }),
 
   // ── Admin: Website Generation ──────────────────────
