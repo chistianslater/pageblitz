@@ -46,27 +46,29 @@ function PageLoader() {
 }
 
 function AdminRouter() {
-  // key={location} on the inner Suspense ensures React unmounts the old page
-  // and shows the loader instead of keeping stale content visible while the
-  // new lazy chunk loads (React 18 concurrent mode behaviour).
+  // DashboardLayout is wrapped in its own Suspense (no key) so it loads once
+  // and stays mounted across admin sub-navigations. The inner Suspense carries
+  // key={location} so only the page content swaps – the sidebar never remounts.
   const [location] = useLocation();
   return (
     <AdminRoute>
-      <DashboardLayout>
-        <Suspense key={location} fallback={<PageLoader />}>
-          <Switch>
-            <Route path="/admin" component={Home} />
-            <Route path="/admin/search" component={SearchPage} />
-            <Route path="/admin/websites" component={WebsitesPage} />
-            <Route path="/admin/outreach" component={OutreachPage} />
-            <Route path="/admin/stats" component={StatsPage} />
-            <Route path="/admin/leads" component={LeadsPage} />
-            <Route path="/admin/businesses" component={BusinessesPage} />
-            <Route path="/admin/layouts" component={LayoutOverviewPage} />
-            <Route component={NotFound} />
-          </Switch>
-        </Suspense>
-      </DashboardLayout>
+      <Suspense fallback={<PageLoader />}>
+        <DashboardLayout>
+          <Suspense key={location} fallback={<PageLoader />}>
+            <Switch>
+              <Route path="/admin" component={Home} />
+              <Route path="/admin/search" component={SearchPage} />
+              <Route path="/admin/websites" component={WebsitesPage} />
+              <Route path="/admin/outreach" component={OutreachPage} />
+              <Route path="/admin/stats" component={StatsPage} />
+              <Route path="/admin/leads" component={LeadsPage} />
+              <Route path="/admin/businesses" component={BusinessesPage} />
+              <Route path="/admin/layouts" component={LayoutOverviewPage} />
+              <Route component={NotFound} />
+            </Switch>
+          </Suspense>
+        </DashboardLayout>
+      </Suspense>
     </AdminRoute>
   );
 }
@@ -101,6 +103,13 @@ function Router() {
     );
   }
 
+  // Admin routes are rendered outside the key={location} Suspense so that
+  // DashboardLayout stays mounted across sub-navigations (no sidebar flicker).
+  // AdminRouter handles its own internal key={location} for page content only.
+  if (location.startsWith("/admin")) {
+    return <AdminRouter />;
+  }
+
   // key={location} forces Suspense to unmount/remount on every navigation.
   // Without it React 18 concurrent mode keeps the OLD page visible while
   // the new lazy component loads → URL changes but screen stays the same.
@@ -130,12 +139,6 @@ function Router() {
         <Route path="/login" component={CustomerLoginPage} />
         <Route path="/admin-login" component={LoginPage} />
         <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
-        <Route path="/admin">
-          <AdminRouter />
-        </Route>
-        <Route path="/admin/:rest*">
-          <AdminRouter />
-        </Route>
         <Route component={NotFound} />
       </Switch>
     </Suspense>
