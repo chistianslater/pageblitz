@@ -1389,87 +1389,70 @@ function pickRandom5(): Array<{ layout: keyof typeof LAYOUT_COMPONENTS }> {
 }
 
 // Live Preview Component with Autoscroll
+// Fixed iframe width – the iframe gets its own 1280px viewport so all
+// Tailwind md:/lg: breakpoints fire correctly regardless of the phone screen width.
+const IFRAME_WIDTH = 1280;
+const IFRAME_HEIGHT = 900; // tall enough to show hero + first section
+
 interface LivePreviewCardProps {
   layout: keyof typeof LAYOUT_COMPONENTS;
   delay?: number;
 }
 
 const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
-  const previewRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const config = LAYOUT_CONFIG[layout];
   const colorScheme = getColorScheme(config.scheme);
   const [isHovering, setIsHovering] = useState(false);
-  const scrollPositionRef = useRef(0);
-  const animationRef = useRef<number>();
+  const [cardWidth, setCardWidth] = useState(360);
+  const scrollPosRef = useRef(0);
+  const animRef = useRef<number>();
 
-  const LayoutComponent = LAYOUT_COMPONENTS[layout] || PremiumLayoutV2;
-
-  // Smooth scroll back to top when mouse leaves
-  const scrollToTop = useCallback(() => {
-    if (!previewRef.current) return;
-    
-    const element = previewRef.current;
-    const startPosition = element.scrollTop;
-    const duration = 800; // ms
-    const startTime = performance.now();
-    
-    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-    
-    const animateScroll = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = easeOutCubic(progress);
-      
-      element.scrollTop = startPosition * (1 - easeProgress);
-      
-      if (progress < 1) {
-        requestAnimationFrame(animateScroll);
-      } else {
-        scrollPositionRef.current = 0;
-      }
-    };
-    
-    requestAnimationFrame(animateScroll);
+  // Measure the card's rendered pixel width so we can compute the exact scale
+  useEffect(() => {
+    if (!cardRef.current) return;
+    const obs = new ResizeObserver(entries => {
+      setCardWidth(entries[0].contentRect.width);
+    });
+    obs.observe(cardRef.current);
+    return () => obs.disconnect();
   }, []);
 
-  const startAutoScroll = useCallback(() => {
-    if (!previewRef.current) return;
-    
-    const scrollStep = () => {
-      if (previewRef.current && isHovering) {
-        scrollPositionRef.current += 1.5;
-        const maxScroll = previewRef.current.scrollHeight - previewRef.current.clientHeight;
-        
-        // Reset to top when reaching bottom for seamless loop
-        if (scrollPositionRef.current >= maxScroll) {
-          scrollPositionRef.current = 0;
-        }
-        
-        previewRef.current.scrollTop = scrollPositionRef.current;
-        animationRef.current = requestAnimationFrame(scrollStep);
-      }
-    };
-    
-    animationRef.current = requestAnimationFrame(scrollStep);
-  }, [isHovering]);
+  const scale = cardWidth / IFRAME_WIDTH;
+  const cardHeight = Math.round(cardWidth * (10 / 16)); // 16:10 aspect ratio
 
+  // Autoscroll via iframe.contentWindow (same origin)
   useEffect(() => {
-    if (isHovering) {
-      startAutoScroll();
-    } else {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      // Scroll back to top when mouse leaves
-      scrollToTop();
+    if (!isHovering) {
+      cancelAnimationFrame(animRef.current!);
+      // Smooth scroll back to top
+      const win = iframeRef.current?.contentWindow;
+      if (!win) return;
+      const start = win.scrollY;
+      const t0 = performance.now();
+      const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+      const back = (now: number) => {
+        const p = Math.min((now - t0) / 700, 1);
+        win.scrollTo(0, start * (1 - ease(p)));
+        if (p < 1) animRef.current = requestAnimationFrame(back);
+        else scrollPosRef.current = 0;
+      };
+      animRef.current = requestAnimationFrame(back);
+      return;
     }
-    
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+    const step = () => {
+      const win = iframeRef.current?.contentWindow;
+      if (!win || !isHovering) return;
+      scrollPosRef.current += 1.2;
+      const max = win.document.body.scrollHeight - IFRAME_HEIGHT;
+      if (scrollPosRef.current >= max) scrollPosRef.current = 0;
+      win.scrollTo(0, scrollPosRef.current);
+      animRef.current = requestAnimationFrame(step);
     };
-  }, [isHovering, startAutoScroll, scrollToTop]);
+    animRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animRef.current!);
+  }, [isHovering]);
 
   const slug = config.data.businessName
     ? config.data.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
@@ -1490,13 +1473,11 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
 
         {/* Browser Chrome */}
         <div className="bg-[#1c1e2e] px-3.5 py-2.5 flex items-center gap-3 border-b border-white/[0.06]">
-          {/* Traffic lights */}
           <div className="flex gap-1.5 flex-shrink-0">
             <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
             <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
             <div className="w-3 h-3 rounded-full bg-[#28c840]" />
           </div>
-          {/* URL bar */}
           <div className="flex-1 bg-white/[0.06] rounded-md px-3 py-1 flex items-center gap-1.5 min-w-0">
             <svg className="w-3 h-3 text-white/25 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -1505,33 +1486,27 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
           </div>
         </div>
 
-        {/* Website Preview */}
-        <div className="relative overflow-hidden bg-white" style={{ aspectRatio: "16/10" }}>
-          <div
-            ref={previewRef}
-            className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide"
-            style={{ scrollBehavior: "auto" }}
-          >
-            <div
-              className="origin-top-left"
-              style={{
-                transform: "scale(0.28)",
-                transformOrigin: "top left",
-                width: "357%",
-                maxWidth: "357%",
-                height: "auto",
-                minHeight: "357%",
-                overflowX: "hidden",
-              }}
-            >
-              <LayoutComponent
-                websiteData={config.data}
-                cs={colorScheme}
-                heroImageUrl={config.heroImage}
-                isLoading={false}
-              />
-            </div>
-          </div>
+        {/* Website Preview – iframe so the layout renders at a true 1280px desktop viewport */}
+        <div
+          ref={cardRef}
+          className="relative overflow-hidden bg-white"
+          style={{ height: cardHeight }}
+        >
+          <iframe
+            ref={iframeRef}
+            src={`/layout-preview/${layout.toUpperCase()}`}
+            width={IFRAME_WIDTH}
+            height={IFRAME_HEIGHT}
+            scrolling="no"
+            style={{
+              border: "none",
+              pointerEvents: "none",
+              transformOrigin: "top left",
+              transform: `scale(${scale})`,
+              display: "block",
+            }}
+            title={`${layout} preview`}
+          />
 
           {/* Bottom fade */}
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
