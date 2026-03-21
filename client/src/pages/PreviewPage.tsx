@@ -74,23 +74,31 @@ export default function PreviewPage() {
     return applyCustomColor(baseColorScheme, customColor);
   }, [baseColorScheme, customColor]);
 
-  // Directly set nav top via inline style (highest specificity — overrides Tailwind classes).
-  // Runs after data loads (so WebsiteRenderer has painted the nav).
-  // When scrolled past banner height → top:0; otherwise → top:bannerHeight.
+  // MutationObserver: fires as soon as WebsiteRenderer adds the <nav> to the DOM.
+  // Uses setProperty('top', …, 'important') so it beats any CSS rule incl. Tailwind layers.
   useEffect(() => {
-    const banner = bannerRef.current;
-    if (!banner || !data) return;
-    const apply = () => {
-      const offset = window.scrollY >= banner.offsetHeight ? 0 : banner.offsetHeight;
+    const BANNER_H = bannerRef.current?.offsetHeight || 52;
+
+    const applyNavTop = () => {
+      const top = window.scrollY >= BANNER_H ? 0 : BANNER_H;
       document.querySelectorAll<HTMLElement>(".pageblitz-preview-root nav").forEach(nav => {
+        nav.style.setProperty("top", top + "px", "important");
         nav.style.transition = "top 0.15s ease";
-        nav.style.top = offset + "px";
       });
     };
-    const t = setTimeout(apply, 300); // wait for WebsiteRenderer to paint
-    window.addEventListener("scroll", apply, { passive: true });
-    return () => { clearTimeout(t); window.removeEventListener("scroll", apply); };
-  }, [data]); // re-run when data loads so nav exists in DOM
+
+    const mo = new MutationObserver(applyNavTop);
+    const root = document.querySelector(".pageblitz-preview-root");
+    if (root) mo.observe(root, { childList: true, subtree: true });
+
+    window.addEventListener("scroll", applyNavTop, { passive: true });
+    applyNavTop();
+
+    return () => {
+      mo.disconnect();
+      window.removeEventListener("scroll", applyNavTop);
+    };
+  }, []); // empty deps — MutationObserver watches DOM, scroll handles scroll
 
   if (isLoading) {
     return (
