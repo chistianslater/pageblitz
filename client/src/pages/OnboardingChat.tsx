@@ -99,7 +99,7 @@ const MOBILE_IFRAME_W  = 390;
 const DESKTOP_IFRAME_H = 900;
 const MOBILE_IFRAME_H  = 844;  // iPhone 14 viewport height
 
-function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
+function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, onSkip }: {
   websiteId: number;
   websiteData?: any;
   heroImageUrl?: string;
@@ -187,7 +187,7 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
           {/* One iframe per variant — inactive ones hidden via display:none */}
           {variants.map((layout, i) => (
             <iframe
-              key={`${round}-${layout}`}
+              key={`${round}-${layout}-${heroImageUrl ?? ""}`}
               src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
               width={iframeW}
               height={iframeH}

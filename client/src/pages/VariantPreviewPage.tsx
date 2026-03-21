@@ -19,7 +19,7 @@ export default function VariantPreviewPage() {
 
   const { data, isLoading } = trpc.website.get.useQuery(
     { id: websiteId },
-    { enabled: websiteId > 0, staleTime: 60_000 },
+    { enabled: websiteId > 0, staleTime: 0 },
   );
 
   const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout];
