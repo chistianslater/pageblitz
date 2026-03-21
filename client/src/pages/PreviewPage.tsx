@@ -57,20 +57,23 @@ export default function PreviewPage() {
   const [customHex, setCustomHex] = useState("#1565c0");
   const bannerRef = useRef<HTMLDivElement>(null);
 
-  // Sticky elements never leave the viewport, so IntersectionObserver won't work.
-  // Instead: when scrollY >= bannerHeight the page has scrolled past the banner
-  // → reset website nav to top:0 so there's no gap.
+  // Directly set nav top via inline style (highest specificity — overrides Tailwind classes).
+  // When page has scrolled past the banner height → top:0; otherwise → top:bannerHeight.
   useEffect(() => {
     const banner = bannerRef.current;
-    const root = document.querySelector(".pageblitz-preview-root") as HTMLElement | null;
-    if (!banner || !root) return;
-    const onScroll = () => {
-      root.classList.toggle("banner-hidden", window.scrollY >= banner.offsetHeight);
+    if (!banner) return;
+    const apply = () => {
+      const offset = window.scrollY >= banner.offsetHeight ? 0 : banner.offsetHeight;
+      document.querySelectorAll<HTMLElement>(".pageblitz-preview-root nav").forEach(nav => {
+        nav.style.transition = "top 0.15s ease";
+        nav.style.top = offset + "px";
+      });
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // run once on mount
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    // Run after WebsiteRenderer has painted
+    const t = setTimeout(apply, 200);
+    window.addEventListener("scroll", apply, { passive: true });
+    return () => { clearTimeout(t); window.removeEventListener("scroll", apply); };
+  }, [data]); // re-run when website data loads so nav exists in DOM
 
   const { data, isLoading, error } = trpc.website.get.useQuery(
     { token: params.token },
