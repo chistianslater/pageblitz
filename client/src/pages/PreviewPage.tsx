@@ -115,8 +115,8 @@ export default function PreviewPage() {
         html:has(.pageblitz-preview-root) { scroll-padding-top: 52px; }
       `}</style>
 
-      {/* Preview Banner with Color Picker */}
-      <div className="sticky top-0 z-[60] bg-gray-900 text-white py-3 px-4">
+      {/* Preview Banner with Color Picker — fixed so the website nav offset stays correct */}
+      <div className="fixed top-0 left-0 right-0 z-[60] bg-gray-900 text-white py-3 px-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Zap className="h-5 w-5 text-amber-400 flex-shrink-0" />
@@ -238,6 +238,9 @@ export default function PreviewPage() {
       {showColorPicker && (
         <div className="fixed inset-0 z-[59]" onClick={() => setShowColorPicker(false)} />
       )}
+
+      {/* Spacer so page content sits below the fixed banner (52px = banner height) */}
+      <div style={{ height: 52 }} />
 
       <WebsiteRenderer
         websiteData={websiteData}
