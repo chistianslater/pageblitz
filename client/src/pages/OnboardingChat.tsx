@@ -93,10 +93,13 @@ const LAYOUT_VIBES: Record<string, string> = {
  * ones) so switching between styles is instant – no reload delay.
  */
 const IFRAME_W = 1280;
+// Large fixed height for the iframe DOM element — the card's overflow:hidden
+// clips it to whatever visible area the flex layout provides.
+const IFRAME_H = 4000;
 
 function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
   websiteId: number;
-  websiteData?: any;   // kept for API compatibility but no longer used
+  websiteData?: any;
   heroImageUrl?: string;
   aboutImageUrl?: string;
   industryKey: string;
@@ -105,13 +108,13 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
 }) {
   const [round, setRound]         = useState(() => Math.floor(Math.random() * 5));
   const [activeIdx, setActiveIdx] = useState(0);
-  const containerRef              = useRef<HTMLDivElement>(null);
-  const [scale, setScale]         = useState(0.3);
+  const cardRef                   = useRef<HTMLDivElement>(null);
+  const [scale, setScale]         = useState(0.25);
   const selectMutation            = trpc.selfService.selectWebsiteTemplate.useMutation();
 
-  // Recompute iframe scale whenever the card container is resized
+  // Scale = card CSS width / iframe layout width
   useEffect(() => {
-    const el = containerRef.current;
+    const el = cardRef.current;
     if (!el) return;
     const update = () => setScale(el.clientWidth / IFRAME_W);
     update();
@@ -125,11 +128,7 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
 
   const goNext = () => setActiveIdx((i) => (i + 1) % variants.length);
   const goPrev = () => setActiveIdx((i) => (i + variants.length - 1) % variants.length);
-
-  const handleOtherLayouts = () => {
-    setRound((r) => r + 1);
-    setActiveIdx(0);
-  };
+  const handleOtherLayouts = () => { setRound((r) => r + 1); setActiveIdx(0); };
 
   const handleConfirm = async () => {
     const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected];
@@ -139,83 +138,68 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
     onConfirm(selected);
   };
 
-  // Accent colour for the card border — derived from the selected layout's scheme
   const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected] as any)?.primary ?? "#6366f1";
-
-  // Visible height of the preview card in CSS px (the iframe is taller; the
-  // card clips it via overflow:hidden, giving it the "above the fold" look).
-  const cardHeight = Math.round(IFRAME_W * scale * (9 / 16));
 
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col overflow-hidden select-none">
 
       {/* ── Header ── */}
-      <div className="flex-shrink-0 pt-5 pb-3 px-6 text-center">
-        <h1 className="text-xl font-bold text-white mb-1">Welcher Stil passt zu dir?</h1>
-        <p className="text-slate-400 text-xs max-w-sm mx-auto leading-relaxed">
-          Farben, Schriften und Inhalte lassen sich danach jederzeit anpassen.
+      <div className="flex-shrink-0 pt-4 pb-2 px-6 text-center">
+        <h1 className="text-xl font-bold text-white mb-0.5">Welcher Stil passt zu dir?</h1>
+        <p className="text-slate-400 text-xs max-w-sm mx-auto">
+          Farben &amp; Inhalte lassen sich jederzeit anpassen.
         </p>
       </div>
 
-      {/* ── Preview carousel ── */}
-      <div className="flex-1 min-h-0 flex items-center gap-2 px-3">
+      {/* ── Preview row — fills remaining vertical space ── */}
+      <div className="flex-1 min-h-0 flex items-center gap-2 px-3 py-2">
 
         {/* Prev arrow */}
-        <button
-          type="button"
-          onClick={goPrev}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors"
-        >
+        <button type="button" onClick={goPrev}
+          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
 
-        {/* Card — clips the scaled iframes */}
+        {/*
+          Card — self-stretch so it fills the full height of the flex row.
+          overflow:hidden clips the absolutely-positioned iframes to this box.
+        */}
         <div
-          ref={containerRef}
-          className="flex-1 min-w-0 rounded-xl overflow-hidden relative"
-          style={{
-            height: cardHeight,
-            boxShadow: `0 0 0 2px ${accentColor}55, 0 20px 40px -10px rgba(0,0,0,0.8)`,
-          }}
+          ref={cardRef}
+          className="flex-1 self-stretch min-w-0 rounded-xl overflow-hidden relative"
+          style={{ boxShadow: `0 0 0 2px ${accentColor}44, 0 20px 48px -8px rgba(0,0,0,0.85)` }}
         >
-          {/* Mount all variants; only the active one is visible */}
+          {/* One iframe per variant — inactive ones hidden via display:none */}
           {variants.map((layout, i) => (
-            <div
+            <iframe
               key={`${round}-${layout}`}
-              className="absolute inset-0"
-              style={{ visibility: i === activeIdx ? "visible" : "hidden" }}
-            >
-              <iframe
-                src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
-                width={IFRAME_W}
-                height={Math.round(IFRAME_W / scale)}   // tall enough to show ~1 screen
-                style={{
-                  display: "block",
-                  transformOrigin: "top left",
-                  transform: `scale(${scale})`,
-                  pointerEvents: "none",
-                  border: "none",
-                }}
-                title={`Preview ${layout}`}
-              />
-            </div>
+              src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
+              width={IFRAME_W}
+              height={IFRAME_H}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                display: i === activeIdx ? "block" : "none",
+                transformOrigin: "top left",
+                transform: `scale(${scale})`,
+                pointerEvents: "none",
+                border: "none",
+              }}
+              title={`Preview ${layout}`}
+            />
           ))}
 
-          {/* Bottom fade — makes the cut-off look intentional */}
-          <div
-            className="absolute bottom-0 inset-x-0 h-12 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, transparent, rgba(2,6,23,0.9))" }}
-          />
+          {/* Fade-out at the bottom so the crop looks intentional */}
+          <div className="absolute bottom-0 inset-x-0 h-14 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, transparent, rgba(2,6,23,0.95))" }} />
         </div>
 
         {/* Next arrow */}
-        <button
-          type="button"
-          onClick={goNext}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors"
-        >
+        <button type="button" onClick={goNext}
+          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
@@ -223,51 +207,39 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
       </div>
 
       {/* ── Dot indicators + layout name ── */}
-      <div className="flex-shrink-0 flex flex-col items-center gap-1.5 pt-3 pb-1">
+      <div className="flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-1">
         <div className="flex gap-2">
           {variants.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setActiveIdx(i)}
-              className={`rounded-full transition-all ${i === activeIdx ? "w-5 h-2 bg-blue-400" : "w-2 h-2 bg-slate-600 hover:bg-slate-500"}`}
-            />
+            <button key={i} type="button" onClick={() => setActiveIdx(i)}
+              className={`rounded-full transition-all ${i === activeIdx ? "w-5 h-2 bg-blue-400" : "w-2 h-2 bg-slate-600 hover:bg-slate-500"}`} />
           ))}
         </div>
         <div className="text-center">
-          <span className="text-white text-sm font-bold">{LAYOUT_LABELS[selected] ?? selected}</span>
+          <span className="text-white text-sm font-semibold">{LAYOUT_LABELS[selected] ?? selected}</span>
           <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
         </div>
       </div>
 
       {/* ── Actions ── */}
-      <div
-        className="flex-shrink-0 flex flex-col items-center gap-2 px-6 pt-2"
-        style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))" }}
-      >
-        <button
-          type="button"
-          onClick={handleConfirm}
-          disabled={selectMutation.isPending}
-          className="w-full max-w-xs py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
-        >
+      <div className="flex-shrink-0 flex flex-col items-center gap-2 px-6 pt-1.5"
+        style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 1.25rem))" }}>
+        <button type="button" onClick={handleConfirm} disabled={selectMutation.isPending}
+          className="w-full max-w-xs py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2">
           {selectMutation.isPending ? (
             <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Wird gespeichert…</>
           ) : (
             <>Dieses Design übernehmen <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></>
           )}
         </button>
-        <button
-          type="button"
-          onClick={handleOtherLayouts}
-          className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium transition-colors py-1"
-        >
+        <button type="button" onClick={handleOtherLayouts}
+          className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium transition-colors py-1">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           Andere Stile zeigen
         </button>
-        <button type="button" onClick={onSkip} className="text-slate-600 hover:text-slate-400 text-xs transition-colors py-0.5">
+        <button type="button" onClick={onSkip}
+          className="text-slate-600 hover:text-slate-400 text-xs transition-colors py-0.5">
           Überspringen
         </button>
       </div>
