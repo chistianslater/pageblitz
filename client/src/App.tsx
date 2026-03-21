@@ -31,6 +31,7 @@ const AccountPage          = lazy(() => import("./pages/AccountPage"));
 const LayoutOverviewPage   = lazy(() => import("./pages/LayoutOverviewPage"));
 const PipelinePage         = lazy(() => import("./pages/PipelinePage"));
 const LayoutPreviewStandalone = lazy(() => import("./pages/LayoutPreviewStandalone"));
+const VariantPreviewPage      = lazy(() => import("./pages/VariantPreviewPage"));
 const LoginPage            = lazy(() => import("./pages/LoginPage"));
 const CustomerLoginPage    = lazy(() => import("./pages/CustomerLoginPage"));
 const BusinessesPage       = lazy(() => import("./pages/BusinessesPage"));
@@ -159,6 +160,7 @@ function Router() {
         <Route path="/login" component={CustomerLoginPage} />
         <Route path="/admin-login" component={LoginPage} />
         <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
+        <Route path="/variant-preview" component={VariantPreviewPage} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

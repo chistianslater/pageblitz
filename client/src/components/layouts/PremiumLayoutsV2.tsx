@@ -460,8 +460,8 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
   return (
     <section id="services" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
       <div className="max-w-7xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem] mb-16 md:mb-20">
-          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
+        <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
+          <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-16 md:mb-20">
             {servicesSection?.headline
               ? <>{servicesSection.headline}</>
               : <>Unsere <span style={{ color: safeCs.primary }}>Leistungen</span></>}
