@@ -3,7 +3,7 @@ import { useParams } from "wouter";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import CookieBanner from "@/components/CookieBanner";
 import { Loader2, Zap, AlertCircle, CheckCircle, MessageSquare, Bot, Calendar, Globe, Palette } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
@@ -55,6 +55,21 @@ export default function PreviewPage() {
   const [customColor, setCustomColor] = useState<string | null>(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [customHex, setCustomHex] = useState("#1565c0");
+  const bannerRef = useRef<HTMLDivElement>(null);
+
+  // When the sticky banner scrolls out of view, reset the website nav to top:0
+  // so there's no gap above it. When banner is back, shift nav down to 52px.
+  useEffect(() => {
+    const banner = bannerRef.current;
+    const root = document.querySelector(".pageblitz-preview-root") as HTMLElement | null;
+    if (!banner || !root) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => root.classList.toggle("banner-hidden", !entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(banner);
+    return () => observer.disconnect();
+  }, []);
 
   const { data, isLoading, error } = trpc.website.get.useQuery(
     { token: params.token },
@@ -111,12 +126,13 @@ export default function PreviewPage() {
           Layout navbars use `fixed top-0 z-50` (Tailwind → top:0px, specificity 0,0,1).
           `.pageblitz-preview-root nav` has specificity 0,1,1 → wins without !important. */}
       <style>{`
-        .pageblitz-preview-root nav { top: 52px; }
+        .pageblitz-preview-root nav { top: 52px; transition: top 0.15s ease; }
+        .pageblitz-preview-root.banner-hidden nav { top: 0; }
         html:has(.pageblitz-preview-root) { scroll-padding-top: 52px; }
       `}</style>
 
-      {/* Preview Banner with Color Picker — fixed so the website nav offset stays correct */}
-      <div className="fixed top-0 left-0 right-0 z-[60] bg-gray-900 text-white py-3 px-4">
+      {/* Preview Banner — sticky so it scrolls away; IntersectionObserver then resets nav top to 0 */}
+      <div ref={bannerRef} className="sticky top-0 z-[60] bg-gray-900 text-white py-3 px-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Zap className="h-5 w-5 text-amber-400 flex-shrink-0" />
@@ -238,9 +254,6 @@ export default function PreviewPage() {
       {showColorPicker && (
         <div className="fixed inset-0 z-[59]" onClick={() => setShowColorPicker(false)} />
       )}
-
-      {/* Spacer so page content sits below the fixed banner (52px = banner height) */}
-      <div style={{ height: 52 }} />
 
       <WebsiteRenderer
         websiteData={websiteData}
