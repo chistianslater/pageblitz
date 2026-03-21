@@ -93,10 +93,11 @@ const LAYOUT_VIBES: Record<string, string> = {
  * ones) so switching between styles is instant – no reload delay.
  */
 const DESKTOP_IFRAME_W = 1280;
-const MOBILE_IFRAME_W  = 390;   // renders the responsive/mobile layout at readable scale
-// Large fixed height for the iframe DOM element — the card's overflow:hidden
-// clips it to whatever visible area the flex layout provides.
-const IFRAME_H = 4000;
+const MOBILE_IFRAME_W  = 390;
+// Viewport heights: must match real screen sizes so 100vh/min-h-screen
+// renders correctly. Card's overflow:hidden clips to the visible area.
+const DESKTOP_IFRAME_H = 900;
+const MOBILE_IFRAME_H  = 844;  // iPhone 14 viewport height
 
 function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
   websiteId: number;
@@ -112,6 +113,7 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
   const cardRef                   = useRef<HTMLDivElement>(null);
   const [scale, setScale]         = useState(0.3);
   const [iframeW, setIframeW]     = useState(MOBILE_IFRAME_W);
+  const [iframeH, setIframeH]     = useState(MOBILE_IFRAME_H);
   const selectMutation            = trpc.selfService.selectWebsiteTemplate.useMutation();
 
   // On narrow cards (phones) use a 390 px mobile iframe so the layout is readable.
@@ -121,8 +123,11 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
     if (!el) return;
     const update = () => {
       const cw = el.clientWidth;
-      const iw = cw < 600 ? MOBILE_IFRAME_W : DESKTOP_IFRAME_W;
+      const mobile = cw < 600;
+      const iw = mobile ? MOBILE_IFRAME_W : DESKTOP_IFRAME_W;
+      const ih = mobile ? MOBILE_IFRAME_H : DESKTOP_IFRAME_H;
       setIframeW(iw);
+      setIframeH(ih);
       setScale(cw / iw);
     };
     update();
@@ -185,7 +190,7 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
               key={`${round}-${layout}`}
               src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
               width={iframeW}
-              height={IFRAME_H}
+              height={iframeH}
               style={{
                 position: "absolute",
                 top: 0,
