@@ -57,24 +57,7 @@ export default function PreviewPage() {
   const [customHex, setCustomHex] = useState("#1565c0");
   const bannerRef = useRef<HTMLDivElement>(null);
 
-  // Directly set nav top via inline style (highest specificity — overrides Tailwind classes).
-  // When page has scrolled past the banner height → top:0; otherwise → top:bannerHeight.
-  useEffect(() => {
-    const banner = bannerRef.current;
-    if (!banner) return;
-    const apply = () => {
-      const offset = window.scrollY >= banner.offsetHeight ? 0 : banner.offsetHeight;
-      document.querySelectorAll<HTMLElement>(".pageblitz-preview-root nav").forEach(nav => {
-        nav.style.transition = "top 0.15s ease";
-        nav.style.top = offset + "px";
-      });
-    };
-    // Run after WebsiteRenderer has painted
-    const t = setTimeout(apply, 200);
-    window.addEventListener("scroll", apply, { passive: true });
-    return () => { clearTimeout(t); window.removeEventListener("scroll", apply); };
-  }, [data]); // re-run when website data loads so nav exists in DOM
-
+  // All data hooks FIRST so they're in scope for useEffect below
   const { data, isLoading, error } = trpc.website.get.useQuery(
     { token: params.token },
     { enabled: !!params.token }
@@ -90,6 +73,24 @@ export default function PreviewPage() {
     if (!customColor) return baseColorScheme;
     return applyCustomColor(baseColorScheme, customColor);
   }, [baseColorScheme, customColor]);
+
+  // Directly set nav top via inline style (highest specificity — overrides Tailwind classes).
+  // Runs after data loads (so WebsiteRenderer has painted the nav).
+  // When scrolled past banner height → top:0; otherwise → top:bannerHeight.
+  useEffect(() => {
+    const banner = bannerRef.current;
+    if (!banner || !data) return;
+    const apply = () => {
+      const offset = window.scrollY >= banner.offsetHeight ? 0 : banner.offsetHeight;
+      document.querySelectorAll<HTMLElement>(".pageblitz-preview-root nav").forEach(nav => {
+        nav.style.transition = "top 0.15s ease";
+        nav.style.top = offset + "px";
+      });
+    };
+    const t = setTimeout(apply, 300); // wait for WebsiteRenderer to paint
+    window.addEventListener("scroll", apply, { passive: true });
+    return () => { clearTimeout(t); window.removeEventListener("scroll", apply); };
+  }, [data]); // re-run when data loads so nav exists in DOM
 
   if (isLoading) {
     return (
