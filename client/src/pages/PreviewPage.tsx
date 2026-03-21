@@ -57,18 +57,19 @@ export default function PreviewPage() {
   const [customHex, setCustomHex] = useState("#1565c0");
   const bannerRef = useRef<HTMLDivElement>(null);
 
-  // When the sticky banner scrolls out of view, reset the website nav to top:0
-  // so there's no gap above it. When banner is back, shift nav down to 52px.
+  // Sticky elements never leave the viewport, so IntersectionObserver won't work.
+  // Instead: when scrollY >= bannerHeight the page has scrolled past the banner
+  // → reset website nav to top:0 so there's no gap.
   useEffect(() => {
     const banner = bannerRef.current;
     const root = document.querySelector(".pageblitz-preview-root") as HTMLElement | null;
     if (!banner || !root) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => root.classList.toggle("banner-hidden", !entry.isIntersecting),
-      { threshold: 0 }
-    );
-    observer.observe(banner);
-    return () => observer.disconnect();
+    const onScroll = () => {
+      root.classList.toggle("banner-hidden", window.scrollY >= banner.offsetHeight);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll(); // run once on mount
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const { data, isLoading, error } = trpc.website.get.useQuery(
