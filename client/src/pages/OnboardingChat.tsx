@@ -92,7 +92,8 @@ const LAYOUT_VIBES: Record<string, string> = {
  * All 3 variant iframes are mounted up-front (visibility:hidden for inactive
  * ones) so switching between styles is instant – no reload delay.
  */
-const IFRAME_W = 1280;
+const DESKTOP_IFRAME_W = 1280;
+const MOBILE_IFRAME_W  = 390;   // renders the responsive/mobile layout at readable scale
 // Large fixed height for the iframe DOM element — the card's overflow:hidden
 // clips it to whatever visible area the flex layout provides.
 const IFRAME_H = 4000;
@@ -109,14 +110,21 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
   const [round, setRound]         = useState(() => Math.floor(Math.random() * 5));
   const [activeIdx, setActiveIdx] = useState(0);
   const cardRef                   = useRef<HTMLDivElement>(null);
-  const [scale, setScale]         = useState(0.25);
+  const [scale, setScale]         = useState(0.3);
+  const [iframeW, setIframeW]     = useState(MOBILE_IFRAME_W);
   const selectMutation            = trpc.selfService.selectWebsiteTemplate.useMutation();
 
-  // Scale = card CSS width / iframe layout width
+  // On narrow cards (phones) use a 390 px mobile iframe so the layout is readable.
+  // On wider cards (desktop) use the full 1280 px desktop iframe.
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-    const update = () => setScale(el.clientWidth / IFRAME_W);
+    const update = () => {
+      const cw = el.clientWidth;
+      const iw = cw < 600 ? MOBILE_IFRAME_W : DESKTOP_IFRAME_W;
+      setIframeW(iw);
+      setScale(cw / iw);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -176,7 +184,7 @@ function VariantPickerScreen({ websiteId, industryKey, onConfirm, onSkip }: {
             <iframe
               key={`${round}-${layout}`}
               src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
-              width={IFRAME_W}
+              width={iframeW}
               height={IFRAME_H}
               style={{
                 position: "absolute",
