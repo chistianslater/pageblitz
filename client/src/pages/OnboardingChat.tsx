@@ -2274,6 +2274,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
+          // Fire Google Ads conversion for all onboarding starts
+          try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
           // For admin-generated websites: save as customerEmail in DB + start from businessCategory.
           // existingOnboarding may pre-fill data.businessCategory from the admin generation, but
           // the customer has never confirmed anything – always start the customization flow fresh.
@@ -2285,6 +2287,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {
                 onSuccess: async () => {
                   toast.success("E-Mail gespeichert! ✅");
+                  // Fire Google Ads conversion: Onboarding gestartet
+                  try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
                   // Refetch siteData so hasCustomerEmail becomes true and the email
                   // step is removed from dynamicStepOrder (won't appear again later)
                   refetchSiteData();
