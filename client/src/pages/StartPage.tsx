@@ -67,6 +67,10 @@ export default function StartPage() {
 
   const startMutation = trpc.selfService.start.useMutation({
     onSuccess: (data) => {
+      // Google Ads Conversion: Registrierung
+      if (typeof (window as any).gtag === "function") {
+        (window as any).gtag("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9" });
+      }
       toast.success("Website wird erstellt...");
       navigate(`/preview/${data.previewToken}/onboarding`);
     },

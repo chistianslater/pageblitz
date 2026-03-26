@@ -4089,9 +4089,16 @@ export default function CustomerDashboard() {
   }, [activeTab, _addOnAiChatEarly, _addOnBookingEarly]);
 
   // ── Setup-Flow State ──────────────────────────────────────────────────────
-  const [setupOpen, setSetupOpen] = useState(() =>
-    new URLSearchParams(window.location.search).get("checkout") === "success"
-  );
+  const _isCheckoutSuccess = new URLSearchParams(window.location.search).get("checkout") === "success";
+  const [setupOpen, setSetupOpen] = useState(() => _isCheckoutSuccess);
+
+  // Google Ads Conversion: Kauf nach Stripe-Checkout
+  useEffect(() => {
+    if (_isCheckoutSuccess && typeof (window as any).gtag === "function") {
+      (window as any).gtag("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9" });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [setupStepIdx, setSetupStepIdx] = useState(0);
   const [slugInput, setSlugInput] = useState("");
   const [showDomainHint, setShowDomainHint] = useState(false);
