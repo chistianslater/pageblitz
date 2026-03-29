@@ -26,9 +26,9 @@ const CATEGORIES: Category[] = [
   {
     id: "marketing",
     label: "Marketing",
-    tools: "Meta Pixel (Facebook)",
+    tools: "Google Ads, Meta Pixel (Facebook)",
     description:
-      "Ermöglicht die Messung von Werbekampagnen und Remarketing auf Facebook/Instagram.",
+      "Ermöglicht die Messung von Werbekampagnen (Google Ads Conversions) und Remarketing auf Facebook/Instagram.",
   },
 ];
 

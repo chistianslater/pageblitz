@@ -136,11 +136,21 @@
     <link rel="preconnect" href="https://api.fontshare.com" />
     <!-- Admin UI fonts (blocking – needed for first paint of app shell) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <!-- Google Ads Conversion Tracking (AW-16545728698) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16545728698"></script>
+    <!-- Google Consent Mode v2 – defaults BEFORE any gtag config -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500
+      });
+    </script>
+    <!-- Google Ads Conversion Tracking (AW-16545728698) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16545728698"></script>
+    <script>
       gtag('js', new Date());
       gtag('config', 'AW-16545728698');
     </script>
