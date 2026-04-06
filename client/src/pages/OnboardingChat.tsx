@@ -1831,19 +1831,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
   }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, onboardingStorageKey]);
 
-  // ── Admin-generated websites: show content immediately (no skeleton) ────
-  // For outreach websites (source === "admin"), the content is already fully generated
-  // by the admin pipeline. Skip the skeleton phase and show the real website right away
-  // so the prospect sees their actual page during onboarding.
+  // ── Show full preview whenever the email step is active ─────────────────
+  // Covers both admin outreach sites AND the new external try-before-email flow.
+  // Fires on every relevant change so it also catches resumed sessions (localStorage
+  // step restoration bypasses initChat, so we can't rely on a one-time initChat call).
   useEffect(() => {
-    if (siteData?.website?.source === "admin" && (contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || contentPhase === 'texts')) {
+    const isIncomplete = contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || contentPhase === 'texts';
+    if (!isIncomplete) return;
+    const source = siteData?.website?.source;
+    const hasData = !!(siteData?.website?.websiteData);
+    const shouldReveal =
+      source === "admin" ||
+      (source === "external" && hasData && currentStep === "email");
+    if (shouldReveal) {
       setContentPhase('complete');
       setCategoryConfirmed(true);
       if (previewToken || websiteIdProp) {
         localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
       }
     }
-  }, [siteData?.website?.source]);
+  }, [siteData?.website?.source, siteData?.website?.websiteData, currentStep, contentPhase, previewToken, websiteIdProp]);
 
   // ── Progressive content revelation based on user input ─────────
 
