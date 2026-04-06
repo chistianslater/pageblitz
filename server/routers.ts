@@ -4905,11 +4905,7 @@ Wichtige Felder im JSON:
         reviewCount: z.number().optional(), // Google review count from resolveLink
       }))
       .mutation(async ({ input, ctx }) => {
-        // Validate email for external sources (when no user is logged in)
         const isLoggedIn = !!ctx.user;
-        if (!isLoggedIn && input.source === "external" && !input.customerEmail) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "E-Mail-Adresse ist erforderlich" });
-        }
 
         // Create a placeholder business
         const placeholderName = input.businessName || "Neues Unternehmen";

@@ -852,7 +852,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Exit intent (mouse leaves window upwards) – shows at most once per session
     const handleMouseOut = (e: MouseEvent) => {
-      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && !exitIntentShownRef.current) {
+      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email" && !exitIntentShownRef.current) {
         exitIntentShownRef.current = true;
         if (hasUserEmail) {
           setShowExitConfirmation(true);
@@ -1798,12 +1798,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
         // For admin-generated websites without a customer email yet,
         // ask for the email as the very first step.
-        if (source === "admin" && !hasEmail) {
+        if (!hasEmail && !isAuthenticated) {
           setCurrentStep("email");
-          await addBotMessage(
-            "Hallo! 👋 Wir haben deine fertige Website bereits für dich erstellt. Damit du sie aktivieren kannst, brauchen wir zuerst deine **E-Mail-Adresse**.",
-            800
-          );
+          const emailMsg = source === "admin"
+            ? "Hallo! 👋 Wir haben deine fertige Website bereits für dich erstellt. Damit du sie aktivieren kannst, brauchen wir zuerst deine **E-Mail-Adresse**."
+            : "Deine Website wurde soeben erstellt! 🎉\n\nGib kurz deine **E-Mail-Adresse** ein – so speichern wir deinen Fortschritt und schicken dir den Link zu deiner fertigen Website.";
+          await addBotMessage(emailMsg, 800);
         } else if ((source === "admin" || source === "external") && (business as any)?.category) {
           // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
           const translatedCategory = translateGmbCategory((business as any).category);
@@ -2276,12 +2276,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           setData((p) => ({ ...p, email: val }));
           // Fire Google Ads conversion for all onboarding starts
           try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
-          // For admin-generated websites: save as customerEmail in DB + start from businessCategory.
-          // existingOnboarding may pre-fill data.businessCategory from the admin generation, but
-          // the customer has never confirmed anything – always start the customization flow fresh.
-          const isAdminSite = siteData?.website?.source === "admin";
+          // Save as customerEmail in DB when email is captured at the START of onboarding
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
-          if (isAdminSite && !alreadyHasEmail && websiteId) {
+          // Only do the "capture email → businessCategory" flow when user is at the
+          // BEGINNING of the onboarding (businessCategory not yet set).
+          // If they've already gone through all content steps, go to the normal next step.
+          const isAtStart = !data.businessCategory;
+          if (!alreadyHasEmail && websiteId && isAtStart) {
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val },
               {
@@ -5933,6 +5934,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               return;
                             }
                             await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
+                            if (websiteId) {
+                              saveCustomerEmailMutation.mutate({ websiteId, email: data.email });
+                            }
                             toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
                             setShowExitIntent(false);
                           }}
