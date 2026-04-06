@@ -602,7 +602,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Exit intent (mouse leaves window upwards) – shows at most once per session
     const handleMouseOut = (e: MouseEvent) => {
-      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && !exitIntentShownRef.current) {
+      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email" && !exitIntentShownRef.current) {
         exitIntentShownRef.current = true;
         if (hasUserEmail) {
           setShowExitConfirmation(true);
@@ -1524,12 +1524,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
         // For admin-generated websites without a customer email yet,
         // ask for the email as the very first step.
-        if (source === "admin" && !hasEmail) {
+        if (!hasEmail && !isAuthenticated) {
           setCurrentStep("email");
-          await addBotMessage(
-            "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**.",
-            800
-          );
+          const emailMsg = source === "admin"
+            ? "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**."
+            : "Deine Website wurde soeben erstellt! 🎉\n\nGib kurz deine **E-Mail-Adresse** ein – so speichern wir deinen Fortschritt und schicken dir den Link zu deiner fertigen Website.";
+          await addBotMessage(emailMsg, 800);
         } else if (source === "external" && (business as any)?.category) {
           // GMB user: pre-select the category but let the user confirm or change it
           const translatedCategory = translateGmbCategory((business as any).category);
@@ -1986,14 +1986,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
-          // For admin-generated websites: save as customerEmail in DB + set captureStatus
-          const isAdminSite = siteData?.website?.source === "admin";
+          // Save as customerEmail in DB when email is captured at the START of onboarding
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
           // Only do the "capture email → businessCategory" flow when user is at the
           // BEGINNING of the onboarding (businessCategory not yet set).
           // If they've already gone through all content steps, go to the normal next step.
           const isAtStart = !data.businessCategory;
-          if (isAdminSite && !alreadyHasEmail && websiteId && isAtStart) {
+          if (!alreadyHasEmail && websiteId && isAtStart) {
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val },
               {
@@ -5439,6 +5438,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               return;
                             }
                             await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
+                            if (websiteId) {
+                              saveCustomerEmailMutation.mutate({ websiteId, email: data.email });
+                            }
                             toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
                             setShowExitIntent(false);
                           }}
