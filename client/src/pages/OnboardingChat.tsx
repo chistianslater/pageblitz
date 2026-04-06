@@ -1804,6 +1804,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           if (source === "external" && !!(siteData?.website?.websiteData)) {
             setContentPhase('complete');
             setCategoryConfirmed(true);
+            setHeroRevealed(true);
+            setContentRevealed(true);
             if (previewToken || websiteIdProp) {
               localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
             }
@@ -1846,6 +1848,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (shouldReveal) {
       setContentPhase('complete');
       setCategoryConfirmed(true);
+      setHeroRevealed(true);
+      setContentRevealed(true);
       if (previewToken || websiteIdProp) {
         localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
       }
