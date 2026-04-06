@@ -1799,10 +1799,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         // For admin-generated websites without a customer email yet,
         // ask for the email as the very first step.
         if (!hasEmail && !isAuthenticated) {
+          // For external users: show the fully generated website before asking for email
+          // so they have a real incentive to leave their address.
+          if (source === "external" && !!(siteData?.website?.websiteData)) {
+            setContentPhase('complete');
+            setCategoryConfirmed(true);
+            if (previewToken || websiteIdProp) {
+              localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+            }
+          }
           setCurrentStep("email");
           const emailMsg = source === "admin"
             ? "Hallo! 👋 Wir haben deine fertige Website bereits für dich erstellt. Damit du sie aktivieren kannst, brauchen wir zuerst deine **E-Mail-Adresse**."
-            : "Deine Website wurde soeben erstellt! 🎉\n\nGib kurz deine **E-Mail-Adresse** ein – so speichern wir deinen Fortschritt und schicken dir den Link zu deiner fertigen Website.";
+            : "Gefällt dir deine Website? 🎉\n\nGib kurz deine **E-Mail-Adresse** ein – so speichern wir sie für dich und du kannst jederzeit weitermachen.";
           await addBotMessage(emailMsg, 800);
         } else if ((source === "admin" || source === "external") && (business as any)?.category) {
           // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
