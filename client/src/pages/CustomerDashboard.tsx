@@ -2735,7 +2735,7 @@ export default function CustomerDashboard() {
             href="/start"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
           >
-            Website erstellen
+            Website gratis erstellen
           </a>
         </div>
       </div>

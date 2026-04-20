@@ -124,7 +124,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
               className="btn-nav-cta rounded-full px-5 h-10 text-sm font-semibold text-white transition-all duration-300 hover:brightness-110 active:scale-95"
               style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
             >
-              Website erstellen ✦
+              Website gratis erstellen ✦
             </button>
           </div>
 
@@ -170,7 +170,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
                 onClick={() => { setMobileMenuOpen(false); navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`); }}
                 className="bg-white text-black hover:bg-white/90 rounded-full mt-6 h-14 text-lg font-medium"
               >
-                Website erstellen
+                Website gratis erstellen
               </Button>
             </div>
           </motion.div>
@@ -1638,9 +1638,10 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                    className={`btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/20" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/30"}`}
+                    className="btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-all shadow-xl shadow-pink-500/30"
+                    style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
                   >
-                    7 Tage gratis testen
+                    gratis ausprobieren
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <button
@@ -1778,13 +1779,10 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-colors duration-500 ${
-                isDark
-                  ? "bg-white text-black hover:bg-white/90"
-                  : "bg-violet-950 text-white hover:bg-violet-900"
-              }`}
+              className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-all shadow-lg shadow-pink-500/30"
+              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
             >
-              Meine Website erstellen
+              Meine Website gratis erstellen
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
@@ -1805,9 +1803,10 @@ export default function LandingPage() {
           <Button
             size="lg"
             onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-            className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+            className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-all shadow-lg shadow-pink-500/30"
+            style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
           >
-            Website jetzt erstellen
+            Website jetzt gratis erstellen
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
           <p className="text-white/30 text-xs mt-3">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
@@ -2502,9 +2501,10 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className={`btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/10" : "bg-violet-950 text-white hover:bg-violet-900 shadow-xl shadow-violet-950/25"}`}
+              className="btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-all shadow-xl shadow-pink-500/25"
+              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
             >
-              7 Tage gratis testen
+              gratis ausprobieren
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
