@@ -415,7 +415,7 @@ export default function AccountPage() {
                     <div className="text-center py-8">
                       <p className="text-slate-400 mb-4">Du hast noch keine aktive Website.</p>
                       <Button onClick={() => navigate("/start")} className="bg-blue-600 hover:bg-blue-500">
-                        Website erstellen
+                        Website gratis erstellen
                       </Button>
                     </div>
                   ) : (

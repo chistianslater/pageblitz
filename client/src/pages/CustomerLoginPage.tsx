@@ -241,7 +241,7 @@ export default function CustomerLoginPage() {
         >
           Noch kein Kunde?{" "}
           <a href="/start" className="text-indigo-400 hover:text-indigo-300 transition-colors">
-            Website erstellen
+            Website gratis erstellen
           </a>
         </motion.p>
       </div>
