@@ -1,15 +1,37 @@
 import "dotenv/config";
+import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import fs from "fs";
+import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerAdminAuthRoutes } from "./adminAuth";
 import { registerGoogleAuthRoutes } from "./googleAuth";
+import { registerMagicLinkAuthRoutes } from "./magicLinkAuth";
+import { registerChatRoutes } from "./chatRoutes";
+import { registerLandingChatRoutes } from "./landingChatRoutes";
+import { registerBookingRoutes } from "./bookingRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./static";
 import { registerStripeWebhook } from "../stripeWebhook";
+import {
+  SEO_INDUSTRIES,
+  DE_CITIES,
+  generateLandingPageHTML,
+  generateOverviewHTML,
+} from "../seo/landingPages";
+import {
+  buildSitemapXml,
+  buildLocalBusinessSchema,
+  extractCity,
+  escapeHtml,
+} from "../seo/metaInjection";
+import { listActiveWebsites, getWebsiteBySlugWithBusiness, updateOutreachEmail } from "../db";
+import { outreachEmails } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,8 +55,42 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // ── Compression (gzip/brotli) for all text responses ──────────────────────
+  app.use(compression({ threshold: 1024 }));
+
   // Stripe webhook MUST be registered BEFORE express.json() for signature verification
   registerStripeWebhook(app);
+
+  // Resend webhook for outreach email tracking (open/bounce events)
+  app.post("/api/webhooks/resend", express.json(), async (req, res) => {
+    try {
+      const { type, data } = req.body ?? {};
+      if (!type || !data?.email_id) {
+        res.json({ ok: true });
+        return;
+      }
+      const db = await (await import("../db")).getDb();
+      if (db) {
+        if (type === "email.opened" || type === "email.clicked") {
+          await db.update(outreachEmails)
+            .set({ status: "opened" })
+            .where(eq(outreachEmails.resendEmailId, data.email_id));
+        } else if (type === "email.bounced") {
+          await db.update(outreachEmails)
+            .set({ status: "bounced" })
+            .where(eq(outreachEmails.resendEmailId, data.email_id));
+        } else if (type === "email.complained") {
+          await db.update(outreachEmails)
+            .set({ status: "bounced" })
+            .where(eq(outreachEmails.resendEmailId, data.email_id));
+        }
+      }
+    } catch (err) {
+      console.error("[Resend Webhook] Error:", err);
+    }
+    res.json({ ok: true });
+  });
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -44,6 +100,77 @@ async function startServer() {
   registerGoogleAuthRoutes(app);
   // Simple password login for self-hosted admin
   registerAdminAuthRoutes(app);
+  // Passwordless Magic-Link login for customers
+  registerMagicLinkAuthRoutes(app);
+  registerChatRoutes(app);
+  registerLandingChatRoutes(app);
+  registerBookingRoutes(app);
+  // Lifecycle-Email Routes (Extension + Unsubscribe, HMAC-signed)
+  {
+    const {
+      verifyLifecycleToken,
+    } = await import("./lifecycleScheduler");
+    const { extendReservation, unsubscribeEmail } = await import("./lifecycleScheduler");
+
+    const renderInfoPage = (title: string, message: string, cta?: { label: string; href: string }) => `<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · Pageblitz</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; margin: 0; padding: 40px 16px; color: #18181b; }
+  .card { max-width: 520px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 40px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  h1 { font-size: 22px; margin: 0 0 16px 0; }
+  p { font-size: 15px; line-height: 1.6; color: #374151; margin: 0 0 16px 0; }
+  a.cta { display: inline-block; margin-top: 16px; background: #4f46e5; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; }
+  .logo { font-size: 18px; font-weight: 700; color: #4f46e5; margin-bottom: 24px; }
+</style></head><body>
+  <div class="card">
+    <div class="logo">Pageblitz</div>
+    <h1>${title}</h1>
+    <p>${message}</p>
+    ${cta ? `<a class="cta" href="${cta.href}">${cta.label}</a>` : ""}
+  </div>
+</body></html>`;
+
+    app.get("/api/lifecycle/extend", async (req, res) => {
+      const token = (req.query.token as string) || "";
+      const verified = verifyLifecycleToken(token);
+      if (!verified || verified.action !== "extend") {
+        res.status(400).send(renderInfoPage("Link ungültig", "Dieser Verlängerungs-Link ist abgelaufen oder ungültig. Wenn du Hilfe brauchst, antworte einfach auf die letzte Email."));
+        return;
+      }
+      const result = await extendReservation(verified.websiteId);
+      if (!result.success) {
+        res.status(400).send(renderInfoPage("Verlängerung nicht möglich", result.error || "Leider konnte die Reservierung nicht verlängert werden."));
+        return;
+      }
+      const untilDe = result.newReservedUntil?.toLocaleString("de-DE", { dateStyle: "full", timeStyle: "short" }) || "später";
+      const remaining = result.remainingExtensions ?? 0;
+      const remainText = remaining > 0
+        ? `Du kannst die Reservierung bei Bedarf noch ${remaining}× verlängern.`
+        : "Das war deine letzte Verlängerung – bei Fragen: antworte einfach auf die Email.";
+      const { getWebsiteById } = await import("../db");
+      const website = await getWebsiteById(verified.websiteId);
+      const ctaHref = website?.previewToken ? `/preview/${website.previewToken}/onboarding` : "/";
+      res.send(renderInfoPage(
+        "Reservierung verlängert",
+        `Alles klar – dein Website-Entwurf ist jetzt bis <strong>${untilDe}</strong> für dich reserviert. ${remainText}`,
+        { label: "Weiter zu deiner Website", href: ctaHref },
+      ));
+    });
+
+    app.get("/api/lifecycle/unsubscribe", async (req, res) => {
+      const token = (req.query.token as string) || "";
+      const verified = verifyLifecycleToken(token);
+      if (!verified || verified.action !== "unsubscribe") {
+        res.status(400).send(renderInfoPage("Link ungültig", "Dieser Abmelde-Link ist abgelaufen oder ungültig."));
+        return;
+      }
+      await unsubscribeEmail(verified.email);
+      res.send(renderInfoPage(
+        "Abgemeldet",
+        "Du bekommst keine weiteren automatischen Erinnerungen von uns. Falls du doch noch Hilfe brauchst, schreib uns einfach: christian@pageblitz.de",
+      ));
+    });
+  }
   // tRPC API
   app.use(
     "/api/trpc",
@@ -52,6 +179,128 @@ async function startServer() {
       createContext,
     })
   );
+  // ── SEO Routes ─────────────────────────────────────────────────────────────
+  // Must be registered BEFORE the SPA catch-all handler
+
+  // robots.txt
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send(
+      "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\n\nSitemap: https://pageblitz.de/sitemap.xml"
+    );
+  });
+
+  // Dynamic sitemap.xml – includes all active customer websites + landing pages
+  app.get("/sitemap.xml", async (_req, res) => {
+    try {
+      const activeWebsites = await listActiveWebsites();
+      const landingPageUrls = Object.values(SEO_INDUSTRIES).flatMap((ind) => [
+        { loc: `https://pageblitz.de/website-erstellen/${ind.slug}`, priority: "0.8", changefreq: "monthly" },
+        ...DE_CITIES.map((city) => ({
+          loc: `https://pageblitz.de/website-erstellen/${ind.slug}/${city.slug}`,
+          priority: "0.6",
+          changefreq: "monthly",
+        })),
+      ]);
+      const urls = [
+        { loc: "https://pageblitz.de/", priority: "1.0", changefreq: "weekly" },
+        { loc: "https://pageblitz.de/website-erstellen", priority: "0.9", changefreq: "monthly" },
+        ...landingPageUrls,
+        ...activeWebsites.map((w) => ({
+          loc: `https://pageblitz.de/site/${w.slug}`,
+          priority: "0.5",
+          changefreq: "monthly",
+        })),
+      ];
+      res.type("application/xml").send(buildSitemapXml(urls));
+    } catch (err) {
+      console.error("[SEO] sitemap.xml error:", err);
+      res.status(500).send("<!-- sitemap generation error -->");
+    }
+  });
+
+  // Programmatic landing pages – served as full HTML (no JS dependency for crawlers)
+  const LANDING_CACHE = "public, max-age=3600, stale-while-revalidate=86400";
+
+  app.get("/website-erstellen", (_req, res) => {
+    res.setHeader("Cache-Control", LANDING_CACHE);
+    res.type("text/html").send(generateOverviewHTML());
+  });
+
+  app.get("/website-erstellen/:industry", (req, res) => {
+    const ind = SEO_INDUSTRIES[req.params.industry];
+    if (!ind) return res.redirect(301, "/website-erstellen");
+    res.setHeader("Cache-Control", LANDING_CACHE);
+    res.type("text/html").send(generateLandingPageHTML(ind));
+  });
+
+  app.get("/website-erstellen/:industry/:city", (req, res) => {
+    const ind = SEO_INDUSTRIES[req.params.industry];
+    const city = DE_CITIES.find((c) => c.slug === req.params.city);
+    if (!ind) return res.redirect(301, "/website-erstellen");
+    res.setHeader("Cache-Control", LANDING_CACHE);
+    res.type("text/html").send(generateLandingPageHTML(ind, city));
+  });
+
+  // /site/:slug – inject business-specific meta tags into index.html (production only)
+  // In dev mode, Vite handles this route and the SPA works fine without server-side meta
+  if (process.env.NODE_ENV !== "development") {
+    const distPath = path.resolve(import.meta.dirname, "public");
+    const indexHtmlPath = path.resolve(distPath, "index.html");
+
+    const injectMetaTags = async (req: express.Request, res: express.Response) => {
+      try {
+        const slug = req.params.slug;
+        if (!slug || !fs.existsSync(indexHtmlPath)) {
+          return res.sendFile(indexHtmlPath);
+        }
+        const row = await getWebsiteBySlugWithBusiness(slug);
+        if (!row) {
+          return res.sendFile(indexHtmlPath);
+        }
+        const { website, business } = row;
+        const name = business?.name ?? slug;
+        const city = extractCity(business?.address);
+        const websiteData = (website.websiteData as any);
+        const aboutText: string = websiteData?.about?.text ?? websiteData?.hero?.subtitle ?? "";
+        const description = aboutText
+          ? aboutText.slice(0, 155).replace(/\s+\S*$/, "") + (aboutText.length > 155 ? "…" : "")
+          : `Professionelle Website von ${name}${city ? " in " + city : ""}.`;
+
+        const localBusinessSchema = buildLocalBusinessSchema(business, website);
+        const schemaTag = localBusinessSchema
+          ? `<script type="application/ld+json">${localBusinessSchema}</script>`
+          : "";
+
+        const metaTags = `
+    <title>${escapeHtml(name)}${city ? " – " + escapeHtml(city) : ""} | Pageblitz</title>
+    <meta name="description" content="${escapeHtml(description)}">
+    <meta property="og:title" content="${escapeHtml(name)}">
+    <meta property="og:description" content="${escapeHtml(description)}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="de_DE">
+    <link rel="canonical" href="https://pageblitz.de/site/${slug}">
+    ${schemaTag}`;
+
+        const html = fs.readFileSync(indexHtmlPath, "utf-8")
+          // Remove default title, description and canonical so injected ones take sole precedence
+          .replace(/<title>[^<]*<\/title>/, "")
+          .replace(/<meta name="description"[^>]*>/i, "")
+          .replace(/<link rel="canonical"[^>]*>/i, "")
+          .replace("</head>", `${metaTags}\n  </head>`);
+        res.type("text/html").send(html);
+      } catch (err) {
+        console.error("[SEO] meta injection error:", err);
+        if (fs.existsSync(indexHtmlPath)) res.sendFile(indexHtmlPath);
+        else res.status(500).send("Server error");
+      }
+    };
+
+    app.get("/site/:slug", injectMetaTags);
+    app.get("/site/:slug/impressum", injectMetaTags);
+    app.get("/site/:slug/datenschutz", injectMetaTags);
+  }
+  // ── End SEO Routes ──────────────────────────────────────────────────────────
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     const { setupVite } = await import("./vite.js");
@@ -69,6 +318,20 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+
+    // Start automated outreach pipeline scheduler
+    import("../outreachPipeline")
+      .then(({ startPipelineScheduler }) => {
+        startPipelineScheduler();
+      })
+      .catch((e) => console.error("[Pipeline] Failed to start:", e));
+
+    // Start lifecycle-email worker (sendet drip mails + löscht abgelaufene Entwürfe)
+    import("./lifecycleWorker")
+      .then(({ startLifecycleWorker }) => {
+        startLifecycleWorker();
+      })
+      .catch((e) => console.error("[LifecycleWorker] Failed to start:", e));
   });
 }
 

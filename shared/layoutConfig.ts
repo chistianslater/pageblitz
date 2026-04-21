@@ -53,7 +53,7 @@ export const LAYOUT_FONTS: Record<string, LayoutFontConfig> = {
   luxury:   { headlineFont: "Fraunces",           bodyFont: "Outfit",           headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Outfit', 'Inter', sans-serif" },
   warm:     { headlineFont: "Fraunces",           bodyFont: "Instrument Sans",  headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
   natural:  { headlineFont: "Fraunces",           bodyFont: "Instrument Sans",  headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
-  bold:     { headlineFont: "Space Grotesque",    bodyFont: "Plus Jakarta Sans", headlineCss: "'Space Grotesque', sans-serif",           bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
+  bold:     { headlineFont: "Space Grotesk",      bodyFont: "Plus Jakarta Sans", headlineCss: "'Space Grotesk', sans-serif",             bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
   craft:    { headlineFont: "Bricolage Grotesque", bodyFont: "Instrument Sans", headlineCss: "'Bricolage Grotesque', 'Impact', sans-serif", bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
   vibrant:  { headlineFont: "Bricolage Grotesque", bodyFont: "Plus Jakarta Sans", headlineCss: "'Bricolage Grotesque', sans-serif",      bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
   dynamic:  { headlineFont: "Syne",              bodyFont: "Plus Jakarta Sans", headlineCss: "'Syne', Impact, sans-serif",              bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
@@ -61,6 +61,15 @@ export const LAYOUT_FONTS: Record<string, LayoutFontConfig> = {
   modern:   { headlineFont: "Plus Jakarta Sans", bodyFont: "Inter",            headlineCss: "'Plus Jakarta Sans', sans-serif",          bodyCss: "'Inter', system-ui, sans-serif" },
   trust:    { headlineFont: "Instrument Sans",   bodyFont: "Inter",            headlineCss: "'Instrument Sans', 'Inter', sans-serif",   bodyCss: "'Inter', system-ui, sans-serif" },
   clean:    { headlineFont: "Instrument Sans",   bodyFont: "Inter",            headlineCss: "'Instrument Sans', 'Inter', sans-serif",   bodyCss: "'Inter', system-ui, sans-serif" },
+  eden:     { headlineFont: "DM Serif Display",  bodyFont: "DM Sans",          headlineCss: "'DM Serif Display', Georgia, serif",          bodyCss: "'DM Sans', 'Inter', sans-serif" },
+  apex:     { headlineFont: "Bebas Neue",         bodyFont: "Inter",            headlineCss: "'Bebas Neue', Impact, sans-serif",             bodyCss: "'Inter', system-ui, sans-serif" },
+  // New layouts (Phase 6)
+  aurora:   { headlineFont: "Space Grotesk",      bodyFont: "Inter",            headlineCss: "'Space Grotesk', sans-serif",                  bodyCss: "'Inter', system-ui, sans-serif" },
+  nexus:    { headlineFont: "Space Grotesk",      bodyFont: "Plus Jakarta Sans", headlineCss: "'Space Grotesk', sans-serif",                 bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
+  clay:     { headlineFont: "Nunito",             bodyFont: "Outfit",            headlineCss: "'Nunito', 'Varela Round', sans-serif",         bodyCss: "'Outfit', 'Inter', sans-serif" },
+  forge:    { headlineFont: "Cormorant Garamond", bodyFont: "Space Grotesk",     headlineCss: "'Cormorant Garamond', Georgia, serif",         bodyCss: "'Space Grotesk', sans-serif" },
+  pulse:    { headlineFont: "Plus Jakarta Sans",  bodyFont: "Inter",             headlineCss: "'Plus Jakarta Sans', sans-serif",              bodyCss: "'Inter', system-ui, sans-serif" },
+  flux:     { headlineFont: "Syne",               bodyFont: "Inter",             headlineCss: "'Syne', Impact, sans-serif",                   bodyCss: "'Inter', system-ui, sans-serif" },
 };
 
 /** Fallback config used when layoutStyle is unknown */
@@ -179,7 +188,7 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
     colors: withOnColors({
       primary: "#B44D1F",
       secondary: "#3D1A0A",
-      accent: "#C4956A",
+      accent: "#9C6B3A",   // Fixed: darker for better contrast (was #C4956A ~2.8:1, now ~4.6:1)
       background: "#FEFCFA",
       surface: "#F5EDE0",
       text: "#1E1208",
@@ -193,7 +202,7 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
     colors: withOnColors({
       primary: "#967B5C",
       secondary: "#1A1511",
-      accent: "#F0EBE3",
+      accent: "#C9A84C",   // Fixed: Classic gold, clearly visible (was #F0EBE3 near invisible)
       background: "#FDFBF8",
       surface: "#F7F3EE",
       text: "#1A1511",
@@ -205,13 +214,13 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
     label: "Grafitmodern",
     description: "Dunkles Graphit mit elektrischem Akzent – präzise, fokussiert und zeitgemäß.",
     colors: withOnColors({
-      primary: "#bef264",
+      primary: "#a3e635",
       secondary: "#0a0a0a",
       accent: "#ffffff",
       background: "#050505",
       surface: "#121212",
       text: "#ffffff",
-      textLight: "rgba(255,255,255,0.6)"
+      textLight: "rgba(255,255,255,0.75)"
     })
   },
   {
@@ -226,6 +235,119 @@ export const PREDEFINED_COLOR_SCHEMES: { id: string; label: string; description:
       surface: "#f5f5f5",
       text: "#1a1a1a",
       textLight: "#6b7280"
+    })
+  },
+  // ── Phase 7: 8 neue branchenspezifische Schemata ─────────────────────────
+  {
+    id: "health",
+    label: "Medical Blue",
+    description: "Vertrauensbildendes Marineblau mit heilendem Grün – für Ärzte, Therapeuten und Praxen.",
+    colors: withOnColors({
+      primary: "#1E5FAD",   // Medical Blue – WCAG AA ✓
+      secondary: "#0C3D73",
+      accent: "#059669",    // Healing Green
+      background: "#ffffff",
+      surface: "#F0F7FF",
+      text: "#0D1B2A",
+      textLight: "#4B6178"
+    })
+  },
+  {
+    id: "eco",
+    label: "Forest Green",
+    description: "Tiefes Waldgrün mit frischem Lime – für Nachhaltigkeit, Bio und Naturbetriebe.",
+    colors: withOnColors({
+      primary: "#166534",   // Forest Green – WCAG AA ✓
+      secondary: "#14532D",
+      accent: "#65A30D",    // Lime
+      background: "#F0FDF4",
+      surface: "#DCFCE7",
+      text: "#14532D",
+      textLight: "#4D7C5A"
+    })
+  },
+  {
+    id: "tech",
+    label: "Digital Blue",
+    description: "Klares Digitalblau mit elektrischem Indigo – für Software, IT und Tech-Startups.",
+    colors: withOnColors({
+      primary: "#0369A1",   // Digital Blue – WCAG AA ✓
+      secondary: "#0C4A6E",
+      accent: "#4F46E5",    // Electric Indigo
+      background: "#ffffff",
+      surface: "#F0F9FF",
+      text: "#0C1A2E",
+      textLight: "#475569"
+    })
+  },
+  {
+    id: "food",
+    label: "Appetit-Rot",
+    description: "Warmes Appetitrot mit goldenem Orange – für Restaurants, Cafés und Gastronomie.",
+    colors: withOnColors({
+      primary: "#B91C1C",   // Appetit-Rot – WCAG AA ✓
+      secondary: "#7F1D1D",
+      accent: "#D97706",    // Warm Orange
+      background: "#FFFBF5",
+      surface: "#FEF3C7",
+      text: "#1C0A0A",
+      textLight: "#78350F"
+    })
+  },
+  {
+    id: "beauty",
+    label: "Rose Gold",
+    description: "Tiefes Rose mit Champagnergold – für Kosmetik, Mode und Beauty-Dienstleister.",
+    colors: withOnColors({
+      primary: "#9D174D",   // Deep Rose – WCAG AA ✓
+      secondary: "#831843",
+      accent: "#C9A84C",    // Champagne Gold
+      background: "#FFF5F7",
+      surface: "#FCE7EF",
+      text: "#1A0510",
+      textLight: "#6B4050"
+    })
+  },
+  {
+    id: "legal",
+    label: "Charcoal Gold",
+    description: "Tiefes Anthrazit mit traditionellem Gold – für Anwälte, Berater und Kanzleien.",
+    colors: withOnColors({
+      primary: "#1E293B",   // Charcoal – WCAG AA ✓
+      secondary: "#0F172A",
+      accent: "#B45309",    // Traditional Gold
+      background: "#ffffff",
+      surface: "#F8FAFC",
+      text: "#0F172A",
+      textLight: "#475569"
+    })
+  },
+  {
+    id: "creative",
+    label: "Violet Sunset",
+    description: "Tiefes Violett mit leuchtendem Orange – für Designer, Künstler und Kreativagenturen.",
+    colors: withOnColors({
+      primary: "#6D28D9",   // Deep Violet – WCAG AA ✓
+      secondary: "#4C1D95",
+      accent: "#EA580C",    // Sunset Orange
+      background: "#ffffff",
+      surface: "#F5F3FF",
+      text: "#1E0A3A",
+      textLight: "#5B4280"
+    })
+  },
+  {
+    id: "sport",
+    label: "Energy Teal",
+    description: "Dynamisches Orange mit aktivem Türkis – für Fitness-Studios, Yoga und Sport.",
+    colors: withOnColors({
+      primary: "#C2410C",   // Energy Orange – WCAG AA ✓
+      secondary: "#9A3412",
+      accent: "#0D9488",    // Active Teal
+      background: "#ffffff",
+      surface: "#FFF7ED",
+      text: "#1C0A00",
+      textLight: "#7C4A30"
     })
   }
 ];
@@ -370,9 +492,9 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#1a202c",     // Dark background
     surface: "#2d3748",          // Slightly lighter
     text: "#f7fafc",             // Off-white
-    textLight: "rgba(247,250,252,0.6)"
+    textLight: "rgba(247,250,252,0.75)"
   }),
-  
+
   // Deep forest with copper - Premium & Refined
   luxury:   withOnColors({ 
     primary: "#1c1917",      // Rich black
@@ -381,9 +503,9 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#1c1917",     // Dark background
     surface: "#292524",          // Warm dark
     text: "#fafaf9",             // Stone 50
-    textLight: "rgba(250,250,249,0.6)"
+    textLight: "rgba(250,250,249,0.75)"
   }),
-  
+
   // Warm stone with rust accent - Artisan & Crafted
   craft:    withOnColors({ 
     primary: "#78716c",      // Stone 500
@@ -392,9 +514,9 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#1c1917",     // Dark stone
     surface: "#292524",          // Warm dark
     text: "#fafaf9",             // Stone 50
-    textLight: "rgba(250,250,249,0.6)"
+    textLight: "rgba(250,250,249,0.75)"
   }),
-  
+
   // Soft blue-gray with peach - Friendly & Light
   fresh:    withOnColors({ 
     primary: "#64748b",      // Blue-gray
@@ -436,11 +558,11 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: "#0f0a1a",     // Very dark purple
     surface: "#1e1b4b",          // Dark purple
     text: "#fafafa",             // Neutral 50
-    textLight: "rgba(250,250,250,0.6)"
+    textLight: "rgba(250,250,250,0.75)"
   }),
   
   // Olive with warm sand - Organic & Earthy
-  natural:  withOnColors({ 
+  natural:  withOnColors({
     primary: "#57534e",      // Warm gray
     secondary: "#f5f5f4",    // Stone 100
     accent: "#a8a29e",       // Stone 400
@@ -448,6 +570,67 @@ export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
     surface: "#f5f5f4",          // Stone 100
     text: "#292524",             // Stone 800
     textLight: "#78716c"         // Stone 500
+  }),
+  // ── New layout defaults (Phase 6) ────────────────────────────────────────
+  // Aurora: Deep space dark, indigo/cyan
+  aurora:   withOnColors({
+    primary: "#6366f1",      // Indigo
+    secondary: "#4338ca",
+    accent: "#22d3ee",       // Cyan
+    background: "#080812",   // Near-black
+    surface: "rgba(255,255,255,0.06)",
+    text: "#f1f5f9",
+    textLight: "rgba(241,245,249,0.65)"
+  }),
+  // Nexus: Clean white, bold navy
+  nexus:    withOnColors({
+    primary: "#0f172a",      // Deep navy
+    secondary: "#1e293b",
+    accent: "#6366f1",       // Indigo accent
+    background: "#ffffff",
+    surface: "#f8fafc",
+    text: "#0f172a",
+    textLight: "#64748b"
+  }),
+  // Clay: Soft lavender-white, rose pink
+  clay:     withOnColors({
+    primary: "#db2777",      // Pink 600
+    secondary: "#9d174d",
+    accent: "#a78bfa",       // Violet 400
+    background: "#fdf4ff",
+    surface: "#fae8ff",
+    text: "#2d2d44",
+    textLight: "#6b6b8a"
+  }),
+  // Forge: Off-white, near-black, gold
+  forge:    withOnColors({
+    primary: "#0a0a0a",      // Near-black
+    secondary: "#1a1a1a",
+    accent: "#c4a000",       // Antique gold
+    background: "#f8f7f4",   // Warm white
+    surface: "#f0ede8",
+    text: "#0a0a0a",
+    textLight: "#5a5a5a"
+  }),
+  // Pulse: Neumorphic gray, blue/teal
+  pulse:    withOnColors({
+    primary: "#4f86c6",      // Medical blue
+    secondary: "#2563eb",
+    accent: "#5dbb9c",       // Teal
+    background: "#e8ecf0",   // Neumorphic base
+    surface: "#e8ecf0",
+    text: "#2d3748",
+    textLight: "#718096"
+  }),
+  // Flux: Deep dark, warm gold
+  flux:     withOnColors({
+    primary: "#d4a843",      // Warm gold
+    secondary: "#b07d3a",    // Copper
+    accent: "#c9a048",
+    background: "#060608",   // Near-black
+    surface: "#0e0e12",
+    text: "#f5f0e8",
+    textLight: "rgba(245,240,232,0.75)"
   }),
 };
 
@@ -478,4 +661,11 @@ export const LAYOUT_FALLBACK_IMAGES: Record<string, string> = {
   modern:  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=85&fit=crop",
   vibrant: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=85&fit=crop",
   natural: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1600&q=85&fit=crop",
+  // New layouts (Phase 6)
+  aurora:  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=85&fit=crop",
+  nexus:   "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1600&q=85&fit=crop",
+  clay:    "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=1600&q=85&fit=crop",
+  forge:   "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&q=85&fit=crop",
+  pulse:   "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=85&fit=crop",
+  flux:    "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1600&q=85&fit=crop",
 };

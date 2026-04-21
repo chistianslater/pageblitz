@@ -1,0 +1,25 @@
+name: Outreach Auto-Optimizer
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'  # Every Monday 08:00 UTC (weekly, not daily for caution)
+  workflow_dispatch:       # Can be triggered manually
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - name: Run Outreach Optimizer
+        run: npx tsx scripts/outreach-optimizer/orchestrator.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          DRY_RUN: ${{ vars.OUTREACH_DRY_RUN || 'false' }}
+          BATCH_SIZE: ${{ vars.OUTREACH_BATCH_SIZE || '10' }}

@@ -3,17 +3,48 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronLeft, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
+import ContentEditorSplitView from "@/components/ContentEditorSplitView";
+import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
+import { FONT_OPTIONS, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FONTS } from "@shared/layoutConfig";
+
+// ── Layout meta (shared with OnboardingChat variant picker) ──────────────────
+const LAYOUT_LABELS_DASH: Record<string, string> = {
+  aurora: "Aurora",  nexus: "Nexus",    bold: "Bold",    flux: "Flux",    dynamic: "Dynamic",
+  forge: "Forge",    elegant: "Elegant",luxury: "Luxury", natural: "Natural", craft: "Craft",
+  clay: "Clay",      pulse: "Pulse",    fresh: "Fresh",  clean: "Clean",  warm: "Warm",
+  modern: "Modern",  vibrant: "Vibrant",trust: "Trust",
+};
+const LAYOUT_VIBES_DASH: Record<string, string> = {
+  aurora:  "Dunkel · Kosmisch",    nexus:   "Präzise · Navy",        bold:    "Stark · Schwarz-Gold",
+  flux:    "Dunkel · Warmes Gold", dynamic: "Energie · Diagonal",    forge:   "Edel · Zeitlos",
+  elegant: "Warm · Éditoriel",     luxury:  "Premium · Cinématisch", natural: "Organisch · Erdtöne",
+  craft:   "Handwerk · Industrial",clay:    "Soft · Verspielt",      pulse:   "Hell · Vertrauensvoll",
+  fresh:   "Frisch · Luftig",      clean:   "Klar · Minimalistisch", warm:    "Herzlich · Einladend",
+  modern:  "Modern · Asymmetrisch",vibrant: "Neon · Energie",        trust:   "Klassisch · Professionell",
+};
+// All 18 layouts grouped by visual family for the switcher
+const LAYOUT_FAMILIES_DASH = [
+  { label: "Dunkel & Bold",    layouts: ["aurora", "flux", "bold", "dynamic", "nexus", "vibrant"] },
+  { label: "Edel & Klassisch", layouts: ["elegant", "luxury", "natural", "craft", "forge"] },
+  { label: "Hell & Modern",    layouts: ["clean", "fresh", "warm", "trust", "modern", "clay", "pulse"] },
+];
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons";
+type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads" | "appointments" | "settings";
 
 interface SectionConfig {
   type: string;
   headline?: string;
   enabled: boolean;
+}
+
+interface GalleryAlbum {
+  id: string;
+  name: string;
+  images: string[]; // first image = cover
 }
 
 // ── Helpers ───────────────────────────────────────────
@@ -38,10 +69,11 @@ interface EditableFieldProps {
   value: string;
   icon?: React.ReactNode;
   multiline?: boolean;
+  placeholder?: string;
   onSave: (v: string) => Promise<void>;
 }
 
-function EditableField({ label, value, icon, multiline, onSave }: EditableFieldProps) {
+function EditableField({ label, value, icon, multiline, placeholder, onSave }: EditableFieldProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -69,15 +101,17 @@ function EditableField({ label, value, icon, multiline, onSave }: EditableFieldP
         <div className="flex flex-col gap-2">
           {multiline ? (
             <textarea
-              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none resize-none min-h-[80px]"
+              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none resize-none min-h-[80px] placeholder-slate-500"
               value={draft}
+              placeholder={placeholder}
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
             />
           ) : (
             <input
-              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none"
+              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none placeholder-slate-500"
               value={draft}
+              placeholder={placeholder}
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
               onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
@@ -103,7 +137,7 @@ function EditableField({ label, value, icon, multiline, onSave }: EditableFieldP
       ) : (
         <div className="flex items-start gap-2">
           <p className="flex-1 text-sm text-slate-200 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50 min-h-[36px] leading-relaxed">
-            {value || <span className="text-slate-500 italic">Nicht angegeben</span>}
+            {value || <span className="text-slate-500 italic">{placeholder ? `z.B. ${placeholder.slice(0, 60)}${placeholder.length > 60 ? "…" : ""}` : "Nicht angegeben"}</span>}
           </p>
           <button
             onClick={() => { setDraft(value); setEditing(true); }}
@@ -112,6 +146,120 @@ function EditableField({ label, value, icon, multiline, onSave }: EditableFieldP
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── KI-Inhaltseditor ─────────────────────────────────
+interface AiContentEditorProps {
+  websiteId: number;
+  onUpdate: () => void;
+}
+
+interface EditHistoryEntry {
+  message: string;
+  ts: Date;
+}
+
+function AiContentEditor({ websiteId, onUpdate }: AiContentEditorProps) {
+  const [input, setInput] = useState("");
+  const [history, setHistory] = useState<EditHistoryEntry[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const examples = [
+    'Hero-Titel zu "Ihr Spezialist fur..." andern',
+    "Uber-uns-Sektion professioneller schreiben",
+    'Vierten Service "Notdienst" mit Beschreibung hinzufugen',
+    'CTA-Button-Text zu "Jetzt anfragen" andern',
+    "3 neue Kundenstimmen mit Namen und Bewertung schreiben",
+  ];
+
+  const applyMutation = trpc.customer.applyAiEdit.useMutation({
+    onSuccess: () => {
+      setHistory((h) => [{ message: input.trim(), ts: new Date() }, ...h].slice(0, 10));
+      setInput("");
+      onUpdate();
+      toast.success("Änderung übernommen ✓");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Fehler bei der KI-Bearbeitung");
+    },
+  });
+
+  const handleSubmit = () => {
+    const text = input.trim();
+    if (!text || applyMutation.isPending) return;
+    applyMutation.mutate({ websiteId, userMessage: text });
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+      <div>
+        <h2 className="text-white font-semibold flex items-center gap-2">
+          <span className="text-lg">✦</span>
+          KI-Inhaltseditor
+        </h2>
+        <p className="text-slate-400 text-xs mt-0.5">
+          Beschreibe auf Deutsch, was du ändern möchtest – die KI setzt es direkt um.
+        </p>
+      </div>
+
+      {/* Examples */}
+      <div className="flex flex-wrap gap-1.5">
+        {examples.map((ex) => (
+          <button
+            key={ex}
+            onClick={() => { setInput(ex.replace(/„|"/g, "")); textareaRef.current?.focus(); }}
+            className="text-xs px-2.5 py-1 rounded-full bg-slate-700/60 hover:bg-slate-600/60 text-slate-300 hover:text-white border border-slate-600/40 transition-colors text-left"
+          >
+            {ex}
+          </button>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="flex flex-col gap-2">
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(); }}
+          placeholder={'z.B. "Andere den Hero-Titel zu Ihr Friseur in Munchen" oder "Fuge Service Haarverlangerung hinzu"'}
+          rows={3}
+          disabled={applyMutation.isPending}
+          className="w-full bg-slate-700/60 text-white text-sm px-3 py-2.5 rounded-xl border border-slate-600 focus:border-blue-500 outline-none resize-none placeholder-slate-500 disabled:opacity-60"
+        />
+        <div className="flex items-center justify-between">
+          <span className="text-slate-500 text-xs">⌘ + Enter zum Senden</span>
+          <button
+            onClick={handleSubmit}
+            disabled={!input.trim() || applyMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          >
+            {applyMutation.isPending ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Wird angepasst…</>
+            ) : (
+              <><Sparkles className="w-3.5 h-3.5" /> Änderung umsetzen</>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* History */}
+      {history.length > 0 && (
+        <div className="space-y-1.5 border-t border-slate-700/50 pt-3">
+          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Letzte Änderungen</p>
+          {history.map((h, i) => (
+            <div key={i} className="flex items-start gap-2 text-xs text-slate-400">
+              <Check className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="flex-1 line-clamp-1">{h.message}</span>
+              <span className="text-slate-600 flex-shrink-0">
+                {h.ts.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -385,6 +533,7 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
   const [fields, setFields] = useState<FormField[]>(initialFields || defaultFields);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [cfDragIdx, setCfDragIdx] = useState<number | null>(null);
 
   // Update fields when initialFields changes
   useEffect(() => {
@@ -409,9 +558,24 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
     setFields(fields.filter((_, i) => i !== idx));
   };
 
+  const moveField = (idx: number, direction: "up" | "down") => {
+    const newFields = [...fields];
+    const swapWith = direction === "up" ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= newFields.length) return;
+    [newFields[idx], newFields[swapWith]] = [newFields[swapWith], newFields[idx]];
+    setFields(newFields);
+  };
+
   const updateField = (idx: number, updates: Partial<FormField>) => {
     const newFields = [...fields];
-    newFields[idx] = { ...newFields[idx], ...updates };
+    const updated = { ...newFields[idx], ...updates };
+    // When type is changed to "email", auto-set id to "email" so form submission works.
+    // Only do this if no other field already uses id "email".
+    if (updates.type === 'email' && updated.id !== 'email') {
+      const alreadyHasEmail = fields.some((f, i) => i !== idx && f.id === 'email');
+      if (!alreadyHasEmail) updated.id = 'email';
+    }
+    newFields[idx] = updated;
     setFields(newFields);
   };
 
@@ -439,9 +603,27 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
 
       <div className="space-y-3">
         {fields.map((field, idx) => (
-          <div key={field.id} className="bg-slate-800/60 rounded-xl p-4 space-y-3">
+          <div
+            key={field.id}
+            draggable
+            onDragStart={() => setCfDragIdx(idx)}
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (cfDragIdx === null || cfDragIdx === idx) return;
+              const nf = [...fields];
+              const item = nf[cfDragIdx];
+              nf.splice(cfDragIdx, 1);
+              nf.splice(idx, 0, item);
+              setFields(nf);
+              setCfDragIdx(idx);
+            }}
+            onDragEnd={() => setCfDragIdx(null)}
+            className={`rounded-xl p-4 space-y-3 border transition-all cursor-move ${cfDragIdx === idx ? "opacity-50 border-blue-500/50 ring-1 ring-blue-500/20 bg-slate-700/60" : "bg-slate-800/60 border-transparent"}`}
+          >
             <div className="flex items-center gap-2">
-              <span className="text-slate-500 text-xs font-mono">#{idx + 1}</span>
+              <div className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 flex-shrink-0">
+                <GripVertical className="w-4 h-4" />
+              </div>
               <input
                 type="text"
                 value={field.label}
@@ -539,25 +721,44 @@ interface DesignEditorProps {
 }
 
 function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
-  const colorScheme = (website.colorScheme as ColorScheme) || {};
-  const websiteData = (website.websiteData as WebsiteData) || {};
-  const designTokens = websiteData.designTokens || {};
+  // Helper: extract colors from website object
+  const colorsFromWebsite = (w: any) => {
+    const cs = (w.colorScheme as ColorScheme) || {};
+    return {
+      primary:    cs.primary    || "#3B82F6",
+      secondary:  cs.secondary  || "#F1F5F9",
+      accent:     cs.accent     || "#8B5CF6",
+      background: cs.background || "#FFFFFF",
+      text:       cs.text       || "#1E293B",
+    };
+  };
 
-  const [colors, setColors] = useState({
-    primary: colorScheme.primary || "#3B82F6",
-    secondary: colorScheme.secondary || "#F1F5F9",
-    accent: colorScheme.accent || "#8B5CF6",
-    background: colorScheme.background || "#FFFFFF",
-    text: colorScheme.text || "#1E293B",
-  });
+  // Helper: extract fonts – normalize old "text-4xl" headlineSize to "large"/"medium"/"small"
+  const fontsFromWebsite = (w: any) => {
+    const dt = ((w.websiteData as WebsiteData) || {}).designTokens || {};
+    const rawSize = dt.headlineSize || "large";
+    const headlineSize =
+      ["small", "medium", "large"].includes(rawSize) ? rawSize
+      : rawSize === "text-2xl" || rawSize === "text-3xl" ? "small"
+      : rawSize === "text-5xl" || rawSize === "text-6xl" ? "large"
+      : "large";
+    return {
+      headlineFont: (dt.headlineFont as string) || "",  // "" = keep layout default
+      bodyFont:     (dt.bodyFont     as string) || "",
+      headlineSize,
+    };
+  };
 
-  const [fonts, setFonts] = useState({
-    headlineFont: designTokens.headlineFont || "Inter",
-    bodyFont: designTokens.bodyFont || "Inter",
-    headlineSize: designTokens.headlineSize || "text-4xl",
-  });
-
+  const [colors, setColors] = useState(() => colorsFromWebsite(website));
+  const [fonts,  setFonts]  = useState(() => fontsFromWebsite(website));
   const [saving, setSaving] = useState(false);
+
+  // Sync form state whenever website prop changes (after onUpdate / refetch)
+  useEffect(() => {
+    setColors(colorsFromWebsite(website));
+    setFonts(fontsFromWebsite(website));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [website.colorScheme, website.websiteData]);
 
   const updateDesign = trpc.customer.updateDesign.useMutation({
     onSuccess: () => {
@@ -572,13 +773,22 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
     await updateDesign.mutateAsync({
       websiteId,
       colorScheme: colors,
-      designTokens: fonts,
+      // only send font overrides when explicitly set (empty = keep layout default)
+      designTokens: {
+        ...(fonts.headlineFont ? { headlineFont: fonts.headlineFont } : {}),
+        ...(fonts.bodyFont     ? { bodyFont:     fonts.bodyFont     } : {}),
+        headlineSize: fonts.headlineSize,
+      },
     });
     setSaving(false);
   };
 
-  const headlineSizeOptions = ["text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl"];
-  const fontOptions = ["Inter", "Poppins", "Playfair Display", "Roboto", "Open Sans", "Lato", "Montserrat"];
+  const headlineSizeOptions = [
+    { value: "small",  label: "Normal" },
+    { value: "medium", label: "Groß" },
+    { value: "large",  label: "Extra groß" },
+  ];
+  // fontOptions rendered inline via FONT_OPTIONS from layoutConfig
 
   return (
     <div className="space-y-6">
@@ -666,7 +876,13 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, headlineFont: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {fontOptions.map(f => <option key={f} value={f}>{f}</option>)}
+              <option value="">Layout-Standard</option>
+              <optgroup label="── Serifenschriften ──">
+                {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
+              <optgroup label="── Serifenlose ──">
+                {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
             </select>
           </div>
           <div>
@@ -676,7 +892,13 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, bodyFont: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {fontOptions.map(f => <option key={f} value={f}>{f}</option>)}
+              <option value="">Layout-Standard</option>
+              <optgroup label="── Serifenschriften ──">
+                {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
+              <optgroup label="── Serifenlose ──">
+                {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+              </optgroup>
             </select>
           </div>
           <div>
@@ -686,7 +908,7 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               onChange={(e) => setFonts({ ...fonts, headlineSize: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {headlineSizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              {headlineSizeOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </div>
         </div>
@@ -710,9 +932,11 @@ interface AddonsEditorProps {
   website: any;
   onboarding: any;
   onUpdate: () => void;
+  purchasedAddOns: Record<string, boolean>;
+  onGoToTermine: () => void;
 }
 
-function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditorProps) {
+function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOns, onGoToTermine }: AddonsEditorProps) {
   const websiteData = (website.websiteData as WebsiteData) || {};
 
   // Get existing data from website sections
@@ -727,6 +951,8 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     gallery: {
       enabled: onboarding?.addOnGallery || false,
       photos: (existingGallery?.items?.map((item: any) => item.imageUrl || item) || []) as string[],
+      mode: ((existingGallery as any)?.mode || 'single') as 'single' | 'albums',
+      albums: ((existingGallery as any)?.albums || []) as GalleryAlbum[],
     },
     menu: {
       enabled: onboarding?.addOnMenu || false,
@@ -767,9 +993,54 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [expandedAddon, setExpandedAddon] = useState<string | null>(null);
+  const [activeDetail, setActiveDetail] = useState<string | null>(null);
+  const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
+  const [bookingEnabled, setBookingEnabled] = useState<boolean>(!!(website as any).addOnBooking);
+  const [aiChatEnabled, setAiChatEnabled] = useState<boolean>(!!(website as any).addOnAiChat);
+  const [menuDragState, setMenuDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
+  const [priceDragState, setPriceDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
+  // Stable ref — initialized null here, assigned after updateAddons is declared below
+  const updateAddonsRef = useRef<any>(null);
+
+  const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
+    onSuccess: (_, variables) => {
+      const key = variables.addonKey;
+      if (key === "contactForm") {
+        setAddons(prev => ({ ...prev, contactForm: true }));
+      } else {
+        setAddons(prev => ({
+          ...prev,
+          [key]: { ...(prev as any)[key], enabled: true },
+        }));
+      }
+      setConfirmAddon(null);
+      onUpdate();
+      toast.success("Add-on freigeschaltet! 🎉");
+    },
+    onError: (err: any) => {
+      toast.error("Freischalten fehlgeschlagen: " + err.message);
+      setConfirmAddon(null);
+    },
+  });
+
+  const ADDON_LABELS: Record<string, { name: string; icon: string; color: string }> = {
+    gallery:     { name: "Bildergalerie",   icon: "🖼️",  color: "text-pink-300" },
+    menu:        { name: "Speisekarte",     icon: "🍽️",  color: "text-amber-300" },
+    pricelist:   { name: "Preisliste",      icon: "💶",  color: "text-emerald-300" },
+    contactForm: { name: "Kontaktformular", icon: "✉️",  color: "text-blue-300" },
+  };
+
+  const renderAddonLock = (addonKey: "gallery" | "menu" | "pricelist" | "contactForm") => (
+    <button
+      onClick={() => setConfirmAddon(addonKey)}
+      className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex-shrink-0"
+    >
+      <Lock className="w-3 h-3" />
+      Freischalten
+    </button>
+  );
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
 
@@ -786,6 +1057,46 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       toast.error("Speichern fehlgeschlagen");
     },
   });
+  // Keep ref in sync on every render — safe since refs are just mutable containers
+  updateAddonsRef.current = updateAddons;
+
+  // Inline toggle mutations for Booking and AiChat overview rows
+  const saveBookingToggleMutation = trpc.customer.saveBookingSettings.useMutation({
+    onSuccess: () => { onUpdate(); },
+    onError: () => { toast.error("Speichern fehlgeschlagen"); },
+  });
+  const { data: bookingSettingsData } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+
+  const handleBookingToggle = () => {
+    if (!purchasedAddOns["booking"]) { setActiveDetail("booking"); return; }
+    const newVal = !bookingEnabled;
+    setBookingEnabled(newVal);
+    const s = bookingSettingsData?.settings;
+    saveBookingToggleMutation.mutate({
+      websiteId, enabled: newVal,
+      weeklySchedule: (s?.weeklySchedule as any) ?? { mon: { enabled: true, start: "09:00", end: "17:00" }, tue: { enabled: true, start: "09:00", end: "17:00" }, wed: { enabled: true, start: "09:00", end: "17:00" }, thu: { enabled: true, start: "09:00", end: "17:00" }, fri: { enabled: true, start: "09:00", end: "17:00" }, sat: { enabled: false, start: "09:00", end: "12:00" }, sun: { enabled: false, start: "09:00", end: "12:00" } },
+      durationMinutes: s?.durationMinutes ?? 30, bufferMinutes: s?.bufferMinutes ?? 0,
+      advanceDays: s?.advanceDays ?? 30, title: s?.title ?? "Terminbuchung",
+      description: s?.description ?? undefined, notificationEmail: s?.notificationEmail ?? null,
+    });
+  };
+
+  const handleAiChatToggle = () => {
+    if (!purchasedAddOns["aiChat"]) { setActiveDetail("aiChat"); return; }
+    const newVal = !aiChatEnabled;
+    setAiChatEnabled(newVal);
+    updateAddons.mutate({
+      websiteId,
+      addOns: {
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
+        menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
+        pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+        contactForm: addons.contactForm,
+        contactFormFields: addons.contactFormFields,
+        addOnAiChat: newVal,
+      } as any,
+    });
+  };
 
   // Auto-save effect - watches for changes in addons
   useEffect(() => {
@@ -806,10 +1117,10 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     autoSaveTimeoutRef.current = setTimeout(() => {
       setSaveStatus("saving");
       setSaving(true);
-      updateAddons.mutate({
+      updateAddonsRef.current.mutate({
         websiteId,
         addOns: {
-          gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+          gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
           menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
           pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
           contactForm: addons.contactForm,
@@ -829,14 +1140,14 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [addons, websiteId, updateAddons]);
+  }, [addons, websiteId]); // updateAddons intentionally excluded — stable via ref
 
   const handleSave = async () => {
     setSaving(true);
     await updateAddons.mutateAsync({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
         menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
         pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
@@ -857,7 +1168,7 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     await updateAddons.mutateAsync({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
+        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
         menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
         pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
         contactForm: addons.contactForm,
@@ -867,22 +1178,35 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
   };
 
   const toggleAddon = (key: keyof typeof addons) => {
+    // Build the updated addons object immediately so we can save it right away
+    let newAddons: typeof addons;
     if (key === "contactForm") {
-      setAddons({ ...addons, contactForm: !addons.contactForm });
+      newAddons = { ...addons, contactForm: !addons.contactForm };
     } else {
       const newEnabled = !addons[key].enabled;
-      setAddons({
-        ...addons,
-        [key]: { ...addons[key], enabled: newEnabled },
-      });
-      // Auto-expand when enabling
-      if (newEnabled) {
-        setExpandedAddon(key);
-      } else {
-        setExpandedAddon(null);
-      }
+      newAddons = { ...addons, [key]: { ...addons[key], enabled: newEnabled } };
+      // No auto-expand — user navigates to detail via "Einstellungen" button
     }
-    // Auto-save will be triggered by useEffect
+    setAddons(newAddons);
+
+    // Save immediately — do NOT rely on the debounce which gets cancelled on tab-switch
+    setSaveStatus("saving");
+    setSaving(true);
+    updateAddonsRef.current.mutate({
+      websiteId,
+      addOns: {
+        gallery: newAddons.gallery.enabled ? { enabled: true, photos: newAddons.gallery.photos, mode: newAddons.gallery.mode, albums: newAddons.gallery.albums } : { enabled: false },
+        menu: newAddons.menu.enabled ? { enabled: true, categories: newAddons.menu.categories } : { enabled: false },
+        pricelist: newAddons.pricelist.enabled ? { enabled: true, categories: newAddons.pricelist.categories } : { enabled: false },
+        contactForm: newAddons.contactForm,
+        contactFormFields: newAddons.contactFormFields || [
+          { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
+          { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
+          { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
+          { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+        ],
+      },
+    });
   };
 
   // Gallery functions
@@ -922,6 +1246,60 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
       gallery: { ...addons.gallery, photos: addons.gallery.photos.filter((_, i) => i !== idx) },
     });
     // Auto-save will be triggered by useEffect
+  };
+
+  const addAlbumPhoto = async (albumIdx: number, file: File) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
+        if (result?.url) {
+          setAddons(prev => {
+            const albums = [...prev.gallery.albums];
+            albums[albumIdx] = { ...albums[albumIdx], images: [...(albums[albumIdx].images || []), result.url] };
+            return { ...prev, gallery: { ...prev.gallery, albums } };
+          });
+          toast.success("Bild hochgeladen");
+        }
+      } catch (error: any) {
+        toast.error("Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler"));
+      } finally {
+        setUploading(false);
+      }
+    };
+    reader.onerror = () => { toast.error("Fehler beim Lesen der Datei"); setUploading(false); };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAlbumPhoto = (albumIdx: number, photoIdx: number) => {
+    setAddons(prev => {
+      const albums = [...prev.gallery.albums];
+      albums[albumIdx] = { ...albums[albumIdx], images: albums[albumIdx].images.filter((_, i) => i !== photoIdx) };
+      return { ...prev, gallery: { ...prev.gallery, albums } };
+    });
+  };
+
+  const addAlbum = () => {
+    const newAlbum: GalleryAlbum = { id: `album-${Date.now()}`, name: '', images: [] };
+    setAddons(prev => ({ ...prev, gallery: { ...prev.gallery, albums: [...prev.gallery.albums, newAlbum] } }));
+  };
+
+  const removeAlbum = (albumIdx: number) => {
+    setAddons(prev => ({
+      ...prev,
+      gallery: { ...prev.gallery, albums: prev.gallery.albums.filter((_, i) => i !== albumIdx) }
+    }));
+  };
+
+  const updateAlbumName = (albumIdx: number, name: string) => {
+    setAddons(prev => {
+      const albums = [...prev.gallery.albums];
+      albums[albumIdx] = { ...albums[albumIdx], name };
+      return { ...prev, gallery: { ...prev.gallery, albums } };
+    });
   };
 
   // Menu category functions
@@ -972,6 +1350,21 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
   };
 
+  const handleMenuItemDragStart = (catIdx: number, itemIdx: number) => setMenuDragState({ catIdx, itemIdx });
+  const handleMenuItemDragOver = (e: React.DragEvent, catIdx: number, itemIdx: number) => {
+    e.preventDefault();
+    if (!menuDragState || menuDragState.catIdx !== catIdx || menuDragState.itemIdx === itemIdx) return;
+    const newCategories = [...addons.menu.categories];
+    const items = [...(newCategories[catIdx].items || [])];
+    const dragged = items[menuDragState.itemIdx];
+    items.splice(menuDragState.itemIdx, 1);
+    items.splice(itemIdx, 0, dragged);
+    newCategories[catIdx] = { ...newCategories[catIdx], items };
+    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+    setMenuDragState({ catIdx, itemIdx });
+  };
+  const handleMenuItemDragEnd = () => setMenuDragState(null);
+
   // Pricelist category functions
   const addPriceCategory = () => {
     setAddons({
@@ -1020,481 +1413,545 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate }: AddonsEditor
     setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
   };
 
+  const handlePriceItemDragStart = (catIdx: number, itemIdx: number) => setPriceDragState({ catIdx, itemIdx });
+  const handlePriceItemDragOver = (e: React.DragEvent, catIdx: number, itemIdx: number) => {
+    e.preventDefault();
+    if (!priceDragState || priceDragState.catIdx !== catIdx || priceDragState.itemIdx === itemIdx) return;
+    const newCategories = [...addons.pricelist.categories];
+    const items = [...(newCategories[catIdx].items || [])];
+    const dragged = items[priceDragState.itemIdx];
+    items.splice(priceDragState.itemIdx, 1);
+    items.splice(itemIdx, 0, dragged);
+    newCategories[catIdx] = { ...newCategories[catIdx], items };
+    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+    setPriceDragState({ catIdx, itemIdx });
+  };
+  const handlePriceItemDragEnd = () => setPriceDragState(null);
+
+  // ── helper to render a consistent toggle switch ───────────────────────────
+  const Toggle = ({ checked, onChange, color }: { checked: boolean; onChange: () => void; color: string }) => (
+    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
+      <div className={`w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${color}`} />
+    </label>
+  );
+
+  const SaveStatus = () => (
+    <div className="flex items-center gap-1.5 text-xs">
+      {saveStatus === "saving" && <><Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" /><span className="text-amber-400">Speichern…</span></>}
+      {saveStatus === "saved" && lastSaved && <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Gespeichert {lastSaved.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</span></>}
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Section Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-slate-400 text-sm">
-          Aktiviere Features für deine Website. Änderungen werden automatisch gespeichert.
-        </p>
-        {/* Auto-save Status Indicator */}
-        <div className="flex items-center gap-2">
-          {saveStatus === "saving" && (
-            <span className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Wird gespeichert...
-            </span>
-          )}
-          {saveStatus === "saved" && lastSaved && (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full">
-              <Check className="w-3.5 h-3.5" />
-              Gespeichert {lastSaved.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-            </span>
-          )}
-          {saveStatus === "unsaved" && (
-            <span className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-500/10 px-3 py-1.5 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" />
-              Warte auf Eingabe...
-            </span>
-          )}
-          {/* Manual save button for instant save */}
-          <button
-            onClick={() => {
-              if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
-              setSaveStatus("saving");
-              setSaving(true);
-              updateAddons.mutate({
-                websiteId,
-                addOns: {
-                  gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos } : { enabled: false },
-                  menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
-                  pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
-                  contactForm: addons.contactForm,
-                  contactFormFields: addons.contactFormFields || [
-                    { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-                    { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
-                    { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-                    { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
-                  ],
-                },
-              });
-            }}
-            disabled={saving || uploading || saveStatus === "saved"}
-            className="flex items-center gap-1.5 text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-white px-3 py-1.5 rounded-lg transition-colors"
-            title="Jetzt sofort speichern"
-          >
-            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-            {saving ? "Speichern..." : "Jetzt speichern"}
-          </button>
-        </div>
-      </div>
-
-      {/* Gallery */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.gallery.enabled ? (expandedAddon === "gallery" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        {/* Card Header */}
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0">
-              <Image className="w-6 h-6 text-pink-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Bildergalerie</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Präsentiere deine Arbeiten und Projekte in einer ansprechenden Galerie. 
-                {addons.gallery.enabled && addons.gallery.photos.length > 0 && (
-                  <span className="text-pink-400 ml-1">{addons.gallery.photos.length} Bilder hochgeladen</span>
-                )}
-              </p>
-            </div>
-            {/* Toggle Switch */}
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.gallery.enabled}
-                onChange={() => toggleAddon("gallery")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500" />
-            </label>
-          </div>
-        </div>
-
-        {/* Expandable Content */}
-        {addons.gallery.enabled && (
-          <div className="border-t border-slate-700/50">
+    <div className="space-y-4">
+      {/* ── DETAIL VIEW ────────────────────────────────────────────────── */}
+      {activeDetail && (
+        <div className="space-y-5">
+          {/* Back + save status row */}
+          <div className="flex items-center justify-between">
             <button
-              onClick={() => setExpandedAddon(expandedAddon === "gallery" ? null : "gallery")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
+              onClick={() => setActiveDetail(null)}
+              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors group"
             >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "gallery" ? "Weniger anzeigen" : "Bilder verwalten"}
-              </span>
-              {expandedAddon === "gallery" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              Zurück zu Add-ons
             </button>
+            <SaveStatus />
+          </div>
 
-            {expandedAddon === "gallery" && (
-              <div className="p-5 pt-0 space-y-4">
-                {addons.gallery.photos.length > 0 && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {addons.gallery.photos.map((photo, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
-                        <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-                        <button
-                          onClick={() => removeGalleryPhoto(idx)}
-                          className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100"
-                        >
-                          <X className="w-3.5 h-3.5" />
+          {/* Gallery detail */}
+          {activeDetail === "gallery" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center">
+                  <Image className="w-4 h-4 text-pink-400" />
+                </div>
+                Bildergalerie verwalten
+              </h3>
+
+              {/* Mode switcher */}
+              <div className="space-y-2">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Galerie-Typ</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['single', 'albums'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => setAddons(prev => ({ ...prev, gallery: { ...prev.gallery, mode } }))}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
+                        addons.gallery.mode === mode
+                          ? 'bg-pink-600/20 border-pink-500/60 text-white'
+                          : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {mode === 'single' ? (
+                        <>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                          Einzelgalerie
+                        </>
+                      ) : (
+                        <>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="10" rx="1"/><rect x="3" y="16" width="8" height="5" rx="1"/><rect x="13" y="16" width="8" height="5" rx="1"/></svg>
+                          Alben
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Single gallery */}
+              {addons.gallery.mode !== 'albums' && (
+                <div className="space-y-3">
+                  {addons.gallery.photos.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {addons.gallery.photos.map((photo, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
+                          <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
+                          <button onClick={() => removeGalleryPhoto(idx)} className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
+                    <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addGalleryPhoto(file); }} />
+                    <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
+                      {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
+                      <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
+                    </div>
+                  </label>
+                </div>
+              )}
+
+              {/* Album mode */}
+              {addons.gallery.mode === 'albums' && (
+                <div className="space-y-3">
+                  {addons.gallery.albums.map((album, albumIdx) => (
+                    <div key={album.id} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
+                      {/* Album header */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <p className="text-slate-500 text-[10px] font-mono mb-1">Album {albumIdx + 1}</p>
+                          <input
+                            type="text"
+                            value={album.name}
+                            onChange={(e) => updateAlbumName(albumIdx, e.target.value)}
+                            placeholder="z.B. Hochzeiten"
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-pink-500"
+                          />
+                        </div>
+                        <button onClick={() => removeAlbum(albumIdx)} className="mt-5 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                    ))}
-                  </div>
-                )}
-                <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={uploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) addGalleryPhoto(file);
-                    }}
-                  />
-                  <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
-                    {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
-                  </div>
-                  <div className="text-center">
-                    <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
-                    <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
-                  </div>
-                </label>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+                      {/* Cover preview */}
+                      {album.images.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <img src={album.images[0]} alt="Cover" className="w-10 h-10 rounded-lg object-cover border border-slate-600" />
+                          <p className="text-slate-500 text-[10px]">Albumbild: erstes Foto</p>
+                        </div>
+                      )}
+                      {/* Photos grid */}
+                      {album.images.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2">
+                          {album.images.map((photo, photoIdx) => (
+                            <div key={photoIdx} className="relative aspect-square rounded-lg overflow-hidden group bg-slate-700/50">
+                              <img src={photo} alt={`Album ${albumIdx + 1} Foto ${photoIdx + 1}`} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
+                              <button onClick={() => removeAlbumPhoto(albumIdx, photoIdx)} className="absolute top-1 right-1 p-1 rounded-md bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Upload for this album */}
+                      <label className={`flex items-center gap-2 justify-center text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/40 border border-dashed border-slate-600 hover:border-slate-500 rounded-lg px-4 py-3 cursor-pointer transition-all text-xs ${uploading ? "opacity-50" : ""}`}>
+                        <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addAlbumPhoto(albumIdx, file); e.target.value = ""; }} />
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin text-pink-400" /> : <Upload className="w-4 h-4" />}
+                        {uploading ? "Wird hochgeladen..." : "Foto hinzufügen"}
+                      </label>
+                    </div>
+                  ))}
 
-      {/* Menu */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.menu.enabled ? (expandedAddon === "menu" ? "border-amber-500/50 ring-1 ring-amber-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-6 h-6 text-amber-400" />
+                  {/* Add album button */}
+                  <button
+                    onClick={addAlbum}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-pink-500/50 text-sm transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Album hinzufügen
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Speisekarte</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Ideal für Restaurants, Cafés und Bäckereien. Präsentiere deine Gerichte mit Preisen und Beschreibungen.
-                {addons.menu.enabled && (
-                  <span className="text-amber-400 ml-1">
-                    {addons.menu.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Gerichte
-                  </span>
-                )}
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.menu.enabled}
-                onChange={() => toggleAddon("menu")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-500" />
-            </label>
-          </div>
-        </div>
+          )}
 
-        {addons.menu.enabled && (
-          <div className="border-t border-slate-700/50">
-            <button
-              onClick={() => setExpandedAddon(expandedAddon === "menu" ? null : "menu")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "menu" ? "Weniger anzeigen" : "Speisekarte bearbeiten"}
-              </span>
-              {expandedAddon === "menu" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            {expandedAddon === "menu" && (
-              <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
+          {/* Menu detail */}
+          {activeDetail === "menu" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                </div>
+                Speisekarte bearbeiten
+              </h3>
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 {addons.menu.categories.map((category, catIdx) => (
                   <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
-                      <input
-                        type="text"
-                        value={category.name}
-                        onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)}
-                        placeholder="Kategorie Name (z.B. Hauptgerichte)"
-                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500 font-medium"
-                      />
-                      {addons.menu.categories.length > 1 && (
-                        <button
-                          onClick={() => removeMenuCategory(catIdx)}
-                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <input type="text" value={category.name} onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)} placeholder="Kategorie Name (z.B. Hauptgerichte)" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500 font-medium" />
+                      {addons.menu.categories.length > 1 && <button onClick={() => removeMenuCategory(catIdx)} className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>}
                     </div>
-
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
-                        <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                        <div
+                          key={itemIdx}
+                          draggable
+                          onDragStart={() => handleMenuItemDragStart(catIdx, itemIdx)}
+                          onDragOver={(e) => handleMenuItemDragOver(e, catIdx, itemIdx)}
+                          onDragEnd={handleMenuItemDragEnd}
+                          className={`flex gap-2 items-center rounded-lg p-3 border cursor-move transition-all ${menuDragState?.catIdx === catIdx && menuDragState?.itemIdx === itemIdx ? "opacity-50 border-amber-500/50 ring-1 ring-amber-500/20 bg-slate-800/40" : "bg-slate-800/40 border-slate-700/50"}`}
+                        >
+                          <div className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 flex-shrink-0">
+                            <GripVertical className="w-3.5 h-3.5" />
+                          </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={item.name || ""}
-                                onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)}
-                                placeholder="Gerichtname"
-                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
-                              />
-                              <input
-                                type="text"
-                                value={item.price || ""}
-                                onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)}
-                                placeholder="Preis (z.B. 12,90 €)"
-                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
-                              />
+                              <input type="text" value={item.name || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Gerichtname" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
+                              <input type="text" value={item.price || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)} placeholder="Preis (z.B. 12,90 €)" className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
                             </div>
-                            <input
-                              type="text"
-                              value={item.description || ""}
-                              onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)}
-                              placeholder="Beschreibung (optional)"
-                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
-                            />
+                            <input type="text" value={item.description || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
                           </div>
-                          <button
-                            onClick={() => removeMenuItem(catIdx, itemIdx)}
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <button onClick={() => removeMenuItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       ))}
-                      <button
-                        onClick={() => addMenuItem(catIdx)}
-                        className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-2"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Gericht hinzufügen
-                      </button>
+                      <button onClick={() => addMenuItem(catIdx)} className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-1"><Plus className="w-4 h-4" />Gericht hinzufügen</button>
                     </div>
                   </div>
                 ))}
-                <button
-                  onClick={addMenuCategory}
-                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
-                >
-                  <Plus className="w-4 h-4" />
-                  Neue Kategorie hinzufügen
-                </button>
+                <button onClick={addMenuCategory} className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"><Plus className="w-4 h-4" />Neue Kategorie</button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Pricelist */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.pricelist.enabled ? (expandedAddon === "pricelist" ? "border-emerald-500/50 ring-1 ring-emerald-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0">
-              <LayoutGrid className="w-6 h-6 text-emerald-400" />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Preisliste</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Zeige deine Leistungen mit Preisen übersichtlich an. Perfekt für Friseure, Beauty-Studios und Dienstleister.
-                {addons.pricelist.enabled && (
-                  <span className="text-emerald-400 ml-1">
-                    {addons.pricelist.categories.reduce((acc, cat) => acc + (cat.items?.length || 0), 0)} Preise
-                  </span>
-                )}
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.pricelist.enabled}
-                onChange={() => toggleAddon("pricelist")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500" />
-            </label>
-          </div>
-        </div>
+          )}
 
-        {addons.pricelist.enabled && (
-          <div className="border-t border-slate-700/50">
-            <button
-              onClick={() => setExpandedAddon(expandedAddon === "pricelist" ? null : "pricelist")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "pricelist" ? "Weniger anzeigen" : "Preisliste bearbeiten"}
-              </span>
-              {expandedAddon === "pricelist" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            {expandedAddon === "pricelist" && (
-              <div className="p-5 pt-0 space-y-4 max-h-[600px] overflow-y-auto">
+          {/* Pricelist detail */}
+          {activeDetail === "pricelist" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+                  <LayoutGrid className="w-4 h-4 text-emerald-400" />
+                </div>
+                Preisliste bearbeiten
+              </h3>
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 {addons.pricelist.categories.map((category, catIdx) => (
                   <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
-                      <input
-                        type="text"
-                        value={category.name}
-                        onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)}
-                        placeholder="Kategorie Name (z.B. Damen)"
-                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500 font-medium"
-                      />
-                      {addons.pricelist.categories.length > 1 && (
-                        <button
-                          onClick={() => removePriceCategory(catIdx)}
-                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <input type="text" value={category.name} onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)} placeholder="Kategorie Name (z.B. Damen)" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500 font-medium" />
+                      {addons.pricelist.categories.length > 1 && <button onClick={() => removePriceCategory(catIdx)} className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>}
                     </div>
-
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
-                        <div key={itemIdx} className="flex gap-2 items-start bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                        <div
+                          key={itemIdx}
+                          draggable
+                          onDragStart={() => handlePriceItemDragStart(catIdx, itemIdx)}
+                          onDragOver={(e) => handlePriceItemDragOver(e, catIdx, itemIdx)}
+                          onDragEnd={handlePriceItemDragEnd}
+                          className={`flex gap-2 items-center rounded-lg p-3 border cursor-move transition-all ${priceDragState?.catIdx === catIdx && priceDragState?.itemIdx === itemIdx ? "opacity-50 border-emerald-500/50 ring-1 ring-emerald-500/20 bg-slate-800/40" : "bg-slate-800/40 border-slate-700/50"}`}
+                        >
+                          <div className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 flex-shrink-0">
+                            <GripVertical className="w-3.5 h-3.5" />
+                          </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={item.name || ""}
-                                onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)}
-                                placeholder="Leistung"
-                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
-                              />
-                              <input
-                                type="text"
-                                value={item.price || ""}
-                                onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)}
-                                placeholder="Preis"
-                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
-                              />
+                              <input type="text" value={item.name || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Leistung" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
+                              <input type="text" value={item.price || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)} placeholder="Preis" className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
                             </div>
-                            <input
-                              type="text"
-                              value={item.description || ""}
-                              onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)}
-                              placeholder="Beschreibung (optional)"
-                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
-                            />
+                            <input type="text" value={item.description || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
                           </div>
-                          <button
-                            onClick={() => removePriceItem(catIdx, itemIdx)}
-                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <button onClick={() => removePriceItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       ))}
-                      <button
-                        onClick={() => addPriceItem(catIdx)}
-                        className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-2"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Preis hinzufügen
-                      </button>
+                      <button onClick={() => addPriceItem(catIdx)} className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-1"><Plus className="w-4 h-4" />Preis hinzufügen</button>
                     </div>
                   </div>
                 ))}
-                <button
-                  onClick={addPriceCategory}
-                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
-                >
-                  <Plus className="w-4 h-4" />
-                  Neue Kategorie hinzufügen
-                </button>
+                <button onClick={addPriceCategory} className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"><Plus className="w-4 h-4" />Neue Kategorie</button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
 
-      {/* Contact Form */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-300 ${addons.contactForm ? (expandedAddon === "contactForm" ? "border-blue-500/50 ring-1 ring-blue-500/20" : "border-slate-600/50") : "border-slate-700/30 opacity-75"}`}>
-        <div className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-6 h-6 text-blue-400" />
+          {/* ContactForm detail */}
+          {activeDetail === "contactForm" && (
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
+                  <Mail className="w-4 h-4 text-blue-400" />
+                </div>
+                Formularfelder bearbeiten
+              </h3>
+              <ContactFormEditor websiteId={websiteId} initialFields={addons.contactFormFields} onSave={handleSaveContactFormFields} />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-white font-semibold">Kontaktformular</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">
-                  +3,90 €/Mon
-                </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Ermögliche Besuchern, direkt über deine Website Anfragen zu senden. 
-                {addons.contactForm && (
-                  <span className="text-blue-400 ml-1">
-                    {addons.contactFormFields?.length || 4} Felder konfiguriert
-                  </span>
-                )}
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-              <input
-                type="checkbox"
-                checked={addons.contactForm}
-                onChange={() => toggleAddon("contactForm")}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500" />
-            </label>
-          </div>
+          )}
+
+          {/* Booking detail */}
+          {activeDetail === "booking" && (
+            <BookingAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} onGoToTermine={onGoToTermine} purchasedAddOns={purchasedAddOns} />
+          )}
+
+          {/* AiChat detail */}
+          {activeDetail === "aiChat" && (
+            <AiChatAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} purchasedAddOns={purchasedAddOns} />
+          )}
         </div>
+      )}
 
-        {addons.contactForm && (
-          <div className="border-t border-slate-700/50">
-            <button
-              onClick={() => setExpandedAddon(expandedAddon === "contactForm" ? null : "contactForm")}
-              className="w-full flex items-center justify-between p-3 px-5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/30 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                {expandedAddon === "contactForm" ? "Weniger anzeigen" : "Formularfelder bearbeiten"}
-              </span>
-              {expandedAddon === "contactForm" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            {expandedAddon === "contactForm" && (
-              <div className="p-5 pt-2">
-                <ContactFormEditor
-                  websiteId={websiteId}
-                  initialFields={addons.contactFormFields}
-                  onSave={handleSaveContactFormFields}
-                />
-              </div>
-            )}
+      {/* ── OVERVIEW ────────────────────────────────────────────────────── */}
+      {!activeDetail && (
+        <div className="space-y-3">
+          {/* Save status row */}
+          <div className="flex justify-end h-6">
+            <SaveStatus />
           </div>
-        )}
-      </div>
+
+          {/* ── Gallery ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.gallery.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0">
+                <Image className="w-5 h-5 text-pink-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Bildergalerie</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">+3,90 €/Mon</span>
+                  {addons.gallery.enabled && addons.gallery.photos.length > 0 && <span className="text-xs text-pink-400">{addons.gallery.photos.length} Bilder</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Präsentiere deine Arbeiten in einer Galerie.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.gallery.enabled && (
+                  <button onClick={() => setActiveDetail("gallery")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["gallery"] ? (
+                  <button onClick={() => setConfirmAddon("gallery")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.gallery.enabled} onChange={() => toggleAddon("gallery")} color="peer-checked:bg-pink-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Speisekarte ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.menu.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Speisekarte</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">+3,90 €/Mon</span>
+                  {addons.menu.enabled && <span className="text-xs text-amber-400">{addons.menu.categories.reduce((a, c) => a + (c.items?.length || 0), 0)} Gerichte</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Ideal für Restaurants, Cafés und Bäckereien.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.menu.enabled && (
+                  <button onClick={() => setActiveDetail("menu")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["menu"] ? (
+                  <button onClick={() => setConfirmAddon("menu")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.menu.enabled} onChange={() => toggleAddon("menu")} color="peer-checked:bg-amber-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Preisliste ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.pricelist.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0">
+                <LayoutGrid className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Preisliste</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">+3,90 €/Mon</span>
+                  {addons.pricelist.enabled && <span className="text-xs text-emerald-400">{addons.pricelist.categories.reduce((a, c) => a + (c.items?.length || 0), 0)} Preise</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Perfekt für Friseure, Beauty-Studios und Dienstleister.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.pricelist.enabled && (
+                  <button onClick={() => setActiveDetail("pricelist")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["pricelist"] ? (
+                  <button onClick={() => setConfirmAddon("pricelist")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.pricelist.enabled} onChange={() => toggleAddon("pricelist")} color="peer-checked:bg-emerald-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Kontaktformular ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.contactForm ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Kontaktformular</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">+3,90 €/Mon</span>
+                  {addons.contactForm && <span className="text-xs text-blue-400">{addons.contactFormFields?.length || 4} Felder</span>}
+                </div>
+                <p className="text-slate-400 text-xs">Ermögliche Besuchern, direkt Anfragen zu senden.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {addons.contactForm && (
+                  <button onClick={() => setActiveDetail("contactForm")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["contactForm"] ? (
+                  <button onClick={() => setConfirmAddon("contactForm")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={addons.contactForm} onChange={() => toggleAddon("contactForm")} color="peer-checked:bg-blue-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Terminbuchung ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${bookingEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <CalendarDays className="w-5 h-5 text-violet-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">Terminbuchung</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-medium">+4,90 €/Mon</span>
+                </div>
+                <p className="text-slate-400 text-xs">Kunden buchen direkt auf deiner Website einen Termin.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {bookingEnabled && (
+                  <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["booking"] ? (
+                  <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={bookingEnabled} onChange={handleBookingToggle} color="peer-checked:bg-violet-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── KI-Chat ── */}
+          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${aiChatEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+            <div className="p-4 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
+                <MessageSquare className="w-5 h-5 text-fuchsia-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white font-semibold text-sm">KI-Chat</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 font-medium">+9,90 €/Mon</span>
+                </div>
+                <p className="text-slate-400 text-xs">KI beantwortet Kundenfragen & erfasst Leads automatisch.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {aiChatEnabled && (
+                  <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
+                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  </button>
+                )}
+                {!purchasedAddOns["aiChat"] ? (
+                  <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                    <Lock className="w-3 h-3" />Freischalten
+                  </button>
+                ) : (
+                  <Toggle checked={aiChatEnabled} onChange={handleAiChatToggle} color="peer-checked:bg-fuchsia-500" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Team ── */}
+          <TeamAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} purchasedAddOns={purchasedAddOns} />
+
+          {/* ── Purchase confirmation modal ── */}
+          {confirmAddon && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+              <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl">
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                      {ADDON_LABELS[confirmAddon]?.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                      <p className={`text-sm font-medium ${ADDON_LABELS[confirmAddon]?.color}`}>
+                        {ADDON_LABELS[confirmAddon]?.name}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed mb-1">
+                    <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+                  </p>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                    Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+                  </p>
+                  <div className="flex gap-3">
+                    <button onClick={() => setConfirmAddon(null)} disabled={purchaseAddonMutation.isPending} className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50">
+                      Abbrechen
+                    </button>
+                    <button onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: confirmAddon as any })} disabled={purchaseAddonMutation.isPending} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                      {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Wird gebucht…</> : "Jetzt freischalten"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
+// ── Structure Editor ─────────────────────────────────
 // ── Structure Editor ─────────────────────────────────
 interface StructureEditorProps {
   websiteId: number;
@@ -1709,21 +2166,1857 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
   );
 }
 
+// ── Setup Step Chip ───────────────────────────────────
+function StepChip({ done, label, onClick }: { done: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={done ? undefined : onClick}
+      disabled={done}
+      className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+        done
+          ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10 cursor-default"
+          : "border-blue-400/40 text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
+      }`}
+    >
+      {done ? "✓" : "○"} {label}
+    </button>
+  );
+}
+
+// ── Booking / Appointments constants ─────────────────────────────────────────
+const DAY_LABELS: Record<string, string> = { mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa", sun: "So" };
+const DAY_NAMES: Record<string, string> = { mon: "Montag", tue: "Dienstag", wed: "Mittwoch", thu: "Donnerstag", fri: "Freitag", sat: "Samstag", sun: "Sonntag" };
+const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DEFAULT_SCHEDULE = {
+  mon: { enabled: true, start: "09:00", end: "17:00" },
+  tue: { enabled: true, start: "09:00", end: "17:00" },
+  wed: { enabled: true, start: "09:00", end: "17:00" },
+  thu: { enabled: true, start: "09:00", end: "17:00" },
+  fri: { enabled: true, start: "09:00", end: "17:00" },
+  sat: { enabled: false, start: "09:00", end: "12:00" },
+  sun: { enabled: false, start: "09:00", end: "12:00" },
+};
+
+// ── AI Chat Add-on Section ───────────────────────────
+// ── Booking Add-on Section (in Add-ons tab) ────────────
+function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onGoToTermine, purchasedAddOns }: {
+  websiteId: number;
+  website: any;
+  onUpdate: () => void;
+  onGoToTermine: () => void;
+  purchasedAddOns: Record<string, boolean>;
+}) {
+  const [enabled, setEnabled] = useState<boolean>(!!(website as any).addOnBooking);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const isPurchased = !!purchasedAddOns["booking"];
+
+  // Settings form state
+  const [schedule, setSchedule] = useState<Record<string, { enabled: boolean; start: string; end: string }>>(DEFAULT_SCHEDULE);
+  const [duration, setDuration] = useState(30);
+  const [buffer, setBuffer] = useState(0);
+  const [advance, setAdvance] = useState(30);
+  const [bookingTitle, setBookingTitle] = useState("Terminbuchung");
+  const [bookingDescription, setBookingDescription] = useState("");
+  const [notifEmail, setNotifEmail] = useState("");
+
+  const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
+    onSuccess: () => { setConfirmOpen(false); setSaving(false); setEnabled(true); onUpdate(); toast.success("Terminbuchung freigeschaltet!"); },
+    onError: (e: any) => { setSaving(false); toast.error("Fehler: " + e.message); },
+  });
+
+  const saveSettingsMutation = trpc.customer.saveBookingSettings.useMutation({
+    onSuccess: () => { setSaving(false); onUpdate(); toast.success("Terminbuchung gespeichert"); },
+    onError: () => { setSaving(false); toast.error("Speichern fehlgeschlagen"); },
+  });
+
+  const { data: bookingData } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+
+  // Populate settings form from fetched data
+  useEffect(() => {
+    if (bookingData?.settings) {
+      const s = bookingData.settings;
+      if (s.weeklySchedule) setSchedule(s.weeklySchedule as any);
+      if (s.durationMinutes != null) setDuration(s.durationMinutes);
+      if (s.bufferMinutes != null) setBuffer(s.bufferMinutes);
+      if (s.advanceDays != null) setAdvance(s.advanceDays);
+      if (s.title) setBookingTitle(s.title);
+      if (s.description != null) setBookingDescription(s.description ?? "");
+      if (s.notificationEmail != null) setNotifEmail(s.notificationEmail ?? "");
+    }
+  }, [bookingData]);
+
+  const handleToggle = () => {
+    if (!isPurchased) { setConfirmOpen(true); return; }
+    const newVal = !enabled;
+    setEnabled(newVal);
+    setSaving(true);
+    saveSettingsMutation.mutate({
+      websiteId,
+      enabled: newVal,
+      weeklySchedule: schedule as any,
+      durationMinutes: duration,
+      bufferMinutes: buffer,
+      advanceDays: advance,
+      title: bookingTitle,
+      description: bookingDescription || undefined,
+      notificationEmail: notifEmail || null,
+    });
+  };
+
+  const handleSaveSettings = () => {
+    setSaving(true);
+    saveSettingsMutation.mutate({
+      websiteId,
+      enabled,
+      weeklySchedule: schedule as any,
+      durationMinutes: duration,
+      bufferMinutes: buffer,
+      advanceDays: advance,
+      title: bookingTitle,
+      description: bookingDescription || undefined,
+      notificationEmail: notifEmail || null,
+    });
+  };
+
+  return (
+    <>
+      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+        <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
+          <CalendarDays className="w-4 h-4 text-blue-400" />
+          Terminbuchung
+          <span className="ml-auto text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">+4,90 €/Monat</span>
+        </h2>
+
+        {!isPurchased ? (
+          <div className="space-y-4">
+            <div className="text-slate-400 text-xs space-y-1.5">
+              {["Eigenes Buchungssystem – kein externer Account nötig", "Wochenplan mit Uhrzeiten frei konfigurierbar", "Automatische Bestätigungs-E-Mails an Kunden", "Terminübersicht und Absagen im Dashboard"].map(f => (
+                <div key={f} className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">✓</span><span>{f}</span></div>
+              ))}
+            </div>
+            <button
+              onClick={() => setConfirmOpen(true)}
+              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+            >
+              Für 4,90 €/Monat freischalten
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className={`rounded-xl p-4 border transition-all ${enabled ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-white text-sm font-medium">Terminbuchung aktivieren</div>
+                  <div className="text-slate-400 text-xs mt-0.5">Besucher können direkt auf deiner Website Termine buchen</div>
+                </div>
+                <button
+                  onClick={handleToggle}
+                  disabled={saving}
+                  className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
+                >
+                  <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
+                </button>
+              </div>
+              {enabled && (
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <Check className="w-3 h-3 text-emerald-400" />
+                  <span className="text-emerald-400">Aktiviert</span>
+                </div>
+              )}
+            </div>
+
+            {/* Inline settings form — shown when purchased & enabled */}
+            {enabled && (
+              <div className="space-y-5 pt-1">
+                {/* Allgemein */}
+                <div className="space-y-3">
+                  <h3 className="text-white text-sm font-semibold flex items-center gap-2">
+                    <Settings className="w-3.5 h-3.5 text-slate-400" />
+                    Allgemein
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Titel</label>
+                      <input
+                        type="text"
+                        value={bookingTitle}
+                        onChange={e => setBookingTitle(e.target.value)}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                        placeholder="Terminbuchung"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Benachrichtigungs-E-Mail</label>
+                      <input
+                        type="email"
+                        value={notifEmail}
+                        onChange={e => setNotifEmail(e.target.value)}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                        placeholder="du@beispiel.de"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-slate-400 text-xs font-medium block mb-1">Beschreibung (optional)</label>
+                    <textarea
+                      value={bookingDescription}
+                      onChange={e => setBookingDescription(e.target.value)}
+                      rows={2}
+                      className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors resize-none placeholder-slate-500"
+                      placeholder="Kurze Beschreibung für deine Kunden…"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Dauer (Min.)</label>
+                      <select
+                        value={duration}
+                        onChange={e => setDuration(Number(e.target.value))}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      >
+                        {[15, 20, 30, 45, 60, 90, 120].map(v => <option key={v} value={v}>{v} Min.</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Puffer (Min.)</label>
+                      <select
+                        value={buffer}
+                        onChange={e => setBuffer(Number(e.target.value))}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      >
+                        {[0, 5, 10, 15, 20, 30].map(v => <option key={v} value={v}>{v} Min.</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">Vorlauf (Tage)</label>
+                      <select
+                        value={advance}
+                        onChange={e => setAdvance(Number(e.target.value))}
+                        className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      >
+                        {[7, 14, 21, 30, 60, 90].map(v => <option key={v} value={v}>{v} Tage</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Wochenplan */}
+                <div className="space-y-3">
+                  <h3 className="text-white text-sm font-semibold flex items-center gap-2">
+                    <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
+                    Verfügbarkeit
+                  </h3>
+                  <div className="space-y-2">
+                    {DAY_ORDER.map(day => {
+                      const slot = schedule[day] ?? { enabled: false, start: "09:00", end: "17:00" };
+                      return (
+                        <div key={day} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${slot.enabled ? "border-blue-500/30 bg-blue-500/5" : "border-slate-700/40 bg-slate-900/30 opacity-60"}`}>
+                          <button
+                            onClick={() => setSchedule(prev => ({ ...prev, [day]: { ...slot, enabled: !slot.enabled } }))}
+                            className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${slot.enabled ? "bg-blue-500" : "bg-slate-600"}`}
+                          >
+                            <span className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: slot.enabled ? "18px" : "2px" }} />
+                          </button>
+                          <span className="text-slate-300 text-xs font-medium w-6 flex-shrink-0">{DAY_LABELS[day]}</span>
+                          {slot.enabled ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <input
+                                type="time"
+                                value={slot.start}
+                                onChange={e => setSchedule(prev => ({ ...prev, [day]: { ...slot, start: e.target.value } }))}
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs outline-none focus:border-blue-500 transition-colors"
+                              />
+                              <span className="text-slate-500 text-xs">–</span>
+                              <input
+                                type="time"
+                                value={slot.end}
+                                onChange={e => setSchedule(prev => ({ ...prev, [day]: { ...slot, end: e.target.value } }))}
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs outline-none focus:border-blue-500 transition-colors"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 text-xs flex-1">Nicht verfügbar</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={saving || saveSettingsMutation.isPending}
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {(saving || saveSettingsMutation.isPending) ? <><Loader2 className="w-4 h-4 animate-spin" /> Speichern…</> : "Einstellungen speichern"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Kauf-Bestätigung Modal */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">📅</div>
+              <div>
+                <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                <p className="text-blue-400 text-sm font-medium">Terminbuchung</p>
+              </div>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed mb-1">
+              <span className="text-white font-semibold">+4,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+            </p>
+            <p className="text-slate-500 text-xs leading-relaxed mb-6">
+              Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => { setSaving(true); purchaseAddonMutation.mutate({ websiteId, addonKey: "booking" }); }}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── AI Chat Add-on Section ─────────────────────────────
+function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
+  websiteId: number;
+  website: any;
+  onUpdate: () => void;
+  purchasedAddOns: Record<string, boolean>;
+}) {
+  const [aiChat, setAiChat] = useState<boolean>(!!(website as any).addOnAiChat);
+  const [welcomeMsg, setWelcomeMsg] = useState<string>((website as any).chatWelcomeMessage || "");
+  const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const isPurchased = !!purchasedAddOns["aiChat"];
+
+  const usageCount = (website as any).chatUsageCount ?? 0;
+  const usagePct = Math.min(100, Math.round((usageCount / 200) * 100));
+
+  const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
+    onSuccess: () => { setConfirmOpen(false); setSaving(false); setAiChat(true); onUpdate(); toast.success("KI-Chat freigeschaltet!"); },
+    onError: (e: any) => { setSaving(false); toast.error("Fehler: " + e.message); },
+  });
+
+  const updateAddons = trpc.customer.updateAddons.useMutation({
+    onSuccess: () => { setSaving(false); onUpdate(); toast.success("KI-Chat gespeichert"); },
+    onError: () => { setSaving(false); toast.error("Speichern fehlgeschlagen"); },
+  });
+
+  const handleToggle = () => {
+    if (!isPurchased) { setConfirmOpen(true); return; }
+    const newVal = !aiChat;
+    setAiChat(newVal);
+    setSaving(true);
+    // Auto-save toggle immediately so it persists on page reload
+    updateAddons.mutate({
+      websiteId,
+      addOns: { gallery: { enabled: false }, aiChat: newVal, chatWelcomeMessage: welcomeMsg.trim() || undefined },
+    });
+  };
+
+  const handleSave = () => {
+    setSaving(true);
+    updateAddons.mutate({
+      websiteId,
+      addOns: { gallery: { enabled: false }, aiChat, chatWelcomeMessage: welcomeMsg.trim() || undefined },
+    });
+  };
+
+  return (
+    <>
+      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+        <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
+          <MessageSquare className="w-4 h-4 text-violet-400" />
+          KI-Chat Add-on
+          <span className="ml-auto text-xs bg-violet-600/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">+9,90 €/Monat</span>
+        </h2>
+
+        {!isPurchased ? (
+          <div className="space-y-4">
+            <div className="text-slate-400 text-xs space-y-1.5">
+              {["KI beantwortet Kundenfragen automatisch rund um die Uhr", "Lead-Erfassung: Name + Kontakt werden direkt gespeichert", "Proaktive Ansprache nach 8 Sekunden auf der Website", "200 Gespräche/Monat inklusive"].map(f => (
+                <div key={f} className="flex items-start gap-2"><span className="text-violet-400 mt-0.5">✓</span><span>{f}</span></div>
+              ))}
+            </div>
+            <button
+              onClick={() => setConfirmOpen(true)}
+              className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors"
+            >
+              Für 9,90 €/Monat freischalten
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className={`rounded-xl p-4 border transition-all mb-4 ${aiChat ? "border-violet-500/40 bg-violet-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <div className="text-white text-sm font-medium">KI-Chat aktivieren</div>
+                  <div className="text-slate-400 text-xs mt-0.5">Chat-Widget erscheint auf deiner Website</div>
+                </div>
+                <button
+                  onClick={handleToggle}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${aiChat ? "bg-violet-500" : "bg-slate-600"}`}
+                >
+                  <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: aiChat ? "22px" : "2px" }} />
+                </button>
+              </div>
+              {aiChat && (
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                    <span>Gespräche diesen Monat</span>
+                    <span className={usagePct >= 80 ? "text-orange-400" : "text-slate-400"}>{usageCount} / 200</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-1.5">
+                    <div className={`h-1.5 rounded-full transition-all ${usagePct >= 80 ? "bg-orange-400" : "bg-violet-500"}`} style={{ width: `${usagePct}%` }} />
+                  </div>
+                </div>
+              )}
+            </div>
+            {aiChat && (
+              <div className="mb-5">
+                <label className="text-slate-300 text-sm font-medium block mb-1.5">
+                  Begrüßungsnachricht <span className="text-slate-500 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={welcomeMsg}
+                  onChange={e => setWelcomeMsg(e.target.value)}
+                  placeholder="Hallo! Ich bin der Assistent – wie kann ich dir helfen?"
+                  maxLength={256}
+                  className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                />
+              </div>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              KI-Chat speichern
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Kauf-Bestätigung Modal */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-lg flex-shrink-0">💬</div>
+              <div>
+                <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                <p className="text-violet-400 text-sm font-medium">KI-Chat</p>
+              </div>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed mb-1">
+              <span className="text-white font-semibold">+9,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+            </p>
+            <p className="text-slate-500 text-xs leading-relaxed mb-6">
+              Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => { setSaving(true); purchaseAddonMutation.mutate({ websiteId, addonKey: "aiChat" }); }}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Team Add-on Section ────────────────────────────────
+interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  photo?: string;
+  email?: string;
+  phone?: string;
+  bio?: string;
+}
+
+function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
+  websiteId: number;
+  website: any;
+  onUpdate: () => void;
+  purchasedAddOns: Record<string, boolean>;
+}) {
+  const isPurchased = !!purchasedAddOns["team"];
+  const { data: teamData, refetch: refetchTeam } = trpc.customer.getTeamMembers.useQuery({ websiteId }, { enabled: isPurchased });
+  const [enabled, setEnabled] = useState<boolean>(!!(website as any).addOnTeam);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploadingIdx] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
+  const saveTeamMutation = trpc.customer.saveTeamMembers.useMutation({
+    onSuccess: () => { setSaving(false); setDirty(false); onUpdate(); refetchTeam(); toast.success("Team gespeichert"); },
+    onError: (e: any) => { setSaving(false); toast.error("Fehler: " + e.message); },
+  });
+  const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
+    onSuccess: () => { setConfirmOpen(false); onUpdate(); toast.success("Team Add-on freigeschaltet! 🎉"); },
+    onError: (e: any) => { toast.error("Fehler: " + e.message); },
+  });
+
+  // Sync remote data into local state once loaded
+  useEffect(() => {
+    if (teamData) {
+      setEnabled(teamData.enabled);
+      setMembers((teamData.members as TeamMember[]) || []);
+    }
+  }, [teamData]);
+
+  const handleToggle = () => {
+    if (!isPurchased) { setConfirmOpen(true); return; }
+    const newVal = !enabled;
+    setEnabled(newVal);
+    saveTeamMutation.mutate({ websiteId, enabled: newVal, members });
+  };
+
+  const addMember = () => {
+    const newMember: TeamMember = { id: Math.random().toString(36).slice(2), name: "", role: "" };
+    setMembers(prev => [...prev, newMember]);
+    setDirty(true);
+  };
+
+  const updateMember = (id: string, field: keyof TeamMember, value: string) => {
+    setMembers(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
+    setDirty(true);
+  };
+
+  const removeMember = (id: string) => {
+    setMembers(prev => prev.filter(m => m.id !== id));
+    setDirty(true);
+  };
+
+  const handlePhotoUpload = async (memberId: string, file: File) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    setUploadingIdx(memberId);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
+        if (result?.url) {
+          setMembers(prev => prev.map(m => m.id === memberId ? { ...m, photo: result.url } : m));
+          setDirty(true);
+          toast.success("Foto hochgeladen");
+        }
+      } catch (err: any) {
+        toast.error("Upload fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
+      } finally {
+        setUploadingIdx(null);
+      }
+    };
+    reader.onerror = () => { toast.error("Fehler beim Lesen der Datei"); setUploadingIdx(null); };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = () => {
+    setSaving(true);
+    saveTeamMutation.mutate({ websiteId, enabled, members });
+  };
+
+  // Overview row (inside AddonsEditor) — rendered inline
+  return (
+    <>
+      {/* Overview row */}
+      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+        <div className="p-4 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-sky-500/20 flex items-center justify-center flex-shrink-0">
+            <Users className="w-5 h-5 text-cyan-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-white font-semibold text-sm">Team</span>
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-medium">+3,90 €/Mon</span>
+              {enabled && members.length > 0 && <span className="text-xs text-cyan-400">{members.length} {members.length === 1 ? "Person" : "Personen"}</span>}
+            </div>
+            <p className="text-slate-400 text-xs">Stell dein Team mit Foto, Rolle und Kontakt vor.</p>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {!isPurchased ? (
+              <button onClick={() => setConfirmOpen(true)} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
+                <Lock className="w-3 h-3" />Freischalten
+              </button>
+            ) : (
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input type="checkbox" checked={enabled} onChange={handleToggle} className="sr-only peer" />
+                <div className="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500" />
+              </label>
+            )}
+          </div>
+        </div>
+
+        {/* Inline management UI when enabled */}
+        {isPurchased && enabled && (
+          <div className="px-4 pb-4 space-y-4 border-t border-slate-700/40 pt-4">
+            {members.length > 0 && (
+              <div className="space-y-3">
+                {members.map((m) => (
+                  <div key={m.id} className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/30 space-y-3">
+                    <div className="flex items-start gap-3">
+                      {/* Photo */}
+                      <label className="relative flex-shrink-0 cursor-pointer group">
+                        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-slate-600 bg-slate-700/60 flex items-center justify-center">
+                          {uploading === m.id ? (
+                            <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
+                          ) : m.photo ? (
+                            <img src={m.photo} className="w-full h-full object-cover" alt={m.name} />
+                          ) : (
+                            <span className="text-xl font-bold text-slate-400">{m.name?.charAt(0)?.toUpperCase() || "?"}</span>
+                          )}
+                        </div>
+                        <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Upload className="w-4 h-4 text-white" />
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploading === m.id}
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(m.id, f); }}
+                        />
+                      </label>
+                      {/* Name + Role */}
+                      <div className="flex-1 grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={m.name}
+                          onChange={(e) => updateMember(m.id, "name", e.target.value)}
+                          placeholder="Name *"
+                          className="col-span-2 sm:col-span-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <input
+                          type="text"
+                          value={m.role}
+                          onChange={(e) => updateMember(m.id, "role", e.target.value)}
+                          placeholder="Position / Rolle *"
+                          className="col-span-2 sm:col-span-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <input
+                          type="email"
+                          value={m.email || ""}
+                          onChange={(e) => updateMember(m.id, "email", e.target.value)}
+                          placeholder="E-Mail (optional)"
+                          className="bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <input
+                          type="tel"
+                          value={m.phone || ""}
+                          onChange={(e) => updateMember(m.id, "phone", e.target.value)}
+                          placeholder="Telefon (optional)"
+                          className="bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
+                        />
+                        <textarea
+                          value={m.bio || ""}
+                          onChange={(e) => updateMember(m.id, "bio", e.target.value.slice(0, 150))}
+                          placeholder="Kurzbio (optional, max. 150 Zeichen)"
+                          rows={2}
+                          maxLength={150}
+                          className="col-span-2 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500 resize-none"
+                        />
+                      </div>
+                      <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0 mt-0.5">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={addMember}
+                className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors py-2 px-4 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-lg border border-dashed border-cyan-500/30"
+              >
+                <Plus className="w-4 h-4" />Mitglied hinzufügen
+              </button>
+              {dirty && (
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Speichern
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Purchase confirmation modal */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-lg flex-shrink-0">👥</div>
+              <div>
+                <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                <p className="text-cyan-400 text-sm font-medium">Team</p>
+              </div>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed mb-1">
+              <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+            </p>
+            <p className="text-slate-500 text-xs leading-relaxed mb-6">
+              Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: "team" })}
+                disabled={purchaseAddonMutation.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Layout Switcher Card ───────────────────────────────
+function LayoutSwitcherCard({ websiteId, currentLayout, onUpdate }: {
+  websiteId: number;
+  currentLayout: string;
+  onUpdate: () => void;
+}) {
+  const [selected, setSelected] = useState(currentLayout);
+  const [saving, setSaving] = useState(false);
+  const changeLayout = trpc.customer.changeLayout.useMutation();
+  const isDirty = selected !== currentLayout;
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await changeLayout.mutateAsync({ websiteId, layoutStyle: selected });
+      toast.success("Layout gespeichert");
+      onUpdate();
+    } catch {
+      toast.error("Fehler beim Speichern");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-white font-medium flex items-center gap-2">
+          <Layers className="w-4 h-4 text-violet-400" />
+          Layout
+        </h3>
+        {isDirty && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold transition-colors"
+          >
+            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+            Speichern
+          </button>
+        )}
+      </div>
+
+      {/* Currently active */}
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-700/40 border border-slate-600/50">
+        <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+        <span className="text-white text-sm font-medium">{LAYOUT_LABELS_DASH[selected] ?? selected}</span>
+        <span className="text-slate-400 text-xs ml-1">{LAYOUT_VIBES_DASH[selected]}</span>
+      </div>
+
+      {/* Family groups */}
+      <div className="space-y-3">
+        {LAYOUT_FAMILIES_DASH.map(fam => (
+          <div key={fam.label}>
+            <div className="text-slate-500 text-[10px] uppercase tracking-widest font-semibold mb-1.5">{fam.label}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {fam.layouts.map(ls => (
+                <button
+                  key={ls}
+                  onClick={() => setSelected(ls)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selected === ls
+                      ? "bg-blue-600 text-white ring-2 ring-blue-400/50"
+                      : "bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50"
+                  }`}
+                >
+                  {LAYOUT_LABELS_DASH[ls] ?? ls}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-slate-500 text-[11px] leading-relaxed">
+        Farben, Schriften & Stil bleiben erhalten. Nur die Struktur ändert sich.
+      </p>
+    </div>
+  );
+}
+
+// ── Design Studio (split-view: live preview + design controls) ────────────
+function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, business, onUpdate, setImagePicker }: {
+  website: any;
+  websiteData: any;
+  heroImageUrl?: string;
+  aboutImageUrl?: string;
+  business?: any;
+  onUpdate: () => void;
+  setImagePicker: (v: { slot: "hero" | "about"; websiteId: number }) => void;
+}) {
+  // ── Draft state (live preview, not yet saved) ──────────────────────────
+  const savedLayout = (website as any).layoutStyle || "modern";
+  const savedColors = (website.colorScheme as any) || {};
+  const savedTokens = ((websiteData as any)?.designTokens) || {};
+
+  const [draftLayout, setDraftLayout] = useState<string>(savedLayout);
+  const [draftColors, setDraftColors] = useState<Record<string, string>>({
+    primary:    savedColors.primary    || "#3B82F6",
+    secondary:  savedColors.secondary  || "#F1F5F9",
+    accent:     savedColors.accent     || "#8B5CF6",
+    background: savedColors.background || "#FFFFFF",
+    text:       savedColors.text       || "#1E293B",
+  });
+  const [draftFonts, setDraftFonts] = useState({
+    headlineFont: savedTokens.headlineFont || "",
+    bodyFont:     savedTokens.bodyFont     || "",
+    headlineSize: savedTokens.headlineSize || "large",
+  });
+  const [openSection, setOpenSection] = useState<string>("layout");
+
+  // Sync when website changes after save
+  useEffect(() => {
+    setDraftLayout((website as any).layoutStyle || "modern");
+    const cs = (website.colorScheme as any) || {};
+    setDraftColors({
+      primary:    cs.primary    || "#3B82F6",
+      secondary:  cs.secondary  || "#F1F5F9",
+      accent:     cs.accent     || "#8B5CF6",
+      background: cs.background || "#FFFFFF",
+      text:       cs.text       || "#1E293B",
+    });
+    const dt = ((websiteData as any)?.designTokens) || {};
+    setDraftFonts({ headlineFont: dt.headlineFont || "", bodyFont: dt.bodyFont || "", headlineSize: dt.headlineSize || "large" });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [website.colorScheme, website.layoutStyle, websiteData?.designTokens]);
+
+  const isDirty = draftLayout !== savedLayout
+    || JSON.stringify(draftColors) !== JSON.stringify({ primary: savedColors.primary || "#3B82F6", secondary: savedColors.secondary || "#F1F5F9", accent: savedColors.accent || "#8B5CF6", background: savedColors.background || "#FFFFFF", text: savedColors.text || "#1E293B" })
+    || JSON.stringify(draftFonts) !== JSON.stringify({ headlineFont: savedTokens.headlineFont || "", bodyFont: savedTokens.bodyFont || "", headlineSize: savedTokens.headlineSize || "large" });
+
+  // ── Scale for live preview ─────────────────────────────────────────────
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(0.45);
+  useEffect(() => {
+    const el = previewContainerRef.current;
+    if (!el) return;
+    const update = () => setPreviewScale(el.clientWidth / 1280);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // ── Mutations ──────────────────────────────────────────────────────────
+  const changeLayout  = trpc.customer.changeLayout.useMutation();
+  const updateDesign  = trpc.customer.updateDesign.useMutation();
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (draftLayout !== savedLayout) {
+        await changeLayout.mutateAsync({ websiteId: website.id, layoutStyle: draftLayout });
+      }
+      await updateDesign.mutateAsync({
+        websiteId: website.id,
+        colorScheme: draftColors as any,
+        designTokens: {
+          ...(draftFonts.headlineFont ? { headlineFont: draftFonts.headlineFont } : {}),
+          ...(draftFonts.bodyFont     ? { bodyFont:     draftFonts.bodyFont }     : {}),
+          headlineSize: draftFonts.headlineSize,
+        },
+      });
+      toast.success("Design gespeichert");
+      onUpdate();
+    } catch {
+      toast.error("Fehler beim Speichern");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    setDraftLayout(savedLayout);
+    setDraftColors({ primary: savedColors.primary || "#3B82F6", secondary: savedColors.secondary || "#F1F5F9", accent: savedColors.accent || "#8B5CF6", background: savedColors.background || "#FFFFFF", text: savedColors.text || "#1E293B" });
+    setDraftFonts({ headlineFont: savedTokens.headlineFont || "", bodyFont: savedTokens.bodyFont || "", headlineSize: savedTokens.headlineSize || "large" });
+  };
+
+  // ── Color preset palettes (derived from color schemes of all 18 layouts) ──
+  const COLOR_PRESETS = Object.entries(DEFAULT_LAYOUT_COLOR_SCHEMES).map(([key, cs]) => ({
+    key,
+    label: LAYOUT_LABELS_DASH[key] ?? key,
+    primary: (cs as any).primary,
+    accent: (cs as any).accent,
+    background: (cs as any).background,
+  }));
+
+  // ── Section accordion helper ───────────────────────────────────────────
+  const Section = ({ id, icon, title, children }: { id: string; icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+    <div className="border border-slate-700/50 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpenSection(s => s === id ? "" : id)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/60 hover:bg-slate-800 transition-colors text-left"
+      >
+        <span className="flex items-center gap-2 text-white text-sm font-medium">{icon}{title}</span>
+        <svg className={`w-4 h-4 text-slate-400 transition-transform ${openSection === id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {openSection === id && <div className="px-4 py-4 bg-slate-900/60 space-y-3">{children}</div>}
+    </div>
+  );
+
+  return (
+    <div className="flex h-[calc(100vh-220px)] min-h-[500px] rounded-2xl border border-slate-700/50 overflow-hidden">
+
+      {/* ── LEFT: Live preview ─────────────────────────────────────────── */}
+      <div ref={previewContainerRef} className="flex-1 min-w-0 bg-slate-950 overflow-y-auto relative">
+        <div style={{ zoom: previewScale, pointerEvents: "none", userSelect: "none" }}>
+          <WebsiteRenderer
+            websiteData={websiteData}
+            colorScheme={draftColors as any}
+            heroImageUrl={heroImageUrl}
+            aboutImageUrl={aboutImageUrl}
+            layoutStyle={draftLayout}
+            headlineSize={draftFonts.headlineSize as any}
+            headlineFontOverride={draftFonts.headlineFont || undefined}
+            businessPhone={business?.phone || undefined}
+            businessAddress={business?.address || undefined}
+            businessEmail={business?.email || undefined}
+            slug={website.slug}
+            isLoading={false}
+            contactFormLocked={false}
+          />
+        </div>
+        {/* Draft indicator — bottom so it doesn't cover the nav */}
+        {isDirty && (
+          <div className="sticky bottom-4 flex justify-center pointer-events-none">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium backdrop-blur-sm">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Vorschau — noch nicht gespeichert
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── DIVIDER ──────────────────────────────────────────────────────── */}
+      <div className="w-px bg-slate-700/50 flex-shrink-0" />
+
+      {/* ── RIGHT: Design controls ───────────────────────────────────────── */}
+      <div className="w-72 xl:w-80 flex-shrink-0 bg-slate-900 flex flex-col">
+
+        {/* Sticky header */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-700/50 bg-slate-900">
+          <span className="text-white font-semibold text-sm flex items-center gap-2">
+            <Palette className="w-4 h-4 text-blue-400" />
+            Design
+          </span>
+          <div className="flex items-center gap-2">
+            {isDirty && (
+              <button onClick={handleDiscard} className="text-slate-400 hover:text-white text-xs transition-colors">Verwerfen</button>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={saving || !isDirty}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
+            >
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              Speichern
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable sections */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+
+          {/* ── LAYOUT ── */}
+          <Section id="layout" icon={<Layers className="w-4 h-4 text-blue-400" />} title="Layout">
+            {LAYOUT_FAMILIES_DASH.map(fam => (
+              <div key={fam.label}>
+                <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">{fam.label}</div>
+                <div className="grid grid-cols-3 gap-1.5 mb-3">
+                  {fam.layouts.map(ls => (
+                    <button
+                      key={ls}
+                      type="button"
+                      onClick={() => setDraftLayout(ls)}
+                      className={`py-2 px-1 rounded-lg text-xs font-medium transition-all text-center ${
+                        draftLayout === ls
+                          ? "bg-blue-600 text-white ring-1 ring-blue-400/50"
+                          : "bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/50"
+                      }`}
+                    >
+                      {LAYOUT_LABELS_DASH[ls] ?? ls}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </Section>
+
+          {/* ── FARBEN ── */}
+          <Section id="farben" icon={<Palette className="w-4 h-4 text-pink-400" />} title="Farben">
+            {/* Quick presets */}
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Schnell-Paletten</div>
+              <div className="flex flex-wrap gap-2">
+                {COLOR_PRESETS.map(p => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    title={p.label}
+                    onClick={() => {
+                      const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as any)[p.key] || {};
+                      setDraftColors({
+                        primary:    cs.primary    || draftColors.primary,
+                        secondary:  cs.secondary  || draftColors.secondary,
+                        accent:     cs.accent     || draftColors.accent,
+                        background: cs.background || draftColors.background,
+                        text:       cs.text       || draftColors.text,
+                      });
+                    }}
+                    className="flex gap-0.5 rounded-md overflow-hidden ring-1 ring-slate-600/50 hover:ring-blue-400/50 transition-all"
+                  >
+                    <div style={{ width: 14, height: 22, background: p.primary }} />
+                    <div style={{ width: 14, height: 22, background: p.accent }} />
+                    <div style={{ width: 14, height: 22, background: p.background }} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Individual pickers */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {[
+                { key: "primary",    label: "Primär" },
+                { key: "accent",     label: "Akzent" },
+                { key: "background", label: "Hintergrund" },
+                { key: "text",       label: "Text" },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center gap-2 bg-slate-800/60 rounded-lg px-2.5 py-2">
+                  <input
+                    type="color"
+                    value={(draftColors as any)[key] || "#000000"}
+                    onChange={e => setDraftColors(c => ({ ...c, [key]: e.target.value }))}
+                    className="w-7 h-7 rounded cursor-pointer border-0 p-0 flex-shrink-0"
+                  />
+                  <div>
+                    <div className="text-[10px] text-slate-400">{label}</div>
+                    <div className="text-[10px] text-slate-500 font-mono">{(draftColors as any)[key]}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* ── SCHRIFTEN ── */}
+          <Section id="schriften" icon={<Type className="w-4 h-4 text-violet-400" />} title="Schriften">
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-slate-400 mb-1.5 block">Überschriften</label>
+                <select
+                  value={draftFonts.headlineFont}
+                  onChange={e => setDraftFonts(f => ({ ...f, headlineFont: e.target.value }))}
+                  className="w-full bg-slate-800/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 outline-none focus:border-blue-500"
+                >
+                  <option value="">Layout-Standard</option>
+                  <optgroup label="── Serifenschriften ──">
+                    {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                  <optgroup label="── Serifenlose ──">
+                    {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1.5 block">Fließtext</label>
+                <select
+                  value={draftFonts.bodyFont}
+                  onChange={e => setDraftFonts(f => ({ ...f, bodyFont: e.target.value }))}
+                  className="w-full bg-slate-800/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 outline-none focus:border-blue-500"
+                >
+                  <option value="">Layout-Standard</option>
+                  <optgroup label="── Serifenschriften ──">
+                    {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                  <optgroup label="── Serifenlose ──">
+                    {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                  </optgroup>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1.5 block">Schriftgröße Überschriften</label>
+                <div className="flex gap-2">
+                  {[{ v: "small", l: "Normal" }, { v: "medium", l: "Groß" }, { v: "large", l: "Sehr groß" }].map(({ v, l }) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setDraftFonts(f => ({ ...f, headlineSize: v }))}
+                      className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                        draftFonts.headlineSize === v
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-800/60 text-slate-300 hover:bg-slate-700 border border-slate-700/50"
+                      }`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          {/* ── LOGO ── */}
+          <Section id="logo" icon={<Upload className="w-4 h-4 text-emerald-400" />} title="Logo">
+            <LogoUploadCard websiteId={website.id} logoUrl={(websiteData as any)?.logoImageUrl} onUpdate={onUpdate} />
+          </Section>
+
+          {/* ── BILDER ── */}
+          <Section id="bilder" icon={<Image className="w-4 h-4 text-orange-400" />} title="Bilder">
+            <div className="space-y-3">
+              {/* Hero */}
+              <div>
+                <div className="text-xs text-slate-400 mb-1.5">Hauptbild</div>
+                <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-800/60 border border-slate-700/50">
+                  {heroImageUrl
+                    ? <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
+                    : <div className="flex items-center justify-center h-full"><Image className="w-6 h-6 text-slate-600" /></div>
+                  }
+                </div>
+                <button
+                  onClick={() => setImagePicker({ slot: "hero", websiteId: website.id })}
+                  className="mt-2 w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Bild ändern
+                </button>
+              </div>
+              {/* About */}
+              <div>
+                <div className="text-xs text-slate-400 mb-1.5">Über-uns-Bild</div>
+                <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-800/60 border border-slate-700/50">
+                  {aboutImageUrl
+                    ? <img src={aboutImageUrl} alt="Über uns" className="w-full h-full object-cover" />
+                    : <div className="flex items-center justify-center h-full"><Image className="w-6 h-6 text-slate-600" /></div>
+                  }
+                </div>
+                <button
+                  onClick={() => setImagePicker({ slot: "about", websiteId: website.id })}
+                  className="mt-2 w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Bild ändern
+                </button>
+              </div>
+            </div>
+          </Section>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Logo Upload Card ──────────────────────────────────
+function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; logoUrl?: string; onUpdate: () => void }) {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const uploadLogoMutation = trpc.customer.uploadLogoForWebsite.useMutation({
+    onSuccess: () => { toast.success("Logo gespeichert"); onUpdate(); setUploading(false); },
+    onError: (e: any) => { toast.error("Upload fehlgeschlagen: " + e.message); setUploading(false); },
+  });
+  const removeLogoMutation = trpc.customer.updateWebsiteContent.useMutation({ onSuccess: () => onUpdate() });
+
+  const handleFile = (file: File) => {
+    if (file.size > 2 * 1024 * 1024) { toast.error("Logo darf maximal 2 MB groß sein"); return; }
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadLogoMutation.mutate({ websiteId, imageData: base64, mimeType: file.type });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) handleFile(file);
+  };
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
+      <h3 className="text-white font-medium flex items-center gap-2">
+        <Upload className="w-4 h-4 text-amber-400" />
+        Logo
+      </h3>
+      {logoUrl ? (
+        <div className="relative bg-slate-700/30 rounded-xl p-4 flex items-center justify-center min-h-[80px]">
+          <img src={logoUrl} alt="Logo" className="max-h-16 max-w-full object-contain" />
+          <button
+            onClick={() => removeLogoMutation.mutate({ websiteId, patch: { logoUrl: "" } })}
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
+        <div
+          className="border-2 border-dashed border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-amber-500/50 hover:bg-amber-500/5 transition-all"
+          onClick={() => fileRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+        >
+          {uploading ? (
+            <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
+          ) : (
+            <>
+              <Upload className="w-6 h-6 text-slate-500" />
+              <p className="text-slate-400 text-xs text-center">Logo hochladen<br /><span className="text-slate-600">PNG, SVG oder JPG · max. 2 MB</span></p>
+            </>
+          )}
+        </div>
+      )}
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+      {logoUrl && (
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors disabled:opacity-50"
+        >
+          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          Logo ersetzen
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Chat Leads Tab ────────────────────────────────────
+function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
+  const { data, isLoading, refetch: refetchLeads } = trpc.customer.getChatLeads.useQuery({ websiteId });
+  const { data: transcriptData, isLoading: transcriptsLoading } = trpc.customer.getChatTranscripts.useQuery({ websiteId });
+  const markRead = trpc.customer.markChatLeadRead.useMutation({ onSuccess: () => refetchLeads() });
+  const deleteLead = trpc.customer.deleteChatLead.useMutation({ onSuccess: () => refetchLeads() });
+  const deleteTranscript = trpc.customer.deleteChatTranscript.useMutation();
+  const aiChatEnabled = !!(website as any).addOnAiChat;
+  const [activeSubTab, setActiveSubTab] = useState<"leads" | "transcripts">("leads");
+  const [expandedTranscript, setExpandedTranscript] = useState<number | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  if (!aiChatEnabled) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/20 rounded-2xl flex items-center justify-center mb-4">
+          <MessageSquare className="w-8 h-8 text-violet-400" />
+        </div>
+        <h3 className="text-white font-semibold text-lg mb-2">KI-Chat noch nicht aktiviert</h3>
+        <p className="text-slate-400 text-sm max-w-sm mb-5">
+          Aktiviere den KI-Chat, damit Besucher direkt auf deiner Website mit dir interagieren können – Leads landen dann hier.
+        </p>
+        <button
+          onClick={onGoToAddons}
+          className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+        >
+          Zu Add-ons → KI-Chat aktivieren
+        </button>
+      </div>
+    );
+  }
+
+  const leads = data?.leads ?? [];
+  const transcripts = transcriptData?.transcripts ?? [];
+  const unread = leads.filter((l: any) => !l.readAt).length;
+
+  function downloadTranscriptJson(transcript: any) {
+    const messages = (transcript.messages as Array<{ role: string; content: string }>) ?? [];
+    const date = transcript.createdAt
+      ? new Date(transcript.createdAt).toLocaleString("de-DE")
+      : "";
+    const visitorName = transcript.visitorName || "Unbekannt";
+    const lines: string[] = [
+      `Chat-Gespräch`,
+      `──────────────────────────────`,
+      `Besucher:  ${visitorName}`,
+      `Datum:     ${date}`,
+      `──────────────────────────────`,
+      "",
+      ...messages.map((m) => {
+        const role = m.role === "assistant" ? "Bot" : "Besucher";
+        return `[${role}]\n${m.content}\n`;
+      }),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `chat-${visitorName.replace(/\s+/g, "-")}-${transcript.sessionId.slice(0, 6)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Sub-tab switcher */}
+      <div className="flex items-center gap-1 bg-slate-800/60 border border-slate-700/40 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setActiveSubTab("leads")}
+          className={`text-sm px-4 py-1.5 rounded-lg font-medium transition-all ${activeSubTab === "leads" ? "bg-violet-600 text-white" : "text-slate-400 hover:text-white"}`}
+        >
+          Leads
+          {unread > 0 && (
+            <span className="ml-1.5 bg-violet-400 text-violet-950 text-xs font-bold px-1.5 py-0.5 rounded-full">{unread}</span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveSubTab("transcripts")}
+          className={`text-sm px-4 py-1.5 rounded-lg font-medium transition-all ${activeSubTab === "transcripts" ? "bg-violet-600 text-white" : "text-slate-400 hover:text-white"}`}
+        >
+          Gespräche
+          {transcripts.length > 0 && (
+            <span className="ml-1.5 bg-slate-600 text-slate-300 text-xs font-bold px-1.5 py-0.5 rounded-full">{transcripts.length}</span>
+          )}
+        </button>
+      </div>
+
+      {/* LEADS sub-tab */}
+      {activeSubTab === "leads" && (
+        isLoading ? (
+          <div className="flex items-center justify-center h-40">
+            <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
+          </div>
+        ) : leads.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-slate-500" />
+            </div>
+            <h3 className="text-white font-semibold text-lg mb-2">Noch keine Leads</h3>
+            <p className="text-slate-400 text-sm max-w-sm">
+              Sobald Website-Besucher ihren Namen und Kontakt im Chat hinterlassen, erscheinen sie hier.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <Users className="w-4 h-4 text-violet-400" />
+                Chat-Leads
+              </h2>
+              <span className="text-slate-500 text-sm">{leads.length} insgesamt</span>
+            </div>
+            {leads.map((lead: any) => (
+              <div
+                key={lead.id}
+                className={`bg-slate-800/60 border rounded-xl p-4 transition-all ${lead.readAt ? "border-slate-700/40" : "border-violet-500/40 ring-1 ring-violet-500/10"}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-white font-medium text-sm">{lead.visitorName || "Unbekannt"}</span>
+                      {!lead.readAt && (
+                        <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full border border-violet-500/30">Neu</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                      {lead.email && (
+                        <a href={`mailto:${lead.email}`} className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5" />{lead.email}
+                        </a>
+                      )}
+                      {lead.phone && (
+                        <a href={`tel:${lead.phone}`} className="text-green-400 hover:text-green-300 transition-colors flex items-center gap-1">
+                          <Phone className="w-3.5 h-3.5" />{lead.phone}
+                        </a>
+                      )}
+                    </div>
+                    {lead.summary && (
+                      <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">{lead.summary}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <span className="text-slate-500 text-xs whitespace-nowrap">
+                      {new Date(lead.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    {!lead.readAt && (
+                      <button
+                        onClick={() => markRead.mutate({ leadId: lead.id, websiteId })}
+                        className="text-xs text-slate-400 hover:text-white transition-colors"
+                      >
+                        Als gelesen markieren
+                      </button>
+                    )}
+                    {deleteConfirmId === lead.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">Löschen?</span>
+                        <button
+                          onClick={() => { deleteLead.mutate({ leadId: lead.id, websiteId }); setDeleteConfirmId(null); }}
+                          className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          Ja
+                        </button>
+                        <button onClick={() => setDeleteConfirmId(null)} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                          Nein
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirmId(lead.id)}
+                        className="p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        title="Lead löschen"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {/* TRANSCRIPTS sub-tab */}
+      {activeSubTab === "transcripts" && (
+        transcriptsLoading ? (
+          <div className="flex items-center justify-center h-40">
+            <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
+          </div>
+        ) : transcripts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mb-4">
+              <MessageSquare className="w-8 h-8 text-slate-500" />
+            </div>
+            <h3 className="text-white font-semibold text-lg mb-2">Noch keine Gespräche</h3>
+            <p className="text-slate-400 text-sm max-w-sm">
+              Geführte Chat-Gespräche werden hier für 30 Tage gespeichert.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-violet-400" />
+                Chat-Gespräche
+              </h2>
+              <span className="text-slate-500 text-xs">30 Tage Aufbewahrung</span>
+            </div>
+            {transcripts.map((t: any) => {
+              const messages: Array<{ role: string; content: string }> = t.messages ?? [];
+              const isExpanded = expandedTranscript === t.id;
+              const expiresIn = Math.ceil((new Date(t.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              return (
+                <div key={t.id} className="bg-slate-800/60 border border-slate-700/40 rounded-xl overflow-hidden">
+                  {/* Header */}
+                  <div className="flex items-center justify-between gap-3 p-4">
+                    <button
+                      onClick={() => setExpandedTranscript(isExpanded ? null : t.id)}
+                      className="flex-1 flex items-center gap-3 text-left min-w-0"
+                    >
+                      <div className="w-8 h-8 bg-violet-500/15 border border-violet-500/25 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <MessageSquare className="w-4 h-4 text-violet-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-white text-sm font-medium">{t.visitorName || "Anonymer Besucher"}</span>
+                          <span className="text-slate-500 text-xs">{t.messageCount} Nachrichten</span>
+                        </div>
+                        {t.summary && <p className="text-slate-400 text-xs mt-0.5 truncate">{t.summary}</p>}
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full border ${expiresIn <= 3 ? "text-orange-400 border-orange-500/30 bg-orange-500/10" : "text-slate-500 border-slate-700"}`}>
+                        {expiresIn}d
+                      </span>
+                      <button
+                        onClick={() => downloadTranscriptJson(t)}
+                        title="Als JSON herunterladen"
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700/50 transition-all"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                      </button>
+                      <button
+                        onClick={() => deleteTranscript.mutate({ transcriptId: t.id, websiteId })}
+                        title="Löschen"
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded transcript */}
+                  {isExpanded && (
+                    <div className="border-t border-slate-700/40 px-4 py-3 space-y-2 max-h-80 overflow-y-auto">
+                      <div className="text-slate-500 text-xs mb-3">
+                        {new Date(t.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {" · "}Session {t.sessionId.slice(0, 8)}…
+                      </div>
+                      {messages.map((msg, idx) => (
+                        <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                          <div className={`max-w-[80%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                            msg.role === "user"
+                              ? "bg-violet-600/30 border border-violet-500/30 text-violet-100"
+                              : "bg-slate-700/60 border border-slate-600/40 text-slate-300"
+                          }`}>
+                            <span className="text-[10px] font-medium opacity-60 block mb-0.5">
+                              {msg.role === "user" ? "Besucher" : "KI-Assistent"}
+                            </span>
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+// ── Appointments Tab ───────────────────────────────────
+function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
+  const { data: bookingData, isLoading: bookingLoading } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+  const { data: appointmentsData, isLoading: appointmentsLoading, refetch: refetchAppointments } = trpc.customer.getAppointments.useQuery({ websiteId, upcoming: true });
+  const cancelMutation = trpc.customer.cancelAppointmentByOwner.useMutation({
+    onSuccess: () => { toast.success("Termin abgesagt – E-Mail wurde versendet"); refetchAppointments(); setCancelConfirmId(null); setCancelMessage(""); },
+    onError: () => toast.error("Fehler beim Absagen"),
+  });
+
+  const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null);
+  const [cancelMessage, setCancelMessage] = useState("");
+  const [showPast, setShowPast] = useState(false);
+  const { data: pastData, refetch: refetchPast } = trpc.customer.getAppointments.useQuery(
+    { websiteId, upcoming: false },
+    { enabled: showPast }
+  );
+
+  if (bookingLoading) return <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>;
+
+  const enabled = bookingData?.addOnBooking ?? false;
+  const appts = appointmentsData?.appointments ?? [];
+  const pastAppts = pastData?.appointments ?? [];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-white text-lg font-semibold flex items-center gap-2">
+          <CalendarCheck className="w-5 h-5 text-blue-400" />
+          Termine
+          {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
+        </h2>
+        <p className="text-slate-400 text-sm mt-0.5">Eingehende Buchungen von deiner Website.</p>
+      </div>
+
+      {!enabled ? (
+        <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+          <CalendarDays className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+          <p className="text-white font-medium mb-1">Terminbuchung nicht aktiv</p>
+          <p className="text-slate-400 text-sm mb-4">Aktiviere das Add-on, um Buchungen entgegenzunehmen.</p>
+          <button onClick={onGoToAddons} className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors">
+            → Zu den Add-ons
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-emerald-400" />
+              Kommende Termine
+              {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
+            </h3>
+          </div>
+
+          {appointmentsLoading ? (
+            <div className="flex items-center justify-center h-32"><Loader2 className="w-5 h-5 animate-spin text-blue-400" /></div>
+          ) : appts.length === 0 ? (
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+              <Calendar className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+              <p className="text-white font-medium mb-1">Keine kommenden Termine</p>
+              <p className="text-slate-400 text-sm">Wenn Besucher einen Termin buchen, erscheint er hier.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {appts.map((a: any) => {
+                const isCancelling = cancelConfirmId === a.id;
+                return (
+                  <div
+                    key={a.id}
+                    className={`bg-slate-800/60 border rounded-xl p-4 flex items-start justify-between gap-4 ${
+                      a.status === "cancelled" ? "border-slate-700/30 opacity-60" : "border-slate-700/50"
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-white font-medium text-sm">{a.visitorName}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                          a.status === "cancelled" ? "bg-red-500/10 text-red-400 border-red-500/30" :
+                          a.status === "confirmed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" :
+                          "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        }`}>
+                          {a.status === "cancelled" ? "Abgesagt" : a.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-blue-300 text-sm mb-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {new Date(a.appointmentDate + "T12:00:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" })}
+                        {" · "}{a.appointmentTime} Uhr
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-1">
+                        <a href={`mailto:${a.email}`} className="text-slate-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5" />{a.email}
+                        </a>
+                        {a.phone && (
+                          <a href={`tel:${a.phone}`} className="text-slate-400 hover:text-green-300 transition-colors flex items-center gap-1">
+                            <Phone className="w-3.5 h-3.5" />{a.phone}
+                          </a>
+                        )}
+                      </div>
+                      {a.message && <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">{a.message}</p>}
+                    </div>
+                    {a.status !== "cancelled" && (
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        {isCancelling ? (
+                          <div className="flex flex-col items-end gap-2 min-w-[200px]">
+                            <p className="text-xs text-slate-400 self-start">Nachricht an Kunden (optional):</p>
+                            <textarea
+                              value={cancelMessage}
+                              onChange={e => setCancelMessage(e.target.value)}
+                              placeholder="z.B. Ich bin leider erkrankt und melde mich bald..."
+                              rows={2}
+                              className="w-full bg-slate-700/60 text-white text-xs px-2.5 py-2 rounded-lg border border-slate-600 outline-none resize-none placeholder-slate-500 focus:border-red-500/60"
+                            />
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => { cancelMutation.mutate({ appointmentId: a.id, websiteId, cancelMessage: cancelMessage.trim() || undefined }); }}
+                                disabled={cancelMutation.isPending}
+                                className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                              >
+                                {cancelMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CalendarX className="w-3 h-3" />}
+                                Termin absagen
+                              </button>
+                              <button onClick={() => { setCancelConfirmId(null); setCancelMessage(""); }} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                                Abbrechen
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setCancelConfirmId(a.id)}
+                            className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                          >
+                            <CalendarX className="w-3.5 h-3.5" />Absagen
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Past appointments toggle */}
+          <button
+            onClick={() => { setShowPast(v => !v); if (!showPast) refetchPast(); }}
+            className="flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+          >
+            <ChevronDown className={`w-4 h-4 transition-transform ${showPast ? "rotate-180" : ""}`} />
+            {showPast ? "Vergangene ausblenden" : "Vergangene Termine anzeigen"}
+          </button>
+
+          {showPast && pastAppts.length > 0 && (
+            <div className="space-y-2 opacity-70">
+              {pastAppts.filter((a: any) => a.appointmentDate < new Date().toISOString().slice(0, 10)).map((a: any) => (
+                <div key={a.id} className="bg-slate-900/40 border border-slate-700/30 rounded-xl p-3 flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-slate-300 text-sm font-medium">{a.visitorName}</span>
+                    <span className="text-slate-500 text-xs ml-2">
+                      {new Date(a.appointmentDate + "T12:00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })} {a.appointmentTime} Uhr
+                    </span>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${a.status === "cancelled" ? "text-red-400" : "text-slate-400"}`}>
+                    {a.status === "cancelled" ? "Abgesagt" : "Erledigt"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Content Fields Accordion (Kontakt, SEO, Leistungen, Impressum) ───────────
+function ContentFieldsAccordion({ website, websiteData, business, onboardingData, makeUpdater, handleUpdate }: {
+  website: any; websiteData: any; business: any; onboardingData: any;
+  makeUpdater: (field: string) => (v: string) => Promise<void>;
+  handleUpdate: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-slate-300 hover:text-white transition-colors"
+      >
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <Settings className="w-4 h-4 text-slate-400" />
+          Detaileinstellungen (Kontakt, SEO, Leistungen, Impressum)
+        </span>
+        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+
+      {open && (
+        <div className="border-t border-slate-700/40 p-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Business Info */}
+          <div className="space-y-4">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
+              <Edit2 className="w-4 h-4 text-blue-400" /> Unternehmensdaten
+            </h3>
+            <EditableField label="Unternehmensname" value={websiteData?.businessName || business?.name || ""} onSave={makeUpdater("businessName")} />
+            <EditableField label="Tagline / Slogan" value={websiteData?.tagline || ""} multiline onSave={makeUpdater("tagline")} />
+            <EditableField label="Beschreibung" value={websiteData?.description || ""} multiline onSave={makeUpdater("description")} />
+          </div>
+
+          {/* Contact */}
+          <div className="space-y-4">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
+              <Phone className="w-4 h-4 text-blue-400" /> Kontaktdaten
+            </h3>
+            <EditableField label="Telefon" value={business?.phone || ""} icon={<Phone className="w-3 h-3" />} onSave={makeUpdater("phone")} />
+            <EditableField label="E-Mail" value={business?.email || ""} icon={<Mail className="w-3 h-3" />} onSave={makeUpdater("email")} />
+            <EditableField label="Adresse" value={business?.address || ""} icon={<MapPin className="w-3 h-3" />} onSave={makeUpdater("address")} />
+          </div>
+
+          {/* SEO */}
+          <div className="lg:col-span-2 space-y-3">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
+              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+              SEO – Google-Sichtbarkeit
+            </h3>
+            <p className="text-slate-400 text-xs">Leer lassen = automatisch generiert.</p>
+            <EditableField label="SEO-Titel" value={websiteData?.seoTitle || ""} placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`} onSave={makeUpdater("seoTitle")} />
+            <div>
+              <EditableField label="Meta-Beschreibung" value={websiteData?.seoDescription || ""} multiline placeholder={websiteData?.tagline || "Kurze Beschreibung (max. 155 Zeichen)"} onSave={makeUpdater("seoDescription")} />
+              <p className="text-slate-500 text-xs mt-1">{(websiteData?.seoDescription || "").length}/155{(websiteData?.seoDescription || "").length > 155 && <span className="text-amber-400 ml-1">⚠ zu lang</span>}</p>
+            </div>
+          </div>
+
+          {/* Services */}
+          <div className="lg:col-span-2">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm mb-3">
+              <Sparkles className="w-4 h-4 text-violet-400" /> Leistungen & USP
+            </h3>
+            <ServicesEditor websiteId={website.id} initialServices={onboardingData?.topServices || []} initialUsp={onboardingData?.usp || websiteData?.usp} onUpdate={handleUpdate} />
+          </div>
+
+          {/* Legal */}
+          <div className="lg:col-span-2">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-sm mb-3">
+              <Settings className="w-4 h-4 text-amber-400" /> Impressum-Daten
+            </h3>
+            <LegalEditor websiteId={website.id} initialData={{ legalOwner: onboardingData?.legalOwner || "", legalStreet: onboardingData?.legalStreet || "", legalZip: onboardingData?.legalZip || "", legalCity: onboardingData?.legalCity || "", legalEmail: onboardingData?.legalEmail || "", legalPhone: onboardingData?.legalPhone || "", legalVatId: onboardingData?.legalVatId || "" }} onUpdate={handleUpdate} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("preview");
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const p = new URLSearchParams(window.location.search).get("tab") as Tab | null;
+    const valid: Tab[] = ["preview","content","design","settings","addons","domain","anfragen","leads","appointments","statistics"];
+    return (p && valid.includes(p)) ? p : "preview";
+  });
   const [previewKey, setPreviewKey] = useState(0);
-
+  const [imagePicker, setImagePicker] = useState<{ slot: "hero" | "about"; websiteId: number } | null>(null);
   const { data: myWebsites, isLoading, refetch } = trpc.customer.getMyWebsites.useQuery(
     undefined,
     { enabled: !!user }
   );
 
-  const { data: onboardingData } = trpc.customer.getOnboardingData.useQuery(
+  const { data: onboardingData, isError: onboardingDataError } = trpc.customer.getOnboardingData.useQuery(
     { websiteId: selectedWebsiteId || myWebsites?.[0]?.website.id || 0 },
-    { enabled: !!selectedWebsiteId || !!myWebsites?.[0]?.website.id }
+    { enabled: !!selectedWebsiteId || !!myWebsites?.[0]?.website.id, retry: false }
+  );
+
+  const { data: imageSuggestions } = trpc.customer.getImageSuggestions.useQuery(
+    { websiteId: imagePicker?.websiteId || 0 },
+    { enabled: !!imagePicker }
   );
 
   const updateMutation = trpc.customer.updateWebsiteContent.useMutation({
@@ -1733,10 +4026,106 @@ export default function CustomerDashboard() {
     },
   });
 
+  const activeWebsiteId = myWebsites?.[0]?.website.id;
+  const { data: analyticsStats, isLoading: analyticsLoading } = trpc.customer.getAnalytics.useQuery(
+    { websiteId: selectedWebsiteId || activeWebsiteId || 0 },
+    { enabled: !!(selectedWebsiteId || activeWebsiteId) && activeTab === "analytics" }
+  );
+
+  const [showArchivedSubmissions, setShowArchivedSubmissions] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const { data: submissionsData, isLoading: submissionsLoading, refetch: refetchSubmissions } = trpc.customer.getSubmissions.useQuery(
+    { websiteId: selectedWebsiteId || activeWebsiteId || 0, includeArchived: showArchivedSubmissions },
+    { enabled: !!(selectedWebsiteId || activeWebsiteId) }
+  );
+
+  const markReadMutation = trpc.customer.markSubmissionRead.useMutation({
+    onSuccess: () => refetchSubmissions(),
+  });
+
+  const archiveMutation = trpc.customer.archiveSubmission.useMutation({
+    onSuccess: () => refetchSubmissions(),
+    onError: () => toast.error("Fehler beim Archivieren."),
+  });
+
+  const deleteMutation = trpc.customer.deleteSubmission.useMutation({
+    onSuccess: () => { setDeleteConfirmId(null); refetchSubmissions(); },
+    onError: () => toast.error("Fehler beim Löschen."),
+  });
+
+  const [contactEmailInput, setContactEmailInput] = useState("");
+  const [contactEmailSaved, setContactEmailSaved] = useState(false);
+  const contactEmailRef = useRef<HTMLInputElement>(null);
+  const updateContactEmailMutation = trpc.customer.updateContactEmail.useMutation({
+    onSuccess: () => { setContactEmailSaved(true); setTimeout(() => setContactEmailSaved(false), 2500); refetch(); },
+    onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
+  });
+
+  const updateShowBrandingMutation = trpc.customer.updateShowBranding.useMutation({
+    onSuccess: () => { refetch(); toast.success("Einstellung gespeichert"); },
+    onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
+  });
+
   const handleUpdate = () => {
     refetch();
     setPreviewKey((k) => k + 1);
   };
+
+  // ── useEffect + Setup-Hooks MÜSSEN vor allen Early-Returns stehen ───────
+  const _selectedEntry = myWebsites?.find((e) => e.website.id === selectedWebsiteId) || myWebsites?.[0];
+  const storedContactEmailEarly = (_selectedEntry?.website as any)?.contactEmail as string | null | undefined;
+  useEffect(() => {
+    setContactEmailInput(storedContactEmailEarly ?? "");
+  }, [storedContactEmailEarly]);
+
+  // Falls aktiver Tab durch deaktiviertes Add-on wegfällt → zurück zu Add-ons
+  // MUSS vor Early-Returns stehen (Rules of Hooks)
+  const _addOnAiChatEarly = !!(_selectedEntry?.website as any)?.addOnAiChat;
+  const _addOnBookingEarly = !!(_selectedEntry?.website as any)?.addOnBooking;
+  useEffect(() => {
+    if (activeTab === "leads" && !_addOnAiChatEarly) setActiveTab("addons");
+    if (activeTab === "appointments" && !_addOnBookingEarly) setActiveTab("addons");
+  }, [activeTab, _addOnAiChatEarly, _addOnBookingEarly]);
+
+  // ── Setup-Flow State ──────────────────────────────────────────────────────
+  const _isCheckoutSuccess = new URLSearchParams(window.location.search).get("checkout") === "success";
+  const [setupOpen, setSetupOpen] = useState(() => _isCheckoutSuccess);
+
+  // Google Ads Conversion: Kauf nach Stripe-Checkout
+  useEffect(() => {
+    if (_isCheckoutSuccess && typeof (window as any).gtag === "function") {
+      (window as any).gtag("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9" });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const [setupStepIdx, setSetupStepIdx] = useState(0);
+  const [slugInput, setSlugInput] = useState("");
+  const [showDomainHint, setShowDomainHint] = useState(false);
+  const [domainTabSlugInput, setDomainTabSlugInput] = useState("");
+  const [domainTabSlugSaved, setDomainTabSlugSaved] = useState(false);
+  const [showCustomDomainInfo, setShowCustomDomainInfo] = useState(false);
+  const [legalOwnerInput, setLegalOwnerInput] = useState("");
+  const [legalEmailInput2, setLegalEmailInput2] = useState("");
+
+  const _activeWebsiteIdForSetup = _selectedEntry?.website.id ?? 0;
+  const updateSlugMutation = trpc.customer.updateSlug.useMutation({
+    onSuccess: () => { refetch(); },
+  });
+  const setLiveMutation = trpc.customer.setLive.useMutation({
+    onSuccess: () => { refetch(); setSetupOpen(false); },
+  });
+  const generateLegalMutation = trpc.customer.generateLegalPages.useMutation({
+    onSuccess: () => { refetch(); },
+  });
+  const { data: slugCheck, isFetching: slugChecking } = trpc.customer.checkSlugAvailability.useQuery(
+    { slug: slugInput, websiteId: _activeWebsiteIdForSetup },
+    { enabled: slugInput.length >= 3 }
+  );
+  const { data: domainSlugCheck, isFetching: domainSlugChecking } = trpc.customer.checkSlugAvailability.useQuery(
+    { slug: domainTabSlugInput, websiteId: _activeWebsiteIdForSetup },
+    { enabled: domainTabSlugInput.length >= 3 && domainTabSlugInput !== _selectedEntry?.website?.slug }
+  );
 
   if (authLoading || isLoading) {
     return (
@@ -1779,7 +4168,7 @@ export default function CustomerDashboard() {
             href="/start"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
           >
-            Website erstellen
+            Website gratis erstellen
           </a>
         </div>
       </div>
@@ -1787,9 +4176,33 @@ export default function CustomerDashboard() {
   }
 
   const selectedEntry = myWebsites.find((e) => e.website.id === selectedWebsiteId) || myWebsites[0];
-  const { website, business } = selectedEntry;
+  const { website, business, subscription } = selectedEntry;
   const websiteData = website.websiteData as WebsiteData | undefined;
   const colorScheme = website.colorScheme as ColorScheme | undefined;
+  // Sync contactEmail – useEffect is above early returns to satisfy Rules of Hooks
+  const storedContactEmail = (website as any).contactEmail as string | null | undefined;
+
+  // ── Setup-Flow Status ─────────────────────────────────
+  const addOns = (subscription?.addOns ?? {}) as Record<string, boolean>;
+  const slugDone  = !website.slug.startsWith("preview-");
+  const emailDone = !addOns.contactForm || !!(website as any).contactEmail;
+  const legalDone = !!(website.websiteData as any)?.impressumHtml && !!(website.websiteData as any)?.datenschutzHtml;
+  const liveDone  = website.status === "active";
+  const allDone   = slugDone && emailDone && legalDone && liveDone;
+
+  // Initialise slugInput when setupOpen opens for step 0
+  function slugifyFE(text: string): string {
+    return text.toLowerCase()
+      .replace(/[äöüß]/g, (m) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  }
+  const suggestedSlug = slugifyFE(business?.name || "");
+
+  const openSetupStep = (idx: number) => {
+    if (idx === 0 && !slugInput) setSlugInput(suggestedSlug);
+    setSetupStepIdx(idx);
+    setSetupOpen(true);
+  };
 
   const makeUpdater = (field: string) => async (value: string) => {
     await updateMutation.mutateAsync({
@@ -1798,16 +4211,120 @@ export default function CustomerDashboard() {
     });
   };
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  const unreadCount = submissionsData?.unreadCount ?? 0;
+
+  const aiChatEnabled = !!(website as any).addOnAiChat;
+  const bookingEnabled = !!(website as any).addOnBooking;
+
+  const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
     { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
+    { id: "settings", label: "Einstellungen", icon: <Settings className="w-4 h-4" /> },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
+    { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
+    { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
+    ...(aiChatEnabled ? [{ id: "leads" as Tab, label: "Chat-Leads", icon: <Users className="w-4 h-4" /> }] : []),
+    ...(bookingEnabled ? [{ id: "appointments" as Tab, label: "Termine", icon: <CalendarDays className="w-4 h-4" /> }] : []),
+    { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
   ];
+
+  // ── Image upload helper (used by picker + direct upload) ────────────────
+  const handleImageUpload = async (file: File, slot: "hero" | "about", websiteId: number) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const result = await (window as any).__trpcUpload?.({ websiteId, imageData: base64, mimeType: file.type });
+        if (result?.url) {
+          await updateMutation.mutateAsync({ websiteId, patch: slot === "hero" ? { heroPhotoUrl: result.url } : { aboutPhotoUrl: result.url } });
+          setImagePicker(null);
+        }
+      } catch { toast.error("Upload fehlgeschlagen"); }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const selectPickerImage = async (url: string) => {
+    if (!imagePicker) return;
+    await updateMutation.mutateAsync({
+      websiteId: imagePicker.websiteId,
+      patch: imagePicker.slot === "hero" ? { heroPhotoUrl: url } : { aboutPhotoUrl: url },
+    });
+    setImagePicker(null);
+  };
+
+  const gmbPhotos = (onboardingData?.photoUrls as string[] | null) || [];
+  const stockPhotos = imageSuggestions?.stockPhotos || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+
+      {/* ── Image Picker Modal ── */}
+      {imagePicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setImagePicker(null)}>
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto space-y-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-semibold text-sm">
+                {imagePicker.slot === "hero" ? "Hauptbild" : "Über-uns-Bild"} auswählen
+              </h3>
+              <button onClick={() => setImagePicker(null)} className="p-1.5 text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* GMB Photos */}
+            {gmbPhotos.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Deine GMB-Fotos</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {gmbPhotos.map((url, i) => (
+                    <button key={i} onClick={() => selectPickerImage(url)}
+                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Stock Photos – industry suggestions */}
+            {stockPhotos.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Vorgeschlagene Stock-Fotos</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {stockPhotos.map((url, i) => (
+                    <button key={i} onClick={() => selectPickerImage(url)}
+                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Stock Photo Search (Unsplash) */}
+            <div className="space-y-2">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock-Foto suchen</p>
+              <StockPhotoSearch onSelect={selectPickerImage} />
+            </div>
+
+            {/* Upload */}
+            <div className="space-y-2">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Eigenes Foto hochladen</p>
+              <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-3 cursor-pointer transition-colors">
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f, imagePicker.slot, imagePicker.websiteId); }} />
+                <Upload className="w-4 h-4" />
+                Bild vom Gerät wählen (max. 5 MB)
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
@@ -1836,7 +4353,7 @@ export default function CustomerDashboard() {
           <StatusBadge status={website.status} />
           {website.status === "active" && (
             <a
-              href={`/site/${website.slug}`}
+              href={`https://${website.slug}.pageblitz.de`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-xl transition-colors"
@@ -1855,30 +4372,85 @@ export default function CustomerDashboard() {
         </div>
       </header>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-slate-700/50 bg-slate-900/50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-                  activeTab === tab.id
-                    ? "text-blue-400 border-blue-400 bg-blue-500/10"
-                    : "text-slate-400 border-transparent hover:text-white hover:bg-slate-800/50"
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+      {/* ── Setup-Checkliste Banner (sticky, direkt unter dem Header) ── */}
+      {!allDone && !setupOpen && (
+        <div className="sticky top-[65px] z-10 bg-gradient-to-r from-blue-900/95 to-indigo-900/95 backdrop-blur-sm border-b border-blue-500/30 shadow-lg shadow-blue-950/20">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 mr-1">
+              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-white text-xs font-semibold">Website einrichten</span>
+            </div>
+            <div className="w-px h-4 bg-blue-400/30" />
+            <StepChip done={slugDone}  label="Subdomain"   onClick={() => openSetupStep(0)} />
+            {addOns.contactForm && (
+              <StepChip done={emailDone} label="Kontakt-E-Mail" onClick={() => openSetupStep(1)} />
+            )}
+            <StepChip done={legalDone} label="Impressum & Datenschutz" onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)} />
+            <StepChip done={liveDone}  label="Live schalten" onClick={() => openSetupStep(addOns.contactForm ? 3 : 2)} />
+            <button
+              onClick={() => openSetupStep(!slugDone ? 0 : (addOns.contactForm && !emailDone) ? 1 : !legalDone ? (addOns.contactForm ? 2 : 1) : (addOns.contactForm ? 3 : 2))}
+              className="ml-auto text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
+            >
+              Einrichten →
+            </button>
           </div>
+        </div>
+      )}
+
+      {/* Mobile Tab Navigation (icon + label, scrollable) */}
+      <div className="lg:hidden border-b border-slate-700/50 bg-slate-900/50 overflow-x-auto scrollbar-hide">
+        <div className="flex px-2 min-w-max">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); window.history.replaceState(null, "", `?tab=${tab.id}`); }}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[10px] font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-blue-400 border-blue-400"
+                  : "text-slate-500 border-transparent hover:text-white"
+              }`}
+            >
+              <span className="[&>svg]:w-4 [&>svg]:h-4">{tab.icon}</span>
+              {tab.label}
+              {tab.badge && tab.badge > 0 ? (
+                <span className="absolute mt-[-2px] ml-3 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-bold leading-none">
+                  {tab.badge > 99 ? "99+" : tab.badge}
+                </span>
+              ) : null}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* Main layout: sidebar (desktop) + content */}
+      <div className="flex flex-1 min-h-0">
+        {/* Desktop Sidebar */}
+        <nav className="hidden lg:flex flex-col w-52 flex-shrink-0 bg-slate-900/40 border-r border-slate-700/50 min-h-[calc(100vh-120px)]">
+          <div className="p-3 space-y-0.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); window.history.replaceState(null, "", `?tab=${tab.id}`); }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
+                  activeTab === tab.id
+                    ? "bg-blue-500/15 text-blue-400"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                }`}
+              >
+                {tab.icon}
+                <span className="flex-1">{tab.label}</span>
+                {tab.badge && tab.badge > 0 && (
+                  <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    {tab.badge > 99 ? "99+" : tab.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        {/* Tab Content */}
+        <div className="flex-1 min-w-0 px-4 lg:px-6 py-4 lg:py-6">
         {/* Preview Tab */}
         {activeTab === "preview" && (
           <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
@@ -1897,22 +4469,24 @@ export default function CustomerDashboard() {
                 </a>
               )}
             </div>
-            <div className="overflow-auto max-h-[calc(100vh-280px)]">
+            <div className="relative overflow-auto max-h-[calc(100vh-280px)]">
               {websiteData ? (
-                <div key={previewKey} className="transform-gpu origin-top" style={{ transform: "scale(0.85)", transformOrigin: "top left", width: "117.65%", height: "117.65%" }}>
-                  <WebsiteRenderer
-                    websiteData={websiteData}
-                    colorScheme={colorScheme}
-                    heroImageUrl={website.heroImageUrl || undefined}
-                    aboutImageUrl={(website as any).aboutImageUrl || undefined}
-                    layoutStyle={(website as any).layoutStyle || undefined}
-                    businessPhone={business?.phone || undefined}
-                    businessAddress={business?.address || undefined}
-                    businessEmail={business?.email || undefined}
-                    slug={website.slug}
-                    contactFormLocked={false}
-                  />
-                </div>
+                <>
+                  <div key={previewKey} style={{ zoom: 0.85, contain: "layout" }}>
+                    <WebsiteRenderer
+                      websiteData={websiteData}
+                      colorScheme={colorScheme}
+                      heroImageUrl={website.heroImageUrl || undefined}
+                      aboutImageUrl={(website as any).aboutImageUrl || undefined}
+                      layoutStyle={(website as any).layoutStyle || undefined}
+                      businessPhone={business?.phone || undefined}
+                      businessAddress={business?.address || undefined}
+                      businessEmail={business?.email || undefined}
+                      slug={website.slug}
+                      contactFormLocked={false}
+                    />
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center justify-center h-64 text-slate-500">
                   <div className="text-center">
@@ -1925,66 +4499,89 @@ export default function CustomerDashboard() {
           </div>
         )}
 
-        {/* Content Tab */}
+        {/* Content Tab — Split View */}
         {activeTab === "content" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Business Info */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
-              <h2 className="text-white font-semibold flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-blue-400" />
-                Unternehmensdaten
-              </h2>
-              <EditableField
-                label="Unternehmensname"
-                value={websiteData?.businessName || business?.name || ""}
-                onSave={makeUpdater("businessName")}
-              />
-              <EditableField
-                label="Tagline / Slogan"
-                value={websiteData?.tagline || ""}
-                multiline
-                onSave={makeUpdater("tagline")}
-              />
-              <EditableField
-                label="Beschreibung"
-                value={websiteData?.description || ""}
-                multiline
-                onSave={makeUpdater("description")}
-              />
-            </div>
+          <div className="space-y-4">
+            {/* KI Split-View Editor */}
+            <ContentEditorSplitView
+              websiteId={website.id}
+              websiteData={websiteData}
+              colorScheme={colorScheme}
+              website={website}
+              business={business}
+              onUpdate={handleUpdate}
+            />
+          </div>
+        )}
 
-            {/* Contact Info */}
+        {/* Design Tab */}
+        {activeTab === "design" && websiteData && (
+          <DesignStudio
+            website={website}
+            websiteData={websiteData}
+            heroImageUrl={website.heroImageUrl || undefined}
+            aboutImageUrl={(website as any).aboutImageUrl || undefined}
+            business={business}
+            onUpdate={handleUpdate}
+            setImagePicker={setImagePicker}
+          />
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === "settings" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            {/* Kontaktdaten */}
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
               <h2 className="text-white font-semibold flex items-center gap-2">
                 <Phone className="w-4 h-4 text-blue-400" />
                 Kontaktdaten
               </h2>
-              <EditableField
-                label="Telefon"
-                value={business?.phone || ""}
-                icon={<Phone className="w-3 h-3" />}
-                onSave={makeUpdater("phone")}
-              />
-              <EditableField
-                label="E-Mail"
-                value={business?.email || ""}
-                icon={<Mail className="w-3 h-3" />}
-                onSave={makeUpdater("email")}
-              />
-              <EditableField
-                label="Adresse"
-                value={business?.address || ""}
-                icon={<MapPin className="w-3 h-3" />}
-                onSave={makeUpdater("address")}
-              />
+              <p className="text-slate-400 text-xs -mt-2">Werden im Kontakt-Bereich deiner Website angezeigt.</p>
+              <EditableField label="Telefon" value={business?.phone || ""} icon={<Phone className="w-3 h-3" />} onSave={makeUpdater("phone")} />
+              <EditableField label="E-Mail" value={business?.email || ""} icon={<Mail className="w-3 h-3" />} onSave={makeUpdater("email")} />
+              <EditableField label="Adresse" value={business?.address || ""} icon={<MapPin className="w-3 h-3" />} onSave={makeUpdater("address")} />
             </div>
 
-            {/* Services */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 lg:col-span-2">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
+            {/* SEO */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                </svg>
+                SEO – Google-Sichtbarkeit
+              </h2>
+              <p className="text-slate-400 text-xs -mt-2">Leer lassen = automatisch generiert.</p>
+              <EditableField
+                label="SEO-Titel"
+                value={websiteData?.seoTitle || ""}
+                placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`}
+                onSave={makeUpdater("seoTitle")}
+              />
+              <div>
+                <EditableField
+                  label="Meta-Beschreibung"
+                  value={websiteData?.seoDescription || ""}
+                  multiline
+                  placeholder={websiteData?.tagline || "Kurze Beschreibung (max. 155 Zeichen)"}
+                  onSave={makeUpdater("seoDescription")}
+                />
+                <p className="text-slate-500 text-xs mt-1">
+                  {(websiteData?.seoDescription || "").length}/155
+                  {(websiteData?.seoDescription || "").length > 155 && (
+                    <span className="text-amber-400 ml-1">⚠ zu lang</span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Leistungen & USP */}
+            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
                 <Sparkles className="w-4 h-4 text-violet-400" />
                 Leistungen & USP
               </h2>
+              <p className="text-slate-400 text-xs mb-4">Deine Kernleistungen und Alleinstellungsmerkmale – erscheinen in der Leistungs-Sektion.</p>
               <ServicesEditor
                 websiteId={website.id}
                 initialServices={onboardingData?.topServices || []}
@@ -1993,12 +4590,13 @@ export default function CustomerDashboard() {
               />
             </div>
 
-            {/* Legal Data */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 lg:col-span-2">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
+            {/* Impressum */}
+            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
                 <Settings className="w-4 h-4 text-amber-400" />
                 Impressum-Daten
               </h2>
+              <p className="text-slate-400 text-xs mb-4">Pflichtangaben für Impressum und Datenschutzerklärung.</p>
               <LegalEditor
                 websiteId={website.id}
                 initialData={{
@@ -2013,126 +4611,43 @@ export default function CustomerDashboard() {
                 onUpdate={handleUpdate}
               />
             </div>
-          </div>
-        )}
 
-        {/* Design Tab */}
-        {activeTab === "design" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                  <Palette className="w-4 h-4 text-blue-400" />
-                  Design-Einstellungen
+            {/* Pageblitz Branding */}
+            {subscription && (
+              <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                  <Globe className="w-4 h-4 text-slate-400" />
+                  Pageblitz-Branding
                 </h2>
-                <DesignEditor
-                  websiteId={website.id}
-                  website={website}
-                  onUpdate={handleUpdate}
-                />
-              </div>
-            </div>
-            <div className="space-y-4">
-              {/* Hero Image */}
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
-                <h3 className="text-white font-medium flex items-center gap-2">
-                  <Image className="w-4 h-4 text-blue-400" />
-                  Hauptbild
-                </h3>
-                {website.heroImageUrl ? (
-                  <div className="relative rounded-xl overflow-hidden aspect-video">
-                    <img src={website.heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => updateMutation.mutate({ websiteId: website.id, patch: { heroPhotoUrl: "" } })}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
+                <p className="text-slate-400 text-xs mb-4">Steuere, ob ein kleiner Hinweis auf Pageblitz im Footer deiner Website erscheint.</p>
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative mt-0.5">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={(website as any).showBranding !== false}
+                      onChange={(e) => {
+                        updateShowBrandingMutation.mutate({ websiteId: website.id, showBranding: e.target.checked });
+                      }}
+                    />
+                    <div
+                      className={`w-10 h-6 rounded-full transition-colors ${(website as any).showBranding !== false ? 'bg-blue-600' : 'bg-slate-600'}`}
+                      onClick={() => {
+                        const current = (website as any).showBranding !== false;
+                        updateShowBrandingMutation.mutate({ websiteId: website.id, showBranding: !current });
+                      }}
                     >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                      <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${(website as any).showBranding !== false ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </div>
                   </div>
-                ) : (
-                  <div className="aspect-video rounded-xl bg-slate-700/40 border-2 border-dashed border-slate-600 flex items-center justify-center">
-                    <Image className="w-8 h-8 text-slate-500" />
+                  <div>
+                    <span className="text-white text-sm font-medium">Pageblitz-Branding im Footer anzeigen</span>
+                    <p className="text-slate-400 text-xs mt-0.5">Zeigt einen kleinen "Erstellt mit Pageblitz"-Link im Footer deiner Website.</p>
                   </div>
-                )}
-                <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        const base64 = (reader.result as string).split(",")[1];
-                        try {
-                          const result = await (window as any).__trpcUpload?.({ websiteId: website.id, imageData: base64, mimeType: file.type });
-                          if (result?.url) {
-                            await updateMutation.mutateAsync({ websiteId: website.id, patch: { heroPhotoUrl: result.url } });
-                          }
-                        } catch {
-                          toast.error("Upload fehlgeschlagen");
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Bild ändern
                 </label>
               </div>
+            )}
 
-              {/* About Image */}
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-3">
-                <h3 className="text-white font-medium flex items-center gap-2">
-                  <Image className="w-4 h-4 text-violet-400" />
-                  Über-uns-Bild
-                </h3>
-                {(website as any).aboutImageUrl ? (
-                  <div className="relative rounded-xl overflow-hidden aspect-video">
-                    <img src={(website as any).aboutImageUrl} alt="Über uns" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => updateMutation.mutate({ websiteId: website.id, patch: { aboutPhotoUrl: "" } })}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="aspect-video rounded-xl bg-slate-700/40 border-2 border-dashed border-slate-600 flex items-center justify-center">
-                    <Image className="w-8 h-8 text-slate-500" />
-                  </div>
-                )}
-                <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        const base64 = (reader.result as string).split(",")[1];
-                        try {
-                          const result = await (window as any).__trpcUpload?.({ websiteId: website.id, imageData: base64, mimeType: file.type });
-                          if (result?.url) {
-                            await updateMutation.mutateAsync({ websiteId: website.id, patch: { aboutPhotoUrl: result.url } });
-                          }
-                        } catch {
-                          toast.error("Upload fehlgeschlagen");
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Bild ändern
-                </label>
-              </div>
-            </div>
           </div>
         )}
 
@@ -2166,38 +4681,684 @@ export default function CustomerDashboard() {
 
         {/* Add-ons Tab */}
         {activeTab === "addons" && (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                <Sparkles className="w-4 h-4 text-pink-400" />
-                Add-ons verwalten
-              </h2>
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+            <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
+              <Sparkles className="w-4 h-4 text-pink-400" />
+              Add-ons
+            </h2>
+            {onboardingData !== undefined || onboardingDataError ? (
               <AddonsEditor
                 websiteId={website.id}
                 website={website}
-                onboarding={onboardingData}
+                onboarding={onboardingData ?? null}
                 onUpdate={handleUpdate}
+                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
+                onGoToTermine={() => setActiveTab("appointments")}
               />
-            </div>
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                <Settings className="w-4 h-4 text-blue-400" />
-                Erweiterte Bearbeitung
-              </h2>
-              <p className="text-slate-400 text-sm mb-4">
-                Für detaillierte Bearbeitung von Galerie-Bildern, Menüpunkten und Preisen nutze das vollständige Onboarding.
-              </p>
-              <a
-                href={`/preview/${website.previewToken}/onboarding`}
-                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Vollständiges Onboarding öffnen
-              </a>
-            </div>
+            ) : (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+              </div>
+            )}
           </div>
         )}
-      </div>
+
+        {/* Leads Tab */}
+        {activeTab === "leads" && (
+          <ChatLeadsTab websiteId={website.id} website={website} onGoToAddons={() => setActiveTab("addons")} />
+        )}
+
+        {/* Appointments Tab */}
+        {activeTab === "appointments" && (
+          <AppointmentsTab websiteId={website.id} website={website} onGoToAddons={() => setActiveTab("addons")} />
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6">
+            {analyticsLoading ? (
+              <div className="flex items-center justify-center h-40">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+              </div>
+            ) : analyticsStats ? (
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: "Seitenaufrufe", value: analyticsStats.pageviews.toLocaleString("de-DE"), icon: <MousePointerClick className="w-5 h-5 text-blue-400" />, color: "text-blue-400" },
+                    { label: "Besucher", value: analyticsStats.visitors.toLocaleString("de-DE"), icon: <Users className="w-5 h-5 text-violet-400" />, color: "text-violet-400" },
+                    { label: "Absprungrate", value: `${analyticsStats.bounceRate} %`, icon: <BarChart2 className="w-5 h-5 text-amber-400" />, color: "text-amber-400" },
+                    { label: "Ø Verweildauer", value: `${Math.floor(analyticsStats.avgDuration / 60)}:${String(analyticsStats.avgDuration % 60).padStart(2, "0")} Min`, icon: <Clock className="w-5 h-5 text-green-400" />, color: "text-green-400" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        {stat.icon}
+                        <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">{stat.label}</span>
+                      </div>
+                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-slate-500 text-xs mt-1">Letzte 30 Tage</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                  <p className="text-slate-400 text-sm">
+                    Diese Statistiken werden von <span className="text-white font-medium">Umami Analytics</span> erfasst –
+                    cookielos, DSGVO-konform, keine persönlichen Daten.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+                <BarChart2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-white font-semibold mb-2">Noch keine Statistiken verfügbar</h3>
+                <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  Analytics werden aktiviert, sobald deine Website live ist und die ersten Besucher kommen.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Domain Tab */}
+        {activeTab === "domain" && website && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-white text-lg font-semibold">Domain & Adresse</h2>
+              <p className="text-slate-400 text-sm mt-0.5">Verwalte die Web-Adresse deiner Website.</p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Subdomain */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
+                  <Globe className="w-4 h-4 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">Pageblitz-Subdomain</p>
+                  <p className="text-slate-400 text-xs">Kostenlos inklusive</p>
+                </div>
+              </div>
+
+              {/* Current URL display */}
+              <div className="flex items-center gap-2 bg-slate-900/60 rounded-xl px-4 py-2.5 border border-slate-700/50">
+                <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <a
+                  href={`https://${website.slug}.pageblitz.de`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 text-sm font-mono transition-colors truncate"
+                >
+                  {website.slug}.pageblitz.de
+                </a>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500 ml-auto shrink-0" />
+              </div>
+
+              {/* Slug change */}
+              <div className="space-y-2">
+                <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain ändern</label>
+                <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                  <input
+                    type="text"
+                    value={domainTabSlugInput || website.slug}
+                    onChange={(e) => {
+                      setDomainTabSlugSaved(false);
+                      setDomainTabSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""));
+                    }}
+                    className="flex-1 bg-transparent text-white outline-none text-sm font-mono"
+                  />
+                  <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
+                </div>
+                {domainTabSlugInput.length >= 3 && domainTabSlugInput !== website.slug && (
+                  <p className={`text-xs flex items-center gap-1.5 ${
+                    domainSlugChecking ? "text-slate-400" :
+                    domainSlugCheck?.available ? "text-emerald-400" : "text-red-400"
+                  }`}>
+                    {domainSlugChecking ? "⏳ Prüfe Verfügbarkeit..." :
+                     domainSlugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben"}
+                  </p>
+                )}
+                {domainTabSlugSaved && (
+                  <p className="text-xs text-emerald-400 flex items-center gap-1">✓ Subdomain gespeichert</p>
+                )}
+                <button
+                  disabled={
+                    !domainTabSlugInput ||
+                    domainTabSlugInput === website.slug ||
+                    domainTabSlugInput.length < 3 ||
+                    (!domainSlugCheck?.available && domainTabSlugInput !== website.slug) ||
+                    domainSlugChecking ||
+                    updateSlugMutation.isPending
+                  }
+                  onClick={async () => {
+                    await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: domainTabSlugInput });
+                    setDomainTabSlugSaved(true);
+                    toast.success("Subdomain gespeichert");
+                  }}
+                  className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                >
+                  {updateSlugMutation.isPending ? "Speichern..." : "Subdomain speichern"}
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Domain */}
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setShowCustomDomainInfo(v => !v)}
+                className="w-full flex items-center gap-3 p-5 text-left hover:bg-slate-700/20 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
+                  <ExternalLink className="w-4 h-4 text-violet-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-semibold">Eigene Domain verbinden</p>
+                  <p className="text-slate-400 text-xs">z.B. www.mein-unternehmen.de</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${showCustomDomainInfo ? "rotate-180" : ""}`} />
+              </button>
+              {showCustomDomainInfo && (
+                <div className="px-5 pb-5 space-y-3 border-t border-slate-700/50 pt-4">
+                  <p className="text-slate-300 text-sm">Setze diesen CNAME-Eintrag bei deinem Domain-Anbieter (IONOS, Strato, GoDaddy, etc.):</p>
+                  <div className="space-y-2 bg-slate-900/60 rounded-xl p-4">
+                    {[
+                      { label: "Typ",  value: "CNAME" },
+                      { label: "Name", value: "www" },
+                      { label: "Ziel", value: "pageblitz.de" },
+                      { label: "TTL",  value: "3600" },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex items-center justify-between">
+                        <span className="text-slate-500 text-xs w-12">{label}</span>
+                        <span className="text-white text-xs font-mono bg-slate-800 px-3 py-1 rounded-lg">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                    <p className="text-amber-300 text-xs">⏱ DNS-Änderungen können bis zu 24 Stunden dauern, bis sie wirksam sind.</p>
+                  </div>
+                  <p className="text-slate-500 text-xs">Nach dem Setzen des CNAME-Eintrags melde dich beim Support — wir schalten die Domain für dich frei.</p>
+                </div>
+              )}
+            </div>
+            </div>{/* end grid */}
+          </div>
+        )}
+
+        {/* Submissions (Anfragen) Tab */}
+        {activeTab === "submissions" && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-white text-lg font-semibold">
+                  {showArchivedSubmissions ? "Archivierte Anfragen" : "Kontaktanfragen"}
+                </h2>
+                <p className="text-slate-400 text-sm mt-0.5">
+                  {submissionsData?.submissions.length ?? 0} {showArchivedSubmissions ? "archivierte" : "aktive"} Anfragen
+                  {!showArchivedSubmissions && unreadCount > 0 && <span className="ml-2 text-rose-400 font-medium">· {unreadCount} ungelesen</span>}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Archive toggle */}
+                <button
+                  onClick={() => setShowArchivedSubmissions(v => !v)}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                    showArchivedSubmissions
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+                      : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  {showArchivedSubmissions ? "Aktive anzeigen" : "Archiv"}
+                </button>
+                {/* Custom recipient email */}
+                {!showArchivedSubmissions && (
+                  <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
+                    <Mail className="w-4 h-4 text-slate-500 shrink-0" />
+                    <input
+                      type="email"
+                      value={contactEmailInput}
+                      onChange={(e) => setContactEmailInput(e.target.value)}
+                      placeholder={business?.email || "Empfänger-E-Mail eintragen..."}
+                      className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-48"
+                    />
+                    <button
+                      onClick={() => updateContactEmailMutation.mutate({ websiteId: website.id, contactEmail: contactEmailInput })}
+                      disabled={updateContactEmailMutation.isPending}
+                      className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+                    >
+                      {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {submissionsLoading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+              </div>
+            ) : !submissionsData?.submissions.length ? (
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-12 text-center">
+                <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-white font-semibold mb-2">
+                  {showArchivedSubmissions ? "Keine archivierten Anfragen" : "Noch keine Anfragen"}
+                </h3>
+                <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  {showArchivedSubmissions
+                    ? "Archivierte Anfragen erscheinen hier."
+                    : "Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {submissionsData.submissions.map((sub) => {
+                  const isUnread = !sub.readAt;
+                  const isDeleting = deleteConfirmId === sub.id;
+                  return (
+                    <div
+                      key={sub.id}
+                      className={`bg-slate-800/60 border rounded-2xl p-5 transition-colors ${
+                        showArchivedSubmissions
+                          ? "border-slate-700/30 opacity-75"
+                          : isUnread
+                            ? "border-blue-500/40 bg-slate-800/80"
+                            : "border-slate-700/50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1">
+                            {isUnread && !showArchivedSubmissions && (
+                              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                            )}
+                            <span className="text-white font-semibold truncate">{sub.name}</span>
+                            <span className="text-slate-400 text-xs shrink-0">
+                              {new Date(sub.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-3 mb-3">
+                            <a
+                              href={`mailto:${sub.email}`}
+                              className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              {sub.email}
+                            </a>
+                            {sub.phone && (
+                              <a
+                                href={`tel:${sub.phone}`}
+                                className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                                {sub.phone}
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
+                            {sub.message}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          {!showArchivedSubmissions ? (
+                            <>
+                              <a
+                                href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
+                                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                              >
+                                <Mail className="w-3 h-3" />
+                                Antworten
+                              </a>
+                              {isUnread && (
+                                <button
+                                  onClick={() => markReadMutation.mutate({ submissionId: sub.id })}
+                                  className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
+                                >
+                                  Als gelesen markieren
+                                </button>
+                              )}
+                              <button
+                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: true })}
+                                disabled={archiveMutation.isPending}
+                                className="flex items-center gap-1 text-slate-500 hover:text-amber-400 text-xs transition-colors disabled:opacity-40"
+                                title="Archivieren"
+                              >
+                                <Layers className="w-3.5 h-3.5" />
+                                Archivieren
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: false })}
+                                disabled={archiveMutation.isPending}
+                                className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors disabled:opacity-40"
+                              >
+                                <Layers className="w-3.5 h-3.5" />
+                                Wiederherstellen
+                              </button>
+                              {isDeleting ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-400">Sicher?</span>
+                                  <button
+                                    onClick={() => deleteMutation.mutate({ submissionId: sub.id })}
+                                    disabled={deleteMutation.isPending}
+                                    className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-40"
+                                  >
+                                    Ja, löschen
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                                  >
+                                    Abbrechen
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDeleteConfirmId(sub.id)}
+                                  className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                                  title="Endgültig löschen"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Löschen
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        </div>{/* end flex-1 content */}
+      </div>{/* end flex row (sidebar + content) */}
+
+      {/* ── Setup-Modal ── */}
+      {setupOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+              <div>
+                <h2 className="text-white font-bold text-lg">Website einrichten</h2>
+                <p className="text-slate-400 text-sm mt-0.5">
+                  Schritt {setupStepIdx + 1} von {addOns.contactForm ? 4 : 3}
+                </p>
+              </div>
+              <button
+                onClick={() => setSetupOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Step 0 – Subdomain wählen */}
+            {setupStepIdx === 0 && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">🌐</div>
+                  <h3 className="text-white font-semibold text-lg">Deine Website-Adresse</h3>
+                  <p className="text-slate-400 text-sm mt-1">Wähle eine einfache, einprägsame Adresse für deine Website.</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain</label>
+                  <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                    <input
+                      type="text"
+                      value={slugInput}
+                      onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""))}
+                      placeholder={suggestedSlug || "mein-unternehmen"}
+                      className="flex-1 bg-transparent text-white outline-none text-sm"
+                      autoFocus
+                    />
+                    <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
+                  </div>
+                  {slugInput.length >= 3 && (
+                    <p className={`text-xs flex items-center gap-1.5 ${
+                      slugChecking ? "text-slate-400" :
+                      slugCheck?.available ? "text-emerald-400" : "text-red-400"
+                    }`}>
+                      {slugChecking ? "⏳ Prüfe Verfügbarkeit..." :
+                       slugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben – anderen Namen wählen"}
+                    </p>
+                  )}
+                  {slugInput.length > 0 && slugInput.length < 3 && (
+                    <p className="text-xs text-slate-400">Mindestens 3 Zeichen</p>
+                  )}
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setSetupOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                  >
+                    Später
+                  </button>
+                  <button
+                    disabled={!slugCheck?.available || slugInput.length < 3 || updateSlugMutation.isPending}
+                    onClick={async () => {
+                      await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: slugInput });
+                      setSetupStepIdx(1);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                  >
+                    {updateSlugMutation.isPending ? "Speichern..." : "Übernehmen →"}
+                  </button>
+                </div>
+                {/* Eigene Domain – subtiler Accordion-Hinweis */}
+                <div className="border-t border-slate-700/50 pt-3 mt-1">
+                  <button
+                    onClick={() => setShowDomainHint(v => !v)}
+                    className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors w-full text-left"
+                  >
+                    <span>🔗</span>
+                    <span>Du hast bereits eine Domain? So verbindest du sie</span>
+                    <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${showDomainHint ? "rotate-180" : ""}`} />
+                  </button>
+                  {showDomainHint && (
+                    <div className="mt-3 bg-slate-900 rounded-xl p-4 space-y-2">
+                      <p className="text-slate-300 text-xs font-medium mb-2">CNAME-Eintrag bei deinem DNS-Anbieter setzen:</p>
+                      {[
+                        { label: "Typ",  value: "CNAME" },
+                        { label: "Name", value: "www" },
+                        { label: "Ziel", value: "pageblitz.de" },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-1.5">
+                          <span className="text-slate-400 text-xs">{label}</span>
+                          <span className="text-white text-xs font-mono">{value}</span>
+                        </div>
+                      ))}
+                      <p className="text-slate-500 text-xs text-center pt-1">DNS-Änderungen können bis zu 24h dauern</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 1 – Kontakt-E-Mail (nur wenn contactForm Add-on) */}
+            {setupStepIdx === 1 && addOns.contactForm && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">📧</div>
+                  <h3 className="text-white font-semibold text-lg">Kontaktformular-E-Mail</h3>
+                  <p className="text-slate-400 text-sm mt-1">Wohin sollen Kundenanfragen aus deinem Kontaktformular gesendet werden?</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Empfänger-E-Mail</label>
+                  <input
+                    ref={contactEmailRef}
+                    type="email"
+                    defaultValue={contactEmailInput}
+                    onChange={(e) => setContactEmailInput(e.target.value)}
+                    onInput={(e) => setContactEmailInput((e.target as HTMLInputElement).value)}
+                    placeholder="deine@email.de"
+                    className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                    autoComplete="off"
+                    autoFocus
+                    id="setup-contact-email"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setSetupStepIdx(2)}
+                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                  >
+                    Überspringen
+                  </button>
+                  <button
+                    disabled={updateContactEmailMutation.isPending}
+                    onClick={async () => {
+                      const val = contactEmailRef.current?.value || contactEmailInput;
+                      if (!val.trim()) {
+                        toast.error("Bitte eine E-Mail-Adresse eingeben.");
+                        return;
+                      }
+                      try {
+                        await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: val.trim() });
+                        setContactEmailInput(val.trim());
+                        setSetupStepIdx(2);
+                      } catch { /* onError handler shows toast */ }
+                    }}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                  >
+                    {updateContactEmailMutation.isPending ? "Speichern..." : "Speichern →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 (contactForm) / Step 1 (no contactForm) – Impressum & Datenschutz */}
+            {setupStepIdx === (addOns.contactForm ? 2 : 1) && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-3">📋</div>
+                  <h3 className="text-white font-semibold text-lg">Impressum & Datenschutz</h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Gesetzlich vorgeschrieben. Gib den Namen des Inhabers an – dauert 30 Sekunden.
+                  </p>
+                </div>
+                {legalDone ? (
+                  <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+                    <span className="text-emerald-400 text-xl">✓</span>
+                    <div>
+                      <p className="text-emerald-400 text-sm font-medium">Impressum & Datenschutz generiert</p>
+                      <p className="text-slate-400 text-xs mt-0.5">Erreichbar unter /impressum und /datenschutz</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Vor- und Nachname des Inhabers *</label>
+                      <input
+                        type="text"
+                        value={legalOwnerInput}
+                        onChange={(e) => setLegalOwnerInput(e.target.value)}
+                        placeholder="Max Mustermann"
+                        className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Impressum-E-Mail *</label>
+                      <input
+                        type="email"
+                        value={legalEmailInput2}
+                        onChange={(e) => setLegalEmailInput2(e.target.value)}
+                        placeholder="info@beispiel.de"
+                        className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                      />
+                    </div>
+                    {generateLegalMutation.isError && (
+                      <p className="text-red-400 text-xs">{generateLegalMutation.error?.message || "Fehler beim Generieren"}</p>
+                    )}
+                  </div>
+                )}
+                <div className="flex gap-3 pt-2">
+                  {!legalDone && (
+                    <button
+                      disabled={
+                        legalOwnerInput.trim().split(/\s+/).length < 2 ||
+                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(legalEmailInput2) ||
+                        generateLegalMutation.isPending
+                      }
+                      onClick={async () => {
+                        await generateLegalMutation.mutateAsync({
+                          websiteId: website.id,
+                          legalOwner: legalOwnerInput.trim(),
+                          legalEmail: legalEmailInput2.trim(),
+                        });
+                      }}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                    >
+                      {generateLegalMutation.isPending ? "Generiere..." : "Generieren →"}
+                    </button>
+                  )}
+                  {legalDone && (
+                    <button
+                      onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 2)}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                    >
+                      Weiter →
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Final Step – Live schalten */}
+            {setupStepIdx === (addOns.contactForm ? 3 : 2) && (
+              <div className="p-6 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">🚀</div>
+                  <h3 className="text-white font-semibold text-lg">Deine Website ist bereit!</h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Schalte deine Website jetzt live. Sie wird öffentlich erreichbar unter:
+                  </p>
+                  <p className="text-blue-400 text-sm font-mono mt-2">
+                    {website.slug}.pageblitz.de
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { label: "Subdomain",              done: slugDone  },
+                    ...(addOns.contactForm ? [{ label: "Kontakt-E-Mail", done: emailDone }] : []),
+                    { label: "Impressum & Datenschutz", done: legalDone },
+                  ].map(({ label, done }) => (
+                    <div key={label} className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-amber-400"}`}>
+                      <span>{done ? "✓" : "⚠"}</span>
+                      <span>{label}</span>
+                    </div>
+                  ))}
+                </div>
+                {!legalDone && (
+                  <p className="text-amber-400 text-xs text-center bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
+                    ⚠ Impressum & Datenschutz fehlen noch – bitte erst generieren (vorheriger Schritt)
+                  </p>
+                )}
+                <button
+                  disabled={setLiveMutation.isPending || !legalDone}
+                  onClick={() => setLiveMutation.mutateAsync({ websiteId: website.id })}
+                  className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-lg shadow-emerald-900/30"
+                >
+                  {setLiveMutation.isPending ? "Wird live geschaltet..." : "⚡ Website jetzt live schalten"}
+                </button>
+              </div>
+            )}
+
+            {/* Step-Dots */}
+            <div className="flex justify-center gap-2 pb-4">
+              {Array.from({ length: addOns.contactForm ? 4 : 3 }).map((_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full transition-all ${
+                  i === setupStepIdx ? "bg-blue-400 w-4" : i < setupStepIdx ? "bg-emerald-400" : "bg-slate-600"
+                }`} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

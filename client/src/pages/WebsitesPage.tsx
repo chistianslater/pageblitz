@@ -49,6 +49,20 @@ const captureLabels: Record<string, string> = {
   abandoned: "Abgebrochen",
 };
 
+/**
+ * Derive the logical funnel status from both website status and captureStatus.
+ * An active/trialing/canceling website is always "converted" regardless of
+ * what captureStatus says (prevents "Aktiv + Onboarding gestartet" contradiction).
+ */
+function getEffectiveCaptureStatus(w: any): string {
+  if (w.status === "active" || w.status === "canceling" || w.status === "trialing") return "converted";
+  if (w.status === "sold") {
+    // Paid but onboarding not yet marked complete → at minimum onboarding_completed
+    if (w.captureStatus === "onboarding_started" || w.captureStatus === "email_captured") return "onboarding_completed";
+  }
+  return w.captureStatus || "email_captured";
+}
+
 // ── Main Page ───────────────────────────────────────────
 export default function WebsitesPage() {
   const utils = trpc.useUtils();
@@ -88,9 +102,12 @@ export default function WebsitesPage() {
   const allWebsites = websiteData?.websites || [];
   const allBusinesses = businessData?.businesses || [];
 
-  // Tab 1: GMB-Backlog – businesses without a generated website
+  // Tab 1: GMB-Backlog – only real GMB businesses (with placeId) without a generated website
   const businessesWithoutWebsite = allBusinesses.filter(b =>
-    !allWebsites.some((w: any) => w.businessId === b.id)
+    !allWebsites.some((w: any) => w.businessId === b.id) &&
+    b.placeId &&
+    !b.placeId.startsWith("self-") &&
+    !b.placeId.startsWith("email-")
   );
 
   // Tab 2: Admin-generated
@@ -433,6 +450,7 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
                         <CheckoutDialog website={w} />
                         <ActivateWebsiteButton website={w} />
                         <TestSubscriptionButton website={w} />
+                        <UnlockAllAddonsButton website={w} />
                         <RegenerateDialog website={w} />
                         <OutreachDialog website={w} />
                         <DeleteWebsiteDialog website={w} />
@@ -608,9 +626,11 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                     </TableCell>
                     <TableCell className="text-sm">{w.industry || "–"}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={captureColors[w.captureStatus] || ""}>
-                        {captureLabels[w.captureStatus] || w.captureStatus}
-                      </Badge>
+                      {(() => { const eff = getEffectiveCaptureStatus(w); return (
+                        <Badge variant="outline" className={captureColors[eff] || ""}>
+                          {captureLabels[eff] || eff}
+                        </Badge>
+                      ); })()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={statusColors[w.status] || ""}>
@@ -918,6 +938,24 @@ function TestSubscriptionButton({ website }: { website: any }) {
       disabled={createTestSub.isPending} title="Verknüpft diese Website mit deinem Account (für Test-Zwecke)">
       {createTestSub.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserPlus className="h-3 w-3 mr-1" />}
       Test-Abo
+    </Button>
+  );
+}
+
+function UnlockAllAddonsButton({ website }: { website: any }) {
+  const { user } = useAuth();
+  const utils = trpc.useUtils();
+  const unlockMutation = trpc.customer.unlockAllAddons.useMutation({
+    onSuccess: () => { utils.website.list.invalidate(); toast.success("Alle Add-ons freigeschaltet! 🎉"); },
+    onError: (err) => toast.error(err.message),
+  });
+  if (!user) return null;
+  return (
+    <Button variant="outline" size="sm" className="text-purple-400 border-purple-400/30 hover:bg-purple-400/10"
+      onClick={() => unlockMutation.mutate({ websiteId: website.id, userId: user.id })}
+      disabled={unlockMutation.isPending} title="Schaltet alle Add-ons für Testzwecke frei (ohne Stripe)">
+      {unlockMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+      Alle Add-ons
     </Button>
   );
 }

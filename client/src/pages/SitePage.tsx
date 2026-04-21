@@ -1,20 +1,99 @@
 import { trpc } from "@/lib/trpc";
 import { useParams } from "wouter";
+import { useEffect, useState } from "react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import CookieBanner from "@/components/CookieBanner";
+import ChatWidget from "@/components/ChatWidget";
+import BookingWidget from "@/components/BookingWidget";
 import { Loader2, AlertCircle } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 
-export default function SitePage() {
+export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   const params = useParams<{ slug: string }>();
+  const effectiveSlug = forceSlug ?? params.slug ?? "";
 
   const { data, isLoading, error } = trpc.website.get.useQuery(
-    { slug: params.slug },
-    { enabled: !!params.slug }
+    { slug: effectiveSlug },
+    { enabled: !!effectiveSlug, staleTime: 0, refetchOnMount: "always" }
   );
 
-  if (isLoading) {
+  // ── ALL hooks MUST be before any early returns (Rules of Hooks) ──────────
+  const [bookingOpen, setBookingOpen] = useState(false);
+
+  const umamiWebsiteId = (data?.website as any)?.umamiWebsiteId as string | null | undefined;
+  useEffect(() => {
+    if (!umamiWebsiteId) return;
+    if (document.getElementById("pb-umami-script")) return;
+    const s = document.createElement("script");
+    s.id = "pb-umami-script";
+    s.async = true;
+    s.defer = true;
+    s.src = "https://analytics.pageblitz.de/script.js";
+    s.setAttribute("data-website-id", umamiWebsiteId);
+    document.head.appendChild(s);
+  }, [umamiWebsiteId]);
+
+  // Redirect if the slug was a former (old preview) slug
+  useEffect(() => {
+    if (data?.redirectToSlug) {
+      window.location.replace(`/site/${data.redirectToSlug}`);
+    }
+  }, [data?.redirectToSlug]);
+
+  // ── SEO meta tags ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!data?.website) return;
+    const wd = data.website.websiteData as any;
+    const biz = data.business;
+    const businessName = wd?.businessName || biz?.name || "";
+    const city = biz?.address?.split(",")?.pop()?.trim() || "";
+    const category = (biz as any)?.category || "";
+
+    // Title: custom → fallback auto-generated
+    const title = wd?.seoTitle ||
+      (businessName && category && city
+        ? `${businessName} – ${category} in ${city}`
+        : businessName
+          ? `${businessName} – Offizielle Website`
+          : "Website");
+
+    // Description: custom → tagline → description → fallback
+    const description = wd?.seoDescription ||
+      wd?.tagline ||
+      (wd?.description ? wd.description.slice(0, 155) + (wd.description.length > 155 ? "…" : "") : "") ||
+      `${businessName} – Professionelle Website mit Infos zu Leistungen, Kontakt und mehr.`;
+
+    document.title = title;
+
+    // Helper: upsert a <meta> tag
+    const setMeta = (selector: string, attr: string, content: string) => {
+      let el = document.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr.split("=")[0], attr.split("=")[1] ?? attr);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+
+    setMeta('meta[name="description"]', 'name=description', description);
+    setMeta('meta[property="og:title"]', 'property=og:title', title);
+    setMeta('meta[property="og:description"]', 'property=og:description', description);
+    setMeta('meta[property="og:type"]', 'property=og:type', "website");
+    if (wd?.heroImageUrl || (data.website as any).heroImageUrl) {
+      setMeta('meta[property="og:image"]', 'property=og:image', wd?.heroImageUrl || (data.website as any).heroImageUrl);
+    }
+
+    return () => {
+      // Restore on unmount (navigation away)
+      document.title = "Pageblitz";
+    };
+  }, [data]);
+
+  // Also show spinner while slug isn't resolved yet (wouter params timing)
+  if (!effectiveSlug || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
@@ -40,8 +119,11 @@ export default function SitePage() {
   const websiteData = data.website.websiteData as WebsiteData;
   const colorScheme = data.website.colorScheme as ColorScheme;
   const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
+  const aboutImageUrl = (data.website as any).aboutImageUrl as string | null | undefined;
   const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
   const business = data.business;
+  const w = data.website as any;
+  const primaryColor = colorScheme?.primary || "#2563eb";
 
   return (
     <>
@@ -49,14 +131,64 @@ export default function SitePage() {
         websiteData={websiteData}
         colorScheme={colorScheme}
         heroImageUrl={heroImageUrl}
+        aboutImageUrl={aboutImageUrl}
         layoutStyle={layoutStyle}
         businessPhone={business?.phone || undefined}
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
         openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
-        slug={params.slug}
+        slug={effectiveSlug}
       />
-      <CookieBanner slug={params.slug} primaryColor={colorScheme.primary} />
+      <CookieBanner slug={effectiveSlug} primaryColor={primaryColor} />
+
+      {/* Booking Add-on: floating pill button (only booking, no chat) */}
+      {w.addOnBooking && !w.addOnAiChat && (
+        <>
+          <button
+            onClick={() => setBookingOpen(true)}
+            className="fixed bottom-6 right-6 z-[9998] flex items-center gap-2 px-4 py-3 rounded-full shadow-xl font-medium text-sm transition-all hover:scale-105 active:scale-95"
+            style={{ backgroundColor: primaryColor, color: colorScheme?.onPrimary || "#ffffff" }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            Termin buchen
+          </button>
+          <AnimatePresence>
+            {bookingOpen && (
+              <BookingWidget slug={effectiveSlug} primaryColor={primaryColor} onClose={() => setBookingOpen(false)} />
+            )}
+          </AnimatePresence>
+        </>
+      )}
+
+      {/* Booking Add-on: round icon button bottom-left (both add-ons active) */}
+      {w.addOnBooking && w.addOnAiChat && (
+        <button
+          onClick={() => setBookingOpen(true)}
+          className="fixed bottom-6 left-6 z-[9998] w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+          style={{ backgroundColor: primaryColor, color: colorScheme?.onPrimary || "#ffffff" }}
+          aria-label="Termin buchen"
+          title="Termin buchen"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+        </button>
+      )}
+
+      {/* AI Chat */}
+      {w.addOnAiChat && (
+        <ChatWidget
+          slug={effectiveSlug}
+          primaryColor={primaryColor}
+          businessName={websiteData?.businessName || business?.name || "Assistent"}
+          welcomeMessage={w.chatWelcomeMessage || undefined}
+          addOnBooking={!!w.addOnBooking}
+          onBookingRequest={() => setBookingOpen(true)}
+        />
+      )}
+      <AnimatePresence>
+        {w.addOnBooking && bookingOpen && (
+          <BookingWidget slug={effectiveSlug} primaryColor={primaryColor} onClose={() => setBookingOpen(false)} />
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -1,75 +1,340 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle, GripVertical } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle, GripVertical, Eye } from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
+import ChatWidget from "@/components/ChatWidget";
+import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory, CATEGORY_GROUPS } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
-import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
+import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FONTS, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
 import { getGalleryImages, getHeroImageUrl, getAboutImageUrl, getRawIndustryColors } from "@shared/industryImages";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
 
+// ── A/B Template Variant Picker ──────────────────────────────────────────────
+
+/**
+ * Industry-specific ranked ordering within each of the 3 design families.
+ * Tuple: [bold_dark_family[], elegant_refined_family[], clean_warm_family[]]
+ * `round` indexes into each family — "Andere zeigen" increments round.
+ */
+const VARIANT_FAMILY_RANKINGS: Record<string, [string[], string[], string[]]> = {
+  friseur:       [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
+  beauty:        [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
+  restaurant:    [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+  food:          [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+  baeckerei:     [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+  fitness:       [["dynamic","aurora","nexus","bold","flux"], ["craft","forge","natural","elegant","luxury"],  ["pulse","fresh","clean","clay","modern","warm"]],
+  bauunternehmen:[["bold","nexus","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  handwerk:      [["bold","nexus","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  medizin:       [["nexus","aurora","bold","flux","dynamic"], ["forge","natural","elegant","luxury","craft"],  ["pulse","clean","clay","modern","fresh","warm"]],
+  medical:       [["nexus","aurora","bold","flux","dynamic"], ["forge","natural","elegant","luxury","craft"],  ["pulse","clean","clay","modern","fresh","warm"]],
+  beratung:      [["nexus","aurora","bold","flux","dynamic"], ["forge","elegant","luxury","natural","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
+  legal:         [["nexus","aurora","bold","flux","dynamic"], ["forge","elegant","luxury","natural","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
+  tech:          [["aurora","nexus","dynamic","bold","flux"], ["forge","elegant","natural","luxury","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
+  immobilien:    [["nexus","aurora","bold","flux","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  auto:          [["nexus","flux","bold","aurora","dynamic"], ["forge","luxury","craft","elegant","natural"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  automotive:    [["nexus","flux","bold","aurora","dynamic"], ["forge","luxury","craft","elegant","natural"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  fotografie:    [["aurora","flux","nexus","bold","dynamic"], ["elegant","forge","luxury","natural","craft"],  ["clay","modern","pulse","clean","fresh","warm"]],
+  hospitality:   [["aurora","flux","nexus","bold","dynamic"], ["luxury","elegant","forge","natural","craft"],  ["warm","fresh","clay","clean","modern","pulse"]],
+  bar:           [["flux","aurora","bold","nexus","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["warm","clay","fresh","clean","modern","pulse"]],
+  hotel:         [["flux","aurora","bold","nexus","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["warm","clay","fresh","clean","modern","pulse"]],
+  garten:        [["aurora","nexus","bold","flux","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["warm","fresh","clay","clean","modern","pulse"]],
+  nature:        [["aurora","nexus","bold","flux","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["warm","fresh","clay","clean","modern","pulse"]],
+  cleaning:      [["nexus","bold","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","pulse","modern","clay","fresh","warm"]],
+  education:     [["nexus","aurora","bold","flux","dynamic"], ["natural","forge","elegant","luxury","craft"],  ["clean","pulse","modern","clay","fresh","warm"]],
+  fastfood:      [["bold","nexus","aurora","flux","dynamic"], ["craft","forge","natural","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+};
+
+const DEFAULT_VARIANT_RANKINGS: [string[], string[], string[]] = [
+  ["nexus","aurora","bold","flux","dynamic"],
+  ["forge","elegant","luxury","natural","craft"],
+  ["clay","pulse","fresh","clean","modern","warm"],
+];
+
+/** Returns 3 layout names — one per design family — based on industry + round. */
+function getVariantLayouts(industryKey: string, round: number): string[] {
+  const families = VARIANT_FAMILY_RANKINGS[industryKey] || DEFAULT_VARIANT_RANKINGS;
+  return families.map((family) => family[round % family.length]);
+}
+
+/** Friendly display names per layout style. */
+const LAYOUT_LABELS: Record<string, string> = {
+  aurora: "Aurora",  nexus: "Nexus",    bold: "Bold",    flux: "Flux",    dynamic: "Dynamic",
+  forge: "Forge",    elegant: "Elegant",luxury: "Luxury", natural: "Natural", craft: "Craft",
+  clay: "Clay",      pulse: "Pulse",    fresh: "Fresh",  clean: "Clean",  warm: "Warm", modern: "Modern",
+  vibrant: "Vibrant",trust: "Trust",
+};
+
+/** Short mood line shown under each preview. */
+const LAYOUT_VIBES: Record<string, string> = {
+  aurora:  "Dunkel · Kosmisch",    nexus:   "Präzise · Navy",        bold:    "Stark · Schwarz-Gold",
+  flux:    "Dunkel · Warmes Gold", dynamic: "Energie · Diagonal",    forge:   "Edel · Zeitlos",
+  elegant: "Warm · Éditoriel",     luxury:  "Premium · Cinématisch", natural: "Organisch · Erdtöne",
+  craft:   "Handwerk · Industrial",clay:    "Soft · Verspielt",      pulse:   "Hell · Vertrauensvoll",
+  fresh:   "Frisch · Luftig",      clean:   "Klar · Minimalistisch", warm:    "Herzlich · Einladend",
+  modern:  "Modern · Asymmetrisch",vibrant: "Neon · Energie",        trust:   "Klassisch · Professionell",
+};
+
+/**
+ * Full-screen carousel picker — one live layout preview at a time.
+ *
+ * Each preview is an <iframe src="/variant-preview?websiteId=…&layout=…">
+ * with width=1280. The iframe has its own 1280 px viewport so every Tailwind
+ * responsive breakpoint (md:, lg:, …) fires correctly and the layout looks
+ * exactly like the desktop version – just scaled down to fit the card.
+ *
+ * All 3 variant iframes are mounted up-front (visibility:hidden for inactive
+ * ones) so switching between styles is instant – no reload delay.
+ */
+const DESKTOP_IFRAME_W = 1280;
+const MOBILE_IFRAME_W  = 390;
+// Viewport heights: must match real screen sizes so 100vh/min-h-screen
+// renders correctly. Card's overflow:hidden clips to the visible area.
+const DESKTOP_IFRAME_H = 900;
+const MOBILE_IFRAME_H  = 844;  // iPhone 14 viewport height
+
+function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, onSkip }: {
+  websiteId: number;
+  websiteData?: any;
+  heroImageUrl?: string;
+  aboutImageUrl?: string;
+  industryKey: string;
+  onConfirm: (layoutStyle: string) => void;
+  onSkip: () => void;
+}) {
+  const [round, setRound]         = useState(() => Math.floor(Math.random() * 5));
+  const [activeIdx, setActiveIdx] = useState(0);
+  const cardRef                   = useRef<HTMLDivElement>(null);
+  const [scale, setScale]         = useState(0.3);
+  const [iframeW, setIframeW]     = useState(MOBILE_IFRAME_W);
+  const [iframeH, setIframeH]     = useState(MOBILE_IFRAME_H);
+  const selectMutation            = trpc.selfService.selectWebsiteTemplate.useMutation();
+
+  // On narrow cards (phones) use a 390 px mobile iframe so the layout is readable.
+  // On wider cards (desktop) use the full 1280 px desktop iframe.
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const update = () => {
+      const cw = el.clientWidth;
+      const mobile = cw < 600;
+      const iw = mobile ? MOBILE_IFRAME_W : DESKTOP_IFRAME_W;
+      const ih = mobile ? MOBILE_IFRAME_H : DESKTOP_IFRAME_H;
+      setIframeW(iw);
+      setIframeH(ih);
+      setScale(cw / iw);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const variants = getVariantLayouts(industryKey, round);
+  const selected  = variants[activeIdx];
+
+  const goNext = () => setActiveIdx((i) => (i + 1) % variants.length);
+  const goPrev = () => setActiveIdx((i) => (i + variants.length - 1) % variants.length);
+  const handleOtherLayouts = () => { setRound((r) => r + 1); setActiveIdx(0); };
+
+  const handleConfirm = async () => {
+    const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected];
+    try {
+      await selectMutation.mutateAsync({ websiteId, layoutStyle: selected, colorScheme: cs ?? undefined });
+    } catch { /* non-critical */ }
+    onConfirm(selected);
+  };
+
+  const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected] as any)?.primary ?? "#6366f1";
+
+  return (
+    <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col overflow-hidden select-none">
+
+      {/* ── Header ── */}
+      <div className="flex-shrink-0 pt-4 pb-2 px-6 text-center">
+        <h1 className="text-xl font-bold text-white mb-0.5">Welcher Stil passt zu dir?</h1>
+        <p className="text-slate-400 text-xs max-w-sm mx-auto">
+          Farben &amp; Inhalte lassen sich jederzeit anpassen.
+        </p>
+      </div>
+
+      {/* ── Preview row — fills remaining vertical space ── */}
+      <div className="flex-1 min-h-0 flex items-center gap-2 px-3 py-2">
+
+        {/* Prev arrow */}
+        <button type="button" onClick={goPrev}
+          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/*
+          Card — self-stretch so it fills the full height of the flex row.
+          overflow:hidden clips the absolutely-positioned iframes to this box.
+        */}
+        <div
+          ref={cardRef}
+          className="flex-1 self-stretch min-w-0 rounded-xl overflow-hidden relative"
+          style={{ boxShadow: `0 0 0 2px ${accentColor}44, 0 20px 48px -8px rgba(0,0,0,0.85)` }}
+        >
+          {/* One iframe per variant — inactive ones hidden via display:none */}
+          {variants.map((layout, i) => (
+            <iframe
+              key={`${round}-${layout}-${heroImageUrl ?? ""}`}
+              src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
+              width={iframeW}
+              height={iframeH}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                display: i === activeIdx ? "block" : "none",
+                transformOrigin: "top left",
+                transform: `scale(${scale})`,
+                pointerEvents: "none",
+                border: "none",
+              }}
+              title={`Preview ${layout}`}
+            />
+          ))}
+
+          {/* Fade-out at the bottom so the crop looks intentional */}
+          <div className="absolute bottom-0 inset-x-0 h-14 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, transparent, rgba(2,6,23,0.95))" }} />
+        </div>
+
+        {/* Next arrow */}
+        <button type="button" onClick={goNext}
+          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Dot indicators + layout name ── */}
+      <div className="flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-1">
+        <div className="flex gap-2">
+          {variants.map((_, i) => (
+            <button key={i} type="button" onClick={() => setActiveIdx(i)}
+              className={`rounded-full transition-all ${i === activeIdx ? "w-5 h-2 bg-blue-400" : "w-2 h-2 bg-slate-600 hover:bg-slate-500"}`} />
+          ))}
+        </div>
+        <div className="text-center">
+          <span className="text-white text-sm font-semibold">{LAYOUT_LABELS[selected] ?? selected}</span>
+          <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
+        </div>
+      </div>
+
+      {/* ── Actions ── */}
+      <div className="flex-shrink-0 flex flex-col items-center gap-2 px-6 pt-1.5"
+        style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 1.25rem))" }}>
+        <button type="button" onClick={handleConfirm} disabled={selectMutation.isPending}
+          className="w-full max-w-xs py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2">
+          {selectMutation.isPending ? (
+            <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Wird gespeichert…</>
+          ) : (
+            <>Dieses Design übernehmen <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></>
+          )}
+        </button>
+        <button type="button" onClick={handleOtherLayouts}
+          className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium transition-colors py-1">
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Andere Stile zeigen
+        </button>
+        <button type="button" onClick={onSkip}
+          className="text-slate-600 hover:text-slate-400 text-xs transition-colors py-0.5">
+          Überspringen
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Epic Loading Screen Component ───────────────────────────────────────────
 
-// WarpStar Interface für 3D Hyperraum-Effekt
-interface WarpStar {
-  id: number;
-  x: number;
-  y: number;
-  z: number;
-  size: number;
-  speed: number;
+// Star data stored in refs – never causes React re-renders
+interface WarpStarData {
+  x: number; y: number; z: number; size: number; speed: number; hue: number;
 }
 
 const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: number }) => {
-  const [warpStars, setWarpStars] = useState<WarpStar[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const starsRef = useRef<WarpStarData[]>([]);
 
-  // Initialize warp stars - mehr Sterne, größer und heller
+  // Canvas-based warp animation – zero React re-renders per frame
   useEffect(() => {
-    const stars: WarpStar[] = Array.from({ length: 400 }, (_, i) => ({
-      id: i,
-      x: (Math.random() - 0.5) * 2500,
-      y: (Math.random() - 0.5) * 2500,
-      z: Math.random() * 2000,
-      size: Math.random() * 3 + 1.5, // Größere Sterne (1.5 - 4.5px)
-      speed: Math.random() * 20 + 15, // Schneller für mehr Dynamik
-    }));
-    setWarpStars(stars);
-  }, []);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  // Animation loop for warp effect
-  useEffect(() => {
-    const animate = () => {
-      setWarpStars(prevStars =>
-        prevStars.map(star => {
-          let newZ = star.z - star.speed;
-          if (newZ <= 0) {
-            newZ = 2000;
-            return {
-              ...star,
-              z: newZ,
-              x: (Math.random() - 0.5) * 2000,
-              y: (Math.random() - 0.5) * 2000,
-            };
-          }
-          return { ...star, z: newZ };
-        })
-      );
-      animationRef.current = requestAnimationFrame(animate);
+    const isMobile = window.innerWidth < 768;
+    const starCount = isMobile ? 80 : 220;
+
+    const init = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      starsRef.current = Array.from({ length: starCount }, () => ({
+        x: (Math.random() - 0.5) * 2,
+        y: (Math.random() - 0.5) * 2,
+        z: Math.random(),
+        size: Math.random() * 2 + 0.5,
+        speed: Math.random() * 0.012 + 0.005,
+        hue: [200, 180, 220][Math.floor(Math.random() * 3)],
+      }));
     };
+    init();
+    window.addEventListener("resize", init);
 
-    animationRef.current = requestAnimationFrame(animate);
+    const draw = () => {
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h / 2;
+      ctx.clearRect(0, 0, w, h);
+
+      starsRef.current.forEach((s) => {
+        const prevZ = s.z;
+        s.z -= s.speed;
+        if (s.z <= 0.01) {
+          s.z = 1; s.x = (Math.random() - 0.5) * 2; s.y = (Math.random() - 0.5) * 2;
+          s.hue = [200, 180, 220][Math.floor(Math.random() * 3)];
+          return;
+        }
+        const scale = 1 / s.z;
+        const prevScale = 1 / prevZ;
+        const sx = cx + s.x * cx * scale * 1.4;
+        const sy = cy + s.y * cy * scale * 1.4;
+        const px = cx + s.x * cx * prevScale * 1.4;
+        const py = cy + s.y * cy * prevScale * 1.4;
+        const opacity = Math.min(0.9, (1 - s.z) * 0.85 + 0.1);
+        const grad = ctx.createLinearGradient(px, py, sx, sy);
+        grad.addColorStop(0, "transparent");
+        grad.addColorStop(1, `hsla(${s.hue},100%,82%,${opacity})`);
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(sx, sy);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = Math.max(0.4, s.size * scale * 1.5);
+        ctx.stroke();
+      });
+
+      animationRef.current = requestAnimationFrame(draw);
+    };
+    animationRef.current = requestAnimationFrame(draw);
+
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      cancelAnimationFrame(animationRef.current);
+      window.removeEventListener("resize", init);
     };
   }, []);
 
@@ -86,87 +351,16 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0a0a0a]">
-      {/* Animated Gradient Orbs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            x: ["-20%", "0%", "-20%"],
-            y: ["-10%", "10%", "-10%"],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] bg-blue-500/20 rounded-full blur-[120px]"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            x: ["20%", "-10%", "20%"],
-            y: ["10%", "-10%", "10%"],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[100px]"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            x: ["10%", "-20%", "10%"],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[80px]"
-        />
+    <div className="relative overflow-hidden bg-[#0a0a0a]" style={{ height: "100dvh" }}>
+      {/* Gradient orbs – mobile-sized, no heavy motion animations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-blue-500/20 rounded-full blur-[80px]" />
+        <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] max-w-[400px] max-h-[400px] bg-purple-500/20 rounded-full blur-[70px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] max-w-[350px] max-h-[350px] bg-indigo-500/15 rounded-full blur-[60px]" />
       </div>
 
-      {/* Warp Speed / Hyperraum Effekt */}
-      <div
-        ref={containerRef}
-        className="absolute inset-0 overflow-hidden pointer-events-none"
-        style={{
-          perspective: "500px",
-          transformStyle: "preserve-3d",
-        }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            transformStyle: "preserve-3d",
-            transform: "rotateX(0deg)",
-          }}
-        >
-          {warpStars.map((star) => {
-            const perspective = 500;
-            const scale = perspective / (perspective + star.z);
-            const x = star.x * scale + 50;
-            const y = star.y * scale + 50;
-            // Höhere Opazität für bessere Sichtbarkeit
-            const opacity = Math.min(1, (2000 - star.z) / 800) * scale + 0.3;
-            const trailLength = Math.max(15, star.speed * scale * 4);
-            // Zufällige Farbe: Blau, Cyan oder Weiß für mehr Varianz
-            const hue = Math.random() > 0.7 ? 200 : (Math.random() > 0.5 ? 180 : 220); // Blau/Cyan Töne
-
-            return (
-              <div
-                key={star.id}
-                className="absolute"
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  width: `${trailLength}px`,
-                  height: `${star.size * scale}px`,
-                  background: `linear-gradient(90deg, transparent, hsla(${hue}, 100%, 85%, ${opacity}))`,
-                  transform: `translate(-50%, -50%) rotate(${Math.atan2(y - 50, x - 50) * (180 / Math.PI)}deg)`,
-                  opacity: Math.min(1, opacity),
-                  boxShadow: `
-                    0 0 ${6 * scale}px hsla(${hue}, 100%, 80%, ${opacity}),
-                    0 0 ${12 * scale}px hsla(${hue}, 100%, 70%, ${opacity * 0.5})
-                  `,
-                  borderRadius: '2px',
-                }}
-              />
-            );
-          })}
-        </div>
-      </div>
+      {/* Warp Speed – Canvas-rendered, zero React re-renders */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
       {/* Grid Pattern Overlay */}
       <div
@@ -286,7 +480,10 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
         </motion.div>
 
         {/* Tech specs floating badges */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 flex-wrap px-4">
+        <div
+          className="absolute left-0 right-0 flex justify-center gap-4 flex-wrap px-4 pb-8"
+          style={{ bottom: "env(safe-area-inset-bottom)" }}
+        >
           {["KI-gestützt", "SEO-optimiert", "Mobile-ready", "Blitzschnell"].map((tag, i) => (
             <motion.div
               key={tag}
@@ -312,6 +509,12 @@ interface SubPage {
   description: string;
 }
 
+interface GalleryAlbum {
+  id: string;
+  name: string;
+  images: string[]; // first image = cover
+}
+
 interface MenuItem {
   name: string;
   description: string;
@@ -335,6 +538,17 @@ interface PriceListCategory {
   items: PriceListItem[];
 }
 
+interface DayHours {
+  day: string;
+  open: boolean;
+  from: string;
+  to: string;
+  from2?: string; // optional second time slot (e.g. after lunch break)
+  to2?: string;
+}
+
+const WEEKDAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+
 interface OnboardingData {
   businessCategory: string;
   businessName: string;
@@ -349,6 +563,7 @@ interface OnboardingData {
   legalCity: string;
   legalEmail: string;
   legalPhone: string;
+  openingHours: DayHours[] | null;
   legalVatId: string;
   colorScheme: ColorScheme;
   heroPhotoUrl: string; // selected or uploaded hero photo URL
@@ -359,11 +574,14 @@ interface OnboardingData {
   addOnContactForm: boolean;
   contactFormFields: { id: string; label: string; placeholder: string; type: "text" | "email" | "textarea" | "select"; required: boolean; options?: string[] }[];
   addOnGallery: boolean;
-  addOnGalleryData: { headline?: string; images: string[] };
+  addOnGalleryData: { headline?: string; mode?: 'single' | 'albums'; images: string[]; albums: GalleryAlbum[] };
   addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
   addOnMenuData: { headline?: string; categories: MenuCategory[] };
   addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
   addOnPricelistData: { headline?: string; categories: PriceListCategory[] };
+  addOnAiChat: boolean;     // KI-Chat-Widget
+  chatWelcomeMessage: string; // Begrüßungsnachricht für KI-Chat
+  addOnBooking: boolean;    // Terminbuchung
   addressingMode: 'du' | 'Sie'; // Besucher duzen oder siezen
   subPages: SubPage[];
   email: string; // for FOMO reminder
@@ -389,6 +607,7 @@ type ChatStep =
   | "legalZipCity"
   | "legalEmail"
   | "legalPhone"
+  | "openingHours"
   | "legalVat"
   | "colorScheme"
   | "brandColor"
@@ -399,6 +618,7 @@ type ChatStep =
   | "headlineFont"
   | "headlineSize"
   | "addons"
+  | "editAiChat"
   | "editMenu"
   | "editPricelist"
   | "editGallery"
@@ -442,8 +662,10 @@ const STEP_ORDER: ChatStep[] = [
   "legalZipCity",
   "legalEmail",
   "legalPhone",
+  "openingHours",
   "legalVat",
   "addons",
+  "editAiChat",
   "editMenu",
   "editPricelist",
   "editGallery",
@@ -479,8 +701,10 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   legalZipCity: null,
   legalEmail: null,
   legalPhone: null,
+  openingHours: "kontakt",
   legalVat: null,
   addons: null,
+  editAiChat: null,
   editMenu: "speisekarte",
   editPricelist: "preise",
   editGallery: "galerie",
@@ -525,6 +749,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
 
+  // Billing interval – read from URL param (passed from LandingPage), default: yearly
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(() => {
+    const param = new URLSearchParams(window.location.search).get("billing");
+    return param === "monthly" ? "monthly" : "yearly";
+  });
+
   // ── Website data ────────────────────────────────────────────────────────
   const { data: siteData, isLoading: siteLoading, error: siteError, refetch: refetchSiteData } = trpc.website.get.useQuery(
     { token: previewToken, id: websiteIdProp },
@@ -546,6 +776,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
   const business = siteData?.business;
+  // Hide FOMO banner once checkout is completed (sold = paid, active = live)
+  const isPaid = siteData?.website?.status === "sold" || siteData?.website?.status === "active";
 
   // ── Dynamic step order based on layout and websiteData ──────────────────
   // These mirror data.addOn* but are declared before `data` to avoid
@@ -553,12 +785,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [_addOnMenu, _setAddOnMenu] = useState(false);
   const [_addOnPricelist, _setAddOnPricelist] = useState(false);
   const [_addOnGallery, _setAddOnGallery] = useState(false);
+  const [_addOnAiChat, _setAddOnAiChat] = useState(false);
   const dynamicStepOrder = useMemo(() => {
     const layout = (siteData?.website as any)?.layoutStyle as string | undefined;
     const websiteDataRaw = siteData?.website?.websiteData as any;
     const sections = websiteDataRaw?.sections || [];
     const hasAbout = sections.some((s: any) => s.type === "about");
-    const layoutHasAboutImage = !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
+    // For non-GMB users the initial generation runs with empty category → random layout
+    // from the "general" pool (may include layouts without about-image like "trust").
+    // Since the real layout is re-assigned on final generation, always show aboutPhoto
+    // for non-GMB users regardless of the preliminary layoutStyle.
+    const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
+    const layoutHasAboutImage = !isGmbFlow || !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
     const hasCustomerEmail = !!(siteData?.website as any)?.customerEmail;
 
     return STEP_ORDER.filter((step) => {
@@ -567,13 +805,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // yet be loaded when dynamicStepOrder is first computed, leading to the
       // step being silently skipped on initial render.
       if (step === "aboutPhoto") return layoutHasAboutImage;
+      if (step === "editAiChat") return _addOnAiChat;
       if (step === "editMenu") return _addOnMenu;
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
       if (step === "email") return !hasCustomerEmail; // Skip email step if already provided
+      // Opening hours only for manual onboarding (GMB already has hours from Google)
+      if (step === "openingHours") return !isGmbFlow;
       return true;
     });
-  }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery]);
+  }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -594,6 +835,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  // Only show exit-intent overlay once per session (not on every upward mouse move)
+  const exitIntentShownRef = useRef(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
 
   useEffect(() => {
@@ -607,14 +850,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // intentionally left blank – no native browser dialog
     };
 
-    // Exit intent (mouse leaves window upwards)
+    // Exit intent (mouse leaves window upwards) – shows at most once per session
     const handleMouseOut = (e: MouseEvent) => {
-      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview") {
-        if (hasUserEmail && !showExitConfirmation) {
-          // Show confirmation for logged-in users
+      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email" && !exitIntentShownRef.current) {
+        exitIntentShownRef.current = true;
+        if (hasUserEmail) {
           setShowExitConfirmation(true);
-        } else if (!hasUserEmail && !showExitIntent) {
-          // Show email capture for guests
+        } else {
           setShowExitIntent(true);
         }
       }
@@ -630,7 +872,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       }
     };
-  }, [currentStep, showExitIntent, showExitConfirmation, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
+  }, [currentStep, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -639,6 +881,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [sectionOrder, setSectionOrder] = useState<string[]>([]);
   const [draggedSectionIdx, setDraggedSectionIdx] = useState<number | null>(null);
   const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
+  // Opening hours widget state
+  const [hoursState, setHoursState] = useState<DayHours[]>(() =>
+    WEEKDAYS.map((day, i) => ({ day, open: i < 5, from: "09:00", to: "18:00" }))
+  );
   const [quickReplySelected, setQuickReplySelected] = useState(false);
   const [inPlaceEditId, setInPlaceEditId] = useState<string | null>(null);
   const [inPlaceEditValue, setInPlaceEditValue] = useState("");
@@ -646,6 +892,46 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [previewScrollTop, setPreviewScrollTop] = useState(0);
   const [previewNotification, setPreviewNotification] = useState<string | null>(null);
   const [showFullPreview, setShowFullPreview] = useState(false);
+  const [showExtendModal, setShowExtendModal] = useState(false);
+  const [extendReason, setExtendReason] = useState<string>("");
+  const [extendSubmitting, setExtendSubmitting] = useState(false);
+  const [extendSuccess, setExtendSuccess] = useState<string | null>(null);
+  const [extendError, setExtendError] = useState<string | null>(null);
+
+  const extendMutation = trpc.lifecycle.extendByPreviewToken.useMutation();
+  const reservationQuery = trpc.lifecycle.getReservation.useQuery(
+    { previewToken: previewToken || "" },
+    { enabled: !!previewToken, staleTime: 30_000 },
+  );
+
+  const handleExtend = async () => {
+    if (!previewToken) return;
+    setExtendSubmitting(true);
+    setExtendError(null);
+    try {
+      const res = await extendMutation.mutateAsync({
+        previewToken,
+        reason: extendReason || undefined,
+      });
+      if (res.newReservedUntil) {
+        const newMs = new Date(res.newReservedUntil).getTime();
+        // Sync lokalen FOMO-Timer mit neuer Backend-Deadline
+        const key = `pageblitz_fomo_${previewToken || websiteIdProp}`;
+        localStorage.setItem(key, String(newMs));
+        setFomoExpiresAt(newMs);
+      }
+      setExtendSuccess(
+        res.remainingExtensions && res.remainingExtensions > 0
+          ? `Super – du hast jetzt 24 Stunden mehr Zeit. Du kannst noch ${res.remainingExtensions}× verlängern.`
+          : "Super – du hast jetzt 24 Stunden mehr Zeit. Das war deine letzte Verlängerung.",
+      );
+      reservationQuery.refetch();
+    } catch (e: any) {
+      setExtendError(e?.message || "Verlängerung fehlgeschlagen. Bitte später erneut versuchen.");
+    } finally {
+      setExtendSubmitting(false);
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -654,6 +940,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // Refs für Kaskaden-Update bei Branchen-Änderung
   const prevCategoryRef = useRef<string>('');
   const contentPhaseRef = useRef<'skeleton' | 'colors' | 'images' | 'texts' | 'complete'>('skeleton');
+  // Guard: Phase-2 KI-Textgenerierung nur einmal ausführen (verhindert Re-Trigger bei State-Changes)
+  const contentGenerationAttemptedRef = useRef(false);
 
   // Auto-scroll preview to current section
   useEffect(() => {
@@ -700,6 +988,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     legalCity: "",
     legalEmail: "",
     legalPhone: "",
+    openingHours: null,
     legalVatId: "",
     colorScheme: withOnColors({
       primary: "#3B82F6",
@@ -723,11 +1012,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
     ],
     addOnGallery: false,
-    addOnGalleryData: { headline: "Unsere Galerie", images: [] },
+    addOnGalleryData: { headline: "Unsere Galerie", mode: 'single', images: [], albums: [] },
     addOnMenu: false,
     addOnMenuData: { headline: "Unsere Speisekarte", categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
     addOnPricelist: false,
     addOnPricelistData: { headline: "Unsere Preise", categories: [{ id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] }] },
+    addOnAiChat: false,
+    chatWelcomeMessage: "",
+    addOnBooking: false,
     subPages: [],
     email: "",
   });
@@ -834,6 +1126,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (existingOnboarding.addOnContactForm !== undefined && existingOnboarding.addOnContactForm !== null) {
       setData(p => ({ ...p, addOnContactForm: existingOnboarding.addOnContactForm! }));
     }
+    if (existingOnboarding.addOnAiChat !== undefined && existingOnboarding.addOnAiChat !== null) {
+      setData(p => ({ ...p, addOnAiChat: existingOnboarding.addOnAiChat! }));
+      _setAddOnAiChat(existingOnboarding.addOnAiChat!);
+    }
+    if (existingOnboarding.addOnBooking !== undefined && existingOnboarding.addOnBooking !== null) {
+      setData(p => ({ ...p, addOnBooking: existingOnboarding.addOnBooking! }));
+    }
+    if (existingOnboarding.chatWelcomeMessage) {
+      setData(p => ({ ...p, chatWelcomeMessage: existingOnboarding.chatWelcomeMessage! }));
+    }
     // Sync contact form fields - default to simple fields for onboarding
     if (existingOnboarding.contactFormFields) {
       setData(p => ({ ...p, contactFormFields: existingOnboarding.contactFormFields! }));
@@ -860,17 +1162,29 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }));
     }
-    // Note: Gallery data is stored in the database but the field name may differ
-    // The gallery images are stored via photoUrls or addOnGalleryData
-    const galleryImages = (existingOnboarding as any).photoUrls || (existingOnboarding as any).addOnGalleryData?.images || [];
-    if (galleryImages.length > 0) {
-      setData(p => ({
-        ...p,
-        addOnGalleryData: {
-          ...p.addOnGalleryData,
-          images: galleryImages
-        }
-      }));
+    // Gallery: restore images, mode and albums
+    const savedGallery = (existingOnboarding as any).addOnGalleryData as any;
+    const galleryImages = (existingOnboarding as any).photoUrls || savedGallery?.images || [];
+    const galleryMode = savedGallery?.mode || 'single';
+    const galleryAlbums: GalleryAlbum[] = savedGallery?.albums || [];
+    setData(p => ({
+      ...p,
+      addOnGalleryData: {
+        headline: savedGallery?.headline || p.addOnGalleryData.headline,
+        mode: galleryMode,
+        images: galleryImages.length > 0 ? galleryImages : p.addOnGalleryData.images,
+        albums: galleryAlbums.length > 0 ? galleryAlbums : p.addOnGalleryData.albums,
+      }
+    }));
+
+    // Restore section order and visibility from hideSections step
+    const rawSectionOrder = (existingOnboarding as any).sectionOrder;
+    if (Array.isArray(rawSectionOrder) && rawSectionOrder.length > 0) {
+      setSectionOrder(rawSectionOrder);
+    }
+    const rawHiddenSections = (existingOnboarding as any).hiddenSections;
+    if (Array.isArray(rawHiddenSections) && rawHiddenSections.length > 0) {
+      setHiddenSections(new Set<string>(rawHiddenSections));
     }
   }, [existingOnboarding]);
 
@@ -885,17 +1199,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (data.addOnGallery !== _addOnGallery) {
       _setAddOnGallery(data.addOnGallery);
     }
-  }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, _addOnMenu, _addOnPricelist, _addOnGallery]);
-
-  // ── Save current step to localStorage whenever it changes ───────────────
-  useEffect(() => {
-    if (currentStep === 'welcome') return; // Don't save initial state
-
-    const effectiveWebsiteId = websiteIdProp || websiteId;
-    if (effectiveWebsiteId && currentStep) {
-      localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, currentStep);
+    if (data.addOnAiChat !== _addOnAiChat) {
+      _setAddOnAiChat(data.addOnAiChat);
     }
-  }, [currentStep, websiteId, websiteIdProp]);
+  }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, data.addOnAiChat, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
+
+  // ── Stable localStorage key – available immediately from props (no async) ──
+  // For /preview/TOKEN/onboarding: uses previewToken (always present, no waiting for siteData)
+  // For /website/ID/onboarding:    uses websiteIdProp (always present)
+  // This replaces the old approach of using the async `websiteId` from siteData.
+  const onboardingStorageKey = previewToken
+    ? `onboarding_step_token_${previewToken}`
+    : websiteIdProp
+    ? `onboarding_step_${websiteIdProp}`
+    : null;
 
   // ── Resume from database when onboarding data loads ────────────────────
   // This effect runs when onboarding data is loaded from the server
@@ -904,14 +1221,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Only proceed if we have onboarding data and are still at welcome step
     if (!existingOnboarding || currentStep !== 'welcome') return;
 
-    const effectiveWebsiteId = websiteIdProp || websiteId;
-
     // First check localStorage (takes precedence)
-    const savedStep = effectiveWebsiteId
-      ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+    const savedStep = onboardingStorageKey
+      ? localStorage.getItem(onboardingStorageKey)
       : null;
 
-    if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
+    if (savedStep && savedStep !== 'welcome') {
       setCurrentStep(savedStep as ChatStep);
       return;
     }
@@ -922,16 +1237,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const stepIndex = dbStepCurrent;
       if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
         const targetStep = STEP_ORDER[stepIndex];
-        if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
+        if (targetStep && targetStep !== 'welcome') {
           setCurrentStep(targetStep);
           // Also save to localStorage for next time
-          if (effectiveWebsiteId) {
-            localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+          if (onboardingStorageKey) {
+            localStorage.setItem(onboardingStorageKey, targetStep);
           }
         }
       }
     }
-  }, [existingOnboarding, currentStep, websiteId, websiteIdProp]);
+  }, [existingOnboarding, currentStep, onboardingStorageKey]);
 
   // ── tRPC mutations ──────────────────────────────────────────────────────
   const saveStepMutation = trpc.onboarding.saveStep.useMutation();
@@ -946,6 +1261,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const sendLeadEmailMutation = trpc.selfService.sendLeadEmail.useMutation();
   const saveCustomerEmailMutation = trpc.selfService.saveCustomerEmail.useMutation();
   const generateInitialContentMutation = trpc.selfService.generateInitialContent.useMutation();
+  // ── Variant picker state ────────────────────────────────────────────────
+  const [showVariantPicker, setShowVariantPicker] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
   // Track if initial content is being generated for skeleton loading
@@ -970,6 +1287,46 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       return (saved as any) || 'skeleton';
     }
     return 'skeleton';
+  });
+
+  // Tracks whether the user has explicitly confirmed their business category.
+  // Only after confirmation do we reveal the actual website (exit skeleton phase).
+  // On resume: if contentPhase was already past skeleton, treat category as confirmed.
+  const [categoryConfirmed, setCategoryConfirmed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return saved !== null && saved !== 'skeleton';
+    }
+    return false;
+  });
+
+  // Progressive reveal: hero area clears after Du/Sie is confirmed.
+  // On resume: if content generation already completed, Du/Sie was definitely answered → skip overlay.
+  const [heroRevealed, setHeroRevealed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      if (saved === 'complete') return true;
+    }
+    return false;
+  });
+
+  // Safety net: if existingOnboarding loads with addressingMode already set, lift the overlay.
+  // Handles the case where user reloads mid-flow past the Du/Sie step.
+  useEffect(() => {
+    if (!heroRevealed && (existingOnboarding as any)?.addressingMode) {
+      setHeroRevealed(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(existingOnboarding as any)?.addressingMode]);
+
+  // Progressive reveal: lower content area clears after text generation finishes.
+  // On resume: skip overlay only if fully complete.
+  const [contentRevealed, setContentRevealed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
+      return saved === 'complete';
+    }
+    return false;
   });
 
 
@@ -1026,17 +1383,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [siteData?.website?.websiteData, initialized]);
 
   // ── Persist current step across page reloads ────────────────────────────
-  const stepStorageKey = websiteIdProp ? `onboarding_step_${websiteIdProp}` : null;
-
-  // Save step whenever it changes
+  // Save step whenever it changes.
+  // Only remove on 'checkout' (payment completed) – NOT on 'preview', so that
+  // reloading or re-opening the link returns the user to the preview step instead
+  // of restarting from the beginning.
   useEffect(() => {
-    if (!stepStorageKey) return;
-    if (currentStep === 'checkout' || currentStep === 'preview') {
-      localStorage.removeItem(stepStorageKey);
+    if (!onboardingStorageKey) return;
+    if (currentStep === 'checkout') {
+      localStorage.removeItem(onboardingStorageKey);
     } else if (currentStep !== 'welcome') {
-      localStorage.setItem(stepStorageKey, currentStep);
+      localStorage.setItem(onboardingStorageKey, currentStep);
     }
-  }, [currentStep, stepStorageKey]);
+  }, [currentStep, onboardingStorageKey]);
 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
@@ -1129,8 +1487,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Handwerk",
             "Bar/Tapas",
           ];
-        case "businessName":
-          return name ? ["Ja, stimmt!"] : [];
+        case "businessName": {
+          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          return isGmb && name ? ["Ja, stimmt!"] : [];
+        }
         case "addressingMode":
           return [];
         case "tagline":
@@ -1152,10 +1512,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Privat- und Gewerbekunden",
           ];
         case "legalOwner": {
-          // Suggest owner name from GMB if available (business name as fallback hint)
-          const suggestions: string[] = [];
-          if (business?.name) suggestions.push(business.name);
-          return suggestions;
+          // Do NOT suggest business name – legalOwner must be a real person's full name
+          return [];
         }
         case "legalStreet": {
           // Extract street from GMB address (format: "Straße 12, PLZ Stadt, Land")
@@ -1186,17 +1544,25 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           return suggestions;
         }
-        case "legalEmail":
-          return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
+        case "legalEmail": {
+          if (data.legalEmail) return [data.legalEmail];
+          const emailSuggestions: string[] = [];
+          // Prefer the email the user entered before starting onboarding
+          if (data.email) emailSuggestions.push(data.email);
+          if (business?.email && business.email !== data.email) emailSuggestions.push(business.email);
+          return emailSuggestions;
+        }
         case "legalPhone":
           return data.legalPhone ? [data.legalPhone] : (business?.phone ? [business.phone] : []);
+        case "openingHours":
+          return ["Überspringen"];
         case "email":
           return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
         default:
           return [];
       }
     },
-    [data.businessName, data.businessCategory, data.legalEmail, business?.name, business?.address, business?.email]
+    [data.businessName, data.businessCategory, data.legalEmail, data.email, business?.name, business?.address, business?.email, business?.placeId]
   );
   // ── Step promptss ────────────────────────────────────────────────────────
   const getStepPrompt = useCallback(
@@ -1207,8 +1573,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Hallo! Bevor wir starten – welche **Branche** ist dein Unternehmen?\n\nBeispiel: Restaurant, Friseur, Bauunternehmen, Fitness-Studio, Anwaltskanzlei, etc.\n\nDas hilft mir, deine Website perfekt auf deine Branche abzustimmen!`;
         case "welcome":
           return `Hey! 👋 Ich bin dein persönlicher Website-Assistent. Ich helfe dir in wenigen Minuten, deine Website mit echten Infos zu befüllen – damit sie nicht mehr generisch klingt, sondern wirklich nach **${name}** aussieht.\n\nKlingt gut? Dann lass uns starten! 🚀`;
-        case "businessName":
-          return `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName || "noch keinen Namen"}** vorausgefüllt – stimmt das so?`;
+        case "businessName": {
+          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          return isGmb && data.businessName
+            ? `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName}** vorausgefüllt – stimmt das so?`
+            : `Wie lautet der offizielle Name deines Unternehmens?`;
+        }
         case "addressingMode":
           return `Kurze Frage zur Sprache deiner Website: Sollen deine Besucher **geduzt** oder **gesiezt** werden?\n\n*Das beeinflusst alle Texte – von Überschriften bis zu Call-to-Actions.*`;
         case "tagline":
@@ -1223,11 +1593,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const cat = (data.businessCategory || "Dienstleistung").toLowerCase();
           let example = "Privatkunden und kleine Unternehmen in der Region";
           if (cat.includes("friseur") || cat.includes("hair") || cat.includes("beauty")) {
-            example = "Damen und Herren in Bocholt, die Wert auf einen modernen Haarschnitt legen";
+            example = "Damen und Herren in Köln, die Wert auf einen modernen Haarschnitt legen";
           } else if (cat.includes("restaurant") || cat.includes("essen") || cat.includes("food") || cat.includes("café")) {
             example = "Feinschmecker und Familien, die gerne in gemütlicher Atmosphäre speisen";
           } else if (cat.includes("bau") || cat.includes("handwerk") || cat.includes("dach")) {
-            example = "Privathaushalte in Bocholt, die ein neues Dach brauchen oder sanieren möchten";
+            example = "Privathaushalte in Köln, die ein neues Dach brauchen oder sanieren möchten";
           } else if (cat.includes("arzt") || cat.includes("zahnarzt") || cat.includes("medizin")) {
             example = "Patienten, die eine kompetente und einfühlsame zahnärztliche Betreuung suchen";
           } else if (cat.includes("anwalt") || cat.includes("beratung") || cat.includes("recht")) {
@@ -1240,11 +1610,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "legalStreet":
           return `Wie lautet die **Straße und Hausnummer** der Geschäftsadresse?\n\nBeispiel: *Musterstraße 12*`;
         case "legalZipCity":
-          return `Und die **Postleitzahl und Stadt**?\n\nBeispiel: *46395 Bocholt*`;
-        case "legalEmail":
-          return `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
+          return `Und die **Postleitzahl und Stadt**?\n\nBeispiel: *50667 Köln*`;
+        case "legalEmail": {
+          const prefilledEmail = data.email || business?.email;
+          return prefilledEmail
+            ? `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nIch schlage **${prefilledEmail}** vor – einfach bestätigen oder eine andere eingeben.`
+            : `Welche **E-Mail-Adresse** soll im Impressum stehen? (Pflichtangabe – muss erreichbar sein)\n\nBeispiel: *info@musterfirma.de*`;
+        }
         case "legalPhone":
           return `Welche **Telefonnummer** soll im Impressum und auf der Website stehen?\n\nBeispiel: *+49 2871 123456*`;
+        case "openingHours":
+          return `Zu welchen Zeiten bist du für Kunden erreichbar? 🕐\n\nGib deine Öffnungszeiten ein oder überspringe diesen Schritt – du kannst sie jederzeit später im Dashboard anpassen.`;
         case "legalVat":
           return `Hast du eine **Umsatzsteuer-ID**? (z.B. DE123456789)\n\nFalls nicht vorhanden oder du Kleinunternehmer bist, schreib einfach "Nein" oder lass das Feld leer.`;
         case "hideSections":
@@ -1270,6 +1646,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return `Fast fertig! Wie groß sollen deine Überschriften sein?\n\n🔹 **Extra groß** – Dramatisch, mutig, für kurze, kraftvolle Statements\n🔹 **Groß** – Ausgewogen, klassisch, gut lesbar\n🔹 **Normal** – Dezent, elegant, für längere Texte`;
         case "addons":
           return `⚡ **Abschnitt 3: Extras & Fertigstellung**\n\nFast geschafft! Möchtest du deine Website noch um optionale Features erweitern? Du kannst diese später jederzeit dazu buchen oder wieder entfernen.`;
+        case "editAiChat":
+          return `Du hast den **KI-Chat** aktiviert! 🤖\n\nMit welcher Nachricht soll dein KI-Assistent Besucher begrüßen?\n\nBeispiel: *"Hallo! Ich bin der digitale Assistent von ${name}. Wie kann ich dir helfen?"*\n\n*Du kannst das später jederzeit im Dashboard anpassen.*`;
         case "editMenu":
           return `Du hast die **Speisekarte** aktiviert! 📖\n\nHier kannst du schon mal ein paar Gerichte eintragen. Keine Sorge, du kannst das später jederzeit vervollständigen oder jetzt einfach überspringen.`;
         case "editPricelist":
@@ -1281,14 +1659,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "email":
           return `Fast fertig! 🎊 An welche E-Mail-Adresse sollen wir deine Website-Infos und die Freischalt-Bestätigung schicken?`;
         case "preview":
-          return `🎉 **Deine Website ist fertig personalisiert!**\n\nSchau dir die Vorschau rechts an – das ist deine echte Website mit deinen echten Daten. Klicke auf **„Vollbild-Vorschau öffnen"**, um alle Funktionen zu testen!\n\n*💡 Keine Sorge: Fotos, Texte, Farben – alles kann nach der Freischaltung jederzeit geändert werden. Du bist nicht festgelegt!*`;
+          return `🎉 **Deine Website ist fertig personalisiert!**\n\nKlicke auf **„Vollbild-Vorschau öffnen"**, um deine echte Website mit deinen echten Daten zu sehen und alle Funktionen zu testen!\n\n*💡 Keine Sorge: Fotos, Texte, Farben – alles kann nach der Freischaltung jederzeit geändert werden. Du bist nicht festgelegt!*`;
         case "checkout":
           return `Bereit zum Freischalten? 🚀 Wähle dein Paket und starte durch!`;
         default:
           return "Nächster Schritt...";
       }
     },
-    [data.businessName, business?.name, data.headlineFont]
+    [data.businessName, data.email, business?.name, business?.email, business?.placeId, data.headlineFont]
   );
 
   // ── Initialize chat ─────────────────────────────────────────────────────
@@ -1347,14 +1725,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               clearInterval(pollInterval);
               setGenerationProgress(100);
               setGenerationPhase("Website bereit!");
-              // Reset state and clear localStorage
+              // Reset generation state and clear localStorage
               setIsGeneratingInitialWebsite(false);
               localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-              // Refetch and then navigate
+              // Refetch then show variant picker (instead of immediate reload)
               refetchSiteData().then(() => {
-                setTimeout(() => {
-                  window.location.href = window.location.href;
-                }, 300);
+                setShowVariantPicker(true);
               });
             } else if (status.status === "failed") {
               clearInterval(pollInterval);
@@ -1419,30 +1795,41 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
         }
 
-        // Resume from saved step - check localStorage first, then database
-        const effectiveWebsiteId = websiteIdProp || websiteId;
-        const savedStep = effectiveWebsiteId
-          ? localStorage.getItem(`onboarding_step_${effectiveWebsiteId}`)
+        // Resume from saved step - check localStorage first (stable key, no async), then database
+        const savedStep = onboardingStorageKey
+          ? localStorage.getItem(onboardingStorageKey)
           : null;
 
-        if (savedStep && savedStep !== 'welcome' && savedStep !== 'checkout' && savedStep !== 'preview') {
-          setCurrentStep(savedStep as ChatStep);
-          await addBotMessage(getStepPrompt(savedStep as ChatStep), 800);
+        if (savedStep && savedStep !== 'welcome') {
+          const step = savedStep as ChatStep;
+          setCurrentStep(step);
+          // checkout and preview are pure UI steps – no bot message needed, the UI renders directly
+          if (step !== 'checkout' && step !== 'preview') {
+            await addBotMessage(getStepPrompt(step), 800);
+          }
           return;
         }
 
-        // If no localStorage, check if we have stepCurrent from database
+        // If no localStorage, check if we have stepCurrent from database.
+        // Exception: for admin-generated outreach websites, NEVER restore from DB step
+        // on first customer visit (localStorage empty = fresh customer). The admin
+        // generation process may have written a stepCurrent that would skip the
+        // entire customization flow for the prospect.
+        const isAdminFreshVisit = source === "admin" && !savedStep;
         const dbStepCurrent = existingOnboarding?.stepCurrent;
-        if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
+        if (!isAdminFreshVisit && dbStepCurrent !== undefined && dbStepCurrent !== null) {
           // Map step number to ChatStep (only resume if user has actually progressed past step 0)
           const stepIndex = dbStepCurrent;
           if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
             const targetStep = STEP_ORDER[stepIndex];
-            if (targetStep && targetStep !== 'welcome' && targetStep !== 'checkout' && targetStep !== 'preview') {
+            if (targetStep && targetStep !== 'welcome') {
               setCurrentStep(targetStep);
               // Also save to localStorage for next time
-              if (effectiveWebsiteId) {
-                localStorage.setItem(`onboarding_step_${effectiveWebsiteId}`, targetStep);
+              if (onboardingStorageKey) {
+                localStorage.setItem(onboardingStorageKey, targetStep);
+              }
+              if (targetStep !== 'checkout' && targetStep !== 'preview') {
+                await addBotMessage(getStepPrompt(targetStep), 800);
               }
               return;
             }
@@ -1451,21 +1838,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
         // For admin-generated websites without a customer email yet,
         // ask for the email as the very first step.
-        if (source === "admin" && !hasEmail) {
+        if (!hasEmail && !isAuthenticated) {
+          // For external users: show the fully generated website before asking for email
+          // so they have a real incentive to leave their address.
+          if (source === "external" && !!(siteData?.website?.websiteData)) {
+            setContentPhase('complete');
+            setCategoryConfirmed(true);
+            setHeroRevealed(true);
+            setContentRevealed(true);
+            if (previewToken || websiteIdProp) {
+              localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+            }
+          }
           setCurrentStep("email");
-          await addBotMessage(
-            "Hallo! 👋 Damit wir deine fertige Website an dich schicken können, brauchen wir zuerst deine **E-Mail-Adresse**.",
-            800
-          );
-        } else if (source === "external" && (business as any)?.category) {
-          // GMB user: pre-select the category but let the user confirm or change it
+          const emailMsg = source === "admin"
+            ? "Hallo! 👋 Wir haben deine fertige Website bereits für dich erstellt. Damit du sie aktivieren kannst, brauchen wir zuerst deine **E-Mail-Adresse**."
+            : "Gefällt dir deine Website? 🎉\n\nGib kurz deine **E-Mail-Adresse** ein – so speichern wir sie für dich und du kannst jederzeit weitermachen.";
+          await addBotMessage(emailMsg, 800);
+        } else if ((source === "admin" || source === "external") && (business as any)?.category) {
+          // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
           const translatedCategory = translateGmbCategory((business as any).category);
           setData((p) => ({ ...p, businessCategory: translatedCategory }));
           setCurrentStep("businessCategory");
-          await addBotMessage(
-            `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`,
-            800
-          );
+          const greeting = source === "admin"
+            ? `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`
+            : `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`;
+          await addBotMessage(greeting, 800);
         } else {
           setCurrentStep("businessCategory");
           await addBotMessage(getStepPrompt("businessCategory"), 800);
@@ -1473,14 +1871,39 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       };
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, websiteIdProp]);
+  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, onboardingStorageKey]);
+
+  // ── Show full preview whenever the email step is active ─────────────────
+  // Covers both admin outreach sites AND the new external try-before-email flow.
+  // Fires on every relevant change so it also catches resumed sessions (localStorage
+  // step restoration bypasses initChat, so we can't rely on a one-time initChat call).
+  useEffect(() => {
+    const isIncomplete = contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || contentPhase === 'texts';
+    if (!isIncomplete) return;
+    const source = siteData?.website?.source;
+    const hasData = !!(siteData?.website?.websiteData);
+    const shouldReveal =
+      source === "admin" ||
+      (source === "external" && hasData && currentStep === "email");
+    if (shouldReveal) {
+      setContentPhase('complete');
+      setCategoryConfirmed(true);
+      setHeroRevealed(true);
+      setContentRevealed(true);
+      if (previewToken || websiteIdProp) {
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+      }
+    }
+  }, [siteData?.website?.source, siteData?.website?.websiteData, currentStep, contentPhase, previewToken, websiteIdProp]);
 
   // ── Progressive content revelation based on user input ─────────
-  
-  // Phase 1: When businessCategory is entered -> show colors
+
+  // Phase 1: When businessCategory is explicitly confirmed by user -> show colors
+  // Uses categoryConfirmed (not data.businessCategory) to avoid revealing the website
+  // before the user has answered the category question (prevents premature skeleton exit
+  // when businessCategory is pre-filled from GMB data or existingOnboarding).
   useEffect(() => {
-    const hasCategory = !!data.businessCategory?.trim();
-    if (hasCategory && contentPhase === 'skeleton') {
+    if (categoryConfirmed && contentPhase === 'skeleton') {
       setContentPhase('colors');
       localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'colors');
       
@@ -1523,7 +1946,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, nextPhase);
       }, 500);
     }
-  }, [data.businessCategory, contentPhase, previewToken, websiteIdProp]);
+  }, [categoryConfirmed, contentPhase, data.businessCategory, previewToken, websiteIdProp]);
   
   // Phase 2: When both category AND name are entered -> generate texts
   useEffect(() => {
@@ -1532,19 +1955,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasWebsiteId = !!websiteId;
     const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
     
-    // Only proceed if we're at images phase (colors+images ready) and have name
+    // Only proceed if we're at images phase AND addressingMode was confirmed (heroRevealed).
+    // This ensures Du/Sie preference is captured before text generation starts.
     if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && contentPhase === 'images' &&
-        !isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
-      
+        heroRevealed &&
+        !isGeneratingInitialContent && !generateInitialContentMutation.isPending &&
+        !contentGenerationAttemptedRef.current) {
+
+      // Guard against double-trigger (state changes can re-fire this effect)
+      contentGenerationAttemptedRef.current = true;
+
       setContentPhase('texts');
       localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'texts');
       setIsGeneratingInitialContent(true);
       localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
-      
+
       generateInitialContentMutation.mutateAsync({
         websiteId,
         businessName: data.businessName,
         businessCategory: data.businessCategory,
+        addressingMode: (data.addressingMode as 'du' | 'Sie') || 'du',
       }).then((result) => {
         if (result.success) {
           // Update local data state with generated content + services
@@ -1557,13 +1987,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               description: svc.description,
             })) || prev.topServices,
           }));
-          
+
           toast.success("Website-Texte & Leistungen wurden generiert!", { duration: 2000 });
-          
-          // Mark as complete
+
+          // Mark as complete + progressive reveal: lower content area now visible
           setContentPhase('complete');
           localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
-          
+          setContentRevealed(true);
+
           // Refetch to update preview
           setTimeout(() => {
             refetchSiteData();
@@ -1571,13 +2002,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }).catch((err) => {
         console.error("Initial content generation failed:", err);
+        // Recover gracefully: show website as-is, don't leave stuck skeleton
+        setContentPhase('complete');
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+        setContentRevealed(true);
+        toast.error("Texte konnten nicht generiert werden. Du kannst sie später bearbeiten.", { duration: 4000 });
       }).finally(() => {
         setIsGeneratingInitialContent(false);
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       });
     }
   }, [data.businessCategory, data.businessName, websiteId, business?.placeId, contentPhase,
-      isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
+      heroRevealed, isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
 
   // Halte contentPhaseRef synchron (damit Kaskaden-useEffect ohne Dependency-Array darauf zugreifen kann)
   useEffect(() => { contentPhaseRef.current = contentPhase; }, [contentPhase]);
@@ -1659,8 +2095,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         setInputValue(result.text);
         toast.success("Text generiert! Du kannst ihn noch anpassen.");
       }
-    } catch {
-      toast.error("KI-Generierung fehlgeschlagen");
+    } catch (err: any) {
+      const msg = err?.message || "";
+      if (msg.includes("429") || msg.includes("overloaded") || msg.includes("Too Many")) {
+        toast.error("KI gerade überlastet – bitte in 10 Sekunden nochmal versuchen.");
+      } else {
+        toast.error("KI-Generierung fehlgeschlagen");
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -1705,6 +2146,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
 
+      // Synchronously update localStorage to avoid race condition on quick page refresh
+      // checkout and preview are saved too so reload brings the user back to the right place
+      if (onboardingStorageKey) {
+        localStorage.setItem(onboardingStorageKey, nextStep);
+      }
+
       // If this step has a section divider, inject it as a special message type
       const divider = SECTION_DIVIDERS[nextStep];
       if (divider) {
@@ -1725,24 +2172,31 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
       }, 900);
     },
-    [addBotMessage, getStepPrompt, SECTION_DIVIDERS]
+    [addBotMessage, getStepPrompt, SECTION_DIVIDERS, onboardingStorageKey]
   );
 
   const goToNextStep = useCallback(async () => {
-    // If in edit mode, return to the original position instead of advancing
+    const idx = dynamicStepOrder.indexOf(currentStep);
+    const next = dynamicStepOrder[idx + 1];
+
+    // If in edit mode, return to the original position instead of advancing –
+    // UNLESS the next step is an addon config step (editAiChat, editMenu, etc.)
+    // that was just activated; those must always be completed even in edit mode.
     if (editMode.isEditing && editMode.returnToStep) {
+      const addonConfigSteps: ChatStep[] = ["editAiChat", "editMenu", "editPricelist", "editGallery"];
+      if (next && addonConfigSteps.includes(next)) {
+        await advanceToStep(next);
+        return;
+      }
       addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
       await new Promise(resolve => setTimeout(resolve, 600));
       const returnStep = editMode.returnToStep;
       setCurrentStep(returnStep);
       setEditMode({ isEditing: false, returnToStep: null });
-      // Show the prompt for the step we're returning to
       await addBotMessage(getStepPrompt(returnStep), 400);
       return;
     }
 
-    const idx = dynamicStepOrder.indexOf(currentStep);
-    const next = dynamicStepOrder[idx + 1];
     if (next) {
       await advanceToStep(next);
     }
@@ -1763,7 +2217,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
     const val = value !== undefined ? value.trim() : inputValue.trim();
     const isExplicitEmpty = value === "";
-    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat"].includes(currentStep)) return;
+    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat", "openingHours"].includes(currentStep)) return;
 
     setInputValue("");
 
@@ -1776,12 +2230,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const confirmationPattern = /^(ja|j|yes|y|yep|yup|stimmt|ok|okay|klar)$/i;
           if (val && confirmationPattern.test(val.trim())) {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
+            await trySaveStep(stepIdx, { businessName: data.businessName });
           } else if (val) {
             addUserMessage(val);
             setData((p) => ({ ...p, businessName: val }));
             await trySaveStep(stepIdx, { businessName: val });
           } else {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
+            await trySaveStep(stepIdx, { businessName: data.businessName });
           }
           break;
         }
@@ -1826,7 +2282,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
         case "legalZipCity": {
           const zipCityMatch = val.trim().match(/^(\d{5})\s+(.+)$/);
-          if (!zipCityMatch) { toast.error("Bitte im Format 'PLZ Stadt' eingeben, z.B. 46395 Bocholt"); return; }
+          if (!zipCityMatch) { toast.error("Bitte im Format 'PLZ Stadt' eingeben, z.B. 50667 Köln"); return; }
           const zip = zipCityMatch[1];
           const city = zipCityMatch[2];
           addUserMessage(val);
@@ -1850,6 +2306,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           await trySaveStep(stepIdx, { legalPhone: phoneVal });
           break;
         }
+        case "openingHours": {
+          // Handled exclusively via the UI widget (Übernehmen/Überspringen buttons)
+          // Text "Überspringen" from quickReply skips without saving
+          addUserMessage("Überspringen");
+          setData((p) => ({ ...p, openingHours: null }));
+          await trySaveStep(stepIdx, { openingHours: null });
+          break;
+        }
         case "legalVat": {
           // Empty input or explicit "no" = Kleinunternehmer (no VAT ID)
           const trimmed = val.trim();
@@ -1870,16 +2334,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
-          // For admin-generated websites: save as customerEmail in DB + set captureStatus
-          const isAdminSite = siteData?.website?.source === "admin";
+          // Fire Google Ads conversion for all onboarding starts
+          try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
+          // Save as customerEmail in DB when email is captured at the START of onboarding
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
-          if (isAdminSite && !alreadyHasEmail && websiteId) {
+          // Only do the "capture email → businessCategory" flow when user is at the
+          // BEGINNING of the onboarding (businessCategory not yet set).
+          // If they've already gone through all content steps, go to the normal next step.
+          const isAtStart = !data.businessCategory;
+          if (!alreadyHasEmail && websiteId && isAtStart) {
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val },
               {
                 onSuccess: async () => {
                   toast.success("E-Mail gespeichert! ✅");
-                  // Advance to businessCategory instead of the normal next step
+                  // Fire Google Ads conversion: Onboarding gestartet
+                  try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
+                  // Refetch siteData so hasCustomerEmail becomes true and the email
+                  // step is removed from dynamicStepOrder (won't appear again later)
+                  refetchSiteData();
+                  // Always start the full customization flow from businessCategory
                   await advanceToStep("businessCategory");
                 },
                 onError: () => {
@@ -1896,6 +2370,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             addUserMessage(val);
             setData((p) => ({ ...p, businessCategory: val }));
             await trySaveStep(stepIdx, { businessCategory: val });
+            setCategoryConfirmed(true); // Triggers contentPhase skeleton → colors transition
           }
           break;
         case "addressingMode":
@@ -1964,12 +2439,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Then create checkout session
       const session = await checkoutMutation.mutateAsync({
         websiteId,
+        billingInterval,
         addOns: {
-          subpages: data.subPages.filter((p) => p.name.trim()).length,
-          features: {
-            gallery: data.addOnGallery,
-            contactForm: data.addOnContactForm,
-          },
+          contactForm: data.addOnContactForm,
+          gallery:     data.addOnGallery,
+          menu:        _addOnMenu,
+          pricelist:   _addOnPricelist,
+          aiChat:      _addOnAiChat,
+          booking:     data.addOnBooking,
         },
       });
       window.open(session.url, "_blank");
@@ -2068,25 +2545,40 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Add or update Gallery section if active
     if (data.addOnGallery && !hiddenSections.has("gallery")) {
-      // Priority: user-selected images → GMB photos → stock fallback
-      const gmbFallback = earlyGmbData?.photos?.length ? earlyGmbData.photos : null;
-      const fallbackImages = gmbFallback || getGalleryImages(data.businessCategory, data.businessName);
-      const galleryImages = data.addOnGalleryData.images.length > 0
-        ? data.addOnGalleryData.images
-        : fallbackImages;
-
-      const galleryItems = galleryImages.map((img, i) => ({ 
-        title: `Projekt ${i + 1}`, 
-        imageUrl: img 
-      }));
-
+      const isAlbumMode = data.addOnGalleryData.mode === 'albums';
       const existingGalleryIdx = patched.sections.findIndex(s => s.type === "gallery");
-      const gallerySection = {
-        type: "gallery" as const,
-        headline: data.addOnGalleryData.headline || "Unsere Galerie",
-        content: "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
-        items: galleryItems as any
-      };
+
+      let gallerySection: any;
+      if (isAlbumMode) {
+        // Album mode: save albums array; cover = first image of each album
+        gallerySection = {
+          type: "gallery" as const,
+          headline: data.addOnGalleryData.headline || "Unsere Galerie",
+          content: "",
+          mode: "albums",
+          albums: data.addOnGalleryData.albums,
+          items: [], // empty in album mode
+        };
+      } else {
+        // Single mode: flat masonry grid
+        const gmbFallback = earlyGmbData?.photos?.length ? earlyGmbData.photos : null;
+        const fallbackImages = gmbFallback || getGalleryImages(data.businessCategory, data.businessName);
+        const galleryImages = data.addOnGalleryData.images.length > 0
+          ? data.addOnGalleryData.images
+          : fallbackImages;
+        const galleryItems = galleryImages.map((img: string, i: number) => ({
+          title: `Projekt ${i + 1}`,
+          imageUrl: img,
+        }));
+        gallerySection = {
+          type: "gallery" as const,
+          headline: data.addOnGalleryData.headline || "Unsere Galerie",
+          content: "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
+          mode: "single",
+          albums: [],
+          items: galleryItems,
+        };
+      }
 
       if (existingGalleryIdx > -1) {
         patched.sections[existingGalleryIdx] = gallerySection;
@@ -2118,6 +2610,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       patched.sections = heroSec ? [heroSec, ...others] : others;
     }
 
+    // Expose section order to layout components for CSS ordering
+    if (sectionOrder.length > 0) {
+      (patched as any)._sectionOrder = [...sectionOrder];
+    }
+
     // Patch colorScheme override
     if (data.colorScheme) {
       (patched as any)._colorSchemeOverride = data.colorScheme;
@@ -2143,12 +2640,56 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Patch addOnContactForm state for ContactSection lock
     (patched as any).addOnContactForm = data.addOnContactForm;
 
+    // Patch addOnBooking state so fullscreen preview shows booking section
+    (patched as any).addOnBooking = data.addOnBooking;
+
     // Patch contact form fields for dynamic form rendering
     (patched as any).contactFormFields = data.contactFormFields;
 
     // Patch about photo URL for "Über uns" section image
     if (data.aboutPhotoUrl) {
       (patched as any).aboutImageUrl = data.aboutPhotoUrl;
+    }
+
+    // Expose slug for legal links (Impressum/Datenschutz) in live preview
+    const slug = siteData?.website?.slug;
+    if (slug) {
+      (patched as any)._slug = slug;
+    }
+
+    // Patch contact section with user-entered legal data + opening hours
+    {
+      const contactIdx = patched.sections.findIndex((s: any) => s.type === "contact");
+      const contactSec: any = contactIdx > -1 ? patched.sections[contactIdx] : { type: "contact", headline: "Kontakt", items: [] };
+      const items: any[] = [...(contactSec.items || [])];
+      const setItem = (icon: string, value: string) => {
+        if (!value) return;
+        const idx = items.findIndex((i: any) => i.icon === icon);
+        if (idx > -1) items[idx] = { ...items[idx], description: value };
+        else items.push({ icon, description: value });
+      };
+      // Address from legal data
+      const street = data.legalStreet || "";
+      const zipCity = data.legalZip && data.legalCity ? `${data.legalZip} ${data.legalCity}` : (data.legalCity || "");
+      const address = [street, zipCity].filter(Boolean).join(", ");
+      setItem("MapPin", address);
+      setItem("Phone", data.legalPhone || "");
+      setItem("Mail", data.legalEmail || "");
+      // Opening hours: format DayHours[] → compact string
+      if (data.openingHours && data.openingHours.length > 0) {
+        const openDays = data.openingHours.filter(d => d.open);
+        if (openDays.length > 0) {
+          const hoursStr = openDays.map(d => {
+            const slot1 = `${d.from}–${d.to}`;
+            const slot2 = d.from2 && d.to2 ? `, ${d.from2}–${d.to2}` : "";
+            return `${d.day.slice(0, 2)}: ${slot1}${slot2}`;
+          }).join(" · ");
+          setItem("Clock", hoursStr);
+        }
+      }
+      const updated = { ...contactSec, items };
+      if (contactIdx > -1) patched.sections[contactIdx] = updated;
+      else patched.sections.push(updated);
     }
 
     return patched;
@@ -2171,8 +2712,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.addOnPricelist,
     data.addOnPricelistData,
     data.contactFormFields,
+    data.legalStreet, data.legalZip, data.legalCity, data.legalPhone, data.legalEmail,
+    data.openingHours,
     hiddenSections,
     sectionOrder,
+    siteData?.website?.slug,
   ]);
 
   // ── Section list for hideSections drag-and-drop step ────────────────────
@@ -2182,12 +2726,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     testimonials: { label: "Kundenstimmen",         emoji: "⭐" },
     gallery:      { label: "Bildergalerie",         emoji: "🖼️" },
     contact:      { label: "Kontaktbereich",        emoji: "📬" },
-    cta:          { label: "Direktkontakt-Banner",  emoji: "🎯" },
+    // cta: not rendered by any layout – intentionally excluded
     features:     { label: "Vorteile",              emoji: "✅" },
     team:         { label: "Team",                  emoji: "👥" },
     faq:          { label: "FAQ",                   emoji: "❓" },
     menu:         { label: "Speisekarte",           emoji: "📖" },
     pricelist:    { label: "Preisliste",            emoji: "🏷️" },
+    process:      { label: "Ablauf",                emoji: "⚙️" },
   };
 
   const allSectionsForHideStep = useMemo(() => {
@@ -2211,19 +2756,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   }, [currentStep, allSectionsForHideStep.length]);
 
   // ── Price calculation ───────────────────────────────────────────────────
-  const BASE_PRICE_INTRO = 19.90;  // First month intro offer (19,90 €)
-  const BASE_PRICE_REGULAR = 19.90; // Regular monthly price (19,90 €)
-  const FEATURE_PRICE = 3.90;       // Per feature (3,90 €)
-  const SUBPAGE_PRICE = 2.50;       // Per subpage (2,50 €)
+  const BASE_PRICE_MONTHLY   = 24.90; // 24,90 €/Monat (monatliche Abrechnung)
+  const BASE_PRICE_YEARLY    = 19.90; // 19,90 €/Monat (jährliche Abrechnung)
+  const ADDON_PRICE          = 3.90;  // 3,90 € pro Standard-Add-on
+  const ADDON_PRICE_AI_CHAT  = 9.90;  // 9,90 € KI-Chat
+  const ADDON_PRICE_BOOKING  = 4.90;  // 4,90 € Terminbuchung
 
-  const totalPrice = (isFirstMonth = false) => {
-    let price = isFirstMonth ? BASE_PRICE_INTRO : BASE_PRICE_REGULAR;
-    if (data.addOnContactForm) price += FEATURE_PRICE;
-    if (data.addOnGallery) price += FEATURE_PRICE;
-    if (data.addOnMenu) price += FEATURE_PRICE;
-    if (data.addOnPricelist) price += FEATURE_PRICE;
-    price += data.subPages.filter(p => p.name).length * SUBPAGE_PRICE;
-    return price.toFixed(2);
+  const totalPrice = () => {
+    const base  = billingInterval === "yearly" ? BASE_PRICE_YEARLY : BASE_PRICE_MONTHLY;
+    let addons  = 0;
+    if (data.addOnContactForm) addons += ADDON_PRICE;
+    if (data.addOnGallery)     addons += ADDON_PRICE;
+    if (_addOnMenu)            addons += ADDON_PRICE;
+    if (_addOnPricelist)       addons += ADDON_PRICE;
+    if (_addOnAiChat)          addons += ADDON_PRICE_AI_CHAT;
+    if (data.addOnBooking)     addons += ADDON_PRICE_BOOKING;
+    return (base + addons).toFixed(2).replace(".", ",");
   };
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -2240,14 +2788,54 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const layoutStyle = (siteData?.website as any)?.layoutStyle as string | undefined;
   const slug = siteData?.website?.slug;
 
+  // ── Variant picker (shown once after generation completes) ───────────────
+  if (showVariantPicker && websiteId && websiteData) {
+    const industryKey: string = ((siteData?.website as any)?.industry as string) || "general";
+    return (
+      <VariantPickerScreen
+        websiteId={websiteId}
+        websiteData={websiteData}
+        heroImageUrl={heroImageUrl}
+        aboutImageUrl={aboutImageUrl}
+        industryKey={industryKey}
+        onConfirm={() => {
+          setShowVariantPicker(false);
+          window.location.href = window.location.href;
+        }}
+        onSkip={() => {
+          setShowVariantPicker(false);
+          window.location.href = window.location.href;
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden"
+      style={{
+        height: "100dvh",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
 
       {/* ── Fullscreen preview overlay ──────────────────────────────────── */}
-      {showFullPreview && liveWebsiteData && colorScheme && (
+      {/* Condition: only showFullPreview — data availability is handled inside
+          so the overlay ALWAYS renders when the button is pressed. */}
+      {showFullPreview && (
         <div className="fixed inset-0 z-[9999] flex flex-col bg-black">
           {/* Browser chrome bar */}
-          <div className="flex items-center gap-3 px-4 h-11 bg-slate-900 border-b border-slate-700 flex-shrink-0">
+          <div
+            className="flex items-center gap-3 px-4 bg-slate-900 border-b border-slate-700 flex-shrink-0"
+            style={{
+              paddingTop: "env(safe-area-inset-top)",
+              height: "calc(44px + env(safe-area-inset-top))",
+            }}
+          >
             <div className="flex gap-1.5 flex-shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500/80" />
               <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
@@ -2261,47 +2849,208 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {previewToken ? `pageblitz.de/preview/${previewToken}` : "deine-website.pageblitz.de"}
               </span>
             </div>
+            {/* Desktop: "Website freischalten" CTA when on preview step */}
+            {currentStep === "preview" && (
+              <button
+                onClick={async () => {
+                  setShowFullPreview(false);
+                  addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+                  await advanceToStep("checkout");
+                }}
+                className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-xs font-semibold transition-all shadow-lg shadow-blue-500/20 flex-shrink-0"
+              >
+                <Zap className="w-3 h-3" /> Website freischalten
+              </button>
+            )}
+            {/* Desktop close button */}
             <button
               onClick={() => setShowFullPreview(false)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex-shrink-0"
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold transition-colors flex-shrink-0"
             >
               <X className="w-3 h-3" /> Schließen
             </button>
+            {/* Mobile close button */}
+            <button
+              onClick={() => setShowFullPreview(false)}
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-colors flex-shrink-0"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          {/* Scrollable website – renders the same live data as the right-side preview
-              so all active add-ons (gallery, contact form, …) are always visible */}
-          <div className="flex-1 overflow-auto bg-white">
-            <WebsiteRenderer
-              websiteData={liveWebsiteData}
-              businessCategory={data.businessCategory || (business as any)?.category || undefined}
-              colorScheme={{ ...colorScheme, ...data.colorScheme } as any}
-              heroImageUrl={data.heroPhotoUrl || heroImageUrl}
-              aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
-              layoutStyle={layoutStyle}
-              headlineFontOverride={data.headlineFont || undefined}
-              headlineSize={data.headlineSize}
-              isLoading={false}
+
+          {/* Website content — always use iframe so that:
+              • position:fixed navbars inside layouts are confined to the
+                iframe viewport and can NEVER overlap our chrome bar / close
+                buttons in the parent window
+              • no browser-history side-effects from in-page navigation
+              If the preview URL isn't available yet, show a spinner.        */}
+          {previewToken ? (
+            <iframe
+              key={previewToken}
+              src={`/preview/${previewToken}`}
+              className="flex-1 w-full border-0"
+              title="Website Vorschau"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             />
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-slate-950">
+              <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+            </div>
+          )}
+
+          {/* Mobile back bar */}
+          <div
+            className="lg:hidden bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/60 flex-shrink-0"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          >
+            {currentStep === "preview" ? (
+              <div className="flex gap-2 px-3 py-2">
+                <button
+                  onClick={() => setShowFullPreview(false)}
+                  className="flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold transition-colors flex-shrink-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={async () => {
+                    setShowFullPreview(false);
+                    addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
+                    await advanceToStep("checkout");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold transition-all shadow-lg shadow-blue-500/20"
+                >
+                  <Zap className="w-4 h-4" /> Website freischalten
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowFullPreview(false)}
+                className="w-full flex items-center justify-center gap-2 py-3 mx-3 my-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                style={{ width: "calc(100% - 24px)" }}
+              >
+                <ChevronLeft className="w-4 h-4" /> Zurück zum Chat
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* FOMO Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
-        <Clock className="w-4 h-4 flex-shrink-0" />
-        <span>
-          ⚡ Diese Website ist noch{" "}
-          <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
-        </span>
-      </div>
+      {/* FOMO Header – only shown before payment */}
+      {!isPaid && (
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span className="flex items-center gap-2">
+            <Clock className="w-4 h-4 flex-shrink-0" />
+            ⚡ Diese Website ist noch{" "}
+            <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
+          </span>
+          {reservationQuery.data?.canExtend !== false && (
+            <button
+              type="button"
+              onClick={() => {
+                setExtendSuccess(null);
+                setExtendError(null);
+                setExtendReason("");
+                setShowExtendModal(true);
+              }}
+              className="underline underline-offset-2 decoration-white/50 hover:decoration-white text-white/90 hover:text-white text-xs sm:text-sm"
+            >
+              Du brauchst mehr Zeit?
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Extend-Reservation Modal */}
+      {showExtendModal && (
+        <div
+          className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => !extendSubmitting && setShowExtendModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {extendSuccess ? (
+              <>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">Alles klar!</h3>
+                <p className="text-slate-600 text-sm leading-relaxed mb-6">{extendSuccess}</p>
+                <button
+                  onClick={() => setShowExtendModal(false)}
+                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors"
+                >
+                  Weiter
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Du brauchst mehr Zeit?</h3>
+                <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                  Kein Problem – wir verlängern deine Reservierung um <strong>24 Stunden</strong>. Magst du uns kurz sagen, was dich gerade abhält? (Optional, hilft uns, Pageblitz besser zu machen.)
+                </p>
+                <div className="space-y-2 mb-6">
+                  {[
+                    { v: "besprechen", t: "Ich möchte mit Partner oder Team besprechen" },
+                    { v: "content", t: "Ich muss noch Fotos oder Texte besorgen" },
+                    { v: "alternativen", t: "Ich vergleiche gerade andere Anbieter" },
+                    { v: "zeit", t: "Kurz keine Zeit gehabt" },
+                    { v: "other", t: "Anderer Grund" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.v}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        extendReason === opt.v
+                          ? "border-indigo-500 bg-indigo-50"
+                          : "border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="extendReason"
+                        value={opt.v}
+                        checked={extendReason === opt.v}
+                        onChange={(e) => setExtendReason(e.target.value)}
+                        className="accent-indigo-600"
+                      />
+                      <span className="text-sm text-slate-700">{opt.t}</span>
+                    </label>
+                  ))}
+                </div>
+                {extendError && (
+                  <p className="text-red-600 text-sm mb-4">{extendError}</p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowExtendModal(false)}
+                    disabled={extendSubmitting}
+                    className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium transition-colors disabled:opacity-50"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    onClick={handleExtend}
+                    disabled={extendSubmitting}
+                    className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors disabled:opacity-50"
+                  >
+                    {extendSubmitting ? "Verlängere…" : "Um 24 Stunden verlängern"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main layout */}
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
         {/* Chat panel – smooth slide */}
         <div
-          className="flex w-full lg:w-[360px] flex-col border-r border-slate-700/50 flex-shrink-0 items-center overflow-hidden transition-all duration-300 ease-in-out"
+          className="flex w-full lg:w-[360px] flex-col lg:border-r border-slate-700/50 flex-1 lg:flex-none items-stretch overflow-hidden transition-all duration-300 ease-in-out"
           style={{
-            maxWidth: chatHidden ? 0 : 360,
+            maxWidth: chatHidden ? 0 : undefined,
+            width: chatHidden ? 0 : undefined,
             minWidth: chatHidden ? 0 : undefined,
             opacity: chatHidden ? 0 : 1,
             pointerEvents: chatHidden ? "none" : undefined,
@@ -2323,6 +3072,86 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </div>
 
           </div>
+
+          {/* Mobile-only progress bar + step navigation (desktop shows it in the preview panel header) */}
+          {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
+            const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
+            const rawIdx = dynamicStepOrder.indexOf(currentStep);
+            // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
+            if (rawIdx === -1) return null;
+            const currentIdx = rawIdx;
+            const pct = totalSteps > 0 ? Math.round((currentIdx / totalSteps) * 100) : 0;
+
+            // Completed steps – same labels as desktop
+            const stepLabels: Record<string, string> = {
+              businessCategory: "Branche", businessName: "Name", addressingMode: "Anrede",
+              brandLogo: "Logo", colorScheme: "Farben", heroPhoto: "Foto", aboutPhoto: "Über uns",
+              headlineFont: "Schrift", headlineSize: "Größe", tagline: "Claim",
+              description: "Beschreibung", usp: "USP", services: "Leistungen",
+              legalOwner: "Impressum", legalStreet: "Adresse", legalZipCity: "Ort",
+              legalEmail: "E-Mail", legalPhone: "Telefon", legalVat: "Steuer",
+              addons: "Extras", editAiChat: "KI-Chat", editMenu: "Speisekarte", editPricelist: "Preise",
+              editGallery: "Galerie", subpages: "Unterseiten", openingHours: "Öffnungszeiten",
+              email: "Kontakt", hideSections: "Anzeige",
+            };
+            const completedSteps = dynamicStepOrder
+              .slice(0, currentIdx)
+              .filter(s => s !== "welcome" && s !== "checkout" && s !== "preview");
+
+            return (
+              <div className="lg:hidden border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0">
+                {/* Scrollable step pills – shown when not in edit mode and steps exist */}
+                {!editMode.isEditing && completedSteps.length > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 pt-2 pb-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider flex-shrink-0">Bearbeiten:</span>
+                    {completedSteps.map(step => (
+                      <button
+                        key={step}
+                        onClick={() => {
+                          setEditMode({ isEditing: true, returnToStep: currentStep });
+                          setCurrentStep(step);
+                        }}
+                        className="flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full bg-slate-700/60 active:bg-slate-600 text-slate-300 border border-slate-600/50 transition-colors"
+                        style={{ touchAction: "manipulation" }}
+                      >
+                        {stepLabels[step] || step}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Edit-mode return button */}
+                {editMode.isEditing && editMode.returnToStep && (
+                  <div className="flex items-center gap-2 px-3 pt-2 pb-1">
+                    <span className="text-[10px] text-amber-400">⚡ Bearbeitungsmodus</span>
+                    <button
+                      onClick={() => {
+                        setCurrentStep(editMode.returnToStep!);
+                        setEditMode({ isEditing: false, returnToStep: null });
+                      }}
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 active:bg-amber-600/50 text-amber-200 border border-amber-500/50 transition-colors"
+                      style={{ touchAction: "manipulation" }}
+                    >
+                      Zurück zum aktuellen Schritt
+                    </button>
+                  </div>
+                )}
+                {/* Progress bar + counter */}
+                <div className="flex items-center gap-2 px-3 py-2">
+                  <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
+                      initial={false}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-medium tabular-nums flex-shrink-0">
+                    {currentIdx}&thinsp;/&thinsp;{totalSteps}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Messages + Input: flex column, messages scroll, input sticky */}
           <div className="flex-1 flex flex-col min-h-0">
@@ -2503,10 +3332,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             setInPlaceEditId(msg.id);
                             setInPlaceEditValue(msg.content);
                           }}
-                          className="w-6 h-6 rounded-md bg-slate-600/50 hover:bg-slate-500/50 flex items-center justify-center transition-colors flex-shrink-0"
+                          className="w-8 h-8 rounded-md bg-slate-600/50 hover:bg-slate-500/50 active:bg-slate-500/70 flex items-center justify-center transition-colors flex-shrink-0"
+                          style={{ touchAction: "manipulation" }}
                           title="Antwort bearbeiten"
                         >
-                          <Edit2 className="w-3.5 h-3.5 text-slate-300 hover:text-white" />
+                          <Edit2 className="w-3.5 h-3.5 text-slate-300" />
                         </button>
                       )}
                     </>
@@ -2808,23 +3638,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       Keine Leistungen anzeigen
                     </button>
                   )}
-                  <button
-                    disabled={isTyping || saveStepMutation.isPending}
-                    onClick={async () => {
-                      if (isTyping) return;
-                      const filtered = data.topServices.filter((s) => s.title.trim());
-                      if (filtered.length === 0) {
-                        setShowSkipServicesWarning(true);
-                        return;
-                      }
-                      addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
-                      await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
-                      await goToNextStep();
-                    }}
-                    className="ml-auto flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Weiter <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+                  {/* Weiter-Button im fixen Bottom-Bar */}
               </div>
             </motion.div>
           )}
@@ -2847,6 +3661,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={async () => {
                       addUserMessage(`Branche: ${data.businessCategory} ✓`);
                       await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
+                      setCategoryConfirmed(true);
                       await goToNextStep();
                     }}
                     className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
@@ -3122,6 +3937,37 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'du' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'du' });
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
+                  setHeroRevealed(true);
+                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
+                  if (_isGmb) {
+                    // GMB: regenerate text with the chosen addressing mode
+                    if (websiteId) {
+                      setIsGeneratingInitialContent(true);
+                      generateInitialContentMutation.mutateAsync({
+                        websiteId,
+                        businessName: data.businessName,
+                        businessCategory: data.businessCategory,
+                        addressingMode: 'du',
+                      }).then((result) => {
+                        if (result.success) {
+                          setData(prev => ({
+                            ...prev,
+                            tagline: result.tagline || prev.tagline,
+                            description: result.description || prev.description,
+                            topServices: result.services?.map((s: any) => ({
+                              title: s.title, description: s.description,
+                            })) || prev.topServices,
+                          }));
+                        }
+                      }).catch(console.error).finally(() => {
+                        setIsGeneratingInitialContent(false);
+                        setTimeout(() => setContentRevealed(true), 600);
+                      });
+                    } else {
+                      setTimeout(() => setContentRevealed(true), 1000);
+                    }
+                  }
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-blue-500/60 hover:bg-blue-500/10 transition-all text-left group"
@@ -3143,6 +3989,37 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   setData((p) => ({ ...p, addressingMode: 'Sie' }));
                   const idx = dynamicStepOrder.indexOf("addressingMode");
                   await trySaveStep(idx, { addressingMode: 'Sie' });
+                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
+                  setHeroRevealed(true);
+                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
+                  if (_isGmb) {
+                    // GMB: regenerate text with the chosen addressing mode
+                    if (websiteId) {
+                      setIsGeneratingInitialContent(true);
+                      generateInitialContentMutation.mutateAsync({
+                        websiteId,
+                        businessName: data.businessName,
+                        businessCategory: data.businessCategory,
+                        addressingMode: 'Sie',
+                      }).then((result) => {
+                        if (result.success) {
+                          setData(prev => ({
+                            ...prev,
+                            tagline: result.tagline || prev.tagline,
+                            description: result.description || prev.description,
+                            topServices: result.services?.map((s: any) => ({
+                              title: s.title, description: s.description,
+                            })) || prev.topServices,
+                          }));
+                        }
+                      }).catch(console.error).finally(() => {
+                        setIsGeneratingInitialContent(false);
+                        setTimeout(() => setContentRevealed(true), 600);
+                      });
+                    } else {
+                      setTimeout(() => setContentRevealed(true), 1000);
+                    }
+                  }
                   await goToNextStep();
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all text-left group"
@@ -3241,20 +4118,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   )}
                 </div>
 
-                <button
-                  disabled={isTyping || uploadLogoMutation.isPending}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const logo = data.brandLogo || "font:Montserrat";
-                    const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
-                    addUserMessage(`Logo gewählt: ${label} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
@@ -3267,7 +4131,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-3"
             >
-              <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau rechts ändert sich sofort:</p>
+              <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau ändert sich sofort:</p>
                 <div className="space-y-2">
                   {(() => {
                     const hideSerifs = prefersSansSerif(data.businessCategory);
@@ -3316,19 +4180,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     })()}
                   </div>
 
-                <button
-                  disabled={isTyping || !data.headlineFont}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const fontLabel = data.headlineFont;
-                    addUserMessage(`Schriftart gewählt: ${fontLabel} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
@@ -3376,19 +4228,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   ))}
                 </div>
 
-                <button
-                  disabled={isTyping}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const sizeLabel = data.headlineSize === 'large' ? 'Extra groß' : data.headlineSize === 'medium' ? 'Groß' : 'Normal';
-                    addUserMessage(`Schriftgröße gewählt: ${sizeLabel} ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("headlineSize"), { headlineSize: data.headlineSize });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
@@ -3416,12 +4256,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     { key: "addOnGallery" as const, label: "Bildergalerie", price: "+3,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
                     ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+3,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
                     ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+3,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
+                    { key: "addOnAiChat" as const, label: "KI-Chat", price: "+9,90 €/Monat", desc: "Beantwortet Kundenfragen automatisch 24/7", emoji: "🤖" },
+                    { key: "addOnBooking" as const, label: "Terminbuchung", price: "+4,90 €/Monat", desc: "Kunden buchen Termine direkt auf der Website", emoji: "📅" },
                   ];
 
                   return addons.map((addon) => (
                     <button
                       key={addon.key}
                       onClick={() => setData((p) => ({ ...p, [addon.key]: !(p as any)[addon.key] }))}
+                      style={{ touchAction: "manipulation" }}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
                         (data as any)[addon.key]
                           ? "border-blue-500 bg-blue-500/10"
@@ -3445,35 +4288,53 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {data.addOnContactForm && (
                   <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 mt-2">
                     <p className="text-blue-300 text-xs">
-                      <strong>📬 Kontaktformular:</strong> Name, Betreff und Nachricht werden angezeigt. 
+                      <strong>📬 Kontaktformular:</strong> Name, Betreff und Nachricht werden angezeigt.
                       Du kannst das Formular später im Kundenportal noch bearbeiten.
                     </p>
                   </div>
                 )}
-                <button
-                  disabled={isTyping}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    const selected = [];
-                    if (data.addOnContactForm) selected.push("Kontaktformular");
-                    if (data.addOnGallery) selected.push("Bildergalerie");
-                    if (data.addOnMenu) selected.push("Speisekarte");
-                    if (data.addOnPricelist) selected.push("Preisliste");
-                    addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
-                    await trySaveStep(STEP_ORDER.indexOf("addons"), {
-                      addOnContactForm: data.addOnContactForm,
-                      contactFormFields: data.contactFormFields,
-                      addOnGallery: data.addOnGallery,
-                      addOnMenu: data.addOnMenu,
-                      addOnPricelist: data.addOnPricelist
-                    });
-                    
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Weiter <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Booking Info */}
+                {data.addOnBooking && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
+                    <p className="text-emerald-300 text-xs">
+                      <strong>📅 Terminbuchung:</strong> Du kannst deine Services und Verfügbarkeit nach der Freischaltung im Kunden-Dashboard einrichten.
+                    </p>
+                  </div>
+                )}
+                {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
+            </motion.div>
+          )}
+
+          {currentStep === "editAiChat" && (
+            <motion.div
+              key="editAiChat-step"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Begrüßungsnachricht</p>
+                <textarea
+                  rows={3}
+                  value={data.chatWelcomeMessage}
+                  onChange={e => setData(p => ({ ...p, chatWelcomeMessage: e.target.value }))}
+                  placeholder={`Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`}
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none placeholder-slate-500"
+                />
+                <p className="text-slate-500 text-xs">Der KI-Chat begrüßt Besucher auf deiner Website mit dieser Nachricht. Du kannst sie später im Dashboard jederzeit ändern.</p>
+              </div>
+              <button
+                onClick={() => {
+                  const suggestion = `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                  setData(p => ({ ...p, chatWelcomeMessage: suggestion }));
+                }}
+                className="w-full text-xs text-slate-400 hover:text-white py-2 px-3 rounded-xl border border-slate-600/50 hover:border-slate-500 bg-slate-700/40 transition-colors"
+              >
+                💡 Vorschlag übernehmen
+              </button>
+              {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
             </motion.div>
           )}
 
@@ -3772,47 +4633,129 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-4"
             >
-                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
-                  <input
-                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
-                    value={data.addOnGalleryData.headline}
-                    onChange={(e) => {
-                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, headline: e.target.value } }));
-                    }}
-                    placeholder="z.B. Unsere Galerie"
-                  />
-                </div>
+              {/* Überschrift */}
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
+                <input
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                  value={data.addOnGalleryData.headline}
+                  onChange={(e) => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, headline: e.target.value } }))}
+                  placeholder="z.B. Unsere Galerie"
+                />
+              </div>
 
+              {/* Modus-Switch */}
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Galerie-Typ</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['single', 'albums'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, mode } }))}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
+                        data.addOnGalleryData.mode === mode
+                          ? 'bg-blue-600/20 border-blue-500/60 text-white'
+                          : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {mode === 'single' ? (
+                        <>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                          Einzelgalerie
+                        </>
+                      ) : (
+                        <>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="10" rx="1"/><rect x="3" y="16" width="8" height="5" rx="1"/><rect x="13" y="16" width="8" height="5" rx="1"/></svg>
+                          Alben
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Einzelgalerie */}
+              {data.addOnGalleryData.mode !== 'albums' && (
                 <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-4">
-                  <p className="text-slate-400 text-xs font-medium">Bilder für die Galerie auswählen (max. 12):</p>
-                  
+                  <p className="text-slate-400 text-xs font-medium">Bilder auswählen:</p>
                   <MultiPhotoSelector
                     websiteId={String(websiteId || "")}
                     selectedPhotos={data.addOnGalleryData.images}
-                    onUpdate={(urls) => {
-                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, images: urls } }));
-                    }}
+                    onUpdate={(urls) => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, images: urls } }))}
                     industry={data.businessCategory}
                   />
+                </div>
+              )}
 
+              {/* Alben-Modus */}
+              {data.addOnGalleryData.mode === 'albums' && (
+                <div className="space-y-3">
+                  {data.addOnGalleryData.albums.map((album, albumIdx) => (
+                    <div key={album.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                      {/* Album-Header */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Album {albumIdx + 1}</p>
+                          <input
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                            value={album.name}
+                            onChange={(e) => {
+                              const updated = [...data.addOnGalleryData.albums];
+                              updated[albumIdx] = { ...updated[albumIdx], name: e.target.value };
+                              setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
+                            }}
+                            placeholder="z.B. Hochzeiten"
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = data.addOnGalleryData.albums.filter((_, i) => i !== albumIdx);
+                            setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
+                          }}
+                          className="mt-5 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg>
+                        </button>
+                      </div>
+
+                      {/* Cover-Vorschau */}
+                      {album.images.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <img src={album.images[0]} alt="Cover" className="w-12 h-12 rounded-lg object-cover border border-slate-600/50" />
+                          <p className="text-slate-400 text-[10px]">Albumbild: erstes Foto</p>
+                        </div>
+                      )}
+
+                      {/* Fotos für dieses Album */}
+                      <div>
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2">Fotos ({album.images.length})</p>
+                        <MultiPhotoSelector
+                          websiteId={String(websiteId || "")}
+                          selectedPhotos={album.images}
+                          onUpdate={(urls) => {
+                            const updated = [...data.addOnGalleryData.albums];
+                            updated[albumIdx] = { ...updated[albumIdx], images: urls };
+                            setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
+                          }}
+                          industry={data.businessCategory}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Album hinzufügen */}
                   <button
-                    disabled={isTyping}
-                    onClick={async () => {
-                      if (isTyping) return;
-                      const count = data.addOnGalleryData.images.length;
-                      addUserMessage(count > 0 ? `${count} Bilder für die Galerie ausgewählt ✓` : "Standard-Bilder für die Galerie behalten");
-                      await trySaveStep(STEP_ORDER.indexOf("editGallery"), { 
-                        galleryHeadline: data.addOnGalleryData.headline,
-                        galleryImages: data.addOnGalleryData.images 
-                      });
-                      await goToNextStep();
+                    onClick={() => {
+                      const newAlbum: GalleryAlbum = { id: `album-${Date.now()}`, name: '', images: [] };
+                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: [...p.addOnGalleryData.albums, newAlbum] } }));
                     }}
-                    className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors font-medium"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-blue-500/50 text-sm transition-all"
                   >
-                    Weiter <ChevronRight className="w-4 h-4" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Album hinzufügen
                   </button>
                 </div>
+              )}
             </motion.div>
           )}
 
@@ -3825,6 +4768,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-4"
             >
+              {/* Coming Soon overlay wrapper */}
+              <div className="relative rounded-2xl overflow-hidden">
+                {/* Blurred content behind overlay */}
+                <div className="select-none pointer-events-none opacity-40 blur-[1px]">
               {/* Info Card */}
                 <div className="bg-blue-600/10 border border-blue-500/30 rounded-2xl p-4 space-y-2">
                   <div className="flex items-start gap-3">
@@ -3881,32 +4828,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
                 <div className="flex flex-col gap-3 pt-1">
                   <button
-                    onClick={() => setData((p) => ({ ...p, subPages: [...p.subPages, { id: genId(), name: "", description: "" }] }))}
-                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl border border-slate-600 transition-colors"
+                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 text-slate-300 py-2.5 rounded-xl border border-slate-600"
                   >
                     <Plus className="w-3.5 h-3.5" /> Neue Unterseite hinzufügen <span className="text-blue-400 font-bold">(+9,90 €)</span>
                   </button>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      disabled={isTyping}
-                      onClick={async () => {
-                        if (isTyping) return;
-                        const validPages = data.subPages.filter((p) => p.name.trim());
-                        addUserMessage(validPages.length > 0 ? `Unterseiten: ${validPages.map((p) => p.name).join(", ")} ✓` : "Keine Unterseiten");
-                        await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: validPages.map((p) => p.name) });
-                        await goToNextStep();
-                      }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
-                    >
-                      {data.subPages.length > 0 ? "Speichern & weiter" : "Überspringen & weiter"} <ChevronRight className="w-4 h-4" />
-                    </button>
+                </div>
+                </div>{/* end blurred content */}
+
+                {/* Coming Soon overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-[2px] rounded-2xl z-10">
+                  <div className="flex flex-col items-center gap-3 text-center px-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/40">
+                      <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                      <span className="text-indigo-300 text-xs font-semibold uppercase tracking-widest">Coming Soon</span>
+                    </div>
+                    <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+                      Unterseiten sind in Kürze verfügbar. Wir arbeiten daran!
+                    </p>
                   </div>
                 </div>
+              </div>{/* end relative wrapper */}
+
+              {/* Weiter-Button im fixen Bottom-Bar */}
             </motion.div>
           )}
 
-          {currentStep === "legalOwner" && business && (business.address || business.phone || business.email) && (
+          {currentStep === "legalOwner" && business && business.placeId && !business.placeId.startsWith("self-") && (business.address || business.phone || business.email) && (
             <motion.div
               key="legalOwner-gmb-step"
               initial={{ opacity: 0, x: 30, scale: 0.95 }}
@@ -3916,42 +4863,81 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               className="ml-9 mt-2"
             >
                 {!gmbÜbernommenEditMode ? (
-                  <button
-                    onClick={async () => {
+                  <div className="space-y-2">
+                    {/* Name field — always required, GMB doesn't provide this */}
+                    <div className="bg-slate-800/80 border border-amber-500/30 rounded-xl px-3 py-2.5 space-y-2">
+                      <p className="text-xs text-amber-300 font-medium">👤 Pflichtangabe für Impressum</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 w-14 flex-shrink-0">Inhaber</span>
+                        <input
+                          type="text"
+                          value={data.legalOwner || ""}
+                          onChange={(e) => setData((p) => ({ ...p, legalOwner: e.target.value }))}
+                          placeholder="Vorname Nachname"
+                          className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-amber-500 placeholder-slate-500"
+                        />
+                      </div>
+                    </div>
+                    {/* Preview of the GMB data to be imported */}
+                    {(() => {
                       const parts = business.address ? business.address.split(",") : [];
                       const street = parts[0]?.trim() || "";
                       const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
                       const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
                       const zip = zipCityMatch?.[1] || "";
                       const city = zipCityMatch?.[2] || "";
-                      const phone = business.phone || "";
-                      const email = business.email || "";
-                      setData((p) => ({
-                        ...p,
-                        legalStreet: street || p.legalStreet,
-                        legalZip: zip || p.legalZip,
-                        legalCity: city || p.legalCity,
-                        legalPhone: phone || p.legalPhone,
-                        legalEmail: email || p.legalEmail,
-                      }));
-                      const summary = [
-                        street && `Straße: ${street}`,
-                        zip && city && `PLZ/Stadt: ${zip} ${city}`,
-                        phone && `Telefon: ${phone}`,
-                        email && `E-Mail: ${email}`,
-                      ].filter(Boolean).join(" · ");
-                      addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
-                      const stepIdx = STEP_ORDER.indexOf("legalOwner");
-                      if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
-                      if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
-                      if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
-                      if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
-                      await advanceToStep("legalVat");
-                    }}
-                    className="flex items-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2 rounded-xl transition-all"
-                  >
-                    <span>📍</span> Adresse, Telefon & E-Mail aus Google My Business übernehmen
-                  </button>
+                      return (
+                        <div className="bg-slate-800/60 border border-slate-600/40 rounded-xl px-3 py-2.5 space-y-1">
+                          <p className="text-[10px] text-slate-500 mb-1">Aus Google übernommen:</p>
+                          {street && <p className="text-xs text-slate-300">📍 {street}{zip && city ? `, ${zip} ${city}` : ""}</p>}
+                          {business.phone && <p className="text-xs text-slate-300">📞 {business.phone}</p>}
+                          {business.email && <p className="text-xs text-slate-300">✉️ {business.email}</p>}
+                        </div>
+                      );
+                    })()}
+                    <button
+                      onClick={async () => {
+                        if (!data.legalOwner || data.legalOwner.trim().split(/\s+/).length < 2) {
+                          toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
+                          return;
+                        }
+                        const parts = business.address ? business.address.split(",") : [];
+                        const street = parts[0]?.trim() || "";
+                        const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
+                        const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
+                        const zip = zipCityMatch?.[1] || "";
+                        const city = zipCityMatch?.[2] || "";
+                        const phone = business.phone || "";
+                        const email = business.email || "";
+                        setData((p) => ({
+                          ...p,
+                          legalStreet: street || p.legalStreet,
+                          legalZip: zip || p.legalZip,
+                          legalCity: city || p.legalCity,
+                          legalPhone: phone || p.legalPhone,
+                          legalEmail: email || p.legalEmail,
+                        }));
+                        const summary = [
+                          `Inhaber: ${data.legalOwner.trim()}`,
+                          street && `Straße: ${street}`,
+                          zip && city && `PLZ/Stadt: ${zip} ${city}`,
+                          phone && `Telefon: ${phone}`,
+                          email && `E-Mail: ${email}`,
+                        ].filter(Boolean).join(" · ");
+                        addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
+                        const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                        await trySaveStep(stepIdx, { legalOwner: data.legalOwner.trim() });
+                        if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
+                        if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
+                        if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
+                        if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
+                        await advanceToStep("legalVat");
+                      }}
+                      className="w-full flex items-center justify-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2.5 rounded-xl transition-all font-medium"
+                    >
+                      ✓ Diese Daten übernehmen
+                    </button>
+                  </div>
                 ) : (
                   /* Edit mode: show fields inline */
                   <div className="bg-slate-800/80 border border-slate-600/50 rounded-xl p-3 space-y-2">
@@ -3965,6 +4951,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       </button>
                     </div>
                     {[
+                      { label: "Inhaber", key: "legalOwner" as const, placeholder: "Vorname Nachname" },
                       { label: "Straße", key: "legalStreet" as const, placeholder: "Musterstraße 1" },
                       { label: "PLZ", key: "legalZip" as const, placeholder: "12345" },
                       { label: "Stadt", key: "legalCity" as const, placeholder: "Musterstadt" },
@@ -3984,8 +4971,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     ))}
                     <button
                       onClick={async () => {
+                        if (!data.legalOwner || data.legalOwner.trim().split(/\s+/).length < 2) {
+                          toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
+                          return;
+                        }
                         setGmbÜbernommenEditMode(false);
                         const stepIdx = STEP_ORDER.indexOf("legalOwner");
+                        await trySaveStep(stepIdx, { legalOwner: data.legalOwner.trim() });
                         if (data.legalStreet) await trySaveStep(stepIdx + 1, { legalStreet: data.legalStreet });
                         if (data.legalZip && data.legalCity) await trySaveStep(stepIdx + 2, { legalZip: data.legalZip, legalCity: data.legalCity });
                         if (data.legalEmail) await trySaveStep(stepIdx + 3, { legalEmail: data.legalEmail });
@@ -4021,6 +5013,139 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   <Pencil className="w-3 h-3" /> Angaben bearbeiten
                 </button>
+            </motion.div>
+          )}
+
+          {currentStep === "openingHours" && (
+            <motion.div
+              key="openingHours-step"
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.97 }}
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="ml-9 space-y-3"
+            >
+              {/* Quick-select buttons */}
+              <div className="flex flex-wrap gap-2 mb-1">
+                {[
+                  { label: "Mo – Fr", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 5 }))) },
+                  { label: "Mo – Sa", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 6 }))) },
+                  { label: "Täglich", action: () => setHoursState(h => h.map(d => ({ ...d, open: true }))) },
+                  { label: "Alle gleiche Zeit", action: () => {
+                    const first = hoursState.find(d => d.open);
+                    if (!first) return;
+                    setHoursState(h => h.map(d => d.open ? { ...d, from: first.from, to: first.to } : d));
+                  }},
+                ].map(({ label, action }) => (
+                  <button key={label} onClick={action}
+                    className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 border border-white/10 transition-colors">
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 7-day grid */}
+              <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden divide-y divide-white/5">
+                {hoursState.map((dh, i) => (
+                  <div key={dh.day} className="flex items-center gap-3 px-3 py-2.5">
+                    {/* Toggle */}
+                    <button
+                      onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, open: !d.open } : d))}
+                      className={`w-9 h-5 rounded-full flex-shrink-0 transition-colors relative ${dh.open ? 'bg-emerald-500' : 'bg-white/20'}`}
+                    >
+                      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${dh.open ? 'left-4' : 'left-0.5'}`} />
+                    </button>
+                    {/* Day name */}
+                    <span className={`text-sm w-24 flex-shrink-0 ${dh.open ? 'text-white' : 'text-slate-500'}`}>
+                      {dh.day.slice(0, 2)}
+                    </span>
+                    {dh.open ? (
+                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        {/* First time slot */}
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="time"
+                            value={dh.from}
+                            onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from: e.target.value } : d))}
+                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                          />
+                          <span className="text-slate-500 text-xs">–</span>
+                          <input
+                            type="time"
+                            value={dh.to}
+                            onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to: e.target.value } : d))}
+                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                          />
+                          {/* Add second slot button */}
+                          {!dh.from2 && (
+                            <button
+                              onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: "13:00", to2: "18:00" } : d))}
+                              className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-slate-400 hover:text-white text-xs flex items-center justify-center transition-colors"
+                              title="Zweites Zeitfenster hinzufügen (z.B. nach Mittagspause)"
+                            >+</button>
+                          )}
+                        </div>
+                        {/* Second time slot (optional, e.g. after lunch break) */}
+                        {dh.from2 !== undefined && (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="time"
+                              value={dh.from2}
+                              onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: e.target.value } : d))}
+                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                            />
+                            <span className="text-slate-500 text-xs">–</span>
+                            <input
+                              type="time"
+                              value={dh.to2}
+                              onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to2: e.target.value } : d))}
+                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                            />
+                            <button
+                              onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: undefined, to2: undefined } : d))}
+                              className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-red-500/30 text-slate-400 hover:text-red-400 text-xs flex items-center justify-center transition-colors"
+                              title="Zweites Zeitfenster entfernen"
+                            >×</button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-500 flex-1">Geschlossen</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={async () => {
+                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
+                    const saved = hoursState;
+                    addUserMessage(`${saved.filter(d => d.open).length} Tage eingetragen`);
+                    setData(p => ({ ...p, openingHours: saved }));
+                    await trySaveStep(stepIdx, { openingHours: saved });
+                    const next = dynamicStepOrder[stepIdx + 1];
+                    if (next) await advanceToStep(next);
+                  }}
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors"
+                >
+                  Übernehmen ✓
+                </button>
+                <button
+                  onClick={async () => {
+                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
+                    addUserMessage("Überspringen");
+                    setData(p => ({ ...p, openingHours: null }));
+                    await trySaveStep(stepIdx, { openingHours: null });
+                    const next = dynamicStepOrder[stepIdx + 1];
+                    if (next) await advanceToStep(next);
+                  }}
+                  className="px-5 py-2.5 bg-white/10 hover:bg-white/15 text-slate-300 text-sm rounded-xl transition-colors border border-white/10"
+                >
+                  Überspringen
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -4120,18 +5245,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         )}
                       </div>
 
-                      <button
-                        disabled={isTyping}
-                        onClick={async () => {
-                          if (isTyping) return;
-                          const hidden = Array.from(hiddenSections);
-                          addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
-                          await advanceToStep("preview");
-                        }}
-                        className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-                      >
-                        Weiter <ChevronRight className="w-4 h-4" />
-                      </button>
+                      {/* Weiter-Button im fixen Bottom-Bar */}
                     </>
                   );
                 })()}
@@ -4177,63 +5291,90 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="ml-9 space-y-3"
             >
+                {/* Billing interval toggle */}
+                <div className="flex rounded-xl overflow-hidden border border-slate-600 mb-1">
+                  <button
+                    onClick={() => setBillingInterval("yearly")}
+                    className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
+                      billingInterval === "yearly"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <span>Jährlich · <span className="font-bold">19,90 €</span>/Mo</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-normal transition-all ${
+                      billingInterval === "yearly"
+                        ? "bg-green-500/30 text-green-300"
+                        : "bg-slate-600/40 text-slate-500"
+                    }`}>2 Monate gratis</span>
+                  </button>
+                  <button
+                    onClick={() => setBillingInterval("monthly")}
+                    className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
+                      billingInterval === "monthly"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <span>Monatlich · <span className="font-bold">24,90 €</span>/Mo</span>
+                    {/* spacer so both buttons stay the same height */}
+                    <span className="text-xs opacity-0 px-2 py-0.5">–</span>
+                  </button>
+                </div>
+
                 <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
-                  {/* Intro offer banner */}
-                  <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-3 py-2 mb-2">
-                    <p className="text-xs font-semibold text-amber-300">🎉 Einführungsangebot: Erster Monat nur 39€!</p>
-                  </div>
-                  
-                  {/* First month pricing */}
+                  {/* Line items */}
                   <div className="space-y-2 pb-2 border-b border-slate-600">
-                    <p className="text-xs text-slate-400 font-medium">1. Monat:</p>
                     <div className="flex justify-between text-sm text-slate-300">
                       <span>Basis-Website</span>
-                      <span className="text-amber-400 font-semibold">39,00 €</span>
-                    </div>
-                  </div>
-                  
-                  {/* Regular pricing */}
-                  <div className="space-y-2 pt-2">
-                    <p className="text-xs text-slate-400 font-medium">Ab 2. Monat:</p>
-                    <div className="flex justify-between text-sm text-slate-300">
-                      <span>Basis-Website</span>
-                      <span>79,00 €/Monat</span>
+                      <span>{billingInterval === "yearly" ? "19,90" : "24,90"} €/Monat</span>
                     </div>
                     {data.addOnContactForm && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Kontaktformular</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Kontaktformular</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
                     {data.addOnGallery && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Bildergalerie</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Bildergalerie</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.addOnMenu && (
+                    {_addOnMenu && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Speisekarte</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Speisekarte</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.addOnPricelist && (
+                    {_addOnPricelist && (
                       <div className="flex justify-between text-sm text-slate-300">
-                        <span>Preisliste</span>
-                        <span>+4,90 €/Monat</span>
+                        <span>+ Preisliste</span>
+                        <span>+3,90 €/Monat</span>
                       </div>
                     )}
-                    {data.subPages.filter((p) => p.name).map((page) => (
-                      <div key={page.id} className="flex justify-between text-sm text-slate-300">
-                        <span>Unterseite: {page.name}</span>
+                    {_addOnAiChat && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>+ KI-Chat</span>
                         <span>+9,90 €/Monat</span>
                       </div>
-                    ))}
-                    <div className="border-t border-slate-600 pt-2 flex justify-between font-bold text-white">
-                      <span>Gesamt ab Monat 2</span>
-                      <span>{totalPrice(false)} €/Monat</span>
-                    </div>
+                    )}
+                    {data.addOnBooking && (
+                      <div className="flex justify-between text-sm text-slate-300">
+                        <span>+ Terminbuchung</span>
+                        <span>+4,90 €/Monat</span>
+                      </div>
+                    )}
                   </div>
+                  <div className="pt-1 flex justify-between font-bold text-white text-base">
+                    <span>Gesamt</span>
+                    <span>{totalPrice()} €/Monat</span>
+                  </div>
+                  <p className="text-xs text-slate-500 pt-0.5">
+                    {billingInterval === "yearly"
+                      ? "Jährliche Abrechnung · monatlich abbuchbar · Jederzeit kündbar"
+                      : "Monatliche Abrechnung · Jederzeit kündbar"}
+                  </p>
                 </div>
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <div
@@ -4256,10 +5397,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {completeMutation.isPending || checkoutMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <>\n                      <Zap className="w-5 h-5" /> Jetzt für {totalPrice(true)} € freischalten (1. Monat)\n                    </>                 )}
+                    <><Zap className="w-5 h-5" /> Jetzt für {totalPrice()} €/Mo freischalten</>
+                  )}
                 </button>
                 <p className="text-center text-xs text-slate-500">
-                  Monatlich kündbar • Keine Einrichtungsgebühr • SSL inklusive
+                  7 Tage gratis testen • Keine Einrichtungsgebühr • SSL inklusive
                 </p>
             </motion.div>
           )}
@@ -4269,8 +5411,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         <div ref={messagesEndRef} />
         </div>
         {/* Input area – sticky at bottom */}
-          {!["services", "addons", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory"].includes(currentStep) && (
-            <div className="flex-shrink-0 px-4 pb-4 border-t border-slate-700/50">
+          {!["services", "addons", "editAiChat", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours", "heroPhoto", "aboutPhoto", "headlineFont", "headlineSize", "editGallery", "hideSections"].includes(currentStep) && (
+            <div className="flex-shrink-0 px-4 pt-3 pb-4 border-t border-slate-700/50">
               {/* Quick-reply chips – above input */}
               {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (
                 <div className="pt-3 pb-2">
@@ -4342,7 +5484,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         : currentStep === "usp"
                         ? "z.B. 'Wir sind der einzige Anbieter in der Region, der...' "
                         : currentStep === "targetAudience"
-                        ? `z.B. "Damen und Herren in ${data.legalCity || 'Bocholt'}, die Wert auf..."`
+                        ? `z.B. "Damen und Herren in ${data.legalCity || 'Köln'}, die Wert auf..."`
                         : "Deine Antwort... (Shift+Enter für neue Zeile)"
                     }
                     className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none leading-relaxed"
@@ -4362,7 +5504,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         : currentStep === "legalStreet"
                         ? "Musterstraße 12"
                         : currentStep === "legalZipCity"
-                        ? "46395 Bocholt"
+                        ? "50667 Köln"
                         : currentStep === "legalEmail"
                         ? "info@musterfirma.de"
                         : currentStep === "legalVat"
@@ -4386,10 +5528,218 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
             </div>
           )}
+          {/* Weiter-Buttons für UI-Schritte – außerhalb des Scroll-Containers (sticky auf Mobile) */}
+          {currentStep === "addons" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  let snapshot: OnboardingData | null = null;
+                  setData(p => { snapshot = p; return p; });
+                  const d = snapshot ?? data;
+                  const selected = [];
+                  if (d.addOnContactForm) selected.push("Kontaktformular");
+                  if (d.addOnGallery) selected.push("Bildergalerie");
+                  if (d.addOnMenu) selected.push("Speisekarte");
+                  if (d.addOnPricelist) selected.push("Preisliste");
+                  if (d.addOnAiChat) selected.push("KI-Chat");
+                  if (d.addOnBooking) selected.push("Terminbuchung");
+                  addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
+                  await trySaveStep(STEP_ORDER.indexOf("addons"), {
+                    addOnContactForm: d.addOnContactForm,
+                    contactFormFields: d.contactFormFields,
+                    addOnGallery: d.addOnGallery,
+                    addOnMenu: d.addOnMenu,
+                    addOnPricelist: d.addOnPricelist,
+                    addOnAiChat: d.addOnAiChat,
+                    addOnBooking: d.addOnBooking,
+                  });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "editAiChat" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const msg = data.chatWelcomeMessage.trim() || `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                  if (!data.chatWelcomeMessage.trim()) {
+                    setData(p => ({ ...p, chatWelcomeMessage: msg }));
+                  }
+                  addUserMessage(`🤖 Begrüßung: "${msg.slice(0, 60)}${msg.length > 60 ? "…" : ""}"`);
+                  await trySaveStep(STEP_ORDER.indexOf("editAiChat"), { chatWelcomeMessage: msg });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "brandLogo" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping || uploadLogoMutation.isPending}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const logo = data.brandLogo || "font:Montserrat";
+                  const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
+                  addUserMessage(`Logo gewählt: ${label} ✓`);
+                  await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "headlineFont" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping || !data.headlineFont}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  addUserMessage(`Schriftart gewählt: ${data.headlineFont} ✓`);
+                  await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "headlineSize" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const sizeLabel = data.headlineSize === 'large' ? 'Extra groß' : data.headlineSize === 'medium' ? 'Groß' : 'Normal';
+                  addUserMessage(`Schriftgröße gewählt: ${sizeLabel} ✓`);
+                  await trySaveStep(STEP_ORDER.indexOf("headlineSize"), { headlineSize: data.headlineSize });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "services" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping || saveStepMutation.isPending}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const filtered = data.topServices.filter((s) => s.title.trim());
+                  if (filtered.length === 0) {
+                    setShowSkipServicesWarning(true);
+                    return;
+                  }
+                  addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
+                  await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "editGallery" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const count = data.addOnGalleryData.images.length;
+                  addUserMessage(count > 0 ? `${count} Bilder für die Galerie ausgewählt ✓` : "Standard-Bilder für die Galerie behalten");
+                  await trySaveStep(STEP_ORDER.indexOf("editGallery"), {
+                    galleryHeadline: data.addOnGalleryData.headline,
+                    galleryImages: data.addOnGalleryData.images,
+                    galleryMode: data.addOnGalleryData.mode,
+                    galleryAlbums: data.addOnGalleryData.albums,
+                    addOnGalleryData: data.addOnGalleryData,
+                  });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "subpages" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  addUserMessage("Keine Unterseiten");
+                  await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: [] });
+                  await goToNextStep();
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {currentStep === "hideSections" && (
+            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+              <button
+                disabled={isTyping}
+                style={{ touchAction: "manipulation" }}
+                onClick={async () => {
+                  if (isTyping) return;
+                  const hidden = Array.from(hiddenSections);
+                  addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
+                  const stepIdx = dynamicStepOrder.indexOf("hideSections");
+                  trySaveStep(stepIdx, {
+                    sectionOrder: sectionOrder.length > 0 ? [...sectionOrder] : [],
+                    hiddenSections: hidden,
+                  });
+                  await advanceToStep("preview");
+                }}
+                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Weiter <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {/* Mobile: preview shortcut button – only shown on small screens, hidden on preview step (has its own button) */}
+          {liveWebsiteData && colorScheme && currentStep !== "preview" && (
+            <div className="lg:hidden px-3 pb-3 pt-1 flex-shrink-0">
+              <button
+                onClick={() => setShowFullPreview(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600/40 text-slate-300 hover:text-white text-sm transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                Website-Vorschau anzeigen
+              </button>
+            </div>
+          )}
           </div>{/* end messages+input wrapper */}
         </div>
-        {/* Preview panell – MacBook mockup */}
-        <div className="relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col">
+        {/* Preview panel – MacBook mockup (desktop only) */}
+        <div className="hidden lg:flex relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex-col">
           {/* Preview top bar: chat toggle + progress bar */}
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-700/50">
             {/* Chat toggle button – always visible here */}
@@ -4405,6 +5755,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
               const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
               const currentIdx = dynamicStepOrder.indexOf(currentStep);
+              // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
+              if (currentIdx === -1) return null;
               const progress = Math.round((currentIdx / totalSteps) * 100);
 
               // Get completed steps (all steps before current)
@@ -4416,6 +5768,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               const stepLabels: Record<string, string> = {
                 businessCategory: "Branche",
                 businessName: "Name",
+                addressingMode: "Anrede",
                 brandLogo: "Logo",
                 colorScheme: "Farben",
                 heroPhoto: "Foto",
@@ -4431,8 +5784,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 legalZipCity: "Ort",
                 legalEmail: "E-Mail",
                 legalPhone: "Telefon",
+                openingHours: "Öffnungszeiten",
                 legalVat: "Steuer",
                 addons: "Extras",
+                editAiChat: "KI-Chat",
                 editMenu: "Speisekarte",
                 editPricelist: "Preise",
                 editGallery: "Galerie",
@@ -4571,7 +5926,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Website – fades in when category is entered; skeleton mode prevents flash */}
                 <div style={{
                   opacity: contentPhase === 'skeleton' ? 0 : 1,
-                  transition: 'opacity 0.45s ease',
+                  transition: 'opacity 0.6s ease',
+                  position: 'relative',
                 }}>
                   <WebsiteRenderer
                     websiteData={liveWebsiteData}
@@ -4585,7 +5941,50 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     layoutStyle={layoutStyle}
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
-                    isLoading={isGeneratingInitialContent || contentPhase === 'colors' || contentPhase === 'images'}
+                    isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}
+                  />
+                  {_addOnAiChat && liveWebsiteData && (
+                    <ChatWidget
+                      slug={siteData?.website?.slug || "preview"}
+                      primaryColor={(data.colorScheme as any)?.primary || colorScheme?.primary || "#2563eb"}
+                      businessName={liveWebsiteData.businessName || data.businessName || "Assistent"}
+                      welcomeMessage={data.chatWelcomeMessage || undefined}
+                      addOnBooking={!!data.addOnBooking}
+                      onBookingRequest={() => {}}
+                    />
+                  )}
+
+                  {/* ── Magic progressive reveal overlays ─────────────────────────────
+                      These "fog of war" layers lift one by one as the user fills in info,
+                      creating the feeling that the website is being built before their eyes.
+                  ─────────────────────────────────────────────────────────────────────── */}
+
+                  {/* Layer 1: Full overlay – clears after businessName confirmed (hero reveal) */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(135deg, rgba(8,12,35,0.72) 0%, rgba(12,18,50,0.65) 100%)',
+                      opacity: heroRevealed ? 0 : 1,
+                      transition: 'opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1)',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                    }}
+                  />
+
+                  {/* Layer 2: Lower content overlay – clears after text generation complete */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      top: '38%', left: 0, right: 0, bottom: 0,
+                      background: 'linear-gradient(to bottom, rgba(8,12,35,0) 0%, rgba(8,12,35,0.68) 18%, rgba(8,12,35,0.68) 100%)',
+                      opacity: contentRevealed ? 0 : 1,
+                      transition: 'opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.45s',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                    }}
                   />
                 </div>
               </div>
@@ -4620,9 +6019,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <CheckCircle className="w-8 h-8 text-white" />
                       </div>
                       <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Fortschritt gespeichert ✓</h2>
-                      <p className="text-emerald-100 text-sm font-medium leading-relaxed">
-                        Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
-                      </p>
+                      {!isPaid && (
+                        <p className="text-emerald-100 text-sm font-medium leading-relaxed">
+                          Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -4647,13 +6048,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
                     >
                       Weiter bearbeiten
-                    </button>
-
-                    <button
-                      onClick={() => { setShowExitIntent(false); window.close?.(); }}
-                      className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
-                    >
-                      Trotzdem schließen
                     </button>
                   </div>
                 </>
@@ -4694,6 +6088,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               return;
                             }
                             await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
+                            if (websiteId) {
+                              saveCustomerEmailMutation.mutate({ websiteId, email: data.email });
+                            }
                             toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
                             setShowExitIntent(false);
                           }}
@@ -4773,21 +6170,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 </button>
 
                 <button
-                  onClick={() => {
-                    setShowExitConfirmation(false);
-                    // Allow user to leave
-                    window.removeEventListener('beforeunload', () => {});
-                  }}
+                  onClick={() => setShowExitConfirmation(false)}
                   className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors py-2"
                 >
-                  Trotzdem verlassen
+                  Schließen
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -4823,7 +6216,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
     if (!gmbData?.photos?.length) return;
     if (selectedPhotos.length > 0) { gmbInitializedRef.current = true; return; }
     gmbInitializedRef.current = true;
-    onUpdate(gmbData.photos.slice(0, 12));
+    onUpdate(gmbData.photos);
   }, [gmbData]);
 
   const photos = suggestionsData?.suggestions || [];
@@ -4832,10 +6225,6 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
     if (selectedPhotos.includes(url)) {
       onUpdate(selectedPhotos.filter(u => u !== url));
     } else {
-      if (selectedPhotos.length >= 12) {
-        toast.error("Maximal 12 Bilder erlaubt.");
-        return;
-      }
       onUpdate([...selectedPhotos, url]);
     }
   };
@@ -5218,6 +6607,17 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
             );
           })
         )}
+      </div>
+
+      {/* Stock Photo Search */}
+      <div className="border-t border-slate-700 pt-3 space-y-2">
+        <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Stock-Foto suchen</p>
+        <StockPhotoSearch
+          defaultQuery={businessCategory}
+          selectedUrl={heroPhotoUrl}
+          onSelect={(url) => onSelect(url)}
+          perPage={9}
+        />
       </div>
 
       {/* Upload option */}

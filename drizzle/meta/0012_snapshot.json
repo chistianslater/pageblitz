@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "a01a7494-88cd-4840-a64e-691ce851396b",
-  "prevId": "1ca7e225-a2fb-48ed-9db0-9c8415b6818d",
+  "id": "cbd1f5bc-ea4d-4604-8fe3-04c70b12b6a6",
+  "prevId": "a01a7494-88cd-4840-a64e-691ce851396b",
   "tables": {
     "businesses": {
       "name": "businesses",
@@ -215,6 +215,94 @@
       },
       "checkConstraint": {}
     },
+    "contact_submissions": {
+      "name": "contact_submissions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "websiteId": {
+          "name": "websiteId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "customFields": {
+          "name": "customFields",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ipAddress": {
+          "name": "ipAddress",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "readAt": {
+          "name": "readAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "contact_submissions_id": {
+          "name": "contact_submissions_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "generated_websites": {
       "name": "generated_websites",
       "columns": {
@@ -371,6 +459,20 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'email_captured'"
+        },
+        "contactFormFields": {
+          "name": "contactFormFields",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "umamiWebsiteId": {
+          "name": "umamiWebsiteId",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "createdAt": {
           "name": "createdAt",
@@ -716,6 +818,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "openingHours": {
+          "name": "openingHours",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "legalVatId": {
           "name": "legalVatId",
           "type": "varchar(100)",
@@ -820,6 +929,27 @@
         },
         "addOnSubpages": {
           "name": "addOnSubpages",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "contactFormFields": {
+          "name": "contactFormFields",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sectionOrder": {
+          "name": "sectionOrder",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "hiddenSections": {
+          "name": "hiddenSections",
           "type": "json",
           "primaryKey": false,
           "notNull": false,

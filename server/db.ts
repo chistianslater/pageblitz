@@ -1,14 +1,19 @@
-import { eq, desc, sql, and, like } from "drizzle-orm";
+import { eq, desc, sql, and, like, gte, isNotNull, notInArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import crypto from "crypto";
 import {
   InsertUser, users,
   businesses, InsertBusiness, Business,
   generatedWebsites, InsertGeneratedWebsite, GeneratedWebsite,
   outreachEmails, InsertOutreachEmail, OutreachEmail,
+  outreachExperiments, InsertOutreachExperiment, OutreachExperiment,
   templateUploads, InsertTemplateUpload, TemplateUpload,
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
   generationJobs, InsertGenerationJob, GenerationJob,
+  contactSubmissions, InsertContactSubmission, ContactSubmission,
+  magicLinkTokens,
+  chatTranscripts, ChatTranscript,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -157,6 +162,13 @@ export async function getWebsiteBySlug(slug: string) {
   return result[0];
 }
 
+export async function getWebsiteByFormerSlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(generatedWebsites).where(eq(generatedWebsites.formerSlug, slug)).limit(1);
+  return result[0];
+}
+
 export async function getWebsiteByToken(token: string) {
   const db = await getDb();
   if (!db) return undefined;
@@ -169,6 +181,14 @@ export async function getWebsiteByBusinessId(businessId: number) {
   if (!db) return undefined;
   const result = await db.select().from(generatedWebsites).where(eq(generatedWebsites.businessId, businessId)).orderBy(desc(generatedWebsites.createdAt)).limit(1);
   return result[0];
+}
+
+/** Returns the set of businessIds that already have a generated website (= Pageblitz customers). */
+export async function getBusinessIdsWithWebsite(): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db.select({ businessId: generatedWebsites.businessId }).from(generatedWebsites);
+  return new Set(rows.map(r => r.businessId).filter((id): id is number => id != null));
 }
 
 export async function listWebsites(limit = 50, offset = 0) {
@@ -233,6 +253,24 @@ export async function updateWebsite(id: number, data: Partial<InsertGeneratedWeb
   await db.update(generatedWebsites).set(data).where(eq(generatedWebsites.id, id));
 }
 
+/** Returns website + its business in a single call – used by server-side SEO meta injection */
+export async function getWebsiteBySlugWithBusiness(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const websites = await db.select().from(generatedWebsites).where(eq(generatedWebsites.slug, slug)).limit(1);
+  if (!websites[0]) return undefined;
+  const website = websites[0];
+  const businessResult = await db.select().from(businesses).where(eq(businesses.id, website.businessId)).limit(1);
+  return { website, business: businessResult[0] ?? null };
+}
+
+/** Returns slugs of all active websites – used for sitemap.xml generation */
+export async function listActiveWebsites(): Promise<Array<{ slug: string }>> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ slug: generatedWebsites.slug }).from(generatedWebsites).where(eq(generatedWebsites.status, "active"));
+}
+
 // ── Outreach Emails ────────────────────────────────────
 export async function createOutreachEmail(data: InsertOutreachEmail) {
   const db = await getDb();
@@ -244,7 +282,28 @@ export async function createOutreachEmail(data: InsertOutreachEmail) {
 export async function listOutreachEmails(limit = 50, offset = 0) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(outreachEmails).orderBy(desc(outreachEmails.createdAt)).limit(limit).offset(offset);
+  return db
+    .select({
+      id: outreachEmails.id,
+      businessId: outreachEmails.businessId,
+      websiteId: outreachEmails.websiteId,
+      recipientEmail: outreachEmails.recipientEmail,
+      subject: outreachEmails.subject,
+      body: outreachEmails.body,
+      status: outreachEmails.status,
+      previewUrl: outreachEmails.previewUrl,
+      sentAt: outreachEmails.sentAt,
+      variant: outreachEmails.variant,
+      createdAt: outreachEmails.createdAt,
+      businessName: businesses.name,
+      businessWebsite: businesses.website,
+      leadType: businesses.leadType,
+    })
+    .from(outreachEmails)
+    .leftJoin(businesses, eq(outreachEmails.businessId, businesses.id))
+    .orderBy(desc(outreachEmails.createdAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function countOutreachEmails() {
@@ -265,6 +324,13 @@ export async function updateOutreachEmail(id: number, data: Partial<InsertOutrea
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(outreachEmails).set(data).where(eq(outreachEmails.id, id));
+}
+
+export async function getOutreachEmailByWebsiteId(websiteId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(outreachEmails).where(eq(outreachEmails.websiteId, websiteId)).limit(1);
+  return result[0];
 }
 
 // ── Stats ──────────────────────────────────────────────
@@ -523,7 +589,8 @@ export async function getWebsitesByUserId(userId: number) {
     })
     .from(subscriptions)
     .innerJoin(generatedWebsites, eq(subscriptions.websiteId, generatedWebsites.id))
-    .where(eq(subscriptions.userId, userId));
+    // Exclude "incomplete" subscriptions (checkout started but never paid)
+    .where(and(eq(subscriptions.userId, userId), sql`${subscriptions.status} != 'incomplete'`));
   return rows;
 }
 
@@ -556,4 +623,220 @@ export async function updateGenerationJob(id: number, data: Partial<InsertGenera
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(generationJobs).set(data).where(eq(generationJobs.id, id));
+}
+
+// ── Contact Submissions ────────────────────────────────
+export async function createContactSubmission(data: InsertContactSubmission): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(contactSubmissions).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getContactSubmissionsByWebsiteId(
+  websiteId: number,
+  { includeArchived = false }: { includeArchived?: boolean } = {}
+): Promise<ContactSubmission[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const condition = includeArchived
+    ? and(eq(contactSubmissions.websiteId, websiteId), sql`archivedAt IS NOT NULL`)
+    : and(eq(contactSubmissions.websiteId, websiteId), sql`archivedAt IS NULL`);
+  return db.select().from(contactSubmissions)
+    .where(condition)
+    .orderBy(desc(contactSubmissions.createdAt));
+}
+
+export async function countUnreadSubmissions(websiteId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  // Only count non-archived unread
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(contactSubmissions)
+    .where(and(eq(contactSubmissions.websiteId, websiteId), sql`readAt IS NULL AND archivedAt IS NULL`));
+  return Number(result[0]?.count ?? 0);
+}
+
+export async function archiveSubmission(id: number, archive: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(contactSubmissions)
+    .set({ archivedAt: archive ? new Date() : null })
+    .where(eq(contactSubmissions.id, id));
+}
+
+export async function deleteContactSubmission(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
+}
+
+export async function markSubmissionRead(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(contactSubmissions)
+    .set({ readAt: new Date() })
+    .where(eq(contactSubmissions.id, id));
+}
+
+export async function countRecentSubmissionsByIp(ip: string, sinceMs: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - sinceMs);
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(contactSubmissions)
+    .where(and(eq(contactSubmissions.ipAddress, ip), sql`createdAt > ${since}`));
+  return Number(result[0]?.count ?? 0);
+}
+
+// ── MAGIC LINK TOKENS ────────────────────────────────────────────────────────
+
+/** Erstellt einen sicheren Token, speichert den SHA-256-Hash und gibt den Klartext zurück. */
+export async function createMagicLinkToken(email: string, redirectUrl: string): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const token = crypto.randomBytes(32).toString("hex"); // 64-char hex, kryptografisch sicher
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 Minuten
+  await db.insert(magicLinkTokens).values({ tokenHash, email, redirectUrl, expiresAt });
+  return token;
+}
+
+/** Sucht einen Token anhand des Klartexts (wird intern gehasht). */
+export async function getMagicLinkToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const [row] = await db.select().from(magicLinkTokens)
+    .where(eq(magicLinkTokens.tokenHash, tokenHash)).limit(1);
+  return row ?? null;
+}
+
+/** Markiert einen Token als verbraucht (single-use). */
+export async function consumeMagicLinkToken(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(magicLinkTokens)
+    .set({ usedAt: new Date() })
+    .where(eq(magicLinkTokens.id, id));
+}
+
+/** Rate-Limit: Anzahl der Tokens einer E-Mail in den letzten 15 Minuten. */
+export async function countRecentMagicLinksByEmail(email: string): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - 15 * 60 * 1000);
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(magicLinkTokens)
+    .where(and(eq(magicLinkTokens.email, email), gte(magicLinkTokens.createdAt, since)));
+  return Number(result[0]?.count ?? 0);
+}
+
+// ── Chat Transcripts ─────────────────────────────────────────────────────────
+
+export async function upsertChatTranscript(
+  websiteId: number,
+  sessionId: string,
+  messages: Array<{ role: string; content: string }>,
+  opts?: { chatLeadId?: number; visitorName?: string; summary?: string }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+  await db
+    .insert(chatTranscripts)
+    .values({
+      websiteId,
+      sessionId,
+      messages: messages as any,
+      messageCount: messages.length,
+      chatLeadId: opts?.chatLeadId ?? null,
+      visitorName: opts?.visitorName ?? null,
+      summary: opts?.summary ?? null,
+      expiresAt,
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        messages: messages as any,
+        messageCount: messages.length,
+        chatLeadId: opts?.chatLeadId ?? undefined,
+        visitorName: opts?.visitorName ?? undefined,
+        summary: opts?.summary ?? undefined,
+        expiresAt,
+      },
+    });
+}
+
+export async function getChatTranscriptsByWebsiteId(
+  websiteId: number,
+  limit = 50
+): Promise<ChatTranscript[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const now = new Date();
+  return db
+    .select()
+    .from(chatTranscripts)
+    .where(and(eq(chatTranscripts.websiteId, websiteId), gte(chatTranscripts.expiresAt, now)))
+    .orderBy(desc(chatTranscripts.updatedAt))
+    .limit(limit);
+}
+
+export async function deleteChatTranscriptById(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(chatTranscripts).where(eq(chatTranscripts.id, id));
+}
+
+// ── Outreach Experiments ──────────────────────────────────────────────────────
+
+export async function getActiveExperiment(): Promise<OutreachExperiment | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(outreachExperiments)
+    .where(eq(outreachExperiments.status, "running")).limit(1);
+  return row ?? null;
+}
+
+export async function createExperiment(data: InsertOutreachExperiment): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(outreachExperiments).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function updateExperiment(id: number, data: Partial<InsertOutreachExperiment>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(outreachExperiments).set(data).where(eq(outreachExperiments.id, id));
+}
+
+export async function getExperimentStats(experimentId: number): Promise<OutreachExperiment | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(outreachExperiments)
+    .where(eq(outreachExperiments.id, experimentId)).limit(1);
+  return row ?? null;
+}
+
+export async function listExperiments(): Promise<OutreachExperiment[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(outreachExperiments)
+    .orderBy(desc(outreachExperiments.createdAt)).limit(20);
+}
+
+export async function getBusinessesForOutreach(limit: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const contacted = db.select({ businessId: outreachEmails.businessId }).from(outreachEmails);
+  return db.select().from(businesses)
+    .where(
+      and(
+        isNotNull(businesses.email),
+        notInArray(businesses.id, contacted)
+      )
+    )
+    .limit(limit);
 }

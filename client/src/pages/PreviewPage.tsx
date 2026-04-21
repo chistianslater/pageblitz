@@ -3,7 +3,7 @@ import { useParams } from "wouter";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import CookieBanner from "@/components/CookieBanner";
 import { Loader2, Zap, AlertCircle, CheckCircle, MessageSquare, Bot, Calendar, Globe, Palette } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
@@ -55,7 +55,9 @@ export default function PreviewPage() {
   const [customColor, setCustomColor] = useState<string | null>(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [customHex, setCustomHex] = useState("#1565c0");
+  const bannerRef = useRef<HTMLDivElement>(null);
 
+  // All data hooks FIRST so they're in scope for useEffect below
   const { data, isLoading, error } = trpc.website.get.useQuery(
     { token: params.token },
     { enabled: !!params.token }
@@ -71,6 +73,32 @@ export default function PreviewPage() {
     if (!customColor) return baseColorScheme;
     return applyCustomColor(baseColorScheme, customColor);
   }, [baseColorScheme, customColor]);
+
+  // MutationObserver: fires as soon as WebsiteRenderer adds the <nav> to the DOM.
+  // Uses setProperty('top', …, 'important') so it beats any CSS rule incl. Tailwind layers.
+  useEffect(() => {
+    const BANNER_H = bannerRef.current?.offsetHeight || 52;
+
+    const applyNavTop = () => {
+      const top = window.scrollY >= BANNER_H ? 0 : BANNER_H;
+      document.querySelectorAll<HTMLElement>(".pageblitz-preview-root nav").forEach(nav => {
+        nav.style.setProperty("top", top + "px", "important");
+        nav.style.transition = "top 0.15s ease";
+      });
+    };
+
+    const mo = new MutationObserver(applyNavTop);
+    const root = document.querySelector(".pageblitz-preview-root");
+    if (root) mo.observe(root, { childList: true, subtree: true });
+
+    window.addEventListener("scroll", applyNavTop, { passive: true });
+    applyNavTop();
+
+    return () => {
+      mo.disconnect();
+      window.removeEventListener("scroll", applyNavTop);
+    };
+  }, []); // empty deps — MutationObserver watches DOM, scroll handles scroll
 
   if (isLoading) {
     return (
@@ -106,9 +134,18 @@ export default function PreviewPage() {
   };
 
   return (
-    <div>
-      {/* Preview Banner with Color Picker */}
-      <div className="sticky top-0 z-[60] bg-gray-900 text-white py-3 px-4">
+    <div className="pageblitz-preview-root">
+      {/* Shift all layout fixed-navbars below the preview bar.
+          Layout navbars use `fixed top-0 z-50` (Tailwind → top:0px, specificity 0,0,1).
+          `.pageblitz-preview-root nav` has specificity 0,1,1 → wins without !important. */}
+      <style>{`
+        .pageblitz-preview-root nav { top: 52px; transition: top 0.15s ease; }
+        .pageblitz-preview-root.banner-hidden nav { top: 0; }
+        html:has(.pageblitz-preview-root) { scroll-padding-top: 52px; }
+      `}</style>
+
+      {/* Preview Banner — sticky so it scrolls away; IntersectionObserver then resets nav top to 0 */}
+      <div ref={bannerRef} className="sticky top-0 z-[60] bg-gray-900 text-white py-3 px-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Zap className="h-5 w-5 text-amber-400 flex-shrink-0" />
@@ -164,22 +201,28 @@ export default function PreviewPage() {
                   {/* Custom Hex Input */}
                   <div className="border-t border-gray-100 pt-3">
                     <p className="text-xs text-gray-500 mb-2">Eigene Farbe (Hex)</p>
+                    {/* Full-width color swatch — click to open native picker */}
+                    <label className="block mb-2 cursor-pointer group">
+                      <div
+                        className="w-full h-10 rounded-xl border border-gray-200 relative overflow-hidden transition-transform group-hover:scale-[1.01]"
+                        style={{ backgroundColor: /^#[0-9a-fA-F]{6}$/.test(customHex) ? customHex : '#cccccc' }}
+                      >
+                        <input
+                          type="color"
+                          value={/^#[0-9a-fA-F]{6}$/.test(customHex) ? customHex : '#cccccc'}
+                          onChange={e => setCustomHex(e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                      </div>
+                    </label>
+                    {/* Hex text + OK button */}
                     <div className="flex gap-2">
-                      <input
-                        type="color"
-                        value={customHex}
-                        onChange={e => setCustomHex(e.target.value)}
-                        className="w-10 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5"
-                      />
                       <input
                         type="text"
                         value={customHex}
-                        onChange={e => {
-                          const v = e.target.value;
-                          setCustomHex(v);
-                        }}
+                        onChange={e => setCustomHex(e.target.value)}
                         placeholder="#1565c0"
-                        className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-900 font-mono"
+                        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl text-gray-900 font-mono min-w-0"
                       />
                       <button
                         onClick={() => {
@@ -190,7 +233,7 @@ export default function PreviewPage() {
                             toast.error("Ungültiger Hex-Code. Beispiel: #1565c0");
                           }
                         }}
-                        className="px-3 py-1.5 rounded-lg text-white text-sm font-medium"
+                        className="px-4 py-2 rounded-xl text-white text-sm font-semibold flex-shrink-0"
                         style={{ backgroundColor: colorScheme.primary }}
                       >
                         OK
@@ -233,7 +276,11 @@ export default function PreviewPage() {
         businessPhone={business?.phone || undefined}
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
-        openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
+        openingHours={
+          Array.isArray(business?.openingHours) && typeof business?.openingHours[0] === 'string'
+            ? convertOpeningHoursToGerman(business.openingHours as string[])
+            : undefined
+        }
         businessCategory={(business as any)?.category || undefined}
         showActivateButton={true}
         onActivate={goToOnboarding}

@@ -29,32 +29,54 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, isLoading =
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center py-16 md:py-20 px-4 md:px-6">
         <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-8 md:gap-16 items-center">
-          <div className="lg:col-span-7">
-            <div className="w-10 md:w-12 h-1 bg-slate-900 mb-6 md:mb-8" />
+          <div className="lg:col-span-7 relative z-[1]">
+            {/* Eyebrow badge */}
+            {!isLoading && (
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] mb-8 self-start border border-slate-900/20 bg-slate-900/05 text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-900 flex-shrink-0" />
+                ✓ {websiteData?.businessCategory || 'Geprüfter Anbieter'}
+              </span>
+            )}
             <Skeleton isLoading={isLoading} className="w-full h-24 md:h-32 mb-8">
-              <h1 className="text-[10vw] md:text-[7vw] font-black uppercase leading-[0.9] tracking-tighter mb-8 md:mb-10">
-                Institutional <br/> 
-                <span className="italic font-serif font-light text-slate-500">Security</span>
-              </h1>
+              {(() => {
+                const text = websiteData?.tagline || websiteData?.businessName || 'Vertrauen & Expertise';
+                const words = text.split(' ');
+                const mid = Math.ceil(words.length / 2);
+                const line1 = words.slice(0, mid).join(' ');
+                const line2 = words.slice(mid).join(' ') || words[0];
+                return (
+                  <h1 className="text-[10vw] md:text-[7vw] font-black uppercase leading-[0.9] tracking-tighter mb-8 md:mb-10">
+                    {line1}<br/>
+                    <span className="italic font-serif font-light text-slate-500">{line2}</span>
+                  </h1>
+                );
+              })()}
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-3/4 h-16 mb-8">
               <p className="text-base md:text-lg text-slate-500 mb-8 md:mb-10 max-w-lg">
-                {websiteData.tagline}
+                {websiteData?.tagline}
               </p>
             </Skeleton>
-            <div className="flex flex-col sm:flex-row gap-6 md:gap-10 border-t border-slate-200 pt-6 md:pt-10">
+            <div className="flex flex-col sm:flex-row gap-4 md:gap-8 border-t border-slate-200 pt-6 md:pt-10 items-start sm:items-center">
               <Skeleton isLoading={isLoading} className="w-36 h-12">
-                <button 
-                  style={{ backgroundColor: cs.primary }} 
-                  className="px-6 md:px-10 py-4 md:py-5 text-white font-bold uppercase tracking-widest text-xs hover:scale-105 transition-transform"
+                <button
+                  style={{ backgroundColor: cs.primary }}
+                  className="px-6 md:px-10 py-4 md:py-5 text-white font-bold uppercase tracking-widest text-xs rounded-sm hover:scale-105 transition-transform shadow-lg"
                 >
-                  Consultation
+                  Beratungsgespräch
                 </button>
               </Skeleton>
               <div className="flex items-center gap-3 md:gap-4">
+                {/* Initials avatars */}
                 <div className="flex -space-x-2 md:-space-x-3">
-                  {[1,2,3].map(i => (
-                    <div key={i} className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-slate-200" />
+                  {['MK','SB','TW'].map((initials, i) => (
+                    <div
+                      key={i}
+                      className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-black text-white"
+                      style={{ backgroundColor: i === 0 ? cs.primary : i === 1 ? '#64748b' : '#94a3b8' }}
+                    >
+                      {initials}
+                    </div>
                   ))}
                 </div>
                 <p className="text-[10px] font-bold uppercase leading-none opacity-50">
@@ -69,8 +91,18 @@ export default function TrustLayout({ websiteData, cs, heroImageUrl, isLoading =
                 <img src={heroImageUrl} className="w-full h-full object-cover" alt="" />
               </div>
             </Skeleton>
-            <div className="absolute -bottom-6 md:-bottom-8 -left-4 md:-left-8 bg-white p-4 md:p-6 shadow-2xl border-t-4 border-slate-900 max-w-[200px] md:max-w-[250px] italic text-xs md:text-sm font-serif hidden sm:block">
-              "Excellence in every procedural detail."
+            {/* Upgraded floating quote card */}
+            <div className="absolute -bottom-6 md:-bottom-8 -left-4 md:-left-8 bg-white p-4 md:p-5 shadow-2xl border-t-4 max-w-[210px] md:max-w-[260px] hidden sm:block" style={{ borderColor: cs.primary }}>
+              <div className="text-2xl leading-none mb-2 opacity-20 font-serif select-none">"</div>
+              <p className="italic text-xs md:text-sm font-serif text-slate-700 leading-snug">
+                Excellence in every procedural detail.
+              </p>
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black text-white flex-shrink-0" style={{ backgroundColor: cs.primary }}>
+                  K
+                </div>
+                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Verified Client</p>
+              </div>
             </div>
           </div>
         </div>

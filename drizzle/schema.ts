@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint, boolean, date, uniqueIndex, index } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -75,6 +75,28 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   captureStatus: mysqlEnum("captureStatus", ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]).default("email_captured"),
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
+  // Contact form: custom recipient email (overrides business.email if set)
+  contactEmail: varchar("contactEmail", { length: 320 }),
+  // Former slug — set when the user changes their slug so old URLs can redirect
+  formerSlug: varchar("formerSlug", { length: 255 }),
+  // Umami Analytics
+  umamiWebsiteId: varchar("umamiWebsiteId", { length: 100 }),
+  // Add-on flags (live state on the website) – only columns that exist in DB
+  addOnBooking: boolean("addOnBooking").default(false),
+  addOnAiChat: boolean("addOnAiChat").default(false),
+  addOnTeam: boolean("addOnTeam").default(false),
+  addOnTeamData: json("addOnTeamData"), // Array of team members
+  addOnCalendly: boolean("addOnCalendly").default(false),
+  calendlyUrl: varchar("calendlyUrl", { length: 512 }),
+  // AI Chat usage tracking
+  chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),
+  chatUsageCount: int("chatUsageCount").default(0),
+  chatUsageResetAt: timestamp("chatUsageResetAt"),
+  // Branding
+  showBranding: boolean("showBranding").default(true),
+  // Reservation lifecycle (external leads only) – when the draft expires + how often extended
+  reservedUntil: timestamp("reservedUntil"),
+  extensionsUsed: int("extensionsUsed").notNull().default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -87,9 +109,10 @@ export const subscriptions = mysqlTable("subscriptions", {
   userId: int("userId").notNull(),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
-  status: mysqlEnum("status", ["active", "canceled", "past_due", "trialing", "incomplete"]).notNull().default("incomplete"),
+  status: mysqlEnum("status", ["active", "canceling", "canceled", "past_due", "trialing", "incomplete"]).notNull().default("incomplete"),
   plan: varchar("plan", { length: 50 }).notNull().default("base"),
-  addOns: json("addOns"), // { contactForm: bool, gallery: bool, subpages: string[] }
+  billingInterval: mysqlEnum("billingInterval", ["monthly", "yearly"]).notNull().default("monthly"),
+  addOns: json("addOns"), // { contactForm: bool, gallery: bool, menu: bool, pricelist: bool }
   currentPeriodEnd: bigint("currentPeriodEnd", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
@@ -128,6 +151,7 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   legalCountry: varchar("legalCountry", { length: 100 }).default("Deutschland"),
   legalEmail: varchar("legalEmail", { length: 255 }),
   legalPhone: varchar("legalPhone", { length: 100 }),
+  openingHours: json("openingHours"), // DayHours[] – { day, open, from, to }
   legalVatId: varchar("legalVatId", { length: 100 }),
   legalRegister: varchar("legalRegister", { length: 255 }),
   legalRegisterCourt: varchar("legalRegisterCourt", { length: 255 }),
@@ -145,8 +169,23 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnPricelist: boolean("addOnPricelist").default(false),
   addOnPricelistData: json("addOnPricelistData"), // { categories: [{ name, items: [{ name, price }] }] }
   addOnSubpages: json("addOnSubpages"), // string[] e.g. ["Über uns", "Projekte"]
+  // Booking Add-on
+  addOnBooking: boolean("addOnBooking").default(false),
+  // AI Chat Add-on
+  addOnAiChat: boolean("addOnAiChat").default(false),
+  // Team Add-on
+  addOnTeam: boolean("addOnTeam").default(false),
+  addOnTeamData: json("addOnTeamData"), // Array of team members
+  addOnCalendly: boolean("addOnCalendly").default(false),
+  calendlyUrl: varchar("calendlyUrl", { length: 512 }),
+  chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),
+  chatUsageCount: int("chatUsageCount").default(0),
+  chatUsageResetAt: timestamp("chatUsageResetAt"),
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
+  // Section visibility & order (from hideSections drag-and-drop step)
+  sectionOrder: json("sectionOrder"), // string[] – user's custom section order
+  hiddenSections: json("hiddenSections"), // string[] – sections hidden by user
   completedAt: bigint("completedAt", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
@@ -162,13 +201,84 @@ export const outreachEmails = mysqlTable("outreach_emails", {
   recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
   subject: varchar("subject", { length: 500 }).notNull(),
   body: text("body"),
-  status: mysqlEnum("status", ["draft", "sent", "opened", "replied", "bounced"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["generating", "queued", "draft", "sent", "opened", "replied", "bounced"]).default("draft").notNull(),
+  previewUrl: varchar("previewUrl", { length: 500 }),
   sentAt: timestamp("sentAt"),
+  variant: varchar("variant", { length: 100 }).default("baseline"),
+  resendEmailId: varchar("resendEmailId", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type OutreachEmail = typeof outreachEmails.$inferSelect;
 export type InsertOutreachEmail = typeof outreachEmails.$inferInsert;
+
+export const outreachExperiments = mysqlTable("outreach_experiments", {
+  id: int("id").autoincrement().primaryKey(),
+  baselineVariant: varchar("baselineVariant", { length: 100 }).notNull(),
+  challengerVariant: varchar("challengerVariant", { length: 100 }).notNull(),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  endedAt: timestamp("endedAt"),
+  winner: varchar("winner", { length: 100 }),
+  status: mysqlEnum("status", ["running", "completed", "aborted"]).default("running").notNull(),
+  hypothesis: text("hypothesis"),
+  baselineSends: int("baselineSends").default(0),
+  challengerSends: int("challengerSends").default(0),
+  baselineOpens: int("baselineOpens").default(0),
+  challengerOpens: int("challengerOpens").default(0),
+  baselineReplies: int("baselineReplies").default(0),
+  challengerReplies: int("challengerReplies").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type OutreachExperiment = typeof outreachExperiments.$inferSelect;
+export type InsertOutreachExperiment = typeof outreachExperiments.$inferInsert;
+
+// ── Lifecycle Emails (Drip-Sequenz für unfertige Onboardings) ────────────────
+export const lifecycleEmails = mysqlTable("lifecycle_emails", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
+  type: mysqlEnum("type", [
+    "reminder_2h",
+    "reminder_24h",
+    "reminder_final",
+    "fresh_start_7d",
+  ]).notNull(),
+  scheduledFor: timestamp("scheduledFor").notNull(),
+  sentAt: timestamp("sentAt"),
+  status: mysqlEnum("status", ["scheduled", "sent", "cancelled", "skipped", "bounced"])
+    .notNull()
+    .default("scheduled"),
+  resendEmailId: varchar("resendEmailId", { length: 255 }),
+  cancelReason: varchar("cancelReason", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  // Verhindert Doppel-Scheduling desselben Mail-Typs pro Website
+  websiteTypeUnique: uniqueIndex("lifecycle_emails_website_type_unique").on(table.websiteId, table.type),
+  // Index für Worker-Query (status + scheduledFor)
+  scheduledLookup: index("lifecycle_emails_scheduled_lookup").on(table.status, table.scheduledFor),
+}));
+
+export type LifecycleEmail = typeof lifecycleEmails.$inferSelect;
+export type InsertLifecycleEmail = typeof lifecycleEmails.$inferInsert;
+
+// ── Reactivation Seeds (Daten-Backup nach Website-Löschung für Email 5) ──────
+export const reactivationSeeds = mysqlTable("reactivation_seeds", {
+  id: int("id").autoincrement().primaryKey(),
+  token: varchar("token", { length: 64 }).notNull().unique(), // eindeutiger URL-Token für /welcome-back
+  recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
+  businessName: varchar("businessName", { length: 500 }),
+  businessCategory: varchar("businessCategory", { length: 255 }),
+  googlePlaceId: varchar("googlePlaceId", { length: 255 }),
+  originalWebsiteId: int("originalWebsiteId"), // nur zur Nachverfolgung
+  originalBusinessId: int("originalBusinessId"),
+  usedAt: timestamp("usedAt"), // wann der Lead zurückgekommen ist
+  expiresAt: timestamp("expiresAt").notNull(), // 30 Tage nach Erstellung (DSGVO-Minimalprinzip)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ReactivationSeed = typeof reactivationSeeds.$inferSelect;
+export type InsertReactivationSeed = typeof reactivationSeeds.$inferInsert;
 
 export const templateUploads = mysqlTable("template_uploads", {
   id: int("id").autoincrement().primaryKey(),
@@ -212,3 +322,104 @@ export const generationJobs = mysqlTable("generation_jobs", {
 
 export type GenerationJob = typeof generationJobs.$inferSelect;
 export type InsertGenerationJob = typeof generationJobs.$inferInsert;
+
+export const contactSubmissions = mysqlTable("contact_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  message: text("message").notNull(),
+  customFields: json("customFields"), // { [fieldId]: value } – flexible extra fields
+  ipAddress: varchar("ipAddress", { length: 45 }), // for rate limiting
+  readAt: timestamp("readAt"),
+  archivedAt: timestamp("archivedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
+
+export const magicLinkTokens = mysqlTable("magic_link_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  tokenHash: varchar("tokenHash", { length: 64 }).notNull().unique(), // SHA-256 des Klartext-Tokens
+  email: varchar("email", { length: 320 }).notNull(),
+  redirectUrl: varchar("redirectUrl", { length: 512 }).notNull().default("/my-website"),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"), // null = noch gültig / single-use
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
+
+// ── AI Chat Leads ────────────────────────────────────────────────────────────
+export const chatLeads = mysqlTable("chat_leads", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull(),
+  visitorName: varchar("visitorName", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  summary: text("summary"),          // KI-Zusammenfassung des Anliegens
+  notifiedAt: timestamp("notifiedAt"), // wann Email an Inhaber gesendet
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ChatLead = typeof chatLeads.$inferSelect;
+export type InsertChatLead = typeof chatLeads.$inferInsert;
+
+// ── Appointment Booking ──────────────────────────────────────────────────────
+export const appointmentSettings = mysqlTable("appointment_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull().unique(),
+  // weeklySchedule: { mon: { enabled, start: "09:00", end: "17:00" }, ... }
+  weeklySchedule: json("weeklySchedule").notNull(),
+  durationMinutes: int("durationMinutes").notNull().default(30),
+  bufferMinutes: int("bufferMinutes").notNull().default(0),
+  advanceDays: int("advanceDays").notNull().default(30),
+  title: varchar("title", { length: 255 }).default("Terminbuchung"),
+  description: text("description"),
+  notificationEmail: varchar("notificationEmail", { length: 320 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AppointmentSettings = typeof appointmentSettings.$inferSelect;
+export type InsertAppointmentSettings = typeof appointmentSettings.$inferInsert;
+
+export const appointments = mysqlTable("appointments", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  visitorName: varchar("visitorName", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  message: text("message"),
+  appointmentDate: varchar("appointmentDate", { length: 10 }).notNull(), // YYYY-MM-DD
+  appointmentTime: varchar("appointmentTime", { length: 5 }).notNull(),  // HH:MM
+  status: mysqlEnum("status", ["pending", "confirmed", "cancelled"]).default("pending").notNull(),
+  cancelToken: varchar("cancelToken", { length: 32 }).notNull().unique(),
+  notifiedAt: timestamp("notifiedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Appointment = typeof appointments.$inferSelect;
+export type InsertAppointment = typeof appointments.$inferInsert;
+
+// ── AI Chat Transcripts ───────────────────────────────────────────────────────
+export const chatTranscripts = mysqlTable("chat_transcripts", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull().unique(),
+  chatLeadId: int("chatLeadId"),            // nullable FK to chat_leads
+  messages: json("messages").notNull(),     // Array<{role,content}>
+  messageCount: int("messageCount").notNull().default(0),
+  visitorName: varchar("visitorName", { length: 255 }),
+  summary: text("summary"),
+  expiresAt: timestamp("expiresAt").notNull(), // 30 days from createdAt
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ChatTranscript = typeof chatTranscripts.$inferSelect;
+export type InsertChatTranscript = typeof chatTranscripts.$inferInsert;

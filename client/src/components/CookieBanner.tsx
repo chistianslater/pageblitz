@@ -80,7 +80,7 @@ export default function CookieBanner({ slug, primaryColor = "#2563eb" }: Props) 
                 Notwendige Cookies sind immer aktiv.{" "}
                 {slug && (
                   <a
-                    href={`/site/${slug}/datenschutz`}
+                    href={/^[a-z0-9][a-z0-9-]*\.pageblitz\.de$/.test(window.location.hostname) ? '/datenschutz' : `/site/${slug}/datenschutz`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline text-blue-600 hover:text-blue-700"
