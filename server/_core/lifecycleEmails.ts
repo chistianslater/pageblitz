@@ -110,12 +110,18 @@ const wrap = (eyebrow: string, inner: string, unsubscribeLink: string) => `<!DOC
 </body>
 </html>`;
 
-// Bulletproof Button – Table-basiert, bgcolor-Attribut + inline style, target=_blank
+// Bulletproof Button – full-width wrapper verhindert Text-Floating, inner table hält Button-Breite
 const primaryCta = (text: string, href: string) => `
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="left" style="margin: 24px 0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
       <tr>
-        <td align="center" bgcolor="#4f46e5" style="background-color: #4f46e5; border-radius: 10px;">
-          <a href="${href}" target="_blank" style="display: inline-block; padding: 14px 32px; color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-decoration: none; border-radius: 10px;">${text}</a>
+        <td align="left">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+              <td align="center" bgcolor="#4f46e5" style="background-color: #4f46e5; border-radius: 10px;">
+                <a href="${href}" target="_blank" style="display: inline-block; padding: 14px 32px; color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-decoration: none; border-radius: 10px;">${text}</a>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>`;
