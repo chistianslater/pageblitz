@@ -434,7 +434,7 @@ async function buildEmailData(
 
   if (!website) return null;
 
-  // Business-Name: onboarding oder business
+  // Business-Name: onboarding oder business (Platzhalter "Lead (E-Mail erfasst)" ausblenden)
   let businessName = "deine Website";
   const onboardingRows = await db
     .select()
@@ -449,7 +449,9 @@ async function buildEmailData(
       .from(businesses)
       .where(eq(businesses.id, website.businessId))
       .limit(1);
-    if (bizRows[0]?.name) businessName = bizRows[0].name;
+    if (bizRows[0]?.name && !bizRows[0].name.startsWith("Lead ")) {
+      businessName = bizRows[0].name;
+    }
   }
 
   // firstName: erster Vorname aus legalOwner oder user.name

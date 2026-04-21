@@ -46,60 +46,89 @@ const greeting = (firstName?: string | null) =>
   firstName ? `Hey ${firstName},` : "Hey,";
 
 const footer = (unsubscribeLink: string) => `
-  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0 16px 0;">
-  <p style="color: #9ca3af; font-size: 12px; line-height: 1.5; margin: 0;">
-    Pageblitz &ndash; Websites f&uuml;r Kleinunternehmen<br>
-    <a href="${unsubscribeLink}" style="color: #9ca3af; text-decoration: underline;">Keine weiteren Erinnerungen</a>
-  </p>
-`;
+    <div style="background: #f9fafb; border-top: 1px solid #f0f0f0; padding: 20px 32px; text-align: center;">
+      <p style="color: #9ca3af; font-size: 11px; line-height: 1.6; margin: 0;">
+        Pageblitz &middot; Websites f&uuml;r Kleinunternehmen<br>
+        <a href="${unsubscribeLink}" style="color: #9ca3af; text-decoration: underline;">Keine weiteren Erinnerungen</a>
+      </p>
+    </div>`;
 
 const footerText = (unsubscribeLink: string) =>
   `\n\n---\nPageblitz - Websites für Kleinunternehmen\nKeine weiteren Erinnerungen: ${unsubscribeLink}\n`;
 
-const wrap = (inner: string) => `<!DOCTYPE html>
+const header = (eyebrow: string) => `
+    <div style="background: #18181b; padding: 28px 32px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 6px 0;">
+        <tr>
+          <td style="vertical-align: middle; padding-right: 10px;">
+            <div style="width: 32px; height: 32px; background: #ffffff; border-radius: 8px; text-align: center; line-height: 32px;">
+              <span style="font-size: 18px;">⚡</span>
+            </div>
+          </td>
+          <td style="vertical-align: middle;">
+            <span style="color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">Page<span style="color: #818cf8;">blitz</span></span>
+          </td>
+        </tr>
+      </table>
+      <p style="color: #a1a1aa; font-size: 11px; margin: 10px 0 0 0; text-transform: uppercase; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">${eyebrow}</p>
+    </div>`;
+
+const wrap = (eyebrow: string, inner: string, unsubscribeLink: string) => `<!DOCTYPE html>
 <html lang="de">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; margin: 0; padding: 24px 16px; color: #18181b;">
-  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-    ${inner}
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f5; margin: 0; padding: 32px 16px; color: #18181b;">
+  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+    ${header(eyebrow)}
+    <div style="padding: 32px;">
+      ${inner}
+    </div>
+    ${footer(unsubscribeLink)}
   </div>
 </body>
 </html>`;
 
+// Bulletproof Button (MSO-kompatibel für Outlook)
 const primaryCta = (text: string, href: string) => `
-  <div style="margin: 24px 0;">
-    <a href="${href}" style="display: inline-block; background: #4f46e5; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 13px 28px; border-radius: 10px;">
-      ${text}
-    </a>
-  </div>
-`;
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
+      <tr>
+        <td style="background: #4f46e5; border-radius: 10px; text-align: center;">
+          <a href="${href}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; border-radius: 10px; -webkit-text-size-adjust: none; mso-hide: all;">
+            ${text}
+          </a>
+        </td>
+      </tr>
+    </table>`;
 
 const secondaryLink = (text: string, href: string) => `
-  <p style="margin: 16px 0 0 0; font-size: 14px; color: #6b7280;">
-    <a href="${href}" style="color: #6b7280; text-decoration: underline;">${text}</a>
-  </p>
-`;
+    <p style="margin: 12px 0 0 0; font-size: 14px; color: #6b7280;">
+      <a href="${href}" style="color: #6b7280; text-decoration: underline;">${text}</a>
+    </p>`;
+
+// Helper: Text-Fragment "für X" nur rendern, wenn echter Business-Name vorhanden
+const forBiz = (bn: string) => (bn && bn !== "deine Website" ? ` für <strong>${bn}</strong>` : "");
 
 // ── Email 1: +2h Nudge ──────────────────────────────────────────────────────
 function reminder2h(d: LifecycleEmailData): TemplateOutput {
-  const subject = `Deine Website von ${d.businessName} wartet auf dich`;
-  const html = wrap(`
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
-      ich bin Christian, einer der Gr&uuml;nder von Pageblitz. Mir ist aufgefallen, dass deine Website f&uuml;r <strong>${d.businessName}</strong> schon fast fertig ist &ndash; dir fehlen nur noch ein paar Klicks.
+  const subject = d.businessName && d.businessName !== "deine Website"
+    ? `Deine Website für ${d.businessName} wartet auf dich`
+    : "Deine Website wartet auf dich";
+  const html = wrap("Erinnerung", `
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+      ich bin Christian, einer der Gr&uuml;nder von Pageblitz. Mir ist aufgefallen, dass deine Website${forBiz(d.businessName)} schon fast fertig ist &ndash; dir fehlen nur noch ein paar Klicks.
     </p>
-    <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6;">Mach hier weiter, wo du aufgeh&ouml;rt hast:</p>
+    <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Mach hier weiter, wo du aufgeh&ouml;rt hast:</p>
     ${primaryCta("Website fertigstellen", d.resumeLink)}
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">Das dauert wirklich nur 2&ndash;3 Minuten. Versprochen.</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+    <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Das dauert wirklich nur 2&ndash;3 Minuten. Versprochen.</p>
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
       Falls du gerade Fragen hast oder irgendwo h&auml;ngst: Antworte einfach auf diese Mail. Ich lese jede pers&ouml;nlich.
     </p>
-    <p style="margin: 24px 0 0 0; font-size: 16px; line-height: 1.6;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-    ${footer(d.unsubscribeLink)}
-  `);
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+  `, d.unsubscribeLink);
+  const forBizText = d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : "";
   const text = `${greeting(d.firstName)}
 
-ich bin Christian, einer der Gründer von Pageblitz. Mir ist aufgefallen, dass deine Website für ${d.businessName} schon fast fertig ist – dir fehlen nur noch ein paar Klicks.
+ich bin Christian, einer der Gründer von Pageblitz. Mir ist aufgefallen, dass deine Website${forBizText} schon fast fertig ist – dir fehlen nur noch ein paar Klicks.
 
 Mach hier weiter, wo du aufgehört hast:
 ${d.resumeLink}
@@ -116,28 +145,27 @@ Christian${footerText(d.unsubscribeLink)}`;
 // ── Email 2: +24h Hilfe anbieten + Verlängerung ─────────────────────────────
 function reminder24h(d: LifecycleEmailData): TemplateOutput {
   const subject = "Brauchst du Hilfe mit deiner Website?";
-  const html = wrap(`
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
-      gestern hast du angefangen, deine Website f&uuml;r <strong>${d.businessName}</strong> zu bauen. Sie wartet noch auf dich &ndash; reserviert f&uuml;r dich bis morgen fr&uuml;h.
+  const html = wrap("Kann ich helfen?", `
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+      gestern hast du angefangen, deine Website${forBiz(d.businessName)} zu bauen. Sie wartet noch auf dich &ndash; reserviert f&uuml;r dich bis morgen fr&uuml;h.
     </p>
-    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6;">Die h&auml;ufigsten Gr&uuml;nde, warum Leute an dieser Stelle stecken bleiben:</p>
-    <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 16px; line-height: 1.8; color: #374151;">
+    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Die h&auml;ufigsten Gr&uuml;nde, warum Leute an dieser Stelle stecken bleiben:</p>
+    <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 15px; line-height: 1.8; color: #374151;">
       <li>Kein gutes Foto vom Laden / der Arbeit</li>
       <li>Unsicher, was man reinschreiben soll</li>
       <li>Kurz keine Zeit und dann vergessen</li>
     </ul>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
       Falls dich eines davon betrifft &ndash; kein Problem. Antworte einfach auf diese Mail, und ich helfe dir pers&ouml;nlich weiter. Texte und Fotos bekommen wir auch gemeinsam hin.
     </p>
     ${primaryCta("Website jetzt fertigstellen", d.resumeLink)}
     ${d.extendLink ? secondaryLink("Ich brauche noch 24 Stunden mehr Zeit", d.extendLink) : ""}
-    <p style="margin: 24px 0 0 0; font-size: 16px; line-height: 1.6;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-    ${footer(d.unsubscribeLink)}
-  `);
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+  `, d.unsubscribeLink);
   const text = `${greeting(d.firstName)}
 
-gestern hast du angefangen, deine Website für ${d.businessName} zu bauen. Sie wartet noch auf dich – reserviert für dich bis morgen früh.
+gestern hast du angefangen, deine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} zu bauen. Sie wartet noch auf dich – reserviert für dich bis morgen früh.
 
 Die häufigsten Gründe, warum Leute an dieser Stelle stecken bleiben:
 - Kein gutes Foto vom Laden / der Arbeit
@@ -158,23 +186,22 @@ Christian${footerText(d.unsubscribeLink)}`;
 function reminderFinal(d: LifecycleEmailData): TemplateOutput {
   if (d.wasExtended) {
     const subject = "Morgen früh wird dein Entwurf gelöscht";
-    const html = wrap(`
-      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">${greeting(d.firstName)}</p>
-      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
-        du hast dir nochmal extra Zeit genommen, um deine Website f&uuml;r <strong>${d.businessName}</strong> fertigzustellen. Die l&auml;uft jetzt in wenigen Stunden ab.
+    const html = wrap("Allerletzter Aufruf", `
+      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
+      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+        du hast dir nochmal extra Zeit genommen, um deine Website${forBiz(d.businessName)} fertigzustellen. Die l&auml;uft jetzt in wenigen Stunden ab.
       </p>
-      <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6;">Wenn du bis dahin nichts tust, ist der Entwurf weg.</p>
+      <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Wenn du bis dahin nichts tust, ist der Entwurf weg.</p>
       ${primaryCta("Jetzt fertigstellen", d.resumeLink)}
       ${d.extendLink ? secondaryLink("Ich brauche noch mehr Zeit", d.extendLink) : ""}
-      <p style="margin: 16px 0 0 0; font-size: 16px; line-height: 1.6;">
+      <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;">
         Falls dich etwas Konkretes abh&auml;lt &ndash; schreib mir. Ich antworte normalerweise innerhalb einer Stunde.
       </p>
-      <p style="margin: 24px 0 0 0; font-size: 16px; line-height: 1.6;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-      ${footer(d.unsubscribeLink)}
-    `);
+      <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+    `, d.unsubscribeLink);
     const text = `${greeting(d.firstName)}
 
-du hast dir nochmal extra Zeit genommen, um deine Website für ${d.businessName} fertigzustellen. Die läuft jetzt in wenigen Stunden ab.
+du hast dir nochmal extra Zeit genommen, um deine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} fertigzustellen. Die läuft jetzt in wenigen Stunden ab.
 
 Wenn du bis dahin nichts tust, ist der Entwurf weg.
 
@@ -190,28 +217,27 @@ Christian${footerText(d.unsubscribeLink)}`;
 
   // Erster Final-Aufruf (ohne vorherige Extension)
   const subject = "Letzter Aufruf: Deine Website läuft bald ab";
-  const html = wrap(`
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
-      kurze Info: Dein Website-Entwurf f&uuml;r <strong>${d.businessName}</strong> l&auml;uft in wenigen Stunden ab. Danach m&uuml;ssen wir ihn leider l&ouml;schen, damit unser Server nicht &uuml;berquillt.
+  const html = wrap("Letzter Aufruf", `
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+      kurze Info: Dein Website-Entwurf${forBiz(d.businessName)} l&auml;uft in wenigen Stunden ab. Danach m&uuml;ssen wir ihn leider l&ouml;schen, damit unser Server nicht &uuml;berquillt.
     </p>
-    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6;">Wenn du ihn behalten willst, hast du zwei M&ouml;glichkeiten:</p>
-    <p style="margin: 8px 0 0 0; font-size: 16px; line-height: 1.6;"><strong>1. Jetzt fertigstellen</strong> (dauert wirklich nur wenige Minuten):</p>
+    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Wenn du ihn behalten willst, hast du zwei M&ouml;glichkeiten:</p>
+    <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;"><strong>1. Jetzt fertigstellen</strong> (dauert wirklich nur wenige Minuten):</p>
     ${primaryCta("Weiter zur Website", d.resumeLink)}
     ${d.extendLink ? `
-    <p style="margin: 8px 0 0 0; font-size: 16px; line-height: 1.6;"><strong>2. Nochmal 24 Stunden Zeit nehmen:</strong></p>
+    <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;"><strong>2. Nochmal 24 Stunden Zeit nehmen:</strong></p>
     ${secondaryLink("Reservierung verl&auml;ngern", d.extendLink)}
     ` : ""}
-    <p style="margin: 24px 0 16px 0; font-size: 16px; line-height: 1.6;">
+    <p style="margin: 24px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
       Wenn gerade einfach nicht der richtige Moment ist: Das ist okay. Du kannst jederzeit einen neuen Entwurf starten. Aber alles, was du schon eingegeben hast, w&auml;re dann weg.
     </p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">Bei Fragen: Einfach auf diese Mail antworten.</p>
-    <p style="margin: 24px 0 0 0; font-size: 16px; line-height: 1.6;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-    ${footer(d.unsubscribeLink)}
-  `);
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Bei Fragen: Einfach auf diese Mail antworten.</p>
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+  `, d.unsubscribeLink);
   const text = `${greeting(d.firstName)}
 
-kurze Info: Dein Website-Entwurf für ${d.businessName} läuft in wenigen Stunden ab. Danach müssen wir ihn leider löschen, damit unser Server nicht überquillt.
+kurze Info: Dein Website-Entwurf${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} läuft in wenigen Stunden ab. Danach müssen wir ihn leider löschen, damit unser Server nicht überquillt.
 
 Wenn du ihn behalten willst, hast du zwei Möglichkeiten:
 
@@ -233,24 +259,23 @@ function freshStart7d(d: LifecycleEmailData): TemplateOutput {
     ? `Willst du es nochmal versuchen, ${d.firstName}?`
     : "Willst du es nochmal versuchen?";
   const welcomeLink = d.welcomeBackLink || d.resumeLink;
-  const html = wrap(`
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
-      vor einer Woche hast du angefangen, eine Website f&uuml;r <strong>${d.businessName}</strong> zu bauen &ndash; und dann ging das Leben dazwischen. Kenn ich.
+  const html = wrap("Frischer Start", `
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+      vor einer Woche hast du angefangen, eine Website${forBiz(d.businessName)} zu bauen &ndash; und dann ging das Leben dazwischen. Kenn ich.
     </p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
       Der alte Entwurf ist inzwischen gel&ouml;scht, aber das Gute ist: Deine Daten haben wir noch &ndash; in 60 Sekunden baue ich dir einen frischen Entwurf. Ein Klick, und es geht los:
     </p>
     ${primaryCta("Neuen Entwurf bauen", welcomeLink)}
-    <p style="margin: 16px 0 0 0; font-size: 16px; line-height: 1.6;">
+    <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;">
       Wenn Pageblitz gerade nicht passt, ist das auch okay. Kein Druck. Du bekommst von mir nach dieser Mail keine weitere automatisch.
     </p>
-    <p style="margin: 24px 0 0 0; font-size: 16px; line-height: 1.6;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-    ${footer(d.unsubscribeLink)}
-  `);
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+  `, d.unsubscribeLink);
   const text = `${greeting(d.firstName)}
 
-vor einer Woche hast du angefangen, eine Website für ${d.businessName} zu bauen – und dann ging das Leben dazwischen. Kenn ich.
+vor einer Woche hast du angefangen, eine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} zu bauen – und dann ging das Leben dazwischen. Kenn ich.
 
 Der alte Entwurf ist inzwischen gelöscht, aber das Gute ist: Deine Daten haben wir noch – in 60 Sekunden baue ich dir einen frischen Entwurf. Ein Klick, und es geht los:
 
@@ -266,9 +291,9 @@ Christian${footerText(d.unsubscribeLink)}`;
 // ── Welcome-Link (sofort beim Email-Capture, transactional, nicht scheduled) ──
 export function renderWelcomeLinkEmail(d: LifecycleEmailData): TemplateOutput {
   const subject = "Dein Link zu deiner Pageblitz-Website";
-  const html = wrap(`
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+  const html = wrap("Dein Link", `
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
       hier ist dein pers&ouml;nlicher Link zu deiner Website-Vorschau${d.businessName && d.businessName !== "deine Website" ? ` f&uuml;r <strong>${d.businessName}</strong>` : ""}:
     </p>
     ${primaryCta("Website bearbeiten", d.resumeLink)}
@@ -278,9 +303,8 @@ export function renderWelcomeLinkEmail(d: LifecycleEmailData): TemplateOutput {
     <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
       Falls du Fragen hast: einfach auf diese Mail antworten.
     </p>
-    <p style="margin: 24px 0 0 0; font-size: 16px; line-height: 1.6;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-    ${footer(d.unsubscribeLink)}
-  `);
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+  `, d.unsubscribeLink);
   const text = `${greeting(d.firstName)}
 
 hier ist dein persönlicher Link zu deiner Website-Vorschau${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""}:
