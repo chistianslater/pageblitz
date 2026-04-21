@@ -892,6 +892,46 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [previewScrollTop, setPreviewScrollTop] = useState(0);
   const [previewNotification, setPreviewNotification] = useState<string | null>(null);
   const [showFullPreview, setShowFullPreview] = useState(false);
+  const [showExtendModal, setShowExtendModal] = useState(false);
+  const [extendReason, setExtendReason] = useState<string>("");
+  const [extendSubmitting, setExtendSubmitting] = useState(false);
+  const [extendSuccess, setExtendSuccess] = useState<string | null>(null);
+  const [extendError, setExtendError] = useState<string | null>(null);
+
+  const extendMutation = trpc.lifecycle.extendByPreviewToken.useMutation();
+  const reservationQuery = trpc.lifecycle.getReservation.useQuery(
+    { previewToken: previewToken || "" },
+    { enabled: !!previewToken, staleTime: 30_000 },
+  );
+
+  const handleExtend = async () => {
+    if (!previewToken) return;
+    setExtendSubmitting(true);
+    setExtendError(null);
+    try {
+      const res = await extendMutation.mutateAsync({
+        previewToken,
+        reason: extendReason || undefined,
+      });
+      if (res.newReservedUntil) {
+        const newMs = new Date(res.newReservedUntil).getTime();
+        // Sync lokalen FOMO-Timer mit neuer Backend-Deadline
+        const key = `pageblitz_fomo_${previewToken || websiteIdProp}`;
+        localStorage.setItem(key, String(newMs));
+        setFomoExpiresAt(newMs);
+      }
+      setExtendSuccess(
+        res.remainingExtensions && res.remainingExtensions > 0
+          ? `Super – du hast jetzt 24 Stunden mehr Zeit. Du kannst noch ${res.remainingExtensions}× verlängern.`
+          : "Super – du hast jetzt 24 Stunden mehr Zeit. Das war deine letzte Verlängerung.",
+      );
+      reservationQuery.refetch();
+    } catch (e: any) {
+      setExtendError(e?.message || "Verlängerung fehlgeschlagen. Bitte später erneut versuchen.");
+    } finally {
+      setExtendSubmitting(false);
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -2900,12 +2940,106 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
       {/* FOMO Header – only shown before payment */}
       {!isPaid && (
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
-          <Clock className="w-4 h-4 flex-shrink-0" />
-          <span>
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span className="flex items-center gap-2">
+            <Clock className="w-4 h-4 flex-shrink-0" />
             ⚡ Diese Website ist noch{" "}
             <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
           </span>
+          {reservationQuery.data?.canExtend !== false && (
+            <button
+              type="button"
+              onClick={() => {
+                setExtendSuccess(null);
+                setExtendError(null);
+                setExtendReason("");
+                setShowExtendModal(true);
+              }}
+              className="underline underline-offset-2 decoration-white/50 hover:decoration-white text-white/90 hover:text-white text-xs sm:text-sm"
+            >
+              Mehr Zeit brauchen?
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Extend-Reservation Modal */}
+      {showExtendModal && (
+        <div
+          className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => !extendSubmitting && setShowExtendModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {extendSuccess ? (
+              <>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">Alles klar!</h3>
+                <p className="text-slate-600 text-sm leading-relaxed mb-6">{extendSuccess}</p>
+                <button
+                  onClick={() => setShowExtendModal(false)}
+                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors"
+                >
+                  Weiter
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Mehr Zeit brauchen?</h3>
+                <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                  Kein Problem – wir verlängern deine Reservierung um <strong>24 Stunden</strong>. Magst du uns kurz sagen, was dich gerade abhält? (Optional, hilft uns, Pageblitz besser zu machen.)
+                </p>
+                <div className="space-y-2 mb-6">
+                  {[
+                    { v: "besprechen", t: "Ich möchte mit Partner oder Team besprechen" },
+                    { v: "content", t: "Ich muss noch Fotos oder Texte besorgen" },
+                    { v: "alternativen", t: "Ich vergleiche gerade andere Anbieter" },
+                    { v: "zeit", t: "Kurz keine Zeit gehabt" },
+                    { v: "other", t: "Anderer Grund" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.v}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        extendReason === opt.v
+                          ? "border-indigo-500 bg-indigo-50"
+                          : "border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="extendReason"
+                        value={opt.v}
+                        checked={extendReason === opt.v}
+                        onChange={(e) => setExtendReason(e.target.value)}
+                        className="accent-indigo-600"
+                      />
+                      <span className="text-sm text-slate-700">{opt.t}</span>
+                    </label>
+                  ))}
+                </div>
+                {extendError && (
+                  <p className="text-red-600 text-sm mb-4">{extendError}</p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowExtendModal(false)}
+                    disabled={extendSubmitting}
+                    className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium transition-colors disabled:opacity-50"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    onClick={handleExtend}
+                    disabled={extendSubmitting}
+                    className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors disabled:opacity-50"
+                  >
+                    {extendSubmitting ? "Verlängere…" : "Um 24 Stunden verlängern"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 

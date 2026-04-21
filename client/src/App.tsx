@@ -35,6 +35,7 @@ const VariantPreviewPage      = lazy(() => import("./pages/VariantPreviewPage"))
 const LoginPage            = lazy(() => import("./pages/LoginPage"));
 const CustomerLoginPage    = lazy(() => import("./pages/CustomerLoginPage"));
 const BusinessesPage       = lazy(() => import("./pages/BusinessesPage"));
+const WelcomeBack          = lazy(() => import("./pages/WelcomeBack"));
 
 function PageLoader() {
   return (
@@ -141,6 +142,7 @@ function Router() {
         <Route path="/impressum" component={PageblitzImpressum} />
         <Route path="/datenschutz" component={PageblitzDatenschutz} />
         <Route path="/start" component={StartPage} />
+        <Route path="/welcome-back" component={WelcomeBack} />
         <Route path="/preview/:token" component={PreviewPage} />
         <Route path="/site/:slug">{(params) => <SitePage key={params.slug} />}</Route>
         <Route path="/site/:slug/impressum">{(params) => <LegalPage key={params.slug} />}</Route>

@@ -142,7 +142,16 @@ export function registerStripeWebhook(app: Express) {
             await updateWebsite(websiteId, {
               status: "sold",
               onboardingStatus: "pending",
+              captureStatus: "converted",
             });
+
+            // Lifecycle-Emails canceln (Kunde hat konvertiert)
+            try {
+              const { cancelLifecycleEmails } = await import("./_core/lifecycleScheduler");
+              await cancelLifecycleEmails(websiteId, "converted");
+            } catch (err) {
+              console.warn("[Webhook] Failed to cancel lifecycle emails:", err);
+            }
 
             console.log(`[Webhook] Checkout completed for website ${websiteId}`);
             break;

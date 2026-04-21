@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint, boolean, date } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, decimal, bigint, boolean, date, uniqueIndex, index } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -94,6 +94,9 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   chatUsageResetAt: timestamp("chatUsageResetAt"),
   // Branding
   showBranding: boolean("showBranding").default(true),
+  // Reservation lifecycle (external leads only) – when the draft expires + how often extended
+  reservedUntil: timestamp("reservedUntil"),
+  extensionsUsed: int("extensionsUsed").notNull().default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -228,6 +231,54 @@ export const outreachExperiments = mysqlTable("outreach_experiments", {
 });
 export type OutreachExperiment = typeof outreachExperiments.$inferSelect;
 export type InsertOutreachExperiment = typeof outreachExperiments.$inferInsert;
+
+// ── Lifecycle Emails (Drip-Sequenz für unfertige Onboardings) ────────────────
+export const lifecycleEmails = mysqlTable("lifecycle_emails", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
+  type: mysqlEnum("type", [
+    "reminder_2h",
+    "reminder_24h",
+    "reminder_final",
+    "fresh_start_7d",
+  ]).notNull(),
+  scheduledFor: timestamp("scheduledFor").notNull(),
+  sentAt: timestamp("sentAt"),
+  status: mysqlEnum("status", ["scheduled", "sent", "cancelled", "skipped", "bounced"])
+    .notNull()
+    .default("scheduled"),
+  resendEmailId: varchar("resendEmailId", { length: 255 }),
+  cancelReason: varchar("cancelReason", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  // Verhindert Doppel-Scheduling desselben Mail-Typs pro Website
+  websiteTypeUnique: uniqueIndex("lifecycle_emails_website_type_unique").on(table.websiteId, table.type),
+  // Index für Worker-Query (status + scheduledFor)
+  scheduledLookup: index("lifecycle_emails_scheduled_lookup").on(table.status, table.scheduledFor),
+}));
+
+export type LifecycleEmail = typeof lifecycleEmails.$inferSelect;
+export type InsertLifecycleEmail = typeof lifecycleEmails.$inferInsert;
+
+// ── Reactivation Seeds (Daten-Backup nach Website-Löschung für Email 5) ──────
+export const reactivationSeeds = mysqlTable("reactivation_seeds", {
+  id: int("id").autoincrement().primaryKey(),
+  token: varchar("token", { length: 64 }).notNull().unique(), // eindeutiger URL-Token für /welcome-back
+  recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
+  businessName: varchar("businessName", { length: 500 }),
+  businessCategory: varchar("businessCategory", { length: 255 }),
+  googlePlaceId: varchar("googlePlaceId", { length: 255 }),
+  originalWebsiteId: int("originalWebsiteId"), // nur zur Nachverfolgung
+  originalBusinessId: int("originalBusinessId"),
+  usedAt: timestamp("usedAt"), // wann der Lead zurückgekommen ist
+  expiresAt: timestamp("expiresAt").notNull(), // 30 Tage nach Erstellung (DSGVO-Minimalprinzip)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ReactivationSeed = typeof reactivationSeeds.$inferSelect;
+export type InsertReactivationSeed = typeof reactivationSeeds.$inferInsert;
 
 export const templateUploads = mysqlTable("template_uploads", {
   id: int("id").autoincrement().primaryKey(),

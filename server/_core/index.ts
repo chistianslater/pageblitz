@@ -105,6 +105,72 @@ async function startServer() {
   registerChatRoutes(app);
   registerLandingChatRoutes(app);
   registerBookingRoutes(app);
+  // Lifecycle-Email Routes (Extension + Unsubscribe, HMAC-signed)
+  {
+    const {
+      verifyLifecycleToken,
+    } = await import("./lifecycleScheduler");
+    const { extendReservation, unsubscribeEmail } = await import("./lifecycleScheduler");
+
+    const renderInfoPage = (title: string, message: string, cta?: { label: string; href: string }) => `<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · Pageblitz</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; margin: 0; padding: 40px 16px; color: #18181b; }
+  .card { max-width: 520px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 40px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  h1 { font-size: 22px; margin: 0 0 16px 0; }
+  p { font-size: 15px; line-height: 1.6; color: #374151; margin: 0 0 16px 0; }
+  a.cta { display: inline-block; margin-top: 16px; background: #4f46e5; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; }
+  .logo { font-size: 18px; font-weight: 700; color: #4f46e5; margin-bottom: 24px; }
+</style></head><body>
+  <div class="card">
+    <div class="logo">Pageblitz</div>
+    <h1>${title}</h1>
+    <p>${message}</p>
+    ${cta ? `<a class="cta" href="${cta.href}">${cta.label}</a>` : ""}
+  </div>
+</body></html>`;
+
+    app.get("/api/lifecycle/extend", async (req, res) => {
+      const token = (req.query.token as string) || "";
+      const verified = verifyLifecycleToken(token);
+      if (!verified || verified.action !== "extend") {
+        res.status(400).send(renderInfoPage("Link ungültig", "Dieser Verlängerungs-Link ist abgelaufen oder ungültig. Wenn du Hilfe brauchst, antworte einfach auf die letzte Email."));
+        return;
+      }
+      const result = await extendReservation(verified.websiteId);
+      if (!result.success) {
+        res.status(400).send(renderInfoPage("Verlängerung nicht möglich", result.error || "Leider konnte die Reservierung nicht verlängert werden."));
+        return;
+      }
+      const untilDe = result.newReservedUntil?.toLocaleString("de-DE", { dateStyle: "full", timeStyle: "short" }) || "später";
+      const remaining = result.remainingExtensions ?? 0;
+      const remainText = remaining > 0
+        ? `Du kannst die Reservierung bei Bedarf noch ${remaining}× verlängern.`
+        : "Das war deine letzte Verlängerung – bei Fragen: antworte einfach auf die Email.";
+      const { getWebsiteById } = await import("../db");
+      const website = await getWebsiteById(verified.websiteId);
+      const ctaHref = website?.previewToken ? `/preview/${website.previewToken}/onboarding` : "/";
+      res.send(renderInfoPage(
+        "Reservierung verlängert",
+        `Alles klar – dein Website-Entwurf ist jetzt bis <strong>${untilDe}</strong> für dich reserviert. ${remainText}`,
+        { label: "Weiter zu deiner Website", href: ctaHref },
+      ));
+    });
+
+    app.get("/api/lifecycle/unsubscribe", async (req, res) => {
+      const token = (req.query.token as string) || "";
+      const verified = verifyLifecycleToken(token);
+      if (!verified || verified.action !== "unsubscribe") {
+        res.status(400).send(renderInfoPage("Link ungültig", "Dieser Abmelde-Link ist abgelaufen oder ungültig."));
+        return;
+      }
+      await unsubscribeEmail(verified.email);
+      res.send(renderInfoPage(
+        "Abgemeldet",
+        "Du bekommst keine weiteren automatischen Erinnerungen von uns. Falls du doch noch Hilfe brauchst, schreib uns einfach: christian@pageblitz.de",
+      ));
+    });
+  }
   // tRPC API
   app.use(
     "/api/trpc",
@@ -259,6 +325,13 @@ async function startServer() {
         startPipelineScheduler();
       })
       .catch((e) => console.error("[Pipeline] Failed to start:", e));
+
+    // Start lifecycle-email worker (sendet drip mails + löscht abgelaufene Entwürfe)
+    import("./lifecycleWorker")
+      .then(({ startLifecycleWorker }) => {
+        startLifecycleWorker();
+      })
+      .catch((e) => console.error("[LifecycleWorker] Failed to start:", e));
   });
 }
 

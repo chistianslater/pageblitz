@@ -4995,6 +4995,13 @@ Wichtige Felder im JSON:
           customerEmail: input.email,
           captureStatus: "email_captured",
         });
+        // Lifecycle-Email-Sequenz starten (fire-and-forget, Fehler darf nicht blocken)
+        try {
+          const { scheduleInitialLifecycleEmails } = await import("./_core/lifecycleScheduler");
+          await scheduleInitialLifecycleEmails(input.websiteId, input.email);
+        } catch (err) {
+          console.warn("[saveCustomerEmail] Lifecycle scheduling failed:", err);
+        }
         return { success: true };
       }),
 
@@ -5065,6 +5072,13 @@ Wichtige Felder im JSON:
           customerEmail: input.email,
           captureStatus: "email_captured",
         });
+        // Lifecycle-Email-Sequenz starten (fire-and-forget)
+        try {
+          const { scheduleInitialLifecycleEmails } = await import("./_core/lifecycleScheduler");
+          await scheduleInitialLifecycleEmails(websiteId, input.email);
+        } catch (err) {
+          console.warn("[captureEmail] Lifecycle scheduling failed:", err);
+        }
         return { websiteId, previewToken };
       }),
 
@@ -5403,6 +5417,105 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
       .mutation(async ({ input }) => {
         await updateWebsite(input.id, { captureStatus: input.captureStatus });
         return { success: true };
+      }),
+  }),
+
+  // ── Lifecycle: Reservierungs-Verlängerung + Welcome-Back-Flow ──────────────
+  lifecycle: router({
+    /**
+     * Vom UI (FOMO-Header-Button) aufgerufen: verlängert Reservierung um 24h.
+     * Authentifizierung über previewToken (der User hat die Session-URL).
+     */
+    extendByPreviewToken: publicProcedure
+      .input(z.object({
+        previewToken: z.string(),
+        reason: z.string().optional(), // optionaler Grund für Analytics
+      }))
+      .mutation(async ({ input }) => {
+        const { getWebsiteByToken: getWebsiteByPreviewToken } = await import("./db");
+        const { extendReservation } = await import("./_core/lifecycleScheduler");
+        const website = await getWebsiteByPreviewToken(input.previewToken);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+        const result = await extendReservation(website.id);
+        if (!result.success) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: result.error || "Verlängerung fehlgeschlagen" });
+        }
+        if (input.reason) {
+          console.log(`[Lifecycle] Extension reason for website ${website.id}: ${input.reason}`);
+        }
+        return {
+          success: true,
+          newReservedUntil: result.newReservedUntil?.toISOString(),
+          remainingExtensions: result.remainingExtensions,
+        };
+      }),
+
+    /**
+     * Gibt den aktuellen Reservierungs-Status zurück (für UI-Anzeige).
+     */
+    getReservation: publicProcedure
+      .input(z.object({ previewToken: z.string() }))
+      .query(async ({ input }) => {
+        const { getWebsiteByToken: getWebsiteByPreviewToken } = await import("./db");
+        const { MAX_EXTENSIONS } = await import("./_core/lifecycleEmails");
+        const website = await getWebsiteByPreviewToken(input.previewToken);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        return {
+          reservedUntil: website.reservedUntil?.toISOString() || null,
+          extensionsUsed: website.extensionsUsed ?? 0,
+          maxExtensions: MAX_EXTENSIONS,
+          canExtend: (website.extensionsUsed ?? 0) < MAX_EXTENSIONS && website.captureStatus !== "converted",
+        };
+      }),
+
+    /**
+     * Löst einen Reactivation-Seed-Token auf (Welcome-Back-Seite).
+     * Gibt Business-Daten zurück, damit die UI "Neuer Entwurf für X" zeigen kann.
+     */
+    resolveSeed: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { reactivationSeeds } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const rows = await db.select().from(reactivationSeeds).where(eq(reactivationSeeds.token, input.token)).limit(1);
+        const seed = rows[0];
+        if (!seed) throw new TRPCError({ code: "NOT_FOUND", message: "Seed nicht gefunden oder abgelaufen" });
+        if (seed.usedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "Dieser Link wurde bereits genutzt" });
+        if (seed.expiresAt < new Date()) throw new TRPCError({ code: "BAD_REQUEST", message: "Dieser Link ist abgelaufen" });
+        return {
+          email: seed.recipientEmail,
+          businessName: seed.businessName,
+          businessCategory: seed.businessCategory,
+          googlePlaceId: seed.googlePlaceId,
+        };
+      }),
+
+    /**
+     * Markiert den Seed als genutzt + gibt die Daten zurück, um einen neuen Entwurf zu starten.
+     * Die eigentliche Erstellung läuft dann über die vorhandenen captureEmail + (optional) GMB-Flows.
+     */
+    consumeSeed: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { reactivationSeeds } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const rows = await db.select().from(reactivationSeeds).where(eq(reactivationSeeds.token, input.token)).limit(1);
+        const seed = rows[0];
+        if (!seed) throw new TRPCError({ code: "NOT_FOUND" });
+        if (seed.usedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "Bereits genutzt" });
+        await db.update(reactivationSeeds).set({ usedAt: new Date() }).where(eq(reactivationSeeds.id, seed.id));
+        return {
+          email: seed.recipientEmail,
+          businessName: seed.businessName,
+          businessCategory: seed.businessCategory,
+          googlePlaceId: seed.googlePlaceId,
+        };
       }),
   }),
 });
