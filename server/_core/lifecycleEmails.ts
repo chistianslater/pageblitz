@@ -56,51 +56,72 @@ const footer = (unsubscribeLink: string) => `
 const footerText = (unsubscribeLink: string) =>
   `\n\n---\nPageblitz - Websites für Kleinunternehmen\nKeine weiteren Erinnerungen: ${unsubscribeLink}\n`;
 
-const header = (eyebrow: string) => `
-    <div style="background: #18181b; padding: 28px 32px;">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 6px 0;">
-        <tr>
-          <td style="vertical-align: middle; padding-right: 10px;">
-            <div style="width: 32px; height: 32px; background: #ffffff; border-radius: 8px; text-align: center; line-height: 32px;">
-              <span style="font-size: 18px;">⚡</span>
-            </div>
-          </td>
-          <td style="vertical-align: middle;">
-            <span style="color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">Page<span style="color: #818cf8;">blitz</span></span>
-          </td>
-        </tr>
-      </table>
-      <p style="color: #a1a1aa; font-size: 11px; margin: 10px 0 0 0; text-transform: uppercase; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">${eyebrow}</p>
-    </div>`;
-
 const wrap = (eyebrow: string, inner: string, unsubscribeLink: string) => `<!DOCTYPE html>
 <html lang="de">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f5; margin: 0; padding: 32px 16px; color: #18181b;">
-  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-    ${header(eyebrow)}
-    <div style="padding: 32px;">
-      ${inner}
-    </div>
-    ${footer(unsubscribeLink)}
-  </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #18181b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f5;">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+        <table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="max-width: 560px; width: 100%; background-color: #ffffff; border-radius: 12px;">
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #18181b; border-radius: 12px 12px 0 0; padding: 28px 32px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="padding-right: 10px; vertical-align: middle;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 8px; width: 32px; height: 32px;">
+                      <tr>
+                        <td width="32" height="32" align="center" style="font-size: 18px; line-height: 32px;">⚡</td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td style="vertical-align: middle; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: -0.3px;">
+                    Page<span style="color: #818cf8;">blitz</span>
+                  </td>
+                </tr>
+              </table>
+              <p style="color: #a1a1aa; font-size: 11px; margin: 12px 0 0 0; text-transform: uppercase; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">${eyebrow}</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+              ${inner}
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; border-top: 1px solid #f0f0f0; border-radius: 0 0 12px 12px; padding: 20px 32px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+              <p style="color: #9ca3af; font-size: 11px; line-height: 1.6; margin: 0;">
+                Pageblitz &middot; Websites f&uuml;r Kleinunternehmen<br>
+                <a href="${unsubscribeLink}" style="color: #9ca3af; text-decoration: underline;">Keine weiteren Erinnerungen</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 
-// Bulletproof Button (MSO-kompatibel für Outlook)
+// Bulletproof Button – Table-basiert, bgcolor-Attribut + inline style, target=_blank
 const primaryCta = (text: string, href: string) => `
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="left" style="margin: 24px 0;">
       <tr>
-        <td style="background: #4f46e5; border-radius: 10px; text-align: center;">
-          <a href="${href}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; border-radius: 10px; -webkit-text-size-adjust: none; mso-hide: all;">
-            ${text}
-          </a>
+        <td align="center" bgcolor="#4f46e5" style="background-color: #4f46e5; border-radius: 10px;">
+          <a href="${href}" target="_blank" style="display: inline-block; padding: 14px 32px; color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-decoration: none; border-radius: 10px;">${text}</a>
         </td>
       </tr>
     </table>`;
 
 const secondaryLink = (text: string, href: string) => `
-    <p style="margin: 12px 0 0 0; font-size: 14px; color: #6b7280;">
+    <p style="margin: 12px 0 0 0; font-size: 14px; line-height: 1.5; color: #6b7280; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
       <a href="${href}" style="color: #6b7280; text-decoration: underline;">${text}</a>
     </p>`;
 
