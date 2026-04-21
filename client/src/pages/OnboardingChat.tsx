@@ -2957,7 +2957,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               }}
               className="underline underline-offset-2 decoration-white/50 hover:decoration-white text-white/90 hover:text-white text-xs sm:text-sm"
             >
-              Mehr Zeit brauchen?
+              Du brauchst mehr Zeit?
             </button>
           )}
         </div>
@@ -2986,7 +2986,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </>
             ) : (
               <>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">Mehr Zeit brauchen?</h3>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Du brauchst mehr Zeit?</h3>
                 <p className="text-slate-600 text-sm leading-relaxed mb-4">
                   Kein Problem – wir verlängern deine Reservierung um <strong>24 Stunden</strong>. Magst du uns kurz sagen, was dich gerade abhält? (Optional, hilft uns, Pageblitz besser zu machen.)
                 </p>
