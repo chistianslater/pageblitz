@@ -14,6 +14,7 @@ import {
 import { ENV } from "./env";
 import {
   sendLifecycleEmail,
+  renderWelcomeLinkEmail,
   type LifecycleEmailType,
   type LifecycleEmailData,
   FIXED_OFFSETS,
@@ -23,6 +24,7 @@ import {
   EXTENSION_HOURS,
   MAX_EXTENSIONS,
 } from "./lifecycleEmails";
+import { sendEmail } from "./email";
 
 const APP_BASE_URL = process.env.APP_BASE_URL || "https://pageblitz.de";
 
@@ -86,6 +88,92 @@ export function buildUnsubscribeLink(websiteId: number, email: string): string {
 
 export function buildWelcomeBackLink(seedToken: string): string {
   return `${APP_BASE_URL}/welcome-back?token=${encodeURIComponent(seedToken)}`;
+}
+
+// ── Sofortige Welcome-Link-Mail (transactional, nicht scheduled) ────────────
+/**
+ * Sendet unmittelbar nach Email-Capture eine kurze transactional Mail mit dem
+ * persönlichen Link. Fire-and-forget – kein DB-Eintrag in lifecycle_emails.
+ */
+export async function sendImmediateWelcomeEmail(
+  websiteId: number,
+  email: string,
+): Promise<void> {
+  try {
+    const db = await getDb();
+    if (!db) return;
+
+    const rows = await db
+      .select()
+      .from(generatedWebsites)
+      .where(eq(generatedWebsites.id, websiteId))
+      .limit(1);
+    const website = rows[0];
+    if (!website) return;
+
+    // businessName aus onboarding oder businesses holen
+    let businessName = "deine Website";
+    const onboardingRows = await db
+      .select()
+      .from(onboardingResponses)
+      .where(eq(onboardingResponses.websiteId, websiteId))
+      .limit(1);
+    if (onboardingRows[0]?.businessName) {
+      businessName = onboardingRows[0].businessName;
+    } else {
+      const bizRows = await db
+        .select()
+        .from(businesses)
+        .where(eq(businesses.id, website.businessId))
+        .limit(1);
+      // "Lead (E-Mail erfasst)" Platzhalter ausblenden
+      if (bizRows[0]?.name && !bizRows[0].name.startsWith("Lead ")) {
+        businessName = bizRows[0].name;
+      }
+    }
+
+    let firstName: string | null = null;
+    if (onboardingRows[0]?.legalOwner) {
+      firstName = onboardingRows[0].legalOwner.trim().split(/\s+/)[0] || null;
+    } else {
+      const userRows = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+      if (userRows[0]?.name) {
+        firstName = userRows[0].name.trim().split(/\s+/)[0] || null;
+      }
+    }
+
+    const resumeLink = website.previewToken
+      ? buildResumeLink(website.previewToken)
+      : `${APP_BASE_URL}/preview/${website.id}/onboarding`;
+
+    const data: LifecycleEmailData = {
+      firstName,
+      businessName,
+      resumeLink,
+      unsubscribeLink: buildUnsubscribeLink(websiteId, email),
+    };
+
+    const { subject, html, text } = renderWelcomeLinkEmail(data);
+    const result = await sendEmail({
+      to: email,
+      subject,
+      html,
+      text,
+      from: "Christian von Pageblitz <christian@pageblitz.de>",
+      replyTo: "christian@pageblitz.de",
+    });
+    if (result.success) {
+      console.log(`[Lifecycle] Welcome-link email sent to ${email} (website ${websiteId})`);
+    } else {
+      console.warn(`[Lifecycle] Welcome-link send failed for website ${websiteId}: ${result.error}`);
+    }
+  } catch (err) {
+    console.error(`[Lifecycle] sendImmediateWelcomeEmail error for website ${websiteId}:`, err);
+  }
 }
 
 // ── Initial Scheduling bei Email-Capture ────────────────────────────────────

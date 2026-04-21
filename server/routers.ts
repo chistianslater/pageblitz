@@ -4997,7 +4997,8 @@ Wichtige Felder im JSON:
         });
         // Lifecycle-Email-Sequenz starten (fire-and-forget, Fehler darf nicht blocken)
         try {
-          const { scheduleInitialLifecycleEmails } = await import("./_core/lifecycleScheduler");
+          const { scheduleInitialLifecycleEmails, sendImmediateWelcomeEmail } = await import("./_core/lifecycleScheduler");
+          await sendImmediateWelcomeEmail(input.websiteId, input.email);
           await scheduleInitialLifecycleEmails(input.websiteId, input.email);
         } catch (err) {
           console.warn("[saveCustomerEmail] Lifecycle scheduling failed:", err);
@@ -5074,7 +5075,8 @@ Wichtige Felder im JSON:
         });
         // Lifecycle-Email-Sequenz starten (fire-and-forget)
         try {
-          const { scheduleInitialLifecycleEmails } = await import("./_core/lifecycleScheduler");
+          const { scheduleInitialLifecycleEmails, sendImmediateWelcomeEmail } = await import("./_core/lifecycleScheduler");
+          await sendImmediateWelcomeEmail(websiteId, input.email);
           await scheduleInitialLifecycleEmails(websiteId, input.email);
         } catch (err) {
           console.warn("[captureEmail] Lifecycle scheduling failed:", err);

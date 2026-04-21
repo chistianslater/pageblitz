@@ -263,6 +263,39 @@ Christian${footerText(d.unsubscribeLink)}`;
   return { subject, html, text };
 }
 
+// ── Welcome-Link (sofort beim Email-Capture, transactional, nicht scheduled) ──
+export function renderWelcomeLinkEmail(d: LifecycleEmailData): TemplateOutput {
+  const subject = "Dein Link zu deiner Pageblitz-Website";
+  const html = wrap(`
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+      hier ist dein pers&ouml;nlicher Link zu deiner Website-Vorschau${d.businessName && d.businessName !== "deine Website" ? ` f&uuml;r <strong>${d.businessName}</strong>` : ""}:
+    </p>
+    ${primaryCta("Website bearbeiten", d.resumeLink)}
+    <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+      Speicher dir diese Mail oder den Link als Lesezeichen &ndash; so kommst du jederzeit zur&uuml;ck und machst dort weiter, wo du aufgeh&ouml;rt hast.
+    </p>
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+      Falls du Fragen hast: einfach auf diese Mail antworten.
+    </p>
+    <p style="margin: 24px 0 0 0; font-size: 16px; line-height: 1.6;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+    ${footer(d.unsubscribeLink)}
+  `);
+  const text = `${greeting(d.firstName)}
+
+hier ist dein persönlicher Link zu deiner Website-Vorschau${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""}:
+
+${d.resumeLink}
+
+Speicher dir diese Mail oder den Link als Lesezeichen – so kommst du jederzeit zurück und machst dort weiter, wo du aufgehört hast.
+
+Falls du Fragen hast: einfach auf diese Mail antworten.
+
+Viele Grüße
+Christian${footerText(d.unsubscribeLink)}`;
+  return { subject, html, text };
+}
+
 const TEMPLATES: Record<LifecycleEmailType, (d: LifecycleEmailData) => TemplateOutput> = {
   reminder_2h: reminder2h,
   reminder_24h: reminder24h,
