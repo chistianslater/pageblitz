@@ -2697,7 +2697,7 @@ export function PremiumLayoutV2({
         <NavLinks textClass="text-neutral-800" />
         <div className="flex items-center gap-3">
           <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider whitespace-nowrap">{heroCta}</button>
+            <button onClick={scrollToContact} style={{ fontFamily: BODY }} className="hidden md:block pb-btn pb-btn-primary pb-btn-sm pb-btn-square whitespace-nowrap">{heroCta}</button>
           </Skeleton>
           <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
         </div>
@@ -2714,10 +2714,11 @@ export function PremiumLayoutV2({
                 {hl.main}<br /><span style={{ color: safeCs.primary }}>{hl.last}</span>
               </h1>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem] mb-16">
-              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData.tagline}</p>
+            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[4rem]">
+              <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
+            <div className="h-10 md:h-14" />
+            <Skeleton isLoading={isLoading} className="w-44 h-12">
               <button style={{ fontFamily: BODY }} className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">{heroCta}</button>
             </Skeleton>
           </div>
