@@ -843,11 +843,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Check if user has email (either from auth or from data)
     const hasUserEmail = !!(isAuthenticated && user?.email);
 
-    // Kein beforeunload-Dialog mehr – Daten werden automatisch mit trySaveStep
-    // gespeichert, der User kann jederzeit zurückkehren. Der Exit-Intent-Dialog
-    // (Maus verlässt Fenster) übernimmt diese Aufgabe.
-    const handleBeforeUnload = (_e: BeforeUnloadEvent) => {
-      // intentionally left blank – no native browser dialog
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
     };
 
     // Exit intent (mouse leaves window upwards) – shows at most once per session
@@ -1836,26 +1833,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
         }
 
-        // For admin-generated websites without a customer email yet,
-        // ask for the email as the very first step.
-        if (!hasEmail && !isAuthenticated) {
-          // For external users: show the fully generated website before asking for email
-          // so they have a real incentive to leave their address.
-          if (source === "external" && !!(siteData?.website?.websiteData)) {
-            setContentPhase('complete');
-            setCategoryConfirmed(true);
-            setHeroRevealed(true);
-            setContentRevealed(true);
-            if (previewToken || websiteIdProp) {
-              localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
-            }
-          }
-          setCurrentStep("email");
-          const emailMsg = source === "admin"
-            ? "Hallo! 👋 Wir haben deine fertige Website bereits für dich erstellt. Damit du sie aktivieren kannst, brauchen wir zuerst deine **E-Mail-Adresse**."
-            : "Gefällt dir deine Website? 🎉\n\nGib kurz deine **E-Mail-Adresse** ein – so speichern wir sie für dich und du kannst jederzeit weitermachen.";
-          await addBotMessage(emailMsg, 800);
-        } else if ((source === "admin" || source === "external") && (business as any)?.category) {
+        if ((source === "admin" || source === "external") && (business as any)?.category) {
           // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
           const translatedCategory = translateGmbCategory((business as any).category);
           setData((p) => ({ ...p, businessCategory: translatedCategory }));
@@ -1864,6 +1842,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             ? `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`
             : `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`;
           await addBotMessage(greeting, 800);
+        } else if (source === "admin") {
+          setCurrentStep("businessCategory");
+          await addBotMessage(
+            `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: In welcher **Branche** bist du tätig? (z.B. Friseur, Restaurant, Handwerker …)`,
+            800
+          );
         } else {
           setCurrentStep("businessCategory");
           await addBotMessage(getStepPrompt("businessCategory"), 800);
@@ -2346,22 +2330,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val },
               {
-                onSuccess: async () => {
+                onSuccess: () => {
                   toast.success("E-Mail gespeichert! ✅");
-                  // Fire Google Ads conversion: Onboarding gestartet
                   try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
-                  // Refetch siteData so hasCustomerEmail becomes true and the email
-                  // step is removed from dynamicStepOrder (won't appear again later)
                   refetchSiteData();
-                  // Always start the full customization flow from businessCategory
-                  await advanceToStep("businessCategory");
                 },
                 onError: () => {
                   toast.error("E-Mail konnte nicht gespeichert werden.");
                 },
               }
             );
-            return; // advanceToStep is called in onSuccess above
           }
           break;
         }
