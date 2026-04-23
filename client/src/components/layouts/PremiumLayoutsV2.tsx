@@ -690,11 +690,12 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
     return (
       <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
-          <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto mb-16">
+          <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto">
             <h2 className={`text-3xl md:text-4xl text-center ${textMain}`} style={{ ...hs, ...textMainStyle }}>
               {process?.headline || "In 3 Schritten zu Ihrem Ziel"}
             </h2>
           </Skeleton>
+          <div className="h-12 md:h-16" />
           <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {items.map((item: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-44">
@@ -722,11 +723,12 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   return (
     <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={{ ...bgStyle, fontFamily: bodyFont }}>
       <div className="max-w-4xl mx-auto">
-        <Skeleton isLoading={isLoading} className="w-56 h-10 mx-auto mb-20">
-          <h2 className={`text-3xl md:text-4xl text-center mb-16 ${textMain}`} style={{ ...hs, ...textMainStyle }}>
+        <Skeleton isLoading={isLoading} className="w-full max-w-md h-16 mx-auto">
+          <h2 className={`text-3xl md:text-4xl text-center ${textMain}`} style={{ ...hs, ...textMainStyle }}>
             {process?.headline || "Ihr Weg zu uns"}
           </h2>
         </Skeleton>
+        <div className="h-16 md:h-20" />
         <div className="relative">
           {/* Line centered at 50% (-translate-x-1/2 shifts line's center to 50%) */}
           <div className="absolute left-[35px] md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5"
