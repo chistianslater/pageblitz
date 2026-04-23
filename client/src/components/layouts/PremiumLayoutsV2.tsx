@@ -208,7 +208,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="grid lg:grid-cols-[52%_48%] min-h-screen overflow-hidden">
+    <section id="hero" className="grid lg:grid-cols-[52%_48%] min-h-screen overflow-hidden relative">
       {/* LEFT: Text Panel */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
@@ -217,19 +217,22 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 0.8 }}
         className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0 z-[1]"
       >
-        {/* Left edge accent line */}
+        {/* Left edge accent line — bolder, gradient fade */}
         {!isLoading && (
-          <div className="absolute left-0 top-1/4 bottom-1/4 w-0.5 rounded-full hidden lg:block"
-            style={{ backgroundColor: primaryColor, opacity: 0.35 }} />
+          <div className="absolute left-0 top-[15%] bottom-[15%] w-[3px] hidden lg:block"
+            style={{ background: `linear-gradient(to bottom, transparent, ${primaryColor}, transparent)` }} />
         )}
-        {/* Subtle background depth blob */}
-        <div className="absolute -top-20 right-0 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.07] pointer-events-none"
+        {/* Primary glow — larger, more visible */}
+        <div className="absolute -top-32 -right-16 w-[500px] h-[500px] rounded-full blur-[150px] opacity-[0.10] pointer-events-none"
           style={{ backgroundColor: primaryColor }} />
+        {/* Secondary glow — bottom-left for depth */}
+        <div className="absolute -bottom-24 -left-20 w-[350px] h-[350px] rounded-full blur-[120px] opacity-[0.06] pointer-events-none"
+          style={{ backgroundColor: accentColor }} />
 
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
         <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-6">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.2rem, 3.2vw, 4rem)'), color: textColor, overflowWrap: 'break-word', wordBreak: 'break-word' }}
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.08, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.2rem, 3.2vw, 4rem)'), color: textColor, overflowWrap: 'break-word', wordBreak: 'break-word' }}
             className="uppercase tracking-tight mb-6">
             {hl.main}<br />
             <span style={{ color: primaryColor }}>{hl.last}</span>
@@ -259,7 +262,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         </div>
       </motion.div>
 
-      {/* RIGHT: Full-height image (no aspect ratio constraint) */}
+      {/* RIGHT: Full-height image with layered treatment */}
       <motion.div
         className="relative min-h-[55vw] lg:min-h-screen overflow-hidden"
         initial={{ opacity: 0, scale: 1.05 }}
@@ -268,17 +271,27 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 1.2 }}
       >
         <Skeleton isLoading={isLoading} className="absolute inset-0">
-          <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
-          {/* Gradient blend at left edge for seamless column transition */}
-          <div className="absolute inset-y-0 left-0 w-16 pointer-events-none"
-            style={{ backgroundImage: dark ? 'linear-gradient(to right, rgba(10,10,10,0.6), transparent)' : 'linear-gradient(to right, rgba(248,249,250,0.5), transparent)' }} />
+          <div className="photo-frame absolute inset-0">
+            <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
+          </div>
+          {/* Gradient blend at left edge — wider, smoother */}
+          <div className="absolute inset-y-0 left-0 w-24 pointer-events-none"
+            style={{ backgroundImage: dark ? 'linear-gradient(to right, rgba(10,10,10,0.8), transparent)' : 'linear-gradient(to right, rgba(248,249,250,0.7), transparent)' }} />
+          {/* Bottom gradient for depth */}
+          <div className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
+            style={{ backgroundImage: dark ? 'linear-gradient(to top, rgba(10,10,10,0.5), transparent)' : 'linear-gradient(to top, rgba(248,249,250,0.3), transparent)' }} />
         </Skeleton>
 
-        {/* Primary color block — top-left corner accent */}
+        {/* Primary color block — top-left corner accent with gradient */}
         {!isLoading && (
-          <div className="absolute top-0 left-0 w-14 h-14 hidden lg:block" style={{ backgroundColor: primaryColor }} />
+          <div className="absolute top-0 left-0 w-16 h-16 hidden lg:block" style={{ background: `linear-gradient(135deg, ${primaryColor}, transparent)` }} />
         )}
 
+        {/* Accent line — right edge */}
+        {!isLoading && (
+          <div className="absolute top-[20%] right-0 w-[3px] h-[30%] hidden lg:block"
+            style={{ background: `linear-gradient(to bottom, transparent, ${primaryColor}60, transparent)` }} />
+        )}
       </motion.div>
     </section>
   );
@@ -294,9 +307,10 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
   return (
     <section id="hero" className="pt-28 md:pt-36 pb-16 md:pb-24 text-center px-6 max-w-7xl mx-auto relative overflow-hidden">
-      {/* Background orbs: more visible */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[120px] opacity-[0.12] pointer-events-none" style={{ backgroundColor: primaryColor }} />
-      <div className="absolute bottom-20 left-0 w-[450px] h-[450px] rounded-full blur-[100px] opacity-[0.08] pointer-events-none" style={{ backgroundColor: accentColor }} />
+      {/* Background orbs — multi-layered for depth */}
+      <div className="absolute -top-20 -right-20 w-[700px] h-[700px] rounded-full blur-[150px] opacity-[0.12] pointer-events-none" style={{ backgroundColor: primaryColor }} />
+      <div className="absolute bottom-0 -left-20 w-[500px] h-[500px] rounded-full blur-[120px] opacity-[0.08] pointer-events-none" style={{ backgroundColor: accentColor }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full blur-[100px] opacity-[0.04] pointer-events-none" style={{ backgroundColor: primaryColor }} />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -307,13 +321,13 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
       >
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} centered={true} />}
 
-        {/* Thin accent line: editorial divider between badge and headline */}
+        {/* Accent line — gradient fade for polish */}
         {!isLoading && (
-          <div className="w-16 h-px mb-8" style={{ backgroundColor: primaryColor }} />
+          <div className="w-20 h-px mb-8" style={{ background: `linear-gradient(to right, transparent, ${primaryColor}, transparent)` }} />
         )}
 
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[8rem] mb-10">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.08, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
             className="uppercase tracking-tight mb-10">
             {hl.main}<br />
             <span style={{ color: primaryColor }}>{hl.last}</span>
@@ -328,7 +342,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         </Skeleton>
 
         {/* CTA row */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
             <button style={{ fontFamily: displayFont }}
               className="pb-btn pb-btn-primary pb-btn-lg pb-btn-pill whitespace-nowrap">
@@ -343,10 +357,12 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           </Skeleton>
         </div>
 
-        {/* Hero image */}
+        {/* Hero image — with photo-frame treatment and accent border */}
         <div className="relative w-full">
-          <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl">
-            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+          <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-2xl overflow-hidden">
+            <div className="photo-frame w-full aspect-video rounded-2xl overflow-hidden shadow-2xl" style={{ boxShadow: `0 25px 60px -12px rgba(0,0,0,0.25), 0 0 0 1px ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+              <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
+            </div>
           </Skeleton>
         </div>
       </motion.div>
@@ -367,11 +383,19 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
   return (
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden py-28 lg:py-32">
-      {/* Full-bleed background — dramatically more visible */}
+      {/* Full-bleed background — higher opacity for impact */}
       <div className="absolute inset-0 z-0">
-        <img src={heroImageUrl} className="w-full h-full object-cover" style={{ opacity: 0.38 }} alt="" />
+        <div className="photo-frame absolute inset-0">
+          <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" style={{ opacity: 0.45 }} alt="" />
+        </div>
         <div className={`absolute inset-0 ${bgGradient}`} />
+        {/* Extra vignette for cinematic depth */}
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 30% 40%, transparent 40%, rgba(0,0,0,0.3) 100%)' }} />
       </div>
+
+      {/* Floating accent glow — adds atmosphere */}
+      <div className="absolute top-[10%] right-[10%] w-[400px] h-[400px] rounded-full blur-[150px] opacity-[0.08] pointer-events-none z-[1]"
+        style={{ backgroundColor: primaryColor }} />
 
       {/* Content: full max-width */}
       <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
@@ -384,7 +408,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
           <Skeleton isLoading={isLoading} className="w-full min-h-[12rem] mb-8">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 1.12, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor }}
+            <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 1.08, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor }}
               className="uppercase tracking-tight mb-8">
               {hl.main}<br />
               <span
@@ -397,7 +421,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
                   <motion.path
                     d="M0 6 Q50 2 100 7 Q150 12 200 6"
                     fill="none" strokeWidth="3"
-                    stroke={primaryColor} strokeOpacity="0.4"
+                    stroke={primaryColor} strokeOpacity="0.5"
                     initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
                     transition={{ duration: 1.0, delay: 0.7, ease: 'easeOut' }}
                   />
@@ -631,11 +655,10 @@ function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
           <div className="absolute rounded-2xl" style={{ inset: 0, transform: 'translate(10px, 10px)', border: `1px solid ${primary}35`, borderRadius: '1rem', pointerEvents: 'none' }} />
 
           <Skeleton isLoading={isLoading} className="rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
-            <div className="rounded-2xl overflow-hidden relative" style={{ aspectRatio: '3/4' }}>
+            <div className="photo-frame rounded-2xl overflow-hidden relative" style={{ aspectRatio: '3/4' }}>
               <img
                 src={aboutImg}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                style={{ filter: 'grayscale(15%) contrast(1.05)', display: 'block' }}
+                className="photo-editorial w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 alt=""
               />
               <div className="absolute inset-0 rounded-2xl" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 50%)' }} />
