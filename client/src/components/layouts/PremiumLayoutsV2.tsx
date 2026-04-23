@@ -459,8 +459,8 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
   const cardBorderColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
   const serviceIconSet = getCategoryIconSet(websiteData?.businessCategory);
   return (
-    <section id="services" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
-      <div className="max-w-7xl mx-auto">
+    <section id="services" className={`pb-section scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
+      <div className="pb-container">
         <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
           <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-16 md:mb-20">
             {servicesSection?.headline
@@ -473,7 +473,7 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
             const ServiceIcon = serviceIconSet[i % serviceIconSet.length] as any;
             return (
               <Skeleton key={i} isLoading={isLoading} className="min-h-[18rem]">
-                <div className={`p-8 md:p-10 rounded-2xl shadow-sm hover:shadow-xl transition-all group ${cardBgClass}`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
+                <div className={`p-8 md:p-10 rounded-2xl shadow-sm pb-card-lift group ${cardBgClass}`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
                   <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
                     <ServiceIcon size={28} style={{ color: safeCs.primary }} />
                   </div>
@@ -507,8 +507,8 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
   const dividerColor = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
   const hoverBgColor = dark ? 'rgba(255,255,255,0.05)' : '#f9fafb';
   return (
-    <section id="services" className={`py-24 md:py-32 px-6 scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
-      <div className="max-w-7xl mx-auto">
+    <section id="services" className={`pb-section scroll-mt-20 ${sectionBgClass}`} style={sectionBgStyle}>
+      <div className="pb-container">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-8">
           <Skeleton isLoading={isLoading} className="w-full max-w-xl min-h-[8rem]">
             <h2 style={{ fontFamily: displayFont, fontWeight: 800, fontSize: getSectionHeadlineSize(headlineSize, 'services'), lineHeight: 1.1, color: textColor }} className="uppercase mb-0">
@@ -546,8 +546,8 @@ function AboutVariantA({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   // Don't render if no about content
   if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
-    <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+    <section id="about" className="pb-section-spacious scroll-mt-20">
+      <div className="pb-container grid lg:grid-cols-2 gap-20 items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -583,7 +583,7 @@ function AboutVariantB({ aboutHeadline, aboutContent, aboutImg, cs, isLoading, d
   const primary = safeCs.primary || '#6366f1';
   if (!aboutContent && !aboutHeadline && !isLoading) return null;
   return (
-    <section id="about" className="py-24 md:py-32 px-6 scroll-mt-20 relative overflow-hidden" style={{ backgroundColor: '#111111' }}>
+    <section id="about" className="pb-section-spacious scroll-mt-20 relative overflow-hidden" style={{ backgroundColor: '#111111' }}>
       {/* Subtle primary glow — ties section to layout's color identity */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none" style={{ background: `radial-gradient(circle, ${primary}1a 0%, transparent 65%)`, transform: 'translate(25%, -25%)' }} />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] pointer-events-none" style={{ background: `radial-gradient(circle, ${primary}0d 0%, transparent 70%)`, transform: 'translate(-30%, 30%)' }} />
@@ -671,7 +671,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   // Variant 0: Horizontal Steps (Current)
   if (variant === 0) {
     return (
-      <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
+      <section id="process" className={`pb-section-tight ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto mb-8">
             <h2 className={`text-3xl md:text-4xl text-center ${textMain}`} style={{ ...hs, ...textMainStyle }}>
@@ -1219,7 +1219,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   <button
                     type="submit"
                     disabled={submitMutation.isPending}
-                    className="w-full hover:opacity-90 transition-opacity disabled:opacity-60"
+                    className="w-full pb-btn pb-btn-primary pb-btn-rounded"
                     style={{ ...buttonStyle, color: safeCs.onPrimary || '#ffffff' }}
                   >
                     {submitMutation.isPending ? "Wird gesendet…" : "Nachricht senden"}
@@ -1868,7 +1868,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         <NavLinks textClass="text-neutral-800" />
         <div className="flex items-center gap-3">
           <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
-            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.15em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-3 text-[10px] uppercase rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+            <button onClick={scrollToContact} style={{ fontFamily: BODY }} className="hidden md:block pb-btn pb-btn-primary pb-btn-pill pb-btn-sm whitespace-nowrap">{heroCta}</button>
           </Skeleton>
           <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
         </div>
@@ -1985,7 +1985,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
         <NavLinks textClass="text-neutral-700" />
         <div className="flex items-center gap-3">
           <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.04em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-3 text-xs rounded-full uppercase shadow-lg hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+            <button onClick={scrollToContact} style={{ fontFamily: BODY }} className="hidden md:block pb-btn pb-btn-primary pb-btn-pill pb-btn-sm whitespace-nowrap">{heroCta}</button>
           </Skeleton>
           <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
         </div>
@@ -2470,7 +2470,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         <NavLinks textClass="text-neutral-800" />
         <div className="flex items-center gap-3">
           <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
-            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.02em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+            <button onClick={scrollToContact} style={{ fontFamily: BODY }} className="hidden md:block pb-btn pb-btn-primary pb-btn-pill pb-btn-sm whitespace-nowrap">{heroCta}</button>
           </Skeleton>
           <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
         </div>
@@ -2569,7 +2569,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
         <NavLinks textClass="text-neutral-700" />
         <div className="flex items-center gap-3">
           <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[130px] h-10">
-            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs rounded-full uppercase tracking-widest hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+            <button onClick={scrollToContact} style={{ fontFamily: BODY }} className="hidden md:block pb-btn pb-btn-primary pb-btn-pill pb-btn-sm whitespace-nowrap">{heroCta}</button>
           </Skeleton>
           <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={false} />
         </div>
@@ -3298,7 +3298,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         <NavLinks textClass="text-neutral-700" />
         <div className="flex items-center gap-3">
           <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[120px] h-10">
-            <button onClick={scrollToContact} style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-lg whitespace-nowrap">{heroCta}</button>
+            <button onClick={scrollToContact} style={{ fontFamily: BODY }} className="hidden md:block pb-btn pb-btn-primary pb-btn-pill pb-btn-sm whitespace-nowrap">{heroCta}</button>
           </Skeleton>
           <MobileMenu businessName={websiteData.businessName} accentColor={primaryColor} isDark={false} />
         </div>
