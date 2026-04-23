@@ -304,7 +304,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
   const badgeText    = websiteData.businessCategory ? `✓ ${websiteData.businessCategory}` : (websiteData.businessName || 'Professioneller Service');
 
   return (
-    <section id="hero" className="pt-28 md:pt-36 pb-16 md:pb-24 text-center px-6 max-w-7xl mx-auto relative overflow-hidden">
+    <section id="hero" className="pt-28 md:pt-36 pb-16 md:pb-24 text-center relative overflow-hidden">
       {/* Background orbs — multi-layered for depth */}
       <div className="absolute -top-20 -right-20 w-[700px] h-[700px] rounded-full blur-[150px] opacity-[0.12] pointer-events-none" style={{ backgroundColor: primaryColor }} />
       <div className="absolute bottom-0 -left-20 w-[500px] h-[500px] rounded-full blur-[120px] opacity-[0.08] pointer-events-none" style={{ backgroundColor: accentColor }} />
@@ -315,7 +315,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="flex flex-col items-center relative z-10"
+        className="flex flex-col items-center relative z-10 max-w-7xl mx-auto px-6"
       >
         {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} centered={true} />}
 
