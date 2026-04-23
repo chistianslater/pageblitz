@@ -18,6 +18,7 @@ import {
   ShoppingBag, GraduationCap, Building, Camera, Music, Palette,
 } from 'lucide-react';
 import { getVariantIndex } from '../../lib/layoutUtils';
+import { colorTokenStyle } from '../../lib/designTokens';
 
 // ── SKELETON ────────────────────────────────────────────────────
 const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
@@ -244,14 +245,14 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <div className="flex flex-wrap items-center gap-4 mt-0">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-xl whitespace-nowrap">
+            <button style={{ fontFamily: displayFont }}
+              className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
             <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
-              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+              className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-square whitespace-nowrap">
               Mehr erfahren
             </button>
           </Skeleton>
@@ -329,14 +330,14 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         {/* CTA row */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-            <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-              className="px-10 py-4 uppercase text-xs rounded-full hover:scale-105 transition-transform shadow-2xl whitespace-nowrap">
+            <button style={{ fontFamily: displayFont }}
+              className="pb-btn pb-btn-primary pb-btn-lg pb-btn-pill whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
             <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
-              className="px-8 py-4 uppercase text-xs rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+              className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-pill whitespace-nowrap">
               Mehr erfahren
             </button>
           </Skeleton>
@@ -415,14 +416,14 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             </Skeleton>
             <div className="flex flex-wrap gap-4">
               <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-                <button style={{ backgroundColor: primaryColor, fontFamily: displayFont, fontWeight: 700, color: safeCs.onPrimary || '#ffffff' }}
-                  className="px-10 py-4 uppercase text-xs tracking-widest rounded-full shadow-2xl hover:scale-105 transition-transform whitespace-nowrap">
+                <button style={{ fontFamily: displayFont }}
+                  className="pb-btn pb-btn-primary pb-btn-lg pb-btn-pill whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
                 <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
-                  className="px-8 py-4 uppercase text-xs tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+                  className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-pill whitespace-nowrap">
                   Mehr erfahren
                 </button>
               </Skeleton>
@@ -1760,7 +1761,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, true) }} className="text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/10" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -1770,7 +1771,7 @@ export function BoldLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
         <NavLinks textClass="text-white" />
         <div className="flex items-center gap-3">
           <Skeleton isLoading={isLoading} className="flex-shrink-0 w-auto min-w-[140px] h-10">
-            <button onClick={scrollToContact} style={{ backgroundColor: safeCs.primary, fontFamily: DISPLAY, fontWeight: 700, letterSpacing: '0.1em', color: safeCs.onPrimary || '#ffffff' }} className="hidden md:block px-6 py-3 text-xs uppercase hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+            <button onClick={scrollToContact} style={{ fontFamily: DISPLAY }} className="hidden md:block pb-btn pb-btn-primary pb-btn-square pb-btn-sm whitespace-nowrap">{heroCta}</button>
           </Skeleton>
           <MobileMenu businessName={websiteData.businessName} accentColor={safeCs.primary} isDark={true} />
         </div>
