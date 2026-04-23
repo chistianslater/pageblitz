@@ -4296,10 +4296,10 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       </nav>
 
       {/* HERO – oversized typo + full image */}
-      <section id="hero" className="pt-28 min-h-screen grid lg:grid-cols-[55%_45%] overflow-hidden"
+      <section id="hero" className="min-h-screen grid lg:grid-cols-[55%_45%] overflow-hidden"
         style={{ borderBottom:`2px solid ${TXT}` }}>
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:1 }}
-          className="flex flex-col justify-center px-8 lg:px-16 py-20 relative">
+          className="flex flex-col justify-center px-8 lg:px-16 pt-28 pb-20 relative">
           {!isLoading && (
             <p style={{ fontFamily:BODY, fontSize:'0.65rem', letterSpacing:'0.3em', color:accentColor, fontWeight:600 }} className="uppercase mb-8">
               {websiteData.businessCategory || '—'}
@@ -4312,12 +4312,13 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
               {heroHeadline}
             </h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-2/3 min-h-[3.5rem] mb-10">
+          <Skeleton isLoading={isLoading} className="w-2/3 min-h-[3.5rem]">
             <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.7, maxWidth:'50ch',
               borderLeft:`3px solid ${accentColor}`, paddingLeft:'1.25rem' }}>
               {hero?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
+          <div className="h-10 md:h-14" />
           <div className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
               <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
@@ -4337,7 +4338,7 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
 
         {/* Right: Full image */}
         <motion.div initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} transition={{ duration:1.2, delay:0.2 }}
-          className="relative min-h-[55vw] lg:min-h-0 overflow-hidden" style={{ borderLeft:`2px solid ${TXT}` }}>
+          className="relative min-h-[55vw] lg:min-h-0 overflow-hidden mt-[72px] lg:mt-0" style={{ borderLeft:`2px solid ${TXT}` }}>
           <Skeleton isLoading={isLoading} className="absolute inset-0">
             {heroImageUrl && <img src={heroImageUrl} className="absolute inset-0 w-full h-full object-cover"
               style={{ filter:'grayscale(20%) contrast(1.05)' }} alt="" />}
@@ -4676,27 +4677,27 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           <Skeleton isLoading={isLoading} className="min-h-[14rem] mb-8">
             <motion.h1 initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ duration:1, delay:0.1 }}
               style={{ fontFamily:DISPLAY, fontWeight:800, lineHeight:1.0,
-                fontSize:getHeadlineFontSize(headlineSize,'clamp(2rem, 5vw, 5rem)'),
+                fontSize:getHeadlineFontSize(headlineSize,'clamp(2rem, 4.5vw, 4.5rem)'),
                 letterSpacing:'-0.02em', textTransform:'uppercase' as const, color:TXT,
-                textShadow:`0 0 60px rgba(212,168,67,0.22)`,
-                overflowWrap:'break-word', wordBreak:'break-word' }}>
+                textShadow:`0 0 60px rgba(212,168,67,0.22)` }}>
               {hl.main}
               {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
             </motion.h1>
           </Skeleton>
-          <Skeleton isLoading={isLoading} className="w-2/3 min-h-[3rem] mb-10">
+          <Skeleton isLoading={isLoading} className="w-2/3 min-h-[3rem]">
             <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.8, delay:0.4 }}
               style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.7, fontSize:'1.05rem',
                 borderLeft:`2px solid ${primaryColor}`, paddingLeft:'1.25rem' }}>
               {hero?.subheadline || websiteData.tagline}
             </motion.p>
           </Skeleton>
+          <div className="h-10 md:h-14" />
           <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.6 }}
             className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
               <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#000',
                 letterSpacing:'0.08em' }}
-                className="px-10 py-4 text-xs uppercase hover:brightness-110 active:scale-95 transition-all shadow-lg whitespace-nowrap">
+                className="pb-btn pb-btn-lg pb-btn-square whitespace-nowrap">
                 {heroCta}
               </button>
             </Skeleton>
