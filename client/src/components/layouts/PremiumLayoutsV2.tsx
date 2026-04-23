@@ -2699,7 +2699,7 @@ export function PremiumLayoutV2({
               <p style={{ fontFamily: BODY, fontWeight: 300, lineHeight: 1.8, fontSize: '1.2rem' }} className="text-white/60 max-w-md border-l border-white/20 pl-8 italic mb-0">{hero?.subheadline || websiteData.tagline}</p>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="w-44 h-12 mt-4">
-              <button style={{ backgroundColor: safeCs.primary, fontFamily: BODY, fontWeight: 600, letterSpacing: '0.08em', color: safeCs.onPrimary || '#ffffff' }} className="px-10 py-4 text-xs uppercase shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform whitespace-nowrap">{heroCta}</button>
+              <button style={{ fontFamily: BODY }} className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">{heroCta}</button>
             </Skeleton>
           </div>
         </div>
@@ -3340,14 +3340,14 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
           <div className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
-              <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }}
-                className="px-8 py-4 text-xs uppercase tracking-widest rounded-full shadow-xl hover:scale-105 transition-transform whitespace-nowrap">
+              <button style={{ fontFamily: BODY }}
+                className="pb-btn pb-btn-primary pb-btn-lg pb-btn-pill whitespace-nowrap">
                 {heroCta}
               </button>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
               <button style={{ fontFamily: BODY, color: textMuted, borderColor: primaryColor + '50' }}
-                className="px-7 py-4 text-xs uppercase tracking-widest rounded-full border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+                className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-pill whitespace-nowrap">
                 Mehr erfahren
               </button>
             </Skeleton>
@@ -3555,14 +3555,14 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
           <div className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[160px] h-12">
-              <button style={{ backgroundColor: primaryColor, fontFamily: BODY, fontWeight: 600, color: safeCs.onPrimary || '#ffffff' }}
-                className="px-8 py-3 text-xs uppercase tracking-wider shadow-xl hover:scale-105 transition-transform whitespace-nowrap">
+              <button style={{ fontFamily: BODY }}
+                className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">
                 {heroCta}
               </button>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="min-w-[130px] h-12">
               <button style={{ fontFamily: BODY, color: textMuted, borderColor: `${primaryColor}50` }}
-                className="px-7 py-3 text-xs uppercase tracking-wider border-2 hover:opacity-70 transition-opacity whitespace-nowrap">
+                className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-square whitespace-nowrap">
                 Mehr erfahren
               </button>
             </Skeleton>
@@ -3784,7 +3784,7 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
           className="flex flex-wrap gap-4 justify-center">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
             <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:700, color:'#fff' }}
-              className="px-10 py-4 rounded-full text-sm hover:scale-105 active:scale-95 transition-transform shadow-2xl whitespace-nowrap">
+              className="pb-btn pb-btn-lg pb-btn-pill whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
@@ -3847,7 +3847,7 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
             <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8 }} className="mb-8">{aboutContent}</p>
             <div className="flex justify-center lg:justify-start">
               <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:600, color:'#fff' }}
-                className="px-8 py-3.5 rounded-full text-sm hover:scale-105 transition-transform whitespace-nowrap">
+                className="px-8 py-3.5 rounded-full text-sm pb-btn whitespace-nowrap">
                 {heroCta}
               </button>
             </div>
@@ -3945,7 +3945,7 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
               </Skeleton>
               <Skeleton isLoading={isLoading} className="min-h-[2.5rem] min-w-[120px]">
                 <button style={{ backgroundColor:'#ffffff', color:primaryColor, fontFamily:BODY, fontWeight:700 }}
-                  className="px-7 py-3 rounded-full text-sm hover:scale-105 transition-transform whitespace-nowrap">
+                  className="px-7 py-3 rounded-full text-sm pb-btn whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
@@ -4098,7 +4098,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
             <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
               borderRadius:'50px', boxShadow:`0 8px 20px ${primaryColor}45` }}
-              className="hidden md:block px-6 py-2.5 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
+              className="hidden md:block px-6 py-2.5 text-sm pb-btn whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
@@ -4135,7 +4135,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
               <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
                 <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
                   borderRadius:'50px', boxShadow:`0 12px 30px ${primaryColor}45` }}
-                  className="px-10 py-4 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
+                  className="px-10 py-4 text-sm pb-btn whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
@@ -4202,7 +4202,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             <div className="flex justify-center lg:justify-start">
               <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
                 borderRadius:'50px', boxShadow:`0 10px 25px ${primaryColor}45` }}
-                className="px-8 py-3.5 text-sm hover:scale-105 transition-transform whitespace-nowrap">
+                className="px-8 py-3.5 text-sm pb-btn whitespace-nowrap">
                 {heroCta}
               </button>
             </div>
@@ -4448,7 +4448,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
           <Skeleton isLoading={isLoading} className="flex-shrink-0 min-w-[130px] h-10">
             <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY,
               fontWeight:600, color:'#fff', boxShadow:`0 6px 18px ${primaryColor}50`, borderRadius:'50px' }}
-              className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider hover:scale-105 transition-transform whitespace-nowrap">
+              className="hidden md:block px-6 py-2.5 text-xs uppercase tracking-wider pb-btn whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
@@ -4486,7 +4486,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
                 <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`,
                   fontFamily:BODY, fontWeight:700, color:'#fff', borderRadius:'50px',
                   boxShadow:`0 10px 28px ${primaryColor}50` }}
-                  className="px-10 py-4 text-sm hover:scale-105 active:scale-95 transition-transform whitespace-nowrap">
+                  className="px-10 py-4 text-sm pb-btn whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
@@ -4562,7 +4562,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
             <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`,
               fontFamily:BODY, fontWeight:700, color:'#fff', borderRadius:'50px',
               boxShadow:`0 10px 28px ${primaryColor}40` }}
-              className="px-8 py-3.5 text-sm hover:scale-105 transition-transform whitespace-nowrap">
+              className="px-8 py-3.5 text-sm pb-btn whitespace-nowrap">
               {heroCta}
             </button>
           </motion.div>
