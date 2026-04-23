@@ -844,6 +844,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const hasUserEmail = !!(isAuthenticated && user?.email);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (currentStep === "welcome" || currentStep === "checkout" || currentStep === "preview") return;
       e.preventDefault();
     };
 
@@ -2778,11 +2779,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         industryKey={industryKey}
         onConfirm={() => {
           setShowVariantPicker(false);
-          window.location.href = window.location.href;
+          refetchSiteData();
         }}
         onSkip={() => {
           setShowVariantPicker(false);
-          window.location.href = window.location.href;
+          refetchSiteData();
         }}
       />
     );
