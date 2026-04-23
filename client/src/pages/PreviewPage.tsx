@@ -126,6 +126,7 @@ export default function PreviewPage() {
   const websiteData = data.website.websiteData as WebsiteData;
   const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
   const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
+  const layoutVersion = (data.website as any).layoutVersion as number | null | undefined;
   const business = data.business;
 
   // Navigate to onboarding
@@ -273,6 +274,7 @@ export default function PreviewPage() {
         colorScheme={colorScheme}
         heroImageUrl={heroImageUrl}
         layoutStyle={layoutStyle}
+        layoutVersion={layoutVersion}
         businessPhone={business?.phone || undefined}
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}

@@ -63,6 +63,7 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   heroImageUrl: text("heroImageUrl"),
   aboutImageUrl: text("aboutImageUrl"),
   layoutStyle: varchar("layoutStyle", { length: 50 }).default("classic"),
+  layoutVersion: int("layoutVersion").notNull().default(1),
   // Onboarding & subscription state
   onboardingStatus: mysqlEnum("onboardingStatus", ["pending", "in_progress", "completed"]).default("pending"),
   hasLegalPages: boolean("hasLegalPages").default(false),

@@ -7,6 +7,12 @@
  * are defined. All consumers (WebsiteRenderer, routers.ts LLM prompt,
  * sanitize logic) import from here.
  *
+ * LAYOUT VERSIONING: Bump this when releasing breaking layout changes.
+ * Existing websites keep their stored version; new websites get this value.
+ */
+export const CURRENT_LAYOUT_VERSION = 1;
+
+/**
  * To update fonts for a layout: edit ONLY this file.
  * ─────────────────────────────────────────────────────────────────────────────
  */

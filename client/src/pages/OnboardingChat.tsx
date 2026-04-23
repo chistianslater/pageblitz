@@ -5919,6 +5919,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     heroImageUrl={data.heroPhotoUrl || heroImageUrl}
                     aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
                     layoutStyle={layoutStyle}
+                    layoutVersion={(siteData?.website as any)?.layoutVersion ?? undefined}
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
                     isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}

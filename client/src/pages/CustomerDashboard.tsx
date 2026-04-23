@@ -3141,6 +3141,7 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
             heroImageUrl={heroImageUrl}
             aboutImageUrl={aboutImageUrl}
             layoutStyle={draftLayout}
+            layoutVersion={(website as any)?.layoutVersion ?? undefined}
             headlineSize={draftFonts.headlineSize as any}
             headlineFontOverride={draftFonts.headlineFont || undefined}
             businessPhone={business?.phone || undefined}
@@ -4479,6 +4480,7 @@ export default function CustomerDashboard() {
                       heroImageUrl={website.heroImageUrl || undefined}
                       aboutImageUrl={(website as any).aboutImageUrl || undefined}
                       layoutStyle={(website as any).layoutStyle || undefined}
+                      layoutVersion={(website as any)?.layoutVersion ?? undefined}
                       businessPhone={business?.phone || undefined}
                       businessAddress={business?.address || undefined}
                       businessEmail={business?.email || undefined}

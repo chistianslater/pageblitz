@@ -40,7 +40,7 @@ import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
 import { registerUmamiWebsite, getUmamiStats } from "./umami";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
-import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG } from "@shared/layoutConfig";
+import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG, CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import { searchStockPhotos } from "./_core/stockPhotos";
 import Stripe from "stripe";
@@ -1987,6 +1987,7 @@ export const appRouter = router({
           addons: [],
           heroImageUrl: finalHeroImageUrl,
           layoutStyle,
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
 
         return { websiteId, slug, previewToken, heroImageUrl: finalHeroImageUrl, layoutStyle };
@@ -2328,6 +2329,7 @@ export const appRouter = router({
               addons: [],
               heroImageUrl,
               layoutStyle,
+              layoutVersion: CURRENT_LAYOUT_VERSION,
             });
 
             const jobId = await createGenerationJob({
@@ -4937,6 +4939,7 @@ Wichtige Felder im JSON:
           source: input.source,
           customerEmail: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
           captureStatus: (input.customerEmail || isLoggedIn) ? "email_captured" : undefined,
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
 
         // If user is logged in, create a subscription to link website to user
@@ -5072,6 +5075,7 @@ Wichtige Felder im JSON:
           source: "external",
           customerEmail: input.email,
           captureStatus: "email_captured",
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
         // Lifecycle-Email-Sequenz starten (fire-and-forget)
         try {
