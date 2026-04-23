@@ -271,16 +271,14 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         transition={{ duration: 1.2 }}
       >
         <Skeleton isLoading={isLoading} className="absolute inset-0">
-          <div className="photo-frame absolute inset-0">
-            <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
-          </div>
-          {/* Gradient blend at left edge — wider, smoother */}
-          <div className="absolute inset-y-0 left-0 w-24 pointer-events-none"
-            style={{ backgroundImage: dark ? 'linear-gradient(to right, rgba(10,10,10,0.8), transparent)' : 'linear-gradient(to right, rgba(248,249,250,0.7), transparent)' }} />
-          {/* Bottom gradient for depth */}
-          <div className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
-            style={{ backgroundImage: dark ? 'linear-gradient(to top, rgba(10,10,10,0.5), transparent)' : 'linear-gradient(to top, rgba(248,249,250,0.3), transparent)' }} />
+          <img src={heroImageUrl} className="photo-editorial absolute inset-0 w-full h-full object-cover" alt="" />
         </Skeleton>
+        {/* Gradient blend at left edge — wider, smoother */}
+        <div className="absolute inset-y-0 left-0 w-24 pointer-events-none z-[1]"
+          style={{ backgroundImage: dark ? 'linear-gradient(to right, rgba(10,10,10,0.8), transparent)' : 'linear-gradient(to right, rgba(248,249,250,0.7), transparent)' }} />
+        {/* Bottom gradient for depth */}
+        <div className="absolute inset-x-0 bottom-0 h-32 pointer-events-none z-[1]"
+          style={{ backgroundImage: dark ? 'linear-gradient(to top, rgba(10,10,10,0.5), transparent)' : 'linear-gradient(to top, rgba(248,249,250,0.3), transparent)' }} />
 
         {/* Primary color block — top-left corner accent with gradient */}
         {!isLoading && (
@@ -359,10 +357,8 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         {/* Hero image — with photo-frame treatment and accent border */}
         <div className="relative w-full">
-          <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-2xl overflow-hidden">
-            <div className="photo-frame w-full aspect-video rounded-2xl overflow-hidden shadow-2xl" style={{ boxShadow: `0 25px 60px -12px rgba(0,0,0,0.25), 0 0 0 1px ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-              <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
-            </div>
+          <Skeleton isLoading={isLoading} className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl" style={{ boxShadow: `0 25px 60px -12px rgba(0,0,0,0.25), 0 0 0 1px ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+            <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" alt="" />
           </Skeleton>
         </div>
       </motion.div>
@@ -385,9 +381,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
     <section id="hero" className="min-h-screen flex items-center relative overflow-hidden py-28 lg:py-32">
       {/* Full-bleed background — higher opacity for impact */}
       <div className="absolute inset-0 z-0">
-        <div className="photo-frame absolute inset-0">
-          <img src={heroImageUrl} className="photo-editorial w-full h-full object-cover" style={{ opacity: 0.45 }} alt="" />
-        </div>
+        <img src={heroImageUrl} className="w-full h-full object-cover" style={{ opacity: 0.45 }} alt="" />
         <div className={`absolute inset-0 ${bgGradient}`} />
         {/* Extra vignette for cinematic depth */}
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 30% 40%, transparent 40%, rgba(0,0,0,0.3) 100%)' }} />
@@ -694,7 +688,7 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
   // Variant 0: Horizontal Steps (Current)
   if (variant === 0) {
     return (
-      <section id="process" className={`pb-section-tight ${bgClass}`} style={bgStyle}>
+      <section id="process" className={`py-24 md:py-32 px-6 ${bgClass}`} style={bgStyle}>
         <div className="max-w-7xl mx-auto">
           <Skeleton isLoading={isLoading} className="w-full max-w-2xl h-24 mx-auto mb-8">
             <h2 className={`text-3xl md:text-4xl text-center ${textMain}`} style={{ ...hs, ...textMainStyle }}>
@@ -3356,7 +3350,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           </Skeleton>
 
           <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-10">
-            <p style={{ fontFamily: BODY, color: textMuted, fontStyle: 'italic' }} className="text-lg leading-relaxed max-w-sm mb-0">
+            <p style={{ fontFamily: BODY, color: textMuted, fontStyle: 'italic' }} className="text-lg leading-relaxed max-w-sm mb-10">
               {hero?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
@@ -3571,7 +3565,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           {!isLoading && <div className="w-full h-px mb-8" style={{ backgroundColor: primaryColor, opacity: 0.3 }} />}
 
           <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3rem] mb-10">
-            <p style={{ fontFamily: BODY, color: textMuted, fontSize: '1rem' }} className="leading-relaxed max-w-md mb-0">
+            <p style={{ fontFamily: BODY, color: textMuted, fontSize: '1rem' }} className="leading-relaxed max-w-md mb-10">
               {hero?.subheadline || websiteData.tagline}
             </p>
           </Skeleton>
@@ -3799,7 +3793,7 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         </Skeleton>
         <Skeleton isLoading={isLoading} className="w-2/3 mx-auto min-h-[4rem] mb-10">
           <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.8, delay:0.3 }}
-            style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8 }} className="text-lg max-w-2xl mx-auto mb-0">
+            style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.8 }} className="text-lg max-w-2xl mx-auto mb-10">
             {hero?.subheadline || websiteData.tagline}
           </motion.p>
         </Skeleton>
@@ -4149,8 +4143,8 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
                 {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
               </h1>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-8">
-              <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.75, fontSize:'1.05rem' }} className="mb-0">
+            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-10">
+              <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.75, fontSize:'1.05rem' }} className="mb-10">
                 {hero?.subheadline || websiteData.tagline}
               </p>
             </Skeleton>
@@ -4499,8 +4493,8 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
                 {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
               </h1>
             </Skeleton>
-            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-10">
-              <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.75, fontSize:'1.05rem' }} className="mb-0">
+            <Skeleton isLoading={isLoading} className="w-3/4 min-h-[3.5rem] mb-12">
+              <p style={{ fontFamily:BODY, color:TXT_M, lineHeight:1.75, fontSize:'1.05rem' }} className="mb-10">
                 {hero?.subheadline || websiteData.tagline}
               </p>
             </Skeleton>
