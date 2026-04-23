@@ -4,10 +4,10 @@
  * No more generic AI aesthetics – each layout has a unique typographic identity.
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { trpc } from '@/lib/trpc';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   Phone, Star, Zap,
   Award, Clock, MapPin, Utensils, Flower,
@@ -19,6 +19,42 @@ import {
 } from 'lucide-react';
 import { getVariantIndex } from '../../lib/layoutUtils';
 import { colorTokenStyle } from '../../lib/designTokens';
+
+// ── Micro-Interaction Helpers ────────────────────────────────────────────────
+
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
+const staggerItem = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
+
+function AnimatedCounter({ value, suffix = '', duration = 1.5 }: { value: string; suffix?: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-50px' });
+  const [display, setDisplay] = useState('0');
+  const numericPart = parseFloat(value.replace(/[^0-9.,]/g, '').replace(',', '.'));
+  const prefix = value.replace(/[0-9.,]+.*/, '');
+
+  useEffect(() => {
+    if (!inView || isNaN(numericPart)) { setDisplay(value); return; }
+    const start = performance.now();
+    const isFloat = value.includes(',') || (value.includes('.') && !value.includes('.0'));
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = numericPart * eased;
+      setDisplay(isFloat ? current.toFixed(1).replace('.', ',') : Math.round(current).toString());
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [inView]);
+
+  if (isNaN(numericPart)) return <span ref={ref}>{value}</span>;
+  return <span ref={ref}>{prefix}{display}{suffix}</span>;
+}
 
 // ── SKELETON ────────────────────────────────────────────────────
 const Skeleton = ({ isLoading, children, className = "" }: { isLoading: boolean, children: React.ReactNode, className?: string }) => {
@@ -486,22 +522,28 @@ function ServicesVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, h
               : <>Unsere <span style={{ color: safeCs.primary }}>Leistungen</span></>}
           </h2>
         </Skeleton>
-        <div className="grid md:grid-cols-3 gap-6 md:gap-8 gap-y-10 md:gap-y-12">
+        <motion.div
+          className="grid md:grid-cols-3 gap-6 md:gap-8 gap-y-10 md:gap-y-12"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+        >
           {services.map((service: any, i: number) => {
             const ServiceIcon = serviceIconSet[i % serviceIconSet.length] as any;
             return (
               <Skeleton key={i} isLoading={isLoading} className="min-h-[18rem]">
-                <div className={`p-8 md:p-10 rounded-2xl shadow-sm pb-card-lift group ${cardBgClass}`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
+                <motion.div variants={staggerItem} className={`p-8 md:p-10 rounded-2xl shadow-sm pb-card-lift group ${cardBgClass}`} style={{ ...cardBgStyle, border: `1px solid ${cardBorderColor}` }}>
                   <div className="w-14 h-14 rounded-full mb-6 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform" style={{ backgroundColor: safeCs.primary + '15' }}>
                     <ServiceIcon size={28} style={{ color: safeCs.primary }} />
                   </div>
                   <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-4">{service.title}</h3>
                   <p style={{ fontFamily: bodyFont, color: textMuted }} className="leading-relaxed">{service.description}</p>
-                </div>
+                </motion.div>
               </Skeleton>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -538,20 +580,21 @@ function ServicesVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, h
           <div className="h-px flex-1 hidden md:block mb-4" style={{ backgroundColor: dividerColor }} />
           <p className="uppercase tracking-widest text-xs font-bold mb-4" style={{ color: textMuted }}>Professionelle Lösungen</p>
         </div>
-        <div style={{ borderTop: `1px solid ${dividerColor}` }}>
+        <motion.div style={{ borderTop: `1px solid ${dividerColor}` }}
+          variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}>
           {services.map((service: any, i: number) => (
             <Skeleton key={i} isLoading={isLoading} className="min-h-[8rem]">
-              <div className="py-8 flex flex-col md:flex-row md:items-center gap-8 group px-4 transition-colors" style={{ borderBottom: `1px solid ${dividerColor}`, '--hover-bg': hoverBgColor } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverBgColor }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}>
+              <motion.div variants={staggerItem} className="py-8 flex flex-col md:flex-row md:items-center gap-8 group px-4 transition-colors" style={{ borderBottom: `1px solid ${dividerColor}` } as React.CSSProperties} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverBgColor }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}>
                 <span style={{ fontFamily: displayFont, fontWeight: 900, color: safeCs.primary }} className="text-4xl opacity-20 group-hover:opacity-100 transition-opacity">0{i + 1}</span>
                 <div className="flex-1">
                   <h3 style={{ fontFamily: displayFont, fontWeight: 700, fontSize: '1.5rem', color: textColor }} className="mb-2 uppercase">{service.title}</h3>
                   <p style={{ fontFamily: bodyFont, color: textMuted }} className="max-w-2xl">{service.description}</p>
                 </div>
                 <ArrowRight size={24} style={{ color: safeCs.primary }} className="shrink-0 opacity-0 group-hover:opacity-100 transition-all translate-x-[-20px] group-hover:translate-x-0" />
-              </div>
+              </motion.div>
             </Skeleton>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -696,10 +739,11 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
             </h2>
           </Skeleton>
           <div className="h-12 md:h-16" />
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+          <motion.div className="grid md:grid-cols-3 gap-8 md:gap-12"
+            variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
             {items.map((item: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-44">
-                <div className="flex flex-col items-center text-center relative">
+                <motion.div variants={staggerItem} className="flex flex-col items-center text-center relative">
                   {i < items.length - 1 && (
                     <div className="hidden md:block absolute top-7 left-[60%] w-[80%] border-t-2 border-dashed"
                       style={{ borderColor: safeCs.primary + '40' }} />
@@ -710,10 +754,10 @@ function ProcessSection({ websiteData, cs, isLoading, dark = false, displayFont 
                   </div>
                   <h3 className={`text-lg mb-2 ${textMain}`} style={{ ...hs, ...textMainStyle }}>{item.title}</h3>
                   <p className={`text-sm leading-relaxed ${textSub}`} style={{ ...textSubStyle, fontFamily: bodyFont }}>{item.description}</p>
-                </div>
+                </motion.div>
               </Skeleton>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
     );
@@ -825,12 +869,12 @@ function GoogleTrustBadge({ websiteData, cs, isLoading, dark = false }: any) {
             </div>
             <div className={`w-px h-10 ${dividerClass}`} style={dividerStyle} />
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-black leading-none" style={{ color: safeCs.primary }}>{displayRating}</span>
+              <span className="text-3xl font-black leading-none" style={{ color: safeCs.primary }}><AnimatedCounter value={displayRating} /></span>
               <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`} style={textSubStyle}>Bewertung</span>
             </div>
             <div className={`w-px h-10 ${dividerClass}`} style={dividerStyle} />
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-black leading-none" style={{ color: safeCs.primary }}>{displayCount}</span>
+              <span className="text-3xl font-black leading-none" style={{ color: safeCs.primary }}><AnimatedCounter value={displayCount} suffix={displayCount.endsWith('+') ? '' : ''} /></span>
               <span className={`text-[10px] uppercase tracking-widest mt-1 ${textSub}`} style={textSubStyle}>Rezensionen</span>
             </div>
           </div>
@@ -1358,12 +1402,12 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
               </h2>
             </div>
           </Skeleton>
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+          <motion.div className="grid md:grid-cols-3 gap-8 md:gap-12"
+            variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}>
             {items?.length > 0 ? items.map((t: any, i: number) => (
               <Skeleton key={i} isLoading={isLoading} className="h-64">
                 {dark ? (
-                  // Dark variant: semi-transparent card, text inherits from theme (already light)
-                  <div className={`p-10 border ${border} ${safeCs.darkSurface ? '' : 'bg-white/5'} hover:shadow-xl transition-all duration-500 rounded-2xl`} style={safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface, borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : undefined}>
+                  <motion.div variants={staggerItem} className={`p-10 border ${border} ${safeCs.darkSurface ? '' : 'bg-white/5'} pb-card-lift rounded-2xl`} style={safeCs.darkSurface ? { backgroundColor: safeCs.darkSurface, borderColor: safeCs.lightTextMuted || 'rgba(255,255,255,0.1)' } : undefined}>
                     <div className="flex gap-1 mb-6">
                       {[...Array(t.rating || 5)].map((_, j) => <Star key={j} size={16} fill="currentColor" className="text-yellow-500" />)}
                     </div>
@@ -1377,19 +1421,20 @@ function TestimonialsSection({ websiteData, cs, isLoading, heading, dark = false
                         <p className="text-xs uppercase tracking-widest" style={{ opacity: 0.4, color: safeCs.lightTextMuted || '#ffffff' }}>Kunde</p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ) : (
-                  // Light variant: white card — use ReviewCard to force dark text and add Weiterlesen
-                  <ReviewCard
-                    review={{ text: t.description || t.title, author: t.author, rating: t.rating }}
-                    cs={safeCs}
-                    cardBg="#ffffff"
-                    cardBorder={safeCs.border || '#e5e7eb'}
-                  />
+                  <motion.div variants={staggerItem}>
+                    <ReviewCard
+                      review={{ text: t.description || t.title, author: t.author, rating: t.rating }}
+                      cs={safeCs}
+                      cardBg="#ffffff"
+                      cardBorder={safeCs.border || '#e5e7eb'}
+                    />
+                  </motion.div>
                 )}
               </Skeleton>
             )) : null}
-          </div>
+          </motion.div>
         </div>
       </section>
     );
