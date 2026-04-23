@@ -834,6 +834,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
+  const [exitIntentEmail, setExitIntentEmail] = useState("");
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   // Only show exit-intent overlay once per session (not on every upward mouse move)
   const exitIntentShownRef = useRef(false);
@@ -6056,19 +6057,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <input
                           type="email"
                           placeholder="deine@email.de"
-                          value={data.email}
-                          onChange={(e) => setData(p => ({ ...p, email: e.target.value }))}
+                          value={exitIntentEmail}
+                          onChange={(e) => setExitIntentEmail(e.target.value)}
                           className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500"
                         />
                         <button
                           onClick={async () => {
-                            if (!data.email || !data.email.includes("@")) {
+                            const email = exitIntentEmail.trim();
+                            if (!email || !email.includes("@") || !email.includes(".")) {
                               toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
                               return;
                             }
-                            await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
+                            setData(p => ({ ...p, email }));
+                            await trySaveStep(STEP_ORDER.indexOf("email"), { email });
                             if (websiteId) {
-                              saveCustomerEmailMutation.mutate({ websiteId, email: data.email });
+                              saveCustomerEmailMutation.mutate({ websiteId, email });
                             }
                             toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
                             setShowExitIntent(false);
