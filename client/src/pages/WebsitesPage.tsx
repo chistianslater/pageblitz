@@ -127,13 +127,13 @@ export default function WebsitesPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="backlog" className="space-y-4">
+      <Tabs defaultValue="external" className="space-y-4">
         <TabsList className="bg-muted/50 border border-border h-auto p-1 gap-1">
-          <TabsTrigger value="backlog" className="flex items-center gap-2 data-[state=active]:bg-background">
-            <Database className="h-4 w-4" />
-            GMB-Backlog
+          <TabsTrigger value="external" className="flex items-center gap-2 data-[state=active]:bg-background">
+            <Users className="h-4 w-4" />
+            Extern-generiert
             <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0 h-5">
-              {businessesWithoutWebsite.length}
+              {externalWebsites.length}
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="admin" className="flex items-center gap-2 data-[state=active]:bg-background">
@@ -143,11 +143,11 @@ export default function WebsitesPage() {
               {adminWebsites.length}
             </Badge>
           </TabsTrigger>
-          <TabsTrigger value="external" className="flex items-center gap-2 data-[state=active]:bg-background">
-            <Users className="h-4 w-4" />
-            Extern-generiert
+          <TabsTrigger value="backlog" className="flex items-center gap-2 data-[state=active]:bg-background">
+            <Database className="h-4 w-4" />
+            GMB-Backlog
             <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0 h-5">
-              {externalWebsites.length}
+              {businessesWithoutWebsite.length}
             </Badge>
           </TabsTrigger>
         </TabsList>

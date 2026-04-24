@@ -2128,6 +2128,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     addons: { icon: "⚡", title: "Abschnitt 3: Extras & Fertigstellung", subtitle: "Optionale Features und letzter Schliff" },
   };
 
+  const logStepMutation = trpc.onboarding.logStep.useMutation();
+
   const advanceToStep = useCallback(
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
@@ -2137,6 +2139,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (onboardingStorageKey) {
         localStorage.setItem(onboardingStorageKey, nextStep);
       }
+
+      // ── Analytics: track step progression ──
+      const stepIdx = STEP_ORDER.indexOf(nextStep as any);
+      if (websiteId && stepIdx >= 0) {
+        logStepMutation.mutate({ websiteId, step: nextStep, stepIndex: stepIdx, event: "reached" });
+      }
+      try {
+        (window as any).gtag?.("event", "onboarding_step", { step_name: nextStep, step_index: stepIdx });
+        (window as any).clarity?.("set", "onboarding_step", nextStep);
+      } catch {}
 
       // If this step has a section divider, inject it as a special message type
       const divider = SECTION_DIVIDERS[nextStep];

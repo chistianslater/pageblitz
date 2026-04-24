@@ -10,6 +10,7 @@ import {
   templateUploads, InsertTemplateUpload, TemplateUpload,
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
+  onboardingEvents, InsertOnboardingEvent,
   generationJobs, InsertGenerationJob, GenerationJob,
   contactSubmissions, InsertContactSubmission, ContactSubmission,
   magicLinkTokens,
@@ -899,4 +900,45 @@ export async function getBusinessesForOutreach(limit: number) {
       )
     )
     .limit(limit);
+}
+
+// ── Onboarding Step Events ────────────────────────────────────────────────
+
+export async function logOnboardingEvent(data: InsertOnboardingEvent) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(onboardingEvents).values(data);
+}
+
+export async function getStepFunnelStats() {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select({
+    step: onboardingEvents.step,
+    stepIndex: onboardingEvents.stepIndex,
+    count: sql<number>`count(DISTINCT ${onboardingEvents.websiteId})`,
+  })
+    .from(onboardingEvents)
+    .where(eq(onboardingEvents.event, "reached"))
+    .groupBy(onboardingEvents.step, onboardingEvents.stepIndex)
+    .orderBy(onboardingEvents.stepIndex);
+  return result;
+}
+
+// ── Cleanup: Delete old preview websites ──────────────────────────────────
+
+export async function deleteExpiredPreviews(olderThanDays = 30) {
+  const db = await getDb();
+  if (!db) return 0;
+  const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
+  const expired = await db.select({ id: generatedWebsites.id })
+    .from(generatedWebsites)
+    .where(and(
+      eq(generatedWebsites.status, "preview"),
+      sql`${generatedWebsites.createdAt} < ${cutoff}`
+    ));
+  for (const w of expired) {
+    await deleteWebsite(w.id);
+  }
+  return expired.length;
 }

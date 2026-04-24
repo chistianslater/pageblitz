@@ -10,6 +10,7 @@ import {
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
   listWebsites, countWebsites, updateWebsite, canActivateWebsite,
   listUsers, countUsers, getUserById, updateUser, deleteUser,
+  logOnboardingEvent, getStepFunnelStats, deleteExpiredPreviews,
   createOutreachEmail, listOutreachEmails, countOutreachEmails, getOutreachEmailByWebsiteId, updateOutreachEmail,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
@@ -1309,6 +1310,15 @@ export const appRouter = router({
     dashboard: adminProcedure.query(async () => {
       return getDashboardStats();
     }),
+    stepFunnel: adminProcedure.query(async () => {
+      return getStepFunnelStats();
+    }),
+    cleanup: adminProcedure
+      .input(z.object({ olderThanDays: z.number().min(1).default(30) }).optional())
+      .mutation(async ({ input }) => {
+        const deleted = await deleteExpiredPreviews(input?.olderThanDays ?? 30);
+        return { deleted };
+      }),
   }),
 
   // ── Admin: User Management ──────────────────────────
@@ -2927,6 +2937,18 @@ Kontext: ${input.context}`,
         }
 
         return { email: null, source: null };
+      }),
+
+    logStep: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        step: z.string(),
+        stepIndex: z.number(),
+        event: z.enum(["reached", "completed", "skipped"]).default("reached"),
+      }))
+      .mutation(async ({ input }) => {
+        await logOnboardingEvent(input);
+        return { success: true };
       }),
 
     saveStep: publicProcedure

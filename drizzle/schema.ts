@@ -195,6 +195,17 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
 export type OnboardingResponse = typeof onboardingResponses.$inferSelect;
 export type InsertOnboardingResponse = typeof onboardingResponses.$inferInsert;
 
+export const onboardingEvents = mysqlTable("onboarding_events", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  step: varchar("step", { length: 50 }).notNull(),
+  stepIndex: int("stepIndex").notNull(),
+  event: mysqlEnum("event", ["reached", "completed", "skipped"]).notNull().default("reached"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type OnboardingEvent = typeof onboardingEvents.$inferSelect;
+export type InsertOnboardingEvent = typeof onboardingEvents.$inferInsert;
+
 export const outreachEmails = mysqlTable("outreach_emails", {
   id: int("id").autoincrement().primaryKey(),
   businessId: int("businessId").notNull(),
