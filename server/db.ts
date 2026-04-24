@@ -253,6 +253,18 @@ export async function updateWebsite(id: number, data: Partial<InsertGeneratedWeb
   await db.update(generatedWebsites).set(data).where(eq(generatedWebsites.id, id));
 }
 
+export async function canActivateWebsite(websiteId: number): Promise<{ ok: boolean; reason?: string }> {
+  const db = await getDb();
+  if (!db) return { ok: false, reason: "DB not available" };
+  const [website] = await db.select().from(generatedWebsites).where(eq(generatedWebsites.id, websiteId)).limit(1);
+  if (!website) return { ok: false, reason: "Website nicht gefunden" };
+  if (!website.customerEmail) return { ok: false, reason: "Keine E-Mail-Adresse hinterlegt" };
+  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.websiteId, websiteId)).limit(1);
+  if (!sub) return { ok: false, reason: "Kein Abonnement vorhanden" };
+  if (!["active", "trialing", "canceling"].includes(sub.status)) return { ok: false, reason: `Abonnement-Status ist '${sub.status}', nicht aktiv` };
+  return { ok: true };
+}
+
 /** Returns website + its business in a single call – used by server-side SEO meta injection */
 export async function getWebsiteBySlugWithBusiness(slug: string) {
   const db = await getDb();

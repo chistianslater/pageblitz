@@ -8,7 +8,7 @@ import {
   upsertBusiness, getBusinessById, listBusinesses, countBusinesses, updateBusiness,
   getBusinessIdsWithWebsite,
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
-  listWebsites, countWebsites, updateWebsite,
+  listWebsites, countWebsites, updateWebsite, canActivateWebsite,
   createOutreachEmail, listOutreachEmails, countOutreachEmails, getOutreachEmailByWebsiteId, updateOutreachEmail,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
@@ -3183,8 +3183,12 @@ Kontext: ${input.context}`,
           colorScheme: patchedColorScheme,
           onboardingStatus: "completed",
           hasLegalPages: !!(impressumHtml && datenschutzHtml),
-          status: "active",
         };
+        const activation = await canActivateWebsite(input.websiteId);
+        if (activation.ok) {
+          websiteUpdateData.status = "active";
+          websiteUpdateData.captureStatus = "converted";
+        }
         // Persist hero and about photo URLs chosen during onboarding
         if (onboarding.heroPhotoUrl) websiteUpdateData.heroImageUrl = onboarding.heroPhotoUrl;
         if (onboarding.aboutPhotoUrl) websiteUpdateData.aboutImageUrl = onboarding.aboutPhotoUrl;
@@ -3780,7 +3784,10 @@ Kontext: ${input.context}`,
         const rows = await getWebsitesByUserId(ctx.user.id);
         if (!rows.find(r => r.website.id === input.websiteId))
           throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
-        await updateWebsite(input.websiteId, { status: "active" });
+        const activation = await canActivateWebsite(input.websiteId);
+        if (!activation.ok)
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: activation.reason || "Website kann nicht aktiviert werden" });
+        await updateWebsite(input.websiteId, { status: "active", captureStatus: "converted" });
         return { success: true };
       }),
 
