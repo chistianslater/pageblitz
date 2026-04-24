@@ -358,17 +358,27 @@ export async function getOutreachEmailByWebsiteId(websiteId: number) {
 }
 
 // ── Stats ──────────────────────────────────────────────
+export async function countPaidWebsites() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(subscriptions)
+    .where(sql`${subscriptions.status} IN ('active', 'trialing', 'canceling')`);
+  return result[0]?.count ?? 0;
+}
+
 export async function getDashboardStats() {
-  const [totalLeads, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails] = await Promise.all([
+  const [totalLeads, totalWebsites, previewCount, activeCount, soldCount, paidCount, totalEmails, sentEmails] = await Promise.all([
     countExternalLeads(),
     countWebsites("external"),
     countWebsitesByStatus("preview", "external"),
     countWebsitesByStatus("active", "external"),
     countWebsitesByStatus("sold", "external"),
+    countPaidWebsites(),
     countOutreachEmails(),
     countOutreachEmailsByStatus("sent"),
   ]);
-  return { totalBusinesses: totalLeads, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails };
+  return { totalBusinesses: totalLeads, totalWebsites, previewCount, activeCount, soldCount, paidCount, totalEmails, sentEmails };
 }
 
 // ── Template Uploads ───────────────────────────────────
