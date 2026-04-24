@@ -94,8 +94,7 @@ const LAYOUT_VIBES: Record<string, string> = {
  */
 const DESKTOP_IFRAME_W = 1280;
 const MOBILE_IFRAME_W  = 390;
-const DESKTOP_IFRAME_H = 3000;
-const MOBILE_IFRAME_H  = 3000;
+const PREVIEW_IFRAME_H = 2400;
 
 function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, onSkip }: {
   websiteId: number;
@@ -106,27 +105,19 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
   onConfirm: (layoutStyle: string) => void;
   onSkip: () => void;
 }) {
-  const [round, setRound]         = useState(() => Math.floor(Math.random() * 5));
-  const [activeIdx, setActiveIdx] = useState(0);
-  const cardRef                   = useRef<HTMLDivElement>(null);
-  const [scale, setScale]         = useState(0.3);
-  const [iframeW, setIframeW]     = useState(MOBILE_IFRAME_W);
-  const [iframeH, setIframeH]     = useState(MOBILE_IFRAME_H);
-  const selectMutation            = trpc.selfService.selectWebsiteTemplate.useMutation();
+  const [round, setRound] = useState(() => Math.floor(Math.random() * 5));
+  const [selected, setSelected] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [cardWidth, setCardWidth] = useState(320);
+  const selectMutation = trpc.selfService.selectWebsiteTemplate.useMutation();
 
-  // On narrow cards (phones) use a 390 px mobile iframe so the layout is readable.
-  // On wider cards (desktop) use the full 1280 px desktop iframe.
   useEffect(() => {
-    const el = cardRef.current;
+    const el = containerRef.current;
     if (!el) return;
     const update = () => {
       const cw = el.clientWidth;
-      const mobile = cw < 600;
-      const iw = mobile ? MOBILE_IFRAME_W : DESKTOP_IFRAME_W;
-      const ih = mobile ? MOBILE_IFRAME_H : DESKTOP_IFRAME_H;
-      setIframeW(iw);
-      setIframeH(ih);
-      setScale(cw / iw);
+      const w = Math.floor((cw - 32) / 3);
+      setCardWidth(Math.max(200, Math.min(400, w)));
     };
     update();
     const ro = new ResizeObserver(update);
@@ -135,97 +126,73 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
   }, []);
 
   const variants = getVariantLayouts(industryKey, round);
-  const selected  = variants[activeIdx];
-
-  const goNext = () => setActiveIdx((i) => (i + 1) % variants.length);
-  const goPrev = () => setActiveIdx((i) => (i + variants.length - 1) % variants.length);
-  const handleOtherLayouts = () => { setRound((r) => r + 1); setActiveIdx(0); };
+  const handleOtherLayouts = () => { setRound((r) => r + 1); setSelected(null); };
 
   const handleConfirm = async () => {
+    if (!selected) return;
     const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected];
     try {
       await selectMutation.mutateAsync({ websiteId, layoutStyle: selected, colorScheme: cs ?? undefined });
-    } catch { /* non-critical */ }
+    } catch {}
     onConfirm(selected);
   };
 
-  const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected] as any)?.primary ?? "#6366f1";
+  const iframeW = DESKTOP_IFRAME_W;
+  const scale = cardWidth / iframeW;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col overflow-hidden select-none">
-
-      {/* ── Header ── */}
-      <div className="flex-shrink-0 pt-4 pb-2 px-6 text-center">
+      <div className="flex-shrink-0 pt-5 pb-3 px-6 text-center">
         <h1 className="text-xl font-bold text-white mb-0.5">Welcher Stil passt zu dir?</h1>
         <p className="text-slate-400 text-xs max-w-sm mx-auto">
-          Farben &amp; Inhalte lassen sich jederzeit anpassen.
+          Klicke auf ein Design, um es auszuwählen. Farben &amp; Inhalte lassen sich jederzeit anpassen.
         </p>
       </div>
 
-      {/* ── Preview row — fills remaining vertical space, scrollable ── */}
-      <div className="flex-1 min-h-0 flex items-center gap-2 px-3 py-2">
-
-        {/* Prev arrow */}
-        <button type="button" onClick={goPrev}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        <div
-          ref={cardRef}
-          className="flex-1 self-stretch min-w-0 rounded-xl overflow-y-auto overflow-x-hidden relative"
-          style={{ boxShadow: `0 0 0 2px ${accentColor}44, 0 20px 48px -8px rgba(0,0,0,0.85)` }}
-        >
-          {variants.map((layout, i) => (
-            <iframe
-              key={`${round}-${layout}-${heroImageUrl ?? ""}`}
-              src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
-              width={iframeW}
-              height={iframeH}
+      <div ref={containerRef} className="flex-1 min-h-0 flex items-start justify-center gap-4 px-4 py-2 overflow-y-auto">
+        {variants.map((layout) => {
+          const isSelected = selected === layout;
+          const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout] as any)?.primary ?? "#6366f1";
+          return (
+            <button
+              key={`${round}-${layout}`}
+              type="button"
+              onClick={() => setSelected(layout)}
+              className={`flex-shrink-0 rounded-xl overflow-hidden transition-all duration-200 ${isSelected ? 'ring-2 ring-offset-2 ring-offset-slate-950 ring-blue-500 scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'}`}
               style={{
-                display: i === activeIdx ? "block" : "none",
-                transformOrigin: "top left",
-                transform: `scale(${scale})`,
-                width: iframeW,
-                height: iframeH * scale,
-                pointerEvents: "none",
-                border: "none",
+                width: cardWidth,
+                height: PREVIEW_IFRAME_H * scale,
+                boxShadow: isSelected ? `0 0 24px ${accentColor}40` : '0 8px 32px rgba(0,0,0,0.5)',
               }}
-              title={`Preview ${layout}`}
-            />
-          ))}
-        </div>
-
-        {/* Next arrow */}
-        <button type="button" onClick={goNext}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+            >
+              <iframe
+                src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
+                width={iframeW}
+                height={PREVIEW_IFRAME_H}
+                style={{
+                  transformOrigin: "top left",
+                  transform: `scale(${scale})`,
+                  pointerEvents: "none",
+                  border: "none",
+                  display: "block",
+                }}
+                title={`Preview ${layout}`}
+              />
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Dot indicators + layout name ── */}
-      <div className="flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-1">
-        <div className="flex gap-2">
-          {variants.map((_, i) => (
-            <button key={i} type="button" onClick={() => setActiveIdx(i)}
-              className={`rounded-full transition-all ${i === activeIdx ? "w-5 h-2 bg-blue-400" : "w-2 h-2 bg-slate-600 hover:bg-slate-500"}`} />
-          ))}
-        </div>
-        <div className="text-center">
-          <span className="text-white text-sm font-semibold">{LAYOUT_LABELS[selected] ?? selected}</span>
-          <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
-        </div>
-      </div>
-
-      {/* ── Actions ── */}
-      <div className="flex-shrink-0 flex flex-col items-center gap-2 px-6 pt-1.5"
+      <div className="flex-shrink-0 flex flex-col items-center gap-1.5 px-6 pt-2"
         style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 1.25rem))" }}>
-        <button type="button" onClick={handleConfirm} disabled={selectMutation.isPending}
-          className="w-full max-w-xs py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2">
+        {selected && (
+          <div className="text-center mb-1">
+            <span className="text-white text-sm font-semibold">{LAYOUT_LABELS[selected] ?? selected}</span>
+            <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
+          </div>
+        )}
+        <button type="button" onClick={handleConfirm} disabled={!selected || selectMutation.isPending}
+          className="w-full max-w-xs py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-40 text-white font-bold text-sm transition-all flex items-center justify-center gap-2">
           {selectMutation.isPending ? (
             <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Wird gespeichert…</>
           ) : (
