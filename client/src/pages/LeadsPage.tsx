@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import {
   Mail, Loader2, ArrowRight, CheckCircle, ShoppingCart, AlertTriangle, Users,
-  TrendingUp, Eye, ExternalLink, ChevronRight
+  TrendingUp, Eye, ExternalLink, ChevronRight, BarChart3
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -77,6 +77,7 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [updateDialogLead, setUpdateDialogLead] = useState<any | null>(null);
   const [newStatus, setNewStatus] = useState<CaptureStatus>("email_captured");
+  const [progressWebsiteId, setProgressWebsiteId] = useState<number | null>(null);
 
   const { data: funnelData, isLoading: funnelLoading } = trpc.leads.funnel.useQuery();
   const { data: leadsData, isLoading: leadsLoading } = trpc.leads.list.useQuery({
@@ -302,6 +303,9 @@ export default function LeadsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setProgressWebsiteId(lead.id)}>
+                              <BarChart3 className="h-3 w-3 mr-1" /> Fortschritt
+                            </Button>
                             {lead.previewToken && (
                               <Button variant="outline" size="sm" asChild>
                                 <a href={`/preview/${lead.previewToken}`} target="_blank" rel="noopener">
@@ -374,6 +378,42 @@ export default function LeadsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Progress Dialog */}
+      <Dialog open={progressWebsiteId !== null} onOpenChange={() => setProgressWebsiteId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Onboarding-Fortschritt</DialogTitle>
+            <DialogDescription>Erreichte Steps dieses Users</DialogDescription>
+          </DialogHeader>
+          {progressWebsiteId && <StepProgressDetail websiteId={progressWebsiteId} />}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function StepProgressDetail({ websiteId }: { websiteId: number }) {
+  const { data: events, isLoading } = trpc.onboarding.getStepEvents.useQuery({ websiteId });
+
+  if (isLoading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>;
+  if (!events || events.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">Keine Step-Daten vorhanden.</p>;
+
+  return (
+    <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
+      {events.map((ev: any, i: number) => (
+        <div key={ev.id} className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/30">
+          <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">{STEP_LABELS[ev.step] || ev.step}</p>
+            <p className="text-[10px] text-muted-foreground">
+              {new Date(ev.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          </div>
+          <span className="text-[10px] text-muted-foreground">Step {ev.stepIndex + 1}</span>
+        </div>
+      ))}
     </div>
   );
 }

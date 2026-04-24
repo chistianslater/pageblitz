@@ -904,6 +904,14 @@ export async function getBusinessesForOutreach(limit: number) {
 
 // ── Onboarding Step Events ────────────────────────────────────────────────
 
+export async function getStepEventsForWebsite(websiteId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(onboardingEvents)
+    .where(eq(onboardingEvents.websiteId, websiteId))
+    .orderBy(onboardingEvents.stepIndex);
+}
+
 export async function logOnboardingEvent(data: InsertOnboardingEvent) {
   const db = await getDb();
   if (!db) return;

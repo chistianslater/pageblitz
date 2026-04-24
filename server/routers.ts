@@ -10,7 +10,7 @@ import {
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
   listWebsites, countWebsites, updateWebsite, canActivateWebsite,
   listUsers, countUsers, getUserById, updateUser, deleteUser,
-  logOnboardingEvent, getStepFunnelStats, deleteExpiredPreviews,
+  logOnboardingEvent, getStepFunnelStats, getStepEventsForWebsite, deleteExpiredPreviews,
   createOutreachEmail, listOutreachEmails, countOutreachEmails, getOutreachEmailByWebsiteId, updateOutreachEmail,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
@@ -2949,6 +2949,12 @@ Kontext: ${input.context}`,
       .mutation(async ({ input }) => {
         await logOnboardingEvent(input);
         return { success: true };
+      }),
+
+    getStepEvents: adminProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        return getStepEventsForWebsite(input.websiteId);
       }),
 
     saveStep: publicProcedure
