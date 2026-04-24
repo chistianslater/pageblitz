@@ -55,27 +55,26 @@ export interface LayoutFontConfig {
  * - bodyFont: MUST always be a sans-serif font
  */
 export const LAYOUT_FONTS: Record<string, LayoutFontConfig> = {
-  elegant:  { headlineFont: "Fraunces",           bodyFont: "Outfit",           headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Outfit', 'Inter', sans-serif" },
-  luxury:   { headlineFont: "Fraunces",           bodyFont: "Outfit",           headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Outfit', 'Inter', sans-serif" },
-  warm:     { headlineFont: "Fraunces",           bodyFont: "Instrument Sans",  headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
-  natural:  { headlineFont: "Fraunces",           bodyFont: "Instrument Sans",  headlineCss: "'Fraunces', Georgia, serif",               bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
-  bold:     { headlineFont: "Space Grotesk",      bodyFont: "Plus Jakarta Sans", headlineCss: "'Space Grotesk', sans-serif",             bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
-  craft:    { headlineFont: "Bricolage Grotesque", bodyFont: "Instrument Sans", headlineCss: "'Bricolage Grotesque', 'Impact', sans-serif", bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
-  vibrant:  { headlineFont: "Bricolage Grotesque", bodyFont: "Plus Jakarta Sans", headlineCss: "'Bricolage Grotesque', sans-serif",      bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
-  dynamic:  { headlineFont: "Syne",              bodyFont: "Plus Jakarta Sans", headlineCss: "'Syne', Impact, sans-serif",              bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
-  fresh:    { headlineFont: "Plus Jakarta Sans", bodyFont: "Instrument Sans",  headlineCss: "'Plus Jakarta Sans', sans-serif",          bodyCss: "'Instrument Sans', 'Inter', sans-serif" },
-  modern:   { headlineFont: "Plus Jakarta Sans", bodyFont: "Inter",            headlineCss: "'Plus Jakarta Sans', sans-serif",          bodyCss: "'Inter', system-ui, sans-serif" },
-  trust:    { headlineFont: "Instrument Sans",   bodyFont: "Inter",            headlineCss: "'Instrument Sans', 'Inter', sans-serif",   bodyCss: "'Inter', system-ui, sans-serif" },
-  clean:    { headlineFont: "Instrument Sans",   bodyFont: "Inter",            headlineCss: "'Instrument Sans', 'Inter', sans-serif",   bodyCss: "'Inter', system-ui, sans-serif" },
-  eden:     { headlineFont: "DM Serif Display",  bodyFont: "DM Sans",          headlineCss: "'DM Serif Display', Georgia, serif",          bodyCss: "'DM Sans', 'Inter', sans-serif" },
-  apex:     { headlineFont: "Bebas Neue",         bodyFont: "Inter",            headlineCss: "'Bebas Neue', Impact, sans-serif",             bodyCss: "'Inter', system-ui, sans-serif" },
-  // New layouts (Phase 6)
-  aurora:   { headlineFont: "Space Grotesk",      bodyFont: "Inter",            headlineCss: "'Space Grotesk', sans-serif",                  bodyCss: "'Inter', system-ui, sans-serif" },
-  nexus:    { headlineFont: "Space Grotesk",      bodyFont: "Plus Jakarta Sans", headlineCss: "'Space Grotesk', sans-serif",                 bodyCss: "'Plus Jakarta Sans', 'Inter', sans-serif" },
-  clay:     { headlineFont: "Nunito",             bodyFont: "Outfit",            headlineCss: "'Nunito', 'Varela Round', sans-serif",         bodyCss: "'Outfit', 'Inter', sans-serif" },
-  forge:    { headlineFont: "Cormorant Garamond", bodyFont: "Space Grotesk",     headlineCss: "'Cormorant Garamond', Georgia, serif",         bodyCss: "'Space Grotesk', sans-serif" },
-  pulse:    { headlineFont: "Plus Jakarta Sans",  bodyFont: "Inter",             headlineCss: "'Plus Jakarta Sans', sans-serif",              bodyCss: "'Inter', system-ui, sans-serif" },
-  flux:     { headlineFont: "Syne",               bodyFont: "Inter",             headlineCss: "'Syne', Impact, sans-serif",                   bodyCss: "'Inter', system-ui, sans-serif" },
+  elegant:  { headlineFont: "Playfair Display",     bodyFont: "Lora",             headlineCss: "'Playfair Display', Georgia, serif",          bodyCss: "'Lora', Georgia, serif" },
+  luxury:   { headlineFont: "Cormorant Garamond",   bodyFont: "DM Sans",          headlineCss: "'Cormorant Garamond', Georgia, serif",       bodyCss: "'DM Sans', 'Inter', sans-serif" },
+  warm:     { headlineFont: "Lora",                 bodyFont: "Barlow",           headlineCss: "'Lora', Georgia, serif",                      bodyCss: "'Barlow', 'Inter', sans-serif" },
+  natural:  { headlineFont: "Libre Baskerville",    bodyFont: "Raleway",          headlineCss: "'Libre Baskerville', Georgia, serif",         bodyCss: "'Raleway', 'Inter', sans-serif" },
+  bold:     { headlineFont: "Oswald",               bodyFont: "Outfit",           headlineCss: "'Oswald', Impact, sans-serif",                bodyCss: "'Outfit', 'Inter', sans-serif" },
+  craft:    { headlineFont: "Bricolage Grotesque",  bodyFont: "Barlow",           headlineCss: "'Bricolage Grotesque', Impact, sans-serif",   bodyCss: "'Barlow', 'Inter', sans-serif" },
+  vibrant:  { headlineFont: "Syne",                 bodyFont: "Nunito",           headlineCss: "'Syne', Impact, sans-serif",                  bodyCss: "'Nunito', 'Inter', sans-serif" },
+  dynamic:  { headlineFont: "Bebas Neue",           bodyFont: "Jost",             headlineCss: "'Bebas Neue', Impact, sans-serif",            bodyCss: "'Jost', 'Inter', sans-serif" },
+  fresh:    { headlineFont: "Fraunces",             bodyFont: "Outfit",           headlineCss: "'Fraunces', Georgia, serif",                  bodyCss: "'Outfit', 'Inter', sans-serif" },
+  modern:   { headlineFont: "Space Grotesk",        bodyFont: "Raleway",          headlineCss: "'Space Grotesk', sans-serif",                 bodyCss: "'Raleway', 'Inter', sans-serif" },
+  trust:    { headlineFont: "DM Serif Display",     bodyFont: "Inter",            headlineCss: "'DM Serif Display', Georgia, serif",          bodyCss: "'Inter', system-ui, sans-serif" },
+  clean:    { headlineFont: "Jost",                 bodyFont: "Source Sans 3",    headlineCss: "'Jost', 'Inter', sans-serif",                 bodyCss: "'Source Sans 3', 'Inter', sans-serif" },
+  eden:     { headlineFont: "DM Serif Display",     bodyFont: "DM Sans",          headlineCss: "'DM Serif Display', Georgia, serif",          bodyCss: "'DM Sans', 'Inter', sans-serif" },
+  apex:     { headlineFont: "Bebas Neue",           bodyFont: "Barlow",           headlineCss: "'Bebas Neue', Impact, sans-serif",            bodyCss: "'Barlow', 'Inter', sans-serif" },
+  aurora:   { headlineFont: "Space Grotesk",        bodyFont: "Nunito",           headlineCss: "'Space Grotesk', sans-serif",                 bodyCss: "'Nunito', 'Inter', sans-serif" },
+  nexus:    { headlineFont: "Montserrat",           bodyFont: "Jost",             headlineCss: "'Montserrat', sans-serif",                    bodyCss: "'Jost', 'Inter', sans-serif" },
+  clay:     { headlineFont: "Playfair Display",     bodyFont: "Nunito",           headlineCss: "'Playfair Display', Georgia, serif",          bodyCss: "'Nunito', 'Inter', sans-serif" },
+  forge:    { headlineFont: "Cormorant Garamond",   bodyFont: "Space Grotesk",    headlineCss: "'Cormorant Garamond', Georgia, serif",       bodyCss: "'Space Grotesk', sans-serif" },
+  pulse:    { headlineFont: "Plus Jakarta Sans",    bodyFont: "Outfit",           headlineCss: "'Plus Jakarta Sans', sans-serif",             bodyCss: "'Outfit', 'Inter', sans-serif" },
+  flux:     { headlineFont: "Playfair Display",     bodyFont: "Jost",             headlineCss: "'Playfair Display', Georgia, serif",          bodyCss: "'Jost', 'Inter', sans-serif" },
 };
 
 /** Fallback config used when layoutStyle is unknown */
@@ -446,197 +445,196 @@ export function generateRandomColorScheme(): { id: string; label: string; descri
  * Each palette uses the 60-30-10 rule for balanced composition.
  */
 export const DEFAULT_LAYOUT_COLOR_SCHEMES: Record<string, ColorScheme> = {
-  // Warm neutral with soft terracotta - Sophisticated & Approachable
-  elegant:  withOnColors({ 
-    primary: "#9a8b7a",    // Warm taupe
-    secondary: "#f8f6f3",  // Cream white
-    accent: "#c4a882",     // Soft gold
-    background: "#fdfcfb",   // Warm white
-    surface: "#f5f3f0",      // Light cream
-    text: "#2d2a26",         // Dark charcoal
-    textLight: "#7a756e"     // Medium gray
-  }),
-  
-  // Deep navy with warm gold - Corporate & Trustworthy
-  bold:     withOnColors({ 
-    primary: "#1e3a5f",     // Deep navy
-    secondary: "#f5f5f5",    // Light gray
-    accent: "#c9a227",       // Antique gold
-    background: "#ffffff",     // Pure white
-    surface: "#f8f9fa",        // Off-white
-    text: "#1a1a1a",           // Near black
-    textLight: "#6b7280"       // Cool gray
-  }),
-  
-  // Sage green with cream - Natural & Calming
-  warm:     withOnColors({ 
-    primary: "#5c6b5c",      // Sage green
-    secondary: "#f5f3f0",    // Warm cream
-    accent: "#8b9a7d",       // Moss green
-    background: "#faf9f7",     // Ivory
-    surface: "#f0ede8",        // Light beige
-    text: "#2c2c2a",           // Soft black
-    textLight: "#6b6b69"       // Warm gray
-  }),
-  
-  // Clean slate with dusty rose - Modern & Fresh
-  clean:    withOnColors({ 
-    primary: "#475569",      // Slate gray
-    secondary: "#f1f5f9",    // Slate 100
-    accent: "#be7c7c",       // Dusty rose
-    background: "#ffffff",     // Pure white
-    surface: "#f8fafc",        // Slate 50
-    text: "#0f172a",           // Slate 900
-    textLight: "#64748b"       // Slate 500
-  }),
-  
-  // Charcoal with soft teal - Tech & Sophisticated
-  dynamic:  withOnColors({ 
-    primary: "#2d3748",      // Charcoal
-    secondary: "#1a202c",      // Deep charcoal
-    accent: "#5a8a8a",       // Muted teal
-    background: "#1a202c",     // Dark background
-    surface: "#2d3748",          // Slightly lighter
-    text: "#f7fafc",             // Off-white
-    textLight: "rgba(247,250,252,0.75)"
+  // Deep charcoal with peach accent — Editorial luxury
+  elegant:  withOnColors({
+    primary: "#2d1810",
+    secondary: "#f8f5f0",
+    accent: "#E8A878",
+    background: "#fdfcfb",
+    surface: "#f5f3f0",
+    text: "#2d1810",
+    textLight: "#7a6a5e"
   }),
 
-  // Deep forest with copper - Premium & Refined
-  luxury:   withOnColors({ 
-    primary: "#1c1917",      // Rich black
-    secondary: "#292524",    // Warm black
-    accent: "#b87333",       // Copper
-    background: "#1c1917",     // Dark background
-    surface: "#292524",          // Warm dark
-    text: "#fafaf9",             // Stone 50
-    textLight: "rgba(250,250,249,0.75)"
+  // Navy with vibrant gold — High-impact corporate
+  bold:     withOnColors({
+    primary: "#0D3B66",
+    secondary: "#f5f5f5",
+    accent: "#F4A460",
+    background: "#ffffff",
+    surface: "#f0f4f8",
+    text: "#0D3B66",
+    textLight: "#5a6d80"
   }),
 
-  // Warm stone with rust accent - Artisan & Crafted
-  craft:    withOnColors({ 
-    primary: "#78716c",      // Stone 500
-    secondary: "#292524",    // Stone 900
-    accent: "#a0522d",       // Sienna/rust
-    background: "#1c1917",     // Dark stone
-    surface: "#292524",          // Warm dark
-    text: "#fafaf9",             // Stone 50
-    textLight: "rgba(250,250,249,0.75)"
+  // Warm rust with sage — Heritage craft
+  warm:     withOnColors({
+    primary: "#A0522D",
+    secondary: "#f5f3f0",
+    accent: "#7A9B6A",
+    background: "#faf9f7",
+    surface: "#f0ede8",
+    text: "#2c2420",
+    textLight: "#6b5d55"
   }),
 
-  // Soft blue-gray with peach - Friendly & Light
-  fresh:    withOnColors({ 
-    primary: "#64748b",      // Blue-gray
-    secondary: "#f8fafc",    // Light blue-gray
-    accent: "#d4a574",       // Soft peach
-    background: "#ffffff",     // Pure white
-    surface: "#f8fafc",          // Very light
-    text: "#334155",             // Slate 700
-    textLight: "#64748b"         // Slate 500
-  }),
-  
-  // Classic blue with warm gray - Professional & Reliable
-  trust:    withOnColors({ 
-    primary: "#334155",      // Slate 700
-    secondary: "#f1f5f9",    // Slate 100
-    accent: "#6366f1",       // Indigo
-    background: "#ffffff",     // Pure white
-    surface: "#f8fafc",          // Slate 50
-    text: "#0f172a",             // Slate 900
-    textLight: "#64748b"         // Slate 500
-  }),
-  
-  // Pure monochrome with subtle accent - Minimal & Sharp
-  modern:   withOnColors({ 
-    primary: "#171717",      // Neutral 900
-    secondary: "#f5f5f5",    // Neutral 100
-    accent: "#525252",       // Neutral 600
-    background: "#ffffff",     // Pure white
-    surface: "#fafafa",          // Neutral 50
-    text: "#171717",             // Neutral 900
-    textLight: "#737373"         // Neutral 500
-  }),
-  
-  // Deep purple with soft gold - Creative & Bold
-  vibrant:  withOnColors({ 
-    primary: "#4c1d95",      // Deep purple
-    secondary: "#1e1b4b",    // Darker purple
-    accent: "#c4b5a0",       // Soft gold
-    background: "#0f0a1a",     // Very dark purple
-    surface: "#1e1b4b",          // Dark purple
-    text: "#fafafa",             // Neutral 50
-    textLight: "rgba(250,250,250,0.75)"
-  }),
-  
-  // Olive with warm sand - Organic & Earthy
-  natural:  withOnColors({
-    primary: "#57534e",      // Warm gray
-    secondary: "#f5f5f4",    // Stone 100
-    accent: "#a8a29e",       // Stone 400
-    background: "#fafaf9",     // Stone 50
-    surface: "#f5f5f4",          // Stone 100
-    text: "#292524",             // Stone 800
-    textLight: "#78716c"         // Stone 500
-  }),
-  // ── New layout defaults (Phase 6) ────────────────────────────────────────
-  // Aurora: Deep space dark, indigo/cyan
-  aurora:   withOnColors({
-    primary: "#6366f1",      // Indigo
-    secondary: "#4338ca",
-    accent: "#22d3ee",       // Cyan
-    background: "#080812",   // Near-black
-    surface: "rgba(255,255,255,0.06)",
-    text: "#f1f5f9",
-    textLight: "rgba(241,245,249,0.65)"
-  }),
-  // Nexus: Clean white, bold navy
-  nexus:    withOnColors({
-    primary: "#0f172a",      // Deep navy
-    secondary: "#1e293b",
-    accent: "#6366f1",       // Indigo accent
+  // Slate with vibrant magenta — Modern contrast
+  clean:    withOnColors({
+    primary: "#334155",
+    secondary: "#f1f5f9",
+    accent: "#D946EF",
     background: "#ffffff",
     surface: "#f8fafc",
     text: "#0f172a",
     textLight: "#64748b"
   }),
-  // Clay: Soft lavender-white, rose pink
+
+  // Deep navy with electric teal — Tech energy
+  dynamic:  withOnColors({
+    primary: "#1A365D",
+    secondary: "#0f1a2e",
+    accent: "#14B8A6",
+    background: "#0f1a2e",
+    surface: "#1a2740",
+    text: "#f1f5f9",
+    textLight: "rgba(241,245,249,0.70)"
+  }),
+
+  // Mahogany with rose gold — Warm luxury
+  luxury:   withOnColors({
+    primary: "#5C2E1A",
+    secondary: "#1c1410",
+    accent: "#D4A574",
+    background: "#1c1410",
+    surface: "#2a1f18",
+    text: "#faf5f0",
+    textLight: "rgba(250,245,240,0.72)"
+  }),
+
+  // Charcoal with burnt orange — Bold artisan
+  craft:    withOnColors({
+    primary: "#3A3A3A",
+    secondary: "#1a1a18",
+    accent: "#CC5500",
+    background: "#1a1a18",
+    surface: "#282826",
+    text: "#fafaf9",
+    textLight: "rgba(250,250,249,0.72)"
+  }),
+
+  // Sage green with coral — Fresh + punchy
+  fresh:    withOnColors({
+    primary: "#3E9651",
+    secondary: "#f0faf2",
+    accent: "#FF6B6B",
+    background: "#ffffff",
+    surface: "#f0faf2",
+    text: "#1a2e1e",
+    textLight: "#5a7a60"
+  }),
+
+  // Deep blue with warm amber — Trustworthy yet warm
+  trust:    withOnColors({
+    primary: "#1E40AF",
+    secondary: "#f0f4ff",
+    accent: "#F59E0B",
+    background: "#ffffff",
+    surface: "#f0f4ff",
+    text: "#0f172a",
+    textLight: "#4b6078"
+  }),
+
+  // Slate with electric blue — Digital precision
+  modern:   withOnColors({
+    primary: "#1E293B",
+    secondary: "#f5f5f5",
+    accent: "#3B82F6",
+    background: "#ffffff",
+    surface: "#f8fafc",
+    text: "#1E293B",
+    textLight: "#64748b"
+  }),
+
+  // Electric purple with lime — Creative energy
+  vibrant:  withOnColors({
+    primary: "#7C3AED",
+    secondary: "#1e1040",
+    accent: "#A3E635",
+    background: "#0f0a1a",
+    surface: "#1e1040",
+    text: "#fafafa",
+    textLight: "rgba(250,250,250,0.72)"
+  }),
+
+  // Deep forest with terracotta — Rich organic
+  natural:  withOnColors({
+    primary: "#2D5A3D",
+    secondary: "#f5f5f4",
+    accent: "#C76C45",
+    background: "#fafaf9",
+    surface: "#f0f5f2",
+    text: "#1a2e20",
+    textLight: "#5a7060"
+  }),
+  // Aurora: Rich indigo with bright cyan — Futuristic tech
+  aurora:   withOnColors({
+    primary: "#4338CA",
+    secondary: "#312e81",
+    accent: "#06B6D4",
+    background: "#080812",
+    surface: "rgba(255,255,255,0.06)",
+    text: "#f1f5f9",
+    textLight: "rgba(241,245,249,0.65)"
+  }),
+  // Nexus: Navy with neon blue — Connected modern
+  nexus:    withOnColors({
+    primary: "#0F172A",
+    secondary: "#1e293b",
+    accent: "#0EA5E9",
+    background: "#ffffff",
+    surface: "#f0f9ff",
+    text: "#0f172a",
+    textLight: "#4b6a88"
+  }),
+  // Clay: Bold rose with vibrant purple — Beauty/wellness
   clay:     withOnColors({
-    primary: "#db2777",      // Pink 600
+    primary: "#BE185D",
     secondary: "#9d174d",
-    accent: "#a78bfa",       // Violet 400
+    accent: "#A855F7",
     background: "#fdf4ff",
     surface: "#fae8ff",
-    text: "#2d2d44",
-    textLight: "#6b6b8a"
+    text: "#2d1530",
+    textLight: "#6b4a72"
   }),
-  // Forge: Off-white, near-black, gold
+  // Forge: Charcoal with bright gold — Editorial luxury
   forge:    withOnColors({
-    primary: "#0a0a0a",      // Near-black
-    secondary: "#1a1a1a",
-    accent: "#c4a000",       // Antique gold
-    background: "#f8f7f4",   // Warm white
+    primary: "#292524",
+    secondary: "#1c1917",
+    accent: "#FCD34D",
+    background: "#f8f7f4",
     surface: "#f0ede8",
-    text: "#0a0a0a",
-    textLight: "#5a5a5a"
+    text: "#1c1917",
+    textLight: "#57534e"
   }),
-  // Pulse: Neumorphic gray, blue/teal
+  // Pulse: Ocean blue with vibrant teal — Energetic healthcare
   pulse:    withOnColors({
-    primary: "#4f86c6",      // Medical blue
-    secondary: "#2563eb",
-    accent: "#5dbb9c",       // Teal
-    background: "#e8ecf0",   // Neumorphic base
-    surface: "#e8ecf0",
-    text: "#2d3748",
-    textLight: "#718096"
+    primary: "#0369A1",
+    secondary: "#0c4a6e",
+    accent: "#14B8A6",
+    background: "#f0f9ff",
+    surface: "#e0f2fe",
+    text: "#0c2d48",
+    textLight: "#4b7a9a"
   }),
-  // Flux: Deep dark, warm gold
+  // Flux: Rich gold on deep dark — Cinematic luxury
   flux:     withOnColors({
-    primary: "#d4a843",      // Warm gold
-    secondary: "#b07d3a",    // Copper
-    accent: "#c9a048",
-    background: "#060608",   // Near-black
+    primary: "#B45309",
+    secondary: "#92400e",
+    accent: "#FCD34D",
+    background: "#060608",
     surface: "#0e0e12",
     text: "#f5f0e8",
-    textLight: "rgba(245,240,232,0.75)"
+    textLight: "rgba(245,240,232,0.72)"
   }),
 };
 
