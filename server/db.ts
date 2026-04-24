@@ -249,7 +249,7 @@ export async function listExternalLeads(limit = 100, offset = 0, captureStatus?:
   return db.select().from(generatedWebsites).where(conditions).orderBy(desc(generatedWebsites.createdAt)).limit(limit).offset(offset);
 }
 
-export async function countExternalLeads(captureStatus?: string) {
+export async function countExternalLeadsByCapture(captureStatus?: string) {
   const db = await getDb();
   if (!db) return 0;
   const conditions = captureStatus

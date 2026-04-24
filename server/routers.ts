@@ -16,7 +16,7 @@ import {
   createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId, updateSubscription,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
-  getLeadFunnelStats, listExternalLeads, countExternalLeads,
+  getLeadFunnelStats, listExternalLeads, countExternalLeadsByCapture,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
   updateUser, getUserByOpenId,
   createContactSubmission, getContactSubmissionsByWebsiteId, countUnreadSubmissions,
@@ -5418,7 +5418,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
       }))
       .query(async ({ input }) => {
         const leads = await listExternalLeads(input.limit ?? 100, input.offset ?? 0, input.captureStatus);
-        const total = await countExternalLeads(input.captureStatus);
+        const total = await countExternalLeadsByCapture(input.captureStatus);
         return { leads, total };
       }),
 
