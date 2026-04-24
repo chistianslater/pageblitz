@@ -433,7 +433,7 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(w.createdAt).toLocaleDateString("de-DE")}
+                      {new Date(w.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -638,7 +638,7 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(w.createdAt).toLocaleDateString("de-DE")}
+                      {new Date(w.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
