@@ -18,49 +18,55 @@ export default function Home() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Building2} label="Leads mit E-Mail" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" />
-        <StatCard icon={Globe} label="Generierte Websites" value={stats?.totalWebsites} loading={isLoading} color="text-emerald-400" />
-        <StatCard icon={Mail} label="E-Mails gesendet" value={stats?.sentEmails} loading={isLoading} color="text-amber-400" />
-        <StatCard icon={ShoppingCart} label="Verkäufe" value={stats?.paidCount ?? 0} loading={isLoading} color="text-purple-400" />
+        <StatCard icon={Building2} label="Leads mit E-Mail" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" href="/admin/leads" />
+        <StatCard icon={Globe} label="Generierte Websites" value={stats?.totalWebsites} loading={isLoading} color="text-emerald-400" href="/admin/websites" />
+        <StatCard icon={Mail} label="E-Mails gesendet" value={stats?.sentEmails} loading={isLoading} color="text-amber-400" href="/admin/outreach" />
+        <StatCard icon={ShoppingCart} label="Verkäufe" value={stats?.paidCount ?? 0} loading={isLoading} color="text-purple-400" href="/admin/stats" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Preview</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-16" /> : (
-              <div className="text-2xl font-bold">{stats?.previewCount ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">Websites im Preview-Modus</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Aktiv</CardTitle>
-            <CheckCircle className="h-4 w-4 text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-16" /> : (
-              <div className="text-2xl font-bold text-emerald-400">{stats?.activeCount ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">Live geschaltete Websites</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Gesamt E-Mails</CardTitle>
-            <Mail className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-16" /> : (
-              <div className="text-2xl font-bold">{stats?.totalEmails ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">Outreach-E-Mails insgesamt</p>
-          </CardContent>
-        </Card>
+        <a href="/admin/websites" className="block group">
+          <Card className="bg-card border-border group-hover:border-primary/30 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Preview</CardTitle>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? <Skeleton className="h-8 w-16" /> : (
+                <div className="text-2xl font-bold">{stats?.previewCount ?? 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">Websites im Preview-Modus</p>
+            </CardContent>
+          </Card>
+        </a>
+        <a href="/admin/websites" className="block group">
+          <Card className="bg-card border-border group-hover:border-emerald-500/30 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Aktiv</CardTitle>
+              <CheckCircle className="h-4 w-4 text-emerald-400" />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? <Skeleton className="h-8 w-16" /> : (
+                <div className="text-2xl font-bold text-emerald-400">{stats?.activeCount ?? 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">Live geschaltete Websites</p>
+            </CardContent>
+          </Card>
+        </a>
+        <a href="/admin/outreach" className="block group">
+          <Card className="bg-card border-border group-hover:border-primary/30 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Gesamt E-Mails</CardTitle>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? <Skeleton className="h-8 w-16" /> : (
+                <div className="text-2xl font-bold">{stats?.totalEmails ?? 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">Outreach-E-Mails insgesamt</p>
+            </CardContent>
+          </Card>
+        </a>
       </div>
 
       <Card className="bg-card border-border">
@@ -97,11 +103,11 @@ export default function Home() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, loading, color }: {
-  icon: any; label: string; value?: number; loading: boolean; color: string;
+function StatCard({ icon: Icon, label, value, loading, color, href }: {
+  icon: any; label: string; value?: number; loading: boolean; color: string; href?: string;
 }) {
-  return (
-    <Card className="bg-card border-border">
+  const card = (
+    <Card className={`bg-card border-border ${href ? 'group-hover:border-primary/30 transition-colors' : ''}`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
         <Icon className={`h-4 w-4 ${color}`} />
@@ -113,6 +119,8 @@ function StatCard({ icon: Icon, label, value, loading, color }: {
       </CardContent>
     </Card>
   );
+  if (href) return <a href={href} className="block group">{card}</a>;
+  return card;
 }
 
 function QuickAction({ title, description, href, icon }: {
