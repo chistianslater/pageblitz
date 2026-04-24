@@ -94,10 +94,8 @@ const LAYOUT_VIBES: Record<string, string> = {
  */
 const DESKTOP_IFRAME_W = 1280;
 const MOBILE_IFRAME_W  = 390;
-// Viewport heights: must match real screen sizes so 100vh/min-h-screen
-// renders correctly. Card's overflow:hidden clips to the visible area.
-const DESKTOP_IFRAME_H = 900;
-const MOBILE_IFRAME_H  = 844;  // iPhone 14 viewport height
+const DESKTOP_IFRAME_H = 3000;
+const MOBILE_IFRAME_H  = 3000;
 
 function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, onSkip }: {
   websiteId: number;
@@ -164,7 +162,7 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
         </p>
       </div>
 
-      {/* ── Preview row — fills remaining vertical space ── */}
+      {/* ── Preview row — fills remaining vertical space, scrollable ── */}
       <div className="flex-1 min-h-0 flex items-center gap-2 px-3 py-2">
 
         {/* Prev arrow */}
@@ -175,16 +173,11 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
           </svg>
         </button>
 
-        {/*
-          Card — self-stretch so it fills the full height of the flex row.
-          overflow:hidden clips the absolutely-positioned iframes to this box.
-        */}
         <div
           ref={cardRef}
-          className="flex-1 self-stretch min-w-0 rounded-xl overflow-hidden relative"
+          className="flex-1 self-stretch min-w-0 rounded-xl overflow-y-auto overflow-x-hidden relative"
           style={{ boxShadow: `0 0 0 2px ${accentColor}44, 0 20px 48px -8px rgba(0,0,0,0.85)` }}
         >
-          {/* One iframe per variant — inactive ones hidden via display:none */}
           {variants.map((layout, i) => (
             <iframe
               key={`${round}-${layout}-${heroImageUrl ?? ""}`}
@@ -192,22 +185,17 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
               width={iframeW}
               height={iframeH}
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
                 display: i === activeIdx ? "block" : "none",
                 transformOrigin: "top left",
                 transform: `scale(${scale})`,
+                width: iframeW,
+                height: iframeH * scale,
                 pointerEvents: "none",
                 border: "none",
               }}
               title={`Preview ${layout}`}
             />
           ))}
-
-          {/* Fade-out at the bottom so the crop looks intentional */}
-          <div className="absolute bottom-0 inset-x-0 h-14 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, transparent, rgba(2,6,23,0.95))" }} />
         </div>
 
         {/* Next arrow */}
