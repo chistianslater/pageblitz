@@ -215,6 +215,9 @@ export default function LeadsPage() {
         </CardContent>
       </Card>
 
+      {/* Step-Level Funnel */}
+      <StepFunnel />
+
       {/* Leads Table */}
       <Card className="bg-card border-border">
         <CardHeader>
@@ -372,5 +375,113 @@ export default function LeadsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// ── Step-Level Onboarding Funnel ──────────────────────────────────────────
+
+const STEP_LABELS: Record<string, string> = {
+  businessCategory: "Branche",
+  businessName: "Firmenname",
+  addressingMode: "Du/Sie",
+  brandLogo: "Logo",
+  colorScheme: "Farbschema",
+  heroPhoto: "Hauptbild",
+  aboutPhoto: "Über-uns-Bild",
+  headlineFont: "Schriftart",
+  headlineSize: "Schriftgröße",
+  tagline: "Slogan",
+  description: "Beschreibung",
+  usp: "USP",
+  services: "Leistungen",
+  legalOwner: "Inhaber",
+  legalStreet: "Adresse",
+  legalZipCity: "PLZ/Ort",
+  legalEmail: "Impressums-E-Mail",
+  legalPhone: "Telefon",
+  openingHours: "Öffnungszeiten",
+  legalVat: "USt-IdNr.",
+  addons: "Add-ons",
+  subpages: "Unterseiten",
+  email: "E-Mail",
+  hideSections: "Bereiche",
+  preview: "Vorschau",
+  checkout: "Checkout",
+};
+
+function StepFunnel() {
+  const { data: steps, isLoading } = trpc.stats.stepFunnel.useQuery();
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="pt-6 flex justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!steps || steps.length === 0) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Onboarding-Steps (Detail)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-6 text-sm">
+            Noch keine Step-Daten. Daten werden gesammelt sobald User das Onboarding durchlaufen.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const maxCount = Math.max(...steps.map((s: any) => s.count), 1);
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          Onboarding-Steps (Detail)
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">Wie viele User erreichen welchen Schritt?</p>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {steps.map((step: any, i: number) => {
+            const pct = maxCount > 0 ? (step.count / maxCount) * 100 : 0;
+            const prevCount = i > 0 ? steps[i - 1].count : step.count;
+            const dropPct = prevCount > 0 ? (((prevCount - step.count) / prevCount) * 100).toFixed(0) : "0";
+            return (
+              <div key={step.step} className="flex items-center gap-3">
+                <div className="w-32 text-xs text-right text-muted-foreground truncate shrink-0">
+                  {STEP_LABELS[step.step] || step.step}
+                </div>
+                <div className="flex-1 h-7 bg-muted/30 rounded-sm overflow-hidden relative">
+                  <div
+                    className="h-full rounded-sm transition-all duration-500"
+                    style={{
+                      width: `${pct}%`,
+                      backgroundColor: pct > 60 ? '#22c55e' : pct > 30 ? '#f59e0b' : '#ef4444',
+                    }}
+                  />
+                  <span className="absolute inset-0 flex items-center px-2 text-xs font-semibold">
+                    {step.count}
+                  </span>
+                </div>
+                {i > 0 && Number(dropPct) > 0 && (
+                  <span className="text-xs text-red-400 w-14 text-right shrink-0">-{dropPct}%</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
