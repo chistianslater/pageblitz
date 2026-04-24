@@ -77,6 +77,38 @@ export async function createUser(data: Omit<InsertUser, 'id'>) {
   await db.insert(users).values(data);
 }
 
+export async function listUsers(limit = 100, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).orderBy(desc(users.createdAt)).limit(limit).offset(offset);
+}
+
+export async function countUsers() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(users);
+  return result[0]?.count ?? 0;
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
+}
+
+export async function updateUser(id: number, data: Partial<InsertUser>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(users).set(data).where(eq(users.id, id));
+}
+
+export async function deleteUser(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(users).where(eq(users.id, id));
+}
+
 export async function updateUser(id: number, data: Partial<InsertUser>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

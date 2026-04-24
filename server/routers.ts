@@ -9,6 +9,7 @@ import {
   getBusinessIdsWithWebsite,
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
   listWebsites, countWebsites, updateWebsite, canActivateWebsite,
+  listUsers, countUsers, getUserById, updateUser, deleteUser,
   createOutreachEmail, listOutreachEmails, countOutreachEmails, getOutreachEmailByWebsiteId, updateOutreachEmail,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
@@ -1308,6 +1309,45 @@ export const appRouter = router({
     dashboard: adminProcedure.query(async () => {
       return getDashboardStats();
     }),
+  }),
+
+  // ── Admin: User Management ──────────────────────────
+  userAdmin: router({
+    list: adminProcedure
+      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const users = await listUsers(input?.limit ?? 100, input?.offset ?? 0);
+        const total = await countUsers();
+        return { users, total };
+      }),
+    get: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const user = await getUserById(input.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User nicht gefunden" });
+        const websites = await getWebsitesByUserId(input.id);
+        return { user, websites };
+      }),
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        role: z.enum(["user", "admin"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await updateUser(id, data);
+        return { success: true };
+      }),
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (input.id === ctx.user!.id)
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Du kannst deinen eigenen Account nicht löschen" });
+        await deleteUser(input.id);
+        return { success: true };
+      }),
   }),
 
   // ── Admin: GMB Search ──────────────────────────────

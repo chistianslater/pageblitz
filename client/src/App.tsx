@@ -35,6 +35,7 @@ const VariantPreviewPage      = lazy(() => import("./pages/VariantPreviewPage"))
 const LoginPage            = lazy(() => import("./pages/LoginPage"));
 const CustomerLoginPage    = lazy(() => import("./pages/CustomerLoginPage"));
 const BusinessesPage       = lazy(() => import("./pages/BusinessesPage"));
+const UsersPage            = lazy(() => import("./pages/UsersPage"));
 const WelcomeBack          = lazy(() => import("./pages/WelcomeBack"));
 
 function PageLoader() {
@@ -71,6 +72,7 @@ function AdminSwitch() {
         <Route path="/admin/stats" component={StatsPage} />
         <Route path="/admin/leads" component={LeadsPage} />
         <Route path="/admin/businesses" component={BusinessesPage} />
+        <Route path="/admin/users" component={UsersPage} />
         <Route path="/admin/layouts" component={LayoutOverviewPage} />
         <Route path="/admin/pipeline" component={PipelinePage} />
         <Route component={NotFound} />
