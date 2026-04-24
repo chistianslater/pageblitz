@@ -18,7 +18,7 @@ export default function StatsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard icon={Building2} label="Unternehmen gesamt" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" bgColor="bg-blue-500/10" />
+        <MetricCard icon={Building2} label="Leads mit E-Mail" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" bgColor="bg-blue-500/10" />
         <MetricCard icon={Globe} label="Websites generiert" value={stats?.totalWebsites} loading={isLoading} color="text-emerald-400" bgColor="bg-emerald-500/10" />
         <MetricCard icon={Mail} label="E-Mails gesendet" value={stats?.sentEmails} loading={isLoading} color="text-amber-400" bgColor="bg-amber-500/10" />
         <MetricCard icon={ShoppingCart} label="Verkäufe" value={(stats?.soldCount ?? 0) + (stats?.activeCount ?? 0)} loading={isLoading} color="text-purple-400" bgColor="bg-purple-500/10" />

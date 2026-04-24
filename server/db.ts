@@ -197,17 +197,29 @@ export async function listWebsites(limit = 50, offset = 0) {
   return db.select().from(generatedWebsites).orderBy(desc(generatedWebsites.createdAt)).limit(limit).offset(offset);
 }
 
-export async function countWebsites() {
+export async function countWebsites(source?: "admin" | "external") {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites);
+  const conditions = source ? eq(generatedWebsites.source, source) : undefined;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites).where(conditions);
   return result[0]?.count ?? 0;
 }
 
-export async function countWebsitesByStatus(status: string) {
+export async function countWebsitesByStatus(status: string, source?: "admin" | "external") {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites).where(eq(generatedWebsites.status, status as any));
+  const conditions = source
+    ? and(eq(generatedWebsites.status, status as any), eq(generatedWebsites.source, source))
+    : eq(generatedWebsites.status, status as any);
+  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites).where(conditions);
+  return result[0]?.count ?? 0;
+}
+
+export async function countExternalLeads() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites)
+    .where(and(eq(generatedWebsites.source, "external"), sql`${generatedWebsites.customerEmail} IS NOT NULL`));
   return result[0]?.count ?? 0;
 }
 
@@ -347,16 +359,16 @@ export async function getOutreachEmailByWebsiteId(websiteId: number) {
 
 // ── Stats ──────────────────────────────────────────────
 export async function getDashboardStats() {
-  const [totalBusinesses, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails] = await Promise.all([
-    countBusinesses(),
-    countWebsites(),
-    countWebsitesByStatus("preview"),
-    countWebsitesByStatus("active"),
-    countWebsitesByStatus("sold"),
+  const [totalLeads, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails] = await Promise.all([
+    countExternalLeads(),
+    countWebsites("external"),
+    countWebsitesByStatus("preview", "external"),
+    countWebsitesByStatus("active", "external"),
+    countWebsitesByStatus("sold", "external"),
     countOutreachEmails(),
     countOutreachEmailsByStatus("sent"),
   ]);
-  return { totalBusinesses, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails };
+  return { totalBusinesses: totalLeads, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails };
 }
 
 // ── Template Uploads ───────────────────────────────────

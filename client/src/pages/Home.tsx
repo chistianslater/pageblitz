@@ -18,7 +18,7 @@ export default function Home() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Building2} label="Unternehmen" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" />
+        <StatCard icon={Building2} label="Leads mit E-Mail" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" />
         <StatCard icon={Globe} label="Generierte Websites" value={stats?.totalWebsites} loading={isLoading} color="text-emerald-400" />
         <StatCard icon={Mail} label="E-Mails gesendet" value={stats?.sentEmails} loading={isLoading} color="text-amber-400" />
         <StatCard icon={ShoppingCart} label="Verkäufe" value={stats?.soldCount} loading={isLoading} color="text-purple-400" />
