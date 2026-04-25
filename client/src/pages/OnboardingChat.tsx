@@ -4175,7 +4175,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                 onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
                                 className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                                   data.headlineFont === opt.font
-                                    ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                    ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
                                     : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                                 }`}
                               >
@@ -4194,7 +4194,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
                               className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                                 data.headlineFont === opt.font
-                                  ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                  ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
                                     : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                                 }`}
                               >
@@ -4234,7 +4234,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       onClick={() => setData((p) => ({ ...p, headlineSize: opt.value as 'large' | 'medium' | 'small' }))}
                       className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                         data.headlineSize === opt.value
-                          ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                          ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
                           : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                       }`}
                     >
@@ -5326,7 +5326,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={() => setBillingInterval("yearly")}
                     className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
                       billingInterval === "yearly"
-                        ? "bg-lime-500 text-white"
+                        ? "bg-lime-500 text-gray-900"
                         : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
                     }`}
                   >
@@ -5341,7 +5341,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={() => setBillingInterval("monthly")}
                     className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
                       billingInterval === "monthly"
-                        ? "bg-lime-500 text-white"
+                        ? "bg-lime-500 text-gray-900"
                         : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
                     }`}
                   >
@@ -5458,7 +5458,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             handleSubmit(reply);
                           }
                         }}
-                        className="text-sm bg-lime-500/20 hover:bg-lime-500/40 border border-lime-500/50 hover:border-lime-400/70 text-blue-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
+                        className="text-sm bg-lime-500/20 hover:bg-lime-500/40 border border-lime-500/50 hover:border-lime-400/70 text-lime-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
                       >
                         {reply}
                       </button>
@@ -5904,7 +5904,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Branchen-Update Toast – erscheint über dem Preview, stört Chat-Flow nicht */}
                 {previewNotification && (
                   <div
-                    className="absolute top-4 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 rounded-full bg-lime-500/90 px-4 py-2 text-[11px] font-medium text-white shadow-lg backdrop-blur-sm pointer-events-none"
+                    className="absolute top-4 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 rounded-full bg-lime-500/90 px-4 py-2 text-[11px] font-medium text-gray-900 shadow-lg backdrop-blur-sm pointer-events-none"
                     style={{ animation: 'fadeInDown 0.25s ease' }}
                   >
                     {previewNotification}
@@ -6113,7 +6113,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <Clock className="w-8 h-8 text-white" />
                       </div>
                       <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Warte kurz! ⚡</h2>
-                      <p className="text-blue-100 text-sm font-medium leading-relaxed">
+                      <p className="text-lime-100 text-sm font-medium leading-relaxed">
                         Deine Website ist nur noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
                       </p>
                     </div>
