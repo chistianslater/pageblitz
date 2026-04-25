@@ -27,7 +27,7 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Branche suchen oder eintippen…"
-          className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-blue-500/60 focus:bg-blue-600/10 transition-all"
+          className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500/60 focus:bg-lime-600/10 transition-all"
         />
         {search && (
           <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors" aria-label="Suche löschen">✕</button>
@@ -38,13 +38,13 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
           {filtered.length === 0 ? (
             <div className="px-3 py-3 flex items-center justify-between gap-2">
               <span className="text-slate-400 text-sm">Keine Treffer – Branche trotzdem übernehmen?</span>
-              <button onClick={() => onSelect(search.trim())} className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">Übernehmen</button>
+              <button onClick={() => onSelect(search.trim())} className="text-xs bg-lime-600 hover:bg-lime-500 text-gray-900 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">Übernehmen</button>
             </div>
           ) : (
             filtered.map((cat) => (
               <button key={cat} onClick={() => onSelect(cat)}
                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                  selected === cat ? "bg-blue-600/30 text-white" : "text-slate-200 hover:bg-slate-700/60 hover:text-white"
+                  selected === cat ? "bg-lime-600/30 text-white" : "text-slate-200 hover:bg-slate-700/60 hover:text-white"
                 }`}>{cat}</button>
             ))
           )}
@@ -63,8 +63,8 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
                   <button key={cat} onClick={() => onSelect(cat)}
                     className={`text-xs border px-2.5 py-1.5 rounded-lg transition-all ${
                       selected === cat
-                        ? "bg-blue-600/40 border-blue-500/60 text-white"
-                        : "bg-slate-700/60 hover:bg-blue-600/30 border-slate-600/50 hover:border-blue-500/50 text-slate-200 hover:text-white"
+                        ? "bg-lime-600/40 border-lime-500/60 text-white"
+                        : "bg-slate-700/60 hover:bg-lime-600/30 border-slate-600/50 hover:border-lime-500/50 text-slate-200 hover:text-white"
                     }`}>{cat}</button>
                 ))}
               </div>
@@ -179,11 +179,11 @@ export default function StartPage() {
   const outerCard = "w-full max-w-md bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl p-8 shadow-2xl";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center px-4 py-8">
 
       {/* Logo */}
       <div className="mb-10 flex flex-col items-center gap-2">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-500/30">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center shadow-xl shadow-lime-500/30">
           <Zap className="w-7 h-7 text-white" />
         </div>
         <span className="text-white font-bold text-2xl tracking-tight">Pageblitz</span>
@@ -215,16 +215,16 @@ export default function StartPage() {
             <div className="space-y-3">
               <button
                 onClick={() => setStep("gmb")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 hover:border-indigo-500/60 transition-all text-left group"
+                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-lime-500/40 bg-lime-500/10 hover:bg-lime-500/20 hover:border-lime-500/60 transition-all text-left group"
               >
-                <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                  <Globe className="w-5 h-5 text-indigo-400" />
+                <div className="w-10 h-10 rounded-lg bg-lime-500/20 flex items-center justify-center flex-shrink-0">
+                  <Globe className="w-5 h-5 text-lime-400" />
                 </div>
                 <div className="flex-1">
                   <div className="text-white font-semibold text-sm">Mit Google My Business starten</div>
                   <div className="text-slate-400 text-xs mt-0.5">Daten werden automatisch übernommen – schnellster Weg</div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-lime-400 group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
@@ -270,9 +270,9 @@ export default function StartPage() {
 
               {/* Selected category badge */}
               {category && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                  <CheckCircle className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                  <span className="text-indigo-300 text-sm">{category}</span>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-lime-500/10 border border-lime-500/20">
+                  <CheckCircle className="w-3.5 h-3.5 text-lime-400 shrink-0" />
+                  <span className="text-lime-300 text-sm">{category}</span>
                   <button onClick={() => setCategory("")} className="ml-auto text-slate-500 hover:text-slate-300 text-xs">✕</button>
                 </div>
               )}
@@ -384,7 +384,7 @@ export default function StartPage() {
                   <Button
                     onClick={handleGmbSearch}
                     disabled={!gmbSearchQuery.trim() || gmbSearchLoading || isLoading}
-                    className="h-12 px-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex-shrink-0"
+                    className="h-12 px-5 bg-lime-500 hover:bg-lime-400 text-gray-900 rounded-xl flex-shrink-0"
                   >
                     {gmbSearchLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -421,7 +421,7 @@ export default function StartPage() {
                         });
                         setGmbSearchResults([]);
                       }}
-                      className="w-full flex items-start gap-3 p-3 rounded-xl border border-slate-600/50 bg-slate-700/40 hover:border-indigo-500/60 hover:bg-indigo-500/10 transition-all text-left"
+                      className="w-full flex items-start gap-3 p-3 rounded-xl border border-slate-600/50 bg-slate-700/40 hover:border-lime-500/60 hover:bg-lime-500/10 transition-all text-left"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white truncate">{result.name}</p>
