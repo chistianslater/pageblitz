@@ -344,17 +344,17 @@ const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => 
       className={`group relative p-8 rounded-3xl border cursor-default transition-all duration-500 ${
         isDark
           ? "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
-          : "bg-white border-gray-100 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/60"
+          : "bg-white border-gray-100 hover:border-lime-200 hover:shadow-md hover:shadow-lime-100/60"
       }`}
     >
-      <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isDark ? "bg-gradient-to-b from-white/[0.02] to-transparent" : "bg-gradient-to-b from-violet-50/40 to-transparent"}`} />
+      <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isDark ? "bg-gradient-to-b from-white/[0.02] to-transparent" : "bg-gradient-to-b from-lime-50/40 to-transparent"}`} />
       <div className="relative z-10">
         <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ${
           isDark
             ? "bg-white/5 border-white/10"
-            : "bg-violet-100 border-violet-200"
+            : "bg-lime-100 border-lime-200"
         }`}>
-          <Icon className={`w-5 h-5 ${isDark ? "text-white/70" : "text-violet-600"}`} />
+          <Icon className={`w-5 h-5 ${isDark ? "text-white/70" : "text-lime-600"}`} />
         </div>
         <h3 className={`text-lg font-semibold mb-3 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{title}</h3>
         <p className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>{description}</p>
@@ -399,7 +399,7 @@ const GhostWebsiteCreation = () => {
               times: [0, 0.2, 0.6, 0.8],
               ease: "easeInOut"
             }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-lime-500/30 to-transparent"
           />
           
           {/* Text lines appearing */}
@@ -465,7 +465,7 @@ const GhostWebsiteCreation = () => {
               className="aspect-[4/3] rounded-md bg-white/[0.03] border border-white/[0.08] p-2 flex flex-col gap-1.5"
             >
               <motion.div 
-                className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500/30 to-purple-500/20"
+                className="w-6 h-6 rounded bg-gradient-to-br from-lime-500/30 to-lime-500/20"
                 animate={{ 
                   scale: [1, 1.1, 1],
                   opacity: [0.5, 1, 0.5]
@@ -608,7 +608,7 @@ const GhostWebsiteCreation = () => {
       </div>
 
       {/* Bottom glow */}
-      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-lime-500/10 to-transparent pointer-events-none" />
     </div>
   );
 };
@@ -1516,7 +1516,7 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
       {/* Info below card */}
       <div className="flex items-center justify-between mt-3 px-0.5">
         <div>
-          <h4 className="text-white font-semibold text-sm group-hover:text-indigo-300 transition-colors">{config.data.businessName}</h4>
+          <h4 className="text-white font-semibold text-sm group-hover:text-lime-300 transition-colors">{config.data.businessName}</h4>
           <p className="text-white/40 text-xs mt-0.5">{config.label}</p>
         </div>
         <div className="flex gap-1">
@@ -1565,7 +1565,7 @@ const WebsiteShowcase = () => {
 
   return (
     <section id="showcase" className="py-32 relative overflow-hidden">
-      <GradientOrb className="w-[600px] h-[600px] bg-indigo-500/10 -right-40 top-20" delay={0.2} />
+      <GradientOrb className="w-[600px] h-[600px] bg-lime-500/10 -right-40 top-20" delay={0.2} />
       
       <div className="max-w-7xl mx-auto px-6 mb-12 flex items-end justify-between">
         <div>
@@ -1663,7 +1663,7 @@ export default function LandingPage() {
     >
       {/* Scroll Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-400 z-[200] origin-left pointer-events-none"
+        className="fixed top-0 left-0 right-0 h-[2px] bg-lime-400 z-[200] origin-left pointer-events-none"
         style={{ scaleX: smoothProgress }}
       />
 
@@ -1671,9 +1671,9 @@ export default function LandingPage() {
 
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <GradientOrb className="w-[800px] h-[800px] bg-indigo-500/10 -left-40 -top-40" delay={0} />
-        <GradientOrb className="w-[600px] h-[600px] bg-purple-500/10 right-0 top-1/4" delay={0.3} />
-        <GradientOrb className="w-[400px] h-[400px] bg-blue-500/5 left-1/3 bottom-0" delay={0.5} />
+        <GradientOrb className="w-[800px] h-[800px] bg-lime-500/10 -left-40 -top-40" delay={0} />
+        <GradientOrb className="w-[600px] h-[600px] bg-lime-500/10 right-0 top-1/4" delay={0.3} />
+        <GradientOrb className="w-[400px] h-[400px] bg-lime-400/5 left-1/3 bottom-0" delay={0.5} />
         
         {/* Grid pattern */}
         <div 
@@ -1693,24 +1693,24 @@ export default function LandingPage() {
           <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
             <BackgroundGradientAnimation
               containerClassName="absolute inset-0"
-              gradientBackgroundStart="rgb(10, 10, 15)"
-              gradientBackgroundEnd="rgb(15, 15, 25)"
-              firstColor="59, 130, 246"
-              secondColor="147, 51, 234"
-              thirdColor="99, 102, 241"
-              fourthColor="79, 70, 229"
-              fifthColor="139, 92, 246"
-              pointerColor="99, 102, 241"
+              gradientBackgroundStart="rgb(8, 10, 8)"
+              gradientBackgroundEnd="rgb(12, 15, 10)"
+              firstColor="163, 230, 53"
+              secondColor="132, 204, 22"
+              thirdColor="190, 242, 100"
+              fourthColor="101, 163, 13"
+              fifthColor="212, 255, 0"
+              pointerColor="190, 242, 100"
               size="70%"
               interactive={true}
             />
           </div>
           {/* Light gradient for light mode */}
           <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50" />
-            <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-300/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-300/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-indigo-300/15 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-lime-50/50 via-stone-50 to-lime-50/30" />
+            <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-lime-300/15 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-lime-300/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-lime-300/15 rounded-full blur-[80px] pointer-events-none" />
           </div>
         </div>
         
@@ -1724,7 +1724,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border text-sm mb-8 transition-colors duration-500 ${isDark ? "bg-white/10 border-white/20 text-white/80" : "bg-indigo-100/80 border-indigo-200 text-indigo-800"}`}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border text-sm mb-8 transition-colors duration-500 ${isDark ? "bg-white/10 border-white/20 text-white/80" : "bg-lime-100/80 border-lime-200 text-lime-800"}`}
                 >
                   <Sparkles className="w-4 h-4 text-amber-400" />
                   <span>Webagentur kostet 3.000€+ – Pageblitz ab 19,90 €/Monat</span>
@@ -1748,7 +1748,7 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 32, filter: "blur(16px)" }}
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     transition={{ duration: 0.9, delay: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 block"
+                    className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-lime-400 to-yellow-300 block"
                     style={{ backgroundSize: '200% 200%', animation: 'gradient-text-shimmer 8s ease infinite' }}
                   >
                     Website in 3 Minuten.
@@ -1782,7 +1782,7 @@ export default function LandingPage() {
                   </Button>
                   <button
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-700 font-medium border border-violet-300 hover:border-violet-500 hover:text-violet-950 bg-transparent"}`}
+                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-lime-700 font-medium border border-lime-300 hover:border-lime-500 hover:text-gray-900 bg-transparent"}`}
                   >
                     Beispiele ansehen
                     <ChevronDown className="ml-2 w-4 h-4" />
@@ -1821,7 +1821,7 @@ export default function LandingPage() {
                 <div className="relative">
                   {/* Glow behind the browser */}
                   <div
-                    className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-blue-500/20 blur-3xl rounded-full pointer-events-none"
+                    className="absolute -inset-4 bg-gradient-to-r from-lime-400/20 via-lime-500/15 to-yellow-400/15 blur-3xl rounded-full pointer-events-none"
                     style={{ animation: 'gradient-orb-drift 14s ease-in-out infinite' }}
                   />
                   <GhostWebsiteCreation />
@@ -1836,11 +1836,11 @@ export default function LandingPage() {
       <section className="py-20 border-y border-white/5 relative overflow-hidden">
         {/* Animated gradient orbs */}
         <div
-          className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/8 rounded-full blur-3xl pointer-events-none"
+          className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 bg-lime-500/8 rounded-full blur-3xl pointer-events-none"
           style={{ animation: 'gradient-orb-drift 18s ease-in-out infinite' }}
         />
         <div
-          className="absolute -right-40 top-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500/6 rounded-full blur-3xl pointer-events-none"
+          className="absolute -right-40 top-1/2 -translate-y-1/2 w-80 h-80 bg-lime-500/6 rounded-full blur-3xl pointer-events-none"
           style={{ animation: 'gradient-orb-drift-alt 22s ease-in-out infinite' }}
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -1891,7 +1891,7 @@ export default function LandingPage() {
                 className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-colors duration-500 cursor-default ${
                   isDark
                     ? "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/20"
-                    : "bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 border-gray-100"
+                    : "bg-gray-50 hover:bg-lime-50 hover:border-lime-200 border-gray-100"
                 }`}
               >
                 <motion.span
@@ -1952,8 +1952,8 @@ export default function LandingPage() {
       {/* GMB Feature Callout */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-1/4 top-0 w-96 h-96 bg-violet-500/8 blur-[120px] rounded-full" />
-          <div className="absolute right-1/4 bottom-0 w-64 h-64 bg-blue-500/8 blur-[100px] rounded-full" />
+          <div className="absolute left-1/4 top-0 w-96 h-96 bg-lime-500/8 blur-[120px] rounded-full" />
+          <div className="absolute right-1/4 bottom-0 w-64 h-64 bg-lime-400/8 blur-[100px] rounded-full" />
         </div>
         <div className="max-w-5xl mx-auto px-6">
           <motion.div
@@ -1961,11 +1961,11 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className={`rounded-3xl border p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-violet-50/60 border-violet-200/60"}`}
+            className={`rounded-3xl border p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-lime-50/60 border-lime-200/60"}`}
           >
             {/* Left: Google Maps icon + illustration */}
             <div className="flex-shrink-0 relative">
-              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl flex items-center justify-center shadow-xl ${isDark ? "bg-[#1a1a2e] border border-white/10" : "bg-white border border-violet-100"}`}>
+              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl flex items-center justify-center shadow-xl ${isDark ? "bg-[#1a1a2e] border border-white/10" : "bg-white border border-lime-100"}`}>
                 <svg viewBox="0 0 48 48" className="w-14 h-14 md:w-20 md:h-20" fill="none">
                   <path d="M24 4C15.163 4 8 11.163 8 20c0 10.5 16 28 16 28s16-17.5 16-28c0-8.837-7.163-16-16-16z" fill="#EA4335"/>
                   <circle cx="24" cy="20" r="6" fill="white"/>
@@ -1978,7 +1978,7 @@ export default function LandingPage() {
 
             {/* Right: Text */}
             <div className="flex-1 text-center md:text-left">
-              <div className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4 ${isDark ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "bg-violet-100 text-violet-700 border border-violet-200"}`}>
+              <div className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4 ${isDark ? "bg-lime-500/20 text-lime-300 border border-lime-500/30" : "bg-lime-100 text-lime-700 border border-lime-200"}`}>
                 <span>⚡</span> 1-Klick Import
               </div>
               <h3 className={`text-2xl md:text-3xl font-semibold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"}`}>
@@ -1990,7 +1990,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center md:justify-start justify-center gap-3">
                 <button
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className={`flex items-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-full transition-all ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-600 text-white hover:bg-violet-700"}`}
+                  className={`flex items-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-full transition-all ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-600 text-white hover:bg-lime-700"}`}
                 >
                   Jetzt GMB-Daten importieren
                   <ArrowRight className="w-4 h-4" />
@@ -2044,7 +2044,7 @@ export default function LandingPage() {
         <Button
           size="lg"
           onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
         >
           Jetzt starten
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -2080,7 +2080,7 @@ export default function LandingPage() {
 
             <div className="relative">
               <div
-                className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl pointer-events-none"
+                className="absolute inset-0 bg-gradient-to-r from-lime-500/10 to-lime-500/10 blur-3xl pointer-events-none"
                 style={{ animation: 'gradient-orb-drift-alt 16s ease-in-out infinite' }}
               />
               <div className="relative rounded-3xl border border-white/10 bg-white/5 p-8 space-y-4">
@@ -2147,7 +2147,7 @@ export default function LandingPage() {
       {/* ── KI-Chat Spotlight ─────────────────────────────────────────────── */}
       <section className="py-32 relative overflow-hidden">
         <GradientOrb className="w-[600px] h-[600px] bg-pink-500/10 -left-40 top-10" delay={0.2} />
-        <GradientOrb className="w-[400px] h-[400px] bg-purple-500/8 right-0 bottom-0" delay={0.4} />
+        <GradientOrb className="w-[400px] h-[400px] bg-lime-500/8 right-0 bottom-0" delay={0.4} />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             {/* Left: Text */}
@@ -2365,7 +2365,7 @@ export default function LandingPage() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className={`btn-shimmer flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
+              className={`btn-shimmer flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-600 text-white hover:bg-lime-700"}`}
             >
               Jetzt einrichten
               <ArrowRight className="w-4 h-4" />
@@ -2471,11 +2471,11 @@ export default function LandingPage() {
       <section id="pricing" className="py-32 relative overflow-hidden">
         {/* Animated gradient orbs */}
         <div
-          className="absolute -left-48 top-1/3 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none"
+          className="absolute -left-48 top-1/3 w-[500px] h-[500px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none"
           style={{ animation: 'gradient-orb-drift 20s ease-in-out infinite' }}
         />
         <div
-          className="absolute -right-48 bottom-1/3 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-3xl pointer-events-none"
+          className="absolute -right-48 bottom-1/3 w-[400px] h-[400px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none"
           style={{ animation: 'gradient-orb-drift-alt 24s ease-in-out infinite' }}
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -2486,10 +2486,10 @@ export default function LandingPage() {
 
           <div className="flex justify-center">
             {/* Pricing card */}
-            <div className={`relative p-1 rounded-3xl w-full max-w-md transition-colors duration-500 ${isDark ? "bg-gradient-to-b from-white/20 to-white/5" : "bg-gradient-to-b from-violet-200/60 to-violet-100/30"}`}>
-              <div className={`rounded-[22px] p-10 border h-full flex flex-col transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-violet-200/60"}`}>
+            <div className={`relative p-1 rounded-3xl w-full max-w-md transition-colors duration-500 ${isDark ? "bg-gradient-to-b from-white/20 to-white/5" : "bg-gradient-to-b from-lime-200/60 to-lime-100/30"}`}>
+              <div className={`rounded-[22px] p-10 border h-full flex flex-col transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-lime-200/60"}`}>
                 <div className="text-center mb-10">
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-5 transition-colors duration-500 ${isDark ? "bg-white/10 text-white/60" : "bg-violet-100 text-violet-700"}`}>
+                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-5 transition-colors duration-500 ${isDark ? "bg-white/10 text-white/60" : "bg-lime-100 text-lime-700"}`}>
                     Pageblitz Pro
                   </div>
                   {/* Billing toggle */}
@@ -2497,13 +2497,13 @@ export default function LandingPage() {
                     <div className={`flex p-0.5 rounded-full border transition-colors duration-500 ${isDark ? "bg-white/5 border-white/10" : "bg-gray-100 border-gray-200"}`}>
                       <button
                         onClick={() => setBillingYearly(true)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? (isDark ? 'bg-white text-black' : 'bg-violet-950 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? (isDark ? 'bg-white text-black' : 'bg-gray-900 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Jährlich
                       </button>
                       <button
                         onClick={() => setBillingYearly(false)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? (isDark ? 'bg-white text-black' : 'bg-violet-950 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? (isDark ? 'bg-white text-black' : 'bg-gray-900 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Monatlich
                       </button>
@@ -2564,7 +2564,7 @@ export default function LandingPage() {
 
                 <Button
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
                 >
                   7 Tage gratis starten
                 </Button>
@@ -2594,7 +2594,7 @@ export default function LandingPage() {
                 <span className={`text-base font-medium transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-400"}`}>Webagentur</span>
               </div>
               <div className="text-center">
-                <span className={`text-base font-semibold transition-colors duration-500 ${isDark ? "text-white" : "text-violet-950"}`}>Pageblitz ✦</span>
+                <span className={`text-base font-semibold transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz ✦</span>
               </div>
             </div>
             {/* Rows */}
@@ -2614,18 +2614,18 @@ export default function LandingPage() {
               >
                 <div className={`text-sm font-medium self-center transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-700"}`}>{row.label}</div>
                 <div className={`text-center text-sm self-center transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-400"}`}>{row.agency}</div>
-                <div className={`text-center text-sm font-semibold self-center transition-colors duration-500 ${isDark ? "text-green-400" : "text-violet-700"}`}>{row.us}</div>
+                <div className={`text-center text-sm font-semibold self-center transition-colors duration-500 ${isDark ? "text-green-400" : "text-lime-700"}`}>{row.us}</div>
               </div>
             ))}
             {/* Footer CTA */}
-            <div className={`border-t px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-violet-50/50 border-violet-100"}`}>
+            <div className={`border-t px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-lime-50/50 border-lime-100"}`}>
               <p className={`text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}>
                 Ersparnis im ersten Jahr: <span className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>bis zu 8.000 €</span>
                 {billingYearly && <span className={`block text-xs mt-1 ${isDark ? "text-white/30" : "text-gray-400"}`}>* bei jährlicher Zahlung · 24,90 €/Mo. bei monatlicher Abrechnung</span>}
               </p>
               <button
                 onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
               >
                 Jetzt kostenlos starten
                 <ArrowRight className="w-4 h-4" />
@@ -2643,11 +2643,11 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
         {/* Animated gradient orbs */}
         <div
-          className="absolute left-1/4 -top-20 w-[600px] h-[600px] -translate-x-1/2 bg-indigo-500/8 rounded-full blur-3xl pointer-events-none"
+          className="absolute left-1/4 -top-20 w-[600px] h-[600px] -translate-x-1/2 bg-lime-500/8 rounded-full blur-3xl pointer-events-none"
           style={{ animation: 'gradient-orb-drift 22s ease-in-out infinite' }}
         />
         <div
-          className="absolute right-1/4 -bottom-20 w-[500px] h-[500px] translate-x-1/2 bg-purple-500/6 rounded-full blur-3xl pointer-events-none"
+          className="absolute right-1/4 -bottom-20 w-[500px] h-[500px] translate-x-1/2 bg-lime-500/6 rounded-full blur-3xl pointer-events-none"
           style={{ animation: 'gradient-orb-drift-alt 18s ease-in-out infinite' }}
         />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
@@ -2685,7 +2685,7 @@ export default function LandingPage() {
               animate={{ scale: [1, 1.18, 1], opacity: [0.25, 0.55, 0.25] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className={`absolute inset-0 rounded-full blur-2xl pointer-events-none ${
-                isDark ? "bg-white/20" : "bg-violet-500/35"
+                isDark ? "bg-white/20" : "bg-lime-500/35"
               }`}
             />
             <Button
