@@ -2320,6 +2320,11 @@ export const appRouter = router({
         }
         return { success: true, deleted };
       }),
+    supportChats: adminProcedure
+      .query(async () => {
+        const transcripts = await getChatTranscriptsByWebsiteId(0, 100);
+        return transcripts;
+      }),
   }),
 
   // ── Admin: Outreach ────────────────────────────────

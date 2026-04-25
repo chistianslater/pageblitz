@@ -808,11 +808,11 @@ export async function upsertChatTranscript(
   websiteId: number,
   sessionId: string,
   messages: Array<{ role: string; content: string }>,
-  opts?: { chatLeadId?: number; visitorName?: string; summary?: string }
+  opts?: { chatLeadId?: number; visitorName?: string; summary?: string; expiryDays?: number }
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+  const expiresAt = new Date(Date.now() + (opts?.expiryDays ?? 30) * 24 * 60 * 60 * 1000);
 
   await db
     .insert(chatTranscripts)

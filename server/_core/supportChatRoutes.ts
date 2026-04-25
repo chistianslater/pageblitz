@@ -1,6 +1,7 @@
 import { Express, Request, Response } from "express";
 import { invokeLLM } from "./llm";
 import { sendEmail } from "./email";
+import { upsertChatTranscript } from "../db";
 
 const ipUsage = new Map<string, { count: number; reset: number }>();
 setInterval(() => {
@@ -105,6 +106,10 @@ export function registerSupportChatRoutes(app: Express) {
         showSupportForm = true;
       }
 
+      // Log transcript (fire-and-forget, 7 day expiry)
+      const allMessages = [...updated, { role: "assistant" as const, content }];
+      upsertChatTranscript(0, sessionId || "unknown", allMessages, { expiryDays: 7 }).catch(() => {});
+
       res.json({ content, showSupportForm });
     } catch (err) {
       console.error("[SupportChat] Error:", err);
@@ -134,7 +139,7 @@ export function registerSupportChatRoutes(app: Express) {
         : "Kein Chat-Verlauf";
 
       await sendEmail({
-        to: "christian@schau-horch.de",
+        to: "hello@pageblitz.de",
         subject: `🎫 Support-Ticket: ${name || email}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9fafb; border-radius: 12px;">
