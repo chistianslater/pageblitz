@@ -4,6 +4,7 @@
  * Opens without any admin chrome so the layout fills the full viewport.
  */
 
+import { useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import {
   BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
@@ -190,6 +191,18 @@ const LAYOUTS: Record<string, { component: React.ComponentType<any>; label: stri
 export default function LayoutPreviewStandalone() {
   const [match, params] = useRoute("/layout-preview/:key");
   const [location] = useLocation();
+
+  // Override min-h-screen so the hero section doesn't fill the entire iframe viewport
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      .min-h-screen { min-height: auto !important; }
+      .min-h-\\[100vh\\] { min-height: auto !important; }
+      .h-screen { height: auto !important; min-height: 600px !important; }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
 
   // Parse query params
   const urlParams = new URLSearchParams(window.location.search);

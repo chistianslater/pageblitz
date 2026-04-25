@@ -1794,7 +1794,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
         }
 
-        if ((source === "admin" || source === "external") && (business as any)?.category) {
+        // Manual StartPage flow: name + category already set, skip to first real step
+        const isManualWithData = source === "external"
+          && (business as any)?.category?.trim()
+          && business?.name && business.name !== "Neues Unternehmen"
+          && business?.placeId?.startsWith("self-");
+
+        if (isManualWithData) {
+          const translatedCategory = translateGmbCategory((business as any).category);
+          setData((p) => ({ ...p, businessCategory: translatedCategory, businessName: business!.name }));
+          setCategoryConfirmed(true);
+          const firstStep = dynamicStepOrder[0] || "addressingMode";
+          setCurrentStep(firstStep);
+          await addBotMessage(getStepPrompt(firstStep), 800);
+        } else if ((source === "admin" || source === "external") && (business as any)?.category) {
           // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
           const translatedCategory = translateGmbCategory((business as any).category);
           setData((p) => ({ ...p, businessCategory: translatedCategory }));

@@ -8,6 +8,7 @@
  * not like a squished mobile layout.
  */
 
+import { useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import { DEFAULT_LAYOUT_COLOR_SCHEMES } from "@shared/layoutConfig";
@@ -16,6 +17,19 @@ export default function VariantPreviewPage() {
   const params = new URLSearchParams(window.location.search);
   const websiteId = parseInt(params.get("websiteId") || "0", 10);
   const layout    = (params.get("layout") || "ELEGANT").toUpperCase();
+
+  // Override min-h-screen so the hero doesn't fill the entire iframe viewport.
+  // Without this, 100vh = iframe height (2400px) and only the hero is visible.
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      .min-h-screen { min-height: auto !important; }
+      .min-h-\\[100vh\\] { min-height: auto !important; }
+      .h-screen { height: auto !important; min-height: 600px !important; }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
 
   const { data, isLoading } = trpc.website.get.useQuery(
     { id: websiteId },
