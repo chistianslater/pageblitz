@@ -15,6 +15,7 @@ import {
   contactSubmissions, InsertContactSubmission, ContactSubmission,
   magicLinkTokens,
   chatTranscripts, ChatTranscript,
+  chatLeads, lifecycleEmails, appointmentSettings, appointments,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -628,9 +629,17 @@ export async function listOnboardingInProgress(limit = 50, offset = 0): Promise<
 export async function deleteWebsite(websiteId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  // Delete dependent records first
+  // Delete ALL dependent records first (order doesn't matter since no FK constraints between them)
   await db.delete(onboardingResponses).where(eq(onboardingResponses.websiteId, websiteId));
   await db.delete(subscriptions).where(eq(subscriptions.websiteId, websiteId));
+  try { await db.delete(onboardingEvents).where(eq(onboardingEvents.websiteId, websiteId)); } catch {}
+  try { await db.delete(lifecycleEmails).where(eq(lifecycleEmails.websiteId, websiteId)); } catch {}
+  try { await db.delete(generationJobs).where(eq(generationJobs.websiteId, websiteId)); } catch {}
+  try { await db.delete(contactSubmissions).where(eq(contactSubmissions.websiteId, websiteId)); } catch {}
+  try { await db.delete(chatLeads).where(eq(chatLeads.websiteId, websiteId)); } catch {}
+  try { await db.delete(chatTranscripts).where(eq(chatTranscripts.websiteId, websiteId)); } catch {}
+  try { await db.delete(appointmentSettings).where(eq(appointmentSettings.websiteId, websiteId)); } catch {}
+  try { await db.delete(appointments).where(eq(appointments.websiteId, websiteId)); } catch {}
   await db.delete(generatedWebsites).where(eq(generatedWebsites.id, websiteId));
 }
 
