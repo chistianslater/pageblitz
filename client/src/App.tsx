@@ -130,7 +130,7 @@ function Router() {
   // Admin routes are rendered outside the key={location} Suspense so that
   // DashboardLayout stays mounted across sub-navigations (no sidebar flicker).
   // AdminRouter handles its own internal key={location} for page content only.
-  if (location.startsWith("/admin")) {
+  if (location.startsWith("/admin") && !location.startsWith("/admin-login")) {
     return <AdminRouter />;
   }
 
