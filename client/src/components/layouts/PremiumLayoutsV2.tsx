@@ -897,7 +897,7 @@ function ContactSection({ websiteData, cs, isLoading, dark = false, displayFont 
   const phone = getContactItem(websiteData, 'Phone');
   const address = getContactItem(websiteData, 'MapPin');
   const hours = getContactItem(websiteData, 'Clock');
-  const locked = websiteData?.addOnContactForm === false;
+  const locked = websiteData?.addOnContactForm !== true;
   const { datenschutzHref } = useLegalLinks(websiteData);
 
   // Get form fields from websiteData or use defaults.

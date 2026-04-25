@@ -1013,7 +1013,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     headlineFont: "",
     headlineSize: "large", // Default: extra groß
     addressingMode: 'du',
-  addOnContactForm: true,
+  addOnContactForm: false,
     contactFormFields: [
       { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
       { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
