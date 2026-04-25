@@ -761,3 +761,7 @@ body {
 .pb-reveal-delay-3 { animation-delay: 0.3s; }
 .pb-reveal-delay-4 { animation-delay: 0.4s; }
 .pb-reveal-delay-5 { animation-delay: 0.5s; }
+
+/* Hide scrollbar for mobile swipe containers */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }

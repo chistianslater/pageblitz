@@ -108,7 +108,10 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
   const [round, setRound] = useState(() => Math.floor(Math.random() * 5));
   const [selected, setSelected] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [cardWidth, setCardWidth] = useState(320);
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
   const selectMutation = trpc.selfService.selectWebsiteTemplate.useMutation();
 
   useEffect(() => {
@@ -116,8 +119,14 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
     if (!el) return;
     const update = () => {
       const cw = el.clientWidth;
-      const w = Math.floor((cw - 32) / 3);
-      setCardWidth(Math.max(200, Math.min(400, w)));
+      const mobile = cw < 640;
+      setIsMobile(mobile);
+      if (mobile) {
+        setCardWidth(Math.min(cw - 48, 340));
+      } else {
+        const w = Math.floor((cw - 32) / 3);
+        setCardWidth(Math.max(200, Math.min(400, w)));
+      }
     };
     update();
     const ro = new ResizeObserver(update);
@@ -125,8 +134,21 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
     return () => ro.disconnect();
   }, []);
 
+  // Track scroll position for dot indicators on mobile
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !isMobile) return;
+    const handleScroll = () => {
+      const scrollLeft = el.scrollLeft;
+      const itemWidth = el.scrollWidth / 3;
+      setActiveSlide(Math.round(scrollLeft / itemWidth));
+    };
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [isMobile]);
+
   const variants = getVariantLayouts(industryKey, round);
-  const handleOtherLayouts = () => { setRound((r) => r + 1); setSelected(null); };
+  const handleOtherLayouts = () => { setRound((r) => r + 1); setSelected(null); setActiveSlide(0); };
 
   const handleConfirm = async () => {
     if (!selected) return;
@@ -145,42 +167,70 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
       <div className="flex-shrink-0 pt-5 pb-3 px-6 text-center">
         <h1 className="text-xl font-bold text-white mb-0.5">Welcher Stil passt zu dir?</h1>
         <p className="text-slate-400 text-xs max-w-sm mx-auto">
-          Klicke auf ein Design, um es auszuwählen. Farben &amp; Inhalte lassen sich jederzeit anpassen.
+          {isMobile ? "Wische, um alle Designs zu sehen. Tippe zum Auswählen." : "Klicke auf ein Design, um es auszuwählen."} Farben &amp; Inhalte lassen sich jederzeit anpassen.
         </p>
       </div>
 
-      <div ref={containerRef} className="flex-1 min-h-0 flex items-start justify-center gap-4 px-4 py-2 overflow-y-auto">
-        {variants.map((layout) => {
-          const isSelected = selected === layout;
-          const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout] as any)?.primary ?? "#6366f1";
-          return (
-            <button
-              key={`${round}-${layout}`}
-              type="button"
-              onClick={() => setSelected(layout)}
-              className={`flex-shrink-0 rounded-xl overflow-hidden transition-all duration-200 ${isSelected ? 'ring-2 ring-offset-2 ring-offset-slate-950 ring-blue-500 scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'}`}
-              style={{
-                width: cardWidth,
-                height: PREVIEW_IFRAME_H * scale,
-                boxShadow: isSelected ? `0 0 24px ${accentColor}40` : '0 8px 32px rgba(0,0,0,0.5)',
-              }}
-            >
-              <iframe
-                src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
-                width={iframeW}
-                height={PREVIEW_IFRAME_H}
+      <div ref={containerRef} className="flex-1 min-h-0 flex flex-col">
+        <div
+          ref={scrollRef}
+          className={
+            isMobile
+              ? "flex-1 min-h-0 flex gap-4 px-6 py-2 overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide"
+              : "flex-1 min-h-0 flex items-start justify-center gap-4 px-4 py-2 overflow-y-auto"
+          }
+          style={isMobile ? { scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } : undefined}
+        >
+          {variants.map((layout) => {
+            const isSelected = selected === layout;
+            const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout] as any)?.primary ?? "#6366f1";
+            return (
+              <button
+                key={`${round}-${layout}`}
+                type="button"
+                onClick={() => setSelected(layout)}
+                className={`flex-shrink-0 rounded-xl overflow-hidden transition-all duration-200 ${isMobile ? "snap-center" : ""} ${isSelected ? 'ring-2 ring-offset-2 ring-offset-slate-950 ring-blue-500 scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'}`}
                 style={{
-                  transformOrigin: "top left",
-                  transform: `scale(${scale})`,
-                  pointerEvents: "none",
-                  border: "none",
-                  display: "block",
+                  width: cardWidth,
+                  height: PREVIEW_IFRAME_H * scale,
+                  boxShadow: isSelected ? `0 0 24px ${accentColor}40` : '0 8px 32px rgba(0,0,0,0.5)',
                 }}
-                title={`Preview ${layout}`}
+              >
+                <iframe
+                  src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
+                  width={iframeW}
+                  height={PREVIEW_IFRAME_H}
+                  style={{
+                    transformOrigin: "top left",
+                    transform: `scale(${scale})`,
+                    pointerEvents: "none",
+                    border: "none",
+                    display: "block",
+                  }}
+                  title={`Preview ${layout}`}
+                />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Dot indicators on mobile */}
+        {isMobile && (
+          <div className="flex-shrink-0 flex justify-center gap-2 py-2">
+            {variants.map((layout, i) => (
+              <button
+                key={layout}
+                type="button"
+                onClick={() => {
+                  scrollRef.current?.children[i]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  i === activeSlide ? "bg-blue-500 w-5" : selected === layout ? "bg-blue-400/60" : "bg-slate-600"
+                }`}
               />
-            </button>
-          );
-        })}
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex-shrink-0 flex flex-col items-center gap-1.5 px-6 pt-2"
@@ -5950,6 +6000,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       pointerEvents: 'none',
                       zIndex: 10,
                     }}
+                  />
+
+                  {/* Click-to-info overlay — shows tooltip when user clicks on the non-interactive preview */}
+                  <div
+                    style={{ position: 'absolute', inset: 0, zIndex: 20, cursor: 'default' }}
+                    onClick={() => toast.info("Das ist deine Live-Vorschau. Beantworte die Fragen im Chat – alle Inhalte, Bilder und Farben lassen sich dort anpassen.", { duration: 4000 })}
                   />
                 </div>
               </div>

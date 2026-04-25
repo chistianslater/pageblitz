@@ -196,9 +196,9 @@ export default function LayoutPreviewStandalone() {
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
-      .min-h-screen { min-height: auto !important; }
-      .min-h-\\[100vh\\] { min-height: auto !important; }
-      .h-screen { height: auto !important; min-height: 600px !important; }
+      .min-h-screen { min-height: 700px !important; }
+      .min-h-\\[100vh\\] { min-height: 700px !important; }
+      .h-screen { height: 700px !important; }
     `;
     document.head.appendChild(style);
     return () => { document.head.removeChild(style); };
