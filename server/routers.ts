@@ -5065,6 +5065,7 @@ Wichtige Felder im JSON:
       .input(z.object({
         websiteId: z.number(),
         email: z.string().email(),
+        marketingConsent: z.boolean().optional().default(false),
       }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
@@ -5072,6 +5073,7 @@ Wichtige Felder im JSON:
         await updateWebsite(input.websiteId, {
           customerEmail: input.email,
           captureStatus: "email_captured",
+          ...(input.marketingConsent ? { marketingConsent: true, marketingConsentAt: Date.now() } : {}),
         });
         // Lifecycle-Email-Sequenz starten (fire-and-forget, Fehler darf nicht blocken)
         try {

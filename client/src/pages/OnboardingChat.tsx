@@ -855,6 +855,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
   const [exitIntentEmail, setExitIntentEmail] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   // Only show exit-intent overlay once per session (not on every upward mouse move)
   const exitIntentShownRef = useRef(false);
@@ -2375,7 +2376,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const isAtStart = !data.businessCategory;
           if (!alreadyHasEmail && websiteId && isAtStart) {
             saveCustomerEmailMutation.mutate(
-              { websiteId, email: val },
+              { websiteId, email: val, marketingConsent },
               {
                 onSuccess: () => {
                   toast.success("E-Mail gespeichert! ✅");
@@ -5462,6 +5463,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   </div>
                 </div>
               )}
+              {/* Marketing consent checkbox — shown on email step */}
+              {currentStep === "email" && (
+                <label className="flex items-start gap-2.5 cursor-pointer mb-2">
+                  <input
+                    type="checkbox"
+                    checked={marketingConsent}
+                    onChange={(e) => setMarketingConsent(e.target.checked)}
+                    className="mt-0.5 shrink-0 w-4 h-4 rounded accent-blue-500 cursor-pointer"
+                  />
+                  <span className="text-slate-400 text-xs leading-relaxed">
+                    Ich möchte gelegentlich per E-Mail über Neuigkeiten und Tipps informiert werden.{" "}
+                    <a href="/datenschutz" target="_blank" className="text-blue-400 underline underline-offset-2 hover:text-blue-300">Datenschutz</a>
+                  </span>
+                </label>
+              )}
               <div className="flex gap-2">
                 {/* AI generate button for text fields */}
                 {["tagline", "description", "usp", "targetAudience"].includes(currentStep) && (
@@ -6113,6 +6129,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           onChange={(e) => setExitIntentEmail(e.target.value)}
                           className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500"
                         />
+                        <label className="flex items-start gap-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={marketingConsent}
+                            onChange={(e) => setMarketingConsent(e.target.checked)}
+                            className="mt-0.5 shrink-0 w-4 h-4 rounded accent-blue-500 cursor-pointer"
+                          />
+                          <span className="text-slate-400 text-xs leading-relaxed">
+                            Ich möchte gelegentlich per E-Mail über Neuigkeiten und Tipps informiert werden.{" "}
+                            <a href="/datenschutz" target="_blank" className="text-blue-400 underline underline-offset-2 hover:text-blue-300">Datenschutz</a>
+                          </span>
+                        </label>
                         <button
                           onClick={async () => {
                             const email = exitIntentEmail.trim();
@@ -6123,7 +6151,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             setData(p => ({ ...p, email }));
                             await trySaveStep(STEP_ORDER.indexOf("email"), { email });
                             if (websiteId) {
-                              saveCustomerEmailMutation.mutate({ websiteId, email });
+                              saveCustomerEmailMutation.mutate({ websiteId, email, marketingConsent });
                             }
                             toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
                             setShowExitIntent(false);

@@ -98,6 +98,9 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   // Reservation lifecycle (external leads only) – when the draft expires + how often extended
   reservedUntil: timestamp("reservedUntil"),
   extensionsUsed: int("extensionsUsed").notNull().default(0),
+  // GDPR marketing consent
+  marketingConsent: boolean("marketingConsent").default(false),
+  marketingConsentAt: bigint("marketingConsentAt", { mode: "number" }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
