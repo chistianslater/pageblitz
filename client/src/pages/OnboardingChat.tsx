@@ -6245,7 +6245,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
         </div>
       )}
-      <HelpWidget />
+      <HelpWidget websiteId={websiteId} />
     </motion.div>
   );
 }

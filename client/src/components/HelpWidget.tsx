@@ -7,7 +7,7 @@ interface Message {
   content: string;
 }
 
-export default function HelpWidget() {
+export default function HelpWidget({ websiteId }: { websiteId?: number }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -46,7 +46,7 @@ export default function HelpWidget() {
       const res = await fetch("/api/support-chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updated, sessionId: sessionId.current }),
+        body: JSON.stringify({ messages: updated, sessionId: sessionId.current, websiteId }),
       });
 
       if (res.status === 429) {

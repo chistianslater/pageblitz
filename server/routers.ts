@@ -26,8 +26,8 @@ import {
   getChatTranscriptsByWebsiteId, deleteChatTranscriptById,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
-import { chatLeads, generatedWebsites, appointmentSettings, appointments } from "../drizzle/schema";
-import { desc, eq as eqDrizzle, and as andDrizzle, gte as gteDrizzle } from "drizzle-orm";
+import { chatLeads, generatedWebsites, appointmentSettings, appointments, chatTranscripts } from "../drizzle/schema";
+import { desc, eq as eqDrizzle, and as andDrizzle, gte as gteDrizzle, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -2321,9 +2321,43 @@ export const appRouter = router({
         return { success: true, deleted };
       }),
     supportChats: adminProcedure
-      .query(async () => {
-        const transcripts = await getChatTranscriptsByWebsiteId(0, 100);
-        return transcripts;
+      .input(z.object({ websiteId: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const wId = input?.websiteId;
+        if (wId !== undefined) {
+          return getChatTranscriptsByWebsiteId(wId, 50);
+        }
+        // All support chats (websiteId=0 for unlinked + all others)
+        const db = await getDb();
+        if (!db) return [];
+        const now = new Date();
+        return db.select().from(chatTranscripts)
+          .where(gteDrizzle(chatTranscripts.expiresAt, now))
+          .orderBy(desc(chatTranscripts.updatedAt))
+          .limit(200);
+      }),
+    supportChatCount: adminProcedure
+      .input(z.object({ websiteIds: z.array(z.number()) }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return {};
+        const now = new Date();
+        const rows = await db.select({
+          websiteId: chatTranscripts.websiteId,
+          count: sql<number>`count(*)`,
+          totalMessages: sql<number>`sum(${chatTranscripts.messageCount})`,
+        })
+          .from(chatTranscripts)
+          .where(andDrizzle(
+            gteDrizzle(chatTranscripts.expiresAt, now),
+            sql`${chatTranscripts.websiteId} IN (${sql.join(input.websiteIds.map(id => sql`${id}`), sql`, `)})`
+          ))
+          .groupBy(chatTranscripts.websiteId);
+        const result: Record<number, { count: number; totalMessages: number }> = {};
+        for (const r of rows) {
+          result[r.websiteId] = { count: r.count, totalMessages: r.totalMessages };
+        }
+        return result;
       }),
   }),
 

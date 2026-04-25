@@ -63,9 +63,10 @@ export function registerSupportChatRoutes(app: Express) {
         req.socket.remoteAddress ||
         "unknown";
 
-      const { messages, sessionId } = req.body as {
+      const { messages, sessionId, websiteId: wId } = req.body as {
         messages: Array<{ role: "user" | "assistant"; content: string }>;
         sessionId?: string;
+        websiteId?: number;
       };
 
       if (!messages || !Array.isArray(messages)) {
@@ -84,6 +85,7 @@ export function registerSupportChatRoutes(app: Express) {
       }
 
       const trimmed = messages.slice(-15);
+      const updated = trimmed;
 
       const llmResult = await invokeLLM({
         messages: [
@@ -107,8 +109,8 @@ export function registerSupportChatRoutes(app: Express) {
       }
 
       // Log transcript (fire-and-forget, 7 day expiry)
-      const allMessages = [...updated, { role: "assistant" as const, content }];
-      upsertChatTranscript(0, sessionId || "unknown", allMessages, { expiryDays: 7 }).catch(() => {});
+      const allMessages = [...messages, { role: "assistant" as const, content }];
+      upsertChatTranscript(wId || 0, sessionId || "unknown", allMessages, { expiryDays: 7 }).catch(() => {});
 
       res.json({ content, showSupportForm });
     } catch (err) {
