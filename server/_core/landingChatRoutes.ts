@@ -1,6 +1,7 @@
 import { Express, Request, Response } from "express";
 import { invokeLLM } from "./llm";
 import { sendEmail } from "./email";
+import { upsertChatTranscript } from "../db";
 
 // ── IP-based rate limit: 30 messages per IP per 24 h ───────────────────────
 const ipUsage = new Map<string, { count: number; reset: number }>();
@@ -148,6 +149,10 @@ export function registerLandingChatRoutes(app: Express) {
           // ignore JSON parse errors
         }
       }
+
+      // Log transcript (7 day expiry, websiteId=-1 for landing page chats)
+      const allMessages = [...messages, { role: "assistant" as const, content }];
+      upsertChatTranscript(-1, sessionId || "unknown", allMessages, { expiryDays: 7 }).catch(() => {});
 
       return res.json({ content, leadCaptured });
     } catch (err) {

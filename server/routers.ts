@@ -2327,7 +2327,7 @@ export const appRouter = router({
         if (wId !== undefined) {
           return getChatTranscriptsByWebsiteId(wId, 50);
         }
-        // All support chats (websiteId=0 for unlinked + all others)
+        // All support + landing chats (websiteId=0 for support, -1 for landing)
         const db = await getDb();
         if (!db) return [];
         const now = new Date();

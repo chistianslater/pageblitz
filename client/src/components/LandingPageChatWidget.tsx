@@ -275,6 +275,12 @@ export default function LandingPageChatWidget() {
                 <Send className="w-4 h-4 text-white" />
               </button>
             </div>
+            <a
+              href="mailto:hello@pageblitz.de"
+              className="block text-center text-white/30 hover:text-white/60 text-[10px] mt-1.5 transition-colors"
+            >
+              Lieber direkt per E-Mail? hello@pageblitz.de
+            </a>
           </motion.div>
         )}
       </AnimatePresence>

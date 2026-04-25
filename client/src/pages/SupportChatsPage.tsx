@@ -39,6 +39,8 @@ export default function SupportChatsPage() {
             const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
             const createdAt = chat.createdAt ? new Date(chat.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–";
             const updatedAt = chat.updatedAt ? new Date(chat.updatedAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–";
+            const isLanding = chat.websiteId === -1;
+            const typeLabel = isLanding ? "Landing" : chat.websiteId > 0 ? `Website #${chat.websiteId}` : "Support";
 
             return (
               <div key={chat.id} className="border rounded-xl overflow-hidden bg-card">
@@ -46,8 +48,8 @@ export default function SupportChatsPage() {
                   onClick={() => setExpandedId(isExpanded ? null : chat.id)}
                   className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-muted/50 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-lime-500/15 flex items-center justify-center shrink-0">
-                    <MessageCircle className="w-4 h-4 text-lime-600" />
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isLanding ? "bg-amber-500/15" : "bg-lime-500/15"}`}>
+                    <MessageCircle className={`w-4 h-4 ${isLanding ? "text-amber-500" : "text-lime-600"}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -57,11 +59,11 @@ export default function SupportChatsPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${isLanding ? "bg-amber-500/15 text-amber-500" : "bg-lime-500/15 text-lime-600"}`}>{typeLabel}</span>
+                      <span>·</span>
                       <span>{createdAt}</span>
                       <span>·</span>
                       <span>{chat.messageCount || messages.length} Nachrichten</span>
-                      <span>·</span>
-                      <span className="font-mono text-[10px]">{chat.sessionId?.slice(0, 8)}</span>
                     </div>
                   </div>
                   {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
