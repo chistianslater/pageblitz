@@ -1121,7 +1121,7 @@ function SupportChatButton({ websiteId, chatCount }: { websiteId: number; chatCo
 // ── Onboarding Progress Dialog (per Website) ──────────────
 function ProgressButton({ websiteId }: { websiteId: number }) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading } = trpc.leads.getStepEvents.useQuery(
+  const { data, isLoading } = trpc.onboarding.getStepEvents.useQuery(
     { websiteId },
     { enabled: open }
   );
