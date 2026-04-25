@@ -189,26 +189,37 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
                 key={`${round}-${layout}`}
                 type="button"
                 onClick={() => setSelected(layout)}
-                className={`flex-shrink-0 rounded-xl overflow-hidden transition-all duration-200 ${isMobile ? "snap-center" : ""} ${isSelected ? 'ring-2 ring-offset-2 ring-offset-slate-950 ring-blue-500 scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'}`}
+                className={`relative flex-shrink-0 rounded-2xl transition-all duration-200 ${isMobile ? "snap-center" : ""} ${isSelected ? 'scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'}`}
                 style={{
                   width: cardWidth,
                   height: PREVIEW_IFRAME_H * scale,
-                  boxShadow: isSelected ? `0 0 24px ${accentColor}40` : '0 8px 32px rgba(0,0,0,0.5)',
+                  boxShadow: isSelected ? `0 0 32px ${accentColor}50` : '0 8px 32px rgba(0,0,0,0.5)',
+                  border: isSelected ? '3px solid #3b82f6' : '3px solid transparent',
+                  padding: 0,
                 }}
               >
-                <iframe
-                  src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
-                  width={iframeW}
-                  height={PREVIEW_IFRAME_H}
-                  style={{
-                    transformOrigin: "top left",
-                    transform: `scale(${scale})`,
-                    pointerEvents: "none",
-                    border: "none",
-                    display: "block",
-                  }}
-                  title={`Preview ${layout}`}
-                />
+                <div className="rounded-xl overflow-hidden w-full h-full">
+                  <iframe
+                    src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
+                    width={iframeW}
+                    height={PREVIEW_IFRAME_H}
+                    style={{
+                      transformOrigin: "top left",
+                      transform: `scale(${scale})`,
+                      pointerEvents: "none",
+                      border: "none",
+                      display: "block",
+                    }}
+                    title={`Preview ${layout}`}
+                  />
+                </div>
+                {/* Selected badge */}
+                {isSelected && (
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    Ausgewählt
+                  </div>
+                )}
               </button>
             );
           })}
