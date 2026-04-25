@@ -8,7 +8,7 @@ interface Message {
   content: string;
 }
 
-const PRIMARY = "#e91e8c"; // Pageblitz pink/magenta
+const PRIMARY = "#a3e635"; // Pageblitz neon lime
 
 export default function LandingPageChatWidget() {
   const [, navigate] = useLocation();
@@ -140,7 +140,7 @@ export default function LandingPageChatWidget() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
         onClick={() => (open ? setOpen(false) : openChat())}
-        className="fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white transition-all"
+        className="fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-gray-900 transition-all"
         style={{ background: PRIMARY, boxShadow: `0 8px 32px ${PRIMARY}60` }}
         aria-label="Chat öffnen"
       >
@@ -235,7 +235,7 @@ export default function LandingPageChatWidget() {
                   <p className="text-white/70 text-xs mb-2.5 font-medium">✨ Starte jetzt kostenlos – in 3 Minuten live</p>
                   <button
                     onClick={() => navigate("/start?billing=yearly")}
-                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-sm font-semibold text-gray-900 transition-all hover:brightness-110 active:scale-95"
                     style={{ background: PRIMARY }}
                   >
                     7 Tage gratis – keine Kreditkarte
