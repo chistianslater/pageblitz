@@ -16,6 +16,7 @@ export default function HelpWidget() {
   const [ticketSent, setTicketSent] = useState(false);
   const [ticketName, setTicketName] = useState("");
   const [ticketEmail, setTicketEmail] = useState("");
+  const [ticketPrivacy, setTicketPrivacy] = useState(false);
   const [ticketMessage, setTicketMessage] = useState("");
   const [ticketLoading, setTicketLoading] = useState(false);
   const [msgCount, setMsgCount] = useState(0);
@@ -166,9 +167,22 @@ export default function HelpWidget() {
                   required
                   className="bg-slate-800 border border-slate-600 text-white text-sm px-3 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:border-lime-500 transition-colors resize-none"
                 />
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ticketPrivacy}
+                    onChange={(e) => setTicketPrivacy(e.target.checked)}
+                    className="mt-0.5 shrink-0 w-4 h-4 rounded cursor-pointer"
+                    style={{ accentColor: 'var(--pb-brand)' }}
+                  />
+                  <span className="text-slate-400 text-xs leading-relaxed">
+                    Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
+                    <a href="/datenschutz" target="_blank" className="underline underline-offset-2 hover:brightness-125" style={{ color: 'var(--pb-brand)' }}>Datenschutzerklärung</a> zu. *
+                  </span>
+                </label>
                 <button
                   onClick={sendTicket}
-                  disabled={!ticketEmail.trim() || !ticketMessage.trim() || ticketLoading}
+                  disabled={!ticketEmail.trim() || !ticketMessage.trim() || !ticketPrivacy || ticketLoading}
                   className="bg-lime-500 hover:bg-lime-400 text-gray-900 font-semibold text-sm py-2.5 rounded-xl transition-colors disabled:opacity-40"
                 >
                   {ticketLoading ? "Wird gesendet..." : "Nachricht senden"}
