@@ -1157,7 +1157,7 @@ function ProgressButton({ websiteId }: { websiteId: number }) {
             {data.map((evt: any, i: number) => (
               <div key={i} className="flex items-center gap-2 text-sm py-1.5 border-b border-border/50 last:border-0">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span className="flex-1">{STEP_LABELS[evt.stepName] || evt.stepName}</span>
+                <span className="flex-1">{STEP_LABELS[evt.step] || evt.step}</span>
                 <span className="text-xs text-muted-foreground">
                   {new Date(evt.createdAt).toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                 </span>
