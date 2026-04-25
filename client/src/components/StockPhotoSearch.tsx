@@ -27,12 +27,16 @@ export default function StockPhotoSearch({
   const [page, setPage] = useState(1);
   const [allPhotos, setAllPhotos] = useState<{ id: string; url: string; thumb: string; photographer: string; photographerUrl: string }[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevQueryRef = useRef(defaultQuery);
 
-  // Debounce input 500ms
+  // Debounce input 500ms — only reset when the query actually changed
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      setDebouncedQuery(query.trim());
+      const trimmed = query.trim();
+      if (trimmed === prevQueryRef.current) return;
+      prevQueryRef.current = trimmed;
+      setDebouncedQuery(trimmed);
       setPage(1);
       setAllPhotos([]);
     }, 500);
