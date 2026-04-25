@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+:root {
+  --pb-brand: #a3e635;
+  --pb-brand-hover: #84cc16;
+  --pb-brand-dim: rgba(163, 230, 53, 0.15);
+  --pb-brand-glow: rgba(163, 230, 53, 0.35);
+  --pb-brand-text: #0a0a0a;
+}
+
 html,
 body {
   scroll-behavior: smooth;
