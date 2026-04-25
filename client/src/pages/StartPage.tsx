@@ -1,79 +1,80 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { CATEGORY_GROUPS } from "@shared/gmbCategories";
 
-type Step = "choice" | "manual" | "pick" | "gmb";
+type Step = "choice" | "manual" | "gmb";
 
-// ─────────────────────────── Layout variant helpers ──────────────────────────
+// ─────────────────────────── CategoryPicker ─────────────────────────────────
 
-const VARIANT_FAMILY_RANKINGS: Record<string, [string[], string[], string[]]> = {
-  friseur:    [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
-  beauty:     [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
-  restaurant: [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
-  fitness:    [["dynamic","aurora","nexus","bold","flux"], ["craft","forge","natural","elegant","luxury"],  ["pulse","fresh","clean","clay","modern","warm"]],
-  handwerk:   [["bold","nexus","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  medizin:    [["nexus","aurora","bold","flux","dynamic"], ["forge","natural","elegant","luxury","craft"],  ["pulse","clean","clay","modern","fresh","warm"]],
-  beratung:   [["nexus","aurora","bold","flux","dynamic"], ["forge","elegant","luxury","natural","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
-  tech:       [["aurora","nexus","dynamic","bold","flux"], ["forge","elegant","natural","luxury","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
-  immobilien: [["nexus","aurora","bold","flux","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  auto:       [["nexus","flux","bold","aurora","dynamic"], ["forge","luxury","craft","elegant","natural"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  fotografie: [["aurora","flux","nexus","bold","dynamic"], ["elegant","forge","luxury","natural","craft"],  ["clay","modern","pulse","clean","fresh","warm"]],
-  hotel:      [["flux","aurora","bold","nexus","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["warm","clay","fresh","clean","modern","pulse"]],
-  garten:     [["aurora","nexus","bold","flux","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["warm","fresh","clay","clean","modern","pulse"]],
-};
-
-const DEFAULT_RANKINGS: [string[], string[], string[]] = [
-  ["nexus","aurora","bold","flux","dynamic"],
-  ["forge","elegant","luxury","natural","craft"],
-  ["clay","pulse","fresh","clean","modern","warm"],
-];
-
-const LAYOUT_LABELS: Record<string, string> = {
-  aurora:"Aurora", nexus:"Nexus", bold:"Bold", flux:"Flux", dynamic:"Dynamic",
-  forge:"Forge", elegant:"Elegant", luxury:"Luxury", natural:"Natural", craft:"Craft",
-  clay:"Clay", pulse:"Pulse", fresh:"Fresh", clean:"Clean", warm:"Warm", modern:"Modern",
-};
-
-const LAYOUT_VIBES: Record<string, string> = {
-  aurora:"Dunkel · Kosmisch", nexus:"Präzise · Navy", bold:"Stark · Schwarz-Gold",
-  flux:"Dunkel · Warmes Gold", dynamic:"Energie · Diagonal", forge:"Edel · Zeitlos",
-  elegant:"Warm · Éditoriel", luxury:"Premium · Cinématisch", natural:"Organisch · Erdtöne",
-  craft:"Handwerk · Industrial", clay:"Soft · Verspielt", pulse:"Hell · Vertrauensvoll",
-  fresh:"Frisch · Luftig", clean:"Klar · Minimalistisch", warm:"Herzlich · Einladend",
-  modern:"Modern · Asymmetrisch",
-};
-
-function getLayoutVariants(industryKey: string, round: number): string[] {
-  const families = VARIANT_FAMILY_RANKINGS[industryKey] || DEFAULT_RANKINGS;
-  return families.map((fam) => fam[round % fam.length]);
+function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (cat: string) => void }) {
+  const [search, setSearch] = useState("");
+  const filtered = search.trim()
+    ? CATEGORY_GROUPS.flatMap((g) =>
+        g.categories.filter((c) => c.toLowerCase().includes(search.toLowerCase()))
+      )
+    : null;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="relative">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Branche suchen oder eintippen…"
+          className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-blue-500/60 focus:bg-blue-600/10 transition-all"
+        />
+        {search && (
+          <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors" aria-label="Suche löschen">✕</button>
+        )}
+      </div>
+      {filtered !== null ? (
+        <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
+          {filtered.length === 0 ? (
+            <div className="px-3 py-3 flex items-center justify-between gap-2">
+              <span className="text-slate-400 text-sm">Keine Treffer – Branche trotzdem übernehmen?</span>
+              <button onClick={() => onSelect(search.trim())} className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">Übernehmen</button>
+            </div>
+          ) : (
+            filtered.map((cat) => (
+              <button key={cat} onClick={() => onSelect(cat)}
+                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                  selected === cat ? "bg-blue-600/30 text-white" : "text-slate-200 hover:bg-slate-700/60 hover:text-white"
+                }`}>{cat}</button>
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="max-h-64 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
+          {CATEGORY_GROUPS.map((group) => (
+            <details key={group.group} className="group">
+              <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors text-xs font-semibold uppercase tracking-wide">
+                <span>{group.icon}</span>
+                <span className="flex-1">{group.group}</span>
+                <span className="text-slate-500 group-open:rotate-90 transition-transform text-[10px]">▶</span>
+              </summary>
+              <div className="flex flex-wrap gap-1.5 px-3 pb-2 pt-1">
+                {group.categories.map((cat) => (
+                  <button key={cat} onClick={() => onSelect(cat)}
+                    className={`text-xs border px-2.5 py-1.5 rounded-lg transition-all ${
+                      selected === cat
+                        ? "bg-blue-600/40 border-blue-500/60 text-white"
+                        : "bg-slate-700/60 hover:bg-blue-600/30 border-slate-600/50 hover:border-blue-500/50 text-slate-200 hover:text-white"
+                    }`}>{cat}</button>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
-
-function getCategoryKey(cat: string): string {
-  const c = cat.toLowerCase();
-  if (/friseur|haar|barber|salon|beauty|kosmetik|nail/.test(c)) return "friseur";
-  if (/restaurant|gastro|küche|essen|pizza|burger|sushi|bistro|café|cafe/.test(c)) return "restaurant";
-  if (/bäckerei|bäcker|konditor/.test(c)) return "restaurant";
-  if (/fitness|gym|sport|yoga|pilates|training/.test(c)) return "fitness";
-  if (/bau|handwerk|elektriker|sanitär|klempner|maler|dachdecker/.test(c)) return "handwerk";
-  if (/arzt|medizin|zahnarzt|apotheke|klinik|pflege|therapie/.test(c)) return "medizin";
-  if (/beratung|consulting|coach|steuer|rechts|anwalt/.test(c)) return "beratung";
-  if (/tech|software|digital|app|it\b|web/.test(c)) return "tech";
-  if (/immobilien|makler/.test(c)) return "immobilien";
-  if (/auto|kfz|werkstatt|fahrzeug/.test(c)) return "auto";
-  if (/foto|fotografie|photo/.test(c)) return "fotografie";
-  if (/hotel|pension|unterkunft/.test(c)) return "hotel";
-  if (/garten|landschaft/.test(c)) return "garten";
-  return "beratung";
-}
-
-const DESKTOP_IFRAME_W = 1280;
-const PREVIEW_IFRAME_H = 2400;
-const CARD_H = 420;
 
 export default function StartPage() {
   const { user, isAuthenticated } = useAuth();
@@ -82,12 +83,6 @@ export default function StartPage() {
   // Manual step
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("");
-
-  // Pick step
-  const [selectedLayout, setSelectedLayout] = useState<string | null>(null);
-  const [variantRound, setVariantRound] = useState(0);
-  const [cardWidth, setCardWidth] = useState(0);
-  const gridRef = useRef<HTMLDivElement>(null);
 
   // GMB step
   const [gmbSearchQuery, setGmbSearchQuery] = useState("");
@@ -108,65 +103,26 @@ export default function StartPage() {
   } | null>(null);
   const [, navigate] = useLocation();
 
-  // Measure grid width for iframe scale
-  useEffect(() => {
-    if (step !== "pick" || !gridRef.current) return;
-    const obs = new ResizeObserver(() => {
-      if (!gridRef.current) return;
-      // 3 columns, gap-4 (16px) × 2 = 32px total gap
-      setCardWidth(Math.floor((gridRef.current.offsetWidth - 32) / 3));
-    });
-    obs.observe(gridRef.current);
-    return () => obs.disconnect();
-  }, [step]);
-
-  const scale = cardWidth > 0 ? cardWidth / DESKTOP_IFRAME_W : 0;
-  const industryKey = getCategoryKey(category);
-  const layouts = getLayoutVariants(industryKey, variantRound);
-
   // ── Mutations ─────────────────────────────────────────────────────────────
   const gmbSearchPublicMutation = trpc.search.gmbSearchPublic.useMutation();
   const autocompleteCityMutation = trpc.search.autocompleteCity.useMutation();
   const startMutation = trpc.selfService.start.useMutation();
-  const selectTemplateMutation = trpc.selfService.selectWebsiteTemplate.useMutation();
 
-  const isLoading = startMutation.isPending || selectTemplateMutation.isPending;
+  const isLoading = startMutation.isPending;
 
-  // ── Manual → Pick ─────────────────────────────────────────────────────────
-  const handleManualNext = () => {
-    const key = getCategoryKey(category);
-    const variants = getLayoutVariants(key, 0);
-    setSelectedLayout(variants[0]);
-    setVariantRound(0);
-    setStep("pick");
-  };
-
-  // ── Andere zeigen ─────────────────────────────────────────────────────────
-  const handleNextRound = () => {
-    const next = variantRound + 1;
-    const key = getCategoryKey(category);
-    const variants = getLayoutVariants(key, next);
-    setVariantRound(next);
-    setSelectedLayout(variants[0]);
-  };
-
-  // ── Pick → Start ──────────────────────────────────────────────────────────
-  const handleStartWithLayout = async () => {
-    if (!selectedLayout) return;
+  // ── Manual → Start ────────────────────────────────────────────────────────
+  const handleManualStart = async () => {
+    if (!businessName.trim() || !category.trim()) return;
     try {
       const data = await startMutation.mutateAsync({
-        businessName: businessName.trim() || undefined,
-        category: category.trim() || undefined,
+        businessName: businessName.trim(),
+        category: category.trim(),
         customerEmail: user?.email || undefined,
         source: "external",
       });
       if (typeof (window as any).gtag === "function") {
         (window as any).gtag("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9" });
       }
-      await selectTemplateMutation.mutateAsync({
-        websiteId: data.websiteId,
-        layoutStyle: selectedLayout,
-      });
       toast.success("Website wird erstellt...");
       navigate(`/preview/${data.previewToken}/onboarding`);
     } catch (err: any) {
@@ -219,10 +175,8 @@ export default function StartPage() {
     }
   };
 
-  // ── Container width switches for pick step ────────────────────────────────
-  const outerCard = step === "pick"
-    ? "w-full max-w-4xl bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl p-8 shadow-2xl"
-    : "w-full max-w-md bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl p-8 shadow-2xl";
+  // ── Container class ───────────────────────────────────────────────────────
+  const outerCard = "w-full max-w-md bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl p-8 shadow-2xl";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col items-center justify-center px-4 py-8">
@@ -310,134 +264,35 @@ export default function StartPage() {
                 autoFocus
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && businessName.trim() && category.trim()) handleManualNext();
-                }}
                 placeholder="Unternehmensname"
                 className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
               />
-              <Input
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && businessName.trim() && category.trim()) handleManualNext();
-                }}
-                placeholder="Branche (z.B. Friseur, Restaurant, Handwerker)"
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
-              />
-              <Button
-                onClick={handleManualNext}
-                disabled={!businessName.trim() || !category.trim()}
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-semibold rounded-xl"
-              >
-                <div className="flex items-center gap-2">
-                  Weiter <ArrowRight className="w-4 h-4" />
-                </div>
-              </Button>
-            </div>
-          </>
-        )}
 
-        {/* ── Pick ── */}
-        {step === "pick" && (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <button
-                onClick={() => setStep("manual")}
-                className="text-slate-400 hover:text-white text-sm flex items-center gap-1 transition-colors"
-              >
-                ← Zurück
-              </button>
-              <button
-                onClick={handleNextRound}
-                className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                Andere zeigen
-              </button>
-            </div>
-
-            <h1 className="text-white text-xl font-bold mb-1">Wähle deinen Stil</h1>
-            <p className="text-slate-400 text-sm mb-5">
-              Klicke auf das Design, das am besten zu{" "}
-              <span className="text-white font-medium">{businessName}</span> passt.
-            </p>
-
-            {/* 3-column preview grid */}
-            <div ref={gridRef} className="grid grid-cols-3 gap-4 mb-6">
-              {layouts.map((layout) => {
-                const isSelected = selectedLayout === layout;
-                return (
-                  <button
-                    key={layout}
-                    onClick={() => setSelectedLayout(layout)}
-                    className={`relative rounded-xl overflow-hidden border-2 transition-all text-left focus:outline-none ${
-                      isSelected
-                        ? "border-indigo-500 shadow-lg shadow-indigo-500/30"
-                        : "border-slate-600/40 hover:border-slate-500/60"
-                    }`}
-                  >
-                    {/* iframe wrapper */}
-                    <div
-                      className="relative overflow-hidden bg-white"
-                      style={{ height: CARD_H }}
-                    >
-                      {scale > 0 && (
-                        <iframe
-                          src={`/layout-preview/${layout.toUpperCase()}?scheme=trust`}
-                          width={DESKTOP_IFRAME_W}
-                          height={PREVIEW_IFRAME_H}
-                          scrolling="no"
-                          style={{
-                            border: "none",
-                            pointerEvents: "none",
-                            transformOrigin: "top left",
-                            transform: `scale(${scale})`,
-                            display: "block",
-                          }}
-                          title={`${LAYOUT_LABELS[layout] || layout} preview`}
-                        />
-                      )}
-                      {/* Bottom fade */}
-                      <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                      {/* Selected check */}
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center shadow-lg">
-                          <CheckCircle className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    {/* Label strip */}
-                    <div className={`px-3 py-2 ${isSelected ? "bg-indigo-500/20" : "bg-slate-700/40"}`}>
-                      <p className="text-white text-sm font-semibold leading-tight">
-                        {LAYOUT_LABELS[layout] || layout}
-                      </p>
-                      <p className="text-slate-400 text-xs mt-0.5 leading-tight">
-                        {LAYOUT_VIBES[layout] || ""}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <Button
-              onClick={handleStartWithLayout}
-              disabled={!selectedLayout || isLoading}
-              className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold rounded-xl"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Wird vorbereitet…
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  Jetzt starten
+              {/* Selected category badge */}
+              {category && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                  <CheckCircle className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                  <span className="text-indigo-300 text-sm">{category}</span>
+                  <button onClick={() => setCategory("")} className="ml-auto text-slate-500 hover:text-slate-300 text-xs">✕</button>
                 </div>
               )}
-            </Button>
+              {/* Category picker */}
+              {!category && (
+                <CategoryPicker selected={category} onSelect={setCategory} />
+              )}
+
+              <Button
+                onClick={handleManualStart}
+                disabled={!businessName.trim() || !category.trim() || isLoading}
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold rounded-xl"
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Wird vorbereitet…</div>
+                ) : (
+                  <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" />Jetzt starten</div>
+                )}
+              </Button>
+            </div>
           </>
         )}
 

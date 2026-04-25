@@ -765,11 +765,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
       if (step === "email") return !hasCustomerEmail; // Skip email step if already provided
+      // Skip businessName step if name was already provided from StartPage
+      if (step === "businessName" && business?.name && business.name !== "Neues Unternehmen") return false;
+      // Skip businessCategory step if category was already provided from StartPage
+      if (step === "businessCategory" && (business as any)?.category && (business as any).category.trim() !== "") return false;
       // Opening hours only for manual onboarding (GMB already has hours from Google)
       if (step === "openingHours") return !isGmbFlow;
       return true;
     });
-  }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
+  }, [siteData?.website, business, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
