@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import HelpWidget from "@/components/HelpWidget";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronLeft, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
@@ -5361,6 +5362,7 @@ export default function CustomerDashboard() {
           </div>
         </div>
       )}
+      <HelpWidget />
     </div>
   );
 }

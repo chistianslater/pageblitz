@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
 import ChatWidget from "@/components/ChatWidget";
+import HelpWidget from "@/components/HelpWidget";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
@@ -6242,6 +6243,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
         </div>
       )}
+      <HelpWidget />
     </motion.div>
   );
 }

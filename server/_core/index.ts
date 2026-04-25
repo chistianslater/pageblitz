@@ -12,6 +12,7 @@ import { registerGoogleAuthRoutes } from "./googleAuth";
 import { registerMagicLinkAuthRoutes } from "./magicLinkAuth";
 import { registerChatRoutes } from "./chatRoutes";
 import { registerLandingChatRoutes } from "./landingChatRoutes";
+import { registerSupportChatRoutes } from "./supportChatRoutes";
 import { registerBookingRoutes } from "./bookingRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -104,6 +105,7 @@ async function startServer() {
   registerMagicLinkAuthRoutes(app);
   registerChatRoutes(app);
   registerLandingChatRoutes(app);
+  registerSupportChatRoutes(app);
   registerBookingRoutes(app);
   // Lifecycle-Email Routes (Extension + Unsubscribe, HMAC-signed)
   {
