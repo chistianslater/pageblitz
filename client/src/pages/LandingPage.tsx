@@ -120,8 +120,8 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             </button>
             <button
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className="btn-nav-cta rounded-full px-5 h-10 text-sm font-semibold text-white transition-all duration-300 hover:brightness-110 active:scale-95"
-              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+              className="btn-nav-cta rounded-full px-5 h-10 text-sm font-semibold text-gray-900 transition-all duration-300 hover:brightness-110 active:scale-95"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
             >
               Website gratis erstellen ✦
             </button>
@@ -1774,8 +1774,8 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                    className="btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-all shadow-xl shadow-pink-500/30"
-                    style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+                    className="btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-all shadow-xl shadow-lime-500/30"
+                    style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
                   >
                     gratis ausprobieren
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -1915,8 +1915,8 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-all shadow-lg shadow-pink-500/30"
-              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+              className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-all shadow-lg shadow-lime-500/30"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
             >
               Meine Website gratis erstellen
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -1939,8 +1939,8 @@ export default function LandingPage() {
           <Button
             size="lg"
             onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-            className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-all shadow-lg shadow-pink-500/30"
-            style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+            className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-all shadow-lg shadow-lime-500/30"
+            style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
           >
             Website jetzt gratis erstellen
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -2146,7 +2146,7 @@ export default function LandingPage() {
 
       {/* ── KI-Chat Spotlight ─────────────────────────────────────────────── */}
       <section className="py-32 relative overflow-hidden">
-        <GradientOrb className="w-[600px] h-[600px] bg-pink-500/10 -left-40 top-10" delay={0.2} />
+        <GradientOrb className="w-[600px] h-[600px] bg-lime-400/8 -left-40 top-10" delay={0.2} />
         <GradientOrb className="w-[400px] h-[400px] bg-lime-500/8 right-0 bottom-0" delay={0.4} />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
@@ -2157,7 +2157,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6 border"
-                style={{ background: "rgba(233,30,140,0.12)", borderColor: "rgba(233,30,140,0.3)", color: "#e91e8c" }}
+                style={{ background: "rgba(163,230,53,0.12)", borderColor: "rgba(163,230,53,0.3)", color: "#a3e635" }}
               >
                 <Bot className="w-3.5 h-3.5" />
                 Add-on · nur 9,90 €/Monat
@@ -2170,7 +2170,7 @@ export default function LandingPage() {
                 className={`text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-6 leading-[1.1] transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
               >
                 Dein 24/7<br />
-                <span style={{ color: "#e91e8c" }}>Vertriebsmitarbeiter.</span>
+                <span style={{ color: "#a3e635" }}>Vertriebsmitarbeiter.</span>
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
@@ -2217,8 +2217,8 @@ export default function LandingPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                className="btn-shimmer flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-medium text-white transition-all"
-                style={{ background: "#e91e8c", boxShadow: "0 8px 28px rgba(233,30,140,0.35)" }}
+                className="btn-shimmer flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-medium text-gray-900 transition-all"
+                style={{ background: "#a3e635", boxShadow: "0 8px 28px rgba(163,230,53,0.35)" }}
               >
                 KI-Chat jetzt freischalten
                 <ArrowRight className="w-4 h-4" />
@@ -2240,7 +2240,7 @@ export default function LandingPage() {
               <div className="relative mx-auto max-w-[320px]">
                 <div className="rounded-3xl overflow-hidden border border-white/15 shadow-2xl shadow-black/50" style={{ background: "#111118" }}>
                   {/* Chat header */}
-                  <div className="flex items-center gap-3 px-4 py-3.5" style={{ background: "#e91e8c" }}>
+                  <div className="flex items-center gap-3 px-4 py-3.5" style={{ background: "#a3e635" }}>
                     <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                       <MessageCircle className="w-4 h-4 text-white" />
                     </div>
@@ -2276,7 +2276,7 @@ export default function LandingPage() {
                               ? "text-white rounded-br-sm"
                               : "bg-white/10 text-white/85 rounded-bl-sm"
                           }`}
-                          style={msg.role === "user" ? { background: "#e91e8c" } : {}}
+                          style={msg.role === "user" ? { background: "#a3e635" } : {}}
                         >
                           {msg.text}
                         </div>
@@ -2691,8 +2691,8 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className="btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-all shadow-xl shadow-pink-500/25"
-              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+              className="btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-all shadow-xl shadow-lime-500/25"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
             >
               gratis ausprobieren
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
