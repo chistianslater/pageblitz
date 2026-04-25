@@ -1254,7 +1254,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const dbStepCurrent = existingOnboarding?.stepCurrent;
     if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
       const stepIndex = dbStepCurrent;
-      if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
+      if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
         const targetStep = STEP_ORDER[stepIndex];
         if (targetStep && targetStep !== 'welcome') {
           setCurrentStep(targetStep);
