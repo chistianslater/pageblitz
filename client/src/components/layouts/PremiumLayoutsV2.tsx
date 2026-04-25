@@ -251,7 +251,7 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0 z-[1]"
+        className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-28 lg:pt-0 pb-16 lg:pb-0 z-[1] min-w-0"
       >
         {/* Left edge accent line — bolder, gradient fade */}
         {!isLoading && (
@@ -361,7 +361,7 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         )}
 
         <Skeleton isLoading={isLoading} className="w-3/4 mx-auto min-h-[8rem] mb-10">
-          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.08, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor }}
+          <h1 style={{ fontFamily: displayFont, fontWeight: 900, lineHeight: 1.08, fontSize: getHeadlineFontSize(headlineSize, 'clamp(3rem, 5vw, 6rem)'), color: textColor, overflowWrap: 'break-word' as const, wordBreak: 'break-word' as const }}
             className="uppercase tracking-tight mb-10">
             {hl.main}<br />
             <span style={{ color: primaryColor }}>{hl.last}</span>
@@ -438,7 +438,7 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
           {!isLoading && <HeroBadge text={badgeText} cs={safeCs} dark={dark} />}
 
           <Skeleton isLoading={isLoading} className="w-full min-h-[12rem] mb-8">
-            <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 1.08, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor }}
+            <h1 style={{ fontFamily: displayFont, fontWeight: 700, lineHeight: 1.08, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 6rem)'), color: textColor, overflowWrap: 'break-word' as const, wordBreak: 'break-word' as const }}
               className="uppercase tracking-tight mb-8">
               {hl.main}<br />
               <span
@@ -2751,11 +2751,11 @@ export function PremiumLayoutV2({
       {/* HERO: Dynamic colored left panel / white right panel */}
       <section id="hero" className="min-h-screen grid lg:grid-cols-[45%_55%] pt-[80px]">
         {/* Left: dynamic primary color panel */}
-        <div className="text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden" style={{ backgroundColor: safeCs.secondary || safeCs.primary }}>
+        <div className="text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden min-w-0" style={{ backgroundColor: safeCs.secondary || safeCs.primary }}>
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-          <div className="relative z-10 flex flex-col items-start">
+          <div className="relative z-10 flex flex-col items-start min-w-0">
             <Skeleton isLoading={isLoading} className="w-full min-h-[14rem] mb-12">
-              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 5.5vw, 5.5rem)') }} className="mb-0">
+              <h1 style={{ fontFamily: DISPLAY, fontStyle: 'italic', fontWeight: 400, lineHeight: 1.15, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 5.5vw, 5.5rem)'), overflowWrap: 'break-word', wordBreak: 'break-word' }} className="mb-0">
                 {hl.main}<br /><span style={{ color: safeCs.primary }}>{hl.last}</span>
               </h1>
             </Skeleton>
@@ -3377,7 +3377,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9 }}
-          className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24 z-[1]"
+          className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24 z-[1] min-w-0"
         >
           {!isLoading && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
@@ -3388,7 +3388,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           )}
 
           <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-6">
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 5.5rem)'), color: textColor }}
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.1, fontSize: getHeadlineFontSize(headlineSize, 'clamp(2.8rem, 4.5vw, 5.5rem)'), color: textColor, overflowWrap: 'break-word' as const, wordBreak: 'break-word' as const }}
               className="mb-0">
               {hl.main}<br />
               <span style={{ color: primaryColor }}>
@@ -3586,7 +3586,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24 z-[1]"
+          className="relative flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-24 z-[1] min-w-0"
         >
           {/* Badge */}
           {!isLoading && (
@@ -3600,7 +3600,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           {!isLoading && <div className="w-full h-px mb-6" style={{ backgroundColor: primaryColor, opacity: 0.3 }} />}
 
           <Skeleton isLoading={isLoading} className="w-full min-h-[10rem] mb-4">
-            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.0, letterSpacing: '0.03em', fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7vw, 7.5rem)'), color: textColor }}
+            <h1 style={{ fontFamily: DISPLAY, fontWeight: 400, lineHeight: 1.0, letterSpacing: '0.03em', fontSize: getHeadlineFontSize(headlineSize, 'clamp(3.5rem, 7vw, 7.5rem)'), color: textColor, overflowWrap: 'break-word' as const, wordBreak: 'break-word' as const }}
               className="uppercase mb-0">
               {hl.main}<br />
               <span style={{ color: primaryColor }}>
@@ -4174,7 +4174,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
       {/* HERO */}
       <section id="hero" className="relative z-10 min-h-screen flex items-center pt-24 pb-16 px-6">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center w-full">
-          <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.8 }}>
+          <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.8 }} className="min-w-0">
             {!isLoading && (
               <motion.div initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
@@ -4186,7 +4186,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
               </motion.div>
             )}
             <Skeleton isLoading={isLoading} className="min-h-[9rem] mb-6">
-              <h1 style={{ fontFamily:DISPLAY, fontWeight:900, lineHeight:1.15, fontSize:getHeadlineFontSize(headlineSize,'clamp(3rem,7vw,6rem)'), color:TXT }}>
+              <h1 style={{ fontFamily:DISPLAY, fontWeight:900, lineHeight:1.15, fontSize:getHeadlineFontSize(headlineSize,'clamp(3rem,7vw,6rem)'), color:TXT, overflowWrap:'break-word' as const, wordBreak:'break-word' as const }}>
                 {hl.main}
                 {hl.main && hl.last ? <><br /><span style={{ color:primaryColor }}>{hl.last}</span></> : null}
               </h1>
@@ -4344,7 +4344,7 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
       <section id="hero" className="min-h-screen grid lg:grid-cols-[55%_45%] overflow-hidden"
         style={{ borderBottom:`2px solid ${TXT}` }}>
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:1 }}
-          className="flex flex-col justify-center px-8 lg:px-16 pt-28 pb-20 relative">
+          className="flex flex-col justify-center px-8 lg:px-16 pt-28 pb-20 relative min-w-0">
           {!isLoading && (
             <p style={{ fontFamily:BODY, fontSize:'0.65rem', letterSpacing:'0.3em', color:accentColor, fontWeight:600 }} className="uppercase mb-8">
               {websiteData.businessCategory || '—'}
@@ -4352,8 +4352,8 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
           )}
           <Skeleton isLoading={isLoading} className="min-h-[16rem] mb-8">
             <h1 style={{ fontFamily:DISPLAY, fontWeight:300, lineHeight:0.95,
-              fontSize:getHeadlineFontSize(headlineSize,'clamp(4rem,10vw,9rem)'),
-              letterSpacing:'-0.03em', textTransform:'uppercase' as const, color:TXT }}>
+              fontSize:getHeadlineFontSize(headlineSize,'clamp(3.5rem,8vw,7rem)'),
+              letterSpacing:'-0.03em', textTransform:'uppercase' as const, color:TXT, overflowWrap:'break-word' as const, wordBreak:'break-word' as const }}>
               {heroHeadline}
             </h1>
           </Skeleton>
