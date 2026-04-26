@@ -2646,10 +2646,10 @@ export default function LandingPage() {
       <footer className={`py-12 border-t transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-500 ${isDark ? "bg-white/10" : "bg-gray-900"}`}>
-              <Zap className={`w-4 h-4 ${isDark ? "text-white" : "text-white"}`} />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-colors duration-500 ${isDark ? "bg-white shadow-white/10" : "bg-gray-900 shadow-gray-900/10"}`}>
+              <Zap className={`w-5 h-5 ${isDark ? "text-black" : "text-white"}`} fill={isDark ? "black" : "white"} />
             </div>
-            <span className={`font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz</span>
+            <span className={`font-semibold text-lg tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz</span>
           </div>
           <div className={`text-sm transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>
             © 2026 Pageblitz. Alle Rechte vorbehalten.
