@@ -363,252 +363,87 @@ const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => 
   );
 };
 
+const HERO_PREVIEW_LAYOUTS = ["BOLD", "ELEGANT", "AURORA", "NEXUS", "FORGE", "FLUX", "CLAY", "FRESH"];
+const ROTATE_INTERVAL = 5000;
+
 const GhostWebsiteCreation = () => {
-  const loopDuration = 8;
-  
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  useEffect(() => {
+    // Initial reveal after short delay
+    const revealTimer = setTimeout(() => setIsRevealed(true), 800);
+    // Rotate layouts
+    const interval = setInterval(() => {
+      setIsRevealed(false);
+      setTimeout(() => {
+        setCurrentIdx((i) => (i + 1) % HERO_PREVIEW_LAYOUTS.length);
+        setTimeout(() => setIsRevealed(true), 200);
+      }, 600);
+    }, ROTATE_INTERVAL);
+    return () => { clearTimeout(revealTimer); clearInterval(interval); };
+  }, []);
+
+  const layout = HERO_PREVIEW_LAYOUTS[currentIdx];
+
   return (
-    <div className="relative w-full max-w-3xl mx-auto aspect-[16/10] rounded-xl bg-[#0a0a0a] border border-white/10 shadow-2xl shadow-black/50 overflow-hidden">
+    <div className="relative w-full max-w-3xl mx-auto aspect-[16/10] rounded-xl bg-white border border-gray-200 shadow-2xl shadow-black/10 overflow-hidden">
       {/* Browser Chrome */}
-      <div className="relative h-10 bg-[#111] border-b border-white/10 flex items-center px-3 gap-2 z-30 shrink-0">
+      <div className="relative h-10 bg-gray-50 border-b border-gray-200 flex items-center px-3 gap-2 z-30 shrink-0">
         <div className="flex gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/30" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-500/30" />
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/30" />
+          <div className="w-2.5 h-2.5 rounded-full bg-red-400/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
         </div>
-        <div className="flex-1 max-w-sm mx-auto h-5 bg-white/5 rounded-md flex items-center px-2 border border-white/5">
-          <div className="w-2 h-2 rounded-full bg-emerald-500/40 mr-2" />
-          <div className="h-1.5 bg-white/20 rounded-full w-20" />
+        <div className="flex-1 max-w-sm mx-auto h-5 bg-gray-100 rounded-md flex items-center px-2 border border-gray-200">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 mr-2" />
+          <span className="text-[9px] text-gray-400 font-mono truncate">dein-unternehmen.pageblitz.de</span>
         </div>
       </div>
 
-      {/* Website Content Building - Loop Animation */}
-      <div className="relative h-[calc(100%-2.5rem)] p-4 overflow-hidden">
-        {/* Hero Section Building - Fades in and out */}
-        <motion.div 
-          className="h-20 rounded-lg bg-gradient-to-br from-white/[0.08] to-white/[0.02] mb-3 relative overflow-hidden border border-white/10"
-        >
-          {/* Background gradient sweep */}
+      {/* Rotating layout previews */}
+      <div className="relative h-[calc(100%-2.5rem)] overflow-hidden bg-white">
+        <AnimatePresence mode="wait">
           <motion.div
-            animate={{ 
-              x: ["-100%", "0%", "0%", "100%"],
-              opacity: [0, 0.5, 0.5, 0]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0, 0.2, 0.6, 0.8],
-              ease: "easeInOut"
-            }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-lime-500/30 to-transparent"
-          />
-          
-          {/* Text lines appearing */}
-          <div className="absolute inset-0 p-4 flex flex-col justify-center gap-2">
-            <motion.div
-              animate={{ 
-                width: ["0%", "70%", "70%", "0%"],
-                opacity: [0, 1, 1, 0]
-              }}
-              transition={{ 
-                duration: loopDuration,
-                repeat: Infinity,
-                times: [0, 0.15, 0.65, 0.75],
-                ease: "easeOut"
-              }}
-              className="h-4 bg-gradient-to-r from-white/40 to-white/20 rounded-full"
-            />
-            <motion.div
-              animate={{ 
-                width: ["0%", "50%", "50%", "0%"],
-                opacity: [0, 1, 1, 0]
-              }}
-              transition={{ 
-                duration: loopDuration,
-                repeat: Infinity,
-                times: [0.05, 0.2, 0.6, 0.7],
-                ease: "easeOut"
-              }}
-              className="h-2.5 bg-gradient-to-r from-white/25 to-white/10 rounded-full"
-            />
-          </div>
-
-          {/* Button appearing */}
-          <motion.div
-            animate={{ 
-              opacity: [0, 1, 1, 0],
-              scale: [0.8, 1, 1, 0.8]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0.1, 0.25, 0.55, 0.7]
-            }}
-            className="absolute bottom-4 left-4 w-20 h-6 bg-white/20 rounded-md"
-          />
-        </motion.div>
-
-        {/* Features Row */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              animate={{ 
-                opacity: [0, 1, 1, 0],
-                y: [10, 0, 0, -10]
-              }}
-              transition={{ 
-                duration: loopDuration,
-                repeat: Infinity,
-                times: [0.15 + i * 0.05, 0.3 + i * 0.05, 0.6, 0.75],
-                ease: "easeOut"
-              }}
-              className="aspect-[4/3] rounded-md bg-white/[0.03] border border-white/[0.08] p-2 flex flex-col gap-1.5"
-            >
-              <motion.div 
-                className="w-6 h-6 rounded bg-gradient-to-br from-lime-500/30 to-lime-500/20"
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  opacity: [0.5, 1, 0.5]
-                }}
-                transition={{ 
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.3
-                }}
-              />
-              <div className="space-y-1 flex-1">
-                <motion.div 
-                  className="h-1.5 bg-white/25 rounded-full"
-                  animate={{ width: ["0%", "100%", "100%", "0%"] }}
-                  transition={{ 
-                    duration: loopDuration,
-                    repeat: Infinity,
-                    times: [0.2 + i * 0.05, 0.35 + i * 0.05, 0.55, 0.65]
-                  }}
-                />
-                <motion.div 
-                  className="h-1.5 bg-white/15 rounded-full"
-                  animate={{ width: ["0%", "60%", "60%", "0%"] }}
-                  transition={{ 
-                    duration: loopDuration,
-                    repeat: Infinity,
-                    times: [0.22 + i * 0.05, 0.37 + i * 0.05, 0.53, 0.63]
-                  }}
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* About Section */}
-        <div className="flex gap-2 h-16">
-          <motion.div
-            animate={{ 
-              opacity: [0, 1, 1, 0],
-              x: [-10, 0, 0, -10]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0.3, 0.45, 0.7, 0.8]
-            }}
-            className="w-1/2 rounded-md bg-white/[0.03] border border-white/[0.08] overflow-hidden"
+            key={layout}
+            initial={{ opacity: 0, scale: 1.02, filter: 'blur(8px)' }}
+            animate={{ opacity: isRevealed ? 1 : 0, scale: 1, filter: isRevealed ? 'blur(0px)' : 'blur(8px)' }}
+            exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
+            transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+            className="absolute inset-0"
           >
-            <div className="w-full h-full bg-gradient-to-br from-white/10 to-transparent" />
-          </motion.div>
-          <motion.div
-            animate={{ 
-              opacity: [0, 1, 1, 0],
-              x: [10, 0, 0, 10]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0.32, 0.47, 0.68, 0.78]
-            }}
-            className="w-1/2 flex flex-col justify-center gap-1.5 py-1"
-          >
-            <motion.div
-              animate={{ width: ["0%", "80%", "80%", "0%"] }}
-              transition={{ duration: loopDuration, repeat: Infinity, times: [0.35, 0.5, 0.65, 0.75] }}
-              className="h-3 bg-white/30 rounded-full"
-            />
-            {[0, 1, 2].map((i) => {
-              const widthVal = 70 - i * 15;
-              return (
-                <motion.div
-                  key={i}
-                  animate={{ width: ["0%", `${widthVal}%`, `${widthVal}%`, "0%"] }}
-                  transition={{ 
-                    duration: loopDuration, 
-                    repeat: Infinity, 
-                    times: [0.37 + i * 0.02, 0.52 + i * 0.02, 0.63, 0.73]
-                  }}
-                  className="h-1.5 bg-white/15 rounded-full"
-                />
-              );
-            })}
-          </motion.div>
-        </div>
-
-        {/* Ghost Cursor - Confined to browser window */}
-        <motion.div
-          className="absolute z-50 pointer-events-none"
-          animate={{ 
-            x: [20, 100, 200, 280, 340, 240, 160, 80, 20],
-            y: [30, 70, 130, 90, 140, 180, 120, 160, 30]
-          }}
-          transition={{ 
-            duration: loopDuration,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <div className="relative">
-            <MousePointer2 className="w-4 h-4 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" fill="white" />
-            {/* Click ripple */}
-            <motion.div
-              animate={{ 
-                scale: [1, 2.5, 2.5],
-                opacity: [0, 0.3, 0]
+            <iframe
+              src={`/layout-preview/${layout}?scheme=trust`}
+              width={1280}
+              height={2400}
+              scrolling="no"
+              style={{
+                border: 'none',
+                pointerEvents: 'none',
+                transformOrigin: 'top left',
+                transform: 'scale(0.42)',
+                display: 'block',
+                width: '1280px',
+                height: '2400px',
               }}
-              transition={{ 
-                duration: 0.6,
-                repeat: Infinity,
-                repeatDelay: 1.2,
-                times: [0, 0.3, 1]
-              }}
-              className="absolute top-0 left-0 w-4 h-4 bg-white rounded-full -translate-x-1/4 -translate-y-1/4"
+              title={`${layout} Preview`}
             />
-          </div>
-        </motion.div>
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Section Labels */}
+        {/* Subtle bottom fade */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none z-10" />
+
+        {/* Layout name badge */}
         <motion.div
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ duration: loopDuration, repeat: Infinity, times: [0.2, 0.3, 0.6, 0.7] }}
-          className="absolute top-16 right-3 px-1.5 py-0.5 bg-white/10 rounded text-[9px] text-white/50"
+          key={`badge-${layout}`}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-[10px] text-white/80 font-medium"
         >
-          Hero
-        </motion.div>
-        <motion.div
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ duration: loopDuration, repeat: Infinity, times: [0.35, 0.45, 0.65, 0.75] }}
-          className="absolute top-40 right-3 px-1.5 py-0.5 bg-white/10 rounded text-[9px] text-white/50"
-        >
-          Features
-        </motion.div>
-        <motion.div
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ duration: loopDuration, repeat: Infinity, times: [0.5, 0.6, 0.7, 0.8] }}
-          className="absolute bottom-12 right-3 px-1.5 py-0.5 bg-white/10 rounded text-[9px] text-white/50"
-        >
-          About
+          {layout.charAt(0) + layout.slice(1).toLowerCase()} Layout
         </motion.div>
       </div>
-
-      {/* Bottom glow */}
-      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-lime-500/10 to-transparent pointer-events-none" />
     </div>
   );
 };
