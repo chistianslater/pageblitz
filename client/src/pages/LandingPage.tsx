@@ -167,7 +167,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
               ))}
               <Button
                 onClick={() => { setMobileMenuOpen(false); navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`); }}
-                className={`rounded-full mt-6 h-14 text-lg font-medium ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
+                className={`rounded-full mt-6 h-14 text-lg font-medium ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
               >
                 Website gratis erstellen
               </Button>
@@ -1992,7 +1992,8 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center md:justify-start justify-center gap-3">
                 <button
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className={`flex items-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-full transition-all ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-600 text-white hover:bg-lime-700"}`}
+                  className="btn-shimmer flex items-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-full transition-all shadow-lg shadow-lime-500/25"
+                  style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
                 >
                   Jetzt GMB-Daten importieren
                   <ArrowRight className="w-4 h-4" />
@@ -2046,7 +2047,7 @@ export default function LandingPage() {
         <Button
           size="lg"
           onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
+          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
         >
           Jetzt starten
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -2367,7 +2368,8 @@ export default function LandingPage() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className={`btn-shimmer flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-600 text-white hover:bg-lime-700"}`}
+              className="btn-shimmer flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-all shadow-lg shadow-lime-500/25"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
             >
               Jetzt einrichten
               <ArrowRight className="w-4 h-4" />
@@ -2566,7 +2568,7 @@ export default function LandingPage() {
 
                 <Button
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
+                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
                 >
                   7 Tage gratis starten
                 </Button>
@@ -2627,7 +2629,7 @@ export default function LandingPage() {
               </p>
               <button
                 onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
+                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
               >
                 Jetzt kostenlos starten
                 <ArrowRight className="w-4 h-4" />
