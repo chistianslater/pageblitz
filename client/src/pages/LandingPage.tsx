@@ -41,9 +41,9 @@ import type { ColorScheme } from "@shared/types";
 
 const GradientOrb = ({ className, delay = 0 }: { className?: string; delay?: number }) => (
   <motion.div
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ delay, duration: 1.5, ease: "easeOut" }}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay, duration: 1, ease: "easeOut" }}
     className={`absolute rounded-full blur-[100px] pointer-events-none ${className}`}
   />
 );
@@ -68,9 +68,9 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
   return (
     <>
       <motion.nav
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
             ? `${isDark ? "bg-[#0a0a0a]/80 border-b border-white/5" : "bg-white/90 border-b border-gray-200/60"} backdrop-blur-xl py-4`
@@ -1617,22 +1617,24 @@ export default function LandingPage() {
       <section className="relative min-h-screen">
         {/* Background Animation - Cross-fades between dark and light */}
         <div className="absolute inset-0 h-screen">
-          {/* Dark animated gradient */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-            <BackgroundGradientAnimation
-              containerClassName="absolute inset-0"
-              gradientBackgroundStart="rgb(8, 10, 8)"
-              gradientBackgroundEnd="rgb(12, 15, 10)"
-              firstColor="163, 230, 53"
-              secondColor="132, 204, 22"
-              thirdColor="190, 242, 100"
-              fourthColor="101, 163, 13"
-              fifthColor="212, 255, 0"
-              pointerColor="190, 242, 100"
-              size="70%"
-              interactive={true}
-            />
-          </div>
+          {/* Dark animated gradient — only mount in dark mode */}
+          {isDark && (
+            <div className="absolute inset-0">
+              <BackgroundGradientAnimation
+                containerClassName="absolute inset-0"
+                gradientBackgroundStart="rgb(8, 10, 8)"
+                gradientBackgroundEnd="rgb(12, 15, 10)"
+                firstColor="163, 230, 53"
+                secondColor="132, 204, 22"
+                thirdColor="190, 242, 100"
+                fourthColor="101, 163, 13"
+                fifthColor="212, 255, 0"
+                pointerColor="190, 242, 100"
+                size="70%"
+                interactive={true}
+              />
+            </div>
+          )}
           {/* Light gradient for light mode */}
           <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
             <div className="absolute inset-0 bg-gradient-to-br from-stone-100 via-white to-lime-50/20" />
@@ -1663,9 +1665,9 @@ export default function LandingPage() {
                     {["Deine", "professionelle"].map((word, i) => (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                        transition={{ duration: 0.65, delay: 0.08 + i * 0.14, ease: [0.16, 1, 0.3, 1] }}
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.08 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
                         className={`inline-block mr-3 ${isDark ? "text-white" : "text-gray-900"}`}
                       >
                         {word}
@@ -1673,9 +1675,9 @@ export default function LandingPage() {
                     ))}
                   </span>
                   <motion.span
-                    initial={{ opacity: 0, y: 32, filter: "blur(16px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    transition={{ duration: 0.9, delay: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     className={`text-transparent bg-clip-text block ${isDark ? "bg-gradient-to-r from-lime-300 via-lime-400 to-yellow-300" : "bg-gradient-to-r from-lime-600 via-lime-500 to-lime-600"}`}
                     style={{ backgroundSize: '200% 200%', animation: 'gradient-text-shimmer 8s ease infinite' }}
                   >
