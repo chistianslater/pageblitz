@@ -1922,7 +1922,7 @@ export function ElegantLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-[#FFFDFB] overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="bg-[#FFFDFB] overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center bg-[#FFFDFB]/80 backdrop-blur-md border-b border-neutral-200/40">
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -2038,7 +2038,7 @@ export function CleanLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -2135,7 +2135,7 @@ export function CraftLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column' }} className="bg-[#F2EBD9] overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, true) }} className="bg-[#F2EBD9] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F2EBD9]/90 backdrop-blur-sm border-b border-neutral-300/50">
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -2232,7 +2232,7 @@ export function DynamicLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, true) }} className="text-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-sm border-b border-white/10" style={{ backgroundColor: darkBg + 'e6' }}>
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -2329,7 +2329,7 @@ export function FreshLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column' }} className="bg-[#FBF7F0] overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#292524', display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="bg-[#FBF7F0] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#FBF7F0]/90 backdrop-blur-sm border-b border-neutral-200/60">
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -2427,7 +2427,7 @@ export function LuxuryLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column' }} className="text-white overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, backgroundColor: darkBg, display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, true) }} className="text-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-md border-b border-white/5" style={{ backgroundColor: darkBg + 'cc' }}>
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -2524,7 +2524,7 @@ export function ModernLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden grain-overlay">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="bg-white overflow-hidden grain-overlay">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -2622,7 +2622,7 @@ export function NaturalLayoutV2({ websiteData, cs, heroImageUrl, isLoading, head
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, display: 'flex', flexDirection: 'column' }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
+    <div style={{ fontFamily: BODY, display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="bg-[#fcfaf7] text-[#4a4a4a] overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#fcfaf7]/80 backdrop-blur-md border-b border-green-900/5">
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -2732,7 +2732,7 @@ export function PremiumLayoutV2({
   const About = AboutVariants[aboutIdx];
 
   return (
-    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column' }} className="bg-white overflow-hidden">
+    <div style={{ fontFamily: BODY, color: safeCs.text || '#171717', display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="bg-white overflow-hidden">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-neutral-100">
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
           {(websiteData as any).logoImageUrl
@@ -3350,7 +3350,7 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const badgeText = websiteData.businessCategory ? `• ${websiteData.businessCategory}` : (websiteData.businessName || '');
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: '#FDFBF7', color: textColor, display: 'flex', flexDirection: 'column' }} className="overflow-hidden">
+    <div style={{ fontFamily: BODY, backgroundColor: '#FDFBF7', color: textColor, display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="overflow-hidden">
       {/* Paper grain texture — like handmade paper */}
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23grain)' opacity='0.09'/%3E%3C/svg%3E")` }} />
       {/* NAV */}
@@ -3559,7 +3559,7 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const badgeText = websiteData.businessCategory ? websiteData.businessCategory : (websiteData.businessName || '');
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: '#ffffff', color: textColor, display: 'flex', flexDirection: 'column' }} className="overflow-hidden">
+    <div style={{ fontFamily: BODY, backgroundColor: '#ffffff', color: textColor, display: 'flex', flexDirection: 'column', ...colorTokenStyle(safeCs, false) }} className="overflow-hidden">
       {/* Dot grid texture — architect paper feel */}
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1, backgroundImage: `radial-gradient(rgba(15, 30, 60, 0.07) 1px, transparent 1px)`, backgroundSize: '22px 22px' }} />
       {/* NAV */}
@@ -3778,7 +3778,7 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
   const aboutImg    = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily: BODY, backgroundColor: BG, color: TXT }} className="overflow-hidden">
+    <div style={{ fontFamily: BODY, backgroundColor: BG, color: TXT, ...colorTokenStyle(safeCs, true) }} className="overflow-hidden">
       <style>{`
         @keyframes aurora-a{0%,100%{transform:translate(0,0)scale(1)}40%{transform:translate(3vw,-4vh)scale(1.08)}70%{transform:translate(-2vw,3vh)scale(0.96)}}
         @keyframes aurora-b{0%,100%{transform:translate(0,0)scale(1)}33%{transform:translate(-4vw,2vh)scale(1.1)}67%{transform:translate(2vw,-3vh)scale(0.93)}}
@@ -3965,7 +3965,7 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const phone      = getContactItem(websiteData, 'phone');
 
   return (
-    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT, ...colorTokenStyle(safeCs, false) }} className="overflow-hidden">
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur-md" style={{ borderBottom:'1px solid rgba(0,0,0,0.06)' }}>
         <Skeleton isLoading={isLoading} className="min-w-0 max-w-[40%] min-h-[2rem] overflow-hidden">
@@ -4134,7 +4134,7 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT, ...colorTokenStyle(safeCs, false) }} className="overflow-hidden">
       <style>{`
         @keyframes clay-blob{0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%}50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%}}
         @media(prefers-reduced-motion:reduce){.clay-blob-el{animation:none!important}}
@@ -4319,7 +4319,7 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const iconSet    = getCategoryIconSet(websiteData.businessCategory);
 
   return (
-    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT, ...colorTokenStyle(safeCs, false) }} className="overflow-hidden">
       {/* NAV – minimal, line-based */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-8 py-5"
         style={{ background:`${BG}f5`, backdropFilter:'blur(12px)', borderBottom:`2px solid ${TXT}` }}>
@@ -4499,7 +4499,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily:BODY, backgroundColor:NEU, color:TXT }} className="overflow-hidden">
+    <div style={{ fontFamily:BODY, backgroundColor:NEU, color:TXT, ...colorTokenStyle(safeCs, false) }} className="overflow-hidden">
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4"
         style={{ background:`${NEU}f5`, backdropFilter:'blur(16px)',
@@ -4672,7 +4672,7 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
   const aboutImg = (websiteData as any).aboutImageUrl || heroImageUrl;
 
   return (
-    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT }} className="overflow-hidden">
+    <div style={{ fontFamily:BODY, backgroundColor:BG, color:TXT, ...colorTokenStyle(safeCs, true) }} className="overflow-hidden">
       {/* NAV */}
       <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-8 py-5"
         style={{ background:'rgba(6,6,8,0.78)', backdropFilter:'blur(24px)', borderBottom:`1px solid ${BORDER}` }}>
