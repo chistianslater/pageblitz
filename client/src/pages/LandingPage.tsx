@@ -73,7 +73,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? `${isDark ? "bg-[#0a0a0a]/80" : "bg-white/90"} backdrop-blur-xl border-b border-white/5 py-4`
+            ? `${isDark ? "bg-[#0a0a0a]/80 border-b border-white/5" : "bg-white/90 border-b border-gray-200/60"} backdrop-blur-xl py-4`
             : "bg-transparent py-6"
         }`}
       >
@@ -83,10 +83,10 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             onClick={() => navigate("/")}
             whileHover={{ scale: 1.02 }}
           >
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-white/10 group-hover:shadow-white/20 transition-all">
-              <Zap className="w-5 h-5 text-black" fill="black" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-all ${isDark ? "bg-white shadow-white/10 group-hover:shadow-white/20" : "bg-gray-900 shadow-gray-900/10 group-hover:shadow-gray-900/20"}`}>
+              <Zap className={`w-5 h-5 ${isDark ? "text-black" : "text-white"}`} fill={isDark ? "black" : "white"} />
             </div>
-            <span className="text-white font-semibold text-lg tracking-tight">Pageblitz</span>
+            <span className={`font-semibold text-lg tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz</span>
           </motion.div>
 
           <div className="hidden md:flex items-center gap-1">
@@ -94,7 +94,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-white/60 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all"
+                className={`text-sm px-4 py-2 rounded-lg transition-all ${isDark ? "text-white/60 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
               >
                 {link.label}
               </a>
@@ -106,7 +106,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             <button
               onClick={onToggle}
               title={isDark ? "Light Mode" : "Dark Mode"}
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+              className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 ${isDark ? "border-white/20 hover:border-white/40 text-white/60 hover:text-white" : "border-gray-300 hover:border-gray-400 text-gray-500 hover:text-gray-900"}`}
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -114,7 +114,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             <button
               onClick={() => navigate("/login")}
               title="Anmelden"
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+              className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 ${isDark ? "border-white/20 hover:border-white/40 text-white/60 hover:text-white" : "border-gray-300 hover:border-gray-400 text-gray-500 hover:text-gray-900"}`}
             >
               <LogIn className="w-4 h-4" />
             </button>
@@ -131,12 +131,12 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             {/* Mobile theme toggle */}
             <button
               onClick={onToggle}
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 text-white/60 transition-all duration-300"
+              className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 ${isDark ? "border-white/20 text-white/60" : "border-gray-300 text-gray-500"}`}
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button
-              className="text-white p-2"
+              className={`p-2 ${isDark ? "text-white" : "text-gray-900"}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -160,14 +160,14 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-2xl text-white/80 py-3 border-b border-white/10"
+                  className={`text-2xl py-3 border-b ${isDark ? "text-white/80 border-white/10" : "text-gray-700 border-gray-200"}`}
                 >
                   {link.label}
                 </a>
               ))}
               <Button
                 onClick={() => { setMobileMenuOpen(false); navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`); }}
-                className="bg-white text-black hover:bg-white/90 rounded-full mt-6 h-14 text-lg font-medium"
+                className={`rounded-full mt-6 h-14 text-lg font-medium ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
               >
                 Website gratis erstellen
               </Button>
@@ -206,29 +206,29 @@ const FAQ_ITEMS = [
   },
 ];
 
-const FaqSection = () => {
+const FaqSection = ({ isDark }: { isDark: boolean }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   return (
-    <section className="py-24 border-y border-white/5">
+    <section className={`py-24 border-y transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
       <div className="max-w-2xl mx-auto px-6">
         <div className="text-center mb-14">
-          <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">FAQ</h2>
-          <h3 className="text-3xl font-semibold text-white tracking-tight">Häufige Fragen</h3>
+          <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>FAQ</h2>
+          <h3 className={`text-3xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Häufige Fragen</h3>
         </div>
         <div className="space-y-2">
           {FAQ_ITEMS.map((item, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden"
+              className={`rounded-2xl border overflow-hidden transition-colors duration-500 ${isDark ? "border-white/8 bg-white/[0.02]" : "border-gray-200 bg-white"}`}
             >
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="w-full flex items-center justify-between px-6 py-5 text-left"
               >
-                <span className="text-white font-medium text-sm">{item.q}</span>
+                <span className={`font-medium text-sm transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{item.q}</span>
                 {openIndex === i
-                  ? <ChevronUp className="w-4 h-4 text-white/40 shrink-0 ml-4" />
-                  : <ChevronDown className="w-4 h-4 text-white/40 shrink-0 ml-4" />
+                  ? <ChevronUp className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`} />
+                  : <ChevronDown className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`} />
                 }
               </button>
               <AnimatePresence initial={false}>
@@ -240,7 +240,7 @@ const FaqSection = () => {
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <p className="px-6 pb-5 text-white/50 text-sm leading-relaxed">{item.a}</p>
+                    <p className={`px-6 pb-5 text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>{item.a}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -271,7 +271,7 @@ const STATS: StatDef[] = [
   { target: null, display: "19,90€", label: "Pro Monat" },
 ];
 
-const StatItem = ({ stat, index }: { stat: StatDef; index: number }) => {
+const StatItem = ({ stat, index, isDark }: { stat: StatDef; index: number; isDark: boolean }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const [count, setCount] = useState(0);
@@ -1647,9 +1647,9 @@ export default function LandingPage() {
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("lp-theme");
-      return stored !== "light"; // dark unless user explicitly chose light
+      return stored === "dark"; // light unless user explicitly chose dark
     }
-    return true;
+    return false;
   });
 
   useEffect(() => {
@@ -1658,7 +1658,7 @@ export default function LandingPage() {
 
   return (
     <div
-      className="lp-root min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans"
+      className={`lp-root min-h-screen font-sans transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] text-white selection:bg-white/20" : "bg-stone-50 text-gray-900 selection:bg-lime-200/40"}`}
       data-lp-theme={isDark ? "dark" : "light"}
     >
       {/* Scroll Progress Bar */}
@@ -1670,13 +1670,13 @@ export default function LandingPage() {
       <Navbar isDark={isDark} onToggle={() => setIsDark((v) => !v)} />
 
       {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className={`fixed inset-0 pointer-events-none overflow-hidden transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}>
         <GradientOrb className="w-[800px] h-[800px] bg-lime-500/10 -left-40 -top-40" delay={0} />
         <GradientOrb className="w-[600px] h-[600px] bg-lime-500/10 right-0 top-1/4" delay={0.3} />
         <GradientOrb className="w-[400px] h-[400px] bg-lime-400/5 left-1/3 bottom-0" delay={0.5} />
-        
+
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
@@ -1707,10 +1707,10 @@ export default function LandingPage() {
           </div>
           {/* Light gradient for light mode */}
           <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-            <div className="absolute inset-0 bg-gradient-to-br from-lime-50/50 via-stone-50 to-lime-50/30" />
-            <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-lime-300/15 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-lime-300/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-lime-300/15 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-stone-100 via-white to-lime-50/20" />
+            <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-stone-200/30 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-stone-200/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-lime-100/15 rounded-full blur-[80px] pointer-events-none" />
           </div>
         </div>
         
@@ -1738,7 +1738,7 @@ export default function LandingPage() {
                         initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                         transition={{ duration: 0.65, delay: 0.08 + i * 0.14, ease: [0.16, 1, 0.3, 1] }}
-                        className="text-white inline-block mr-3"
+                        className={`inline-block mr-3 ${isDark ? "text-white" : "text-gray-900"}`}
                       >
                         {word}
                       </motion.span>
@@ -1748,7 +1748,7 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 32, filter: "blur(16px)" }}
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     transition={{ duration: 0.9, delay: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-lime-400 to-yellow-300 block"
+                    className={`text-transparent bg-clip-text block ${isDark ? "bg-gradient-to-r from-lime-300 via-lime-400 to-yellow-300" : "bg-gradient-to-r from-lime-600 via-lime-500 to-lime-600"}`}
                     style={{ backgroundSize: '200% 200%', animation: 'gradient-text-shimmer 8s ease infinite' }}
                   >
                     Website in 3 Minuten.
@@ -1759,7 +1759,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-lg text-white/60 max-w-lg mb-8 leading-relaxed"
+                  className={`text-lg max-w-lg mb-8 leading-relaxed ${isDark ? "text-white/60" : "text-gray-600"}`}
                 >
                   Kein Webdesigner. Kein Monatelanges Warten. Kein 4-stelliges Budget.
                   Pageblitz erstellt deine Website automatisch – du musst nur dein Business beschreiben.
