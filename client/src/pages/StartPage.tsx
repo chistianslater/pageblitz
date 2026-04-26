@@ -12,7 +12,7 @@ type Step = "choice" | "manual" | "gmb";
 
 // ─────────────────────────── CategoryPicker ─────────────────────────────────
 
-function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (cat: string) => void }) {
+function CategoryPicker({ selected, onSelect, isDark }: { selected: string; onSelect: (cat: string) => void; isDark: boolean }) {
   const [search, setSearch] = useState("");
   const filtered = search.trim()
     ? CATEGORY_GROUPS.flatMap((g) =>
@@ -27,36 +27,38 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Branche suchen oder eintippen…"
-          className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500/60 focus:bg-lime-600/10 transition-all"
+          className={`w-full ${isDark ? "bg-slate-700/60 border-slate-600/50 text-slate-200 placeholder-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400"} border text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500/60 focus:bg-lime-600/10 transition-all`}
         />
         {search && (
-          <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors" aria-label="Suche löschen">✕</button>
+          <button onClick={() => setSearch("")} className={`absolute right-2 top-1/2 -translate-y-1/2 ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"} transition-colors`} aria-label="Suche löschen">✕</button>
         )}
       </div>
       {filtered !== null ? (
-        <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
+        <div className={`max-h-52 overflow-y-auto rounded-xl border ${isDark ? "border-slate-700/50 bg-slate-800/60 divide-slate-700/40" : "border-gray-200 bg-white divide-gray-100"} divide-y`}>
           {filtered.length === 0 ? (
             <div className="px-3 py-3 flex items-center justify-between gap-2">
-              <span className="text-slate-400 text-sm">Keine Treffer – Branche trotzdem übernehmen?</span>
+              <span className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm`}>Keine Treffer – Branche trotzdem übernehmen?</span>
               <button onClick={() => onSelect(search.trim())} className="text-xs bg-lime-600 hover:bg-lime-500 text-gray-900 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">Übernehmen</button>
             </div>
           ) : (
             filtered.map((cat) => (
               <button key={cat} onClick={() => onSelect(cat)}
                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                  selected === cat ? "bg-lime-600/30 text-white" : "text-slate-200 hover:bg-slate-700/60 hover:text-white"
+                  selected === cat
+                    ? isDark ? "bg-lime-600/30 text-white" : "bg-lime-50 text-lime-700"
+                    : isDark ? "text-slate-200 hover:bg-slate-700/60 hover:text-white" : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 }`}>{cat}</button>
             ))
           )}
         </div>
       ) : (
-        <div className="max-h-64 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
+        <div className={`max-h-64 overflow-y-auto rounded-xl border ${isDark ? "border-slate-700/50 bg-slate-800/60 divide-slate-700/40" : "border-gray-200 bg-white divide-gray-100"} divide-y`}>
           {CATEGORY_GROUPS.map((group) => (
             <details key={group.group} className="group">
-              <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors text-xs font-semibold uppercase tracking-wide">
+              <summary className={`flex items-center gap-2 px-3 py-2 cursor-pointer select-none ${isDark ? "text-slate-300 hover:text-white hover:bg-slate-700/40" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"} transition-colors text-xs font-semibold uppercase tracking-wide`}>
                 <span>{group.icon}</span>
                 <span className="flex-1">{group.group}</span>
-                <span className="text-slate-500 group-open:rotate-90 transition-transform text-[10px]">▶</span>
+                <span className={`${isDark ? "text-slate-500" : "text-gray-400"} group-open:rotate-90 transition-transform text-[10px]`}>▶</span>
               </summary>
               <div className="flex flex-wrap gap-1.5 px-3 pb-2 pt-1">
                 {group.categories.map((cat) => (
@@ -64,7 +66,9 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
                     className={`text-xs border px-2.5 py-1.5 rounded-lg transition-all ${
                       selected === cat
                         ? "bg-lime-600/40 border-lime-500/60 text-white"
-                        : "bg-slate-700/60 hover:bg-lime-600/30 border-slate-600/50 hover:border-lime-500/50 text-slate-200 hover:text-white"
+                        : isDark
+                          ? "bg-slate-700/60 hover:bg-lime-600/30 border-slate-600/50 hover:border-lime-500/50 text-slate-200 hover:text-white"
+                          : "bg-gray-100 hover:bg-lime-50 border-gray-200 hover:border-lime-500/50 text-gray-700 hover:text-gray-900"
                     }`}>{cat}</button>
                 ))}
               </div>
@@ -77,6 +81,7 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
 }
 
 export default function StartPage() {
+  const isDark = typeof window !== "undefined" && localStorage.getItem("lp-theme") === "dark";
   const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<Step>("choice");
 
@@ -176,18 +181,18 @@ export default function StartPage() {
   };
 
   // ── Container class ───────────────────────────────────────────────────────
-  const outerCard = "w-full max-w-md bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl p-8 shadow-2xl";
+  const outerCard = `w-full max-w-md rounded-2xl p-8 ${isDark ? "bg-slate-800/60 backdrop-blur border border-slate-700/50 shadow-2xl" : "bg-white border border-gray-200 shadow-lg"}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center px-4 py-8">
+    <div className={`min-h-screen flex flex-col items-center justify-center px-4 py-8 ${isDark ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" : "bg-stone-50"}`}>
 
       {/* Logo */}
       <div className="mb-10 flex flex-col items-center gap-2">
         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center shadow-xl shadow-lime-500/30">
           <Zap className="w-7 h-7 text-white" />
         </div>
-        <span className="text-white font-bold text-2xl tracking-tight">Pageblitz</span>
-        <p className="text-slate-400 text-sm text-center max-w-xs">
+        <span className={`${isDark ? "text-white" : "text-gray-900"} font-bold text-2xl tracking-tight`}>Pageblitz</span>
+        <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm text-center max-w-xs`}>
           Deine professionelle Website in wenigen Minuten – automatisch aus deinen Daten.
         </p>
       </div>
@@ -198,47 +203,47 @@ export default function StartPage() {
         {/* ── Choice ── */}
         {step === "choice" && (
           <>
-            <h1 className="text-white text-2xl font-bold mb-1 text-center">
+            <h1 className={`${isDark ? "text-white" : "text-gray-900"} text-2xl font-bold mb-1 text-center`}>
               Wie möchtest du starten?
             </h1>
-            <p className="text-slate-400 text-sm text-center mb-6">
+            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm text-center mb-6`}>
               Mit deinem Google My Business-Profil geht es am schnellsten.
             </p>
 
             {isAuthenticated && user?.email && (
               <div className="flex items-center gap-2 mb-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="text-emerald-300 text-sm">{user.email}</span>
+                <span className={`${isDark ? "text-emerald-300" : "text-emerald-600"} text-sm`}>{user.email}</span>
               </div>
             )}
 
             <div className="space-y-3">
               <button
                 onClick={() => setStep("gmb")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-lime-500/40 bg-lime-500/10 hover:bg-lime-500/20 hover:border-lime-500/60 transition-all text-left group"
+                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 ${isDark ? "border-lime-500/40 bg-lime-500/10 hover:bg-lime-500/20" : "border-lime-500/50 bg-lime-50 hover:bg-lime-100"} hover:border-lime-500/60 transition-all text-left group`}
               >
-                <div className="w-10 h-10 rounded-lg bg-lime-500/20 flex items-center justify-center flex-shrink-0">
-                  <Globe className="w-5 h-5 text-lime-400" />
+                <div className={`w-10 h-10 rounded-lg ${isDark ? "bg-lime-500/20" : "bg-lime-100"} flex items-center justify-center flex-shrink-0`}>
+                  <Globe className={`w-5 h-5 ${isDark ? "text-lime-400" : "text-lime-600"}`} />
                 </div>
                 <div className="flex-1">
-                  <div className="text-white font-semibold text-sm">Mit Google My Business starten</div>
-                  <div className="text-slate-400 text-xs mt-0.5">Daten werden automatisch übernommen – schnellster Weg</div>
+                  <div className={`${isDark ? "text-white" : "text-gray-900"} font-semibold text-sm`}>Mit Google My Business starten</div>
+                  <div className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs mt-0.5`}>Daten werden automatisch übernommen – schnellster Weg</div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-lime-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className={`w-4 h-4 ${isDark ? "text-lime-400" : "text-lime-600"} group-hover:translate-x-1 transition-transform`} />
               </button>
 
               <button
                 onClick={() => setStep("manual")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-600/40 bg-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/60 transition-all text-left group"
+                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 ${isDark ? "border-slate-600/40 bg-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/60" : "border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300"} transition-all text-left group`}
               >
-                <div className="w-10 h-10 rounded-lg bg-slate-600/30 flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-5 h-5 text-slate-400" />
+                <div className={`w-10 h-10 rounded-lg ${isDark ? "bg-slate-600/30" : "bg-gray-100"} flex items-center justify-center flex-shrink-0`}>
+                  <Zap className={`w-5 h-5 ${isDark ? "text-slate-400" : "text-gray-500"}`} />
                 </div>
                 <div className="flex-1">
-                  <div className="text-white font-semibold text-sm">Ohne Google My Business starten</div>
-                  <div className="text-slate-400 text-xs mt-0.5">Unternehmensname und Branche eingeben</div>
+                  <div className={`${isDark ? "text-white" : "text-gray-900"} font-semibold text-sm`}>Ohne Google My Business starten</div>
+                  <div className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs mt-0.5`}>Unternehmensname und Branche eingeben</div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className={`w-4 h-4 ${isDark ? "text-slate-400" : "text-gray-500"} group-hover:translate-x-1 transition-transform`} />
               </button>
             </div>
           </>
@@ -249,13 +254,13 @@ export default function StartPage() {
           <>
             <button
               onClick={() => setStep("choice")}
-              className="text-slate-400 hover:text-white text-sm mb-5 flex items-center gap-1 transition-colors"
+              className={`${isDark ? "text-slate-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} text-sm mb-5 flex items-center gap-1 transition-colors`}
             >
               ← Zurück
             </button>
 
-            <h1 className="text-white text-2xl font-bold mb-1">Dein Unternehmen</h1>
-            <p className="text-slate-400 text-sm mb-5">
+            <h1 className={`${isDark ? "text-white" : "text-gray-900"} text-2xl font-bold mb-1`}>Dein Unternehmen</h1>
+            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm mb-5`}>
               Kurz zwei Infos – dann zeigen wir dir passende Design-Vorlagen.
             </p>
 
@@ -265,20 +270,20 @@ export default function StartPage() {
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="Unternehmensname"
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12"
+                className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400"} h-12`}
               />
 
               {/* Selected category badge */}
               {category && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-lime-500/10 border border-lime-500/20">
-                  <CheckCircle className="w-3.5 h-3.5 text-lime-400 shrink-0" />
-                  <span className="text-lime-300 text-sm">{category}</span>
-                  <button onClick={() => setCategory("")} className="ml-auto text-slate-500 hover:text-slate-300 text-xs">✕</button>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isDark ? "bg-lime-500/10 border-lime-500/20" : "bg-lime-50 border-lime-200"} border`}>
+                  <CheckCircle className={`w-3.5 h-3.5 ${isDark ? "text-lime-400" : "text-lime-600"} shrink-0`} />
+                  <span className={`${isDark ? "text-lime-300" : "text-lime-700"} text-sm`}>{category}</span>
+                  <button onClick={() => setCategory("")} className={`ml-auto ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"} text-xs`}>✕</button>
                 </div>
               )}
               {/* Category picker */}
               {!category && (
-                <CategoryPicker selected={category} onSelect={setCategory} />
+                <CategoryPicker selected={category} onSelect={setCategory} isDark={isDark} />
               )}
 
               <Button
@@ -301,15 +306,15 @@ export default function StartPage() {
           <>
             <button
               onClick={() => { setStep("choice"); setResolvedInfo(null); setGmbSearchResults([]); setGmbSearchQuery(""); }}
-              className="text-slate-400 hover:text-white text-sm mb-5 flex items-center gap-1 transition-colors"
+              className={`${isDark ? "text-slate-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} text-sm mb-5 flex items-center gap-1 transition-colors`}
             >
               ← Zurück
             </button>
 
-            <h1 className="text-white text-2xl font-bold mb-1">
+            <h1 className={`${isDark ? "text-white" : "text-gray-900"} text-2xl font-bold mb-1`}>
               Dein Unternehmen bei Google
             </h1>
-            <p className="text-slate-400 text-sm mb-5">
+            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm mb-5`}>
               Suche deinen Betrieb – wir übernehmen alle Infos automatisch.
             </p>
 
@@ -322,7 +327,7 @@ export default function StartPage() {
                   onChange={(e) => { setGmbSearchQuery(e.target.value); setGmbSearchResults([]); setResolvedInfo(null); }}
                   onKeyDown={(e) => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
                   placeholder="Unternehmensname"
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-full"
+                  className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400"} h-12 w-full`}
                   disabled={gmbSearchLoading || isLoading}
                 />
 
@@ -356,11 +361,11 @@ export default function StartPage() {
                       onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
                       onFocus={() => citysuggestions.length > 0 && setShowCitySuggestions(true)}
                       placeholder="Stadt (optional)"
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 h-12 w-full"
+                      className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400"} h-12 w-full`}
                       disabled={gmbSearchLoading || isLoading}
                     />
                     {showCitySuggestions && citysuggestions.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-slate-800 border border-slate-600 rounded-xl shadow-xl overflow-hidden">
+                      <div className={`absolute top-full left-0 right-0 mt-1 z-50 ${isDark ? "bg-slate-800 border-slate-600" : "bg-white border-gray-200"} border rounded-xl shadow-xl overflow-hidden`}>
                         {citysuggestions.map((s) => (
                           <button
                             key={s.placeId}
@@ -373,7 +378,7 @@ export default function StartPage() {
                               setShowCitySuggestions(false);
                               if (gmbSearchQuery.trim() && !gmbSearchLoading) handleGmbSearch();
                             }}
-                            className="w-full text-left px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
+                            className={`w-full text-left px-3 py-2.5 text-sm ${isDark ? "text-slate-200 hover:bg-slate-700" : "text-gray-700 hover:bg-gray-50"} transition-colors`}
                           >
                             {s.label}
                           </button>
@@ -400,7 +405,7 @@ export default function StartPage() {
               {/* Search results */}
               {gmbSearchResults.length > 0 && !resolvedInfo && (
                 <div className="space-y-2">
-                  <p className="text-slate-400 text-xs">
+                  <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs`}>
                     {gmbSearchResults.length} Ergebnis{gmbSearchResults.length !== 1 ? "se" : ""} gefunden:
                   </p>
                   {gmbSearchResults.map((result) => (
