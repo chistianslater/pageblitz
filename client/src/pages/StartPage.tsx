@@ -426,16 +426,16 @@ export default function StartPage() {
                         });
                         setGmbSearchResults([]);
                       }}
-                      className="w-full flex items-start gap-3 p-3 rounded-xl border border-slate-600/50 bg-slate-700/40 hover:border-lime-500/60 hover:bg-lime-500/10 transition-all text-left"
+                      className={`w-full flex items-start gap-3 p-3 rounded-xl border ${isDark ? "border-slate-600/50 bg-slate-700/40 hover:border-lime-500/60 hover:bg-lime-500/10" : "border-gray-200 bg-gray-50 hover:border-lime-500/60 hover:bg-lime-50"} transition-all text-left`}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{result.name}</p>
-                        <p className="text-xs text-slate-400 truncate">{result.address.split(",").slice(0, 2).join(",")}</p>
+                        <p className={`text-sm font-semibold ${isDark ? "text-white" : "text-gray-900"} truncate`}>{result.name}</p>
+                        <p className={`text-xs ${isDark ? "text-slate-400" : "text-gray-500"} truncate`}>{result.address.split(",").slice(0, 2).join(",")}</p>
                         {result.rating && (
                           <p className="text-xs text-amber-400 mt-0.5">★ {result.rating.toFixed(1)} ({result.reviewCount} Bewertungen)</p>
                         )}
                       </div>
-                      <ArrowRight className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+                      <ArrowRight className={`w-4 h-4 ${isDark ? "text-slate-500" : "text-gray-400"} flex-shrink-0 mt-0.5`} />
                     </button>
                   ))}
                 </div>
@@ -443,28 +443,28 @@ export default function StartPage() {
 
               {/* No results */}
               {!gmbSearchLoading && gmbSearchResults.length === 0 && gmbSearchPublicMutation.isSuccess && !resolvedInfo && (
-                <div className="p-3 rounded-lg bg-amber-900/30 border border-amber-700/50 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-amber-400 text-sm">Kein Treffer – versuche einen anderen Begriff oder ergänze die Stadt.</p>
+                <div className={`p-3 rounded-lg ${isDark ? "bg-amber-900/30 border-amber-700/50" : "bg-amber-50 border-amber-200"} border flex items-start gap-2`}>
+                  <AlertCircle className={`w-4 h-4 ${isDark ? "text-amber-400" : "text-amber-600"} mt-0.5 flex-shrink-0`} />
+                  <p className={`${isDark ? "text-amber-400" : "text-amber-600"} text-sm`}>Kein Treffer – versuche einen anderen Begriff oder ergänze die Stadt.</p>
                 </div>
               )}
 
               {/* Selected business confirmation */}
               {resolvedInfo && (
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <div className={`p-4 rounded-xl ${isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"} border`}>
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-400 text-sm font-semibold">Unternehmen ausgewählt</span>
+                    <CheckCircle className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+                    <span className={`${isDark ? "text-emerald-400" : "text-emerald-600"} text-sm font-semibold`}>Unternehmen ausgewählt</span>
                     <button
                       onClick={() => setResolvedInfo(null)}
-                      className="ml-auto text-slate-500 hover:text-slate-300 text-xs"
+                      className={`ml-auto ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"} text-xs`}
                     >
                       Ändern
                     </button>
                   </div>
-                  <p className="text-white font-semibold">{resolvedInfo.businessName}</p>
+                  <p className={`${isDark ? "text-white" : "text-gray-900"} font-semibold`}>{resolvedInfo.businessName}</p>
                   {resolvedInfo.address && (
-                    <p className="text-slate-400 text-xs mt-0.5">{resolvedInfo.address.split(",").slice(0, 2).join(",")}</p>
+                    <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs mt-0.5`}>{resolvedInfo.address.split(",").slice(0, 2).join(",")}</p>
                   )}
                 </div>
               )}
@@ -491,7 +491,7 @@ export default function StartPage() {
               <button
                 onClick={() => setStep("manual")}
                 disabled={isLoading}
-                className="w-full text-slate-400 hover:text-white text-sm transition-colors py-2"
+                className={`w-full ${isDark ? "text-slate-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} text-sm transition-colors py-2`}
               >
                 Mein Unternehmen ist nicht dabei – manuell eingeben →
               </button>
@@ -500,7 +500,7 @@ export default function StartPage() {
         )}
       </div>
 
-      <p className="text-slate-600 text-xs mt-8 text-center">
+      <p className={`${isDark ? "text-slate-600" : "text-gray-400"} text-xs mt-8 text-center`}>
         7 Tage gratis · danach 19,90 €/Monat · Jederzeit kündbar
       </p>
     </div>
