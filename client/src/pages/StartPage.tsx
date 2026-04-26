@@ -27,7 +27,7 @@ function CategoryPicker({ selected, onSelect, isDark }: { selected: string; onSe
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Branche suchen oder eintippen…"
-          className={`w-full ${isDark ? "bg-slate-700/60 border-slate-600/50 text-slate-200 placeholder-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400"} border text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500/60 focus:bg-lime-600/10 transition-all`}
+          className={`w-full ${isDark ? "bg-slate-700/60 border-slate-600/50 text-slate-200 placeholder-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 shadow-sm"} border text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500/30 transition-all`}
         />
         {search && (
           <button onClick={() => setSearch("")} className={`absolute right-2 top-1/2 -translate-y-1/2 ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"} transition-colors`} aria-label="Suche löschen">✕</button>
@@ -270,7 +270,7 @@ export default function StartPage() {
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="Unternehmensname"
-                className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400"} h-12`}
+                className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm"} h-12`}
               />
 
               {/* Selected category badge */}
@@ -289,7 +289,8 @@ export default function StartPage() {
               <Button
                 onClick={handleManualStart}
                 disabled={!businessName.trim() || !category.trim() || isLoading}
-                className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold rounded-xl"
+                className="w-full h-12 disabled:opacity-40 font-semibold rounded-xl text-gray-900 shadow-md"
+                style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Wird vorbereitet…</div>
@@ -327,7 +328,7 @@ export default function StartPage() {
                   onChange={(e) => { setGmbSearchQuery(e.target.value); setGmbSearchResults([]); setResolvedInfo(null); }}
                   onKeyDown={(e) => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
                   placeholder="Unternehmensname"
-                  className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400"} h-12 w-full`}
+                  className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm"} h-12 w-full`}
                   disabled={gmbSearchLoading || isLoading}
                 />
 
@@ -361,7 +362,7 @@ export default function StartPage() {
                       onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
                       onFocus={() => citysuggestions.length > 0 && setShowCitySuggestions(true)}
                       placeholder="Stadt (optional)"
-                      className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400"} h-12 w-full`}
+                      className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm"} h-12 w-full`}
                       disabled={gmbSearchLoading || isLoading}
                     />
                     {showCitySuggestions && citysuggestions.length > 0 && (
@@ -473,7 +474,8 @@ export default function StartPage() {
               <Button
                 onClick={handleStartWithResolved}
                 disabled={!resolvedInfo || isLoading}
-                className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold rounded-xl"
+                className="w-full h-12 disabled:opacity-40 font-semibold rounded-xl text-gray-900 shadow-md"
+                style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
