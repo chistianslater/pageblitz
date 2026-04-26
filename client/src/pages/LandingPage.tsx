@@ -167,7 +167,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
               ))}
               <Button
                 onClick={() => { setMobileMenuOpen(false); navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`); }}
-                className={`rounded-full mt-6 h-14 text-lg font-medium ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
+                className={`rounded-full mt-6 h-14 text-lg font-medium ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
               >
                 Website gratis erstellen
               </Button>
@@ -303,10 +303,10 @@ const StatItem = ({ stat, index, isDark }: { stat: StatDef; index: number; isDar
       transition={{ delay: index * 0.1 }}
       className="text-center md:text-left"
     >
-      <div className="text-3xl md:text-4xl font-semibold text-white mb-2 tracking-tight tabular-nums">
+      <div className={`text-3xl md:text-4xl font-semibold mb-2 tracking-tight tabular-nums transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>
         {displayValue}
       </div>
-      <div className="text-white/40 text-sm">{stat.label}</div>
+      <div className={`text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>{stat.label}</div>
     </motion.div>
   );
 };
@@ -1397,9 +1397,10 @@ const IFRAME_HEIGHT = 900; // tall enough to show hero + first section
 interface LivePreviewCardProps {
   layout: keyof typeof LAYOUT_COMPONENTS;
   delay?: number;
+  isDark?: boolean;
 }
 
-const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
+const LivePreviewCard = ({ layout, delay = 0, isDark = true }: LivePreviewCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const config = LAYOUT_CONFIG[layout];
@@ -1469,7 +1470,7 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
       onMouseLeave={() => setIsHovering(false)}
     >
       {/* Browser Window Mockup */}
-      <div className="rounded-xl overflow-hidden border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.55)] group-hover:shadow-[0_24px_70px_rgba(99,102,241,0.25)] group-hover:border-white/[0.15] transition-all duration-500">
+      <div className={`rounded-xl overflow-hidden border transition-all duration-500 ${isDark ? "border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.55)] group-hover:shadow-[0_24px_70px_rgba(99,102,241,0.25)] group-hover:border-white/[0.15]" : "border-gray-200 shadow-lg shadow-gray-200/60 group-hover:shadow-xl group-hover:shadow-gray-300/60 group-hover:border-gray-300"}`}>
 
         {/* Browser Chrome */}
         <div className="bg-[#1c1e2e] px-3.5 py-2.5 flex items-center gap-3 border-b border-white/[0.06]">
@@ -1516,20 +1517,20 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
       {/* Info below card */}
       <div className="flex items-center justify-between mt-3 px-0.5">
         <div>
-          <h4 className="text-white font-semibold text-sm group-hover:text-lime-300 transition-colors">{config.data.businessName}</h4>
-          <p className="text-white/40 text-xs mt-0.5">{config.label}</p>
+          <h4 className={`font-semibold text-sm transition-colors ${isDark ? "text-white group-hover:text-lime-300" : "text-gray-900 group-hover:text-lime-600"}`}>{config.data.businessName}</h4>
+          <p className={`text-xs mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>{config.label}</p>
         </div>
         <div className="flex gap-1">
-          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.primary }} />
-          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.secondary }} />
-          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.accent }} />
+          <div className={`w-3.5 h-3.5 rounded-full border ${isDark ? "border-white/15" : "border-gray-200"}`} style={{ backgroundColor: colorScheme.primary }} />
+          <div className={`w-3.5 h-3.5 rounded-full border ${isDark ? "border-white/15" : "border-gray-200"}`} style={{ backgroundColor: colorScheme.secondary }} />
+          <div className={`w-3.5 h-3.5 rounded-full border ${isDark ? "border-white/15" : "border-gray-200"}`} style={{ backgroundColor: colorScheme.accent }} />
         </div>
       </div>
     </motion.div>
   );
 };
 
-const WebsiteShowcase = () => {
+const WebsiteShowcase = ({ isDark }: { isDark: boolean }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -1565,37 +1566,37 @@ const WebsiteShowcase = () => {
 
   return (
     <section id="showcase" className="py-32 relative overflow-hidden">
-      <GradientOrb className="w-[600px] h-[600px] bg-lime-500/10 -right-40 top-20" delay={0.2} />
-      
+      {isDark && <GradientOrb className="w-[600px] h-[600px] bg-lime-500/10 -right-40 top-20" delay={0.2} />}
+
       <div className="max-w-7xl mx-auto px-6 mb-12 flex items-end justify-between">
         <div>
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-white/40 text-sm font-medium uppercase tracking-widest mb-3"
+            className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
           >
             Live Beispiele
           </motion.h2>
-          <motion.h3 
+          <motion.h3
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl md:text-4xl font-semibold text-white tracking-tight"
+            className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
           >
             Websites, die verkaufen.
           </motion.h3>
         </div>
-        
+
         <div className="hidden md:flex gap-2">
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
             className={`p-3 rounded-full border transition-all ${
-              canScrollLeft 
-                ? "border-white/20 text-white hover:bg-white/10" 
-                : "border-white/5 text-white/20 cursor-not-allowed"
+              canScrollLeft
+                ? isDark ? "border-white/20 text-white hover:bg-white/10" : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                : isDark ? "border-white/5 text-white/20 cursor-not-allowed" : "border-gray-200 text-gray-300 cursor-not-allowed"
             }`}
           >
             <ChevronLeft className="w-5 h-5" />
@@ -1604,9 +1605,9 @@ const WebsiteShowcase = () => {
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
             className={`p-3 rounded-full border transition-all ${
-              canScrollRight 
-                ? "border-white/20 text-white hover:bg-white/10" 
-                : "border-white/5 text-white/20 cursor-not-allowed"
+              canScrollRight
+                ? isDark ? "border-white/20 text-white hover:bg-white/10" : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                : isDark ? "border-white/5 text-white/20 cursor-not-allowed" : "border-gray-200 text-gray-300 cursor-not-allowed"
             }`}
           >
             <ChevronRight className="w-5 h-5" />
@@ -1628,6 +1629,7 @@ const WebsiteShowcase = () => {
             key={i}
             layout={site.layout}
             delay={i * 0.1}
+            isDark={isDark}
           />
         ))}
         
@@ -1794,17 +1796,17 @@ export default function LandingPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-10 pt-6 border-t border-white/10"
+                  className={`flex flex-wrap items-center gap-x-6 gap-y-2 mt-10 pt-6 border-t transition-colors duration-500 ${isDark ? "border-white/10" : "border-gray-200"}`}
                 >
-                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                  <div className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <span>7 Tage gratis</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                  <div className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <span>Danach 19,90 €/Monat</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                  <div className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <span>Monatlich kündbar</span>
                   </div>
@@ -1833,20 +1835,20 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 border-y border-white/5 relative overflow-hidden">
+      <section className={`py-20 border-y relative overflow-hidden transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
         {/* Animated gradient orbs */}
         <div
-          className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 bg-lime-500/8 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "bg-lime-500/8 opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift 18s ease-in-out infinite' }}
         />
         <div
-          className="absolute -right-40 top-1/2 -translate-y-1/2 w-80 h-80 bg-lime-500/6 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -right-40 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "bg-lime-500/6 opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift-alt 22s ease-in-out infinite' }}
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {STATS.map((stat, i) => (
-              <StatItem key={i} stat={stat} index={i} />
+              <StatItem key={i} stat={stat} index={i} isDark={isDark} />
             ))}
           </div>
         </div>
@@ -1927,13 +1929,13 @@ export default function LandingPage() {
 
       {/* Website Showcase Gallery */}
       <div id="showcase">
-        <WebsiteShowcase />
+        <WebsiteShowcase isDark={isDark} />
       </div>
 
       {/* CTA after Showcase */}
-      <section className="py-16 border-y border-white/5 bg-white/[0.02]">
+      <section className={`py-16 border-y transition-colors duration-500 ${isDark ? "border-white/5 bg-white/[0.02]" : "border-gray-200 bg-gray-50"}`}>
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="text-white/60 text-lg mb-6">
+          <p className={`text-lg mb-6 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}>
             Gefällt dir, was du siehst? Erstelle jetzt deine eigene Website – in 3 Minuten.
           </p>
           <Button
@@ -1945,13 +1947,13 @@ export default function LandingPage() {
             Website jetzt gratis erstellen
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <p className="text-white/30 text-xs mt-3">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
+          <p className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
         </div>
       </section>
 
       {/* GMB Feature Callout */}
       <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
+        <div className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}>
           <div className="absolute left-1/4 top-0 w-96 h-96 bg-lime-500/8 blur-[120px] rounded-full" />
           <div className="absolute right-1/4 bottom-0 w-64 h-64 bg-lime-400/8 blur-[100px] rounded-full" />
         </div>
@@ -2011,7 +2013,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4"
+              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
             >
               Warum Pageblitz?
             </motion.h2>
@@ -2020,7 +2022,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               viewport={{ once: true }}
               transition={{ delay: 0.12, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-              className="text-3xl md:text-5xl font-semibold text-white tracking-tight"
+              className={`text-3xl md:text-5xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
             >
               Alles dabei.<br />Sofort einsatzbereit.
             </motion.h3>
@@ -2044,22 +2046,22 @@ export default function LandingPage() {
         <Button
           size="lg"
           onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
+          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
         >
           Jetzt starten
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Button>
-        <p className="text-white/30 text-xs mt-3">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
+        <p className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
       </div>
 
       {/* How it Works - Minimalist */}
-      <section className="py-32 border-y border-white/5 bg-white/[0.02]">
+      <section className={`py-32 border-y transition-colors duration-500 ${isDark ? "border-white/5 bg-white/[0.02]" : "border-gray-200 bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Der Ablauf</h2>
-              <h3 className="text-3xl md:text-4xl font-semibold text-white mb-12 tracking-tight">So einfach geht's.</h3>
-              
+              <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Der Ablauf</h2>
+              <h3 className={`text-3xl md:text-4xl font-semibold mb-12 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>So einfach geht's.</h3>
+
               <div className="space-y-10">
                 {[
                   { step: "01", title: "Link eingeben", desc: "Füge deinen Google My Business Link ein oder starte manuell." },
@@ -2068,10 +2070,10 @@ export default function LandingPage() {
                   { step: "04", title: "Veröffentlichen", desc: "Mit einem Klick ist deine Website live." },
                 ].map((item, i) => (
                   <div key={i} className="flex gap-6 group">
-                    <div className="text-sm font-medium text-white/20 pt-1">{item.step}</div>
+                    <div className={`text-sm font-medium pt-1 transition-colors duration-500 ${isDark ? "text-white/20" : "text-gray-300"}`}>{item.step}</div>
                     <div>
-                      <h4 className="text-white text-lg font-medium mb-2 group-hover:text-white/80 transition-colors">{item.title}</h4>
-                      <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                      <h4 className={`text-lg font-medium mb-2 transition-colors duration-500 ${isDark ? "text-white group-hover:text-white/80" : "text-gray-900 group-hover:text-gray-700"}`}>{item.title}</h4>
+                      <p className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -2080,10 +2082,10 @@ export default function LandingPage() {
 
             <div className="relative">
               <div
-                className="absolute inset-0 bg-gradient-to-r from-lime-500/10 to-lime-500/10 blur-3xl pointer-events-none"
+                className={`absolute inset-0 blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "bg-gradient-to-r from-lime-500/10 to-lime-500/10 opacity-100" : "opacity-0"}`}
                 style={{ animation: 'gradient-orb-drift-alt 16s ease-in-out infinite' }}
               />
-              <div className="relative rounded-3xl border border-white/10 bg-white/5 p-8 space-y-4">
+              <div className={`relative rounded-3xl border p-8 space-y-4 transition-colors duration-500 ${isDark ? "border-white/10 bg-white/5" : "border-gray-200 bg-white shadow-lg shadow-gray-100"}`}>
                 {/* Mini preview cards for each step */}
                 {[
                   { icon: "🔗", label: "Link eingefügt", sub: "google.com/maps/..." },
@@ -2097,15 +2099,15 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.15 }}
-                    className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/5"
+                    className={`flex items-center gap-4 rounded-xl p-4 border transition-colors duration-500 ${isDark ? "bg-white/5 border-white/5" : "bg-gray-50 border-gray-100"}`}
                   >
                     <span className="text-2xl">{s.icon}</span>
                     <div>
-                      <div className="text-white text-sm font-medium">{s.label}</div>
-                      <div className="text-white/40 text-xs font-mono mt-0.5">{s.sub}</div>
+                      <div className={`text-sm font-medium transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{s.label}</div>
+                      <div className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>{s.sub}</div>
                     </div>
                     {i < 3 && (
-                      <div className="ml-auto text-white/20 text-xs">→</div>
+                      <div className={`ml-auto text-xs transition-colors duration-500 ${isDark ? "text-white/20" : "text-gray-300"}`}>→</div>
                     )}
                     {i === 3 && (
                       <div className="ml-auto">
@@ -2127,16 +2129,16 @@ export default function LandingPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className="btn-shimmer w-full flex items-center justify-between bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/25 rounded-xl p-4 transition-all duration-300 cursor-pointer group"
+                  className={`btn-shimmer w-full flex items-center justify-between rounded-xl p-4 transition-all duration-300 cursor-pointer group border ${isDark ? "bg-white/10 hover:bg-white/15 border-white/10 hover:border-white/25" : "bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300"}`}
                 >
                   <div className="flex items-center gap-4">
                     <span className="text-2xl">⚡</span>
                     <div className="text-left">
-                      <div className="text-white text-sm font-medium">Jetzt kostenlos starten</div>
-                      <div className="text-white/40 text-xs font-mono mt-0.5">7 Tage gratis testen · dann 19,90 €/Mo.</div>
+                      <div className={`text-sm font-medium transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Jetzt kostenlos starten</div>
+                      <div className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>7 Tage gratis testen · dann 19,90 €/Mo.</div>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all duration-200" />
+                  <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-all duration-200 ${isDark ? "text-white/50 group-hover:text-white" : "text-gray-400 group-hover:text-gray-900"}`} />
                 </motion.button>
               </div>
             </div>
@@ -2146,8 +2148,8 @@ export default function LandingPage() {
 
       {/* ── KI-Chat Spotlight ─────────────────────────────────────────────── */}
       <section className="py-32 relative overflow-hidden">
-        <GradientOrb className="w-[600px] h-[600px] bg-lime-400/8 -left-40 top-10" delay={0.2} />
-        <GradientOrb className="w-[400px] h-[400px] bg-lime-500/8 right-0 bottom-0" delay={0.4} />
+        {isDark && <GradientOrb className="w-[600px] h-[600px] bg-lime-400/8 -left-40 top-10" delay={0.2} />}
+        {isDark && <GradientOrb className="w-[400px] h-[400px] bg-lime-500/8 right-0 bottom-0" delay={0.4} />}
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             {/* Left: Text */}
@@ -2471,17 +2473,17 @@ export default function LandingPage() {
       <section id="pricing" className="py-32 relative overflow-hidden">
         {/* Animated gradient orbs */}
         <div
-          className="absolute -left-48 top-1/3 w-[500px] h-[500px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -left-48 top-1/3 w-[500px] h-[500px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift 20s ease-in-out infinite' }}
         />
         <div
-          className="absolute -right-48 bottom-1/3 w-[400px] h-[400px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -right-48 bottom-1/3 w-[400px] h-[400px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift-alt 24s ease-in-out infinite' }}
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Preise</h2>
-            <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Ein Preis. Alles inklusive.</h3>
+            <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Preise</h2>
+            <h3 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Ein Preis. Alles inklusive.</h3>
           </div>
 
           <div className="flex justify-center">
@@ -2497,13 +2499,13 @@ export default function LandingPage() {
                     <div className={`flex p-0.5 rounded-full border transition-colors duration-500 ${isDark ? "bg-white/5 border-white/10" : "bg-gray-100 border-gray-200"}`}>
                       <button
                         onClick={() => setBillingYearly(true)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? (isDark ? 'bg-white text-black' : 'bg-gray-900 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? (isDark ? 'bg-white text-black' : 'bg-lime-500 text-gray-900') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Jährlich
                       </button>
                       <button
                         onClick={() => setBillingYearly(false)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? (isDark ? 'bg-white text-black' : 'bg-gray-900 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? (isDark ? 'bg-white text-black' : 'bg-lime-500 text-gray-900') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Monatlich
                       </button>
@@ -2516,9 +2518,9 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
                     <span className={`text-6xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{billingYearly ? '19,90€' : '24,90€'}</span>
-                    <span className="text-white/40">/Monat</span>
+                    <span className={`transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>/Monat</span>
                   </div>
-                  <p className="text-white/40 text-sm">
+                  <p className={`text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>
                     {billingYearly ? 'Jährliche Abrechnung · Jederzeit kündbar.' : 'Monatliche Abrechnung · Jederzeit kündbar.'}
                   </p>
                 </div>
@@ -2534,7 +2536,7 @@ export default function LandingPage() {
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <CheckCircle2 className="w-5 h-5 text-green-500/80 shrink-0" />
-                      <span className="text-white/70 text-sm">{feature}</span>
+                      <span className={`text-sm transition-colors duration-500 ${isDark ? "text-white/70" : "text-gray-700"}`}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -2564,11 +2566,11 @@ export default function LandingPage() {
 
                 <Button
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
+                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
                 >
                   7 Tage gratis starten
                 </Button>
-                <p className="text-center text-white/30 text-xs mt-4">
+                <p className={`text-center text-xs mt-4 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>
                   7 Tage gratis · danach {billingYearly ? '19,90 €/Mo. (jährlich)' : '24,90 €/Mo.'} · Jederzeit kündbar
                 </p>
               </div>
@@ -2582,14 +2584,14 @@ export default function LandingPage() {
       <section className="py-24 relative">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
-            <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Vergleich</h2>
-            <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Pageblitz vs. Webagentur</h3>
-            <p className="text-white/40 mt-4 text-base">Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen.</p>
+            <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Vergleich</h2>
+            <h3 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz vs. Webagentur</h3>
+            <p className={`mt-4 text-base transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen.</p>
           </div>
           <div className={`rounded-2xl border overflow-hidden transition-colors duration-500 ${isDark ? "border-white/10" : "border-gray-200"}`}>
             {/* Header */}
             <div className={`grid grid-cols-3 px-8 py-5 transition-colors duration-500 ${isDark ? "bg-white/5" : "bg-gray-50"}`}>
-              <div className="text-white/40 text-sm font-medium uppercase tracking-wider"></div>
+              <div className={`text-sm font-medium uppercase tracking-wider transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}></div>
               <div className="text-center">
                 <span className={`text-base font-medium transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-400"}`}>Webagentur</span>
               </div>
@@ -2625,7 +2627,7 @@ export default function LandingPage() {
               </p>
               <button
                 onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800"}`}
+                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-lime-500 text-gray-900 hover:bg-lime-400"}`}
               >
                 Jetzt kostenlos starten
                 <ArrowRight className="w-4 h-4" />
@@ -2636,18 +2638,18 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <FaqSection />
+      <FaqSection isDark={isDark} />
 
       {/* Final CTA */}
       <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
+        <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" : ""}`} />
         {/* Animated gradient orbs */}
         <div
-          className="absolute left-1/4 -top-20 w-[600px] h-[600px] -translate-x-1/2 bg-lime-500/8 rounded-full blur-3xl pointer-events-none"
+          className={`absolute left-1/4 -top-20 w-[600px] h-[600px] -translate-x-1/2 bg-lime-500/8 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift 22s ease-in-out infinite' }}
         />
         <div
-          className="absolute right-1/4 -bottom-20 w-[500px] h-[500px] translate-x-1/2 bg-lime-500/6 rounded-full blur-3xl pointer-events-none"
+          className={`absolute right-1/4 -bottom-20 w-[500px] h-[500px] translate-x-1/2 bg-lime-500/6 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift-alt 18s ease-in-out infinite' }}
         />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
@@ -2656,7 +2658,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-white/40 text-sm font-medium uppercase tracking-widest mb-6"
+            className={`text-sm font-medium uppercase tracking-widest mb-6 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
           >
             Jetzt loslegen
           </motion.p>
@@ -2665,7 +2667,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl md:text-5xl font-semibold text-white mb-6 tracking-tight"
+            className={`text-4xl md:text-5xl font-semibold mb-6 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
           >
             Deine Website wartet.<br />Starte heute kostenlos.
           </motion.h2>
@@ -2674,7 +2676,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.22, duration: 0.6 }}
-            className="text-lg text-white/50 mb-10 max-w-lg mx-auto leading-relaxed"
+            className={`text-lg mb-10 max-w-lg mx-auto leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}
           >
             Kein Webdesigner. Kein technisches Wissen. Nur dein Unternehmen –
             professionell online in 3 Minuten.
@@ -2700,7 +2702,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-wrap justify-center gap-6 mt-8">
             {["7 Tage gratis", "Ab 19,90 €/Mo.", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
-              <div key={t} className="flex items-center gap-2 text-white/40 text-sm">
+              <div key={t} className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>
                 <CheckCircle2 className="w-4 h-4 text-green-400/60" />
                 {t}
               </div>
@@ -2713,23 +2715,23 @@ export default function LandingPage() {
       <LandingPageChatWidget />
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/5">
+      <footer className={`py-12 border-t transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-500 ${isDark ? "bg-white/10" : "bg-gray-900"}`}>
+              <Zap className={`w-4 h-4 ${isDark ? "text-white" : "text-white"}`} />
             </div>
-            <span className="text-white font-semibold tracking-tight">Pageblitz</span>
+            <span className={`font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz</span>
           </div>
-          <div className="text-white/30 text-sm">
+          <div className={`text-sm transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>
             © 2026 Pageblitz. Alle Rechte vorbehalten.
           </div>
           <div className="flex gap-6 text-sm">
-            <a href="/impressum" className="text-white/40 hover:text-white/80 transition-colors">Impressum</a>
-            <a href="/datenschutz" className="text-white/40 hover:text-white/80 transition-colors">Datenschutz</a>
+            <a href="/impressum" className={`transition-colors ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-400 hover:text-gray-700"}`}>Impressum</a>
+            <a href="/datenschutz" className={`transition-colors ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-400 hover:text-gray-700"}`}>Datenschutz</a>
             <button
               onClick={() => window.dispatchEvent(new Event("pageblitz:open-cookie-settings"))}
-              className="text-white/40 hover:text-white/80 transition-colors cursor-pointer bg-transparent border-none p-0"
+              className={`transition-colors cursor-pointer bg-transparent border-none p-0 ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-400 hover:text-gray-700"}`}
             >
               Cookie Einstellungen
             </button>

@@ -121,13 +121,13 @@ export default function LandingPageChatWidget() {
             exit={{ opacity: 0, y: 8, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 340, damping: 26 }}
             onClick={openChat}
-            className="fixed bottom-24 right-6 z-[9990] max-w-[240px] text-left rounded-2xl px-4 py-3 shadow-xl border border-white/10 backdrop-blur-sm cursor-pointer"
-            style={{ background: "rgba(20,20,30,0.95)" }}
+            className="fixed bottom-24 right-6 z-[9990] max-w-[240px] text-left rounded-2xl px-4 py-3 shadow-xl border border-gray-200 cursor-pointer"
+            style={{ background: "white" }}
           >
-            <p className="text-white text-sm font-medium leading-snug">
+            <p className="text-gray-900 text-sm font-medium leading-snug">
               Hast du Fragen zu Pageblitz?
             </p>
-            <p className="text-white/50 text-xs mt-0.5">Ich beantworte sie gerne! 👋</p>
+            <p className="text-gray-500 text-xs mt-0.5">Ich beantworte sie gerne! 👋</p>
           </motion.button>
         )}
       </AnimatePresence>
