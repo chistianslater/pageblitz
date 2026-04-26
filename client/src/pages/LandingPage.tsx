@@ -365,84 +365,164 @@ const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => 
 
 const HERO_PREVIEW_LAYOUTS = ["BOLD", "ELEGANT", "AURORA", "NEXUS", "FORGE", "FLUX", "CLAY", "FRESH"];
 const ROTATE_INTERVAL = 5000;
+const SKELETON_DURATION = 2800;
 
 const GhostWebsiteCreation = () => {
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [phase, setPhase] = useState<"skeleton" | "live">("skeleton");
+  const [currentIdx, setCurrentIdx] = useState(() => Math.floor(Math.random() * HERO_PREVIEW_LAYOUTS.length));
 
   useEffect(() => {
-    // Initial reveal after short delay
-    const revealTimer = setTimeout(() => setIsRevealed(true), 800);
-    // Rotate layouts
-    const interval = setInterval(() => {
-      setIsRevealed(false);
-      setTimeout(() => {
-        setCurrentIdx((i) => (i + 1) % HERO_PREVIEW_LAYOUTS.length);
-        setTimeout(() => setIsRevealed(true), 200);
-      }, 600);
-    }, ROTATE_INTERVAL);
-    return () => { clearTimeout(revealTimer); clearInterval(interval); };
+    const skeletonTimer = setTimeout(() => setPhase("live"), SKELETON_DURATION);
+    return () => clearTimeout(skeletonTimer);
   }, []);
 
+  useEffect(() => {
+    if (phase !== "live") return;
+    const interval = setInterval(() => {
+      setCurrentIdx((i) => (i + 1) % HERO_PREVIEW_LAYOUTS.length);
+    }, ROTATE_INTERVAL);
+    return () => clearInterval(interval);
+  }, [phase]);
+
   const layout = HERO_PREVIEW_LAYOUTS[currentIdx];
+  const IFRAME_W = 1280;
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto aspect-[16/10] rounded-xl bg-white border border-gray-200 shadow-2xl shadow-black/10 overflow-hidden">
+    <div className="relative w-full max-w-3xl mx-auto aspect-[16/10] rounded-2xl bg-white border border-gray-200/80 shadow-2xl shadow-black/8 overflow-hidden">
       {/* Browser Chrome */}
       <div className="relative h-10 bg-gray-50 border-b border-gray-200 flex items-center px-3 gap-2 z-30 shrink-0">
         <div className="flex gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-400/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
         </div>
-        <div className="flex-1 max-w-sm mx-auto h-5 bg-gray-100 rounded-md flex items-center px-2 border border-gray-200">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 mr-2" />
-          <span className="text-[9px] text-gray-400 font-mono truncate">dein-unternehmen.pageblitz.de</span>
+        <div className="flex-1 max-w-md mx-auto h-6 bg-white rounded-md flex items-center px-2.5 border border-gray-200">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2 shrink-0" />
+          <span className="text-[10px] text-gray-500 font-mono truncate">dein-unternehmen.pageblitz.de</span>
         </div>
       </div>
 
-      {/* Rotating layout previews */}
+      {/* Content area */}
       <div className="relative h-[calc(100%-2.5rem)] overflow-hidden bg-white">
-        <AnimatePresence mode="wait">
+
+        {/* Phase 1: Skeleton wireframe building animation */}
+        <motion.div
+          className="absolute inset-0 z-10 bg-white p-5"
+          animate={{ opacity: phase === "skeleton" ? 1 : 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          style={{ pointerEvents: phase === "skeleton" ? "auto" : "none" }}
+        >
+          {/* Shimmer sweep */}
           <motion.div
-            key={layout}
-            initial={{ opacity: 0, scale: 1.02, filter: 'blur(8px)' }}
-            animate={{ opacity: isRevealed ? 1 : 0, scale: 1, filter: isRevealed ? 'blur(0px)' : 'blur(8px)' }}
-            exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-            transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-            className="absolute inset-0"
+            className="absolute inset-0 z-20 pointer-events-none"
+            animate={{ x: ["-100%", "200%"] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           >
-            <iframe
-              src={`/layout-preview/${layout}?scheme=trust`}
-              width={1280}
-              height={2400}
-              scrolling="no"
-              style={{
-                border: 'none',
-                pointerEvents: 'none',
-                transformOrigin: 'top left',
-                transform: 'scale(0.42)',
-                display: 'block',
-                width: '1280px',
-                height: '2400px',
-              }}
-              title={`${layout} Preview`}
-            />
+            <div className="w-1/3 h-full bg-gradient-to-r from-transparent via-lime-300/20 to-transparent" />
           </motion.div>
+
+          {/* Wireframe blocks building in */}
+          <div className="space-y-3">
+            {/* Nav bar */}
+            <div className="flex items-center justify-between">
+              <motion.div initial={{ width: 0 }} animate={{ width: "80px" }} transition={{ delay: 0.1, duration: 0.4 }}
+                className="h-3 bg-gray-200 rounded-full" />
+              <div className="flex gap-3">
+                {[0, 1, 2].map((i) => (
+                  <motion.div key={i} initial={{ width: 0, opacity: 0 }} animate={{ width: "40px", opacity: 1 }}
+                    transition={{ delay: 0.2 + i * 0.1, duration: 0.3 }}
+                    className="h-2 bg-gray-100 rounded-full" />
+                ))}
+              </div>
+            </div>
+            {/* Hero block */}
+            <motion.div initial={{ scaleY: 0, opacity: 0 }} animate={{ scaleY: 1, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }} style={{ transformOrigin: "top" }}
+              className="h-28 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200/60 flex flex-col justify-center items-center gap-2 px-8"
+            >
+              <motion.div initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ delay: 0.8, duration: 0.5 }}
+                className="h-4 bg-gray-200 rounded-full" />
+              <motion.div initial={{ width: 0 }} animate={{ width: "45%" }} transition={{ delay: 1.0, duration: 0.4 }}
+                className="h-2.5 bg-gray-150 rounded-full" style={{ backgroundColor: "#e8e8e8" }} />
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.3, duration: 0.3, type: "spring" }}
+                className="h-6 w-24 bg-lime-400 rounded-md mt-1" />
+            </motion.div>
+            {/* Feature cards */}
+            <div className="grid grid-cols-3 gap-2">
+              {[0, 1, 2].map((i) => (
+                <motion.div key={i} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 1.5 + i * 0.15, duration: 0.4 }}
+                  className="aspect-[4/3] rounded-lg bg-gray-50 border border-gray-200/50 p-3 flex flex-col gap-2"
+                >
+                  <div className="w-5 h-5 rounded bg-lime-300/40" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-1.5 bg-gray-200 rounded-full w-full" />
+                    <div className="h-1.5 bg-gray-150 rounded-full w-3/4" style={{ backgroundColor: "#efefef" }} />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            {/* About block */}
+            <motion.div initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 2.1, duration: 0.4 }}
+              className="h-14 rounded-lg bg-gray-50 border border-gray-200/50"
+            />
+          </div>
+        </motion.div>
+
+        {/* Phase 2: Real layout iframes */}
+        <AnimatePresence mode="wait">
+          {phase === "live" && (
+            <motion.div
+              key={layout}
+              initial={{ opacity: 0, filter: "blur(10px)" }}
+              animate={{ opacity: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, filter: "blur(6px)" }}
+              transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+              className="absolute inset-0"
+            >
+              <iframe
+                src={`/layout-preview/${layout}?scheme=trust`}
+                width={IFRAME_W}
+                height={2400}
+                scrolling="no"
+                style={{
+                  border: "none",
+                  pointerEvents: "none",
+                  transformOrigin: "top left",
+                  transform: `scale(${0.42})`,
+                  display: "block",
+                  width: `${IFRAME_W}px`,
+                  height: "2400px",
+                }}
+                title={`${layout} Preview`}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
 
-        {/* Subtle bottom fade */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none z-10" />
+        {/* Bottom fade */}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-20" />
 
-        {/* Layout name badge */}
-        <motion.div
-          key={`badge-${layout}`}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-[10px] text-white/80 font-medium"
-        >
-          {layout.charAt(0) + layout.slice(1).toLowerCase()} Layout
-        </motion.div>
+        {/* Glassmorphism layout badge */}
+        {phase === "live" && (
+          <motion.div
+            key={`badge-${layout}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="absolute bottom-4 right-4 z-30 px-3.5 py-1.5 rounded-full text-[11px] text-white font-semibold tracking-wide"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+            }}
+          >
+            ✦ {layout.charAt(0) + layout.slice(1).toLowerCase()}
+          </motion.div>
+        )}
       </div>
     </div>
   );
