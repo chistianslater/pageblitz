@@ -370,6 +370,8 @@ const SKELETON_DURATION = 2800;
 const GhostWebsiteCreation = () => {
   const [phase, setPhase] = useState<"skeleton" | "live">("skeleton");
   const [currentIdx, setCurrentIdx] = useState(() => Math.floor(Math.random() * HERO_PREVIEW_LAYOUTS.length));
+  const [containerW, setContainerW] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const skeletonTimer = setTimeout(() => setPhase("live"), SKELETON_DURATION);
@@ -384,8 +386,17 @@ const GhostWebsiteCreation = () => {
     return () => clearInterval(interval);
   }, [phase]);
 
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => setContainerW(el.offsetWidth));
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   const layout = HERO_PREVIEW_LAYOUTS[currentIdx];
   const IFRAME_W = 1280;
+  const iframeScale = containerW > 0 ? containerW / IFRAME_W : 0.5;
 
   return (
     <div className="relative w-full max-w-3xl mx-auto aspect-[16/10] rounded-2xl bg-white border border-gray-200/80 shadow-2xl shadow-black/8 overflow-hidden">
@@ -403,7 +414,7 @@ const GhostWebsiteCreation = () => {
       </div>
 
       {/* Content area */}
-      <div className="relative h-[calc(100%-2.5rem)] overflow-hidden bg-white">
+      <div ref={contentRef} className="relative h-[calc(100%-2.5rem)] overflow-hidden bg-white">
 
         {/* Phase 1: Skeleton wireframe building animation */}
         <motion.div
@@ -490,7 +501,7 @@ const GhostWebsiteCreation = () => {
                   border: "none",
                   pointerEvents: "none",
                   transformOrigin: "top left",
-                  transform: `scale(${0.42})`,
+                  transform: `scale(${iframeScale})`,
                   display: "block",
                   width: `${IFRAME_W}px`,
                   height: "2400px",
