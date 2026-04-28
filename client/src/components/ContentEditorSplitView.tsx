@@ -759,6 +759,7 @@ export default function ContentEditorSplitView({
               heroImageUrl={website.heroImageUrl || undefined}
               aboutImageUrl={(website as any).aboutImageUrl || undefined}
               layoutStyle={(website as any).layoutStyle || undefined}
+              layoutVersion={(website as any)?.layoutVersion ?? undefined}
               slug={website.slug}
             />
           </div>

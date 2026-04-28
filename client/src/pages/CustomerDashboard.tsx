@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import HelpWidget from "@/components/HelpWidget";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronLeft, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
@@ -3141,6 +3142,7 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
             heroImageUrl={heroImageUrl}
             aboutImageUrl={aboutImageUrl}
             layoutStyle={draftLayout}
+            layoutVersion={(website as any)?.layoutVersion ?? undefined}
             headlineSize={draftFonts.headlineSize as any}
             headlineFontOverride={draftFonts.headlineFont || undefined}
             businessPhone={business?.phone || undefined}
@@ -4479,6 +4481,7 @@ export default function CustomerDashboard() {
                       heroImageUrl={website.heroImageUrl || undefined}
                       aboutImageUrl={(website as any).aboutImageUrl || undefined}
                       layoutStyle={(website as any).layoutStyle || undefined}
+                      layoutVersion={(website as any)?.layoutVersion ?? undefined}
                       businessPhone={business?.phone || undefined}
                       businessAddress={business?.address || undefined}
                       businessEmail={business?.email || undefined}
@@ -5359,6 +5362,7 @@ export default function CustomerDashboard() {
           </div>
         </div>
       )}
+      <HelpWidget />
     </div>
   );
 }

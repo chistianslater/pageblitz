@@ -8,7 +8,9 @@ import {
   upsertBusiness, getBusinessById, listBusinesses, countBusinesses, updateBusiness,
   getBusinessIdsWithWebsite,
   createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
-  listWebsites, countWebsites, updateWebsite,
+  listWebsites, countWebsites, updateWebsite, canActivateWebsite,
+  listUsers, countUsers, getUserById, updateUser, deleteUser,
+  logOnboardingEvent, getStepFunnelStats, getStepEventsForWebsite, deleteExpiredPreviews,
   createOutreachEmail, listOutreachEmails, countOutreachEmails, getOutreachEmailByWebsiteId, updateOutreachEmail,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
@@ -16,7 +18,7 @@ import {
   createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId, updateSubscription,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
-  getLeadFunnelStats, listExternalLeads, countExternalLeads,
+  getLeadFunnelStats, listExternalLeads, countExternalLeadsByCapture,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
   updateUser, getUserByOpenId,
   createContactSubmission, getContactSubmissionsByWebsiteId, countUnreadSubmissions,
@@ -24,8 +26,8 @@ import {
   getChatTranscriptsByWebsiteId, deleteChatTranscriptById,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
-import { chatLeads, generatedWebsites, appointmentSettings, appointments } from "../drizzle/schema";
-import { desc, eq as eqDrizzle, and as andDrizzle, gte as gteDrizzle } from "drizzle-orm";
+import { chatLeads, generatedWebsites, appointmentSettings, appointments, chatTranscripts } from "../drizzle/schema";
+import { desc, eq as eqDrizzle, and as andDrizzle, gte as gteDrizzle, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
@@ -40,7 +42,7 @@ import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
 import { registerUmamiWebsite, getUmamiStats } from "./umami";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
-import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG } from "@shared/layoutConfig";
+import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG, CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import { searchStockPhotos } from "./_core/stockPhotos";
 import Stripe from "stripe";
@@ -1308,6 +1310,54 @@ export const appRouter = router({
     dashboard: adminProcedure.query(async () => {
       return getDashboardStats();
     }),
+    stepFunnel: adminProcedure.query(async () => {
+      return getStepFunnelStats();
+    }),
+    cleanup: adminProcedure
+      .input(z.object({ olderThanDays: z.number().min(1).default(30) }).optional())
+      .mutation(async ({ input }) => {
+        const deleted = await deleteExpiredPreviews(input?.olderThanDays ?? 30);
+        return { deleted };
+      }),
+  }),
+
+  // ── Admin: User Management ──────────────────────────
+  userAdmin: router({
+    list: adminProcedure
+      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const users = await listUsers(input?.limit ?? 100, input?.offset ?? 0);
+        const total = await countUsers();
+        return { users, total };
+      }),
+    get: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const user = await getUserById(input.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User nicht gefunden" });
+        const websites = await getWebsitesByUserId(input.id);
+        return { user, websites };
+      }),
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        role: z.enum(["user", "admin"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await updateUser(id, data);
+        return { success: true };
+      }),
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (input.id === ctx.user!.id)
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Du kannst deinen eigenen Account nicht löschen" });
+        await deleteUser(input.id);
+        return { success: true };
+      }),
   }),
 
   // ── Admin: GMB Search ──────────────────────────────
@@ -1987,6 +2037,7 @@ export const appRouter = router({
           addons: [],
           heroImageUrl: finalHeroImageUrl,
           layoutStyle,
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
 
         return { websiteId, slug, previewToken, heroImageUrl: finalHeroImageUrl, layoutStyle };
@@ -2269,6 +2320,45 @@ export const appRouter = router({
         }
         return { success: true, deleted };
       }),
+    supportChats: adminProcedure
+      .input(z.object({ websiteId: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const wId = input?.websiteId;
+        if (wId !== undefined) {
+          return getChatTranscriptsByWebsiteId(wId, 50);
+        }
+        // All support + landing chats (websiteId=0 for support, -1 for landing)
+        const db = await getDb();
+        if (!db) return [];
+        const now = new Date();
+        return db.select().from(chatTranscripts)
+          .where(gteDrizzle(chatTranscripts.expiresAt, now))
+          .orderBy(desc(chatTranscripts.updatedAt))
+          .limit(200);
+      }),
+    supportChatCount: adminProcedure
+      .input(z.object({ websiteIds: z.array(z.number()) }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return {};
+        const now = new Date();
+        const rows = await db.select({
+          websiteId: chatTranscripts.websiteId,
+          count: sql<number>`count(*)`,
+          totalMessages: sql<number>`sum(${chatTranscripts.messageCount})`,
+        })
+          .from(chatTranscripts)
+          .where(andDrizzle(
+            gteDrizzle(chatTranscripts.expiresAt, now),
+            sql`${chatTranscripts.websiteId} IN (${sql.join(input.websiteIds.map(id => sql`${id}`), sql`, `)})`
+          ))
+          .groupBy(chatTranscripts.websiteId);
+        const result: Record<number, { count: number; totalMessages: number }> = {};
+        for (const r of rows) {
+          result[r.websiteId] = { count: r.count, totalMessages: r.totalMessages };
+        }
+        return result;
+      }),
   }),
 
   // ── Admin: Outreach ────────────────────────────────
@@ -2328,6 +2418,7 @@ export const appRouter = router({
               addons: [],
               heroImageUrl,
               layoutStyle,
+              layoutVersion: CURRENT_LAYOUT_VERSION,
             });
 
             const jobId = await createGenerationJob({
@@ -2887,6 +2978,24 @@ Kontext: ${input.context}`,
         return { email: null, source: null };
       }),
 
+    logStep: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        step: z.string(),
+        stepIndex: z.number(),
+        event: z.enum(["reached", "completed", "skipped"]).default("reached"),
+      }))
+      .mutation(async ({ input }) => {
+        await logOnboardingEvent(input);
+        return { success: true };
+      }),
+
+    getStepEvents: adminProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        return getStepEventsForWebsite(input.websiteId);
+      }),
+
     saveStep: publicProcedure
       .input(z.object({
         websiteId: z.number(),
@@ -3181,8 +3290,12 @@ Kontext: ${input.context}`,
           colorScheme: patchedColorScheme,
           onboardingStatus: "completed",
           hasLegalPages: !!(impressumHtml && datenschutzHtml),
-          status: "active",
         };
+        const activation = await canActivateWebsite(input.websiteId);
+        if (activation.ok) {
+          websiteUpdateData.status = "active";
+          websiteUpdateData.captureStatus = "converted";
+        }
         // Persist hero and about photo URLs chosen during onboarding
         if (onboarding.heroPhotoUrl) websiteUpdateData.heroImageUrl = onboarding.heroPhotoUrl;
         if (onboarding.aboutPhotoUrl) websiteUpdateData.aboutImageUrl = onboarding.aboutPhotoUrl;
@@ -3778,7 +3891,10 @@ Kontext: ${input.context}`,
         const rows = await getWebsitesByUserId(ctx.user.id);
         if (!rows.find(r => r.website.id === input.websiteId))
           throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
-        await updateWebsite(input.websiteId, { status: "active" });
+        const activation = await canActivateWebsite(input.websiteId);
+        if (!activation.ok)
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: activation.reason || "Website kann nicht aktiviert werden" });
+        await updateWebsite(input.websiteId, { status: "active", captureStatus: "converted" });
         return { success: true };
       }),
 
@@ -4937,6 +5053,7 @@ Wichtige Felder im JSON:
           source: input.source,
           customerEmail: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
           captureStatus: (input.customerEmail || isLoggedIn) ? "email_captured" : undefined,
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
 
         // If user is logged in, create a subscription to link website to user
@@ -4987,6 +5104,7 @@ Wichtige Felder im JSON:
       .input(z.object({
         websiteId: z.number(),
         email: z.string().email(),
+        marketingConsent: z.boolean().optional().default(false),
       }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
@@ -4994,6 +5112,7 @@ Wichtige Felder im JSON:
         await updateWebsite(input.websiteId, {
           customerEmail: input.email,
           captureStatus: "email_captured",
+          ...(input.marketingConsent ? { marketingConsent: true, marketingConsentAt: Date.now() } : {}),
         });
         // Lifecycle-Email-Sequenz starten (fire-and-forget, Fehler darf nicht blocken)
         try {
@@ -5072,6 +5191,7 @@ Wichtige Felder im JSON:
           source: "external",
           customerEmail: input.email,
           captureStatus: "email_captured",
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
         // Lifecycle-Email-Sequenz starten (fire-and-forget)
         try {
@@ -5407,7 +5527,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
       }))
       .query(async ({ input }) => {
         const leads = await listExternalLeads(input.limit ?? 100, input.offset ?? 0, input.captureStatus);
-        const total = await countExternalLeads(input.captureStatus);
+        const total = await countExternalLeadsByCapture(input.captureStatus);
         return { leads, total };
       }),
 

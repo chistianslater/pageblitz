@@ -41,9 +41,9 @@ import type { ColorScheme } from "@shared/types";
 
 const GradientOrb = ({ className, delay = 0 }: { className?: string; delay?: number }) => (
   <motion.div
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ delay, duration: 1.5, ease: "easeOut" }}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay, duration: 1, ease: "easeOut" }}
     className={`absolute rounded-full blur-[100px] pointer-events-none ${className}`}
   />
 );
@@ -68,12 +68,12 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
   return (
     <>
       <motion.nav
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? `${isDark ? "bg-[#0a0a0a]/80" : "bg-white/90"} backdrop-blur-xl border-b border-white/5 py-4`
+            ? `${isDark ? "bg-[#0a0a0a]/80 border-b border-white/5" : "bg-white/90 border-b border-gray-200/60"} backdrop-blur-xl py-4`
             : "bg-transparent py-6"
         }`}
       >
@@ -83,10 +83,10 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             onClick={() => navigate("/")}
             whileHover={{ scale: 1.02 }}
           >
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-white/10 group-hover:shadow-white/20 transition-all">
-              <Zap className="w-5 h-5 text-black" fill="black" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-all ${isDark ? "bg-white shadow-white/10 group-hover:shadow-white/20" : "bg-gray-900 shadow-gray-900/10 group-hover:shadow-gray-900/20"}`}>
+              <Zap className={`w-5 h-5 ${isDark ? "text-black" : "text-white"}`} fill={isDark ? "black" : "white"} />
             </div>
-            <span className="text-white font-semibold text-lg tracking-tight">Pageblitz</span>
+            <span className={`font-semibold text-lg tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz</span>
           </motion.div>
 
           <div className="hidden md:flex items-center gap-1">
@@ -94,7 +94,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-white/60 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all"
+                className={`text-sm px-4 py-2 rounded-lg transition-all ${isDark ? "text-white/60 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
               >
                 {link.label}
               </a>
@@ -106,7 +106,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             <button
               onClick={onToggle}
               title={isDark ? "Light Mode" : "Dark Mode"}
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+              className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 ${isDark ? "border-white/20 hover:border-white/40 text-white/60 hover:text-white" : "border-gray-300 hover:border-gray-400 text-gray-500 hover:text-gray-900"}`}
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -114,7 +114,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             <button
               onClick={() => navigate("/login")}
               title="Anmelden"
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 hover:border-white/40 text-white/60 hover:text-white transition-all duration-300"
+              className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 ${isDark ? "border-white/20 hover:border-white/40 text-white/60 hover:text-white" : "border-gray-300 hover:border-gray-400 text-gray-500 hover:text-gray-900"}`}
             >
               <LogIn className="w-4 h-4" />
             </button>
@@ -131,12 +131,12 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
             {/* Mobile theme toggle */}
             <button
               onClick={onToggle}
-              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/20 text-white/60 transition-all duration-300"
+              className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 ${isDark ? "border-white/20 text-white/60" : "border-gray-300 text-gray-500"}`}
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button
-              className="text-white p-2"
+              className={`p-2 ${isDark ? "text-white" : "text-gray-900"}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -160,7 +160,7 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-2xl text-white/80 py-3 border-b border-white/10"
+                  className={`text-2xl py-3 border-b ${isDark ? "text-white/80 border-white/10" : "text-gray-700 border-gray-200"}`}
                 >
                   {link.label}
                 </a>
@@ -206,29 +206,29 @@ const FAQ_ITEMS = [
   },
 ];
 
-const FaqSection = () => {
+const FaqSection = ({ isDark }: { isDark: boolean }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   return (
-    <section className="py-24 border-y border-white/5">
+    <section className={`py-24 border-y transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
       <div className="max-w-2xl mx-auto px-6">
         <div className="text-center mb-14">
-          <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">FAQ</h2>
-          <h3 className="text-3xl font-semibold text-white tracking-tight">Häufige Fragen</h3>
+          <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>FAQ</h2>
+          <h3 className={`text-3xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Häufige Fragen</h3>
         </div>
         <div className="space-y-2">
           {FAQ_ITEMS.map((item, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden"
+              className={`rounded-2xl border overflow-hidden transition-colors duration-500 ${isDark ? "border-white/8 bg-white/[0.02]" : "border-gray-200 bg-white"}`}
             >
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="w-full flex items-center justify-between px-6 py-5 text-left"
               >
-                <span className="text-white font-medium text-sm">{item.q}</span>
+                <span className={`font-medium text-sm transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{item.q}</span>
                 {openIndex === i
-                  ? <ChevronUp className="w-4 h-4 text-white/40 shrink-0 ml-4" />
-                  : <ChevronDown className="w-4 h-4 text-white/40 shrink-0 ml-4" />
+                  ? <ChevronUp className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`} />
+                  : <ChevronDown className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`} />
                 }
               </button>
               <AnimatePresence initial={false}>
@@ -240,7 +240,7 @@ const FaqSection = () => {
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <p className="px-6 pb-5 text-white/50 text-sm leading-relaxed">{item.a}</p>
+                    <p className={`px-6 pb-5 text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>{item.a}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -271,7 +271,7 @@ const STATS: StatDef[] = [
   { target: null, display: "19,90€", label: "Pro Monat" },
 ];
 
-const StatItem = ({ stat, index }: { stat: StatDef; index: number }) => {
+const StatItem = ({ stat, index, isDark }: { stat: StatDef; index: number; isDark: boolean }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const [count, setCount] = useState(0);
@@ -303,10 +303,10 @@ const StatItem = ({ stat, index }: { stat: StatDef; index: number }) => {
       transition={{ delay: index * 0.1 }}
       className="text-center md:text-left"
     >
-      <div className="text-3xl md:text-4xl font-semibold text-white mb-2 tracking-tight tabular-nums">
+      <div className={`text-3xl md:text-4xl font-semibold mb-2 tracking-tight tabular-nums transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>
         {displayValue}
       </div>
-      <div className="text-white/40 text-sm">{stat.label}</div>
+      <div className={`text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>{stat.label}</div>
     </motion.div>
   );
 };
@@ -344,17 +344,17 @@ const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => 
       className={`group relative p-8 rounded-3xl border cursor-default transition-all duration-500 ${
         isDark
           ? "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
-          : "bg-white border-gray-100 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/60"
+          : "bg-white border-gray-100 hover:border-lime-200 hover:shadow-md hover:shadow-lime-100/60"
       }`}
     >
-      <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isDark ? "bg-gradient-to-b from-white/[0.02] to-transparent" : "bg-gradient-to-b from-violet-50/40 to-transparent"}`} />
+      <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isDark ? "bg-gradient-to-b from-white/[0.02] to-transparent" : "bg-gradient-to-b from-lime-50/40 to-transparent"}`} />
       <div className="relative z-10">
         <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ${
           isDark
             ? "bg-white/5 border-white/10"
-            : "bg-violet-100 border-violet-200"
+            : "bg-lime-100 border-lime-200"
         }`}>
-          <Icon className={`w-5 h-5 ${isDark ? "text-white/70" : "text-violet-600"}`} />
+          <Icon className={`w-5 h-5 ${isDark ? "text-white/70" : "text-lime-600"}`} />
         </div>
         <h3 className={`text-lg font-semibold mb-3 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{title}</h3>
         <p className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>{description}</p>
@@ -363,252 +363,178 @@ const FeatureCard = ({ icon: Icon, title, description, index, isDark }: any) => 
   );
 };
 
+const HERO_PREVIEW_LAYOUTS = ["BOLD", "ELEGANT", "AURORA", "NEXUS", "FORGE", "FLUX", "CLAY", "FRESH"];
+const ROTATE_INTERVAL = 5000;
+const SKELETON_DURATION = 2800;
+
 const GhostWebsiteCreation = () => {
-  const loopDuration = 8;
-  
+  const [phase, setPhase] = useState<"skeleton" | "live">("skeleton");
+  const [currentIdx, setCurrentIdx] = useState(() => Math.floor(Math.random() * HERO_PREVIEW_LAYOUTS.length));
+  const [containerW, setContainerW] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const skeletonTimer = setTimeout(() => setPhase("live"), SKELETON_DURATION);
+    return () => clearTimeout(skeletonTimer);
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "live") return;
+    const interval = setInterval(() => {
+      setCurrentIdx((i) => (i + 1) % HERO_PREVIEW_LAYOUTS.length);
+    }, ROTATE_INTERVAL);
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => setContainerW(el.offsetWidth));
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const layout = HERO_PREVIEW_LAYOUTS[currentIdx];
+  const IFRAME_W = 1280;
+  const iframeScale = containerW > 0 ? containerW / IFRAME_W : 0.5;
+
   return (
-    <div className="relative w-full max-w-3xl mx-auto aspect-[16/10] rounded-xl bg-[#0a0a0a] border border-white/10 shadow-2xl shadow-black/50 overflow-hidden">
+    <div className="relative w-full max-w-3xl mx-auto aspect-[16/10] rounded-2xl bg-white border border-gray-200/80 shadow-2xl shadow-black/8 overflow-hidden">
       {/* Browser Chrome */}
-      <div className="relative h-10 bg-[#111] border-b border-white/10 flex items-center px-3 gap-2 z-30 shrink-0">
+      <div className="relative h-10 bg-gray-50 border-b border-gray-200 flex items-center px-3 gap-2 z-30 shrink-0">
         <div className="flex gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/30" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-500/30" />
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/30" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
         </div>
-        <div className="flex-1 max-w-sm mx-auto h-5 bg-white/5 rounded-md flex items-center px-2 border border-white/5">
-          <div className="w-2 h-2 rounded-full bg-emerald-500/40 mr-2" />
-          <div className="h-1.5 bg-white/20 rounded-full w-20" />
+        <div className="flex-1 max-w-md mx-auto h-6 bg-white rounded-md flex items-center px-2.5 border border-gray-200">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2 shrink-0" />
+          <span className="text-[10px] text-gray-500 font-mono truncate">dein-unternehmen.pageblitz.de</span>
         </div>
       </div>
 
-      {/* Website Content Building - Loop Animation */}
-      <div className="relative h-[calc(100%-2.5rem)] p-4 overflow-hidden">
-        {/* Hero Section Building - Fades in and out */}
-        <motion.div 
-          className="h-20 rounded-lg bg-gradient-to-br from-white/[0.08] to-white/[0.02] mb-3 relative overflow-hidden border border-white/10"
+      {/* Content area */}
+      <div ref={contentRef} className="relative h-[calc(100%-2.5rem)] overflow-hidden bg-white">
+
+        {/* Phase 1: Skeleton wireframe building animation */}
+        <motion.div
+          className="absolute inset-0 z-10 bg-white p-5"
+          animate={{ opacity: phase === "skeleton" ? 1 : 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          style={{ pointerEvents: phase === "skeleton" ? "auto" : "none" }}
         >
-          {/* Background gradient sweep */}
+          {/* Shimmer sweep */}
           <motion.div
-            animate={{ 
-              x: ["-100%", "0%", "0%", "100%"],
-              opacity: [0, 0.5, 0.5, 0]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0, 0.2, 0.6, 0.8],
-              ease: "easeInOut"
-            }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"
-          />
-          
-          {/* Text lines appearing */}
-          <div className="absolute inset-0 p-4 flex flex-col justify-center gap-2">
-            <motion.div
-              animate={{ 
-                width: ["0%", "70%", "70%", "0%"],
-                opacity: [0, 1, 1, 0]
-              }}
-              transition={{ 
-                duration: loopDuration,
-                repeat: Infinity,
-                times: [0, 0.15, 0.65, 0.75],
-                ease: "easeOut"
-              }}
-              className="h-4 bg-gradient-to-r from-white/40 to-white/20 rounded-full"
-            />
-            <motion.div
-              animate={{ 
-                width: ["0%", "50%", "50%", "0%"],
-                opacity: [0, 1, 1, 0]
-              }}
-              transition={{ 
-                duration: loopDuration,
-                repeat: Infinity,
-                times: [0.05, 0.2, 0.6, 0.7],
-                ease: "easeOut"
-              }}
-              className="h-2.5 bg-gradient-to-r from-white/25 to-white/10 rounded-full"
-            />
-          </div>
+            className="absolute inset-0 z-20 pointer-events-none"
+            animate={{ x: ["-100%", "200%"] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <div className="w-1/3 h-full bg-gradient-to-r from-transparent via-lime-300/20 to-transparent" />
+          </motion.div>
 
-          {/* Button appearing */}
-          <motion.div
-            animate={{ 
-              opacity: [0, 1, 1, 0],
-              scale: [0.8, 1, 1, 0.8]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0.1, 0.25, 0.55, 0.7]
-            }}
-            className="absolute bottom-4 left-4 w-20 h-6 bg-white/20 rounded-md"
-          />
-        </motion.div>
-
-        {/* Features Row */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              animate={{ 
-                opacity: [0, 1, 1, 0],
-                y: [10, 0, 0, -10]
-              }}
-              transition={{ 
-                duration: loopDuration,
-                repeat: Infinity,
-                times: [0.15 + i * 0.05, 0.3 + i * 0.05, 0.6, 0.75],
-                ease: "easeOut"
-              }}
-              className="aspect-[4/3] rounded-md bg-white/[0.03] border border-white/[0.08] p-2 flex flex-col gap-1.5"
-            >
-              <motion.div 
-                className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500/30 to-purple-500/20"
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  opacity: [0.5, 1, 0.5]
-                }}
-                transition={{ 
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.3
-                }}
-              />
-              <div className="space-y-1 flex-1">
-                <motion.div 
-                  className="h-1.5 bg-white/25 rounded-full"
-                  animate={{ width: ["0%", "100%", "100%", "0%"] }}
-                  transition={{ 
-                    duration: loopDuration,
-                    repeat: Infinity,
-                    times: [0.2 + i * 0.05, 0.35 + i * 0.05, 0.55, 0.65]
-                  }}
-                />
-                <motion.div 
-                  className="h-1.5 bg-white/15 rounded-full"
-                  animate={{ width: ["0%", "60%", "60%", "0%"] }}
-                  transition={{ 
-                    duration: loopDuration,
-                    repeat: Infinity,
-                    times: [0.22 + i * 0.05, 0.37 + i * 0.05, 0.53, 0.63]
-                  }}
-                />
+          {/* Wireframe blocks building in */}
+          <div className="space-y-3">
+            {/* Nav bar */}
+            <div className="flex items-center justify-between">
+              <motion.div initial={{ width: 0 }} animate={{ width: "80px" }} transition={{ delay: 0.1, duration: 0.4 }}
+                className="h-3 bg-gray-200 rounded-full" />
+              <div className="flex gap-3">
+                {[0, 1, 2].map((i) => (
+                  <motion.div key={i} initial={{ width: 0, opacity: 0 }} animate={{ width: "40px", opacity: 1 }}
+                    transition={{ delay: 0.2 + i * 0.1, duration: 0.3 }}
+                    className="h-2 bg-gray-100 rounded-full" />
+                ))}
               </div>
+            </div>
+            {/* Hero block */}
+            <motion.div initial={{ scaleY: 0, opacity: 0 }} animate={{ scaleY: 1, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }} style={{ transformOrigin: "top" }}
+              className="h-28 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200/60 flex flex-col justify-center items-center gap-2 px-8"
+            >
+              <motion.div initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ delay: 0.8, duration: 0.5 }}
+                className="h-4 bg-gray-200 rounded-full" />
+              <motion.div initial={{ width: 0 }} animate={{ width: "45%" }} transition={{ delay: 1.0, duration: 0.4 }}
+                className="h-2.5 bg-gray-150 rounded-full" style={{ backgroundColor: "#e8e8e8" }} />
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.3, duration: 0.3, type: "spring" }}
+                className="h-6 w-24 bg-lime-400 rounded-md mt-1" />
             </motion.div>
-          ))}
-        </div>
-
-        {/* About Section */}
-        <div className="flex gap-2 h-16">
-          <motion.div
-            animate={{ 
-              opacity: [0, 1, 1, 0],
-              x: [-10, 0, 0, -10]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0.3, 0.45, 0.7, 0.8]
-            }}
-            className="w-1/2 rounded-md bg-white/[0.03] border border-white/[0.08] overflow-hidden"
-          >
-            <div className="w-full h-full bg-gradient-to-br from-white/10 to-transparent" />
-          </motion.div>
-          <motion.div
-            animate={{ 
-              opacity: [0, 1, 1, 0],
-              x: [10, 0, 0, 10]
-            }}
-            transition={{ 
-              duration: loopDuration,
-              repeat: Infinity,
-              times: [0.32, 0.47, 0.68, 0.78]
-            }}
-            className="w-1/2 flex flex-col justify-center gap-1.5 py-1"
-          >
-            <motion.div
-              animate={{ width: ["0%", "80%", "80%", "0%"] }}
-              transition={{ duration: loopDuration, repeat: Infinity, times: [0.35, 0.5, 0.65, 0.75] }}
-              className="h-3 bg-white/30 rounded-full"
-            />
-            {[0, 1, 2].map((i) => {
-              const widthVal = 70 - i * 15;
-              return (
-                <motion.div
-                  key={i}
-                  animate={{ width: ["0%", `${widthVal}%`, `${widthVal}%`, "0%"] }}
-                  transition={{ 
-                    duration: loopDuration, 
-                    repeat: Infinity, 
-                    times: [0.37 + i * 0.02, 0.52 + i * 0.02, 0.63, 0.73]
-                  }}
-                  className="h-1.5 bg-white/15 rounded-full"
-                />
-              );
-            })}
-          </motion.div>
-        </div>
-
-        {/* Ghost Cursor - Confined to browser window */}
-        <motion.div
-          className="absolute z-50 pointer-events-none"
-          animate={{ 
-            x: [20, 100, 200, 280, 340, 240, 160, 80, 20],
-            y: [30, 70, 130, 90, 140, 180, 120, 160, 30]
-          }}
-          transition={{ 
-            duration: loopDuration,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <div className="relative">
-            <MousePointer2 className="w-4 h-4 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" fill="white" />
-            {/* Click ripple */}
-            <motion.div
-              animate={{ 
-                scale: [1, 2.5, 2.5],
-                opacity: [0, 0.3, 0]
-              }}
-              transition={{ 
-                duration: 0.6,
-                repeat: Infinity,
-                repeatDelay: 1.2,
-                times: [0, 0.3, 1]
-              }}
-              className="absolute top-0 left-0 w-4 h-4 bg-white rounded-full -translate-x-1/4 -translate-y-1/4"
+            {/* Feature cards */}
+            <div className="grid grid-cols-3 gap-2">
+              {[0, 1, 2].map((i) => (
+                <motion.div key={i} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 1.5 + i * 0.15, duration: 0.4 }}
+                  className="aspect-[4/3] rounded-lg bg-gray-50 border border-gray-200/50 p-3 flex flex-col gap-2"
+                >
+                  <div className="w-5 h-5 rounded bg-lime-300/40" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-1.5 bg-gray-200 rounded-full w-full" />
+                    <div className="h-1.5 bg-gray-150 rounded-full w-3/4" style={{ backgroundColor: "#efefef" }} />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            {/* About block */}
+            <motion.div initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 2.1, duration: 0.4 }}
+              className="h-14 rounded-lg bg-gray-50 border border-gray-200/50"
             />
           </div>
         </motion.div>
 
-        {/* Section Labels */}
-        <motion.div
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ duration: loopDuration, repeat: Infinity, times: [0.2, 0.3, 0.6, 0.7] }}
-          className="absolute top-16 right-3 px-1.5 py-0.5 bg-white/10 rounded text-[9px] text-white/50"
-        >
-          Hero
-        </motion.div>
-        <motion.div
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ duration: loopDuration, repeat: Infinity, times: [0.35, 0.45, 0.65, 0.75] }}
-          className="absolute top-40 right-3 px-1.5 py-0.5 bg-white/10 rounded text-[9px] text-white/50"
-        >
-          Features
-        </motion.div>
-        <motion.div
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ duration: loopDuration, repeat: Infinity, times: [0.5, 0.6, 0.7, 0.8] }}
-          className="absolute bottom-12 right-3 px-1.5 py-0.5 bg-white/10 rounded text-[9px] text-white/50"
-        >
-          About
-        </motion.div>
-      </div>
+        {/* Phase 2: Real layout iframes */}
+        <AnimatePresence mode="wait">
+          {phase === "live" && (
+            <motion.div
+              key={layout}
+              initial={{ opacity: 0, filter: "blur(10px)" }}
+              animate={{ opacity: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, filter: "blur(6px)" }}
+              transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+              className="absolute inset-0"
+            >
+              <iframe
+                src={`/layout-preview/${layout}?scheme=trust`}
+                width={IFRAME_W}
+                height={2400}
+                scrolling="no"
+                style={{
+                  border: "none",
+                  pointerEvents: "none",
+                  transformOrigin: "top left",
+                  transform: `scale(${iframeScale})`,
+                  display: "block",
+                  width: `${IFRAME_W}px`,
+                  height: "2400px",
+                }}
+                title={`${layout} Preview`}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Bottom glow */}
-      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none" />
+        {/* Bottom fade */}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-20" />
+
+        {/* Glassmorphism layout badge */}
+        {phase === "live" && (
+          <motion.div
+            key={`badge-${layout}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="absolute bottom-4 right-4 z-30 px-3.5 py-1.5 rounded-full text-[11px] text-white font-semibold tracking-wide"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+            }}
+          >
+            ✦ {layout.charAt(0) + layout.slice(1).toLowerCase()}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };
@@ -1397,9 +1323,10 @@ const IFRAME_HEIGHT = 900; // tall enough to show hero + first section
 interface LivePreviewCardProps {
   layout: keyof typeof LAYOUT_COMPONENTS;
   delay?: number;
+  isDark?: boolean;
 }
 
-const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
+const LivePreviewCard = ({ layout, delay = 0, isDark = true }: LivePreviewCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const config = LAYOUT_CONFIG[layout];
@@ -1469,7 +1396,7 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
       onMouseLeave={() => setIsHovering(false)}
     >
       {/* Browser Window Mockup */}
-      <div className="rounded-xl overflow-hidden border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.55)] group-hover:shadow-[0_24px_70px_rgba(99,102,241,0.25)] group-hover:border-white/[0.15] transition-all duration-500">
+      <div className={`rounded-xl overflow-hidden border transition-all duration-500 ${isDark ? "border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.55)] group-hover:shadow-[0_24px_70px_rgba(99,102,241,0.25)] group-hover:border-white/[0.15]" : "border-gray-200 shadow-lg shadow-gray-200/60 group-hover:shadow-xl group-hover:shadow-gray-300/60 group-hover:border-gray-300"}`}>
 
         {/* Browser Chrome */}
         <div className="bg-[#1c1e2e] px-3.5 py-2.5 flex items-center gap-3 border-b border-white/[0.06]">
@@ -1516,20 +1443,20 @@ const LivePreviewCard = ({ layout, delay = 0 }: LivePreviewCardProps) => {
       {/* Info below card */}
       <div className="flex items-center justify-between mt-3 px-0.5">
         <div>
-          <h4 className="text-white font-semibold text-sm group-hover:text-indigo-300 transition-colors">{config.data.businessName}</h4>
-          <p className="text-white/40 text-xs mt-0.5">{config.label}</p>
+          <h4 className={`font-semibold text-sm transition-colors ${isDark ? "text-white group-hover:text-lime-300" : "text-gray-900 group-hover:text-lime-600"}`}>{config.data.businessName}</h4>
+          <p className={`text-xs mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>{config.label}</p>
         </div>
         <div className="flex gap-1">
-          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.primary }} />
-          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.secondary }} />
-          <div className="w-3.5 h-3.5 rounded-full border border-white/15" style={{ backgroundColor: colorScheme.accent }} />
+          <div className={`w-3.5 h-3.5 rounded-full border ${isDark ? "border-white/15" : "border-gray-200"}`} style={{ backgroundColor: colorScheme.primary }} />
+          <div className={`w-3.5 h-3.5 rounded-full border ${isDark ? "border-white/15" : "border-gray-200"}`} style={{ backgroundColor: colorScheme.secondary }} />
+          <div className={`w-3.5 h-3.5 rounded-full border ${isDark ? "border-white/15" : "border-gray-200"}`} style={{ backgroundColor: colorScheme.accent }} />
         </div>
       </div>
     </motion.div>
   );
 };
 
-const WebsiteShowcase = () => {
+const WebsiteShowcase = ({ isDark }: { isDark: boolean }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -1565,37 +1492,37 @@ const WebsiteShowcase = () => {
 
   return (
     <section id="showcase" className="py-32 relative overflow-hidden">
-      <GradientOrb className="w-[600px] h-[600px] bg-indigo-500/10 -right-40 top-20" delay={0.2} />
-      
+      {isDark && <GradientOrb className="w-[600px] h-[600px] bg-lime-500/10 -right-40 top-20" delay={0.2} />}
+
       <div className="max-w-7xl mx-auto px-6 mb-12 flex items-end justify-between">
         <div>
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-white/40 text-sm font-medium uppercase tracking-widest mb-3"
+            className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
           >
             Live Beispiele
           </motion.h2>
-          <motion.h3 
+          <motion.h3
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl md:text-4xl font-semibold text-white tracking-tight"
+            className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
           >
             Websites, die verkaufen.
           </motion.h3>
         </div>
-        
+
         <div className="hidden md:flex gap-2">
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
             className={`p-3 rounded-full border transition-all ${
-              canScrollLeft 
-                ? "border-white/20 text-white hover:bg-white/10" 
-                : "border-white/5 text-white/20 cursor-not-allowed"
+              canScrollLeft
+                ? isDark ? "border-white/20 text-white hover:bg-white/10" : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                : isDark ? "border-white/5 text-white/20 cursor-not-allowed" : "border-gray-200 text-gray-300 cursor-not-allowed"
             }`}
           >
             <ChevronLeft className="w-5 h-5" />
@@ -1604,9 +1531,9 @@ const WebsiteShowcase = () => {
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
             className={`p-3 rounded-full border transition-all ${
-              canScrollRight 
-                ? "border-white/20 text-white hover:bg-white/10" 
-                : "border-white/5 text-white/20 cursor-not-allowed"
+              canScrollRight
+                ? isDark ? "border-white/20 text-white hover:bg-white/10" : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                : isDark ? "border-white/5 text-white/20 cursor-not-allowed" : "border-gray-200 text-gray-300 cursor-not-allowed"
             }`}
           >
             <ChevronRight className="w-5 h-5" />
@@ -1628,6 +1555,7 @@ const WebsiteShowcase = () => {
             key={i}
             layout={site.layout}
             delay={i * 0.1}
+            isDark={isDark}
           />
         ))}
         
@@ -1647,9 +1575,9 @@ export default function LandingPage() {
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("lp-theme");
-      return stored !== "light"; // dark unless user explicitly chose light
+      return stored === "dark"; // light unless user explicitly chose dark
     }
-    return true;
+    return false;
   });
 
   useEffect(() => {
@@ -1658,25 +1586,25 @@ export default function LandingPage() {
 
   return (
     <div
-      className="lp-root min-h-screen bg-[#0a0a0a] text-white selection:bg-white/20 font-sans"
+      className={`lp-root min-h-screen font-sans transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] text-white selection:bg-white/20" : "bg-stone-50 text-gray-900 selection:bg-lime-200/40"}`}
       data-lp-theme={isDark ? "dark" : "light"}
     >
       {/* Scroll Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-400 z-[200] origin-left pointer-events-none"
+        className="fixed top-0 left-0 right-0 h-[2px] bg-lime-400 z-[200] origin-left pointer-events-none"
         style={{ scaleX: smoothProgress }}
       />
 
       <Navbar isDark={isDark} onToggle={() => setIsDark((v) => !v)} />
 
       {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <GradientOrb className="w-[800px] h-[800px] bg-indigo-500/10 -left-40 -top-40" delay={0} />
-        <GradientOrb className="w-[600px] h-[600px] bg-purple-500/10 right-0 top-1/4" delay={0.3} />
-        <GradientOrb className="w-[400px] h-[400px] bg-blue-500/5 left-1/3 bottom-0" delay={0.5} />
-        
+      <div className={`fixed inset-0 pointer-events-none overflow-hidden transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}>
+        <GradientOrb className="w-[800px] h-[800px] bg-lime-500/10 -left-40 -top-40" delay={0} />
+        <GradientOrb className="w-[600px] h-[600px] bg-lime-500/10 right-0 top-1/4" delay={0.3} />
+        <GradientOrb className="w-[400px] h-[400px] bg-lime-400/5 left-1/3 bottom-0" delay={0.5} />
+
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
@@ -1689,28 +1617,30 @@ export default function LandingPage() {
       <section className="relative min-h-screen">
         {/* Background Animation - Cross-fades between dark and light */}
         <div className="absolute inset-0 h-screen">
-          {/* Dark animated gradient */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-            <BackgroundGradientAnimation
-              containerClassName="absolute inset-0"
-              gradientBackgroundStart="rgb(10, 10, 15)"
-              gradientBackgroundEnd="rgb(15, 15, 25)"
-              firstColor="59, 130, 246"
-              secondColor="147, 51, 234"
-              thirdColor="99, 102, 241"
-              fourthColor="79, 70, 229"
-              fifthColor="139, 92, 246"
-              pointerColor="99, 102, 241"
-              size="70%"
-              interactive={true}
-            />
-          </div>
+          {/* Dark animated gradient — only mount in dark mode */}
+          {isDark && (
+            <div className="absolute inset-0">
+              <BackgroundGradientAnimation
+                containerClassName="absolute inset-0"
+                gradientBackgroundStart="rgb(8, 10, 8)"
+                gradientBackgroundEnd="rgb(12, 15, 10)"
+                firstColor="163, 230, 53"
+                secondColor="132, 204, 22"
+                thirdColor="190, 242, 100"
+                fourthColor="101, 163, 13"
+                fifthColor="212, 255, 0"
+                pointerColor="190, 242, 100"
+                size="70%"
+                interactive={true}
+              />
+            </div>
+          )}
           {/* Light gradient for light mode */}
           <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50" />
-            <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-300/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-300/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-indigo-300/15 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-stone-100 via-white to-lime-50/20" />
+            <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-stone-200/30 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-stone-200/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] bg-lime-100/15 rounded-full blur-[80px] pointer-events-none" />
           </div>
         </div>
         
@@ -1724,7 +1654,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border text-sm mb-8 transition-colors duration-500 ${isDark ? "bg-white/10 border-white/20 text-white/80" : "bg-indigo-100/80 border-indigo-200 text-indigo-800"}`}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border text-sm mb-8 transition-colors duration-500 ${isDark ? "bg-white/10 border-white/20 text-white/80" : "bg-lime-100/80 border-lime-200 text-lime-800"}`}
                 >
                   <Sparkles className="w-4 h-4 text-amber-400" />
                   <span>Webagentur kostet 3.000€+ – Pageblitz ab 19,90 €/Monat</span>
@@ -1735,20 +1665,20 @@ export default function LandingPage() {
                     {["Deine", "professionelle"].map((word, i) => (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, y: 22, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                        transition={{ duration: 0.65, delay: 0.08 + i * 0.14, ease: [0.16, 1, 0.3, 1] }}
-                        className="text-white inline-block mr-3"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.08 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                        className={`inline-block mr-3 ${isDark ? "text-white" : "text-gray-900"}`}
                       >
                         {word}
                       </motion.span>
                     ))}
                   </span>
                   <motion.span
-                    initial={{ opacity: 0, y: 32, filter: "blur(16px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    transition={{ duration: 0.9, delay: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 block"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    className={`text-transparent bg-clip-text block ${isDark ? "bg-gradient-to-r from-lime-300 via-lime-400 to-yellow-300" : "bg-gradient-to-r from-lime-600 via-lime-500 to-lime-600"}`}
                     style={{ backgroundSize: '200% 200%', animation: 'gradient-text-shimmer 8s ease infinite' }}
                   >
                     Website in 3 Minuten.
@@ -1759,7 +1689,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-lg text-white/60 max-w-lg mb-8 leading-relaxed"
+                  className={`text-lg max-w-lg mb-8 leading-relaxed ${isDark ? "text-white/60" : "text-gray-600"}`}
                 >
                   Kein Webdesigner. Kein Monatelanges Warten. Kein 4-stelliges Budget.
                   Pageblitz erstellt deine Website automatisch – du musst nur dein Business beschreiben.
@@ -1774,15 +1704,15 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                    className="btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-all shadow-xl shadow-pink-500/30"
-                    style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+                    className="btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-all shadow-xl shadow-lime-500/30"
+                    style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
                   >
                     gratis ausprobieren
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <button
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-violet-700 font-medium border border-violet-300 hover:border-violet-500 hover:text-violet-950 bg-transparent"}`}
+                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-lime-700 font-medium border border-lime-300 hover:border-lime-500 hover:text-gray-900 bg-transparent"}`}
                   >
                     Beispiele ansehen
                     <ChevronDown className="ml-2 w-4 h-4" />
@@ -1794,17 +1724,17 @@ export default function LandingPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-10 pt-6 border-t border-white/10"
+                  className={`flex flex-wrap items-center gap-x-6 gap-y-2 mt-10 pt-6 border-t transition-colors duration-500 ${isDark ? "border-white/10" : "border-gray-200"}`}
                 >
-                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                  <div className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <span>7 Tage gratis</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                  <div className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <span>Danach 19,90 €/Monat</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/50 text-sm">
+                  <div className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}>
                     <CheckCircle2 className="w-4 h-4 text-green-400" />
                     <span>Monatlich kündbar</span>
                   </div>
@@ -1821,7 +1751,7 @@ export default function LandingPage() {
                 <div className="relative">
                   {/* Glow behind the browser */}
                   <div
-                    className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-blue-500/20 blur-3xl rounded-full pointer-events-none"
+                    className="absolute -inset-4 bg-gradient-to-r from-lime-400/20 via-lime-500/15 to-yellow-400/15 blur-3xl rounded-full pointer-events-none"
                     style={{ animation: 'gradient-orb-drift 14s ease-in-out infinite' }}
                   />
                   <GhostWebsiteCreation />
@@ -1833,20 +1763,20 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 border-y border-white/5 relative overflow-hidden">
+      <section className={`py-20 border-y relative overflow-hidden transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
         {/* Animated gradient orbs */}
         <div
-          className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/8 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "bg-lime-500/8 opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift 18s ease-in-out infinite' }}
         />
         <div
-          className="absolute -right-40 top-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500/6 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -right-40 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "bg-lime-500/6 opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift-alt 22s ease-in-out infinite' }}
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {STATS.map((stat, i) => (
-              <StatItem key={i} stat={stat} index={i} />
+              <StatItem key={i} stat={stat} index={i} isDark={isDark} />
             ))}
           </div>
         </div>
@@ -1891,7 +1821,7 @@ export default function LandingPage() {
                 className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-colors duration-500 cursor-default ${
                   isDark
                     ? "bg-white/[0.03] hover:bg-white/[0.06] border-white/10 hover:border-white/20"
-                    : "bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 border-gray-100"
+                    : "bg-gray-50 hover:bg-lime-50 hover:border-lime-200 border-gray-100"
                 }`}
               >
                 <motion.span
@@ -1915,8 +1845,8 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-all shadow-lg shadow-pink-500/30"
-              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+              className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium transition-all shadow-lg shadow-lime-500/30"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
             >
               Meine Website gratis erstellen
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -1927,33 +1857,33 @@ export default function LandingPage() {
 
       {/* Website Showcase Gallery */}
       <div id="showcase">
-        <WebsiteShowcase />
+        <WebsiteShowcase isDark={isDark} />
       </div>
 
       {/* CTA after Showcase */}
-      <section className="py-16 border-y border-white/5 bg-white/[0.02]">
+      <section className={`py-16 border-y transition-colors duration-500 ${isDark ? "border-white/5 bg-white/[0.02]" : "border-gray-200 bg-gray-50"}`}>
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="text-white/60 text-lg mb-6">
+          <p className={`text-lg mb-6 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}>
             Gefällt dir, was du siehst? Erstelle jetzt deine eigene Website – in 3 Minuten.
           </p>
           <Button
             size="lg"
             onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-            className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-all shadow-lg shadow-pink-500/30"
-            style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+            className="btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-all shadow-lg shadow-lime-500/30"
+            style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
           >
             Website jetzt gratis erstellen
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <p className="text-white/30 text-xs mt-3">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
+          <p className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
         </div>
       </section>
 
       {/* GMB Feature Callout */}
       <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-1/4 top-0 w-96 h-96 bg-violet-500/8 blur-[120px] rounded-full" />
-          <div className="absolute right-1/4 bottom-0 w-64 h-64 bg-blue-500/8 blur-[100px] rounded-full" />
+        <div className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}>
+          <div className="absolute left-1/4 top-0 w-96 h-96 bg-lime-500/8 blur-[120px] rounded-full" />
+          <div className="absolute right-1/4 bottom-0 w-64 h-64 bg-lime-400/8 blur-[100px] rounded-full" />
         </div>
         <div className="max-w-5xl mx-auto px-6">
           <motion.div
@@ -1961,11 +1891,11 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className={`rounded-3xl border p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-violet-50/60 border-violet-200/60"}`}
+            className={`rounded-3xl border p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-lime-50/60 border-lime-200/60"}`}
           >
             {/* Left: Google Maps icon + illustration */}
             <div className="flex-shrink-0 relative">
-              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl flex items-center justify-center shadow-xl ${isDark ? "bg-[#1a1a2e] border border-white/10" : "bg-white border border-violet-100"}`}>
+              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl flex items-center justify-center shadow-xl ${isDark ? "bg-[#1a1a2e] border border-white/10" : "bg-white border border-lime-100"}`}>
                 <svg viewBox="0 0 48 48" className="w-14 h-14 md:w-20 md:h-20" fill="none">
                   <path d="M24 4C15.163 4 8 11.163 8 20c0 10.5 16 28 16 28s16-17.5 16-28c0-8.837-7.163-16-16-16z" fill="#EA4335"/>
                   <circle cx="24" cy="20" r="6" fill="white"/>
@@ -1978,7 +1908,7 @@ export default function LandingPage() {
 
             {/* Right: Text */}
             <div className="flex-1 text-center md:text-left">
-              <div className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4 ${isDark ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "bg-violet-100 text-violet-700 border border-violet-200"}`}>
+              <div className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4 ${isDark ? "bg-lime-500/20 text-lime-300 border border-lime-500/30" : "bg-lime-100 text-lime-700 border border-lime-200"}`}>
                 <span>⚡</span> 1-Klick Import
               </div>
               <h3 className={`text-2xl md:text-3xl font-semibold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"}`}>
@@ -1990,7 +1920,8 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center md:justify-start justify-center gap-3">
                 <button
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className={`flex items-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-full transition-all ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-600 text-white hover:bg-violet-700"}`}
+                  className="btn-shimmer flex items-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-full transition-all shadow-lg shadow-lime-500/25"
+                  style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
                 >
                   Jetzt GMB-Daten importieren
                   <ArrowRight className="w-4 h-4" />
@@ -2011,7 +1942,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4"
+              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
             >
               Warum Pageblitz?
             </motion.h2>
@@ -2020,7 +1951,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               viewport={{ once: true }}
               transition={{ delay: 0.12, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-              className="text-3xl md:text-5xl font-semibold text-white tracking-tight"
+              className={`text-3xl md:text-5xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
             >
               Alles dabei.<br />Sofort einsatzbereit.
             </motion.h3>
@@ -2044,22 +1975,22 @@ export default function LandingPage() {
         <Button
           size="lg"
           onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+          className={`btn-shimmer rounded-full h-12 px-8 text-sm font-medium group transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
         >
           Jetzt starten
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Button>
-        <p className="text-white/30 text-xs mt-3">7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
+        <p className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar</p>
       </div>
 
       {/* How it Works - Minimalist */}
-      <section className="py-32 border-y border-white/5 bg-white/[0.02]">
+      <section className={`py-32 border-y transition-colors duration-500 ${isDark ? "border-white/5 bg-white/[0.02]" : "border-gray-200 bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Der Ablauf</h2>
-              <h3 className="text-3xl md:text-4xl font-semibold text-white mb-12 tracking-tight">So einfach geht's.</h3>
-              
+              <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Der Ablauf</h2>
+              <h3 className={`text-3xl md:text-4xl font-semibold mb-12 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>So einfach geht's.</h3>
+
               <div className="space-y-10">
                 {[
                   { step: "01", title: "Link eingeben", desc: "Füge deinen Google My Business Link ein oder starte manuell." },
@@ -2068,10 +1999,10 @@ export default function LandingPage() {
                   { step: "04", title: "Veröffentlichen", desc: "Mit einem Klick ist deine Website live." },
                 ].map((item, i) => (
                   <div key={i} className="flex gap-6 group">
-                    <div className="text-sm font-medium text-white/20 pt-1">{item.step}</div>
+                    <div className={`text-sm font-medium pt-1 transition-colors duration-500 ${isDark ? "text-white/20" : "text-gray-300"}`}>{item.step}</div>
                     <div>
-                      <h4 className="text-white text-lg font-medium mb-2 group-hover:text-white/80 transition-colors">{item.title}</h4>
-                      <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                      <h4 className={`text-lg font-medium mb-2 transition-colors duration-500 ${isDark ? "text-white group-hover:text-white/80" : "text-gray-900 group-hover:text-gray-700"}`}>{item.title}</h4>
+                      <p className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -2080,10 +2011,10 @@ export default function LandingPage() {
 
             <div className="relative">
               <div
-                className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 blur-3xl pointer-events-none"
+                className={`absolute inset-0 blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "bg-gradient-to-r from-lime-500/10 to-lime-500/10 opacity-100" : "opacity-0"}`}
                 style={{ animation: 'gradient-orb-drift-alt 16s ease-in-out infinite' }}
               />
-              <div className="relative rounded-3xl border border-white/10 bg-white/5 p-8 space-y-4">
+              <div className={`relative rounded-3xl border p-8 space-y-4 transition-colors duration-500 ${isDark ? "border-white/10 bg-white/5" : "border-gray-200 bg-white shadow-lg shadow-gray-100"}`}>
                 {/* Mini preview cards for each step */}
                 {[
                   { icon: "🔗", label: "Link eingefügt", sub: "google.com/maps/..." },
@@ -2097,15 +2028,15 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.15 }}
-                    className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/5"
+                    className={`flex items-center gap-4 rounded-xl p-4 border transition-colors duration-500 ${isDark ? "bg-white/5 border-white/5" : "bg-gray-50 border-gray-100"}`}
                   >
                     <span className="text-2xl">{s.icon}</span>
                     <div>
-                      <div className="text-white text-sm font-medium">{s.label}</div>
-                      <div className="text-white/40 text-xs font-mono mt-0.5">{s.sub}</div>
+                      <div className={`text-sm font-medium transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{s.label}</div>
+                      <div className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>{s.sub}</div>
                     </div>
                     {i < 3 && (
-                      <div className="ml-auto text-white/20 text-xs">→</div>
+                      <div className={`ml-auto text-xs transition-colors duration-500 ${isDark ? "text-white/20" : "text-gray-300"}`}>→</div>
                     )}
                     {i === 3 && (
                       <div className="ml-auto">
@@ -2127,16 +2058,16 @@ export default function LandingPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className="btn-shimmer w-full flex items-center justify-between bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/25 rounded-xl p-4 transition-all duration-300 cursor-pointer group"
+                  className={`btn-shimmer w-full flex items-center justify-between rounded-xl p-4 transition-all duration-300 cursor-pointer group border ${isDark ? "bg-white/10 hover:bg-white/15 border-white/10 hover:border-white/25" : "bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300"}`}
                 >
                   <div className="flex items-center gap-4">
                     <span className="text-2xl">⚡</span>
                     <div className="text-left">
-                      <div className="text-white text-sm font-medium">Jetzt kostenlos starten</div>
-                      <div className="text-white/40 text-xs font-mono mt-0.5">7 Tage gratis testen · dann 19,90 €/Mo.</div>
+                      <div className={`text-sm font-medium transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Jetzt kostenlos starten</div>
+                      <div className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>7 Tage gratis testen · dann 19,90 €/Mo.</div>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all duration-200" />
+                  <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-all duration-200 ${isDark ? "text-white/50 group-hover:text-white" : "text-gray-400 group-hover:text-gray-900"}`} />
                 </motion.button>
               </div>
             </div>
@@ -2146,8 +2077,8 @@ export default function LandingPage() {
 
       {/* ── KI-Chat Spotlight ─────────────────────────────────────────────── */}
       <section className="py-32 relative overflow-hidden">
-        <GradientOrb className="w-[600px] h-[600px] bg-pink-500/10 -left-40 top-10" delay={0.2} />
-        <GradientOrb className="w-[400px] h-[400px] bg-purple-500/8 right-0 bottom-0" delay={0.4} />
+        {isDark && <GradientOrb className="w-[600px] h-[600px] bg-lime-400/8 -left-40 top-10" delay={0.2} />}
+        {isDark && <GradientOrb className="w-[400px] h-[400px] bg-lime-500/8 right-0 bottom-0" delay={0.4} />}
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             {/* Left: Text */}
@@ -2157,7 +2088,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6 border"
-                style={{ background: "rgba(233,30,140,0.12)", borderColor: "rgba(233,30,140,0.3)", color: "#e91e8c" }}
+                style={{ background: "rgba(163,230,53,0.12)", borderColor: "rgba(163,230,53,0.3)", color: "#a3e635" }}
               >
                 <Bot className="w-3.5 h-3.5" />
                 Add-on · nur 9,90 €/Monat
@@ -2170,7 +2101,7 @@ export default function LandingPage() {
                 className={`text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-6 leading-[1.1] transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
               >
                 Dein 24/7<br />
-                <span style={{ color: "#e91e8c" }}>Vertriebsmitarbeiter.</span>
+                <span style={{ color: "#a3e635" }}>Vertriebsmitarbeiter.</span>
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
@@ -2217,8 +2148,8 @@ export default function LandingPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                className="btn-shimmer flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-medium text-white transition-all"
-                style={{ background: "#e91e8c", boxShadow: "0 8px 28px rgba(233,30,140,0.35)" }}
+                className="btn-shimmer flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-medium text-gray-900 transition-all"
+                style={{ background: "#a3e635", boxShadow: "0 8px 28px rgba(163,230,53,0.35)" }}
               >
                 KI-Chat jetzt freischalten
                 <ArrowRight className="w-4 h-4" />
@@ -2240,7 +2171,7 @@ export default function LandingPage() {
               <div className="relative mx-auto max-w-[320px]">
                 <div className="rounded-3xl overflow-hidden border border-white/15 shadow-2xl shadow-black/50" style={{ background: "#111118" }}>
                   {/* Chat header */}
-                  <div className="flex items-center gap-3 px-4 py-3.5" style={{ background: "#e91e8c" }}>
+                  <div className="flex items-center gap-3 px-4 py-3.5" style={{ background: "#a3e635" }}>
                     <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                       <MessageCircle className="w-4 h-4 text-white" />
                     </div>
@@ -2276,7 +2207,7 @@ export default function LandingPage() {
                               ? "text-white rounded-br-sm"
                               : "bg-white/10 text-white/85 rounded-bl-sm"
                           }`}
-                          style={msg.role === "user" ? { background: "#e91e8c" } : {}}
+                          style={msg.role === "user" ? { background: "#a3e635" } : {}}
                         >
                           {msg.text}
                         </div>
@@ -2365,7 +2296,8 @@ export default function LandingPage() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className={`btn-shimmer flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
+              className="btn-shimmer flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium whitespace-nowrap transition-all shadow-lg shadow-lime-500/25"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
             >
               Jetzt einrichten
               <ArrowRight className="w-4 h-4" />
@@ -2471,25 +2403,25 @@ export default function LandingPage() {
       <section id="pricing" className="py-32 relative overflow-hidden">
         {/* Animated gradient orbs */}
         <div
-          className="absolute -left-48 top-1/3 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -left-48 top-1/3 w-[500px] h-[500px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift 20s ease-in-out infinite' }}
         />
         <div
-          className="absolute -right-48 bottom-1/3 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-3xl pointer-events-none"
+          className={`absolute -right-48 bottom-1/3 w-[400px] h-[400px] bg-lime-600/5 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift-alt 24s ease-in-out infinite' }}
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Preise</h2>
-            <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Ein Preis. Alles inklusive.</h3>
+            <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Preise</h2>
+            <h3 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Ein Preis. Alles inklusive.</h3>
           </div>
 
           <div className="flex justify-center">
             {/* Pricing card */}
-            <div className={`relative p-1 rounded-3xl w-full max-w-md transition-colors duration-500 ${isDark ? "bg-gradient-to-b from-white/20 to-white/5" : "bg-gradient-to-b from-violet-200/60 to-violet-100/30"}`}>
-              <div className={`rounded-[22px] p-10 border h-full flex flex-col transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-violet-200/60"}`}>
+            <div className={`relative p-1 rounded-3xl w-full max-w-md transition-colors duration-500 ${isDark ? "bg-gradient-to-b from-white/20 to-white/5" : "bg-gradient-to-b from-lime-200/60 to-lime-100/30"}`}>
+              <div className={`rounded-[22px] p-10 border h-full flex flex-col transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-lime-200/60"}`}>
                 <div className="text-center mb-10">
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-5 transition-colors duration-500 ${isDark ? "bg-white/10 text-white/60" : "bg-violet-100 text-violet-700"}`}>
+                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-5 transition-colors duration-500 ${isDark ? "bg-white/10 text-white/60" : "bg-lime-100 text-lime-700"}`}>
                     Pageblitz Pro
                   </div>
                   {/* Billing toggle */}
@@ -2497,13 +2429,13 @@ export default function LandingPage() {
                     <div className={`flex p-0.5 rounded-full border transition-colors duration-500 ${isDark ? "bg-white/5 border-white/10" : "bg-gray-100 border-gray-200"}`}>
                       <button
                         onClick={() => setBillingYearly(true)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? (isDark ? 'bg-white text-black' : 'bg-violet-950 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${billingYearly ? (isDark ? 'bg-white text-black' : 'bg-lime-500 text-gray-900') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Jährlich
                       </button>
                       <button
                         onClick={() => setBillingYearly(false)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? (isDark ? 'bg-white text-black' : 'bg-violet-950 text-white') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!billingYearly ? (isDark ? 'bg-white text-black' : 'bg-lime-500 text-gray-900') : (isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')}`}
                       >
                         Monatlich
                       </button>
@@ -2516,9 +2448,9 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
                     <span className={`text-6xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>{billingYearly ? '19,90€' : '24,90€'}</span>
-                    <span className="text-white/40">/Monat</span>
+                    <span className={`transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>/Monat</span>
                   </div>
-                  <p className="text-white/40 text-sm">
+                  <p className={`text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>
                     {billingYearly ? 'Jährliche Abrechnung · Jederzeit kündbar.' : 'Monatliche Abrechnung · Jederzeit kündbar.'}
                   </p>
                 </div>
@@ -2534,7 +2466,7 @@ export default function LandingPage() {
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <CheckCircle2 className="w-5 h-5 text-green-500/80 shrink-0" />
-                      <span className="text-white/70 text-sm">{feature}</span>
+                      <span className={`text-sm transition-colors duration-500 ${isDark ? "text-white/70" : "text-gray-700"}`}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -2564,11 +2496,11 @@ export default function LandingPage() {
 
                 <Button
                   onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+                  className={`btn-shimmer w-full rounded-full h-14 text-base font-medium mt-auto transition-colors duration-300 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
                 >
                   7 Tage gratis starten
                 </Button>
-                <p className="text-center text-white/30 text-xs mt-4">
+                <p className={`text-center text-xs mt-4 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>
                   7 Tage gratis · danach {billingYearly ? '19,90 €/Mo. (jährlich)' : '24,90 €/Mo.'} · Jederzeit kündbar
                 </p>
               </div>
@@ -2582,19 +2514,19 @@ export default function LandingPage() {
       <section className="py-24 relative">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
-            <h2 className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">Vergleich</h2>
-            <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">Pageblitz vs. Webagentur</h3>
-            <p className="text-white/40 mt-4 text-base">Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen.</p>
+            <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Vergleich</h2>
+            <h3 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz vs. Webagentur</h3>
+            <p className={`mt-4 text-base transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen.</p>
           </div>
           <div className={`rounded-2xl border overflow-hidden transition-colors duration-500 ${isDark ? "border-white/10" : "border-gray-200"}`}>
             {/* Header */}
             <div className={`grid grid-cols-3 px-8 py-5 transition-colors duration-500 ${isDark ? "bg-white/5" : "bg-gray-50"}`}>
-              <div className="text-white/40 text-sm font-medium uppercase tracking-wider"></div>
+              <div className={`text-sm font-medium uppercase tracking-wider transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}></div>
               <div className="text-center">
                 <span className={`text-base font-medium transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-400"}`}>Webagentur</span>
               </div>
               <div className="text-center">
-                <span className={`text-base font-semibold transition-colors duration-500 ${isDark ? "text-white" : "text-violet-950"}`}>Pageblitz ✦</span>
+                <span className={`text-base font-semibold transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz ✦</span>
               </div>
             </div>
             {/* Rows */}
@@ -2614,18 +2546,18 @@ export default function LandingPage() {
               >
                 <div className={`text-sm font-medium self-center transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-700"}`}>{row.label}</div>
                 <div className={`text-center text-sm self-center transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-400"}`}>{row.agency}</div>
-                <div className={`text-center text-sm font-semibold self-center transition-colors duration-500 ${isDark ? "text-green-400" : "text-violet-700"}`}>{row.us}</div>
+                <div className={`text-center text-sm font-semibold self-center transition-colors duration-500 ${isDark ? "text-green-400" : "text-lime-700"}`}>{row.us}</div>
               </div>
             ))}
             {/* Footer CTA */}
-            <div className={`border-t px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-violet-50/50 border-violet-100"}`}>
+            <div className={`border-t px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/10" : "bg-lime-50/50 border-lime-100"}`}>
               <p className={`text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}>
                 Ersparnis im ersten Jahr: <span className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>bis zu 8.000 €</span>
                 {billingYearly && <span className={`block text-xs mt-1 ${isDark ? "text-white/30" : "text-gray-400"}`}>* bei jährlicher Zahlung · 24,90 €/Mo. bei monatlicher Abrechnung</span>}
               </p>
               <button
                 onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-violet-950 text-white hover:bg-violet-900"}`}
+                className={`btn-shimmer flex items-center gap-2 text-sm font-medium px-6 py-2.5 rounded-full transition-colors whitespace-nowrap ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
               >
                 Jetzt kostenlos starten
                 <ArrowRight className="w-4 h-4" />
@@ -2636,18 +2568,18 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <FaqSection />
+      <FaqSection isDark={isDark} />
 
       {/* Final CTA */}
       <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
+        <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? "bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" : ""}`} />
         {/* Animated gradient orbs */}
         <div
-          className="absolute left-1/4 -top-20 w-[600px] h-[600px] -translate-x-1/2 bg-indigo-500/8 rounded-full blur-3xl pointer-events-none"
+          className={`absolute left-1/4 -top-20 w-[600px] h-[600px] -translate-x-1/2 bg-lime-500/8 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift 22s ease-in-out infinite' }}
         />
         <div
-          className="absolute right-1/4 -bottom-20 w-[500px] h-[500px] translate-x-1/2 bg-purple-500/6 rounded-full blur-3xl pointer-events-none"
+          className={`absolute right-1/4 -bottom-20 w-[500px] h-[500px] translate-x-1/2 bg-lime-500/6 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${isDark ? "opacity-100" : "opacity-0"}`}
           style={{ animation: 'gradient-orb-drift-alt 18s ease-in-out infinite' }}
         />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
@@ -2656,7 +2588,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-white/40 text-sm font-medium uppercase tracking-widest mb-6"
+            className={`text-sm font-medium uppercase tracking-widest mb-6 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
           >
             Jetzt loslegen
           </motion.p>
@@ -2665,7 +2597,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl md:text-5xl font-semibold text-white mb-6 tracking-tight"
+            className={`text-4xl md:text-5xl font-semibold mb-6 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
           >
             Deine Website wartet.<br />Starte heute kostenlos.
           </motion.h2>
@@ -2674,7 +2606,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.22, duration: 0.6 }}
-            className="text-lg text-white/50 mb-10 max-w-lg mx-auto leading-relaxed"
+            className={`text-lg mb-10 max-w-lg mx-auto leading-relaxed transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}
           >
             Kein Webdesigner. Kein technisches Wissen. Nur dein Unternehmen –
             professionell online in 3 Minuten.
@@ -2685,14 +2617,14 @@ export default function LandingPage() {
               animate={{ scale: [1, 1.18, 1], opacity: [0.25, 0.55, 0.25] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className={`absolute inset-0 rounded-full blur-2xl pointer-events-none ${
-                isDark ? "bg-white/20" : "bg-violet-500/35"
+                isDark ? "bg-white/20" : "bg-lime-500/35"
               }`}
             />
             <Button
               size="lg"
               onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className="btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-all shadow-xl shadow-pink-500/25"
-              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+              className="btn-shimmer relative rounded-full h-16 px-12 text-lg font-medium group transition-all shadow-xl shadow-lime-500/25"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
             >
               gratis ausprobieren
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -2700,7 +2632,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-wrap justify-center gap-6 mt-8">
             {["7 Tage gratis", "Ab 19,90 €/Mo.", "Monatlich kündbar", "In 3 Minuten fertig"].map((t) => (
-              <div key={t} className="flex items-center gap-2 text-white/40 text-sm">
+              <div key={t} className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>
                 <CheckCircle2 className="w-4 h-4 text-green-400/60" />
                 {t}
               </div>
@@ -2713,23 +2645,23 @@ export default function LandingPage() {
       <LandingPageChatWidget />
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/5">
+      <footer className={`py-12 border-t transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-colors duration-500 ${isDark ? "bg-white shadow-white/10" : "bg-gray-900 shadow-gray-900/10"}`}>
+              <Zap className={`w-5 h-5 ${isDark ? "text-black" : "text-white"}`} fill={isDark ? "black" : "white"} />
             </div>
-            <span className="text-white font-semibold tracking-tight">Pageblitz</span>
+            <span className={`font-semibold text-lg tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz</span>
           </div>
-          <div className="text-white/30 text-sm">
+          <div className={`text-sm transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-400"}`}>
             © 2026 Pageblitz. Alle Rechte vorbehalten.
           </div>
           <div className="flex gap-6 text-sm">
-            <a href="/impressum" className="text-white/40 hover:text-white/80 transition-colors">Impressum</a>
-            <a href="/datenschutz" className="text-white/40 hover:text-white/80 transition-colors">Datenschutz</a>
+            <a href="/impressum" className={`transition-colors ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-400 hover:text-gray-700"}`}>Impressum</a>
+            <a href="/datenschutz" className={`transition-colors ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-400 hover:text-gray-700"}`}>Datenschutz</a>
             <button
               onClick={() => window.dispatchEvent(new Event("pageblitz:open-cookie-settings"))}
-              className="text-white/40 hover:text-white/80 transition-colors cursor-pointer bg-transparent border-none p-0"
+              className={`transition-colors cursor-pointer bg-transparent border-none p-0 ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-400 hover:text-gray-700"}`}
             >
               Cookie Einstellungen
             </button>

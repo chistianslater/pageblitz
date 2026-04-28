@@ -63,6 +63,7 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   heroImageUrl: text("heroImageUrl"),
   aboutImageUrl: text("aboutImageUrl"),
   layoutStyle: varchar("layoutStyle", { length: 50 }).default("classic"),
+  layoutVersion: int("layoutVersion").notNull().default(1),
   // Onboarding & subscription state
   onboardingStatus: mysqlEnum("onboardingStatus", ["pending", "in_progress", "completed"]).default("pending"),
   hasLegalPages: boolean("hasLegalPages").default(false),
@@ -97,6 +98,9 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   // Reservation lifecycle (external leads only) – when the draft expires + how often extended
   reservedUntil: timestamp("reservedUntil"),
   extensionsUsed: int("extensionsUsed").notNull().default(0),
+  // GDPR marketing consent
+  marketingConsent: boolean("marketingConsent").default(false),
+  marketingConsentAt: bigint("marketingConsentAt", { mode: "number" }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -193,6 +197,17 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
 
 export type OnboardingResponse = typeof onboardingResponses.$inferSelect;
 export type InsertOnboardingResponse = typeof onboardingResponses.$inferInsert;
+
+export const onboardingEvents = mysqlTable("onboarding_events", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  step: varchar("step", { length: 50 }).notNull(),
+  stepIndex: int("stepIndex").notNull(),
+  event: mysqlEnum("event", ["reached", "completed", "skipped"]).notNull().default("reached"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type OnboardingEvent = typeof onboardingEvents.$inferSelect;
+export type InsertOnboardingEvent = typeof onboardingEvents.$inferInsert;
 
 export const outreachEmails = mysqlTable("outreach_emails", {
   id: int("id").autoincrement().primaryKey(),

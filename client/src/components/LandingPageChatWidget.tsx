@@ -8,11 +8,12 @@ interface Message {
   content: string;
 }
 
-const PRIMARY = "#e91e8c"; // Pageblitz pink/magenta
+const PRIMARY = "#a3e635"; // Pageblitz neon lime
 
 export default function LandingPageChatWidget() {
   const [, navigate] = useLocation();
   const [open, setOpen] = useState(false);
+  const isDark = typeof window !== "undefined" && localStorage.getItem("lp-theme") === "dark";
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -121,13 +122,13 @@ export default function LandingPageChatWidget() {
             exit={{ opacity: 0, y: 8, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 340, damping: 26 }}
             onClick={openChat}
-            className="fixed bottom-24 right-6 z-[9990] max-w-[240px] text-left rounded-2xl px-4 py-3 shadow-xl border border-white/10 backdrop-blur-sm cursor-pointer"
-            style={{ background: "rgba(20,20,30,0.95)" }}
+            className="fixed bottom-24 right-6 z-[9990] max-w-[240px] text-left rounded-2xl px-4 py-3 shadow-xl border border-gray-200 cursor-pointer"
+            style={{ background: "white" }}
           >
-            <p className="text-white text-sm font-medium leading-snug">
+            <p className="text-gray-900 text-sm font-medium leading-snug">
               Hast du Fragen zu Pageblitz?
             </p>
-            <p className="text-white/50 text-xs mt-0.5">Ich beantworte sie gerne! 👋</p>
+            <p className="text-gray-500 text-xs mt-0.5">Ich beantworte sie gerne! 👋</p>
           </motion.button>
         )}
       </AnimatePresence>
@@ -140,7 +141,7 @@ export default function LandingPageChatWidget() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
         onClick={() => (open ? setOpen(false) : openChat())}
-        className="fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white transition-all"
+        className="fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-gray-900 transition-all"
         style={{ background: PRIMARY, boxShadow: `0 8px 32px ${PRIMARY}60` }}
         aria-label="Chat öffnen"
       >
@@ -165,20 +166,20 @@ export default function LandingPageChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="fixed bottom-24 right-6 z-[9990] w-[340px] max-h-[520px] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/10"
-            style={{ background: "#111118" }}
+            className={`fixed bottom-24 right-6 z-[9990] w-[340px] max-h-[520px] flex flex-col rounded-2xl overflow-hidden shadow-2xl ${isDark ? "border border-white/10" : "border border-gray-200"}`}
+            style={{ background: isDark ? "#111118" : "#ffffff" }}
           >
             {/* Header */}
             <div
               className="flex items-center gap-3 px-4 py-3.5 shrink-0"
               style={{ background: PRIMARY }}
             >
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-full bg-black/15 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-gray-900" />
               </div>
               <div>
-                <div className="text-white font-semibold text-sm leading-tight">Mika · Pageblitz</div>
-                <div className="text-white/70 text-xs flex items-center gap-1.5">
+                <div className="text-gray-900 font-semibold text-sm leading-tight">Mika · Pageblitz</div>
+                <div className="text-gray-700 text-xs flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse" />
                   Online · antwortet sofort
                 </div>
@@ -188,7 +189,7 @@ export default function LandingPageChatWidget() {
             {/* Messages */}
             <div
               className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0"
-              style={{ background: "#111118" }}
+              style={{ background: isDark ? "#111118" : "#ffffff" }}
             >
               {messages.map((msg, i) => (
                 <div
@@ -198,8 +199,8 @@ export default function LandingPageChatWidget() {
                   <div
                     className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                       msg.role === "user"
-                        ? "text-white rounded-br-sm"
-                        : "bg-white/8 text-white/90 rounded-bl-sm"
+                        ? "text-gray-900 rounded-br-sm"
+                        : isDark ? "bg-white/8 text-white/90 rounded-bl-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"
                     }`}
                     style={msg.role === "user" ? { background: PRIMARY } : {}}
                   >
@@ -211,11 +212,11 @@ export default function LandingPageChatWidget() {
               {/* Typing indicator */}
               {loading && (
                 <div className="flex justify-start">
-                  <div className="bg-white/8 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
+                  <div className={`rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center ${isDark ? "bg-white/8" : "bg-gray-100"}`}>
                     {[0, 1, 2].map((i) => (
                       <motion.span
                         key={i}
-                        className="w-1.5 h-1.5 rounded-full bg-white/40"
+                        className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-white/40" : "bg-gray-400"}`}
                         animate={{ y: [0, -5, 0] }}
                         transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
                       />
@@ -235,7 +236,7 @@ export default function LandingPageChatWidget() {
                   <p className="text-white/70 text-xs mb-2.5 font-medium">✨ Starte jetzt kostenlos – in 3 Minuten live</p>
                   <button
                     onClick={() => navigate("/start?billing=yearly")}
-                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-sm font-semibold text-gray-900 transition-all hover:brightness-110 active:scale-95"
                     style={{ background: PRIMARY }}
                   >
                     7 Tage gratis – keine Kreditkarte
@@ -253,8 +254,8 @@ export default function LandingPageChatWidget() {
 
             {/* Input */}
             <div
-              className="px-3 py-3 border-t border-white/8 flex items-end gap-2 shrink-0"
-              style={{ background: "#111118" }}
+              className={`px-3 py-3 border-t flex items-end gap-2 shrink-0 ${isDark ? "border-white/8" : "border-gray-200"}`}
+              style={{ background: isDark ? "#111118" : "#ffffff" }}
             >
               <textarea
                 ref={inputRef}
@@ -263,7 +264,7 @@ export default function LandingPageChatWidget() {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Frage stellen…"
-                className="flex-1 resize-none bg-white/8 text-white text-sm placeholder-white/30 rounded-xl px-3 py-2.5 outline-none border border-white/10 focus:border-white/25 transition-colors min-h-[40px] max-h-[100px]"
+                className={`flex-1 resize-none text-sm rounded-xl px-3 py-2.5 outline-none border transition-colors min-h-[40px] max-h-[100px] ${isDark ? "bg-white/8 text-white placeholder-white/30 border-white/10 focus:border-white/25" : "bg-gray-50 text-gray-900 placeholder-gray-400 border-gray-200 focus:border-lime-500"}`}
                 style={{ lineHeight: "1.4" }}
               />
               <button
@@ -275,6 +276,12 @@ export default function LandingPageChatWidget() {
                 <Send className="w-4 h-4 text-white" />
               </button>
             </div>
+            <a
+              href="mailto:hello@pageblitz.de"
+              className={`block text-center text-[10px] mt-1.5 transition-colors ${isDark ? "text-white/30 hover:text-white/60" : "text-gray-400 hover:text-gray-600"}`}
+            >
+              Lieber direkt per E-Mail? hello@pageblitz.de
+            </a>
           </motion.div>
         )}
       </AnimatePresence>

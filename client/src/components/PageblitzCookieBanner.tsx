@@ -26,9 +26,9 @@ const CATEGORIES: Category[] = [
   {
     id: "marketing",
     label: "Marketing",
-    tools: "Meta Pixel (Facebook)",
+    tools: "Google Ads, Meta Pixel (Facebook)",
     description:
-      "Ermöglicht die Messung von Werbekampagnen und Remarketing auf Facebook/Instagram.",
+      "Ermöglicht die Messung von Werbekampagnen (Google Ads Conversions) und Remarketing auf Facebook/Instagram.",
   },
 ];
 
@@ -41,13 +41,11 @@ export default function PageblitzCookieBanner() {
   useEffect(() => {
     const stored = getStoredConsent();
     if (!stored) {
-      // Kurze Verzögerung, damit die Seite zuerst rendert
       const t = setTimeout(() => setVisible(true), 600);
       return () => clearTimeout(t);
     }
   }, []);
 
-  // Kann von außen via window.dispatchEvent(new Event('pageblitz:open-cookie-settings')) geöffnet werden
   useEffect(() => {
     const handler = () => {
       const stored = getStoredConsent();
@@ -90,8 +88,9 @@ export default function PageblitzCookieBanner() {
         {/* Header */}
         <div className="px-5 pt-5 pb-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Cookie className="w-4.5 h-4.5 text-indigo-400" style={{ width: 18, height: 18 }} />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+              style={{ backgroundColor: 'var(--pb-brand-dim)' }}>
+              <Cookie className="w-4.5 h-4.5" style={{ width: 18, height: 18, color: 'var(--pb-brand)' }} />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-semibold text-white mb-1">
@@ -104,7 +103,8 @@ export default function PageblitzCookieBanner() {
                   href="/datenschutz"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-400 hover:text-indigo-300 underline inline-flex items-center gap-0.5 transition-colors"
+                  className="hover:brightness-125 underline inline-flex items-center gap-0.5 transition-colors"
+                  style={{ color: 'var(--pb-brand)' }}
                 >
                   Datenschutzerklärung
                   <ExternalLink className="w-3 h-3" />
@@ -120,8 +120,9 @@ export default function PageblitzCookieBanner() {
             {/* Necessary – always on */}
             <div className="flex items-start gap-3 p-3 rounded-xl bg-white/4 border border-white/8">
               <div className="flex-shrink-0 mt-0.5">
-                <div className="w-4 h-4 rounded border-2 border-indigo-500 bg-indigo-500 flex items-center justify-center">
-                  <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none">
+                <div className="w-4 h-4 rounded border-2 flex items-center justify-center"
+                  style={{ borderColor: 'var(--pb-brand)', backgroundColor: 'var(--pb-brand)' }}>
+                  <svg className="w-2.5 h-2.5" style={{ color: 'var(--pb-brand-text)' }} viewBox="0 0 10 10" fill="none">
                     <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
@@ -153,7 +154,8 @@ export default function PageblitzCookieBanner() {
                       type="checkbox"
                       checked={checked}
                       onChange={toggle}
-                      className="w-4 h-4 rounded accent-indigo-500 cursor-pointer"
+                      className="w-4 h-4 rounded cursor-pointer"
+                      style={{ accentColor: 'var(--pb-brand)' }}
                     />
                   </div>
                   <div className="flex-1">
@@ -189,14 +191,16 @@ export default function PageblitzCookieBanner() {
           {expanded ? (
             <button
               onClick={handleSaveCustom}
-              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-colors"
+              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-xl text-xs font-semibold transition-colors"
+              style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}
             >
               Auswahl speichern
             </button>
           ) : (
             <button
               onClick={handleAcceptAll}
-              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-colors"
+              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-xl text-xs font-semibold transition-colors"
+              style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}
             >
               Alle akzeptieren
             </button>
