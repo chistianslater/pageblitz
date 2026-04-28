@@ -119,9 +119,9 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
               <LogIn className="w-4 h-4" />
             </button>
             <button
-              onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-              className="btn-nav-cta rounded-full px-5 h-10 text-sm font-semibold text-white transition-all duration-300 hover:brightness-110 active:scale-95"
-              style={{ background: "linear-gradient(135deg, #e91e8c 0%, #c8177a 100%)" }}
+              onClick={() => navigate("/start")}
+              className="btn-nav-cta rounded-full px-5 h-10 text-sm font-semibold text-gray-900 transition-all duration-300 hover:brightness-110 active:scale-95"
+              style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
             >
               Website gratis erstellen ✦
             </button>
@@ -166,8 +166,8 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
                 </a>
               ))}
               <Button
-                onClick={() => { setMobileMenuOpen(false); navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`); }}
-                className="bg-white text-black hover:bg-white/90 rounded-full mt-6 h-14 text-lg font-medium"
+                onClick={() => { setMobileMenuOpen(false); navigate("/start"); }}
+                className={`rounded-full mt-6 h-14 text-lg font-medium ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-[#a3e635] text-gray-900 hover:bg-[#bef264]"}`}
               >
                 Website gratis erstellen
               </Button>
