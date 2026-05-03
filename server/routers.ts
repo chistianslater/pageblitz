@@ -5404,7 +5404,20 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           }) || [],
         };
 
-        await updateWebsite(input.websiteId, { websiteData: updatedWebsiteData });
+        // Classify industry and assign visual assets
+        const industryKey = await classifyIndustry(businessCategory, businessName);
+        const colorScheme = getIndustryColorScheme(businessCategory, businessName, industryKey);
+        const heroImageUrl = getHeroImageUrl(businessCategory, businessName, industryKey);
+        const { pool: layoutPool } = getLayoutPool(businessCategory, businessName, industryKey);
+        const layoutStyle = (website as any).layoutStyle || await getNextLayoutForIndustry(industryKey, layoutPool);
+
+        await updateWebsite(input.websiteId, {
+          websiteData: updatedWebsiteData,
+          heroImageUrl,
+          colorScheme,
+          industry: businessCategory,
+          layoutStyle,
+        });
 
         return {
           success: true,
