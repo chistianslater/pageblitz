@@ -118,6 +118,7 @@ export default function StartPage() {
   // ── Manual → Start ────────────────────────────────────────────────────────
   const handleManualStart = async () => {
     if (!businessName.trim() || !category.trim()) return;
+    try { (window as any).clarity?.("event", "start_manual"); (window as any).clarity?.("set", "start_category", category); } catch {}
     try {
       const data = await startMutation.mutateAsync({
         businessName: businessName.trim(),
@@ -219,7 +220,7 @@ export default function StartPage() {
 
             <div className="space-y-3">
               <button
-                onClick={() => setStep("gmb")}
+                onClick={() => { setStep("gmb"); try { (window as any).clarity?.("event", "start_gmb"); } catch {} }}
                 className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 ${isDark ? "border-lime-500/40 bg-lime-500/10 hover:bg-lime-500/20" : "border-lime-500/50 bg-lime-50 hover:bg-lime-100"} hover:border-lime-500/60 transition-all text-left group`}
               >
                 <div className={`w-10 h-10 rounded-lg ${isDark ? "bg-lime-500/20" : "bg-lime-100"} flex items-center justify-center flex-shrink-0`}>

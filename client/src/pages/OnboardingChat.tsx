@@ -877,6 +877,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const handleMouseOut = (e: MouseEvent) => {
       if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email" && !exitIntentShownRef.current) {
         exitIntentShownRef.current = true;
+        try { (window as any).clarity?.("event", "exit_intent_triggered"); } catch {}
         if (hasUserEmail) {
           setShowExitConfirmation(true);
         } else {
@@ -1754,6 +1755,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               // Refetch then show variant picker (instead of immediate reload)
               refetchSiteData().then(() => {
                 setShowVariantPicker(true);
+                try { (window as any).clarity?.("event", "variant_picker_shown"); } catch {}
               });
             } else if (status.status === "failed") {
               clearInterval(pollInterval);
@@ -1783,7 +1785,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   useEffect(() => {
     if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
-      
+
+      // Clarity session tags
+      try {
+        const c = (window as any).clarity;
+        if (c) {
+          c("set", "onboarding_source", siteData?.website?.source || "unknown");
+          c("set", "onboarding_website_id", String(websiteId || ""));
+          c("set", "onboarding_category", (business as any)?.category || "");
+          c("set", "onboarding_business", business?.name || "");
+          c("event", "onboarding_started");
+        }
+      } catch {}
+
       // Update captureStatus and send welcome email for external leads
       if (websiteId && siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
@@ -2185,6 +2199,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       try {
         (window as any).gtag?.("event", "onboarding_step", { step_name: nextStep, step_index: stepIdx });
         (window as any).clarity?.("set", "onboarding_step", nextStep);
+        (window as any).clarity?.("set", "onboarding_step_index", String(stepIdx));
+        (window as any).clarity?.("event", `step_${nextStep}`);
       } catch {}
 
       // If this step has a section divider, inject it as a special message type
