@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import HelpWidget from "@/components/HelpWidget";
+import { trackConversion } from "@/lib/tracking";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronLeft, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
@@ -4096,8 +4097,8 @@ export default function CustomerDashboard() {
 
   // Google Ads Conversion: Kauf nach Stripe-Checkout
   useEffect(() => {
-    if (_isCheckoutSuccess && typeof (window as any).gtag === "function") {
-      (window as any).gtag("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9" });
+    if (_isCheckoutSuccess) {
+      trackConversion("subscription_paid");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

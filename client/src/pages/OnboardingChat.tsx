@@ -7,6 +7,7 @@ import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
 import ChatWidget from "@/components/ChatWidget";
 import HelpWidget from "@/components/HelpWidget";
+import { trackConversion, trackFunnelStep } from "@/lib/tracking";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
@@ -2197,7 +2198,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         logStepMutation.mutate({ websiteId, step: nextStep, stepIndex: stepIdx, event: "reached" });
       }
       try {
-        (window as any).gtag?.("event", "onboarding_step", { step_name: nextStep, step_index: stepIdx });
+        trackFunnelStep(nextStep, stepIdx);
         (window as any).clarity?.("set", "onboarding_step", nextStep);
         (window as any).clarity?.("set", "onboarding_step_index", String(stepIdx));
         (window as any).clarity?.("event", `step_${nextStep}`);
@@ -2385,8 +2386,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
-          // Fire Google Ads conversion for all onboarding starts
-          try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
+          trackConversion("email_submitted");
           // Save as customerEmail in DB when email is captured at the START of onboarding
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
           // Only do the "capture email → businessCategory" flow when user is at the
@@ -2399,7 +2399,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {
                 onSuccess: () => {
                   toast.success("E-Mail gespeichert! ✅");
-                  try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
                   refetchSiteData();
                 },
                 onError: () => {
@@ -2494,6 +2493,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           booking:     data.addOnBooking,
         },
       });
+      trackConversion("trial_started");
       window.open(session.url, "_blank");
       toast.success("Du wirst zu Stripe weitergeleitet...");
     } catch (e: any) {

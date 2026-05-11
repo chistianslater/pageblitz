@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
+import { trackConversion } from "@/lib/tracking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
@@ -126,9 +127,7 @@ export default function StartPage() {
         customerEmail: user?.email || undefined,
         source: "external",
       });
-      if (typeof (window as any).gtag === "function") {
-        (window as any).gtag("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9" });
-      }
+      trackConversion("onboarding_started");
       toast.success("Website wird erstellt...");
       navigate(`/preview/${data.previewToken}/onboarding`);
     } catch (err: any) {
@@ -171,9 +170,7 @@ export default function StartPage() {
         rating: resolvedInfo.rating || undefined,
         reviewCount: resolvedInfo.reviewCount || undefined,
       });
-      if (typeof (window as any).gtag === "function") {
-        (window as any).gtag("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9" });
-      }
+      trackConversion("onboarding_started");
       toast.success("Website wird erstellt...");
       navigate(`/preview/${data.previewToken}/onboarding`);
     } catch (err: any) {
