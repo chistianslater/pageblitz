@@ -31,6 +31,7 @@ const AccountPage          = lazy(() => import("./pages/AccountPage"));
 const LayoutOverviewPage   = lazy(() => import("./pages/LayoutOverviewPage"));
 const PipelinePage         = lazy(() => import("./pages/PipelinePage"));
 const SupportChatsPage     = lazy(() => import("./pages/SupportChatsPage"));
+const LifecycleEmailsPage  = lazy(() => import("./pages/LifecycleEmailsPage"));
 const LayoutPreviewStandalone = lazy(() => import("./pages/LayoutPreviewStandalone"));
 const VariantPreviewPage      = lazy(() => import("./pages/VariantPreviewPage"));
 const LoginPage            = lazy(() => import("./pages/LoginPage"));
@@ -77,6 +78,7 @@ function AdminSwitch() {
         <Route path="/admin/layouts" component={LayoutOverviewPage} />
         <Route path="/admin/pipeline" component={PipelinePage} />
         <Route path="/admin/support-chats" component={SupportChatsPage} />
+        <Route path="/admin/lifecycle-emails" component={LifecycleEmailsPage} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

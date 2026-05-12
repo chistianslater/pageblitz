@@ -26,7 +26,7 @@ import {
   getChatTranscriptsByWebsiteId, deleteChatTranscriptById,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
-import { chatLeads, generatedWebsites, appointmentSettings, appointments, chatTranscripts } from "../drizzle/schema";
+import { chatLeads, generatedWebsites, appointmentSettings, appointments, chatTranscripts, lifecycleEmails } from "../drizzle/schema";
 import { desc, eq as eqDrizzle, and as andDrizzle, gte as gteDrizzle, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
@@ -2358,6 +2358,24 @@ export const appRouter = router({
           result[r.websiteId] = { count: r.count, totalMessages: r.totalMessages };
         }
         return result;
+      }),
+    lifecycleEmails: adminProcedure
+      .query(async () => {
+        const db = await getDb();
+        if (!db) return [];
+        return db.select({
+          id: lifecycleEmails.id,
+          websiteId: lifecycleEmails.websiteId,
+          recipientEmail: lifecycleEmails.recipientEmail,
+          type: lifecycleEmails.type,
+          status: lifecycleEmails.status,
+          scheduledFor: lifecycleEmails.scheduledFor,
+          sentAt: lifecycleEmails.sentAt,
+          cancelReason: lifecycleEmails.cancelReason,
+          createdAt: lifecycleEmails.createdAt,
+        }).from(lifecycleEmails)
+          .orderBy(desc(lifecycleEmails.createdAt))
+          .limit(200);
       }),
   }),
 
