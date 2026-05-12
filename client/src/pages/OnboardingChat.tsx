@@ -2406,13 +2406,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
           trackConversion("qualify_lead");
-          // Save as customerEmail in DB when email is captured at the START of onboarding
+          // Save as customerEmail in DB
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
-          // Only do the "capture email → businessCategory" flow when user is at the
-          // BEGINNING of the onboarding (businessCategory not yet set).
-          // If they've already gone through all content steps, go to the normal next step.
-          const isAtStart = !data.businessCategory;
-          if (!alreadyHasEmail && websiteId && isAtStart) {
+          if (!alreadyHasEmail && websiteId) {
             saveCustomerEmailMutation.mutate(
               { websiteId, email: val, marketingConsent },
               {
