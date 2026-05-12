@@ -127,7 +127,7 @@ export default function StartPage() {
         customerEmail: user?.email || undefined,
         source: "external",
       });
-      trackConversion("onboarding_started");
+      trackConversion("form_start");
       toast.success("Website wird erstellt...");
       navigate(`/preview/${data.previewToken}/onboarding`);
     } catch (err: any) {
@@ -170,7 +170,7 @@ export default function StartPage() {
         rating: resolvedInfo.rating || undefined,
         reviewCount: resolvedInfo.reviewCount || undefined,
       });
-      trackConversion("onboarding_started");
+      trackConversion("form_start");
       toast.success("Website wird erstellt...");
       navigate(`/preview/${data.previewToken}/onboarding`);
     } catch (err: any) {

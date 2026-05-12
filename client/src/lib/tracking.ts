@@ -1,61 +1,69 @@
 /**
- * Centralized conversion tracking for Google Ads + GA4.
+ * Centralized conversion tracking for GA4 + Google Ads.
  *
- * Google Ads Conversion IDs — create these in Google Ads:
- *   Tools → Conversions → New Conversion Action → Website
- *   Each gets its own send_to label.
+ * GA4 Key Events (already configured in GA4 Property 528392894):
+ *   - qualify_lead        → User submits email (mid-funnel)
+ *   - close_convert_lead  → User starts trial / clicks checkout
+ *   - purchase            → Successful payment
+ *   - form_start          → Onboarding started (secondary signal)
+ *   - onboarding_step     → Each step in the funnel (secondary signal)
  *
- * IMPORTANT: After deploying, create the matching Conversion Actions
- * in Google Ads with these exact send_to labels, then set:
- *   - email_submitted → Primary (Include in Conversions: YES)
- *   - trial_started → Primary (Include in Conversions: YES)
- *   - onboarding_started → Secondary (Include in Conversions: NO)
- *   - website_published → Secondary (Include in Conversions: NO)
+ * GA4 → Google Ads import:
+ *   Import qualify_lead, close_convert_lead, purchase as Conversion Actions.
+ *   Set qualify_lead as Primary (enough volume for Smart Bidding).
+ *   Demote old "Registrierung" action to Secondary.
+ *
+ * Google Ads direct conversion tag (fallback):
+ *   Also fires gtag('event','conversion',{send_to:...}) for direct tracking.
+ *   Replace labels below once Conversion Actions exist in Google Ads.
  */
 
 const ADS_ID = "AW-16545728698";
 
-// These conversion labels need to be created in Google Ads.
-// For now we use the existing label for all; replace each once
-// you create the individual Conversion Actions in Google Ads.
-const CONVERSION_LABELS: Record<string, string> = {
-  onboarding_started: "24hCCMT9wI8cELqRz9E9",  // Existing — demote to Secondary
-  email_submitted:    "24hCCMT9wI8cELqRz9E9",  // TODO: Replace with new label from Google Ads
-  trial_started:      "24hCCMT9wI8cELqRz9E9",  // TODO: Replace with new label from Google Ads
-  website_published:  "24hCCMT9wI8cELqRz9E9",  // TODO: Replace with new label from Google Ads
-  subscription_paid:  "24hCCMT9wI8cELqRz9E9",  // TODO: Replace with new label from Google Ads
+// Direct Google Ads conversion labels.
+// Replace with individual labels from Google Ads Conversion Actions.
+// Until then, the existing "Registrierung" label is used as fallback.
+const ADS_LABELS: Record<string, string | null> = {
+  form_start:         "24hCCMT9wI8cELqRz9E9",  // Existing "Registrierung" — demote to Secondary
+  qualify_lead:       null,  // TODO: Create in Google Ads, paste label here
+  close_convert_lead: null,  // TODO: Create in Google Ads, paste label here
+  purchase:           null,  // TODO: Create in Google Ads, paste label here
 };
 
-const CONVERSION_VALUES: Record<string, number> = {
-  onboarding_started: 1,
-  email_submitted:    5,
-  trial_started:      50,
-  website_published:  10,
-  subscription_paid:  240,
+const EVENT_VALUES: Record<string, number> = {
+  form_start:         1,
+  qualify_lead:       5,
+  close_convert_lead: 50,
+  purchase:           240,
 };
 
 type ConversionEvent =
-  | "onboarding_started"
-  | "email_submitted"
-  | "trial_started"
-  | "website_published"
-  | "subscription_paid";
+  | "form_start"
+  | "qualify_lead"
+  | "close_convert_lead"
+  | "purchase";
 
-export function trackConversion(event: ConversionEvent): void {
+/**
+ * Fire a conversion event to both GA4 and Google Ads.
+ *
+ * GA4: fires the event name directly (matches pre-configured Key Events).
+ * Google Ads: fires gtag('event','conversion',{send_to:...}) if a label exists.
+ */
+export function trackConversion(event: ConversionEvent, customValue?: number): void {
   const g = (window as any).gtag;
   if (typeof g !== "function") return;
 
-  const label = CONVERSION_LABELS[event];
-  const value = CONVERSION_VALUES[event] || 0;
+  const value = customValue ?? EVENT_VALUES[event] ?? 0;
 
-  // GA4 custom event (for GA4 reporting + potential import to Google Ads)
+  // GA4 event (matches Key Event names in GA4 property)
   g("event", event, {
     event_category: "conversion",
     value,
     currency: "EUR",
   });
 
-  // Google Ads conversion tag (for direct Ads tracking)
+  // Google Ads direct conversion tag (if label configured)
+  const label = ADS_LABELS[event];
   if (label) {
     g("event", "conversion", {
       send_to: `${ADS_ID}/${label}`,
@@ -65,6 +73,9 @@ export function trackConversion(event: ConversionEvent): void {
   }
 }
 
+/**
+ * Track individual onboarding step progression (GA4 only, secondary signal).
+ */
 export function trackFunnelStep(stepName: string, stepIndex: number): void {
   const g = (window as any).gtag;
   if (typeof g !== "function") return;

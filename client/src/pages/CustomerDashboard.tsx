@@ -4098,7 +4098,7 @@ export default function CustomerDashboard() {
   // Google Ads Conversion: Kauf nach Stripe-Checkout
   useEffect(() => {
     if (_isCheckoutSuccess) {
-      trackConversion("subscription_paid");
+      trackConversion("purchase");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -861,8 +861,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [exitIntentEmail, setExitIntentEmail] = useState("");
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const [showSaveReminder, setShowSaveReminder] = useState(false);
   // Only show exit-intent overlay once per session (not on every upward mouse move)
   const exitIntentShownRef = useRef(false);
+  const saveReminderShownRef = useRef(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
 
   useEffect(() => {
@@ -898,6 +900,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }
     };
   }, [currentStep, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
+
+  // Mid-funnel save reminder: show after 5 min if no email captured yet
+  useEffect(() => {
+    const hasEmail = !!(siteData?.website as any)?.customerEmail || !!data.email;
+    if (hasEmail || saveReminderShownRef.current) return;
+    const timer = setTimeout(() => {
+      if (saveReminderShownRef.current) return;
+      const stillNoEmail = !(siteData?.website as any)?.customerEmail && !data.email;
+      if (stillNoEmail && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email") {
+        saveReminderShownRef.current = true;
+        setShowSaveReminder(true);
+        try { (window as any).clarity?.("event", "save_reminder_shown"); } catch {}
+      }
+    }, 5 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, [siteData?.website, data.email, currentStep]);
+
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -2386,7 +2405,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
-          trackConversion("email_submitted");
+          trackConversion("qualify_lead");
           // Save as customerEmail in DB when email is captured at the START of onboarding
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
           // Only do the "capture email → businessCategory" flow when user is at the
@@ -2493,7 +2512,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           booking:     data.addOnBooking,
         },
       });
-      trackConversion("trial_started");
+      trackConversion("close_convert_lead");
       window.open(session.url, "_blank");
       toast.success("Du wirst zu Stripe weitergeleitet...");
     } catch (e: any) {
@@ -6069,6 +6088,55 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       </div>
 
       {/* Exit intent modal */}
+      {/* Mid-funnel save reminder (5 min timer) */}
+      {showSaveReminder && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-br from-lime-500 to-lime-600 p-6 text-center">
+              <div className="w-14 h-14 bg-black/15 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Mail className="w-7 h-7 text-gray-900" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Entwurf speichern?</h2>
+              <p className="text-gray-800 text-sm">Sichere deinen Fortschritt — wir senden dir den Link per E-Mail.</p>
+            </div>
+            <div className="p-6 space-y-3">
+              <input
+                type="email"
+                placeholder="deine@email.de"
+                value={exitIntentEmail}
+                onChange={(e) => setExitIntentEmail(e.target.value)}
+                className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-lime-500 placeholder-slate-500"
+              />
+              <button
+                onClick={async () => {
+                  const email = exitIntentEmail.trim();
+                  if (!email || !email.includes("@") || !email.includes(".")) {
+                    toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
+                    return;
+                  }
+                  setData(p => ({ ...p, email }));
+                  await trySaveStep(STEP_ORDER.indexOf("email"), { email });
+                  if (websiteId) saveCustomerEmailMutation.mutate({ websiteId, email, marketingConsent });
+                  trackConversion("qualify_lead");
+                  toast.success("Gespeichert! Du kannst jederzeit zurückkehren.");
+                  setShowSaveReminder(false);
+                }}
+                className="w-full py-3 rounded-xl font-semibold text-gray-900 transition-colors"
+                style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
+              >
+                Fortschritt speichern
+              </button>
+              <button
+                onClick={() => setShowSaveReminder(false)}
+                className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors text-center py-1"
+              >
+                Später
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showExitIntent && (() => {
         const knownEmail = data.email || data.legalEmail;
         return (
