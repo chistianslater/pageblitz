@@ -71,8 +71,10 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   source: mysqlEnum("source", ["admin", "external"]).default("admin"),
   // External visitor email capture for lead nurturing
   customerEmail: varchar("customerEmail", { length: 320 }),
-  // Capture status for external leads: email_captured, onboarding_started, onboarding_completed, converted
-  captureStatus: mysqlEnum("captureStatus", ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]).default("email_captured"),
+  // Capture status for external leads: email_captured, onboarding_started, onboarding_completed, converted, abandoned
+  // Kein Default mehr – der Code MUSS den korrekten Status explizit setzen,
+  // sonst wurden Leads ohne Email fälschlich als "email_captured" angezeigt.
+  captureStatus: mysqlEnum("captureStatus", ["email_captured", "onboarding_started", "onboarding_completed", "converted", "abandoned"]),
   // Contact form configuration
   contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
   // Contact form: custom recipient email (overrides business.email if set)

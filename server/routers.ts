@@ -4925,9 +4925,12 @@ Wichtige Felder im JSON:
           reviewCount: input.reviewCount || null,
         });
 
-        // Create a preview website
+        // Create a preview website.
+        // Wichtig: captureStatus nur setzen, wenn auch wirklich eine customerEmail aufgelöst werden konnte.
+        // Sonst greift der MySQL-Default (email_captured) und zeigt im Dashboard fälschlich "E-Mail erfasst" an.
         const previewToken = nanoid(32);
         const websiteSlug = `preview-${uniqueSlug}`;
+        const resolvedEmail = input.customerEmail || (isLoggedIn ? ctx.user?.email ?? null : null);
         const websiteId = await createGeneratedWebsite({
           businessId,
           slug: websiteSlug,
@@ -4935,9 +4938,20 @@ Wichtige Felder im JSON:
           previewToken,
           onboardingStatus: "in_progress",
           source: input.source,
-          customerEmail: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
-          captureStatus: (input.customerEmail || isLoggedIn) ? "email_captured" : undefined,
+          customerEmail: resolvedEmail,
+          captureStatus: resolvedEmail ? "email_captured" : "onboarding_started",
         });
+
+        // Lifecycle-Mails starten, wenn eine Email da ist (analog zu saveCustomerEmail/captureEmail)
+        if (resolvedEmail) {
+          try {
+            const { scheduleInitialLifecycleEmails, sendImmediateWelcomeEmail } = await import("./_core/lifecycleScheduler");
+            await sendImmediateWelcomeEmail(websiteId, resolvedEmail);
+            await scheduleInitialLifecycleEmails(websiteId, resolvedEmail);
+          } catch (err) {
+            console.warn("[generate] Lifecycle scheduling failed:", err);
+          }
+        }
 
         // If user is logged in, create a subscription to link website to user
         if (isLoggedIn && ctx.user) {
