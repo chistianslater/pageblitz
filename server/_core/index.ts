@@ -91,6 +91,50 @@ async function startServer() {
     }
     res.json({ ok: true });
   });
+  // ── Client-Error Logging (vor express.json mit kleinerem Limit) ──────────
+  // Fängt Errors vom ErrorBoundary + window.onerror + unhandledrejection.
+  // Logging geht in PM2 → `pm2 logs pageblitz | grep "Client Error"`.
+  // Rate-Limit: max 200 Errors/Stunde pro IP (in-memory, reicht für jetzt).
+  const clientErrorBuckets = new Map<string, { count: number; resetAt: number }>();
+  app.post("/api/client-error", express.json({ limit: "32kb" }), (req, res) => {
+    try {
+      const ip = (req.ip || req.headers["x-forwarded-for"] || "unknown").toString();
+      const now = Date.now();
+      const bucket = clientErrorBuckets.get(ip);
+      if (bucket && bucket.resetAt > now) {
+        if (bucket.count > 200) {
+          res.json({ ok: true, throttled: true });
+          return;
+        }
+        bucket.count++;
+      } else {
+        clientErrorBuckets.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
+      }
+
+      const { source, message, stack, componentStack, url, userAgent, timestamp } = req.body ?? {};
+      console.error(`[Client Error] ${source || "unknown"}`, {
+        message: (message || "").toString().slice(0, 500),
+        url: (url || "").toString().slice(0, 300),
+        userAgent: (userAgent || "").toString().slice(0, 200),
+        ip,
+        timestamp,
+        stack: (stack || "").toString().slice(0, 3000),
+        componentStack: (componentStack || "").toString().slice(0, 3000),
+      });
+    } catch (err) {
+      console.warn("[Client Error] log endpoint error:", err);
+    }
+    res.json({ ok: true });
+  });
+
+  // Bucket-Cleanup alle 30 Min (verhindert Memory-Leak)
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, b] of clientErrorBuckets) {
+      if (b.resetAt <= now) clientErrorBuckets.delete(ip);
+    }
+  }, 30 * 60 * 1000);
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

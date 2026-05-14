@@ -5,9 +5,48 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
+import { reportClientError } from "./components/ErrorBoundary";
 import { getLoginUrl } from "./const";
 import "./index.css";
 import "./animations.css";
+
+// ── Global Error-Reporting für non-React Errors ────────────────────────────
+// React-Errors werden vom ErrorBoundary gefangen. Hier fangen wir alles ab,
+// was außerhalb des Render-Cycles passiert: setTimeout-Crashes, async ohne
+// catch, etc. Throttling über Set, damit derselbe Error nicht 1000× geschickt
+// wird.
+const reportedFingerprints = new Set<string>();
+const seen = (key: string) => {
+  if (reportedFingerprints.has(key)) return true;
+  reportedFingerprints.add(key);
+  // Maximal 50 unique errors pro Session merken (Memory-Schutz)
+  if (reportedFingerprints.size > 50) reportedFingerprints.clear();
+  return false;
+};
+
+window.addEventListener("error", (event) => {
+  const msg = event.message || "Unknown window error";
+  const fp = `${msg}|${event.filename}|${event.lineno}`;
+  if (seen(fp)) return;
+  reportClientError({
+    source: "window-error",
+    message: msg,
+    stack: event.error?.stack || `${event.filename}:${event.lineno}:${event.colno}`,
+  });
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = event.reason;
+  const msg = reason?.message || String(reason ?? "Unhandled rejection");
+  const stack = reason?.stack || null;
+  const fp = `${msg}|${(stack || "").slice(0, 80)}`;
+  if (seen(fp)) return;
+  reportClientError({
+    source: "unhandled-rejection",
+    message: msg,
+    stack,
+  });
+});
 
 // ── localStorage Sanitization ──────────────────────────────────────────────
 // The Manus runtime reads "manus-runtime-user-info" from localStorage and
