@@ -234,6 +234,32 @@ export const outreachExperiments = mysqlTable("outreach_experiments", {
 export type OutreachExperiment = typeof outreachExperiments.$inferSelect;
 export type InsertOutreachExperiment = typeof outreachExperiments.$inferInsert;
 
+// ── Client Errors (Logging von Browser-Crashes für Admin-Dashboard) ──────────
+export const clientErrors = mysqlTable("client_errors", {
+  id: int("id").autoincrement().primaryKey(),
+  // Fingerprint (sha256, gekürzt) gruppiert identische Errors → Counter statt n Rows
+  fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
+  source: mysqlEnum("source", ["react", "window-error", "unhandled-rejection", "server"]).notNull(),
+  message: text("message").notNull(),
+  stack: text("stack"),
+  componentStack: text("componentStack"),
+  url: varchar("url", { length: 1024 }),
+  userAgent: varchar("userAgent", { length: 500 }),
+  ip: varchar("ip", { length: 64 }),
+  occurrences: int("occurrences").notNull().default(1),
+  firstSeenAt: timestamp("firstSeenAt").defaultNow().notNull(),
+  lastSeenAt: timestamp("lastSeenAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  resolvedBy: int("resolvedBy"), // user id
+  notes: text("notes"),
+}, (table) => ({
+  fingerprintUnique: uniqueIndex("client_errors_fingerprint_unique").on(table.fingerprint),
+  resolvedLastSeen: index("client_errors_resolved_last_seen").on(table.resolvedAt, table.lastSeenAt),
+}));
+
+export type ClientError = typeof clientErrors.$inferSelect;
+export type InsertClientError = typeof clientErrors.$inferInsert;
+
 // ── Lifecycle Emails (Drip-Sequenz für unfertige Onboardings) ────────────────
 export const lifecycleEmails = mysqlTable("lifecycle_emails", {
   id: int("id").autoincrement().primaryKey(),

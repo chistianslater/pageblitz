@@ -3,6 +3,7 @@ import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -93,12 +94,12 @@ async function startServer() {
   });
   // ── Client-Error Logging (vor express.json mit kleinerem Limit) ──────────
   // Fängt Errors vom ErrorBoundary + window.onerror + unhandledrejection.
-  // Logging geht in PM2 → `pm2 logs pageblitz | grep "Client Error"`.
-  // Rate-Limit: max 200 Errors/Stunde pro IP (in-memory, reicht für jetzt).
+  // Schreibt in DB (client_errors, gruppiert via Fingerprint) + Console (PM2).
+  // Rate-Limit: max 200 Errors/Stunde pro IP (in-memory).
   const clientErrorBuckets = new Map<string, { count: number; resetAt: number }>();
-  app.post("/api/client-error", express.json({ limit: "32kb" }), (req, res) => {
+  app.post("/api/client-error", express.json({ limit: "32kb" }), async (req, res) => {
     try {
-      const ip = (req.ip || req.headers["x-forwarded-for"] || "unknown").toString();
+      const ip = (req.ip || req.headers["x-forwarded-for"] || "unknown").toString().slice(0, 64);
       const now = Date.now();
       const bucket = clientErrorBuckets.get(ip);
       if (bucket && bucket.resetAt > now) {
@@ -111,16 +112,63 @@ async function startServer() {
         clientErrorBuckets.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
       }
 
-      const { source, message, stack, componentStack, url, userAgent, timestamp } = req.body ?? {};
-      console.error(`[Client Error] ${source || "unknown"}`, {
-        message: (message || "").toString().slice(0, 500),
-        url: (url || "").toString().slice(0, 300),
-        userAgent: (userAgent || "").toString().slice(0, 200),
-        ip,
-        timestamp,
-        stack: (stack || "").toString().slice(0, 3000),
-        componentStack: (componentStack || "").toString().slice(0, 3000),
-      });
+      const body = req.body ?? {};
+      const source = String(body.source || "react");
+      const validSources = ["react", "window-error", "unhandled-rejection", "server"] as const;
+      const safeSource = (validSources as readonly string[]).includes(source) ? source : "react";
+      const message = String(body.message || "Unknown error").slice(0, 1000);
+      const stack = body.stack ? String(body.stack).slice(0, 6000) : null;
+      const componentStack = body.componentStack ? String(body.componentStack).slice(0, 4000) : null;
+      const url = body.url ? String(body.url).slice(0, 1024) : null;
+      const userAgent = body.userAgent ? String(body.userAgent).slice(0, 500) : null;
+
+      // Fingerprint: source + message + erste 2 Stack-Frames → gruppiert identische Errors
+      const stackPrefix = stack ? stack.split("\n").slice(0, 3).join("\n") : "";
+      const fingerprint = crypto
+        .createHash("sha256")
+        .update(`${safeSource}|${message}|${stackPrefix}`)
+        .digest("hex")
+        .slice(0, 64);
+
+      // Console (für tail -f / PM2 logs)
+      console.error(`[Client Error] ${safeSource}`, { message, url, ip, fingerprint: fingerprint.slice(0, 8) });
+
+      // DB-Upsert: bei doppeltem Fingerprint → occurrences++, lastSeenAt update
+      try {
+        const { getDb } = await import("../db");
+        const { clientErrors } = await import("../../drizzle/schema");
+        const { sql } = await import("drizzle-orm");
+        const db = await getDb();
+        if (db) {
+          await db
+            .insert(clientErrors)
+            .values({
+              fingerprint,
+              source: safeSource as any,
+              message,
+              stack,
+              componentStack,
+              url,
+              userAgent,
+              ip,
+            })
+            .onDuplicateKeyUpdate({
+              set: {
+                occurrences: sql`${clientErrors.occurrences} + 1`,
+                lastSeenAt: new Date(),
+                stack: sql`COALESCE(${clientErrors.stack}, VALUES(stack))`, // behalte ersten Stack
+                url: sql`VALUES(url)`,
+                userAgent: sql`VALUES(userAgent)`,
+                ip: sql`VALUES(ip)`,
+                // Resolved-Status zurücksetzen bei neuem Auftreten:
+                resolvedAt: sql`NULL`,
+                resolvedBy: sql`NULL`,
+              },
+            });
+        }
+      } catch (dbErr) {
+        console.warn("[Client Error] DB-Insert fehlgeschlagen (Tabelle existiert?):", dbErr);
+      }
     } catch (err) {
       console.warn("[Client Error] log endpoint error:", err);
     }

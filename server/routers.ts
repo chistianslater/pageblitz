@@ -4918,7 +4918,7 @@ Wichtige Felder im JSON:
           category: input.category || "",
           address: input.address || "",
           phone: input.phone || "",
-          email: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
+          email: input.customerEmail || (isLoggedIn ? ctx.user?.email ?? null : null),
           googleReviews: input.googleReviews?.length ? input.googleReviews : null,
           openingHours: input.openingHours?.length ? input.openingHours : null,
           rating: input.rating || null,
@@ -5432,6 +5432,104 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
       }))
       .mutation(async ({ input }) => {
         await updateWebsite(input.id, { captureStatus: input.captureStatus });
+        return { success: true };
+      }),
+  }),
+
+  // ── Client-Errors (Admin-Dashboard) ───────────────────────────────────────
+  clientErrors: router({
+    list: adminProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(200).optional().default(50),
+        offset: z.number().min(0).optional().default(0),
+        filter: z.enum(["unresolved", "resolved", "all"]).optional().default("unresolved"),
+        source: z.enum(["react", "window-error", "unhandled-rejection", "server"]).optional(),
+        search: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { and, desc, eq, isNotNull, isNull, like, sql } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) return { rows: [], total: 0 };
+
+        const conditions: any[] = [];
+        if (input.filter === "unresolved") conditions.push(isNull(clientErrors.resolvedAt));
+        else if (input.filter === "resolved") conditions.push(isNotNull(clientErrors.resolvedAt));
+        if (input.source) conditions.push(eq(clientErrors.source, input.source));
+        if (input.search) conditions.push(like(clientErrors.message, `%${input.search}%`));
+
+        const where = conditions.length ? and(...conditions) : undefined;
+        const rows = await db
+          .select()
+          .from(clientErrors)
+          .where(where)
+          .orderBy(desc(clientErrors.lastSeenAt))
+          .limit(input.limit)
+          .offset(input.offset);
+
+        const countRows = await db
+          .select({ cnt: sql<number>`COUNT(*)` })
+          .from(clientErrors)
+          .where(where);
+        return { rows, total: Number(countRows[0]?.cnt ?? 0) };
+      }),
+
+    stats: adminProcedure.query(async () => {
+      const { getDb } = await import("./db");
+      const { clientErrors } = await import("../drizzle/schema");
+      const { isNull, isNotNull, sql } = await import("drizzle-orm");
+      const db = await getDb();
+      if (!db) return { unresolved: 0, resolved: 0, totalOccurrences: 0, last24h: 0 };
+      const unresolvedR = await db.select({ cnt: sql<number>`COUNT(*)` }).from(clientErrors).where(isNull(clientErrors.resolvedAt));
+      const resolvedR = await db.select({ cnt: sql<number>`COUNT(*)` }).from(clientErrors).where(isNotNull(clientErrors.resolvedAt));
+      const occR = await db.select({ s: sql<number>`COALESCE(SUM(occurrences),0)` }).from(clientErrors).where(isNull(clientErrors.resolvedAt));
+      const last24hR = await db.select({ cnt: sql<number>`COUNT(*)` }).from(clientErrors).where(sql`lastSeenAt >= NOW() - INTERVAL 1 DAY`);
+      return {
+        unresolved: Number(unresolvedR[0]?.cnt ?? 0),
+        resolved: Number(resolvedR[0]?.cnt ?? 0),
+        totalOccurrences: Number(occR[0]?.s ?? 0),
+        last24h: Number(last24hR[0]?.cnt ?? 0),
+      };
+    }),
+
+    markResolved: adminProcedure
+      .input(z.object({ id: z.number(), notes: z.string().optional() }))
+      .mutation(async ({ input, ctx }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.update(clientErrors).set({
+          resolvedAt: new Date(),
+          resolvedBy: ctx.user?.id ?? null,
+          notes: input.notes ?? null,
+        }).where(eq(clientErrors.id, input.id));
+        return { success: true };
+      }),
+
+    reopen: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.update(clientErrors).set({ resolvedAt: null, resolvedBy: null }).where(eq(clientErrors.id, input.id));
+        return { success: true };
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.delete(clientErrors).where(eq(clientErrors.id, input.id));
         return { success: true };
       }),
   }),
