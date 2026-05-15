@@ -535,10 +535,15 @@ export async function processExpiredReservations(): Promise<{ processed: number;
           .limit(1);
         const business = bizRows[0];
 
+        // Platzhalter-Namen ("Lead (E-Mail erfasst)") ausblenden
+        const rawBizName = onboarding?.businessName || business?.name || null;
+        const cleanBizName =
+          rawBizName && !rawBizName.startsWith("Lead ") ? rawBizName : null;
+
         await db.insert(reactivationSeeds).values({
           token: seedToken,
           recipientEmail: website.customerEmail,
-          businessName: onboarding?.businessName || business?.name || null,
+          businessName: cleanBizName,
           businessCategory: onboarding?.businessCategory || business?.category || null,
           googlePlaceId: business?.placeId || null,
           originalWebsiteId: website.id,

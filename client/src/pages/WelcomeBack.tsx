@@ -87,7 +87,10 @@ export default function WelcomeBack() {
     );
   }
 
-  const { email, businessName } = seedQuery.data;
+  const { email, businessName: rawBusinessName } = seedQuery.data;
+  // Platzhalter-Namen ("Lead (E-Mail erfasst)") als "kein Name" behandeln
+  const businessName =
+    rawBusinessName && !rawBusinessName.startsWith("Lead ") ? rawBusinessName : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 flex items-center justify-center p-6">
