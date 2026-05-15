@@ -504,7 +504,8 @@ export async function processExpiredReservations(): Promise<{ processed: number;
       and(
         eq(generatedWebsites.source, "external"),
         lte(generatedWebsites.reservedUntil, now),
-        sql`${generatedWebsites.captureStatus} != 'converted'`,
+        // NULL-sicher: captureStatus darf NULL oder ungleich 'converted' sein
+        sql`(${generatedWebsites.captureStatus} IS NULL OR ${generatedWebsites.captureStatus} != 'converted')`,
         sql`${generatedWebsites.paidAt} IS NULL`,
       ),
     )
@@ -513,7 +514,12 @@ export async function processExpiredReservations(): Promise<{ processed: number;
   let deleted = 0;
   for (const website of expired) {
     try {
-      // Seed + Email nur anlegen, wenn wir eine Email haben
+      // 1. Alte scheduled lifecycle_emails (2h/24h/final) canceln – MUSS vor dem
+      //    fresh_start_7d-Insert passieren, sonst würde cancelLifecycleEmails()
+      //    die gerade eingeplante Fresh-Start-Mail gleich wieder canceln.
+      await cancelLifecycleEmails(website.id, "website_expired");
+
+      // 2. Seed + Fresh-Start-Mail anlegen (nur wenn wir eine Email haben)
       if (website.customerEmail) {
         const seedToken = crypto.randomBytes(24).toString("base64url");
         const onboardingRows = await db
@@ -540,20 +546,27 @@ export async function processExpiredReservations(): Promise<{ processed: number;
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         });
 
-        // fresh_start_7d einplanen (7 Tage nach Löschung)
-        await db.insert(lifecycleEmails).values({
-          websiteId: website.id,
-          recipientEmail: website.customerEmail,
-          type: "fresh_start_7d",
-          scheduledFor: new Date(Date.now() + FRESH_START_DELAY_MS),
-          status: "scheduled",
-        });
+        // fresh_start_7d einplanen (7 Tage nach Löschung) – NACH dem Cancel.
+        // onDuplicateKeyUpdate, falls für diese websiteId schon eine existiert.
+        await db
+          .insert(lifecycleEmails)
+          .values({
+            websiteId: website.id,
+            recipientEmail: website.customerEmail,
+            type: "fresh_start_7d",
+            scheduledFor: new Date(Date.now() + FRESH_START_DELAY_MS),
+            status: "scheduled",
+          })
+          .onDuplicateKeyUpdate({
+            set: {
+              status: "scheduled",
+              cancelReason: null,
+              scheduledFor: new Date(Date.now() + FRESH_START_DELAY_MS),
+            },
+          });
       }
 
-      // Noch nicht abgelaufene lifecycle_emails canceln (vor Löschung)
-      await cancelLifecycleEmails(website.id, "website_expired");
-
-      // captureStatus auf 'abandoned' setzen, dann löschen
+      // 3. captureStatus auf 'abandoned' setzen, dann Website löschen
       await db
         .update(generatedWebsites)
         .set({ captureStatus: "abandoned" })
