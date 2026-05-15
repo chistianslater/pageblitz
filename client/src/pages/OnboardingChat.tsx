@@ -2815,7 +2815,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
-      className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden"
+      // translate="no" + notranslate: verhindert dass Browser-Übersetzer (Google
+      // Translate etc.) DOM-Text-Knoten ersetzen – sonst kommt React's reconciler
+      // bei Step-Wechseln aus dem Tritt und crasht mit insertBefore/removeChild.
+      translate="no"
+      className="notranslate bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-hidden"
       style={{
         height: "100dvh",
         paddingTop: "env(safe-area-inset-top)",

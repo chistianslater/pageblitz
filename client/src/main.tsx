@@ -1,3 +1,39 @@
+// ── Defensive Node-Patches gegen Translate/Extension-Interferenzen ─────────
+// Browser-Übersetzer (Google Translate) und manche Extensions (Grammarly,
+// Password-Manager) manipulieren DOM-Text-Knoten direkt. React's reconciler
+// merkt das nicht und crasht beim nächsten removeChild/insertBefore mit
+// NotFoundError. Wir patchen die DOM-API defensiv: bei Parent-Mismatch
+// warnen statt werfen. Standard-Pattern bei großen React-Apps (FB/Airbnb/Atlas).
+// Siehe: https://github.com/facebook/react/issues/11538
+(function patchDomForTranslateCompat() {
+  if (typeof Node === "undefined" || !Node.prototype) return;
+  const origRemoveChild = Node.prototype.removeChild;
+  const origInsertBefore = Node.prototype.insertBefore;
+
+  Node.prototype.removeChild = function <T extends Node>(child: T): T {
+    if (child.parentNode !== this) {
+      // Stiller no-op: Child wurde von einer externen DOM-Mutation entfernt
+      // (Translate, Extension). React-State und tatsächlicher DOM driften
+      // dann auseinander; nicht ideal, aber besser als Crash + White-Screen.
+      console.warn("[DOM Patch] removeChild: child is not a child of this node");
+      return child;
+    }
+    return origRemoveChild.call(this, child) as T;
+  };
+
+  Node.prototype.insertBefore = function <T extends Node>(
+    newNode: T,
+    referenceNode: Node | null,
+  ): T {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      console.warn("[DOM Patch] insertBefore: referenceNode is not a child of this node");
+      // Fallback: append am Ende statt insertBefore
+      return (this.appendChild(newNode) as unknown) as T;
+    }
+    return origInsertBefore.call(this, newNode, referenceNode) as T;
+  };
+})();
+
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
