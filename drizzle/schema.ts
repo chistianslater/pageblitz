@@ -300,6 +300,8 @@ export const reactivationSeeds = mysqlTable("reactivation_seeds", {
   googlePlaceId: varchar("googlePlaceId", { length: 255 }),
   originalWebsiteId: int("originalWebsiteId"), // nur zur Nachverfolgung
   originalBusinessId: int("originalBusinessId"),
+  // previewToken der gelöschten Website – verknüpft alte Email-Links mit diesem Seed
+  originalPreviewToken: varchar("originalPreviewToken", { length: 100 }),
   usedAt: timestamp("usedAt"), // wann der Lead zurückgekommen ist
   expiresAt: timestamp("expiresAt").notNull(), // 30 Tage nach Erstellung (DSGVO-Minimalprinzip)
   createdAt: timestamp("createdAt").defaultNow().notNull(),

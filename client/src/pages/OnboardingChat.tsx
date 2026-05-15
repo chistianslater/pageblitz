@@ -769,9 +769,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   useEffect(() => {
     if (siteError) {
       console.error("Website loading error:", siteError);
-      toast.error("Fehler beim Laden der Website: " + siteError.message);
     }
   }, [siteError]);
+
+  // ── Website nicht (mehr) vorhanden – z.B. nach Ablauf gelöscht ───────────
+  // Prüfen ob ein Reactivation-Seed existiert → dann auf Welcome-Back umleiten,
+  // sonst zeigen wir einen "Website gelöscht"-Screen.
+  const websiteNotFound = !!siteError && !siteLoading;
+  const deletedSeedQuery = trpc.lifecycle.resolveSeedByPreviewToken.useQuery(
+    { previewToken: previewToken || "" },
+    { enabled: websiteNotFound && !!previewToken, retry: false },
+  );
+
+  useEffect(() => {
+    if (deletedSeedQuery.data?.found && deletedSeedQuery.data.usable) {
+      navigate(`/welcome-back?token=${encodeURIComponent(deletedSeedQuery.data.token)}`);
+    }
+  }, [deletedSeedQuery.data, navigate]);
 
 
   const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
@@ -2778,6 +2792,55 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   if (siteLoading || isGeneratingInitialWebsite) {
     return <EpicGenerationLoading phase={generationPhase} progress={generationProgress} />;
+  }
+
+  // ── Website nicht (mehr) vorhanden ──────────────────────────────────────
+  if (websiteNotFound) {
+    const seed = deletedSeedQuery.data;
+    // Seed wird noch geprüft, oder usable Seed gefunden → Redirect läuft gleich
+    if (deletedSeedQuery.isLoading || (seed?.found && seed.usable)) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-slate-950 text-slate-300">
+          <div className="flex flex-col items-center gap-3">
+            <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            <p className="text-sm">Einen Moment…</p>
+          </div>
+        </div>
+      );
+    }
+    // Kein Seed (oder schon genutzt / abgelaufen) → "Website gelöscht"-Screen
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-950 p-6">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto mb-5">
+            <Clock className="w-7 h-7" />
+          </div>
+          <h1 className="text-xl font-semibold text-white mb-2">
+            Diese Website ist nicht mehr verfügbar
+          </h1>
+          <p className="text-slate-400 text-sm leading-relaxed mb-6">
+            Dein Website-Entwurf wurde nach Ablauf der Reservierung gelöscht.
+            Kein Problem &ndash; du kannst in 60&nbsp;Sekunden einen neuen Entwurf erstellen,
+            der gleiche Ablauf wie beim ersten Mal.
+          </p>
+          <button
+            onClick={() => navigate("/start")}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold transition-all shadow-lg shadow-blue-600/20"
+          >
+            Neue Website erstellen
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full mt-2 py-3 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+          >
+            Zur Startseite
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;

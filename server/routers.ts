@@ -5608,6 +5608,37 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
       }),
 
     /**
+     * Prüft, ob es zu einem (gelöschten) previewToken einen Reactivation-Seed gibt.
+     * Wird vom OnboardingChat aufgerufen, wenn die Website nicht mehr existiert,
+     * um den User auf die Welcome-Back-Seite umzuleiten.
+     */
+    resolveSeedByPreviewToken: publicProcedure
+      .input(z.object({ previewToken: z.string() }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { reactivationSeeds } = await import("../drizzle/schema");
+        const { eq, desc } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) return { found: false as const };
+        const rows = await db
+          .select()
+          .from(reactivationSeeds)
+          .where(eq(reactivationSeeds.originalPreviewToken, input.previewToken))
+          .orderBy(desc(reactivationSeeds.createdAt))
+          .limit(1);
+        const seed = rows[0];
+        if (!seed) return { found: false as const };
+        // Abgelaufene oder bereits genutzte Seeds gelten als "nicht verfügbar"
+        const usable = !seed.usedAt && seed.expiresAt > new Date();
+        return {
+          found: true as const,
+          usable,
+          token: seed.token,
+          businessName: seed.businessName,
+        };
+      }),
+
+    /**
      * Markiert den Seed als genutzt + gibt die Daten zurück, um einen neuen Entwurf zu starten.
      * Die eigentliche Erstellung läuft dann über die vorhandenen captureEmail + (optional) GMB-Flows.
      */

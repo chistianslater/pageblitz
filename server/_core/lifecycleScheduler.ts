@@ -543,6 +543,7 @@ export async function processExpiredReservations(): Promise<{ processed: number;
           googlePlaceId: business?.placeId || null,
           originalWebsiteId: website.id,
           originalBusinessId: business?.id || null,
+          originalPreviewToken: website.previewToken || null,
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         });
 
