@@ -5631,6 +5631,71 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           googlePlaceId: seed.googlePlaceId,
         };
       }),
+
+    /**
+     * Admin: Liste aller Lifecycle-Mails (geplant + versendet) für das Dashboard.
+     */
+    adminList: adminProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(200).optional().default(100),
+        offset: z.number().min(0).optional().default(0),
+        status: z.enum(["scheduled", "sent", "cancelled", "skipped", "bounced"]).optional(),
+        type: z.enum(["reminder_2h", "reminder_24h", "reminder_final", "fresh_start_7d"]).optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { lifecycleEmails } = await import("../drizzle/schema");
+        const { and, desc, eq, sql } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) return { rows: [], total: 0 };
+
+        const conditions: any[] = [];
+        if (input.status) conditions.push(eq(lifecycleEmails.status, input.status));
+        if (input.type) conditions.push(eq(lifecycleEmails.type, input.type));
+        const where = conditions.length ? and(...conditions) : undefined;
+
+        const rows = await db
+          .select()
+          .from(lifecycleEmails)
+          .where(where)
+          .orderBy(desc(lifecycleEmails.createdAt))
+          .limit(input.limit)
+          .offset(input.offset);
+
+        const countRows = await db
+          .select({ cnt: sql<number>`COUNT(*)` })
+          .from(lifecycleEmails)
+          .where(where);
+        return { rows, total: Number(countRows[0]?.cnt ?? 0) };
+      }),
+
+    /**
+     * Admin: Aggregierte Stats über alle Lifecycle-Mails.
+     */
+    adminStats: adminProcedure.query(async () => {
+      const { getDb } = await import("./db");
+      const { lifecycleEmails } = await import("../drizzle/schema");
+      const { sql } = await import("drizzle-orm");
+      const db = await getDb();
+      if (!db) return { scheduled: 0, sent: 0, skipped: 0, cancelled: 0, bounced: 0, sentLast24h: 0 };
+      const byStatus = await db
+        .select({ status: lifecycleEmails.status, cnt: sql<number>`COUNT(*)` })
+        .from(lifecycleEmails)
+        .groupBy(lifecycleEmails.status);
+      const last24hR = await db
+        .select({ cnt: sql<number>`COUNT(*)` })
+        .from(lifecycleEmails)
+        .where(sql`status = 'sent' AND sentAt >= NOW() - INTERVAL 1 DAY`);
+      const get = (s: string) => Number(byStatus.find((r) => r.status === s)?.cnt ?? 0);
+      return {
+        scheduled: get("scheduled"),
+        sent: get("sent"),
+        skipped: get("skipped"),
+        cancelled: get("cancelled"),
+        bounced: get("bounced"),
+        sentLast24h: Number(last24hR[0]?.cnt ?? 0),
+      };
+    }),
   }),
 });
 

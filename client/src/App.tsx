@@ -37,6 +37,7 @@ const CustomerLoginPage    = lazy(() => import("./pages/CustomerLoginPage"));
 const BusinessesPage       = lazy(() => import("./pages/BusinessesPage"));
 const WelcomeBack          = lazy(() => import("./pages/WelcomeBack"));
 const ErrorsPage           = lazy(() => import("./pages/ErrorsPage"));
+const LifecyclePage        = lazy(() => import("./pages/LifecyclePage"));
 
 function PageLoader() {
   return (
@@ -75,6 +76,7 @@ function AdminSwitch() {
         <Route path="/admin/layouts" component={LayoutOverviewPage} />
         <Route path="/admin/pipeline" component={PipelinePage} />
         <Route path="/admin/errors" component={ErrorsPage} />
+        <Route path="/admin/lifecycle" component={LifecyclePage} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
