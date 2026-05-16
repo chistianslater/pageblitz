@@ -5738,7 +5738,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
       const { lifecycleEmails } = await import("../drizzle/schema");
       const { sql } = await import("drizzle-orm");
       const db = await getDb();
-      if (!db) return { scheduled: 0, sent: 0, skipped: 0, cancelled: 0, bounced: 0, sentLast24h: 0 };
+      if (!db) return { scheduled: 0, sent: 0, skipped: 0, cancelled: 0, bounced: 0, sentLast24h: 0, opened: 0, clicked: 0 };
       const byStatus = await db
         .select({ status: lifecycleEmails.status, cnt: sql<number>`COUNT(*)` })
         .from(lifecycleEmails)
@@ -5747,6 +5747,14 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
         .select({ cnt: sql<number>`COUNT(*)` })
         .from(lifecycleEmails)
         .where(sql`status = 'sent' AND sentAt >= NOW() - INTERVAL 1 DAY`);
+      // Engagement: nur über tatsächlich versendete Mails
+      const engagementR = await db
+        .select({
+          opened: sql<number>`SUM(openedAt IS NOT NULL)`,
+          clicked: sql<number>`SUM(clickedAt IS NOT NULL)`,
+        })
+        .from(lifecycleEmails)
+        .where(sql`status = 'sent'`);
       const get = (s: string) => Number(byStatus.find((r) => r.status === s)?.cnt ?? 0);
       return {
         scheduled: get("scheduled"),
@@ -5755,6 +5763,8 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
         cancelled: get("cancelled"),
         bounced: get("bounced"),
         sentLast24h: Number(last24hR[0]?.cnt ?? 0),
+        opened: Number(engagementR[0]?.opened ?? 0),
+        clicked: Number(engagementR[0]?.clicked ?? 0),
       };
     }),
   }),

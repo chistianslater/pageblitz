@@ -63,7 +63,9 @@ async function startServer() {
   // Stripe webhook MUST be registered BEFORE express.json() for signature verification
   registerStripeWebhook(app);
 
-  // Resend webhook for outreach email tracking (open/bounce events)
+  // Resend webhook für Email-Tracking (open/click/bounce). Deckt sowohl
+  // Outreach- als auch Lifecycle-Mails ab – die email_id matcht jeweils nur
+  // eine der beiden Tabellen, das andere Update trifft 0 Rows (harmlos).
   app.post("/api/webhooks/resend", express.json(), async (req, res) => {
     try {
       const { type, data } = req.body ?? {};
@@ -73,18 +75,37 @@ async function startServer() {
       }
       const db = await (await import("../db")).getDb();
       if (db) {
-        if (type === "email.opened" || type === "email.clicked") {
+        const { lifecycleEmails } = await import("../../drizzle/schema");
+        const { eq: eqOp, and: andOp, isNull } = await import("drizzle-orm");
+        const emailId = data.email_id as string;
+        const now = new Date();
+
+        if (type === "email.opened") {
           await db.update(outreachEmails)
             .set({ status: "opened" })
-            .where(eq(outreachEmails.resendEmailId, data.email_id));
-        } else if (type === "email.bounced") {
+            .where(eq(outreachEmails.resendEmailId, emailId));
+          // Lifecycle: openedAt nur setzen, wenn noch nicht gesetzt (erstes Öffnen)
+          await db.update(lifecycleEmails)
+            .set({ openedAt: now })
+            .where(andOp(eqOp(lifecycleEmails.resendEmailId, emailId), isNull(lifecycleEmails.openedAt)));
+        } else if (type === "email.clicked") {
+          await db.update(outreachEmails)
+            .set({ status: "opened" })
+            .where(eq(outreachEmails.resendEmailId, emailId));
+          // Klick impliziert Öffnung – beide Felder setzen (openedAt nur falls leer)
+          await db.update(lifecycleEmails)
+            .set({ clickedAt: now })
+            .where(eqOp(lifecycleEmails.resendEmailId, emailId));
+          await db.update(lifecycleEmails)
+            .set({ openedAt: now })
+            .where(andOp(eqOp(lifecycleEmails.resendEmailId, emailId), isNull(lifecycleEmails.openedAt)));
+        } else if (type === "email.bounced" || type === "email.complained") {
           await db.update(outreachEmails)
             .set({ status: "bounced" })
-            .where(eq(outreachEmails.resendEmailId, data.email_id));
-        } else if (type === "email.complained") {
-          await db.update(outreachEmails)
+            .where(eq(outreachEmails.resendEmailId, emailId));
+          await db.update(lifecycleEmails)
             .set({ status: "bounced" })
-            .where(eq(outreachEmails.resendEmailId, data.email_id));
+            .where(eqOp(lifecycleEmails.resendEmailId, emailId));
         }
       }
     } catch (err) {

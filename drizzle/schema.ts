@@ -273,6 +273,9 @@ export const lifecycleEmails = mysqlTable("lifecycle_emails", {
   ]).notNull(),
   scheduledFor: timestamp("scheduledFor").notNull(),
   sentAt: timestamp("sentAt"),
+  // Engagement-Tracking via Resend-Webhook
+  openedAt: timestamp("openedAt"),
+  clickedAt: timestamp("clickedAt"),
   status: mysqlEnum("status", ["scheduled", "sent", "cancelled", "skipped", "bounced"])
     .notNull()
     .default("scheduled"),

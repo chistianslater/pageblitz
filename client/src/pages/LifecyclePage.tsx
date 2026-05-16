@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, Clock, CheckCircle, SkipForward, XCircle, AlertTriangle } from "lucide-react";
+import { Mail, Clock, CheckCircle, SkipForward, XCircle, AlertTriangle, Eye, MousePointerClick } from "lucide-react";
 
 type StatusFilter = "any" | "scheduled" | "sent" | "cancelled" | "skipped" | "bounced";
 type TypeFilter = "any" | "reminder_2h" | "reminder_24h" | "reminder_final" | "fresh_start_7d";
@@ -67,52 +67,63 @@ export default function LifecyclePage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Geplant</CardTitle>
-            <Clock className="w-4 h-4 text-blue-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statsQuery.data?.scheduled ?? 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Gesendet</CardTitle>
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statsQuery.data?.sent ?? 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Letzte 24h</CardTitle>
-            <Mail className="w-4 h-4 text-violet-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statsQuery.data?.sentLast24h ?? 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Übersprungen</CardTitle>
-            <SkipForward className="w-4 h-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statsQuery.data?.skipped ?? 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Abgebrochen</CardTitle>
-            <XCircle className="w-4 h-4 text-amber-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statsQuery.data?.cancelled ?? 0}</div>
-          </CardContent>
-        </Card>
+      {(() => {
+        const s = statsQuery.data;
+        const sent = s?.sent ?? 0;
+        const opened = s?.opened ?? 0;
+        const clicked = s?.clicked ?? 0;
+        const openRate = sent > 0 ? Math.round((opened / sent) * 100) : 0;
+        const clickRate = sent > 0 ? Math.round((clicked / sent) * 100) : 0;
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Geplant</CardTitle>
+                <Clock className="w-4 h-4 text-blue-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{s?.scheduled ?? 0}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Gesendet</CardTitle>
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{sent}</div>
+                <div className="text-xs text-muted-foreground mt-1">{s?.sentLast24h ?? 0} in 24h</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Geöffnet</CardTitle>
+                <Eye className="w-4 h-4 text-violet-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{openRate}%</div>
+                <div className="text-xs text-muted-foreground mt-1">{opened} von {sent} Mails</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Geklickt</CardTitle>
+                <MousePointerClick className="w-4 h-4 text-amber-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{clickRate}%</div>
+                <div className="text-xs text-muted-foreground mt-1">{clicked} von {sent} Mails</div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
+
+      {/* Sekundär-Stats */}
+      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1.5"><SkipForward className="w-3.5 h-3.5" /> {statsQuery.data?.skipped ?? 0} übersprungen</span>
+        <span className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5" /> {statsQuery.data?.cancelled ?? 0} abgebrochen</span>
+        <span className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> {statsQuery.data?.bounced ?? 0} Bounce</span>
       </div>
 
       {/* Filter */}
@@ -173,6 +184,7 @@ export default function LifecyclePage() {
                   <TableHead>Empfänger</TableHead>
                   <TableHead className="w-40">Typ</TableHead>
                   <TableHead className="w-32">Status</TableHead>
+                  <TableHead className="w-40">Engagement</TableHead>
                   <TableHead className="w-40">Geplant für</TableHead>
                   <TableHead className="w-40">Gesendet am</TableHead>
                   <TableHead className="w-24 text-right">Website</TableHead>
@@ -193,6 +205,25 @@ export default function LifecyclePage() {
                       </Badge>
                       {row.cancelReason && (
                         <div className="text-xs text-muted-foreground mt-1">{row.cancelReason}</div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {row.status !== "sent" ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          {row.clickedAt ? (
+                            <span className="flex items-center gap-1 text-amber-400" title={fmt(row.clickedAt)}>
+                              <MousePointerClick className="w-3.5 h-3.5" /> Geklickt
+                            </span>
+                          ) : row.openedAt ? (
+                            <span className="flex items-center gap-1 text-violet-400" title={fmt(row.openedAt)}>
+                              <Eye className="w-3.5 h-3.5" /> Geöffnet
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Nicht geöffnet</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{fmt(row.scheduledFor)}</TableCell>
