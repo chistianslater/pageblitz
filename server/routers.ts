@@ -2197,6 +2197,30 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const websites = await listWebsites(input?.limit || 50, input?.offset || 0);
         const total = await countWebsites();
+
+        // Batch: alle onboarding_responses in einer Query laden → Map
+        // (für die "Onboarding-Schritt"-Spalte im Dashboard)
+        const onboardingMap = new Map<number, { step: number; status: string }>();
+        try {
+          const { getDb } = await import("./db");
+          const { onboardingResponses } = await import("../drizzle/schema");
+          const db = await getDb();
+          if (db) {
+            const rows = await db
+              .select({
+                websiteId: onboardingResponses.websiteId,
+                stepCurrent: onboardingResponses.stepCurrent,
+                status: onboardingResponses.status,
+              })
+              .from(onboardingResponses);
+            for (const r of rows) {
+              onboardingMap.set(r.websiteId, { step: r.stepCurrent ?? 0, status: r.status ?? "pending" });
+            }
+          }
+        } catch (e) {
+          console.warn("[website.list] onboarding batch load failed:", e);
+        }
+
         const enriched = [];
         for (const w of websites) {
           const biz = await getBusinessById(w.businessId);
@@ -2204,7 +2228,13 @@ export const appRouter = router({
           if (w.websiteData) {
             (w.websiteData as any).id = w.id;
           }
-          enriched.push({ ...w, business: biz });
+          const ob = onboardingMap.get(w.id);
+          enriched.push({
+            ...w,
+            business: biz,
+            onboardingStep: ob?.step ?? null,
+            onboardingResponseStatus: ob?.status ?? null,
+          });
         }
         return { websites: enriched, total };
       }),

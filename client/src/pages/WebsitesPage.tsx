@@ -49,6 +49,35 @@ const captureLabels: Record<string, string> = {
   abandoned: "Abgebrochen",
 };
 
+// Deutsche Labels der Onboarding-Schritte – Reihenfolge = STEP_ORDER in OnboardingChat.tsx
+const ONBOARDING_STEP_LABELS = [
+  "Branche", "Firmenname", "Anrede", "Logo", "Farben",
+  "Hauptbild", "Über-uns-Bild", "Schriftart", "Schriftgröße", "Slogan",
+  "Beschreibung", "Alleinstellung", "Leistungen", "Inhaber", "Straße",
+  "PLZ/Ort", "E-Mail (Impressum)", "Telefon", "Öffnungszeiten", "USt-ID",
+  "Add-ons", "KI-Chat", "Speisekarte", "Preisliste", "Galerie",
+  "Unterseiten", "E-Mail-Erfassung", "Sektionen", "Vorschau", "Checkout",
+];
+
+/** Liefert eine lesbare Beschreibung des aktuellen Onboarding-Schritts. */
+function formatOnboardingStep(w: any): { label: string; sub: string | null; tone: "idle" | "active" | "done" } {
+  const status = w.onboardingResponseStatus;
+  const step = w.onboardingStep;
+  if (status === "completed" || w.onboardingStatus === "completed") {
+    return { label: "Abgeschlossen", sub: null, tone: "done" };
+  }
+  if (!status || status === "pending") {
+    return { label: "Nicht gestartet", sub: null, tone: "idle" };
+  }
+  // in_progress
+  if (typeof step === "number" && step >= 0) {
+    const total = ONBOARDING_STEP_LABELS.length;
+    const name = ONBOARDING_STEP_LABELS[step] || `Schritt ${step + 1}`;
+    return { label: `Schritt ${step + 1} / ${total}`, sub: name, tone: "active" };
+  }
+  return { label: "Gestartet", sub: null, tone: "active" };
+}
+
 /**
  * Derive the logical funnel status from both website status and captureStatus.
  * An active/trialing/canceling website is always "converted" regardless of
@@ -603,6 +632,7 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                   <TableHead>E-Mail / Slug</TableHead>
                   <TableHead>Branche</TableHead>
                   <TableHead>Funnel-Status</TableHead>
+                  <TableHead>Onboarding-Schritt</TableHead>
                   <TableHead>Website-Status</TableHead>
                   <TableHead>Erstellt</TableHead>
                   <TableHead className="text-right">Aktionen</TableHead>
@@ -634,6 +664,21 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                           {captureLabels[eff] || eff}
                         </Badge>
                       ); })()}
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const s = formatOnboardingStep(w);
+                        const toneClass =
+                          s.tone === "done" ? "text-emerald-400"
+                          : s.tone === "active" ? "text-blue-400"
+                          : "text-muted-foreground";
+                        return (
+                          <div className="text-sm">
+                            <div className={`font-medium ${toneClass}`}>{s.label}</div>
+                            {s.sub && <div className="text-xs text-muted-foreground">{s.sub}</div>}
+                          </div>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={statusColors[w.status] || ""}>
