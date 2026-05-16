@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+:root {
+  --pb-brand: #a3e635;
+  --pb-brand-hover: #84cc16;
+  --pb-brand-dim: rgba(163, 230, 53, 0.15);
+  --pb-brand-glow: rgba(163, 230, 53, 0.35);
+  --pb-brand-text: #0a0a0a;
+}
+
 html,
 body {
   scroll-behavior: smooth;
@@ -434,7 +442,7 @@ body {
   background: linear-gradient(
     105deg,
     transparent 20%,
-    rgba(180, 195, 255, 0.38) 50%,
+    rgba(212, 255, 0, 0.30) 50%,
     transparent 80%
   );
   transform: skewX(-20deg);
@@ -477,6 +485,291 @@ body {
   55%, 100% { left: 130%; opacity: 0; }
 }
 @keyframes nav-cta-glow {
-  0%, 100% { box-shadow: 0 0 12px 0px rgba(233, 30, 140, 0.35), 0 4px 14px rgba(0,0,0,0.25); }
-  50%      { box-shadow: 0 0 22px 4px rgba(233, 30, 140, 0.55), 0 4px 18px rgba(0,0,0,0.30); }
+  0%, 100% { box-shadow: 0 0 12px 0px rgba(163, 230, 53, 0.35), 0 4px 14px rgba(0,0,0,0.25); }
+  50%      { box-shadow: 0 0 22px 4px rgba(163, 230, 53, 0.55), 0 4px 18px rgba(0,0,0,0.30); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGEBLITZ DESIGN SYSTEM (v2)
+   All generated website layouts use these tokens for consistent quality.
+   Color tokens are set dynamically via inline style on each layout's root div.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Spacing Scale ────────────────────────────────────────────────────────── */
+:root {
+  --pb-space-1:  0.25rem;
+  --pb-space-2:  0.5rem;
+  --pb-space-3:  0.75rem;
+  --pb-space-4:  1rem;
+  --pb-space-5:  1.5rem;
+  --pb-space-6:  2rem;
+  --pb-space-8:  3rem;
+  --pb-space-10: 4rem;
+  --pb-space-12: 5rem;
+  --pb-space-16: 7rem;
+  --pb-space-20: 9rem;
+
+  --pb-section-y: clamp(5rem, 8vw, 8rem);
+  --pb-section-y-tight: clamp(3.5rem, 6vw, 5rem);
+  --pb-section-y-spacious: clamp(6rem, 10vw, 10rem);
+  --pb-section-x: clamp(1rem, 3vw, 1.5rem);
+
+  --pb-content-max: 80rem;
+  --pb-content-narrow: 48rem;
+  --pb-content-wide: 90rem;
+
+  --pb-gap-sm: clamp(0.75rem, 1.5vw, 1rem);
+  --pb-gap-md: clamp(1.5rem, 3vw, 2rem);
+  --pb-gap-lg: clamp(2.5rem, 4vw, 4rem);
+  --pb-gap-xl: clamp(3.5rem, 6vw, 5rem);
+}
+
+/* ── Typography Scale ─────────────────────────────────────────────────────── */
+:root {
+  --pb-text-xs:    0.75rem;
+  --pb-text-sm:    0.875rem;
+  --pb-text-base:  1rem;
+  --pb-text-lg:    1.125rem;
+  --pb-text-xl:    1.25rem;
+  --pb-text-2xl:   1.5rem;
+  --pb-text-3xl:   1.875rem;
+  --pb-text-4xl:   2.25rem;
+
+  --pb-hero-headline:     clamp(2.5rem, 5vw, 5rem);
+  --pb-section-headline:  clamp(2rem, 4vw, 3.5rem);
+  --pb-subheadline:       clamp(1.125rem, 2vw, 1.375rem);
+  --pb-card-title:        1.25rem;
+  --pb-caption:           0.75rem;
+
+  --pb-leading-tight:    1.1;
+  --pb-leading-snug:     1.25;
+  --pb-leading-normal:   1.5;
+  --pb-leading-relaxed:  1.7;
+
+  --pb-tracking-tight:   -0.03em;
+  --pb-tracking-normal:  0;
+  --pb-tracking-wide:    0.02em;
+  --pb-tracking-wider:   0.05em;
+  --pb-tracking-caps:    0.15em;
+}
+
+/* ── Color Tokens (defaults – overridden per layout via inline style) ───── */
+:root {
+  --pb-color-primary: #3b82f6;
+  --pb-color-on-primary: #ffffff;
+  --pb-color-secondary: #f5f5f5;
+  --pb-color-accent: #6366f1;
+  --pb-color-bg: #ffffff;
+  --pb-color-surface: #fafafa;
+  --pb-color-text: #171717;
+  --pb-color-text-muted: #737373;
+  --pb-color-border: rgba(0, 0, 0, 0.1);
+}
+
+/* ── Section Layout ───────────────────────────────────────────────────────── */
+@layer components {
+  .pb-section {
+    padding-top: var(--pb-section-y);
+    padding-bottom: var(--pb-section-y);
+    padding-left: var(--pb-section-x);
+    padding-right: var(--pb-section-x);
+  }
+  .pb-section-tight {
+    padding-top: var(--pb-section-y-tight);
+    padding-bottom: var(--pb-section-y-tight);
+    padding-left: var(--pb-section-x);
+    padding-right: var(--pb-section-x);
+  }
+  .pb-section-spacious {
+    padding-top: var(--pb-section-y-spacious);
+    padding-bottom: var(--pb-section-y-spacious);
+    padding-left: var(--pb-section-x);
+    padding-right: var(--pb-section-x);
+  }
+  .pb-container {
+    max-width: var(--pb-content-max);
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+  .pb-container-narrow {
+    max-width: var(--pb-content-narrow);
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+}
+
+/* ── Typography Classes ───────────────────────────────────────────────────── */
+@layer components {
+  .pb-hero-headline {
+    font-size: var(--pb-hero-headline);
+    line-height: var(--pb-leading-tight);
+    letter-spacing: var(--pb-tracking-tight);
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .pb-section-headline {
+    font-size: var(--pb-section-headline);
+    line-height: var(--pb-leading-snug);
+  }
+  .pb-subheadline {
+    font-size: var(--pb-subheadline);
+    line-height: var(--pb-leading-relaxed);
+  }
+  .pb-body {
+    font-size: var(--pb-text-base);
+    line-height: var(--pb-leading-relaxed);
+  }
+  .pb-body-lg {
+    font-size: var(--pb-text-lg);
+    line-height: var(--pb-leading-relaxed);
+  }
+  .pb-caption {
+    font-size: var(--pb-caption);
+    line-height: var(--pb-leading-normal);
+    letter-spacing: var(--pb-tracking-caps);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .pb-card-title {
+    font-size: var(--pb-card-title);
+    line-height: var(--pb-leading-snug);
+  }
+  .pb-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: var(--pb-tracking-caps);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+}
+
+/* ── Button System ────────────────────────────────────────────────────────── */
+@layer components {
+  .pb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    padding: 0.875rem 1.75rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .pb-btn:focus-visible {
+    outline: 2px solid var(--pb-color-primary);
+    outline-offset: 2px;
+  }
+  .pb-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+  }
+
+  .pb-btn-primary {
+    background-color: var(--pb-color-primary);
+    color: var(--pb-color-on-primary);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.06),
+      0 4px 12px rgba(0,0,0,0.1);
+  }
+  .pb-btn-primary:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.08),
+      0 8px 24px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+  }
+  .pb-btn-primary:active:not(:disabled) {
+    filter: brightness(0.95);
+    transform: translateY(0);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.08),
+      0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .pb-btn-secondary {
+    background-color: transparent;
+    color: var(--pb-color-text);
+    border: 1.5px solid var(--pb-color-border);
+  }
+  .pb-btn-secondary:hover:not(:disabled) {
+    background-color: var(--pb-color-primary);
+    color: var(--pb-color-on-primary);
+    border-color: var(--pb-color-primary);
+    transform: translateY(-1px);
+  }
+  .pb-btn-secondary:active:not(:disabled) {
+    transform: translateY(0);
+    filter: brightness(0.95);
+  }
+
+  .pb-btn-ghost {
+    background-color: transparent;
+    color: var(--pb-color-text-muted);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .pb-btn-ghost:hover:not(:disabled) {
+    color: var(--pb-color-primary);
+  }
+
+  .pb-btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+  .pb-btn-lg {
+    padding: 1rem 2.25rem;
+    font-size: 0.875rem;
+  }
+
+  .pb-btn-pill { border-radius: 9999px; }
+  .pb-btn-rounded { border-radius: 0.5rem; }
+  .pb-btn-square { border-radius: 0; }
+}
+
+/* ── Card Lift Effect ─────────────────────────────────────────────────────── */
+@layer components {
+  .pb-card-lift {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pb-card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 12px 28px rgba(0,0,0,0.08),
+      0 4px 10px rgba(0,0,0,0.04);
+  }
+}
+
+/* ── Scroll Reveal Animation ──────────────────────────────────────────────── */
+@keyframes pb-reveal-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pb-reveal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.pb-reveal {
+  animation: pb-reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.pb-reveal-fade {
+  animation: pb-reveal-fade 0.5s ease both;
+}
+.pb-reveal-delay-1 { animation-delay: 0.1s; }
+.pb-reveal-delay-2 { animation-delay: 0.2s; }
+.pb-reveal-delay-3 { animation-delay: 0.3s; }
+.pb-reveal-delay-4 { animation-delay: 0.4s; }
+.pb-reveal-delay-5 { animation-delay: 0.5s; }
+
+/* Hide scrollbar for mobile swipe containers */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }

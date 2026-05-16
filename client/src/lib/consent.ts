@@ -35,6 +35,8 @@ export function saveConsent(data: Omit<ConsentData, "timestamp">): void {
   } catch {
     // ignore storage errors
   }
+  // Update Google Consent Mode v2 signals
+  updateGoogleConsent(consent);
   loadConsentedScripts(consent);
   // Fire PageView immediately when user accepts – the fbq stub queues it
   // and fbevents.js will process it once loaded from CDN
@@ -49,7 +51,10 @@ export function saveConsent(data: Omit<ConsentData, "timestamp">): void {
  */
 export function initConsent(): void {
   const consent = getStoredConsent();
-  if (consent) loadConsentedScripts(consent);
+  if (consent) {
+    updateGoogleConsent(consent);
+    loadConsentedScripts(consent);
+  }
 }
 
 /** Skripte entsprechend der Einwilligung dynamisch ins DOM injizieren. */
@@ -81,6 +86,25 @@ export function trackMetaPageView(): void {
 /** Marketing-Consent prüfen. */
 export function hasMarketingConsent(): boolean {
   return getStoredConsent()?.marketing === true;
+}
+
+// ─── Google Consent Mode v2 ──────────────────────────────────────────────────
+
+/** Consent-Signale an Google senden (Consent Mode v2, Pflicht für EWR seit 03/2024). */
+function updateGoogleConsent(consent: ConsentData): void {
+  try {
+    const gtag: any = (window as any).gtag;
+    if (typeof gtag !== "function") return;
+    const granted = (v: boolean) => (v ? "granted" : "denied");
+    gtag("consent", "update", {
+      ad_storage: granted(consent.marketing),
+      ad_user_data: granted(consent.marketing),
+      ad_personalization: granted(consent.marketing),
+      analytics_storage: granted(consent.analytics),
+    });
+  } catch {
+    // ignore – gtag might not be loaded yet
+  }
 }
 
 // ─── Injektion-Helpers ────────────────────────────────────────────────────────

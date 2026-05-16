@@ -18,10 +18,10 @@ export default function StatsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard icon={Building2} label="Unternehmen gesamt" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" bgColor="bg-blue-500/10" />
+        <MetricCard icon={Building2} label="Leads mit E-Mail" value={stats?.totalBusinesses} loading={isLoading} color="text-blue-400" bgColor="bg-blue-500/10" />
         <MetricCard icon={Globe} label="Websites generiert" value={stats?.totalWebsites} loading={isLoading} color="text-emerald-400" bgColor="bg-emerald-500/10" />
         <MetricCard icon={Mail} label="E-Mails gesendet" value={stats?.sentEmails} loading={isLoading} color="text-amber-400" bgColor="bg-amber-500/10" />
-        <MetricCard icon={ShoppingCart} label="Verkäufe" value={stats?.soldCount} loading={isLoading} color="text-purple-400" bgColor="bg-purple-500/10" />
+        <MetricCard icon={ShoppingCart} label="Verkäufe" value={stats?.paidCount ?? 0} loading={isLoading} color="text-purple-400" bgColor="bg-purple-500/10" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -48,23 +48,23 @@ export default function StatsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <ConversionMetric
-              label="Suche → Website"
+              label="Lead → Website"
               from={stats?.totalBusinesses ?? 0}
               to={stats?.totalWebsites ?? 0}
-              fromLabel="Unternehmen"
+              fromLabel="Leads"
               toLabel="Websites"
             />
             <ConversionMetric
               label="Website → Verkauf"
               from={stats?.totalWebsites ?? 0}
-              to={(stats?.soldCount ?? 0) + (stats?.activeCount ?? 0)}
+              to={stats?.paidCount ?? 0}
               fromLabel="Websites"
               toLabel="Verkäufe"
             />
             <ConversionMetric
               label="E-Mail → Verkauf"
               from={stats?.sentEmails ?? 0}
-              to={(stats?.soldCount ?? 0) + (stats?.activeCount ?? 0)}
+              to={stats?.paidCount ?? 0}
               fromLabel="E-Mails"
               toLabel="Verkäufe"
             />
