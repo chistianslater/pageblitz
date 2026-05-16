@@ -209,7 +209,14 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () => {
+const resolveApiUrl = (useBackup = false) => {
+  if (useBackup) {
+    const backupUrl = ENV.backupApiUrl?.trim();
+    if (backupUrl) {
+      const base = backupUrl.replace(/\/$/, "");
+      return base.includes("/v1") ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
+    }
+  }
   if (ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0) {
     // Handle Kimi/Moonshot API which already has /v1 in URL
     const baseUrl = ENV.forgeApiUrl.replace(/\/$/, "");
@@ -272,9 +279,7 @@ const normalizeResponseFormat = ({
   };
 };
 
-export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
-
+async function callLLM(params: InvokeParams, useBackup: boolean): Promise<InvokeResult> {
   const {
     messages,
     tools,
@@ -286,11 +291,14 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     response_format,
   } = params;
 
-  // Detect Kimi/Moonshot API
-  const isKimi = ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn");
+  // Detect Kimi/Moonshot API (primary only)
+  const isKimi = !useBackup && (ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn"));
+  // Backup model: gemini-2.0-flash (cheap, fast, reliable)
+  const model = useBackup ? "gemini-2.0-flash" : (isKimi ? "kimi-k2-turbo-preview" : "gemini-2.5-flash");
+  const apiKey = useBackup ? ENV.backupApiKey : ENV.forgeApiKey;
 
   const payload: Record<string, unknown> = {
-    model: isKimi ? "kimi-k2-turbo-preview" : "gemini-2.5-flash",
+    model,
     messages: messages.map(normalizeMessage),
   };
 
@@ -298,18 +306,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tools = tools;
   }
 
-  const normalizedToolChoice = normalizeToolChoice(
-    toolChoice || tool_choice,
-    tools
-  );
+  const normalizedToolChoice = normalizeToolChoice(toolChoice || tool_choice, tools);
   if (normalizedToolChoice) {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  // Reduzierte Token-Anzahl für schnellere Generation
   payload.max_tokens = 4096;
-  
-  // Thinking-Parameter entfernt für maximale Geschwindigkeit
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
@@ -322,11 +324,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const response = await fetch(resolveApiUrl(useBackup), {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(payload),
   });
@@ -339,4 +341,21 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   }
 
   return (await response.json()) as InvokeResult;
+}
+
+export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
+  assertApiKey();
+
+  try {
+    return await callLLM(params, false);
+  } catch (err: any) {
+    const msg = err?.message ?? "";
+    const is429 = msg.includes("429") || msg.includes("overloaded") || msg.includes("Too Many") || msg.includes("engine_overloaded");
+    // Only retry with backup if we have one configured and it was a rate-limit error
+    if (is429 && ENV.backupApiUrl && ENV.backupApiKey) {
+      console.warn("[LLM] Primary API rate-limited (429), retrying with backup model...");
+      return await callLLM(params, true);
+    }
+    throw err;
+  }
 }

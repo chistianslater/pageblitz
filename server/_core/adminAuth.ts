@@ -9,10 +9,10 @@ const ADMIN_OPEN_ID = "local-admin";
 
 export function registerAdminAuthRoutes(app: Express) {
   app.post("/api/auth/login", async (req: Request, res: Response) => {
-    const { password } = req.body ?? {};
+    const { email, password } = req.body ?? {};
 
     console.log("[AdminAuth] Login attempt, ADMIN_PASSWORD configured:", !!ENV.adminPassword);
-    console.log("[AdminAuth] Password provided:", !!password, "Length:", password?.length);
+    console.log("[AdminAuth] Email provided:", !!email, "Password provided:", !!password);
 
     if (!ENV.adminPassword) {
       console.log("[AdminAuth] Rejected: ADMIN_PASSWORD not configured");
@@ -20,9 +20,16 @@ export function registerAdminAuthRoutes(app: Express) {
       return;
     }
 
+    // If ADMIN_EMAIL is configured, require it to match
+    if (ENV.adminEmail && (!email || email.toLowerCase().trim() !== ENV.adminEmail.toLowerCase().trim())) {
+      console.log("[AdminAuth] Rejected: Wrong email");
+      res.status(401).json({ error: "E-Mail oder Passwort falsch." });
+      return;
+    }
+
     if (!password || password !== ENV.adminPassword) {
       console.log("[AdminAuth] Rejected: Wrong password");
-      res.status(401).json({ error: "Falsches Passwort." });
+      res.status(401).json({ error: "E-Mail oder Passwort falsch." });
       return;
     }
 
@@ -32,7 +39,7 @@ export function registerAdminAuthRoutes(app: Express) {
       await db.upsertUser({
         openId: ADMIN_OPEN_ID,
         name: "Admin",
-        email: null,
+        email: ENV.adminEmail || null,
         loginMethod: "password",
         role: "admin",
         lastSignedIn: new Date(),

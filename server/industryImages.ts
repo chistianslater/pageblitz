@@ -118,31 +118,42 @@ export function getContrastColor(hexColor: string): string {
 /**
  * Returns the layout pool and industry key for a given category/businessName.
  * The pool is a list of layout styles to choose from for this industry.
- * 
+ *
  * Uses intelligent matching: prioritizes longer, more specific keywords
  * to avoid false matches (e.g., "bauunternehmen" matched as "bau" → medical).
  */
 export function getLayoutPool(category: string, businessName: string = "", explicitIndustryKey?: string): { pool: string[]; industryKey: string } {
+  // Expanded pools: 6–8 layouts per industry including all premium layouts
+  // (aurora, nexus, clay, forge, pulse, flux) so the round-robin covers the full range
   const KEY_TO_POOL: Record<string, string[]> = {
-    friseur: ["elegant", "fresh", "luxury"],
-    restaurant: ["warm", "fresh", "modern"],
-    pizza: ["warm", "fresh", "modern"],
-    bar: ["luxury", "warm", "elegant"],
-    cafe: ["warm", "fresh", "modern"],
-    hotel: ["luxury", "warm", "elegant"],
-    bauunternehmen: ["bold", "trust", "modern"],
-    handwerk: ["bold", "trust", "modern"],
-    fitness: ["vibrant", "dynamic", "fresh"],
-    beauty: ["elegant", "fresh", "luxury"],
-    medizin: ["trust", "clean", "fresh"],
-    immobilien: ["trust", "luxury", "modern"],
-    baeckerei: ["warm", "fresh", "modern"],
-    beratung: ["trust", "clean", "modern"],
-    reinigung: ["bold", "trust", "clean"],
-    auto: ["bold", "craft", "clean"],
-    fotografie: ["modern", "dynamic", "vibrant"],
-    garten: ["fresh", "warm", "clean"],
-    tech: ["modern", "dynamic", "vibrant"],
+    friseur:       ["elegant", "fresh", "luxury", "clay", "aurora", "pulse"],
+    restaurant:    ["warm", "fresh", "modern", "clay", "forge", "natural"],
+    pizza:         ["warm", "fresh", "modern", "bold", "nexus", "dynamic"],
+    bar:           ["luxury", "warm", "elegant", "aurora", "flux", "forge"],
+    cafe:          ["warm", "fresh", "modern", "clay", "forge", "natural"],
+    hotel:         ["luxury", "warm", "elegant", "aurora", "flux", "forge"],
+    bauunternehmen:["bold", "trust", "modern", "nexus", "forge", "flux"],
+    handwerk:      ["bold", "trust", "modern", "nexus", "craft", "forge"],
+    fitness:       ["dynamic", "aurora", "nexus", "pulse", "vibrant", "fresh"],
+    beauty:        ["elegant", "fresh", "luxury", "clay", "aurora", "pulse"],
+    medizin:       ["trust", "clean", "fresh", "pulse", "clay", "nexus"],
+    immobilien:    ["trust", "luxury", "modern", "nexus", "forge", "elegant"],
+    baeckerei:     ["warm", "fresh", "modern", "clay", "natural", "forge"],
+    beratung:      ["trust", "clean", "modern", "nexus", "pulse", "forge"],
+    reinigung:     ["bold", "trust", "clean", "nexus", "pulse", "modern"],
+    auto:          ["bold", "craft", "clean", "forge", "nexus", "flux"],
+    fotografie:    ["modern", "dynamic", "aurora", "flux", "elegant", "nexus"],
+    garten:        ["fresh", "warm", "clean", "clay", "natural", "forge"],
+    tech:          ["modern", "dynamic", "aurora", "nexus", "pulse", "vibrant"],
+    education:     ["trust", "fresh", "modern", "pulse", "clay", "clean"],
+    hospitality:   ["luxury", "warm", "elegant", "aurora", "flux", "forge"],
+    fastfood:      ["bold", "fresh", "modern", "warm", "nexus", "dynamic"],
+    nature:        ["fresh", "warm", "clean", "clay", "natural", "forge"],
+    legal:         ["trust", "clean", "modern", "nexus", "pulse", "forge"],
+    cleaning:      ["bold", "trust", "clean", "nexus", "pulse", "modern"],
+    automotive:    ["bold", "craft", "clean", "forge", "nexus", "flux"],
+    medical:       ["trust", "clean", "fresh", "pulse", "clay", "nexus"],
+    food:          ["warm", "fresh", "modern", "clay", "forge", "natural"],
   };
   
   if (explicitIndustryKey && KEY_TO_POOL[explicitIndustryKey]) {
@@ -155,40 +166,92 @@ export function getLayoutPool(category: string, businessName: string = "", expli
   // Damit "bauunternehmen" vor "bau" geprüft wird
   const POOLS_PRIORITY = [
     // 1. Spezifischste Begriffe (längere Wörter, compound words)
-    { test: (s: string) => /bauunternehmen|baufirma|hochbau|tiefbau|rohbau|construction company|building company/.test(s), pool: ["bold", "trust", "modern"], key: "bauunternehmen" },
-    { test: (s: string) => /unternehmensberatung|business consulting|management consulting/.test(s), pool: ["trust", "clean", "modern"], key: "beratung" },
-    { test: (s: string) => /steuerberatung|tax consulting|tax advisory/.test(s), pool: ["trust", "clean", "modern"], key: "beratung" },
-    { test: (s: string) => /rechtsanwalt|anwaltskanzlei|law firm|attorney at law/.test(s), pool: ["trust", "clean", "modern"], key: "legal" },
-    { test: (s: string) => /zahnarztpraxis|dental clinic|dental practice/.test(s), pool: ["trust", "clean", "fresh"], key: "medical" },
-    { test: (s: string) => /arztpraxis|medical practice|doctor.?s office/.test(s), pool: ["trust", "clean", "fresh"], key: "medical" },
-    { test: (s: string) => /kfz-werkstatt|autowerkstatt|car repair shop|auto repair/.test(s), pool: ["bold", "craft", "clean"], key: "automotive" },
-    { test: (s: string) => /friseursalon|hair salon|beauty salon|nail salon/.test(s), pool: ["elegant", "fresh", "luxury"], key: "beauty" },
-    { test: (s: string) => /fitnessstudio|fitness center|gym center|training center/.test(s), pool: ["vibrant", "dynamic", "fresh"], key: "fitness" },
-    { test: (s: string) => /immobilienmakler|real estate agent|property agent/.test(s), pool: ["trust", "luxury", "modern"], key: "immobilien" },
-    
+    { test: (s: string) => /bauunternehmen|baufirma|hochbau|tiefbau|rohbau|construction company|building company/.test(s), pool: ["bold", "trust", "modern", "nexus", "forge", "flux"], key: "bauunternehmen" },
+    { test: (s: string) => /unternehmensberatung|business consulting|management consulting/.test(s), pool: ["trust", "clean", "modern", "nexus", "pulse", "forge"], key: "beratung" },
+    { test: (s: string) => /steuerberatung|tax consulting|tax advisory/.test(s), pool: ["trust", "clean", "modern", "nexus", "pulse", "forge"], key: "beratung" },
+    { test: (s: string) => /rechtsanwalt|anwaltskanzlei|law firm|attorney at law/.test(s), pool: ["trust", "clean", "modern", "nexus", "pulse", "forge"], key: "legal" },
+    { test: (s: string) => /zahnarztpraxis|dental clinic|dental practice/.test(s), pool: ["trust", "clean", "fresh", "pulse", "clay", "nexus"], key: "medical" },
+    { test: (s: string) => /arztpraxis|medical practice|doctor.?s office/.test(s), pool: ["trust", "clean", "fresh", "pulse", "clay", "nexus"], key: "medical" },
+    { test: (s: string) => /kfz-werkstatt|autowerkstatt|car repair shop|auto repair/.test(s), pool: ["bold", "craft", "clean", "forge", "nexus", "flux"], key: "automotive" },
+    { test: (s: string) => /friseursalon|hair salon|beauty salon|nail salon/.test(s), pool: ["elegant", "fresh", "luxury", "clay", "aurora", "pulse"], key: "beauty" },
+    { test: (s: string) => /fitnessstudio|fitness center|gym center|training center/.test(s), pool: ["dynamic", "aurora", "nexus", "pulse", "vibrant", "fresh"], key: "fitness" },
+    { test: (s: string) => /immobilienmakler|real estate agent|property agent/.test(s), pool: ["trust", "luxury", "modern", "nexus", "forge", "elegant"], key: "immobilien" },
+
     // 2. Normale Branchen-Keywords (mittlere Spezifität)
-    { test: (s: string) => /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading|esthetician|eyebrow|eyelash|skincare|skin care|facial|pedicure|manicure|hairdresser|hairstylist/.test(s), pool: ["elegant", "fresh", "luxury"], key: "beauty" },
-    { test: (s: string) => /pizzeria|pizza|burger|delivery|lieferservice|fast.?food|takeout|takeaway|diner|imbiss|snack/.test(s), pool: ["bold", "fresh", "modern"], key: "fastfood" },
-    { test: (s: string) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|sushi|gastronomie|bakery|patisserie|confectionery|coffee.?shop|coffee house|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|brunch|breakfast|lunch|dinner|mahlzeit/.test(s), pool: ["warm", "fresh", "modern"], key: "food" },
-    { test: (s: string) => /dachdecker|klempner|sanitär|heizung|elektriker|maler|zimmermann|schreiner|tischler|fliesenleger|contractor|roofing|plumber|plumbing|carpenter|carpentry|painter|painting|renovation|installation|tischler|electrician|electrical|hvac|heating|cooling|air.?condition|masonry|concrete|drywall|flooring|tile|insulation|waterproof|window|door|fence|deck|patio|siding|gutter|handyman|remodel/.test(s), pool: ["bold", "trust", "modern"], key: "handwerk" },
+    { test: (s: string) => /friseur|salon|beauty|hair|barber|coiffeur|nail|spa|massage|kosmetik|wellness|ästhetik|lash|brow|make.?up|tanning|waxing|threading|esthetician|eyebrow|eyelash|skincare|skin care|facial|pedicure|manicure|hairdresser|hairstylist/.test(s), pool: ["elegant", "fresh", "luxury", "clay", "aurora", "pulse"], key: "beauty" },
+    { test: (s: string) => /pizzeria|pizza|burger|delivery|lieferservice|fast.?food|takeout|takeaway|diner|imbiss|snack/.test(s), pool: ["bold", "fresh", "modern", "warm", "nexus", "dynamic"], key: "fastfood" },
+    { test: (s: string) => /restaurant|café|cafe|bistro|bäckerei|konditorei|catering|essen|küche|food|sushi|gastronomie|bakery|patisserie|confectionery|coffee.?shop|coffee house|steakhouse|seafood|italian|chinese|japanese|thai|mexican|indian|greek|french|american|brunch|breakfast|lunch|dinner|mahlzeit/.test(s), pool: ["warm", "fresh", "modern", "clay", "forge", "natural"], key: "food" },
+    { test: (s: string) => /dachdecker|klempner|sanitär|heizung|elektriker|maler|zimmermann|schreiner|tischler|fliesenleger|contractor|roofing|plumber|plumbing|carpenter|carpentry|painter|painting|renovation|installation|tischler|electrician|electrical|hvac|heating|cooling|air.?condition|masonry|concrete|drywall|flooring|tile|insulation|waterproof|window|door|fence|deck|patio|siding|gutter|handyman|remodel/.test(s), pool: ["bold", "trust", "modern", "nexus", "craft", "forge"], key: "handwerk" },
     // "bau" separat UND NACH spezifischeren Begriffen prüfen!
-    { test: (s: string) => /handwerk|bau$|\sbau\s|bauunternehmen|baufirma|bauwerk|baustelle/.test(s), pool: ["bold", "trust", "modern"], key: "handwerk" },
-    { test: (s: string) => /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire|auto.?repair|auto.?body|auto.?service|car.?wash|car.?dealer|dealership|transmission|oil.?change|brake|exhaust|collision|towing|used.?car|new.?car/.test(s), pool: ["bold", "craft", "clean"], key: "automotive" },
-    { test: (s: string) => /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance|athletic|athletics|swimming|pool|tennis|golf|cycling|running|triathlon|weightlifting|zumba|barre|bootcamp|spin|hiit|stretch|flexibility|wellness.?center/.test(s), pool: ["vibrant", "dynamic", "fresh"], key: "fitness" },
-    { test: (s: string) => /zahnarzt|arzt|medizin|doctor|dental|dentist|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker|physician|surgeon|orthopedic|pediatric|gynecolog|dermatolog|ophthalmolog|optometrist|optician|audiolog|cardiolog|neurolog|psychiatr|psycholog|therapist|counselor|mental.?health|urgent.?care|emergency|laboratory|lab|radiology|physical.?therapy|occupational|speech|dietitian|nutritionist|acupuncture|naturopath/.test(s), pool: ["trust", "clean", "fresh"], key: "medical" },
-    { test: (s: string) => /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|accounting|tax|finanz|wirtschaft|notariat|immobilien|makler|real.?estate|attorney|lawyer|notary|financial|finance|insurance|investment|mortgage|bank|credit|audit|bookkeeping|cpa|advisor|wealth|asset|property.?management|business.?consulting/.test(s), pool: ["trust", "clean", "modern"], key: "legal" },
-    { test: (s: string) => /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable|landscaping|landscape|lawn|mowing|tree|arborist|nursery|greenhouse|horticulture|irrigation|outdoor|yard|groundskeeping/.test(s), pool: ["fresh", "warm", "clean"], key: "nature" },
-    { test: (s: string) => /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving|janitorial|maid|housekeeping|carpet.?clean|window.?clean|pressure.?wash|power.?wash|disinfect|sanitiz|exterminator|termite|rodent|storage|self.?storage/.test(s), pool: ["bold", "trust", "clean"], key: "cleaning" },
-    { test: (s: string) => /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup|photographer|photography|videograph|video.?production|graphic|print|signage|advertising|pr.?agency|social.?media|seo|branding|copywriting|content/.test(s), pool: ["modern", "dynamic", "vibrant"], key: "tech" },
-    { test: (s: string) => /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung|driving.?school|music.?school|art.?school|language|childcare|daycare|preschool|kindergarten|montessori|after.?school|college|university/.test(s), pool: ["trust", "fresh", "modern"], key: "education" },
-    { test: (s: string) => /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour|resort|motel|bed.?and.?breakfast|b&b|vacation|rental|venue|banquet|conference|catering.?event|entertainment|nightclub|bar|lounge|brewery|winery|distillery/.test(s), pool: ["luxury", "warm", "elegant"], key: "hospitality" },
+    { test: (s: string) => /handwerk|bau$|\sbau\s|bauunternehmen|baufirma|bauwerk|baustelle/.test(s), pool: ["bold", "trust", "modern", "nexus", "craft", "forge"], key: "handwerk" },
+    { test: (s: string) => /auto|kfz|car|garage|mechanic|werkstatt|karosserie|tuning|fahrzeug|vehicle|motorrad|motorcycle|reifenservice|tire|auto.?repair|auto.?body|auto.?service|car.?wash|car.?dealer|dealership|transmission|oil.?change|brake|exhaust|collision|towing|used.?car|new.?car/.test(s), pool: ["bold", "craft", "clean", "forge", "nexus", "flux"], key: "automotive" },
+    { test: (s: string) => /fitness|sport|gym|yoga|training|crossfit|pilates|kampfsport|tanzen|personal.?trainer|physiotherap|bewegung|martial|boxing|kickbox|dance|athletic|athletics|swimming|pool|tennis|golf|cycling|running|triathlon|weightlifting|zumba|barre|bootcamp|spin|hiit|stretch|flexibility|wellness.?center/.test(s), pool: ["dynamic", "aurora", "nexus", "pulse", "vibrant", "fresh"], key: "fitness" },
+    { test: (s: string) => /zahnarzt|arzt|medizin|doctor|dental|dentist|medical|health|clinic|pharmacy|apotheke|praxis|klinik|hospital|chiropractor|osteopath|heilpraktiker|physician|surgeon|orthopedic|pediatric|gynecolog|dermatolog|ophthalmolog|optometrist|optician|audiolog|cardiolog|neurolog|psychiatr|psycholog|therapist|counselor|mental.?health|urgent.?care|emergency|laboratory|lab|radiology|physical.?therapy|occupational|speech|dietitian|nutritionist|acupuncture|naturopath/.test(s), pool: ["trust", "clean", "fresh", "pulse", "clay", "nexus"], key: "medical" },
+    { test: (s: string) => /rechtsanwalt|anwalt|steuer|versicherung|beratung|law|legal|consulting|accountant|accounting|tax|finanz|wirtschaft|notariat|immobilien|makler|real.?estate|attorney|lawyer|notary|financial|finance|insurance|investment|mortgage|bank|credit|audit|bookkeeping|cpa|advisor|wealth|asset|property.?management|business.?consulting/.test(s), pool: ["trust", "clean", "modern", "nexus", "pulse", "forge"], key: "legal" },
+    { test: (s: string) => /bio|organic|öko|eco|natur|garden|garten|florist|blumen|flower|pflanze|plant|naturopath|kräuter|herb|nachhaltig|sustainable|landscaping|landscape|lawn|mowing|tree|arborist|nursery|greenhouse|horticulture|irrigation|outdoor|yard|groundskeeping/.test(s), pool: ["fresh", "warm", "clean", "clay", "natural", "forge"], key: "nature" },
+    { test: (s: string) => /schädling|pest|control|reinigung|cleaning|facility|gebäude|hausmeister|security|bewachung|entsorgung|waste|umzug|moving|janitorial|maid|housekeeping|carpet.?clean|window.?clean|pressure.?wash|power.?wash|disinfect|sanitiz|exterminator|termite|rodent|storage|self.?storage/.test(s), pool: ["bold", "trust", "clean", "nexus", "pulse", "modern"], key: "cleaning" },
+    { test: (s: string) => /tech|software|digital|agency|agentur|web|app|it|computer|marketing|design|media|kreativ|creative|startup|photographer|photography|videograph|video.?production|graphic|print|signage|advertising|pr.?agency|social.?media|seo|branding|copywriting|content/.test(s), pool: ["modern", "dynamic", "aurora", "nexus", "pulse", "vibrant"], key: "tech" },
+    { test: (s: string) => /schule|school|bildung|education|coaching|coach|nachhilfe|tutor|kurs|course|akademie|academy|seminar|workshop|weiterbildung|driving.?school|music.?school|art.?school|language|childcare|daycare|preschool|kindergarten|montessori|after.?school|college|university/.test(s), pool: ["trust", "fresh", "modern", "pulse", "clay", "clean"], key: "education" },
+    { test: (s: string) => /hotel|pension|hostel|airbnb|tourism|tourismus|event|veranstaltung|hochzeit|wedding|party|reise|travel|tour|resort|motel|bed.?and.?breakfast|b&b|vacation|rental|venue|banquet|conference|catering.?event|entertainment|nightclub|bar|lounge|brewery|winery|distillery/.test(s), pool: ["luxury", "warm", "elegant", "aurora", "flux", "forge"], key: "hospitality" },
   ];
   
   for (const entry of POOLS_PRIORITY) {
     if (entry.test(combined)) return { pool: entry.pool, industryKey: entry.key };
   }
   
-  return { pool: ["clean", "modern", "trust", "fresh"], industryKey: "general" };
+  return { pool: ["clean", "modern", "trust", "fresh", "nexus", "pulse", "clay", "aurora"], industryKey: "general" };
+}
+
+/**
+ * Three design families used for A/B variant selection.
+ * Each industry has a ranked order within each family.
+ * `round` cycles through the family to show fresh options on "Andere zeigen".
+ */
+const VARIANT_FAMILY_RANKINGS: Record<string, [string[], string[], string[]]> = {
+  // [bold_dark_family, elegant_refined_family, clean_warm_family]
+  friseur:       [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
+  beauty:        [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
+  restaurant:    [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+  food:          [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+  baeckerei:     [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+  fitness:       [["dynamic","aurora","nexus","bold","flux"], ["craft","forge","natural","elegant","luxury"],  ["pulse","fresh","clean","clay","modern","warm"]],
+  bauunternehmen:[["bold","nexus","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  handwerk:      [["bold","nexus","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  medizin:       [["nexus","aurora","bold","flux","dynamic"], ["forge","natural","elegant","luxury","craft"],  ["pulse","clean","clay","modern","fresh","warm"]],
+  medical:       [["nexus","aurora","bold","flux","dynamic"], ["forge","natural","elegant","luxury","craft"],  ["pulse","clean","clay","modern","fresh","warm"]],
+  beratung:      [["nexus","aurora","bold","flux","dynamic"], ["forge","elegant","luxury","natural","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
+  legal:         [["nexus","aurora","bold","flux","dynamic"], ["forge","elegant","luxury","natural","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
+  tech:          [["aurora","nexus","dynamic","bold","flux"], ["forge","elegant","natural","luxury","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
+  immobilien:    [["nexus","aurora","bold","flux","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  auto:          [["nexus","flux","bold","aurora","dynamic"], ["forge","luxury","craft","elegant","natural"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  automotive:    [["nexus","flux","bold","aurora","dynamic"], ["forge","luxury","craft","elegant","natural"],  ["clean","modern","pulse","clay","fresh","warm"]],
+  fotografie:    [["aurora","flux","nexus","bold","dynamic"], ["elegant","forge","luxury","natural","craft"],  ["clay","modern","pulse","clean","fresh","warm"]],
+  hospitality:   [["aurora","flux","nexus","bold","dynamic"], ["luxury","elegant","forge","natural","craft"],  ["warm","fresh","clay","clean","modern","pulse"]],
+  bar:           [["flux","aurora","bold","nexus","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["warm","clay","fresh","clean","modern","pulse"]],
+  hotel:         [["flux","aurora","bold","nexus","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["warm","clay","fresh","clean","modern","pulse"]],
+  garten:        [["aurora","nexus","bold","flux","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["warm","fresh","clay","clean","modern","pulse"]],
+  nature:        [["aurora","nexus","bold","flux","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["warm","fresh","clay","clean","modern","pulse"]],
+  cleaning:      [["nexus","bold","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","pulse","modern","clay","fresh","warm"]],
+  education:     [["nexus","aurora","bold","flux","dynamic"], ["natural","forge","elegant","luxury","craft"],  ["clean","pulse","modern","clay","fresh","warm"]],
+  fastfood:      [["bold","nexus","aurora","flux","dynamic"], ["craft","forge","natural","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
+};
+
+const DEFAULT_VARIANT_RANKINGS: [string[], string[], string[]] = [
+  ["nexus","aurora","bold","flux","dynamic"],
+  ["forge","elegant","luxury","natural","craft"],
+  ["clay","pulse","fresh","clean","modern","warm"],
+];
+
+/**
+ * Returns 3 layout style picks — one from each design family (bold/dark,
+ * elegant/refined, clean/warm) — for use in the A/B template picker.
+ *
+ * `round` shifts the pick within each family so "Andere zeigen" always
+ * shows a fresh set of 3.
+ */
+export function getLayoutVariants(industryKey: string, round: number): string[] {
+  const families = VARIANT_FAMILY_RANKINGS[industryKey] || DEFAULT_VARIANT_RANKINGS;
+  return families.map((family) => family[round % family.length]);
 }
 
 /**

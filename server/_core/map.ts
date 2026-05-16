@@ -189,6 +189,7 @@ export type PlacesSearchResult = {
     types: string[];
   }>;
   status: string;
+  next_page_token?: string;
 };
 
 export type PlaceDetailsResult = {

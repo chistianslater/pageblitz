@@ -84,6 +84,8 @@ export interface WebsiteData {
   googleReviewCount?: number | null;
   // Per-website design tokens for visual individuality
   designTokens?: DesignTokens;
+  // Branding: show "Erstellt mit Pageblitz" in footer (default: true)
+  showBranding?: boolean;
 }
 
 export interface ColorScheme {

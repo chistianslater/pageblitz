@@ -11,31 +11,19 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
-  ChevronRight,
   ArrowLeft,
   Loader2,
   Shield,
-  Bell,
   Globe,
   Zap,
   Package,
-  X,
   ExternalLink,
   Trash2,
+  Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import type { Addon } from "@shared/types";
-
-const AVAILABLE_ADDONS: Addon[] = [
-  { id: "contact-form", name: "Kontaktformular", description: "Professionelles Kontaktformular mit E-Mail-Benachrichtigung", price: 49, icon: "MessageSquare", enabled: false },
-  { id: "ai-chat", name: "KI-Chat", description: "Intelligenter Chatbot für automatische Kundenanfragen", price: 99, icon: "Bot", enabled: false },
-  { id: "booking", name: "Terminbuchung", description: "Online-Terminbuchungssystem für Ihre Kunden", price: 79, icon: "Calendar", enabled: false },
-  { id: "custom-domain", name: "Eigene Domain", description: "Verbinden Sie Ihre eigene Domain", price: 29, icon: "Globe", enabled: false },
-  { id: "gallery", name: "Bildergalerie", description: "Erweiterte Bildergalerie mit bis zu 12 Bildern", price: 39, icon: "Image", enabled: false },
-  { id: "pricelist", name: "Preisliste", description: "Detaillierte Preislisten mit Kategorien", price: 39, icon: "List", enabled: false },
-];
 
 // ── Components ───────────────────────────────────────────
 
@@ -64,9 +52,10 @@ function Section({ title, icon, children }: SectionProps) {
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
     active: { label: "Aktiv", cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
-    canceled: { label: "Gekündigt", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
-    past_due: { label: "Zahlung ausstehend", cls: "bg-red-500/20 text-red-300 border-red-500/40" },
     trialing: { label: "Testphase", cls: "bg-blue-500/20 text-blue-300 border-blue-500/40" },
+    canceling: { label: "Gekündigt", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
+    canceled: { label: "Abgelaufen", cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" },
+    past_due: { label: "Zahlung ausstehend", cls: "bg-red-500/20 text-red-300 border-red-500/40" },
     incomplete: { label: "Unvollständig", cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" },
   };
   const { label, cls } = map[status] || { label: status, cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" };
@@ -117,6 +106,15 @@ export default function AccountPage() {
     },
     onError: (error) => {
       setPasswordError(error.message || "Fehler beim Ändern des Passworts");
+    },
+  });
+
+  const billingPortalMutation = trpc.customer.createBillingPortalSession.useMutation({
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+    onError: (error) => {
+      toast.error(error.message || "Fehler beim Öffnen des Kundenportals");
     },
   });
 
@@ -184,7 +182,25 @@ export default function AccountPage() {
   // Get subscription info from first website (if any)
   const subscription = myWebsites?.[0]?.subscription;
   const website = myWebsites?.[0]?.website;
-  const hasActiveSubscription = subscription?.status === "active";
+  const hasActiveSubscription = subscription?.status === "active" || subscription?.status === "trialing" || subscription?.status === "canceling";
+  const isCanceling = subscription?.status === "canceling";
+
+  // Compute active paid add-ons from subscription.addOns (supports both storage formats)
+  const subAddOns = (subscription?.addOns ?? {}) as Record<string, any>;
+  const ADDON_INFO: Record<string, { label: string; priceCents: number }> = {
+    contactForm: { label: "Kontaktformular", priceCents: 390 },
+    gallery:     { label: "Bildergalerie",   priceCents: 390 },
+    menu:        { label: "Speisekarte",     priceCents: 390 },
+    pricelist:   { label: "Preisliste",      priceCents: 390 },
+    aiChat:      { label: "KI-Chat",         priceCents: 990 },
+    booking:     { label: "Terminbuchung",   priceCents: 490 },
+  };
+  const activeAddOns = (Object.keys(ADDON_INFO) as Array<keyof typeof ADDON_INFO>).filter(
+    (k) => subAddOns[k] === true || subAddOns.features?.[k] === true
+  );
+  const BASE_PRICE_CENTS = 1990; // Monatsabo-Basis (Brutto inkl. MwSt.)
+  const totalCents = BASE_PRICE_CENTS + activeAddOns.reduce((sum, k) => sum + ADDON_INFO[k].priceCents, 0);
+  const totalStr = (totalCents / 100).toFixed(2).replace(".", ",");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -214,12 +230,12 @@ export default function AccountPage() {
             {/* User Card */}
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-6">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-16 h-16 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
                   {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <div>
-                  <h2 className="text-white font-semibold">{user.name || "Unbenannt"}</h2>
-                  <p className="text-slate-400 text-sm">{user.email}</p>
+                <div className="min-w-0">
+                  <h2 className="text-white font-semibold truncate">{user.name || "Unbenannt"}</h2>
+                  <p className="text-slate-400 text-sm truncate">{user.email}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -230,6 +246,14 @@ export default function AccountPage() {
 
             {/* Navigation */}
             <nav className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => navigate("/my-website")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-300 hover:bg-slate-700/50 transition-colors"
+              >
+                <Monitor className="w-5 h-5" />
+                <span className="font-medium">Meine Website</span>
+              </button>
+              <div className="border-t border-slate-700/50" />
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
@@ -248,7 +272,7 @@ export default function AccountPage() {
                 <CreditCard className="w-5 h-5" />
                 <span className="font-medium">Abonnement</span>
                 {hasActiveSubscription && (
-                  <span className="ml-auto w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className={`ml-auto w-2 h-2 rounded-full ${isCanceling ? "bg-amber-400" : "bg-emerald-500"}`} />
                 )}
               </button>
               <button
@@ -391,7 +415,7 @@ export default function AccountPage() {
                     <div className="text-center py-8">
                       <p className="text-slate-400 mb-4">Du hast noch keine aktive Website.</p>
                       <Button onClick={() => navigate("/start")} className="bg-blue-600 hover:bg-blue-500">
-                        Website erstellen
+                        Website gratis erstellen
                       </Button>
                     </div>
                   ) : (
@@ -400,14 +424,42 @@ export default function AccountPage() {
                       <div className="bg-gradient-to-br from-blue-600/20 to-violet-600/20 border border-blue-500/30 rounded-xl p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="text-white font-semibold text-lg">Basis-Paket</h3>
-                            <p className="text-slate-400 text-sm">19,90 € / Monat</p>
+                            <h3 className="text-white font-semibold text-lg">
+                              Pageblitz{activeAddOns.length > 0 ? ` + ${activeAddOns.length} Add-on${activeAddOns.length > 1 ? "s" : ""}` : ""}
+                            </h3>
+                            <p className="text-slate-400 text-sm">Alle Preise inkl. MwSt.</p>
                           </div>
                           <StatusBadge status={subscription?.status || "incomplete"} />
                         </div>
 
+                        {/* Itemized breakdown */}
+                        <div className="space-y-2 mb-4">
+                          {/* Base plan */}
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-slate-300">Basis-Paket (Jahresabo)</span>
+                            <span className="text-white font-semibold">19,90 €/Mo</span>
+                          </div>
+                          {/* Active add-ons */}
+                          {activeAddOns.map((key) => (
+                            <div key={key} className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-300">{ADDON_INFO[key].label}</span>
+                                <span className="text-xs text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full">Aktiv</span>
+                              </div>
+                              <span className="text-emerald-400 font-semibold">+{(ADDON_INFO[key].priceCents / 100).toFixed(2).replace(".", ",")} €/Mo</span>
+                            </div>
+                          ))}
+                          {/* Total – only if add-ons active */}
+                          {activeAddOns.length > 0 && (
+                            <div className="flex items-center justify-between text-sm border-t border-slate-700/60 pt-2 mt-2">
+                              <span className="text-white font-bold">Gesamt</span>
+                              <span className="text-white font-bold">{totalStr} €/Mo</span>
+                            </div>
+                          )}
+                        </div>
+
                         {hasActiveSubscription && (
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-2 text-sm border-t border-slate-700/40 pt-3 mt-1">
                             <div className="flex items-center gap-2 text-emerald-400">
                               <CheckCircle className="w-4 h-4" />
                               <span>Website aktiv: {website?.slug}.pageblitz.de</span>
@@ -415,12 +467,28 @@ export default function AccountPage() {
                             <div className="flex items-center gap-2 text-slate-400">
                               <Calendar className="w-4 h-4" />
                               <span>
-                                Nächste Zahlung:{" "}
+                                {isCanceling ? "Läuft ab am: " : "Nächste Zahlung: "}
                                 {subscription?.currentPeriodEnd
                                   ? new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString("de-DE")
                                   : "Unbekannt"}
                               </span>
                             </div>
+                          </div>
+                        )}
+
+                        {/* Canceling info banner */}
+                        {isCanceling && (
+                          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                            <p className="text-sm text-amber-300">
+                              Dein Abo wurde gekündigt. Deine Website bleibt bis zum{" "}
+                              <strong>
+                                {subscription?.currentPeriodEnd
+                                  ? new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString("de-DE")
+                                  : "Periodenende"}
+                              </strong>{" "}
+                              online und wird danach automatisch deaktiviert.
+                            </p>
                           </div>
                         )}
                       </div>
@@ -436,20 +504,25 @@ export default function AccountPage() {
                           Website öffnen
                         </Button>
                         <Button
-                          onClick={() => navigate(`/websites/${website?.id}/onboarding`)}
+                          onClick={() => navigate("/my-website")}
                           variant="outline"
                           className="border-slate-600 text-slate-300 hover:bg-slate-700"
                         >
                           <Zap className="w-4 h-4 mr-2" />
                           Bearbeiten
                         </Button>
-                        {hasActiveSubscription && (
+                        {hasActiveSubscription && !isCanceling && (
                           <Button
                             variant="outline"
                             className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                            onClick={() => toast.info("Kündigung über Stripe Portal")}
+                            disabled={billingPortalMutation.isPending}
+                            onClick={() => billingPortalMutation.mutate({ websiteId: website!.id })}
                           >
-                            <Trash2 className="w-4 h-4 mr-2" />
+                            {billingPortalMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 mr-2" />
+                            )}
                             Kündigen
                           </Button>
                         )}
@@ -458,37 +531,6 @@ export default function AccountPage() {
                   )}
                 </Section>
 
-                {/* Available Add-ons */}
-                <Section title="Verfügbare Erweiterungen" icon={<Package className="w-5 h-5 text-blue-400" />}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {AVAILABLE_ADDONS.map((addon) => (
-                      <div
-                        key={addon.id}
-                        className="bg-slate-700/40 border border-slate-600/50 rounded-xl p-4 hover:border-blue-500/50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-white font-medium">{addon.name}</h4>
-                          <span className="text-emerald-400 font-semibold text-sm">
-                            +{addon.price.toFixed(2)} €
-                          </span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-3">{addon.description}</p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full border-slate-600 text-slate-300 hover:bg-blue-600/20 hover:border-blue-500/50"
-                          onClick={() => toast.info("Erweiterung wird über Stripe hinzugefügt...")}
-                        >
-                          Hinzufügen
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-slate-500 text-xs mt-4">
-                    * Erweiterungen können jederzeit hinzugefügt oder entfernt werden.
-                    Die Abrechnung erfolgt über Stripe.
-                  </p>
-                </Section>
               </>
             )}
 

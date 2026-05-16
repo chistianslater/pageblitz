@@ -1,10 +1,11 @@
 import { useState, FormEvent } from "react";
 import { useLocation } from "wouter";
-import { Zap, Lock } from "lucide-react";
+import { Zap, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,13 +21,13 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Login fehlgeschlagen.");
+        setError(data.error ?? "E-Mail oder Passwort falsch.");
         return;
       }
 
@@ -61,11 +62,24 @@ export default function LoginPage() {
           <div className="space-y-1">
             <h1 className="text-lg font-semibold">Anmelden</h1>
             <p className="text-sm text-muted-foreground">
-              Gib dein Admin-Passwort ein.
+              Admin-Zugang für das Pageblitz-Dashboard.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="email"
+                placeholder="E-Mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-9"
+                required
+                autoFocus
+                autoComplete="email"
+              />
+            </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -75,7 +89,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-9"
                 required
-                autoFocus
+                autoComplete="current-password"
               />
             </div>
 

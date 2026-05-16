@@ -1,5 +1,5 @@
 /**
- * Admin: Layout Overview – zeigt alle 10 Premium-Layouts als anklickbare Karten.
+ * Admin: Layout Overview – zeigt alle 18 Premium-Layouts als anklickbare Karten.
  * Jede Karte öffnet die Vollansicht in einem neuen Tab.
  */
 
@@ -120,6 +120,102 @@ const LAYOUTS = [
     accent: "#C9A43A",
     description: "Autorität & Klasse – dunkles Navy-Panel links, weißes Bild-Panel rechts.",
   },
+  {
+    key: "EDEN",
+    label: "Eden",
+    industry: "Coaching & Personal Services",
+    headline: "DM Serif Display 400 italic",
+    body: "DM Sans 400",
+    bg: "#FDFBF7",
+    text: "#2A2820",
+    accent: "#6B7D5E",
+    description: "Warm & persönlich – Paper-Grain-Textur, organische Karten-Overlaps, Serif-Kursiv-Typografie.",
+    badge: "Neu",
+  },
+  {
+    key: "APEX",
+    label: "Apex",
+    industry: "Beratung & B2B",
+    headline: "Bebas Neue",
+    body: "Inter 400",
+    bg: "#FFFFFF",
+    text: "#0F1E3C",
+    accent: "#C9A43A",
+    description: "Autoritär & präzise – Dot-Grid-Textur (Architektenpapier), nummerierte Services, Uppercase-Typografie.",
+    badge: "Neu",
+  },
+  {
+    key: "AURORA",
+    label: "Aurora",
+    industry: "Tech & Startups",
+    headline: "Space Grotesk 800",
+    body: "Inter 400",
+    bg: "#0A0B1E",
+    text: "#E8EEFF",
+    accent: "#22D3EE",
+    description: "Glassmorphism Dark – animierte Gradient-Kugeln, Glass-Cards mit Blur-Backdrop, Space Grotesk.",
+    badge: "Neu",
+  },
+  {
+    key: "NEXUS",
+    label: "Nexus",
+    industry: "Portfolio & Kreativ",
+    headline: "Space Grotesk 700",
+    body: "Plus Jakarta Sans 400",
+    bg: "#0F1629",
+    text: "#F1F5FF",
+    accent: "#818CF8",
+    description: "Bento Grid – asymmetrisches 2×2 Hero-Raster mit Satellit-Karten, tiefes Navy.",
+    badge: "Neu",
+  },
+  {
+    key: "CLAY",
+    label: "Clay",
+    industry: "Wellness & Familien",
+    headline: "Nunito 800",
+    body: "Outfit 400",
+    bg: "#F5F0FF",
+    text: "#2D1B69",
+    accent: "#A855F7",
+    description: "Claymorphism – dual-shadow Clay-Cards, weiche Rundungen, pastellfarbener Lavendel-Hintergrund.",
+    badge: "Neu",
+  },
+  {
+    key: "FORGE",
+    label: "Forge",
+    industry: "Architektur & Kunst",
+    headline: "Cormorant Garamond 300",
+    body: "Space Grotesk 400",
+    bg: "#F5F4EF",
+    text: "#0A0A0A",
+    accent: "#C9A43A",
+    description: "Brutalist Editorial – Cormorant Light bis 9rem, stark nummerierte Services, strenge Haarlinien.",
+    badge: "Neu",
+  },
+  {
+    key: "PULSE",
+    label: "Pulse",
+    industry: "Gesundheit & Klinik",
+    headline: "Plus Jakarta Sans 700",
+    body: "Inter 400",
+    bg: "#E8ECF0",
+    text: "#1E2A3A",
+    accent: "#3B82F6",
+    description: "Neumorphism – inset/raised Schatten-System, Soft 3D, beruhigendes neumorphisches Grau.",
+    badge: "Neu",
+  },
+  {
+    key: "FLUX",
+    label: "Flux",
+    industry: "Nightlife & Events",
+    headline: "Syne 800",
+    body: "Inter 400",
+    bg: "#050508",
+    text: "#F5F3ED",
+    accent: "#C9A43A",
+    description: "Dark Cinematic – full-bleed Hero 38% Helligkeit, Gold-Akzente, cinematische Typografie.",
+    badge: "Neu",
+  },
 ];
 
 export default function LayoutOverviewPage() {
@@ -134,7 +230,7 @@ export default function LayoutOverviewPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight mb-1">Layout Vorschau</h1>
-        <p className="text-muted-foreground text-sm">Alle 10 Premium-Layouts mit Mock-Daten. Klicke auf "Vorschau öffnen" um das Layout im Vollbild zu sehen.</p>
+        <p className="text-muted-foreground text-sm">Alle 18 Premium-Layouts mit Mock-Daten. Klicke auf "Vorschau öffnen" um das Layout im Vollbild zu sehen.</p>
       </div>
 
       {/* Color scheme switcher */}
@@ -187,6 +283,9 @@ export default function LayoutOverviewPage() {
             <div className="p-4 flex flex-col flex-1">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <Badge variant="secondary" className="text-xs font-medium">{layout.industry}</Badge>
+                {(layout as any).badge && (
+                  <Badge className="text-xs font-semibold bg-indigo-600 text-white border-0">{(layout as any).badge}</Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">{layout.description}</p>
 

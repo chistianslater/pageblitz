@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, MapPin, Phone, Globe, Star, Save, Loader2, CheckCircle, XCircle, Building2, AlertTriangle, Clock, TrendingDown } from "lucide-react";
+import { Search, MapPin, Phone, Globe, Star, Save, Loader2, CheckCircle, XCircle, Building2, AlertTriangle, Clock, TrendingDown, Layers } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SearchPage() {
@@ -13,13 +13,28 @@ export default function SearchPage() {
   const [region, setRegion] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [selectedResults, setSelectedResults] = useState<Set<number>>(new Set());
+  const [isBulkCrawling, setIsBulkCrawling] = useState(false);
 
   const searchMutation = trpc.search.gmb.useMutation({
     onSuccess: (data) => {
       setResults(data.results);
+      setSelectedResults(new Set());
       toast.success(`${data.total} Unternehmen gefunden`);
     },
     onError: (err) => toast.error("Suche fehlgeschlagen: " + err.message),
+  });
+
+  const bulkCrawlMutation = trpc.search.gmbBulkCrawl.useMutation({
+    onSuccess: (data) => {
+      setResults(data.results);
+      setSelectedResults(new Set());
+      setIsBulkCrawling(false);
+      toast.success(`${data.total} Unternehmen aus allen Stadtteilen gefunden`);
+    },
+    onError: (err) => {
+      setIsBulkCrawling(false);
+      toast.error("Stadtteil-Crawl fehlgeschlagen: " + err.message);
+    },
   });
 
   const saveMutation = trpc.search.saveResults.useMutation({
@@ -38,11 +53,29 @@ export default function SearchPage() {
     searchMutation.mutate({ query: query.trim(), region: region.trim() });
   };
 
+  const handleBulkCrawl = () => {
+    if (!query.trim() || !region.trim()) {
+      toast.error("Bitte Nische und Stadt eingeben");
+      return;
+    }
+    setIsBulkCrawling(true);
+    toast.info("Stadtteil-Crawl gestartet – das dauert 1–3 Minuten…");
+    bulkCrawlMutation.mutate({ query: query.trim(), city: region.trim() });
+  };
+
   const toggleSelect = (index: number) => {
     const next = new Set(selectedResults);
     if (next.has(index)) next.delete(index);
     else next.add(index);
     setSelectedResults(next);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedResults.size === results.length) {
+      setSelectedResults(new Set());
+    } else {
+      setSelectedResults(new Set(results.map((_, i) => i)));
+    }
   };
 
   const selectAllWithoutWebsite = () => {
@@ -56,6 +89,8 @@ export default function SearchPage() {
     if (selected.length === 0) { toast.error("Keine Unternehmen ausgewählt"); return; }
     saveMutation.mutate({ results: selected, searchQuery: query, searchRegion: region });
   };
+
+  const isLoading = searchMutation.isPending || isBulkCrawling;
 
   return (
     <div className="space-y-6">
@@ -95,13 +130,26 @@ export default function SearchPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
-            <div className="flex items-end">
-              <Button onClick={handleSearch} disabled={searchMutation.isPending} className="w-full sm:w-auto">
+            <div className="flex items-end gap-2">
+              <Button onClick={handleSearch} disabled={isLoading} className="w-full sm:w-auto">
                 {searchMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
                 Suchen
               </Button>
+              <Button
+                variant="outline"
+                onClick={handleBulkCrawl}
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+                title="Durchsucht alle Stadtteile der eingegebenen Stadt automatisch (1–3 Min.)"
+              >
+                {isBulkCrawling ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Layers className="h-4 w-4 mr-2" />}
+                Alle Stadtteile
+              </Button>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            <strong>Suchen</strong> = bis zu 60 Ergebnisse für die Stadt. <strong>Alle Stadtteile</strong> = crawlt automatisch alle Bezirke (München, Berlin, Hamburg, Köln etc.) → bis zu ~500 Einträge, dauert 1–3 Min.
+          </p>
         </CardContent>
       </Card>
 
@@ -112,10 +160,16 @@ export default function SearchPage() {
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Building2 className="h-5 w-5" />
                 Ergebnisse ({results.length})
+                <span className="text-sm font-normal text-muted-foreground">
+                  · {results.filter(r => !r.hasWebsite).length} ohne Website
+                </span>
               </CardTitle>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllWithoutWebsite}>
-                  Ohne Website auswählen
+                  Ohne Website wählen
+                </Button>
+                <Button variant="outline" size="sm" onClick={toggleSelectAll}>
+                  {selectedResults.size === results.length ? "Alle abwählen" : "Alle wählen"}
                 </Button>
                 <Button size="sm" onClick={handleSave} disabled={saveMutation.isPending || selectedResults.size === 0}>
                   {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
@@ -236,14 +290,12 @@ function LeadTypeBadge({ hasWebsite, leadType, website }: { hasWebsite: boolean;
       </div>
     );
   }
-  // hasWebsite but leadType === "unknown" – not yet analyzed
   return (
     <div>
       <Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1">
         <CheckCircle className="h-3 w-3" /> Hat Website
       </Badge>
       {link}
-      {!website && <span className="text-xs text-muted-foreground block mt-0.5">Noch nicht analysiert</span>}
     </div>
   );
 }

@@ -6,20 +6,29 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import {
   upsertBusiness, getBusinessById, listBusinesses, countBusinesses, updateBusiness,
-  createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByToken, getWebsiteByBusinessId,
-  listWebsites, countWebsites, updateWebsite,
-  createOutreachEmail, listOutreachEmails, countOutreachEmails,
+  getBusinessIdsWithWebsite,
+  createGeneratedWebsite, getWebsiteById, getWebsiteBySlug, getWebsiteByFormerSlug, getWebsiteByToken, getWebsiteByBusinessId,
+  listWebsites, countWebsites, updateWebsite, canActivateWebsite,
+  listUsers, countUsers, getUserById, deleteUser,
+  logOnboardingEvent, getStepFunnelStats, getStepEventsForWebsite, deleteExpiredPreviews,
+  createOutreachEmail, listOutreachEmails, countOutreachEmails, getOutreachEmailByWebsiteId, updateOutreachEmail,
   getDashboardStats,
   createTemplateUpload, listTemplateUploads, listTemplateUploadsByIndustry, listTemplateUploadsByPool, deleteTemplateUpload,
   updateTemplateUpload, getTemplateUploadById, parseIndustries,
-  createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId,
+  createSubscription, getSubscriptionByWebsiteId, updateSubscriptionByWebsiteId, updateSubscription,
   createOnboarding, getOnboardingByWebsiteId, updateOnboarding,
   deleteWebsite, deleteBusiness, getWebsitesByUserId,
-  getLeadFunnelStats, listExternalLeads, countExternalLeads,
+  getLeadFunnelStats, listExternalLeads, countExternalLeads, countExternalLeadsByCapture,
   createGenerationJob, getGenerationJobById, getGenerationJobByWebsiteId, updateGenerationJob,
   updateUser, getUserByOpenId,
+  createContactSubmission, getContactSubmissionsByWebsiteId, countUnreadSubmissions,
+  markSubmissionRead, countRecentSubmissionsByIp, archiveSubmission, deleteContactSubmission,
+  getChatTranscriptsByWebsiteId, deleteChatTranscriptById,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
+import { chatLeads, generatedWebsites, appointmentSettings, appointments, chatTranscripts } from "../drizzle/schema";
+import { desc, eq as eqDrizzle, and as andDrizzle, gte as gteDrizzle, sql } from "drizzle-orm";
+import { getDb } from "./db";
 import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
 import { ENV } from "./_core/env";
 import { invokeLLM } from "./_core/llm";
@@ -27,36 +36,80 @@ import { generateImage } from "./_core/imageGeneration";
 import { notifyOwner } from "./_core/notification";
 import { TRPCError } from "@trpc/server";
 import { getHeroImageUrl, getGalleryImages, getIndustryColorScheme, getLayoutStyle, getLayoutPool, getIndustryImages, getContrastColor } from "./industryImages";
-import { uploadPhoto } from "./onboardingUpload";
 import { getNextLayoutForIndustry } from "./db";
 import { selectTemplatesForIndustry, getTemplateStyleDescription, getTemplateImageUrls } from "./templateSelector";
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
+import { registerUmamiWebsite, getUmamiStats } from "./umami";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
-import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG } from "@shared/layoutConfig";
+import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG, CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
+import { searchStockPhotos } from "./_core/stockPhotos";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+// Compat client with older API — current_period_end not in 2026-02-25.clover
+const stripeCompat = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-04-10" as any });
 
 const PRICING = {
-  base: { amount: 1990, currency: "eur", interval: "month" as const },      // 19,90 €/Monat
-  feature: { amount: 390, currency: "eur", interval: "month" as const },     // 3,90 € pro Extra-Feature
-  subpage: { amount: 250, currency: "eur", interval: "month" as const },     // 2,50 € pro Extra-Unterseite
+  base: {
+    monthly: 2490,  // 24,90 €/Monat (monatliche Abrechnung)
+    yearly:  1990,  // 19,90 €/Monat (jährliche Abrechnung, monatlich abgebucht)
+  },
+  addon: 390,         // 3,90 € pro Standard-Add-on
+  addonAiChat: 990,   // 9,90 € KI-Chat
+  addonBooking: 490,  // 4,90 € Terminbuchung
 } as const;
 
-// Feature-Typen für Stripe Checkout
-type FeatureType = "gallery" | "contactForm" | "menu" | "pricelist";
-const FEATURE_NAMES: Record<FeatureType, string> = {
-  gallery: "Bildergalerie",
+type AddOnKey = "contactForm" | "gallery" | "menu" | "pricelist" | "aiChat" | "booking" | "team";
+const ADDON_NAMES: Record<AddOnKey, string> = {
   contactForm: "Kontaktformular",
-  menu: "Speisekarte",
-  pricelist: "Preisliste",
+  gallery:     "Bildergalerie",
+  menu:        "Speisekarte",
+  pricelist:   "Preisliste",
+  aiChat:      "KI-Chat",
+  booking:     "Terminbuchung",
+  team:        "Team",
 };
+
+function addonPrice(key: AddOnKey): number {
+  if (key === "aiChat")   return PRICING.addonAiChat;
+  if (key === "booking")  return PRICING.addonBooking;
+  if (key === "team")     return PRICING.addon; // 3,90 €
+  return PRICING.addon;
+}
 
 function slugify(text: string): string {
   return text.toLowerCase()
     .replace(/[äöüß]/g, m => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
+
+/**
+ * Converts an array of DayHours objects into a human-readable opening hours string.
+ * Consecutive days with identical times are grouped (e.g. "Montag – Freitag: 09:00 – 18:00 Uhr").
+ */
+function formatOpeningHoursText(hours: Array<{ day: string; open: boolean; from: string; to: string; from2?: string; to2?: string }>): string {
+  const open = hours.filter(h => h.open);
+  if (open.length === 0) return '';
+  const lines: string[] = [];
+  let i = 0;
+  while (i < open.length) {
+    let j = i;
+    // Group consecutive days only if both slots match exactly
+    while (
+      j + 1 < open.length &&
+      open[j + 1].from === open[i].from &&
+      open[j + 1].to === open[i].to &&
+      (open[j + 1].from2 ?? '') === (open[i].from2 ?? '') &&
+      (open[j + 1].to2 ?? '') === (open[i].to2 ?? '')
+    ) j++;
+    const range = i === j ? open[i].day : `${open[i].day} – ${open[j].day}`;
+    const slot1 = `${open[i].from} – ${open[i].to} Uhr`;
+    const slot2 = open[i].from2 && open[i].to2 ? `, ${open[i].from2} – ${open[i].to2} Uhr` : '';
+    lines.push(`${range}: ${slot1}${slot2}`);
+    i = j + 1;
+  }
+  return lines.join('\n');
 }
 
 // Generic Google Places types that apply to virtually every business – not useful as category
@@ -106,6 +159,23 @@ async function getGmbPhotos(placeId: string, maxPhotos = 6): Promise<string[]> {
       url.searchParams.set("key", apiKey);
       return url.toString();
     });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch up to 5 reviews from Google Places API for a given placeId.
+ * Returns empty array on failure or when placeId is a non-GMB placeholder.
+ */
+async function getGmbReviews(placeId: string): Promise<Array<{ author_name: string; rating: number; text: string; time: number }>> {
+  if (!placeId || placeId.startsWith("self-") || placeId.startsWith("email-")) return [];
+  try {
+    const details = await makeRequest<PlaceDetailsResult>(
+      "/maps/api/place/details/json",
+      { place_id: placeId, fields: "reviews", language: "de" }
+    );
+    return details?.result?.reviews || [];
   } catch {
     return [];
   }
@@ -546,7 +616,7 @@ REGELN:
 1. ALLE TEXTE AUF DEUTSCH
 2. KEINE generischen Phrasen wie "Ihr Partner für..."
 3. Der KUNDE ist der Held, ${business.name} ist der Guide
-4. Authentische deutsche Kundennamen in Testimonials
+4. Testimonials: glaubwürdige deutsche Namen + branchenspezifische Texte (echte GMB-Reviews werden danach automatisch eingefügt falls vorhanden)
 5. ANREDE: ${addressingMode === 'Sie' ? 'Besucher IMMER siezen – "Wir helfen Ihnen", "Ihre Website", "Sie profitieren" – KEIN "du/dein/dir"' : 'Besucher IMMER duzen – "Wir helfen dir", "deine Website", "du profitierst" – KEIN "Sie/Ihnen/Ihr"'}
 ${isRegenerate ? "6. ANDERE Perspektive als zuvor wählen" : ""}
 
@@ -583,6 +653,26 @@ JSON-AUSGABE:
         {"step": "1", "title": "Schritt 1 Titel", "description": "1 Satz – branchenspezifisch, wie der Kunde Kontakt aufnimmt"},
         {"step": "2", "title": "Schritt 2 Titel", "description": "1 Satz – was beim Beratungs- oder Planungsgespräch passiert"},
         {"step": "3", "title": "Schritt 3 Titel", "description": "1 Satz – das konkrete Ergebnis, das der Kunde erhält"}
+      ]
+    },
+    {
+      "type": "testimonials",
+      "headline": "Das sagen unsere Kunden",
+      "items": [
+        {"title": "Kurzer Teaser max 8 Wörter", "description": "Authentische Kundenstimme 2-3 Sätze – branchenspezifisch, konkret, kein Marketingsprech", "author": "Typisch deutscher Vorname + Nachname", "rating": 5},
+        {"title": "Kurzer Teaser max 8 Wörter", "description": "Authentische Kundenstimme 2-3 Sätze – ein anderer Aspekt des Angebots", "author": "Typisch deutscher Vorname + Nachname", "rating": 5},
+        {"title": "Kurzer Teaser max 8 Wörter", "description": "Authentische Kundenstimme 2-3 Sätze – Ergebnis aus Kundenperspektive", "author": "Typisch deutscher Vorname + Nachname", "rating": 5}
+      ]
+    },
+    {
+      "type": "faq",
+      "headline": "Häufige Fragen",
+      "items": [
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 1?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze – kein Werbesprech"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 2?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 3?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 4?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"},
+        {"question": "Branchenspezifische Frage die Kunden wirklich stellen 5?", "answer": "Konkrete, hilfreiche Antwort 1-2 Sätze"}
       ]
     },
     {
@@ -874,7 +964,7 @@ function getFallbackWebsiteData(business: any, category: string, colorScheme: an
  * Runs website generation in the background.
  * Updates job progress and status in the database.
  */
-async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<void> {
+export async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<void> {
   try {
     // Update job status to processing
     await updateGenerationJob(jobId, { status: "processing", progress: 10 });
@@ -1033,7 +1123,17 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     if (business.rating) websiteData.googleRating = parseFloat(business.rating);
     if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
-    const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+    // Use stored reviews; fetch fresh from Places API if not stored yet (backwards-compat for old records)
+    let storedReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+    if ((!storedReviews || storedReviews.length === 0) && business.placeId) {
+      const fresh = await getGmbReviews(business.placeId);
+      if (fresh.length > 0) {
+        storedReviews = fresh;
+        // Persist for future generations
+        await updateBusiness(business.id, { googleReviews: fresh } as any);
+      }
+    }
+    const realReviews = storedReviews;
     let injectedRealReviewsSS = false;
     if (realReviews && realReviews.length > 0 && websiteData.sections) {
       const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
@@ -1058,7 +1158,7 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       }
     }
 
-    // Remove testimonials if they are not real reviews (AI hallucinations)
+    // Strip testimonials if no real reviews could be injected – never show AI-generated fake reviews
     if (!injectedRealReviewsSS && websiteData.sections) {
       websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
     }
@@ -1086,9 +1186,9 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
       if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any)) dt.buttonStyle = "filled";
       if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
       { const lfSS = getLayoutFonts(layoutStyle);
-      if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfSS.headlineFont;
-      if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfSS.bodyFont;
-      if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfSS.bodyFont; }
+      // Always enforce canonical layout fonts — never trust LLM-generated font names
+      dt.headlineFont = lfSS.headlineFont;
+      dt.bodyFont = lfSS.bodyFont; }
       if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
       if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
       if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
@@ -1108,6 +1208,26 @@ async function runWebsiteGeneration(jobId: number, websiteId: number): Promise<v
     });
 
     console.log(`[Generation Job ${jobId}] Completed successfully for website ${websiteId}${useFallback ? " (mit Fallback)" : ""}`);
+
+    // If this website was generated as part of outreach, move email to "draft"
+    // so the admin can review website + email before manually approving to send.
+    try {
+      const linkedEmail = await getOutreachEmailByWebsiteId(websiteId);
+      if (linkedEmail && linkedEmail.status === "generating") {
+        const completedWebsite = await getWebsiteById(websiteId);
+        const previewUrl = completedWebsite?.previewToken
+          ? `https://pageblitz.de/preview/${completedWebsite.previewToken}`
+          : null;
+        await updateOutreachEmail(linkedEmail.id, {
+          status: "draft",   // ← admin must approve before sending
+          previewUrl: previewUrl ?? undefined,
+        });
+        console.log(`[Generation Job ${jobId}] Outreach email ${linkedEmail.id} marked as draft (awaiting approval)`);
+      }
+    } catch (e) {
+      // Non-critical: don't fail the generation job
+      console.error(`[Generation Job ${jobId}] Failed to update outreach email:`, e);
+    }
   } catch (error: any) {
     console.error(`[Generation Job ${jobId}] Failed:`, error);
     await updateGenerationJob(jobId, { 
@@ -1190,6 +1310,54 @@ export const appRouter = router({
     dashboard: adminProcedure.query(async () => {
       return getDashboardStats();
     }),
+    stepFunnel: adminProcedure.query(async () => {
+      return getStepFunnelStats();
+    }),
+    cleanup: adminProcedure
+      .input(z.object({ olderThanDays: z.number().min(1).default(30) }).optional())
+      .mutation(async ({ input }) => {
+        const deleted = await deleteExpiredPreviews(input?.olderThanDays ?? 30);
+        return { deleted };
+      }),
+  }),
+
+  // ── Admin: User Management ──────────────────────────
+  userAdmin: router({
+    list: adminProcedure
+      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const users = await listUsers(input?.limit ?? 100, input?.offset ?? 0);
+        const total = await countUsers();
+        return { users, total };
+      }),
+    get: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const user = await getUserById(input.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User nicht gefunden" });
+        const websites = await getWebsitesByUserId(input.id);
+        return { user, websites };
+      }),
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        role: z.enum(["user", "admin"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await updateUser(id, data);
+        return { success: true };
+      }),
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (input.id === ctx.user!.id)
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Du kannst deinen eigenen Account nicht löschen" });
+        await deleteUser(input.id);
+        return { success: true };
+      }),
   }),
 
   // ── Admin: GMB Search ──────────────────────────────
@@ -1202,16 +1370,28 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const searchQuery = `${input.query} in ${input.region}`;
-        const placesResult = await makeRequest<PlacesSearchResult>(
-          "/maps/api/place/textsearch/json",
-          { query: searchQuery, language: "de" }
-        );
-        if (placesResult.status !== "OK" || !placesResult.results?.length) {
-          return { results: [], total: 0 };
+
+        // Fetch up to 3 pages (max 60 results) using next_page_token
+        const allPlaces: PlacesSearchResult["results"] = [];
+        let pageToken: string | undefined = undefined;
+        for (let page = 0; page < 3; page++) {
+          const params: Record<string, string> = { query: searchQuery, language: "de" };
+          if (pageToken) params.pagetoken = pageToken;
+          const placesResult = await makeRequest<PlacesSearchResult>(
+            "/maps/api/place/textsearch/json", params
+          );
+          if (placesResult.status !== "OK" || !placesResult.results?.length) break;
+          allPlaces.push(...placesResult.results);
+          if (!placesResult.next_page_token) break;
+          pageToken = placesResult.next_page_token;
+          // Google requires a short delay before using next_page_token
+          await new Promise(r => setTimeout(r, 2000));
         }
+
+        if (!allPlaces.length) return { results: [], total: 0 };
+
         const detailedResults = [];
-        const limitedResults = placesResult.results.slice(0, 20);
-        for (const place of limitedResults) {
+        for (const place of allPlaces) {
           try {
             const details = await makeRequest<PlaceDetailsResult>(
               "/maps/api/place/details/json",
@@ -1220,9 +1400,7 @@ export const appRouter = router({
             const hasWebsite = !!(details.result?.website);
             const category = extractGmbCategory(place.types) || input.query;
             const websiteUrl = details.result?.website || null;
-
-            // Determine initial lead type
-            let leadType: "no_website" | "outdated_website" | "poor_website" | "unknown" = hasWebsite ? "unknown" : "no_website";
+            const leadType: "no_website" | "outdated_website" | "poor_website" | "unknown" = hasWebsite ? "unknown" : "no_website";
 
             detailedResults.push({
               placeId: place.place_id,
@@ -1258,12 +1436,92 @@ export const appRouter = router({
           }
         }
 
-        // Filter: if includeOutdated is false, only return businesses without website
         const filtered = input.includeOutdated
           ? detailedResults
           : detailedResults.filter(r => !r.hasWebsite);
 
         return { results: filtered, total: filtered.length };
+      }),
+
+    // Bulk crawl: search all districts of a city automatically
+    gmbBulkCrawl: adminProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        city: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        const CITY_DISTRICTS: Record<string, string[]> = {
+          münchen: ["Schwabing","Maxvorstadt","Neuhausen","Pasing","Sendling","Haidhausen","Giesing","Bogenhausen","Milbertshofen","Moosach","Laim","Nymphenburg","Schwabing-West","Au","Glockenbachviertel","Ludwigsvorstadt","Isarvorstadt","Berg am Laim","Ramersdorf","Trudering"],
+          berlin: ["Mitte","Prenzlauer Berg","Friedrichshain","Kreuzberg","Neukölln","Tempelhof","Schöneberg","Charlottenburg","Wilmersdorf","Steglitz","Zehlendorf","Spandau","Reinickendorf","Pankow","Weißensee","Lichtenberg","Marzahn","Hellersdorf","Köpenick","Treptow"],
+          hamburg: ["Altona","Eimsbüttel","Harburg","Bergedorf","Wandsbek","Nord","Mitte","Barmbek","Rahlstedt","Bramfeld","Steilshoop","Dulsberg","Hammerbrook","Rothenburgsort","Billstedt","Horn","Borgfelde","Hamm","Uhlenhorst","Winterhude"],
+          köln: ["Innenstadt","Deutz","Nippes","Ehrenfeld","Lindenthal","Rodenkirchen","Chorweiler","Porz","Kalk","Mühlheim"],
+          frankfurt: ["Sachsenhausen","Bornheim","Nordend","Westend","Bockenheim","Gallus","Niederrad","Höchst","Sossenheim","Rödelheim","Dornbusch","Preungesheim","Fechenheim","Ostend","Bahnhofsviertel"],
+          düsseldorf: ["Altstadt","Carlstadt","Flingern","Derendorf","Pempelfort","Golzheim","Bilk","Friedrichstadt","Oberbilk","Eller","Gerresheim","Garath","Benrath","Urdenbach","Volmerswerth"],
+          stuttgart: ["Mitte","Nord","Süd","West","Ost","Bad Cannstatt","Zuffenhausen","Vaihingen","Möhringen","Mühlhausen","Hedelfingen","Obertürkheim","Wangen","Untertürkheim","Degerloch"],
+          dortmund: ["Innenstadt","Eving","Scharnhorst","Brackel","Aplerbeck","Hörde","Hombruch","Lütgendortmund","Huckarde","Mengede"],
+          essen: ["Stadtmitte","Rüttenscheid","Bredeney","Werden","Kettwig","Steele","Karnap","Altenessen","Katernberg","Stoppenberg"],
+          leipzig: ["Zentrum","Gohlis","Connewitz","Plagwitz","Lindenau","Grünau","Mockau","Eutritzsch","Reudnitz","Volkmarsdorf"],
+          dresden: ["Altstadt","Neustadt","Pieschen","Klotzsche","Loschwitz","Blasewitz","Leuben","Prohlis","Plauen","Cotta"],
+          duisburg: ["Duisburg-Mitte","Rheinhausen","Homberg","Walsum","Hamborn","Meiderich","Ruhrort","Neudorf","Buchholz","Großenbaum"],
+          bochum: ["Innenstadt","Wattenscheid","Hamme","Hordel","Riemke","Grumme","Altenbochum","Langendreer","Wiemelhausen","Weitmar"],
+          nürnberg: ["Altstadt","Gostenhof","Maxfeld","Schoppershof","Erlenstegen","Wöhrd","Tafelhof","Steinbühl","Gibitzenhof","Langwasser"],
+        };
+
+        const cityKey = input.city.toLowerCase().trim();
+        const districts = CITY_DISTRICTS[cityKey] || [];
+
+        // Always include the city itself as the first search
+        const searchTargets = [input.city, ...districts.map(d => `${d}, ${input.city}`)];
+
+        const seenPlaceIds = new Set<string>();
+        const allDetailedResults: any[] = [];
+
+        for (const target of searchTargets) {
+          try {
+            const params: Record<string, string> = { query: `${input.query} in ${target}`, language: "de" };
+            const placesResult = await makeRequest<PlacesSearchResult>("/maps/api/place/textsearch/json", params);
+            if (placesResult.status !== "OK" || !placesResult.results?.length) continue;
+
+            const places = placesResult.results;
+            // Also fetch page 2 if available
+            if (placesResult.next_page_token) {
+              await new Promise(r => setTimeout(r, 2000));
+              const p2 = await makeRequest<PlacesSearchResult>("/maps/api/place/textsearch/json", { pagetoken: placesResult.next_page_token });
+              if (p2.status === "OK" && p2.results?.length) places.push(...p2.results);
+            }
+
+            for (const place of places) {
+              if (seenPlaceIds.has(place.place_id)) continue;
+              seenPlaceIds.add(place.place_id);
+
+              try {
+                const details = await makeRequest<PlaceDetailsResult>(
+                  "/maps/api/place/details/json",
+                  { place_id: place.place_id, fields: "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews", language: "de" }
+                );
+                const hasWebsite = !!(details.result?.website);
+                allDetailedResults.push({
+                  placeId: place.place_id,
+                  name: details.result?.name || place.name,
+                  address: details.result?.formatted_address || place.formatted_address,
+                  phone: details.result?.formatted_phone_number || null,
+                  website: details.result?.website || null,
+                  rating: details.result?.rating || place.rating || null,
+                  reviewCount: details.result?.user_ratings_total || place.user_ratings_total || 0,
+                  category: extractGmbCategory(place.types) || input.query,
+                  lat: place.geometry?.location?.lat,
+                  lng: place.geometry?.location?.lng,
+                  openingHours: details.result?.opening_hours?.weekday_text || [],
+                  hasWebsite,
+                  leadType: hasWebsite ? "unknown" : "no_website",
+                  reviews: details.result?.reviews || [],
+                });
+              } catch { /* skip failed detail lookups */ }
+            }
+          } catch { /* skip failed district searches */ }
+        }
+
+        return { results: allDetailedResults, total: allDetailedResults.length };
       }),
 
     // User-facing GMB search (no admin required)
@@ -1448,15 +1706,35 @@ export const appRouter = router({
         limit: z.number().default(50),
         offset: z.number().default(0),
         leadType: z.enum(["no_website", "outdated_website", "poor_website", "unknown", "all"]).default("all"),
+        search: z.string().optional(),
       }).optional())
       .query(async ({ input }) => {
-        const businesses = await listBusinesses(input?.limit || 50, input?.offset || 0);
-        const total = await countBusinesses();
-        // Filter by leadType if specified
-        const filtered = (input?.leadType && input.leadType !== "all")
-          ? businesses.filter(b => b.leadType === input.leadType)
-          : businesses;
-        return { businesses: filtered, total };
+        const [all, customerIds] = await Promise.all([
+          listBusinesses(10000, 0),
+          getBusinessIdsWithWebsite(),
+        ]);
+
+        // Only GMB-sourced leads: real ChIJ placeId AND no Pageblitz website yet
+        let filtered = all.filter(b =>
+          b.placeId != null &&
+          b.placeId.startsWith("ChIJ") &&
+          !customerIds.has(b.id)
+        );
+        const total = filtered.length;
+
+        if (input?.leadType && input.leadType !== "all") {
+          filtered = filtered.filter(b => b.leadType === input.leadType);
+        }
+        if (input?.search) {
+          const q = input.search.toLowerCase();
+          filtered = filtered.filter(b =>
+            b.name.toLowerCase().includes(q) ||
+            (b.address ?? "").toLowerCase().includes(q)
+          );
+        }
+
+        const paginated = filtered.slice(input?.offset ?? 0, (input?.offset ?? 0) + (input?.limit ?? 50));
+        return { businesses: paginated, total: filtered.length, grandTotal: total };
       }),
     get: adminProcedure
       .input(z.object({ id: z.number() }))
@@ -1494,6 +1772,64 @@ export const appRouter = router({
         }
         return { deleted };
       }),
+
+    scrapeEmails: adminProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        const { scrapeEmailFromWebsite, hasMxRecord } = await import("./emailScraper");
+        let found = 0;
+        let skipped = 0;
+        let failed = 0;
+
+        for (const id of input.ids) {
+          try {
+            const business = await getBusinessById(id);
+            if (!business) { skipped++; continue; }
+            // Already has a valid email – skip
+            if (business.email && business.email.includes("@")) { skipped++; continue; }
+            // No website URL to scrape from
+            if (!business.website) { failed++; continue; }
+
+            const email = await scrapeEmailFromWebsite(business.website);
+            if (!email) { failed++; continue; }
+
+            // Basic MX check
+            const mxOk = await hasMxRecord(email);
+            if (!mxOk) { failed++; continue; }
+
+            await updateBusiness(id, { email });
+            found++;
+          } catch (_) {
+            failed++;
+          }
+        }
+
+        return { found, skipped, failed };
+      }),
+
+    updateEmail: adminProcedure
+      .input(z.object({ id: z.number(), email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        await updateBusiness(input.id, { email: input.email });
+        return { success: true };
+      }),
+
+    stats: adminProcedure.query(async () => {
+      const [all, customerIds] = await Promise.all([
+        listBusinesses(10000, 0),
+        getBusinessIdsWithWebsite(),
+      ]);
+      const gmb = all.filter(b =>
+        b.placeId != null &&
+        b.placeId.startsWith("ChIJ") &&
+        !customerIds.has(b.id)
+      );
+      const noWebsite = gmb.filter(b => b.leadType === "no_website").length;
+      const outdated = gmb.filter(b => b.leadType === "outdated_website").length;
+      const poor = gmb.filter(b => b.leadType === "poor_website").length;
+      const good = gmb.filter(b => b.leadType === "unknown").length;
+      return { noWebsite, outdated, poor, good, total: gmb.length };
+    }),
   }),
 
   // ── Admin: Website Generation ──────────────────────
@@ -1610,8 +1946,13 @@ export const appRouter = router({
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
-        // Inject real Google reviews into testimonials section if available
-        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        // Inject real Google reviews – fetch fresh if not stored yet (backwards-compat)
+        let storedReviewsRegen = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        if ((!storedReviewsRegen || storedReviewsRegen.length === 0) && business.placeId) {
+          const fresh = await getGmbReviews(business.placeId);
+          if (fresh.length > 0) { storedReviewsRegen = fresh; await updateBusiness(business.id, { googleReviews: fresh } as any); }
+        }
+        const realReviews = storedReviewsRegen;
         let injectedRealReviews = false;
         if (realReviews && realReviews.length > 0 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
@@ -1636,7 +1977,7 @@ export const appRouter = router({
           }
         }
 
-        // Remove testimonials if they are not real reviews (AI hallucinations)
+        // Strip testimonials if no real reviews could be injected – never show AI-generated fake reviews
         if (!injectedRealReviews && websiteData.sections) {
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
@@ -1671,11 +2012,10 @@ export const appRouter = router({
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
-          // Ensure font names are plain strings (no brackets)
+          // Always enforce canonical layout fonts
           { const lf = getLayoutFonts(layoutStyle);
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lf.headlineFont;
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lf.bodyFont;
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lf.bodyFont; }
+          dt.headlineFont = lf.headlineFont;
+          dt.bodyFont = lf.bodyFont; }
           // Ensure accent color is a valid hex/rgb
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
@@ -1697,6 +2037,7 @@ export const appRouter = router({
           addons: [],
           heroImageUrl: finalHeroImageUrl,
           layoutStyle,
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
 
         return { websiteId, slug, previewToken, heroImageUrl: finalHeroImageUrl, layoutStyle };
@@ -1800,8 +2141,13 @@ export const appRouter = router({
         if (business.rating) websiteData.googleRating = parseFloat(business.rating);
         if (business.reviewCount) websiteData.googleReviewCount = business.reviewCount;
 
-        // Inject real Google reviews into testimonials section if available
-        const realReviews = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        // Inject real Google reviews – fetch fresh if not stored yet (backwards-compat)
+        let storedReviewsRegen2 = (business as any).googleReviews as Array<{ author_name: string; rating: number; text: string; time: number }> | null;
+        if ((!storedReviewsRegen2 || storedReviewsRegen2.length === 0) && business.placeId) {
+          const fresh2 = await getGmbReviews(business.placeId);
+          if (fresh2.length > 0) { storedReviewsRegen2 = fresh2; await updateBusiness(business.id, { googleReviews: fresh2 } as any); }
+        }
+        const realReviews = storedReviewsRegen2;
         let injectedRealReviews = false;
         if (realReviews && realReviews.length > 0 && websiteData.sections) {
           const testimonialsSection = websiteData.sections.find((s: any) => s.type === "testimonials");
@@ -1826,7 +2172,7 @@ export const appRouter = router({
           }
         }
 
-        // Remove testimonials if they are not real reviews (AI hallucinations)
+        // Strip testimonials if no real reviews could be injected – never show AI-generated fake reviews
         if (!injectedRealReviews && websiteData.sections) {
           websiteData.sections = websiteData.sections.filter((s: any) => s.type !== "testimonials");
         }
@@ -1861,10 +2207,10 @@ export const appRouter = router({
           if (!Array.isArray(dt.sectionBackgrounds) || dt.sectionBackgrounds.length < 2) {
             dt.sectionBackgrounds = [colorScheme.background, colorScheme.surface, colorScheme.background];
           }
+          // Always enforce canonical layout fonts
           { const lfR = getLayoutFonts(layoutStyle);
-          if (!dt.headlineFont || dt.headlineFont.includes("[")) dt.headlineFont = lfR.headlineFont;
-          if (!dt.bodyFont || dt.bodyFont.includes("[")) dt.bodyFont = lfR.bodyFont;
-          if (dt.bodyFont && FORBIDDEN_BODY_FONTS.some(f => dt.bodyFont!.toLowerCase().includes(f))) dt.bodyFont = lfR.bodyFont; }
+          dt.headlineFont = lfR.headlineFont;
+          dt.bodyFont = lfR.bodyFont; }
           if (!dt.accentColor || dt.accentColor.includes("[")) dt.accentColor = colorScheme.accent;
           if (!dt.textColor || dt.textColor.includes("[")) dt.textColor = colorScheme.text;
           if (!dt.backgroundColor || dt.backgroundColor.includes("[")) dt.backgroundColor = colorScheme.background;
@@ -1902,6 +2248,30 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const websites = await listWebsites(input?.limit || 50, input?.offset || 0);
         const total = await countWebsites();
+
+        // Batch: alle onboarding_responses in einer Query laden → Map
+        // (für die "Onboarding-Schritt"-Spalte im Dashboard)
+        const onboardingMap = new Map<number, { step: number; status: string }>();
+        try {
+          const { getDb } = await import("./db");
+          const { onboardingResponses } = await import("../drizzle/schema");
+          const db = await getDb();
+          if (db) {
+            const rows = await db
+              .select({
+                websiteId: onboardingResponses.websiteId,
+                stepCurrent: onboardingResponses.stepCurrent,
+                status: onboardingResponses.status,
+              })
+              .from(onboardingResponses);
+            for (const r of rows) {
+              onboardingMap.set(r.websiteId, { step: r.stepCurrent ?? 0, status: r.status ?? "pending" });
+            }
+          }
+        } catch (e) {
+          console.warn("[website.list] onboarding batch load failed:", e);
+        }
+
         const enriched = [];
         for (const w of websites) {
           const biz = await getBusinessById(w.businessId);
@@ -1909,7 +2279,13 @@ export const appRouter = router({
           if (w.websiteData) {
             (w.websiteData as any).id = w.id;
           }
-          enriched.push({ ...w, business: biz });
+          const ob = onboardingMap.get(w.id);
+          enriched.push({
+            ...w,
+            business: biz,
+            onboardingStep: ob?.step ?? null,
+            onboardingResponseStatus: ob?.status ?? null,
+          });
         }
         return { websites: enriched, total };
       }),
@@ -1918,18 +2294,31 @@ export const appRouter = router({
       .input(z.object({ id: z.number().optional(), slug: z.string().optional(), token: z.string().optional() }))
       .query(async ({ input }) => {
         let website;
+        let redirectToSlug: string | null = null;
         if (input.id) website = await getWebsiteById(input.id);
-        else if (input.slug) website = await getWebsiteBySlug(input.slug);
+        else if (input.slug) {
+          website = await getWebsiteBySlug(input.slug);
+          // Fallback: look up by former slug so old preview-* URLs redirect to the new slug
+          if (!website) {
+            const byFormer = await getWebsiteByFormerSlug(input.slug);
+            if (byFormer) {
+              website = byFormer;
+              redirectToSlug = byFormer.slug;
+            }
+          }
+        }
         else if (input.token) website = await getWebsiteByToken(input.token);
         if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
         const business = await getBusinessById(website.businessId);
-        
+
         // Inject ID into websiteData for stable randomization seed in frontend
         if (website.websiteData) {
           (website.websiteData as any).id = website.id;
+          // Inject showBranding so layout components can read it from websiteData
+          (website.websiteData as any).showBranding = website.showBranding !== false;
         }
-        
-        return { website, business };
+
+        return { website, business, redirectToSlug };
       }),
 
     updateStatus: adminProcedure
@@ -1961,33 +2350,191 @@ export const appRouter = router({
         }
         return { success: true, deleted };
       }),
+    supportChats: adminProcedure
+      .input(z.object({ websiteId: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        const wId = input?.websiteId;
+        if (wId !== undefined) {
+          return getChatTranscriptsByWebsiteId(wId, 50);
+        }
+        // All support + landing chats (websiteId=0 for support, -1 for landing)
+        const db = await getDb();
+        if (!db) return [];
+        const now = new Date();
+        return db.select().from(chatTranscripts)
+          .where(gteDrizzle(chatTranscripts.expiresAt, now))
+          .orderBy(desc(chatTranscripts.updatedAt))
+          .limit(200);
+      }),
+    supportChatCount: adminProcedure
+      .input(z.object({ websiteIds: z.array(z.number()) }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return {};
+        const now = new Date();
+        const rows = await db.select({
+          websiteId: chatTranscripts.websiteId,
+          count: sql<number>`count(*)`,
+          totalMessages: sql<number>`sum(${chatTranscripts.messageCount})`,
+        })
+          .from(chatTranscripts)
+          .where(andDrizzle(
+            gteDrizzle(chatTranscripts.expiresAt, now),
+            sql`${chatTranscripts.websiteId} IN (${sql.join(input.websiteIds.map(id => sql`${id}`), sql`, `)})`
+          ))
+          .groupBy(chatTranscripts.websiteId);
+        const result: Record<number, { count: number; totalMessages: number }> = {};
+        for (const r of rows) {
+          result[r.websiteId] = { count: r.count, totalMessages: r.totalMessages };
+        }
+        return result;
+      }),
   }),
 
   // ── Admin: Outreach ────────────────────────────────
   outreach: router({
+    queueBusinesses: adminProcedure
+      .input(z.object({ businessIds: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        let queued = 0;
+        let skipped = 0;
+        let noEmail = 0;
+
+        for (const businessId of input.businessIds) {
+          const business = await getBusinessById(businessId);
+          if (!business) continue;
+
+          // Skip businesses without a valid email address
+          if (!business.email || !business.email.includes("@")) {
+            noEmail++;
+            continue;
+          }
+
+          const existing = await getWebsiteByBusinessId(businessId);
+
+          if (existing && existing.previewToken) {
+            // Website already exists with a preview token – skip generation, create queued email
+            const previewUrl = `https://pageblitz.de/preview/${existing.previewToken}`;
+            await createOutreachEmail({
+              businessId,
+              websiteId: existing.id,
+              recipientEmail: business.email || "",
+              subject: "Ihre neue Website ist fertig",
+              body: "",
+              status: "queued",
+              previewUrl,
+            });
+            skipped++;
+          } else {
+            // No website yet – set up generation pipeline
+            const category = business.category || "Dienstleistung";
+            const industryKey = await classifyIndustry(category, business.name);
+            const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
+            const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
+            const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
+            const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
+
+            const slug = slugify(business.name) + "-" + nanoid(4);
+            const previewToken = nanoid(32);
+
+            const websiteId = await createGeneratedWebsite({
+              businessId,
+              slug,
+              status: "preview",
+              websiteData: null,
+              colorScheme,
+              industry: category,
+              previewToken,
+              addons: [],
+              heroImageUrl,
+              layoutStyle,
+              layoutVersion: CURRENT_LAYOUT_VERSION,
+            });
+
+            const jobId = await createGenerationJob({
+              websiteId,
+              status: "pending",
+              progress: 0,
+            });
+
+            // Start background generation (non-blocking)
+            runWebsiteGeneration(jobId, websiteId).catch((err) => {
+              console.error(`[Outreach Queue] Background generation failed for business ${businessId}:`, err);
+            });
+
+            await createOutreachEmail({
+              businessId,
+              websiteId,
+              recipientEmail: business.email || "",
+              subject: "Ihre neue Website ist fertig",
+              body: "",
+              status: "generating",
+            });
+
+            queued++;
+          }
+        }
+
+        return { queued, skipped, noEmail };
+      }),
+
     send: adminProcedure
       .input(z.object({
         businessId: z.number(),
-        websiteId: z.number(),
+        websiteId: z.number().optional(),
         recipientEmail: z.string().email(),
         subject: z.string(),
         body: z.string(),
+        variant: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
+        // Create DB record first (draft status)
         const emailId = await createOutreachEmail({
           businessId: input.businessId,
           websiteId: input.websiteId,
           recipientEmail: input.recipientEmail,
           subject: input.subject,
           body: input.body,
-          status: "sent",
-          sentAt: new Date(),
+          status: "draft",
+          variant: input.variant ?? "baseline",
         });
+
+        // Convert plain text body to simple HTML
+        const htmlBody = `<!DOCTYPE html>
+<html><body style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;color:#1a1a1a;line-height:1.7;font-size:15px">
+${input.body.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}
+<br>
+<p style="color:#9ca3af;font-size:12px;border-top:1px solid #f0f0f0;padding-top:16px;margin-top:32px">
+Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
+<a href="https://pageblitz.de" style="color:#6366f1">pageblitz.de</a> ·
+<a href="mailto:christian@pageblitz.de?subject=Abmelden" style="color:#9ca3af">Abmelden</a>
+</p>
+</body></html>`;
+
+        // Actually send the email via Resend
+        const { sendEmail } = await import("./_core/email");
+        const sendResult = await sendEmail({
+          to: input.recipientEmail,
+          subject: input.subject,
+          html: htmlBody,
+          text: input.body,
+        });
+
+        // Update DB record with result
+        const { updateOutreachEmail } = await import("./db");
+        if (sendResult.success) {
+          await updateOutreachEmail(emailId, {
+            status: "sent",
+            sentAt: new Date(),
+            resendEmailId: sendResult.id ?? null,
+          });
+        }
+
         await notifyOwner({
           title: `Outreach E-Mail gesendet`,
           content: `E-Mail an ${input.recipientEmail} gesendet.\nBetreff: ${input.subject}`,
         });
-        return { emailId, success: true };
+        return { emailId, success: sendResult.success, error: sendResult.error };
       }),
 
     list: adminProcedure
@@ -1997,6 +2544,49 @@ export const appRouter = router({
         const total = await countOutreachEmails();
         return { emails, total };
       }),
+
+    // Approve selected draft emails → status "queued" so orchestrator will send them
+    approve: adminProcedure
+      .input(z.object({ emailIds: z.array(z.number()) }))
+      .mutation(async ({ input }) => {
+        let approved = 0;
+        for (const id of input.emailIds) {
+          try {
+            await updateOutreachEmail(id, { status: "queued" });
+            approved++;
+          } catch {}
+        }
+        return { approved };
+      }),
+
+    getPipelineStatus: adminProcedure.query(async () => {
+      const { loadState } = await import("./outreachPipeline");
+      return loadState();
+    }),
+
+    setPipelineConfig: adminProcedure
+      .input(z.object({
+        enabled: z.boolean().optional(),
+        dailyLimit: z.number().min(1).max(500).optional(),
+        batchSize: z.number().min(1).max(50).optional(),
+        intervalMinutes: z.number().min(5).max(1440).optional(),
+        targetCitySlugs: z.array(z.string()).optional(),
+        targetIndustryKeys: z.array(z.string()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { loadState, saveState } = await import("./outreachPipeline");
+        const state = loadState();
+        state.config = { ...state.config, ...input };
+        saveState(state);
+        return { success: true, config: state.config };
+      }),
+
+    triggerPipeline: adminProcedure.mutation(async () => {
+      // Manual trigger always runs, even if pipeline is disabled
+      const { runPipelineCycle } = await import("./outreachPipeline");
+      const result = await runPipelineCycle({ forceRun: true });
+      return result;
+    }),
   }),
 
   // ── Admin: Template Uploads ───────────────────────
@@ -2193,49 +2783,33 @@ Antworte NUR mit validem JSON:
   checkout: router({
     createSession: publicProcedure
       .input(z.object({
-        websiteId: z.number(),
+        websiteId:       z.number(),
+        billingInterval: z.enum(["monthly", "yearly"]).default("yearly"),
         addOns: z.object({
-          subpages: z.number().default(0),
-          features: z.object({
-            gallery: z.boolean().default(false),
-            contactForm: z.boolean().default(false),
-            menu: z.boolean().default(false),
-            pricelist: z.boolean().default(false),
-          }).default({}),
-        }).default({ subpages: 0, features: {} }),
+          contactForm: z.boolean().default(false),
+          gallery:     z.boolean().default(false),
+          menu:        z.boolean().default(false),
+          pricelist:   z.boolean().default(false),
+          aiChat:      z.boolean().default(false),
+          booking:     z.boolean().default(false),
+        }).default({}),
       }))
       .mutation(async ({ input, ctx }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
 
-        let totalAmount = PRICING.base.amount;
-        const addOnsList: string[] = [];
-        const featureCount = Object.values(input.addOns.features).filter(Boolean).length;
+        const baseAmount  = PRICING.base[input.billingInterval];
+        const activeAddOns = (Object.entries(input.addOns) as [AddOnKey, boolean][]).filter(([, v]) => v);
+        const totalAmount  = baseAmount + activeAddOns.reduce((sum, [k]) => sum + addonPrice(k), 0);
 
-        // Unterseiten berechnen (2,50 € pro Stück)
-        if (input.addOns.subpages > 0) {
-          totalAmount += input.addOns.subpages * PRICING.subpage.amount;
-          addOnsList.push(`${input.addOns.subpages}x Unterseite`);
-        }
+        const basePriceStr  = (baseAmount / 100).toFixed(2).replace(".", ",");
+        const intervalLabel = input.billingInterval === "yearly" ? "Jahresabo" : "monatlich";
+        const description   = [
+          `${basePriceStr} €/Mo Basis (${intervalLabel})`,
+          ...activeAddOns.map(([k]) => ADDON_NAMES[k]),
+        ].join(" + ");
 
-        // Features berechnen (3,90 € pro Feature)
-        if (featureCount > 0) {
-          totalAmount += featureCount * PRICING.feature.amount;
-
-          // Feature-Namen sammeln
-          (Object.entries(input.addOns.features) as [FeatureType, boolean][])
-            .filter(([, enabled]) => enabled)
-            .forEach(([type]) => addOnsList.push(FEATURE_NAMES[type]));
-        }
-
-        // Beschreibung erstellen
-        const basePrice = (PRICING.base.amount / 100).toFixed(2).replace('.', ',');
-        const descriptionParts = [`${basePrice} €/Monat Basis`];
-        if (addOnsList.length > 0) {
-          descriptionParts.push(addOnsList.join(', '));
-        }
-        const totalPrice = (totalAmount / 100).toFixed(2).replace('.', ',');
-
+        const origin = ctx.req.headers.origin || "https://pageblitz.de";
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
           mode: "subscription",
@@ -2245,27 +2819,33 @@ Antworte NUR mit validem JSON:
               price_data: {
                 currency: "eur",
                 product_data: {
-                  name: `Pageblitz Website - ${website.businessName || website.slug}`,
-                  description: descriptionParts.join(' + '),
+                  name: `Pageblitz – ${website.businessName || (website.websiteData as any)?.businessName || "Deine Website"}`,
+                  description,
                 },
                 unit_amount: totalAmount,
-                recurring: { interval: "month", interval_count: 1 },
+                recurring: { interval: "month" },
+                // Alle Preise sind Bruttopreise inkl. MwSt. – Stripe rechnet KEINE Steuer drauf
+                tax_behavior: "inclusive" as const,
               },
               quantity: 1,
             },
           ],
-          success_url: `${ctx.req.headers.origin}/websites/${website.id}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${ctx.req.headers.origin}/admin/websites`,
+          subscription_data: {
+            trial_period_days: 7,
+          },
+          success_url: `${origin}/my-website?checkout=success`,
+          cancel_url:  `${origin}/start`,
           metadata: {
-            websiteId: website.id.toString(),
-            userId: ctx.user?.id.toString() || "anonymous",
-            addOns: JSON.stringify(input.addOns),
-            totalAmount: totalAmount.toString(),
+            websiteId:       website.id.toString(),
+            userId:          ctx.user?.id?.toString() || "0",
+            billingInterval: input.billingInterval,
+            addOns:          JSON.stringify(input.addOns),
+            totalAmount:     totalAmount.toString(),
           },
         });
 
         if (!session.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Stripe session URL not generated" });
-        return { url: session.url, sessionId: session.id, totalAmount, addOnsList };
+        return { url: session.url, sessionId: session.id, totalAmount, addOnsList: activeAddOns.map(([k]) => ADDON_NAMES[k]) };
       }),
   }),
   
@@ -2428,6 +3008,24 @@ Kontext: ${input.context}`,
         return { email: null, source: null };
       }),
 
+    logStep: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        step: z.string(),
+        stepIndex: z.number(),
+        event: z.enum(["reached", "completed", "skipped"]).default("reached"),
+      }))
+      .mutation(async ({ input }) => {
+        await logOnboardingEvent(input);
+        return { success: true };
+      }),
+
+    getStepEvents: adminProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        return getStepEventsForWebsite(input.websiteId);
+      }),
+
     saveStep: publicProcedure
       .input(z.object({
         websiteId: z.number(),
@@ -2521,6 +3119,30 @@ Kontext: ${input.context}`,
           });
         }
 
+        // If brandLogo changed, persist logoFont / logoImageUrl into websiteData
+        if (safeData.brandLogo !== undefined && safeData.brandLogo !== null) {
+          const currentWd = website.websiteData ? JSON.parse(JSON.stringify(website.websiteData)) : null;
+          if (currentWd) {
+            if (typeof safeData.brandLogo === 'string' && safeData.brandLogo.startsWith("font:")) {
+              currentWd.logoFont = safeData.brandLogo.replace("font:", "");
+              delete currentWd.logoImageUrl;
+            } else if (typeof safeData.brandLogo === 'string' && safeData.brandLogo.startsWith("url:")) {
+              currentWd.logoImageUrl = safeData.brandLogo.replace("url:", "");
+              delete currentWd.logoFont;
+            }
+            await updateWebsite(input.websiteId, { websiteData: currentWd });
+          }
+        }
+
+        // If headlineFont changed, persist into websiteData.designTokens
+        if (safeData.headlineFont) {
+          const currentWd = website.websiteData ? JSON.parse(JSON.stringify(website.websiteData)) : null;
+          if (currentWd) {
+            currentWd.designTokens = { ...(currentWd.designTokens || {}), headlineFont: safeData.headlineFont };
+            await updateWebsite(input.websiteId, { websiteData: currentWd });
+          }
+        }
+
         // If colorScheme changed, immediately update colorScheme in generated_websites
         // so the Preview page shows the same colors as the Onboarding Chat live preview.
         if (safeData.colorScheme) {
@@ -2580,11 +3202,74 @@ Kontext: ${input.context}`,
           photoUrls: onboarding.photoUrls,
         });
         
+        // Inject contact items from manual onboarding data (phone, email, address, opening hours)
+        const contactItems: Array<{ title: string; description: string; icon: string }> = [];
+        if (onboarding.legalPhone)
+          contactItems.push({ title: 'Telefon', description: onboarding.legalPhone, icon: 'Phone' });
+        if (onboarding.legalEmail)
+          contactItems.push({ title: 'E-Mail', description: onboarding.legalEmail, icon: 'Mail' });
+        const addrParts = [
+          onboarding.legalStreet,
+          `${onboarding.legalZip || ''} ${onboarding.legalCity || ''}`.trim(),
+        ].filter(Boolean);
+        const addrStr = addrParts.join(', ');
+        if (addrStr)
+          contactItems.push({ title: 'Adresse', description: addrStr, icon: 'MapPin' });
+        const ohRaw = (onboarding as any).openingHours;
+        if (ohRaw && Array.isArray(ohRaw) && ohRaw.length > 0) {
+          const ohText = formatOpeningHoursText(ohRaw);
+          if (ohText) contactItems.push({ title: 'Öffnungszeiten', description: ohText, icon: 'Clock' });
+        }
+        if (contactItems.length > 0 && patchedData) {
+          // Ensure sections array exists (some non-GMB websites might not have one yet)
+          if (!(patchedData as any).sections) (patchedData as any).sections = [];
+          (patchedData as any).sections = (patchedData as any).sections.filter((s: any) => s.type !== 'contact');
+          (patchedData as any).sections.push({
+            type: 'contact',
+            headline: 'Kontakt',
+            items: contactItems,
+            content: 'Wir freuen uns auf Ihre Nachricht.',
+            ctaText: 'Nachricht senden',
+          });
+        }
+
+        // Apply user's section order and hidden sections from hideSections step
+        const savedSectionOrder: string[] | undefined = (onboarding as any).sectionOrder;
+        const savedHiddenSections: string[] | undefined = (onboarding as any).hiddenSections;
+        if (patchedData && (patchedData as any).sections) {
+          let secs = (patchedData as any).sections;
+          if (savedHiddenSections && savedHiddenSections.length > 0) {
+            secs = secs.filter((s: any) => !savedHiddenSections.includes(s.type));
+          }
+          if (savedSectionOrder && savedSectionOrder.length > 0) {
+            const heroSec = secs.find((s: any) => s.type === 'hero');
+            const others = secs.filter((s: any) => s.type !== 'hero');
+            others.sort((a: any, b: any) => {
+              const ai = savedSectionOrder.indexOf(a.type);
+              const bi = savedSectionOrder.indexOf(b.type);
+              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            });
+            secs = heroSec ? [heroSec, ...others] : others;
+          }
+          (patchedData as any).sections = secs;
+        }
+
         // Also update the business category in the business table if it changed
         if ((onboarding as any).businessCategory && website.businessId) {
           try {
             await updateBusiness(website.businessId, { category: (onboarding as any).businessCategory });
           } catch { /* non-critical */ }
+        }
+
+        // Sync phone/address/opening hours back to business table for future regenerations
+        if (website.businessId) {
+          const bizUpd: Record<string, any> = {};
+          if (onboarding.legalPhone) bizUpd.phone = onboarding.legalPhone;
+          if (addrStr) bizUpd.address = addrStr;
+          if (ohRaw) bizUpd.openingHours = ohRaw;
+          if (Object.keys(bizUpd).length > 0) {
+            try { await updateBusiness(website.businessId, bizUpd); } catch { /* non-critical */ }
+          }
         }
         
         // Generate legal pages if legal data is present
@@ -2635,26 +3320,39 @@ Kontext: ${input.context}`,
           colorScheme: patchedColorScheme,
           onboardingStatus: "completed",
           hasLegalPages: !!(impressumHtml && datenschutzHtml),
-          status: "active",
         };
+        // Website nur aktivieren, wenn Voraussetzungen erfüllt (Email + Subscription)
+        const activation = await canActivateWebsite(input.websiteId);
+        if (activation.ok) {
+          websiteUpdateData.status = "active";
+          websiteUpdateData.captureStatus = "converted";
+        }
         // Persist hero and about photo URLs chosen during onboarding
         if (onboarding.heroPhotoUrl) websiteUpdateData.heroImageUrl = onboarding.heroPhotoUrl;
         if (onboarding.aboutPhotoUrl) websiteUpdateData.aboutImageUrl = onboarding.aboutPhotoUrl;
         await updateWebsite(input.websiteId, websiteUpdateData);
-        
+
+        // Register in Umami Analytics (non-critical, fire-and-forget)
+        const domain = website.slug + ".pageblitz.de";
+        registerUmamiWebsite(website.slug, domain)
+          .then((umamiId) => {
+            if (umamiId) updateWebsite(input.websiteId, { umamiWebsiteId: umamiId });
+          })
+          .catch(() => { /* non-critical */ });
+
         // Mark onboarding as completed
         await updateOnboarding(input.websiteId, {
           status: "completed",
           completedAt: Date.now(),
           updatedAt: Date.now(),
         });
-        
+
         // Notify owner
         await notifyOwner({
           title: "Onboarding abgeschlossen",
           content: `Website ${website.slug} wurde durch Onboarding aktiviert.`,
         });
-        
+
         return { success: true };
       }),
     
@@ -2698,6 +3396,16 @@ Kontext: ${input.context}`,
       }),
 
     // Get industry-specific photo suggestions for the hero image step
+    searchStockPhotos: publicProcedure
+      .input(z.object({
+        query: z.string().min(2).max(100),
+        page: z.number().optional().default(1),
+        perPage: z.number().optional().default(12),
+      }))
+      .query(async ({ input }) => {
+        return searchStockPhotos(input.query, input.page, input.perPage);
+      }),
+
     getPhotoSuggestions: publicProcedure
       .input(z.object({ category: z.string(), businessName: z.string().optional() }))
       .query(async ({ input }) => {
@@ -2788,15 +3496,490 @@ Kontext: ${input.context}`,
     getMyWebsites: protectedProcedure.query(async ({ ctx }) => {
       const userId = ctx.user.id;
       const rows = await getWebsitesByUserId(userId);
-      // Enrich with business data
+      // Enrich with business data + auto-sync currentPeriodEnd from Stripe if missing
       const results = await Promise.all(
         rows.map(async (row) => {
           const business = await getBusinessById(row.website.businessId);
+          // Fetch currentPeriodEnd from Stripe if not yet stored (use compat client)
+          if (row.subscription && !row.subscription.currentPeriodEnd && row.subscription.stripeSubscriptionId) {
+            try {
+              const stripeSub = await stripeCompat.subscriptions.retrieve(row.subscription.stripeSubscriptionId);
+              const periodEnd = (stripeSub as any).current_period_end as number | undefined;
+              if (periodEnd) {
+                await updateSubscription(row.subscription.id, { currentPeriodEnd: periodEnd, updatedAt: Date.now() });
+                (row.subscription as any).currentPeriodEnd = periodEnd;
+              }
+            } catch (e) {
+              console.warn("[getMyWebsites] Could not fetch Stripe subscription period:", e);
+            }
+          }
+          // Auto-migrate: if colorScheme is missing, reconstruct from industry and save
+          if (!row.website.colorScheme) {
+            try {
+              const cs = getIndustryColorScheme(row.website.industry || "default", business?.name || "");
+              await updateWebsite(row.website.id, { colorScheme: cs });
+              (row.website as any).colorScheme = cs;
+            } catch (e) {
+              console.warn("[getMyWebsites] colorScheme migration failed:", e);
+            }
+          }
+          // Inject ID into websiteData for stable randomization seed in frontend
+          // (mirrors the same injection in website.get so preview matches live site)
+          if (row.website.websiteData) {
+            (row.website.websiteData as any).id = row.website.id;
+            // Inject showBranding so layout components can read it from websiteData
+            (row.website.websiteData as any).showBranding = row.website.showBranding !== false;
+          }
           return { website: row.website, subscription: row.subscription, business };
         })
       );
       return results;
     }),
+
+    // Upload logo from the customer dashboard (authenticated)
+    uploadLogoForWebsite: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        imageData: z.string(),
+        mimeType: z.string().default("image/png"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const result = await uploadLogo(input.imageData, input.mimeType, input.websiteId);
+        // Store logo URL in websiteData.logoImageUrl (where layouts read it from)
+        const websiteData = (row.website.websiteData as any) || {};
+        await updateWebsite(input.websiteId, {
+          websiteData: { ...websiteData, logoImageUrl: result.url },
+        });
+        // Also keep onboarding in sync
+        await updateOnboarding(input.websiteId, { logoUrl: result.url, updatedAt: Date.now() });
+        return { url: result.url };
+      }),
+
+    changeLayout: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        layoutStyle: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        await updateWebsite(input.websiteId, { layoutStyle: input.layoutStyle });
+        return { success: true };
+      }),
+
+    getImageSuggestions: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        const website = row.website;
+        const business = await getBusinessById(website.businessId);
+        const industry = website.industry || "default";
+        const bizName = business?.name || "";
+        // Stock photos: hero image + gallery images for this industry
+        const stockHero = getHeroImageUrl(industry, bizName);
+        const stockGallery = getGalleryImages(industry, bizName);
+        const stockPhotos = [...new Set([stockHero, ...stockGallery])].filter(Boolean) as string[];
+        return { stockPhotos };
+      }),
+
+    // ── AI Chat: Leads + Settings ────────────────────────────────────────────
+    getChatLeads: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const _db = await getDb();
+        const leads = _db ? await _db
+          .select()
+          .from(chatLeads)
+          .where(eqDrizzle(chatLeads.websiteId, input.websiteId))
+          .orderBy(desc(chatLeads.createdAt))
+          .limit(100) : [];
+
+        return { leads };
+      }),
+
+    markChatLeadRead: protectedProcedure
+      .input(z.object({ leadId: z.number(), websiteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const _db = await getDb();
+        if (_db) await _db
+          .update(chatLeads)
+          .set({ readAt: new Date() })
+          .where(eqDrizzle(chatLeads.id, input.leadId));
+
+        return { success: true };
+      }),
+
+    deleteChatLead: protectedProcedure
+      .input(z.object({ leadId: z.number(), websiteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const _db = await getDb();
+        if (_db) await _db
+          .delete(chatLeads)
+          .where(andDrizzle(eqDrizzle(chatLeads.id, input.leadId), eqDrizzle(chatLeads.websiteId, input.websiteId)));
+
+        return { success: true };
+      }),
+
+    getChatTranscripts: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const transcripts = await getChatTranscriptsByWebsiteId(input.websiteId, 100);
+        return { transcripts };
+      }),
+
+    deleteChatTranscript: protectedProcedure
+      .input(z.object({ transcriptId: z.number(), websiteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        await deleteChatTranscriptById(input.transcriptId);
+        return { success: true };
+      }),
+
+    getChatSettings: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const w = row.website as any;
+        return {
+          addOnAiChat: w.addOnAiChat ?? false,
+          addOnCalendly: w.addOnCalendly ?? false,
+          calendlyUrl: w.calendlyUrl ?? "",
+          chatWelcomeMessage: w.chatWelcomeMessage ?? "",
+          chatUsageCount: w.chatUsageCount ?? 0,
+          chatUsageResetAt: w.chatUsageResetAt ?? null,
+        };
+      }),
+
+    updateChatSettings: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        calendlyUrl: z.string().max(512).optional(),
+        chatWelcomeMessage: z.string().max(512).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        const updateData: Record<string, any> = {};
+        if (input.calendlyUrl !== undefined) updateData.calendlyUrl = input.calendlyUrl || null;
+        if (input.chatWelcomeMessage !== undefined) updateData.chatWelcomeMessage = input.chatWelcomeMessage || null;
+
+        const _db = await getDb();
+        if (_db) await _db
+          .update(generatedWebsites)
+          .set(updateData)
+          .where(eqDrizzle(generatedWebsites.id, input.websiteId));
+
+        return { success: true };
+      }),
+
+    // ── Booking: Settings + Appointments ────────────────────────────────────
+    getBookingSettings: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        const [settings] = _db ? await _db
+          .select()
+          .from(appointmentSettings)
+          .where(eqDrizzle(appointmentSettings.websiteId, input.websiteId))
+          .limit(1) : [undefined];
+
+        return {
+          addOnBooking: !!(row.website as any).addOnBooking,
+          settings: settings ?? null,
+        };
+      }),
+
+    saveBookingSettings: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        enabled: z.boolean(),
+        weeklySchedule: z.record(z.string(), z.any()),
+        durationMinutes: z.number().min(15).max(240),
+        bufferMinutes: z.number().min(0).max(120),
+        advanceDays: z.number().min(1).max(90),
+        title: z.string().max(255).optional(),
+        description: z.string().max(1000).optional(),
+        notificationEmail: z.string().email().max(320).optional().nullable(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        if (!_db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        // Enable/disable add-on
+        await _db.update(generatedWebsites)
+          .set({ addOnBooking: input.enabled })
+          .where(eqDrizzle(generatedWebsites.id, input.websiteId));
+
+        // Upsert settings
+        const [existing] = await _db.select({ id: appointmentSettings.id })
+          .from(appointmentSettings)
+          .where(eqDrizzle(appointmentSettings.websiteId, input.websiteId))
+          .limit(1);
+
+        const settingsData = {
+          weeklySchedule: input.weeklySchedule,
+          durationMinutes: input.durationMinutes,
+          bufferMinutes: input.bufferMinutes,
+          advanceDays: input.advanceDays,
+          title: input.title || "Terminbuchung",
+          description: input.description || null,
+          notificationEmail: input.notificationEmail || null,
+        };
+
+        if (existing) {
+          await _db.update(appointmentSettings).set(settingsData).where(eqDrizzle(appointmentSettings.id, existing.id));
+        } else {
+          await _db.insert(appointmentSettings).values({ websiteId: input.websiteId, ...settingsData });
+        }
+
+        return { success: true };
+      }),
+
+    // ── Team Members ──────────────────────────────────────────────────────────
+    getTeamMembers: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        return {
+          members: ((row.website as any).addOnTeamData as any[]) || [],
+          enabled: !!(row.website as any).addOnTeam,
+        };
+      }),
+
+    saveTeamMembers: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        enabled: z.boolean(),
+        members: z.array(z.object({
+          id: z.string(),
+          name: z.string(),
+          role: z.string(),
+          photo: z.string().optional(),
+          email: z.string().optional(),
+          phone: z.string().optional(),
+          bio: z.string().optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const currentWd = row.website.websiteData ? JSON.parse(JSON.stringify(row.website.websiteData)) : {};
+        currentWd.teamMembers = input.enabled ? input.members : [];
+
+        await updateWebsite(input.websiteId, {
+          addOnTeam: input.enabled,
+          addOnTeamData: input.members,
+          websiteData: currentWd,
+        } as any);
+        return { ok: true };
+      }),
+
+    getAppointments: protectedProcedure
+      .input(z.object({ websiteId: z.number(), upcoming: z.boolean().optional().default(true) }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        if (!_db) return { appointments: [] };
+
+        const today = new Date().toISOString().slice(0, 10);
+        const all = await _db
+          .select()
+          .from(appointments)
+          .where(
+            input.upcoming
+              ? andDrizzle(eqDrizzle(appointments.websiteId, input.websiteId), gteDrizzle(appointments.appointmentDate, today))
+              : eqDrizzle(appointments.websiteId, input.websiteId)
+          )
+          .orderBy(appointments.appointmentDate, appointments.appointmentTime)
+          .limit(200);
+
+        return { appointments: all };
+      }),
+
+    cancelAppointmentByOwner: protectedProcedure
+      .input(z.object({
+        appointmentId: z.number(),
+        websiteId: z.number(),
+        cancelMessage: z.string().max(1000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        const _db = await getDb();
+        if (!_db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        // Get appointment details for the cancellation email
+        const [appt] = await _db.select().from(appointments)
+          .where(andDrizzle(eqDrizzle(appointments.id, input.appointmentId), eqDrizzle(appointments.websiteId, input.websiteId)))
+          .limit(1);
+        if (!appt) throw new TRPCError({ code: "NOT_FOUND" });
+
+        await _db.update(appointments)
+          .set({ status: "cancelled" })
+          .where(andDrizzle(eqDrizzle(appointments.id, input.appointmentId), eqDrizzle(appointments.websiteId, input.websiteId)));
+
+        // Send cancellation email to visitor
+        try {
+          const { sendAppointmentCancellationEmail } = await import("./_core/email");
+          await sendAppointmentCancellationEmail({
+            to: appt.email,
+            visitorName: appt.visitorName,
+            appointmentDate: appt.appointmentDate,
+            appointmentTime: appt.appointmentTime,
+            businessName: (row.website.websiteData as any)?.businessName || "Ihr Dienstleister",
+            cancelMessage: input.cancelMessage,
+          });
+        } catch (e) {
+          console.error("[cancelAppointment] Email failed:", e);
+        }
+
+        return { success: true };
+      }),
+
+    // ── Setup-Flow ──────────────────────────────────────
+    checkSlugAvailability: publicProcedure
+      .input(z.object({ slug: z.string(), websiteId: z.number() }))
+      .query(async ({ input }) => {
+        if (input.slug.length < 3) return { available: false };
+        const existing = await getWebsiteBySlug(input.slug);
+        const available = !existing || existing.id === input.websiteId;
+        return { available };
+      }),
+
+    updateSlug: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        slug: z.string().min(3).max(60).regex(/^[a-z0-9-]+$/, "Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row)
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        const existing = await getWebsiteBySlug(input.slug);
+        if (existing && existing.id !== input.websiteId)
+          throw new TRPCError({ code: "CONFLICT", message: "Diese Adresse ist bereits vergeben" });
+        // Preserve the old slug so old URLs can redirect
+        const oldSlug = row.website.slug;
+        await updateWebsite(input.websiteId, {
+          slug: input.slug,
+          ...(oldSlug !== input.slug ? { formerSlug: oldSlug } : {}),
+        });
+        return { success: true };
+      }),
+
+    setLive: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+        const activation = await canActivateWebsite(input.websiteId);
+        if (!activation.ok)
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: activation.reason || "Website kann nicht aktiviert werden" });
+        await updateWebsite(input.websiteId, { status: "active", captureStatus: "converted" });
+        return { success: true };
+      }),
+
+    /** Saves legal owner/email to onboarding and generates Impressum + Datenschutz */
+    generateLegalPages: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        legalOwner: z.string().min(2),
+        legalEmail: z.string().email(),
+        legalStreet: z.string().optional(),
+        legalZip: z.string().optional(),
+        legalCity: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Website gehört nicht zu deinem Account" });
+
+        // Save legal data to onboarding
+        await updateOnboarding(input.websiteId, {
+          legalOwner: input.legalOwner,
+          legalEmail: input.legalEmail,
+          ...(input.legalStreet ? { legalStreet: input.legalStreet } : {}),
+          ...(input.legalZip    ? { legalZip:    input.legalZip    } : {}),
+          ...(input.legalCity   ? { legalCity:   input.legalCity   } : {}),
+        });
+
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+
+        const legalData = {
+          businessName: (website.websiteData as any)?.businessName || onboarding?.businessName || "Unternehmen",
+          legalOwner: input.legalOwner,
+          legalStreet: input.legalStreet || onboarding?.legalStreet || "",
+          legalZip:    input.legalZip    || onboarding?.legalZip    || "",
+          legalCity:   input.legalCity   || onboarding?.legalCity   || "",
+          legalCountry: "Deutschland",
+          legalEmail: input.legalEmail,
+          legalPhone:  onboarding?.legalPhone  || undefined,
+          legalVatId:  onboarding?.legalVatId  || undefined,
+        };
+
+        const impressumHtml    = generateImpressum(legalData);
+        const datenschutzHtml  = generateDatenschutz(legalData);
+        const websiteData      = (website.websiteData as any) || {};
+
+        await updateWebsite(input.websiteId, {
+          websiteData: { ...websiteData, impressumHtml, datenschutzHtml, hasLegalPages: true },
+        });
+
+        return { success: true };
+      }),
+
     updateWebsiteContent: protectedProcedure
       .input(z.object({
         websiteId: z.number(),
@@ -2809,10 +3992,13 @@ Kontext: ${input.context}`,
           address: z.string().optional(),
           heroPhotoUrl: z.string().optional(),
           aboutPhotoUrl: z.string().optional(),
+          logoUrl: z.string().optional(),
           brandColor: z.string().optional(),
           brandSecondaryColor: z.string().optional(),
           sections: z.array(z.any()).optional(),
           hiddenSections: z.array(z.string()).optional(),
+          seoTitle: z.string().optional(),
+          seoDescription: z.string().optional(),
         }),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -2823,10 +4009,12 @@ Kontext: ${input.context}`,
         const website = owned.website;
         // Patch websiteData
         const websiteData = (website.websiteData as any) || {};
-        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl, sections, hiddenSections } = input.patch;
+        const { tagline, description, businessName, phone, email, address, heroPhotoUrl, aboutPhotoUrl, logoUrl, sections, hiddenSections, seoTitle, seoDescription } = input.patch;
         if (tagline !== undefined) websiteData.tagline = tagline;
         if (description !== undefined) websiteData.description = description;
         if (businessName !== undefined) websiteData.businessName = businessName;
+        if (seoTitle !== undefined) websiteData.seoTitle = seoTitle;
+        if (seoDescription !== undefined) websiteData.seoDescription = seoDescription;
         // Patch sections
         if ((tagline || description) && Array.isArray(websiteData.sections)) {
           websiteData.sections = websiteData.sections.map((s: any) => {
@@ -2851,6 +4039,7 @@ Kontext: ${input.context}`,
         const updateData: any = { websiteData, colorScheme };
         if (heroPhotoUrl !== undefined) updateData.heroImageUrl = heroPhotoUrl;
         if (aboutPhotoUrl !== undefined) updateData.aboutImageUrl = aboutPhotoUrl;
+        if (logoUrl !== undefined) websiteData.logoImageUrl = logoUrl === "" ? undefined : logoUrl;
         // Patch business contact info
         if (phone !== undefined || email !== undefined || address !== undefined) {
           const biz = await getBusinessById(website.businessId);
@@ -2864,6 +4053,132 @@ Kontext: ${input.context}`,
         }
         await updateWebsite(input.websiteId, updateData);
         return { success: true };
+      }),
+
+    // ── KI-basierter Inhaltseditor ────────────────────────────────────────
+    applyAiEdit: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        userMessage: z.string().min(3).max(1200),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Nicht autorisiert" });
+
+        const websiteData = (owned.website.websiteData as any) || {};
+
+        // Strip large non-editable blobs before sending to LLM
+        const editableData: any = { ...websiteData };
+        delete editableData.impressumHtml;
+        delete editableData.datenschutzHtml;
+        delete editableData.hasLegalPages;
+
+        const systemPrompt = `Du bist ein Website-Inhalts-Editor für deutsche Kleinunternehmer auf der Plattform Pageblitz.
+Du erhältst die aktuellen Website-Daten als JSON-Objekt und eine Änderungsanfrage.
+
+Deine Regeln:
+1. Setze exakt die Änderung um, die der Nutzer beschreibt – nicht mehr, nicht weniger.
+2. Lasse alle nicht betroffenen Felder und deren Werte absolut unverändert.
+3. Antworte AUSSCHLIESSLICH mit dem vollständig aktualisierten JSON-Objekt – kein Text davor oder danach, kein Markdown, kein Code-Block.
+4. Behalte die exakte JSON-Struktur (Schlüsselnamen, Arrays, Typen) unverändert.
+5a. HINZUFÜGEN-Regel: Wenn der Nutzer Elemente "hinzufügen", "ergänzen", "erweitern" oder "noch X weitere" möchte → ERWEITERE das bestehende Array. Niemals das gesamte Array ersetzen!
+5. Füge dem JSON-Objekt immer diese zwei Meta-Felder hinzu:
+   - "_mode" – Entscheidungsregel:
+     • "apply"   → Nutzer gibt den GENAUEN neuen Inhalt vor (z.B. "setze den Slogan auf 'X'", "ersetze Y durch Z", "mach den Text kürzer"). Du setzt 1:1 um, was vorgegeben wird.
+     • "suggest" → Nutzer bittet die KI, den Inhalt SELBST ZU WÄHLEN oder schlägt vor, etwas zu verbessern (z.B. "schlage vor", "was würdest du empfehlen?", "finde passende X", "optimiere", "verbessere", "welche würden passen?", "ich hätte gerne X – schlage welche vor"). AUCH WENN der Nutzer ein klares Ziel nennt (z.B. "6 Leistungen"), aber die KI die konkreten Inhalte aussucht → immer "suggest"!
+     • "chat"    → Meta-Frage oder Gesprächsnachricht OHNE jede Änderung (z.B. "was hast du geändert?", "erkläre das", "wieso?"). Bei "chat" lasse ALLE Daten unverändert.
+   - "_aiMessage": Kurze deutsche Antwort (max. 150 Zeichen). Bei "apply": z.B. "Slogan auf '...' geändert." Bei "suggest": z.B. "Wie wäre es mit: X, Y und Z?" Bei "chat": direkte Antwort.
+
+Wichtige Felder im JSON:
+- businessName: Unternehmensname
+- tagline: Hauptslogan (kurz, einprägsam)
+- description: Ausführlichere Beschreibung
+- usp: Alleinstellungsmerkmal / USP-Text
+- seoTitle: Google-Titel (max. 60 Zeichen)
+- seoDescription: Meta-Beschreibung (max. 155 Zeichen)
+- sections[]: Array der Sektionen – jede hat type + spezifische Felder:
+  • hero → headline, subheadline, ctaText
+  • about → headline, text (oder items[])
+  • services / features → headline, items[{title, description, icon}]
+  • testimonials → headline, items[{name, text, rating}]
+  • process → headline, items[{step, title, description}]
+  • cta → headline, subheadline, ctaText
+  • contact → headline
+  • gallery → headline
+  • menu → headline, categories[{name, items[{name, description, price}]}]
+  • pricelist → headline, categories[{name, items[{name, description, price}]}]
+- footer: { text, links[] }`;
+
+        const userPrompt = `Aktuelle Website-Daten:\n${JSON.stringify(editableData, null, 2)}\n\nÄnderungsanfrage: ${input.userMessage}`;
+
+        let updatedData: any;
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            max_tokens: 6000,
+            response_format: { type: "json_object" },
+          });
+          const raw = response.choices[0]?.message?.content;
+          const rawStr = typeof raw === "string" ? raw : JSON.stringify(raw);
+          updatedData = JSON.parse(rawStr);
+        } catch (e) {
+          console.error("[applyAiEdit] LLM/parse error:", e);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "KI-Antwort konnte nicht verarbeitet werden. Bitte versuche es erneut.",
+          });
+        }
+
+        // Extract meta fields before saving
+        const rawMode = updatedData._mode;
+        const mode: "apply" | "suggest" | "chat" =
+          rawMode === "suggest" ? "suggest" :
+          rawMode === "chat" ? "chat" :
+          "apply";
+        const aiMessage: string = typeof updatedData._aiMessage === "string"
+          ? updatedData._aiMessage
+          : mode === "apply" ? "Änderung wurde übernommen." : "Hier ist mein Vorschlag.";
+        delete updatedData._mode;
+        delete updatedData._aiMessage;
+
+        // Re-attach preserved fields
+        const mergedData = {
+          ...updatedData,
+          impressumHtml: websiteData.impressumHtml,
+          datenschutzHtml: websiteData.datenschutzHtml,
+          hasLegalPages: websiteData.hasLegalPages,
+        };
+
+        if (mode === "chat") {
+          // Pure conversational reply — don't save or show confirm buttons
+          return { mode: "chat" as const, aiMessage };
+        }
+
+        if (mode === "suggest") {
+          // Don't save yet – return proposal to frontend for confirmation
+          return { mode: "suggest" as const, aiMessage, proposedData: mergedData };
+        }
+
+        await updateWebsite(input.websiteId, { websiteData: mergedData });
+        return { mode: "apply" as const, aiMessage, updatedData: mergedData };
+      }),
+
+    // Confirm a pending AI suggestion
+    confirmAiEdit: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        proposedData: z.any(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find((r) => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nicht autorisiert" });
+        await updateWebsite(input.websiteId, { websiteData: input.proposedData });
+        return { success: true, updatedData: input.proposedData };
       }),
 
     // Update legal data and regenerate Impressum/Datenschutz pages
@@ -3106,7 +4421,16 @@ Kontext: ${input.context}`,
       .input(z.object({
         websiteId: z.number(),
         addOns: z.object({
-          gallery: z.object({ enabled: z.boolean(), photos: z.array(z.string()).optional() }).optional(),
+          gallery: z.object({
+            enabled: z.boolean(),
+            photos: z.array(z.string()).optional(),
+            mode: z.enum(['single', 'albums']).optional(),
+            albums: z.array(z.object({
+              id: z.string(),
+              name: z.string(),
+              images: z.array(z.string()),
+            })).optional(),
+          }).optional(),
           menu: z.object({
             enabled: z.boolean(),
             categories: z.array(z.object({
@@ -3132,6 +4456,10 @@ Kontext: ${input.context}`,
             required: z.boolean(),
             options: z.array(z.string()).optional(),
           })).optional().nullable(),
+          aiChat: z.boolean().optional(),
+          calendly: z.boolean().optional(),
+          calendlyUrl: z.string().max(512).optional(),
+          chatWelcomeMessage: z.string().max(512).optional(),
         }),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -3152,27 +4480,49 @@ Kontext: ${input.context}`,
           updatedAt: Date.now(),
         });
 
+        // AI Chat add-ons: write directly to generated_websites
+        const chatUpdate: Record<string, any> = {};
+        if (input.addOns.aiChat !== undefined) chatUpdate.addOnAiChat = input.addOns.aiChat;
+        if (input.addOns.calendly !== undefined) chatUpdate.addOnCalendly = input.addOns.calendly;
+        if (input.addOns.calendlyUrl !== undefined) chatUpdate.calendlyUrl = input.addOns.calendlyUrl || null;
+        if (input.addOns.chatWelcomeMessage !== undefined) chatUpdate.chatWelcomeMessage = input.addOns.chatWelcomeMessage || null;
+        if (Object.keys(chatUpdate).length > 0) {
+          const _dbChat = await getDb();
+          if (_dbChat) await _dbChat.update(generatedWebsites).set(chatUpdate).where(eqDrizzle(generatedWebsites.id, input.websiteId));
+        }
+
         // Update websiteData sections based on add-ons
         const websiteData = (website.websiteData as any) || {};
         let sections = Array.isArray(websiteData.sections) ? websiteData.sections : [];
 
-        // Handle gallery - convert photos to items format expected by layouts
+        // Handle gallery
         if (input.addOns.gallery?.enabled) {
           const hasGallery = sections.some((s: any) => s.type === "gallery");
-          const galleryItems = input.addOns.gallery.photos?.map((url: string) => ({ imageUrl: url, title: "" })) || [];
-          if (!hasGallery) {
-            sections.push({
+          const mode = input.addOns.gallery.mode || 'single';
+          const albums = input.addOns.gallery.albums || [];
+          let gallerySection: any;
+          if (mode === 'albums') {
+            gallerySection = {
               type: "gallery",
               headline: "Galerie",
-              items: galleryItems,
-            });
+              mode: "albums",
+              albums,
+              items: [],
+            };
           } else {
-            sections = sections.map((s: any) => {
-              if (s.type === "gallery") {
-                return { ...s, items: galleryItems };
-              }
-              return s;
-            });
+            const galleryItems = (input.addOns.gallery.photos || []).map((url: string) => ({ imageUrl: url, title: "" }));
+            gallerySection = {
+              type: "gallery",
+              headline: "Galerie",
+              mode: "single",
+              albums: [],
+              items: galleryItems,
+            };
+          }
+          if (!hasGallery) {
+            sections.push(gallerySection);
+          } else {
+            sections = sections.map((s: any) => s.type === "gallery" ? { ...s, ...gallerySection } : s);
           }
         } else if (input.addOns.gallery?.enabled === false) {
           sections = sections.filter((s: any) => s.type !== "gallery");
@@ -3263,6 +4613,78 @@ Kontext: ${input.context}`,
         return { success: true };
       }),
 
+    purchaseAddon: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        addonKey: z.enum(["contactForm", "gallery", "menu", "pricelist", "aiChat", "booking", "team"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find(r => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN" });
+        if (!row.subscription) throw new TRPCError({ code: "NOT_FOUND", message: "Kein aktives Abonnement gefunden." });
+
+        // Guard: prevent double-charging if add-on is already active
+        const currentAddOns = (row.subscription.addOns as Record<string, any>) || {};
+        const alreadyActive =
+          currentAddOns[input.addonKey] === true ||
+          currentAddOns.features?.[input.addonKey] === true;
+        if (alreadyActive) {
+          return { success: true, alreadyOwned: true };
+        }
+
+        const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
+        if (stripeSubscriptionId) {
+          // tax_behavior "inclusive" = Preis ist Brutto inkl. MwSt.
+          const price = await stripe.prices.create({
+            currency: "eur",
+            unit_amount: addonPrice(input.addonKey),
+            recurring: { interval: "month" },
+            product_data: { name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}` },
+            tax_behavior: "inclusive",
+          } as any);
+
+          await stripe.subscriptionItems.create({
+            subscription: stripeSubscriptionId,
+            price: price.id,
+            quantity: 1,
+            proration_behavior: "create_prorations",
+          } as any);
+        }
+
+        // Update addOns record in DB
+        const newAddOns = { ...currentAddOns, [input.addonKey]: true };
+        await updateSubscription(row.subscription.id, { addOns: newAddOns, updatedAt: Date.now() });
+
+        // Auto-enable the feature on the website
+        const _db = await getDb();
+        if (_db) {
+          if (input.addonKey === "aiChat") {
+            await _db.update(generatedWebsites).set({ addOnAiChat: true }).where(eqDrizzle(generatedWebsites.id, input.websiteId));
+          } else if (input.addonKey === "booking") {
+            await _db.update(generatedWebsites).set({ addOnBooking: true }).where(eqDrizzle(generatedWebsites.id, input.websiteId));
+          }
+        }
+
+        return { success: true };
+      }),
+
+    createBillingPortalSession: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const row = rows.find((r) => r.website.id === input.websiteId);
+        if (!row) throw new TRPCError({ code: "FORBIDDEN" });
+        const stripeCustomerId = row.subscription?.stripeCustomerId;
+        if (!stripeCustomerId) throw new TRPCError({ code: "NOT_FOUND", message: "Kein Stripe-Kundenkonto gefunden. Bitte kontaktiere den Support." });
+        const origin = ctx.req.headers.origin || "https://pageblitz.de";
+        const session = await stripe.billingPortal.sessions.create({
+          customer: stripeCustomerId,
+          return_url: `${origin}/my-account`,
+        });
+        return { url: session.url };
+      }),
+
     setWebsiteActive: adminProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
@@ -3288,6 +4710,113 @@ Kontext: ${input.context}`,
           });
         }
         await updateWebsite(input.websiteId, { status: "active" });
+        return { success: true };
+      }),
+
+    unlockAllAddons: adminProcedure
+      .input(z.object({ websiteId: z.number(), userId: z.number() }))
+      .mutation(async ({ input }) => {
+        // Enable all add-ons on the website row
+        await updateWebsite(input.websiteId, {
+          status: "active",
+          addOnContactForm: true,
+          addOnGallery: true,
+          addOnMenu: true,
+          addOnPricelist: true,
+          addOnBooking: true,
+          addOnAiChat: true,
+          addOnTeam: true,
+        } as any);
+        // Create or update subscription with all add-ons enabled
+        const existing = await getSubscriptionByWebsiteId(input.websiteId);
+        const allAddOns = { contactForm: true, gallery: true, menu: true, pricelist: true, booking: true, aiChat: true, team: true };
+        if (existing) {
+          await updateSubscriptionByWebsiteId(input.websiteId, {
+            userId: input.userId,
+            status: "active",
+            addOns: allAddOns,
+          });
+        } else {
+          await createSubscription({
+            websiteId: input.websiteId,
+            userId: input.userId,
+            status: "active",
+            plan: "base",
+            addOns: allAddOns,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }
+        return { success: true };
+      }),
+
+    getAnalytics: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const umamiWebsiteId = (owned.website as any).umamiWebsiteId as string | null | undefined;
+        if (!umamiWebsiteId) return null;
+        const stats = await getUmamiStats(umamiWebsiteId);
+        return stats;
+      }),
+
+    updateContactEmail: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        contactEmail: z.string().email().max(320).or(z.literal("")),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        await updateWebsite(input.websiteId, { contactEmail: input.contactEmail || null } as any);
+        return { success: true };
+      }),
+
+    updateShowBranding: protectedProcedure
+      .input(z.object({ websiteId: z.number(), showBranding: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        if (!rows.find(r => r.website.id === input.websiteId))
+          throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        await updateWebsite(input.websiteId, { showBranding: input.showBranding } as any);
+        return { success: true };
+      }),
+
+    getSubmissions: protectedProcedure
+      .input(z.object({ websiteId: z.number(), includeArchived: z.boolean().default(false) }))
+      .query(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find((r) => r.website.id === input.websiteId);
+        if (!owned) throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        const submissions = await getContactSubmissionsByWebsiteId(input.websiteId, { includeArchived: input.includeArchived });
+        const unreadCount = await countUnreadSubmissions(input.websiteId);
+        return { submissions, unreadCount };
+      }),
+
+    markSubmissionRead: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await markSubmissionRead(input.submissionId);
+        return { success: true };
+      }),
+
+    archiveSubmission: protectedProcedure
+      .input(z.object({ submissionId: z.number(), archive: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership via website
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        // We trust the client here (submissionId belongs to one of the user's websites)
+        await archiveSubmission(input.submissionId, input.archive);
+        return { success: true };
+      }),
+
+    deleteSubmission: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteContactSubmission(input.submissionId);
         return { success: true };
       }),
   }),
@@ -3485,6 +5014,28 @@ Kontext: ${input.context}`,
         };
       }),
 
+    /**
+     * Persists the user's template/layout choice from the A/B variant picker.
+     * Uses publicProcedure because the user may not be logged in yet during onboarding.
+     * Security: websiteId must exist; no user-specific ownership check needed here
+     * because the website is only accessible via its previewToken in onboarding.
+     */
+    selectWebsiteTemplate: publicProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        layoutStyle: z.string(),
+        colorScheme: z.record(z.string(), z.any()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        await updateWebsite(input.websiteId, {
+          layoutStyle: input.layoutStyle,
+          ...(input.colorScheme ? { colorScheme: input.colorScheme as any } : {}),
+        });
+        return { success: true };
+      }),
+
     start: publicProcedure
       .input(z.object({
         gmbUrl: z.string().optional(), // optional GMB URL
@@ -3501,11 +5052,7 @@ Kontext: ${input.context}`,
         reviewCount: z.number().optional(), // Google review count from resolveLink
       }))
       .mutation(async ({ input, ctx }) => {
-        // Validate email for external sources (when no user is logged in)
         const isLoggedIn = !!ctx.user;
-        if (!isLoggedIn && input.source === "external" && !input.customerEmail) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "E-Mail-Adresse ist erforderlich" });
-        }
 
         // Create a placeholder business
         const placeholderName = input.businessName || "Neues Unternehmen";
@@ -3518,16 +5065,19 @@ Kontext: ${input.context}`,
           category: input.category || "",
           address: input.address || "",
           phone: input.phone || "",
-          email: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
+          email: input.customerEmail || (isLoggedIn ? ctx.user?.email ?? null : null),
           googleReviews: input.googleReviews?.length ? input.googleReviews : null,
           openingHours: input.openingHours?.length ? input.openingHours : null,
           rating: input.rating || null,
           reviewCount: input.reviewCount || null,
         });
 
-        // Create a preview website
+        // Create a preview website.
+        // Wichtig: captureStatus nur setzen, wenn auch wirklich eine customerEmail aufgelöst werden konnte.
+        // Sonst greift der MySQL-Default (email_captured) und zeigt im Dashboard fälschlich "E-Mail erfasst" an.
         const previewToken = nanoid(32);
         const websiteSlug = `preview-${uniqueSlug}`;
+        const resolvedEmail = input.customerEmail || (isLoggedIn ? ctx.user?.email ?? null : null);
         const websiteId = await createGeneratedWebsite({
           businessId,
           slug: websiteSlug,
@@ -3535,9 +5085,21 @@ Kontext: ${input.context}`,
           previewToken,
           onboardingStatus: "in_progress",
           source: input.source,
-          customerEmail: input.customerEmail || (isLoggedIn ? ctx.user.email : null),
-          captureStatus: (input.customerEmail || isLoggedIn) ? "email_captured" : undefined,
+          customerEmail: resolvedEmail,
+          captureStatus: resolvedEmail ? "email_captured" : "onboarding_started",
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
+
+        // Lifecycle-Mails starten, wenn eine Email da ist (analog zu saveCustomerEmail/captureEmail)
+        if (resolvedEmail) {
+          try {
+            const { scheduleInitialLifecycleEmails, sendImmediateWelcomeEmail } = await import("./_core/lifecycleScheduler");
+            await sendImmediateWelcomeEmail(websiteId, resolvedEmail);
+            await scheduleInitialLifecycleEmails(websiteId, resolvedEmail);
+          } catch (err) {
+            console.warn("[generate] Lifecycle scheduling failed:", err);
+          }
+        }
 
         // If user is logged in, create a subscription to link website to user
         if (isLoggedIn && ctx.user) {
@@ -3587,6 +5149,7 @@ Kontext: ${input.context}`,
       .input(z.object({
         websiteId: z.number(),
         email: z.string().email(),
+        marketingConsent: z.boolean().optional().default(false),
       }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
@@ -3594,7 +5157,16 @@ Kontext: ${input.context}`,
         await updateWebsite(input.websiteId, {
           customerEmail: input.email,
           captureStatus: "email_captured",
+          ...(input.marketingConsent ? { marketingConsent: true, marketingConsentAt: Date.now() } : {}),
         });
+        // Lifecycle-Email-Sequenz starten (fire-and-forget, Fehler darf nicht blocken)
+        try {
+          const { scheduleInitialLifecycleEmails, sendImmediateWelcomeEmail } = await import("./_core/lifecycleScheduler");
+          await sendImmediateWelcomeEmail(input.websiteId, input.email);
+          await scheduleInitialLifecycleEmails(input.websiteId, input.email);
+        } catch (err) {
+          console.warn("[saveCustomerEmail] Lifecycle scheduling failed:", err);
+        }
         return { success: true };
       }),
 
@@ -3664,7 +5236,16 @@ Kontext: ${input.context}`,
           source: "external",
           customerEmail: input.email,
           captureStatus: "email_captured",
+          layoutVersion: CURRENT_LAYOUT_VERSION,
         });
+        // Lifecycle-Email-Sequenz starten (fire-and-forget)
+        try {
+          const { scheduleInitialLifecycleEmails, sendImmediateWelcomeEmail } = await import("./_core/lifecycleScheduler");
+          await sendImmediateWelcomeEmail(websiteId, input.email);
+          await scheduleInitialLifecycleEmails(websiteId, input.email);
+        } catch (err) {
+          console.warn("[captureEmail] Lifecycle scheduling failed:", err);
+        }
         return { websiteId, previewToken };
       }),
 
@@ -3711,6 +5292,7 @@ Kontext: ${input.context}`,
         websiteId: z.number(),
         businessName: z.string(),
         businessCategory: z.string(),
+        addressingMode: z.enum(['du', 'Sie']).optional().default('du'),
       }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
@@ -3719,7 +5301,7 @@ Kontext: ${input.context}`,
         const business = await getBusinessById(website.businessId);
         if (!business) throw new TRPCError({ code: "NOT_FOUND", message: "Business not found" });
 
-        const { businessName, businessCategory } = input;
+        const { businessName, businessCategory, addressingMode } = input;
 
         // Build StoryBrand-aligned prompt for all website content
         const prompt = `Du bist ein Experte für das StoryBrand-Framework von Donald Miller und erstellst Website-Texte für deutsche Kleinunternehmen.
@@ -3728,6 +5310,7 @@ Das StoryBrand-Prinzip: Der KUNDE ist der Held – nicht das Unternehmen. Das Un
 
 Unternehmensname: ${businessName}
 Branche/Kategorie: ${businessCategory}
+Anrede: ${addressingMode === 'Sie' ? 'Besucher IMMER siezen – also "Sie", "Ihnen", "Ihr" verwenden. Niemals "du", "dir", "dein".' : 'Besucher IMMER duzen – also "du", "dir", "dein" verwenden. Niemals "Sie", "Ihnen", "Ihr".'}
 
 Erstelle folgende Website-Texte strikt nach StoryBrand:
 
@@ -3866,7 +5449,20 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           }) || [],
         };
 
-        await updateWebsite(input.websiteId, { websiteData: updatedWebsiteData });
+        // Classify industry and assign visual assets
+        const industryKey = await classifyIndustry(businessCategory, businessName);
+        const reColorScheme = getIndustryColorScheme(businessCategory, businessName, industryKey);
+        const reHeroImageUrl = getHeroImageUrl(businessCategory, businessName, industryKey);
+        const { pool: reLayoutPool } = getLayoutPool(businessCategory, businessName, industryKey);
+        const reLayoutStyle = (website as any).layoutStyle || await getNextLayoutForIndustry(industryKey, reLayoutPool);
+
+        await updateWebsite(input.websiteId, {
+          websiteData: updatedWebsiteData,
+          heroImageUrl: reHeroImageUrl,
+          colorScheme: reColorScheme,
+          industry: businessCategory,
+          layoutStyle: reLayoutStyle,
+        });
 
         return {
           success: true,
@@ -3878,6 +5474,99 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           processSteps:   generatedProcessSteps,
           services:       generatedServices,
         };
+      }),
+  }),
+
+  // ── Public: Contact Form ──────────────────────────────────────
+  contact: router({
+    submit: publicProcedure
+      .input(z.object({
+        slug: z.string(),
+        name: z.string().min(1).max(255),
+        email: z.string().email().max(320),
+        phone: z.string().max(50).optional(),
+        message: z.string().min(1).max(5000),
+        customFields: z.record(z.string(), z.string()).optional(),
+        // Honeypot: filled by bots, must be empty for humans
+        website_url: z.string().max(0).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Honeypot check – bots fill this field
+        if (input.website_url && input.website_url.length > 0) {
+          return { success: true }; // silently ignore
+        }
+
+        // Look up website by slug
+        const website = await getWebsiteBySlug(input.slug);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+
+        // IP-based rate limiting: max 5 submissions per IP per hour
+        const ip = (ctx as any).req?.ip
+          || (ctx as any).req?.headers?.["x-forwarded-for"]?.split(",")[0]?.trim()
+          || "unknown";
+        const recentCount = await countRecentSubmissionsByIp(ip, 60 * 60 * 1000);
+        if (recentCount >= 5) {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Zu viele Anfragen. Bitte versuche es später erneut." });
+        }
+
+        // Save to DB
+        await createContactSubmission({
+          websiteId: website.id,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          message: input.message,
+          customFields: input.customFields ?? {},
+          ipAddress: ip,
+        });
+
+        // Send email notification to business owner
+        const business = website.businessId ? await getBusinessById(website.businessId) : null;
+        // contactEmail on website overrides business.email
+        const recipientEmail = (website as any).contactEmail || business?.email;
+
+        if (recipientEmail) {
+          const { sendEmail } = await import("./_core/email");
+          const businessName = business?.name ?? website.slug;
+          await sendEmail({
+            to: recipientEmail,
+            from: `Pageblitz Kontaktformular <kontakt@pageblitz.de>`,
+            replyTo: input.email, // Business owner hits "Reply" → antwort geht direkt an Besucher
+            subject: `Neue Kontaktanfrage – ${businessName}`,
+            html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f5; margin: 0; padding: 32px 16px;">
+  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div style="background: #18181b; padding: 28px 32px;">
+      <p style="color: #a1a1aa; font-size: 12px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.08em;">Neue Kontaktanfrage</p>
+      <h1 style="color: #ffffff; font-size: 22px; font-weight: 600; margin: 0;">${businessName}</h1>
+    </div>
+    <div style="padding: 32px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px; width: 30%;">Name</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px; font-weight: 500;">${input.name}</td></tr>
+        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">E-Mail</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;"><a href="mailto:${input.email}" style="color: #6366f1; font-size: 14px; text-decoration: none;">${input.email}</a></td></tr>
+        ${input.phone ? `<tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">Telefon</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px;">${input.phone}</td></tr>` : ""}
+      </table>
+      <div style="margin-top: 24px; background: #f9f9f9; border-radius: 8px; padding: 20px;">
+        <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.06em;">Nachricht</p>
+        <p style="color: #18181b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${input.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+      </div>
+      <div style="margin-top: 24px; text-align: center;">
+        <a href="mailto:${input.email}?subject=Re: Kontaktanfrage" style="display: inline-block; background: #18181b; color: #fff; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 8px;">Direkt antworten</a>
+      </div>
+    </div>
+    <div style="padding: 20px 32px; border-top: 1px solid #f0f0f0; text-align: center;">
+      <p style="color: #a1a1aa; font-size: 12px; margin: 0;">Gesendet via <a href="https://pageblitz.de" style="color: #6366f1; text-decoration: none;">pageblitz.de</a></p>
+    </div>
+  </div>
+</body>
+</html>`,
+          }).catch(() => { /* non-critical */ });
+        }
+
+        return { success: true };
       }),
   }),
 
@@ -3896,7 +5585,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
       }))
       .query(async ({ input }) => {
         const leads = await listExternalLeads(input.limit ?? 100, input.offset ?? 0, input.captureStatus);
-        const total = await countExternalLeads(input.captureStatus);
+        const total = await countExternalLeadsByCapture(input.captureStatus);
         return { leads, total };
       }),
 
@@ -3909,6 +5598,309 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
         await updateWebsite(input.id, { captureStatus: input.captureStatus });
         return { success: true };
       }),
+  }),
+
+  // ── Client-Errors (Admin-Dashboard) ───────────────────────────────────────
+  clientErrors: router({
+    list: adminProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(200).optional().default(50),
+        offset: z.number().min(0).optional().default(0),
+        filter: z.enum(["unresolved", "resolved", "all"]).optional().default("unresolved"),
+        source: z.enum(["react", "window-error", "unhandled-rejection", "server"]).optional(),
+        search: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { and, desc, eq, isNotNull, isNull, like, sql } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) return { rows: [], total: 0 };
+
+        const conditions: any[] = [];
+        if (input.filter === "unresolved") conditions.push(isNull(clientErrors.resolvedAt));
+        else if (input.filter === "resolved") conditions.push(isNotNull(clientErrors.resolvedAt));
+        if (input.source) conditions.push(eq(clientErrors.source, input.source));
+        if (input.search) conditions.push(like(clientErrors.message, `%${input.search}%`));
+
+        const where = conditions.length ? and(...conditions) : undefined;
+        const rows = await db
+          .select()
+          .from(clientErrors)
+          .where(where)
+          .orderBy(desc(clientErrors.lastSeenAt))
+          .limit(input.limit)
+          .offset(input.offset);
+
+        const countRows = await db
+          .select({ cnt: sql<number>`COUNT(*)` })
+          .from(clientErrors)
+          .where(where);
+        return { rows, total: Number(countRows[0]?.cnt ?? 0) };
+      }),
+
+    stats: adminProcedure.query(async () => {
+      const { getDb } = await import("./db");
+      const { clientErrors } = await import("../drizzle/schema");
+      const { isNull, isNotNull, sql } = await import("drizzle-orm");
+      const db = await getDb();
+      if (!db) return { unresolved: 0, resolved: 0, totalOccurrences: 0, last24h: 0 };
+      const unresolvedR = await db.select({ cnt: sql<number>`COUNT(*)` }).from(clientErrors).where(isNull(clientErrors.resolvedAt));
+      const resolvedR = await db.select({ cnt: sql<number>`COUNT(*)` }).from(clientErrors).where(isNotNull(clientErrors.resolvedAt));
+      const occR = await db.select({ s: sql<number>`COALESCE(SUM(occurrences),0)` }).from(clientErrors).where(isNull(clientErrors.resolvedAt));
+      const last24hR = await db.select({ cnt: sql<number>`COUNT(*)` }).from(clientErrors).where(sql`lastSeenAt >= NOW() - INTERVAL 1 DAY`);
+      return {
+        unresolved: Number(unresolvedR[0]?.cnt ?? 0),
+        resolved: Number(resolvedR[0]?.cnt ?? 0),
+        totalOccurrences: Number(occR[0]?.s ?? 0),
+        last24h: Number(last24hR[0]?.cnt ?? 0),
+      };
+    }),
+
+    markResolved: adminProcedure
+      .input(z.object({ id: z.number(), notes: z.string().optional() }))
+      .mutation(async ({ input, ctx }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.update(clientErrors).set({
+          resolvedAt: new Date(),
+          resolvedBy: ctx.user?.id ?? null,
+          notes: input.notes ?? null,
+        }).where(eq(clientErrors.id, input.id));
+        return { success: true };
+      }),
+
+    reopen: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.update(clientErrors).set({ resolvedAt: null, resolvedBy: null }).where(eq(clientErrors.id, input.id));
+        return { success: true };
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { clientErrors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.delete(clientErrors).where(eq(clientErrors.id, input.id));
+        return { success: true };
+      }),
+  }),
+
+  // ── Lifecycle: Reservierungs-Verlängerung + Welcome-Back-Flow ──────────────
+  lifecycle: router({
+    /**
+     * Vom UI (FOMO-Header-Button) aufgerufen: verlängert Reservierung um 24h.
+     * Authentifizierung über previewToken (der User hat die Session-URL).
+     */
+    extendByPreviewToken: publicProcedure
+      .input(z.object({
+        previewToken: z.string(),
+        reason: z.string().optional(), // optionaler Grund für Analytics
+      }))
+      .mutation(async ({ input }) => {
+        const { getWebsiteByToken: getWebsiteByPreviewToken } = await import("./db");
+        const { extendReservation } = await import("./_core/lifecycleScheduler");
+        const website = await getWebsiteByPreviewToken(input.previewToken);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+        const result = await extendReservation(website.id);
+        if (!result.success) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: result.error || "Verlängerung fehlgeschlagen" });
+        }
+        if (input.reason) {
+          console.log(`[Lifecycle] Extension reason for website ${website.id}: ${input.reason}`);
+        }
+        return {
+          success: true,
+          newReservedUntil: result.newReservedUntil?.toISOString(),
+          remainingExtensions: result.remainingExtensions,
+        };
+      }),
+
+    /**
+     * Gibt den aktuellen Reservierungs-Status zurück (für UI-Anzeige).
+     */
+    getReservation: publicProcedure
+      .input(z.object({ previewToken: z.string() }))
+      .query(async ({ input }) => {
+        const { getWebsiteByToken: getWebsiteByPreviewToken } = await import("./db");
+        const { MAX_EXTENSIONS } = await import("./_core/lifecycleEmails");
+        const website = await getWebsiteByPreviewToken(input.previewToken);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
+        return {
+          reservedUntil: website.reservedUntil?.toISOString() || null,
+          extensionsUsed: website.extensionsUsed ?? 0,
+          maxExtensions: MAX_EXTENSIONS,
+          canExtend: (website.extensionsUsed ?? 0) < MAX_EXTENSIONS && website.captureStatus !== "converted",
+        };
+      }),
+
+    /**
+     * Löst einen Reactivation-Seed-Token auf (Welcome-Back-Seite).
+     * Gibt Business-Daten zurück, damit die UI "Neuer Entwurf für X" zeigen kann.
+     */
+    resolveSeed: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { reactivationSeeds } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const rows = await db.select().from(reactivationSeeds).where(eq(reactivationSeeds.token, input.token)).limit(1);
+        const seed = rows[0];
+        if (!seed) throw new TRPCError({ code: "NOT_FOUND", message: "Seed nicht gefunden oder abgelaufen" });
+        if (seed.usedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "Dieser Link wurde bereits genutzt" });
+        if (seed.expiresAt < new Date()) throw new TRPCError({ code: "BAD_REQUEST", message: "Dieser Link ist abgelaufen" });
+        return {
+          email: seed.recipientEmail,
+          businessName: seed.businessName,
+          businessCategory: seed.businessCategory,
+          googlePlaceId: seed.googlePlaceId,
+        };
+      }),
+
+    /**
+     * Prüft, ob es zu einem (gelöschten) previewToken einen Reactivation-Seed gibt.
+     * Wird vom OnboardingChat aufgerufen, wenn die Website nicht mehr existiert,
+     * um den User auf die Welcome-Back-Seite umzuleiten.
+     */
+    resolveSeedByPreviewToken: publicProcedure
+      .input(z.object({ previewToken: z.string() }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { reactivationSeeds } = await import("../drizzle/schema");
+        const { eq, desc } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) return { found: false as const };
+        const rows = await db
+          .select()
+          .from(reactivationSeeds)
+          .where(eq(reactivationSeeds.originalPreviewToken, input.previewToken))
+          .orderBy(desc(reactivationSeeds.createdAt))
+          .limit(1);
+        const seed = rows[0];
+        if (!seed) return { found: false as const };
+        // Abgelaufene oder bereits genutzte Seeds gelten als "nicht verfügbar"
+        const usable = !seed.usedAt && seed.expiresAt > new Date();
+        return {
+          found: true as const,
+          usable,
+          token: seed.token,
+          businessName: seed.businessName,
+        };
+      }),
+
+    /**
+     * Markiert den Seed als genutzt + gibt die Daten zurück, um einen neuen Entwurf zu starten.
+     * Die eigentliche Erstellung läuft dann über die vorhandenen captureEmail + (optional) GMB-Flows.
+     */
+    consumeSeed: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { reactivationSeeds } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const rows = await db.select().from(reactivationSeeds).where(eq(reactivationSeeds.token, input.token)).limit(1);
+        const seed = rows[0];
+        if (!seed) throw new TRPCError({ code: "NOT_FOUND" });
+        if (seed.usedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "Bereits genutzt" });
+        await db.update(reactivationSeeds).set({ usedAt: new Date() }).where(eq(reactivationSeeds.id, seed.id));
+        return {
+          email: seed.recipientEmail,
+          businessName: seed.businessName,
+          businessCategory: seed.businessCategory,
+          googlePlaceId: seed.googlePlaceId,
+        };
+      }),
+
+    /**
+     * Admin: Liste aller Lifecycle-Mails (geplant + versendet) für das Dashboard.
+     */
+    adminList: adminProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(200).optional().default(100),
+        offset: z.number().min(0).optional().default(0),
+        status: z.enum(["scheduled", "sent", "cancelled", "skipped", "bounced"]).optional(),
+        type: z.enum(["reminder_2h", "reminder_24h", "reminder_final", "fresh_start_7d"]).optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { lifecycleEmails } = await import("../drizzle/schema");
+        const { and, desc, eq, sql } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) return { rows: [], total: 0 };
+
+        const conditions: any[] = [];
+        if (input.status) conditions.push(eq(lifecycleEmails.status, input.status));
+        if (input.type) conditions.push(eq(lifecycleEmails.type, input.type));
+        const where = conditions.length ? and(...conditions) : undefined;
+
+        const rows = await db
+          .select()
+          .from(lifecycleEmails)
+          .where(where)
+          .orderBy(desc(lifecycleEmails.createdAt))
+          .limit(input.limit)
+          .offset(input.offset);
+
+        const countRows = await db
+          .select({ cnt: sql<number>`COUNT(*)` })
+          .from(lifecycleEmails)
+          .where(where);
+        return { rows, total: Number(countRows[0]?.cnt ?? 0) };
+      }),
+
+    /**
+     * Admin: Aggregierte Stats über alle Lifecycle-Mails.
+     */
+    adminStats: adminProcedure.query(async () => {
+      const { getDb } = await import("./db");
+      const { lifecycleEmails } = await import("../drizzle/schema");
+      const { sql } = await import("drizzle-orm");
+      const db = await getDb();
+      if (!db) return { scheduled: 0, sent: 0, skipped: 0, cancelled: 0, bounced: 0, sentLast24h: 0, opened: 0, clicked: 0 };
+      const byStatus = await db
+        .select({ status: lifecycleEmails.status, cnt: sql<number>`COUNT(*)` })
+        .from(lifecycleEmails)
+        .groupBy(lifecycleEmails.status);
+      const last24hR = await db
+        .select({ cnt: sql<number>`COUNT(*)` })
+        .from(lifecycleEmails)
+        .where(sql`status = 'sent' AND sentAt >= NOW() - INTERVAL 1 DAY`);
+      // Engagement: nur über tatsächlich versendete Mails
+      const engagementR = await db
+        .select({
+          opened: sql<number>`SUM(openedAt IS NOT NULL)`,
+          clicked: sql<number>`SUM(clickedAt IS NOT NULL)`,
+        })
+        .from(lifecycleEmails)
+        .where(sql`status = 'sent'`);
+      const get = (s: string) => Number(byStatus.find((r) => r.status === s)?.cnt ?? 0);
+      return {
+        scheduled: get("scheduled"),
+        sent: get("sent"),
+        skipped: get("skipped"),
+        cancelled: get("cancelled"),
+        bounced: get("bounced"),
+        sentLast24h: Number(last24hR[0]?.cnt ?? 0),
+        opened: Number(engagementR[0]?.opened ?? 0),
+        clicked: Number(engagementR[0]?.clicked ?? 0),
+      };
+    }),
   }),
 });
 
