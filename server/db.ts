@@ -10,10 +10,12 @@ import {
   templateUploads, InsertTemplateUpload, TemplateUpload,
   subscriptions, InsertSubscription, Subscription,
   onboardingResponses, InsertOnboardingResponse, OnboardingResponse,
+  onboardingEvents, InsertOnboardingEvent,
   generationJobs, InsertGenerationJob, GenerationJob,
   contactSubmissions, InsertContactSubmission, ContactSubmission,
   magicLinkTokens,
   chatTranscripts, ChatTranscript,
+  chatLeads, lifecycleEmails, appointmentSettings, appointments,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -77,10 +79,36 @@ export async function createUser(data: Omit<InsertUser, 'id'>) {
   await db.insert(users).values(data);
 }
 
+export async function listUsers(limit = 100, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).orderBy(desc(users.createdAt)).limit(limit).offset(offset);
+}
+
+export async function countUsers() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(users);
+  return result[0]?.count ?? 0;
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
+}
+
 export async function updateUser(id: number, data: Partial<InsertUser>) {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  if (!db) throw new Error("DB not available");
   await db.update(users).set(data).where(eq(users.id, id));
+}
+
+export async function deleteUser(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(users).where(eq(users.id, id));
 }
 
 // ── Businesses ─────────────────────────────────────────
@@ -197,17 +225,29 @@ export async function listWebsites(limit = 50, offset = 0) {
   return db.select().from(generatedWebsites).orderBy(desc(generatedWebsites.createdAt)).limit(limit).offset(offset);
 }
 
-export async function countWebsites() {
+export async function countWebsites(source?: "admin" | "external") {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites);
+  const conditions = source ? eq(generatedWebsites.source, source) : undefined;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites).where(conditions);
   return result[0]?.count ?? 0;
 }
 
-export async function countWebsitesByStatus(status: string) {
+export async function countWebsitesByStatus(status: string, source?: "admin" | "external") {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites).where(eq(generatedWebsites.status, status as any));
+  const conditions = source
+    ? and(eq(generatedWebsites.status, status as any), eq(generatedWebsites.source, source))
+    : eq(generatedWebsites.status, status as any);
+  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites).where(conditions);
+  return result[0]?.count ?? 0;
+}
+
+export async function countExternalLeads() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(generatedWebsites)
+    .where(and(eq(generatedWebsites.source, "external"), sql`${generatedWebsites.customerEmail} IS NOT NULL`));
   return result[0]?.count ?? 0;
 }
 
@@ -237,7 +277,7 @@ export async function listExternalLeads(limit = 100, offset = 0, captureStatus?:
   return db.select().from(generatedWebsites).where(conditions).orderBy(desc(generatedWebsites.createdAt)).limit(limit).offset(offset);
 }
 
-export async function countExternalLeads(captureStatus?: string) {
+export async function countExternalLeadsByCapture(captureStatus?: string) {
   const db = await getDb();
   if (!db) return 0;
   const conditions = captureStatus
@@ -251,6 +291,18 @@ export async function updateWebsite(id: number, data: Partial<InsertGeneratedWeb
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(generatedWebsites).set(data).where(eq(generatedWebsites.id, id));
+}
+
+export async function canActivateWebsite(websiteId: number): Promise<{ ok: boolean; reason?: string }> {
+  const db = await getDb();
+  if (!db) return { ok: false, reason: "DB not available" };
+  const [website] = await db.select().from(generatedWebsites).where(eq(generatedWebsites.id, websiteId)).limit(1);
+  if (!website) return { ok: false, reason: "Website nicht gefunden" };
+  if (!website.customerEmail) return { ok: false, reason: "Keine E-Mail-Adresse hinterlegt" };
+  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.websiteId, websiteId)).limit(1);
+  if (!sub) return { ok: false, reason: "Kein Abonnement vorhanden" };
+  if (!["active", "trialing", "canceling"].includes(sub.status)) return { ok: false, reason: `Abonnement-Status ist '${sub.status}', nicht aktiv` };
+  return { ok: true };
 }
 
 /** Returns website + its business in a single call – used by server-side SEO meta injection */
@@ -334,17 +386,27 @@ export async function getOutreachEmailByWebsiteId(websiteId: number) {
 }
 
 // ── Stats ──────────────────────────────────────────────
+export async function countPaidWebsites() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(subscriptions)
+    .where(sql`${subscriptions.status} IN ('active', 'trialing', 'canceling')`);
+  return result[0]?.count ?? 0;
+}
+
 export async function getDashboardStats() {
-  const [totalBusinesses, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails] = await Promise.all([
-    countBusinesses(),
-    countWebsites(),
-    countWebsitesByStatus("preview"),
-    countWebsitesByStatus("active"),
-    countWebsitesByStatus("sold"),
+  const [totalLeads, totalWebsites, previewCount, activeCount, soldCount, paidCount, totalEmails, sentEmails] = await Promise.all([
+    countExternalLeads(),
+    countWebsites("external"),
+    countWebsitesByStatus("preview", "external"),
+    countWebsitesByStatus("active", "external"),
+    countWebsitesByStatus("sold", "external"),
+    countPaidWebsites(),
     countOutreachEmails(),
     countOutreachEmailsByStatus("sent"),
   ]);
-  return { totalBusinesses, totalWebsites, previewCount, activeCount, soldCount, totalEmails, sentEmails };
+  return { totalBusinesses: totalLeads, totalWebsites, previewCount, activeCount, soldCount, paidCount, totalEmails, sentEmails };
 }
 
 // ── Template Uploads ───────────────────────────────────
@@ -567,9 +629,17 @@ export async function listOnboardingInProgress(limit = 50, offset = 0): Promise<
 export async function deleteWebsite(websiteId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  // Delete dependent records first
+  // Delete ALL dependent records first (order doesn't matter since no FK constraints between them)
   await db.delete(onboardingResponses).where(eq(onboardingResponses.websiteId, websiteId));
   await db.delete(subscriptions).where(eq(subscriptions.websiteId, websiteId));
+  try { await db.delete(onboardingEvents).where(eq(onboardingEvents.websiteId, websiteId)); } catch {}
+  try { await db.delete(lifecycleEmails).where(eq(lifecycleEmails.websiteId, websiteId)); } catch {}
+  try { await db.delete(generationJobs).where(eq(generationJobs.websiteId, websiteId)); } catch {}
+  try { await db.delete(contactSubmissions).where(eq(contactSubmissions.websiteId, websiteId)); } catch {}
+  try { await db.delete(chatLeads).where(eq(chatLeads.websiteId, websiteId)); } catch {}
+  try { await db.delete(chatTranscripts).where(eq(chatTranscripts.websiteId, websiteId)); } catch {}
+  try { await db.delete(appointmentSettings).where(eq(appointmentSettings.websiteId, websiteId)); } catch {}
+  try { await db.delete(appointments).where(eq(appointments.websiteId, websiteId)); } catch {}
   await db.delete(generatedWebsites).where(eq(generatedWebsites.id, websiteId));
 }
 
@@ -738,11 +808,11 @@ export async function upsertChatTranscript(
   websiteId: number,
   sessionId: string,
   messages: Array<{ role: string; content: string }>,
-  opts?: { chatLeadId?: number; visitorName?: string; summary?: string }
+  opts?: { chatLeadId?: number; visitorName?: string; summary?: string; expiryDays?: number }
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+  const expiresAt = new Date(Date.now() + (opts?.expiryDays ?? 30) * 24 * 60 * 60 * 1000);
 
   await db
     .insert(chatTranscripts)
@@ -839,4 +909,53 @@ export async function getBusinessesForOutreach(limit: number) {
       )
     )
     .limit(limit);
+}
+
+// ── Onboarding Step Events ────────────────────────────────────────────────
+
+export async function getStepEventsForWebsite(websiteId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(onboardingEvents)
+    .where(eq(onboardingEvents.websiteId, websiteId))
+    .orderBy(onboardingEvents.stepIndex);
+}
+
+export async function logOnboardingEvent(data: InsertOnboardingEvent) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(onboardingEvents).values(data);
+}
+
+export async function getStepFunnelStats() {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select({
+    step: onboardingEvents.step,
+    stepIndex: onboardingEvents.stepIndex,
+    count: sql<number>`count(DISTINCT ${onboardingEvents.websiteId})`,
+  })
+    .from(onboardingEvents)
+    .where(eq(onboardingEvents.event, "reached"))
+    .groupBy(onboardingEvents.step, onboardingEvents.stepIndex)
+    .orderBy(onboardingEvents.stepIndex);
+  return result;
+}
+
+// ── Cleanup: Delete old preview websites ──────────────────────────────────
+
+export async function deleteExpiredPreviews(olderThanDays = 30) {
+  const db = await getDb();
+  if (!db) return 0;
+  const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
+  const expired = await db.select({ id: generatedWebsites.id })
+    .from(generatedWebsites)
+    .where(and(
+      eq(generatedWebsites.status, "preview"),
+      sql`${generatedWebsites.createdAt} < ${cutoff}`
+    ));
+  for (const w of expired) {
+    await deleteWebsite(w.id);
+  }
+  return expired.length;
 }

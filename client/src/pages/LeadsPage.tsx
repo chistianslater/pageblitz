@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import {
   Mail, Loader2, ArrowRight, CheckCircle, ShoppingCart, AlertTriangle, Users,
-  TrendingUp, Eye, ExternalLink, ChevronRight
+  TrendingUp, Eye, ExternalLink, ChevronRight, BarChart3
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -77,6 +77,7 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [updateDialogLead, setUpdateDialogLead] = useState<any | null>(null);
   const [newStatus, setNewStatus] = useState<CaptureStatus>("email_captured");
+  const [progressWebsiteId, setProgressWebsiteId] = useState<number | null>(null);
 
   const { data: funnelData, isLoading: funnelLoading } = trpc.leads.funnel.useQuery();
   const { data: leadsData, isLoading: leadsLoading } = trpc.leads.list.useQuery({
@@ -215,6 +216,9 @@ export default function LeadsPage() {
         </CardContent>
       </Card>
 
+      {/* Step-Level Funnel */}
+      <StepFunnel />
+
       {/* Leads Table */}
       <Card className="bg-card border-border">
         <CardHeader>
@@ -299,6 +303,9 @@ export default function LeadsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setProgressWebsiteId(lead.id)}>
+                              <BarChart3 className="h-3 w-3 mr-1" /> Fortschritt
+                            </Button>
                             {lead.previewToken && (
                               <Button variant="outline" size="sm" asChild>
                                 <a href={`/preview/${lead.previewToken}`} target="_blank" rel="noopener">
@@ -371,6 +378,150 @@ export default function LeadsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Progress Dialog */}
+      <Dialog open={progressWebsiteId !== null} onOpenChange={() => setProgressWebsiteId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Onboarding-Fortschritt</DialogTitle>
+            <DialogDescription>Erreichte Steps dieses Users</DialogDescription>
+          </DialogHeader>
+          {progressWebsiteId && <StepProgressDetail websiteId={progressWebsiteId} />}
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function StepProgressDetail({ websiteId }: { websiteId: number }) {
+  const { data: events, isLoading } = trpc.onboarding.getStepEvents.useQuery({ websiteId });
+
+  if (isLoading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>;
+  if (!events || events.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">Keine Step-Daten vorhanden.</p>;
+
+  return (
+    <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
+      {events.map((ev: any, i: number) => (
+        <div key={ev.id} className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/30">
+          <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">{STEP_LABELS[ev.step] || ev.step}</p>
+            <p className="text-[10px] text-muted-foreground">
+              {new Date(ev.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          </div>
+          <span className="text-[10px] text-muted-foreground">Step {ev.stepIndex + 1}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Step-Level Onboarding Funnel ──────────────────────────────────────────
+
+const STEP_LABELS: Record<string, string> = {
+  businessCategory: "Branche",
+  businessName: "Firmenname",
+  addressingMode: "Du/Sie",
+  brandLogo: "Logo",
+  colorScheme: "Farbschema",
+  heroPhoto: "Hauptbild",
+  aboutPhoto: "Über-uns-Bild",
+  headlineFont: "Schriftart",
+  headlineSize: "Schriftgröße",
+  tagline: "Slogan",
+  description: "Beschreibung",
+  usp: "USP",
+  services: "Leistungen",
+  legalOwner: "Inhaber",
+  legalStreet: "Adresse",
+  legalZipCity: "PLZ/Ort",
+  legalEmail: "Impressums-E-Mail",
+  legalPhone: "Telefon",
+  openingHours: "Öffnungszeiten",
+  legalVat: "USt-IdNr.",
+  addons: "Add-ons",
+  subpages: "Unterseiten",
+  email: "E-Mail",
+  hideSections: "Bereiche",
+  preview: "Vorschau",
+  checkout: "Checkout",
+};
+
+function StepFunnel() {
+  const { data: steps, isLoading } = trpc.stats.stepFunnel.useQuery();
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="pt-6 flex justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!steps || steps.length === 0) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Onboarding-Steps (Detail)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-6 text-sm">
+            Noch keine Step-Daten. Daten werden gesammelt sobald User das Onboarding durchlaufen.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const maxCount = Math.max(...steps.map((s: any) => s.count), 1);
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          Onboarding-Steps (Detail)
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">Wie viele User erreichen welchen Schritt?</p>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {steps.map((step: any, i: number) => {
+            const pct = maxCount > 0 ? (step.count / maxCount) * 100 : 0;
+            const prevCount = i > 0 ? steps[i - 1].count : step.count;
+            const dropPct = prevCount > 0 ? (((prevCount - step.count) / prevCount) * 100).toFixed(0) : "0";
+            return (
+              <div key={step.step} className="flex items-center gap-3">
+                <div className="w-32 text-xs text-right text-muted-foreground truncate shrink-0">
+                  {STEP_LABELS[step.step] || step.step}
+                </div>
+                <div className="flex-1 h-7 bg-muted/30 rounded-sm overflow-hidden relative">
+                  <div
+                    className="h-full rounded-sm transition-all duration-500"
+                    style={{
+                      width: `${pct}%`,
+                      backgroundColor: pct > 60 ? '#22c55e' : pct > 30 ? '#f59e0b' : '#ef4444',
+                    }}
+                  />
+                  <span className="absolute inset-0 flex items-center px-2 text-xs font-semibold">
+                    {step.count}
+                  </span>
+                </div>
+                {i > 0 && Number(dropPct) > 0 && (
+                  <span className="text-xs text-red-400 w-14 text-right shrink-0">-{dropPct}%</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

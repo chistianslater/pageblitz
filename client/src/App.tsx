@@ -30,6 +30,8 @@ const CustomerDashboard    = lazy(() => import("./pages/CustomerDashboard"));
 const AccountPage          = lazy(() => import("./pages/AccountPage"));
 const LayoutOverviewPage   = lazy(() => import("./pages/LayoutOverviewPage"));
 const PipelinePage         = lazy(() => import("./pages/PipelinePage"));
+const SupportChatsPage     = lazy(() => import("./pages/SupportChatsPage"));
+const UsersPage            = lazy(() => import("./pages/UsersPage"));
 const LayoutPreviewStandalone = lazy(() => import("./pages/LayoutPreviewStandalone"));
 const VariantPreviewPage      = lazy(() => import("./pages/VariantPreviewPage"));
 const LoginPage            = lazy(() => import("./pages/LoginPage"));
@@ -73,8 +75,10 @@ function AdminSwitch() {
         <Route path="/admin/stats" component={StatsPage} />
         <Route path="/admin/leads" component={LeadsPage} />
         <Route path="/admin/businesses" component={BusinessesPage} />
+        <Route path="/admin/users" component={UsersPage} />
         <Route path="/admin/layouts" component={LayoutOverviewPage} />
         <Route path="/admin/pipeline" component={PipelinePage} />
+        <Route path="/admin/support-chats" component={SupportChatsPage} />
         <Route path="/admin/errors" component={ErrorsPage} />
         <Route path="/admin/lifecycle" component={LifecyclePage} />
         <Route component={NotFound} />
@@ -132,7 +136,7 @@ function Router() {
   // Admin routes are rendered outside the key={location} Suspense so that
   // DashboardLayout stays mounted across sub-navigations (no sidebar flicker).
   // AdminRouter handles its own internal key={location} for page content only.
-  if (location.startsWith("/admin")) {
+  if (location.startsWith("/admin") && !location.startsWith("/admin-login")) {
     return <AdminRouter />;
   }
 

@@ -1,4 +1,5 @@
 import type { WebsiteData, ColorScheme } from "@shared/types";
+import { CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import {
   BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
   DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
@@ -7,6 +8,8 @@ import {
   PulseLayoutV2, FluxLayoutV2,
 } from "./layouts/PremiumLayoutsV2";
 
+export { CURRENT_LAYOUT_VERSION };
+
 interface WebsiteRendererProps {
   websiteData: WebsiteData;
   colorScheme?: ColorScheme;
@@ -14,13 +17,14 @@ interface WebsiteRendererProps {
   aboutImageUrl?: string | null;
   businessCategory?: string | null;
   layoutStyle?: string | null;
+  layoutVersion?: number | null;
   isLoading?: boolean;
   headlineSize?: 'large' | 'medium' | 'small';
   headlineFontOverride?: string;
   slug?: string;
 }
 
-function getLayoutComponent(category: string = "", layoutStyle?: string | null): any {
+function getLayoutComponent(category: string = "", layoutStyle?: string | null, _layoutVersion?: number | null): any {
   // If explicit layoutStyle is provided (from admin/dashboard), use it directly
   if (layoutStyle) {
     const style = layoutStyle.toLowerCase();
@@ -61,7 +65,7 @@ function getLayoutComponent(category: string = "", layoutStyle?: string | null):
   return PremiumLayoutV2;
 }
 
-export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, headlineSize, headlineFontOverride, slug }: WebsiteRendererProps) {
+export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, layoutVersion, headlineSize, headlineFontOverride, slug }: WebsiteRendererProps) {
   const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
   const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
   
@@ -85,9 +89,11 @@ export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl
   }
   
   // Use layoutStyle if provided (from admin/dashboard), otherwise fall back to businessCategory
+  const version = layoutVersion ?? (websiteData as any)?.layoutVersion ?? 1;
   const LayoutComponent = getLayoutComponent(
     businessCategory || websiteData?.business?.category,
-    layoutStyle || (websiteData as any)?.layoutStyle
+    layoutStyle || (websiteData as any)?.layoutStyle,
+    version
   );
   return <LayoutComponent websiteData={wd} cs={cs} heroImageUrl={heroImg} isLoading={isLoading} headlineSize={headlineSize} />;
 }

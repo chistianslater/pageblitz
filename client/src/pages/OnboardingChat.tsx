@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
 import ChatWidget from "@/components/ChatWidget";
+import HelpWidget from "@/components/HelpWidget";
+import { trackConversion, trackFunnelStep } from "@/lib/tracking";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
@@ -94,10 +96,7 @@ const LAYOUT_VIBES: Record<string, string> = {
  */
 const DESKTOP_IFRAME_W = 1280;
 const MOBILE_IFRAME_W  = 390;
-// Viewport heights: must match real screen sizes so 100vh/min-h-screen
-// renders correctly. Card's overflow:hidden clips to the visible area.
-const DESKTOP_IFRAME_H = 900;
-const MOBILE_IFRAME_H  = 844;  // iPhone 14 viewport height
+const PREVIEW_IFRAME_H = 2400;
 
 function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, onSkip }: {
   websiteId: number;
@@ -108,27 +107,28 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
   onConfirm: (layoutStyle: string) => void;
   onSkip: () => void;
 }) {
-  const [round, setRound]         = useState(() => Math.floor(Math.random() * 5));
-  const [activeIdx, setActiveIdx] = useState(0);
-  const cardRef                   = useRef<HTMLDivElement>(null);
-  const [scale, setScale]         = useState(0.3);
-  const [iframeW, setIframeW]     = useState(MOBILE_IFRAME_W);
-  const [iframeH, setIframeH]     = useState(MOBILE_IFRAME_H);
-  const selectMutation            = trpc.selfService.selectWebsiteTemplate.useMutation();
+  const [round, setRound] = useState(() => Math.floor(Math.random() * 5));
+  const [selected, setSelected] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [cardWidth, setCardWidth] = useState(320);
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const selectMutation = trpc.selfService.selectWebsiteTemplate.useMutation();
 
-  // On narrow cards (phones) use a 390 px mobile iframe so the layout is readable.
-  // On wider cards (desktop) use the full 1280 px desktop iframe.
   useEffect(() => {
-    const el = cardRef.current;
+    const el = containerRef.current;
     if (!el) return;
     const update = () => {
       const cw = el.clientWidth;
-      const mobile = cw < 600;
-      const iw = mobile ? MOBILE_IFRAME_W : DESKTOP_IFRAME_W;
-      const ih = mobile ? MOBILE_IFRAME_H : DESKTOP_IFRAME_H;
-      setIframeW(iw);
-      setIframeH(ih);
-      setScale(cw / iw);
+      const mobile = cw < 640;
+      setIsMobile(mobile);
+      if (mobile) {
+        setCardWidth(Math.min(cw - 48, 340));
+      } else {
+        const w = Math.floor((cw - 32) / 3);
+        setCardWidth(Math.max(200, Math.min(400, w)));
+      }
     };
     update();
     const ro = new ResizeObserver(update);
@@ -136,108 +136,128 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
     return () => ro.disconnect();
   }, []);
 
-  const variants = getVariantLayouts(industryKey, round);
-  const selected  = variants[activeIdx];
+  // Track scroll position for dot indicators on mobile
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !isMobile) return;
+    const handleScroll = () => {
+      const scrollLeft = el.scrollLeft;
+      const itemWidth = el.scrollWidth / 3;
+      setActiveSlide(Math.round(scrollLeft / itemWidth));
+    };
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [isMobile]);
 
-  const goNext = () => setActiveIdx((i) => (i + 1) % variants.length);
-  const goPrev = () => setActiveIdx((i) => (i + variants.length - 1) % variants.length);
-  const handleOtherLayouts = () => { setRound((r) => r + 1); setActiveIdx(0); };
+  const variants = getVariantLayouts(industryKey, round);
+  const handleOtherLayouts = () => { setRound((r) => r + 1); setSelected(null); setActiveSlide(0); };
 
   const handleConfirm = async () => {
+    if (!selected) return;
     const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected];
     try {
       await selectMutation.mutateAsync({ websiteId, layoutStyle: selected, colorScheme: cs ?? undefined });
-    } catch { /* non-critical */ }
+    } catch {}
     onConfirm(selected);
   };
 
-  const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected] as any)?.primary ?? "#6366f1";
+  const iframeW = DESKTOP_IFRAME_W;
+  const scale = cardWidth / iframeW;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col overflow-hidden select-none">
-
-      {/* ── Header ── */}
-      <div className="flex-shrink-0 pt-4 pb-2 px-6 text-center">
+      <div className="flex-shrink-0 pt-5 pb-3 px-6 text-center">
         <h1 className="text-xl font-bold text-white mb-0.5">Welcher Stil passt zu dir?</h1>
         <p className="text-slate-400 text-xs max-w-sm mx-auto">
-          Farben &amp; Inhalte lassen sich jederzeit anpassen.
+          {isMobile ? "Wische, um alle Designs zu sehen. Tippe zum Auswählen." : "Klicke auf ein Design, um es auszuwählen."} Farben &amp; Inhalte lassen sich jederzeit anpassen.
         </p>
       </div>
 
-      {/* ── Preview row — fills remaining vertical space ── */}
-      <div className="flex-1 min-h-0 flex items-center gap-2 px-3 py-2">
-
-        {/* Prev arrow */}
-        <button type="button" onClick={goPrev}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        {/*
-          Card — self-stretch so it fills the full height of the flex row.
-          overflow:hidden clips the absolutely-positioned iframes to this box.
-        */}
+      <div ref={containerRef} className="flex-1 min-h-0 flex flex-col">
         <div
-          ref={cardRef}
-          className="flex-1 self-stretch min-w-0 rounded-xl overflow-hidden relative"
-          style={{ boxShadow: `0 0 0 2px ${accentColor}44, 0 20px 48px -8px rgba(0,0,0,0.85)` }}
+          ref={scrollRef}
+          className={
+            isMobile
+              ? "flex-1 min-h-0 flex gap-4 px-6 py-2 overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide"
+              : "flex-1 min-h-0 flex items-start justify-center gap-4 px-4 py-2 overflow-y-auto"
+          }
+          style={isMobile ? { scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } : undefined}
         >
-          {/* One iframe per variant — inactive ones hidden via display:none */}
-          {variants.map((layout, i) => (
-            <iframe
-              key={`${round}-${layout}-${heroImageUrl ?? ""}`}
-              src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
-              width={iframeW}
-              height={iframeH}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                display: i === activeIdx ? "block" : "none",
-                transformOrigin: "top left",
-                transform: `scale(${scale})`,
-                pointerEvents: "none",
-                border: "none",
-              }}
-              title={`Preview ${layout}`}
-            />
-          ))}
-
-          {/* Fade-out at the bottom so the crop looks intentional */}
-          <div className="absolute bottom-0 inset-x-0 h-14 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, transparent, rgba(2,6,23,0.95))" }} />
+          {variants.map((layout) => {
+            const isSelected = selected === layout;
+            const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout] as any)?.primary ?? "#a3e635";
+            return (
+              <button
+                key={`${round}-${layout}`}
+                type="button"
+                onClick={() => setSelected(layout)}
+                className={`relative flex-shrink-0 rounded-2xl transition-all duration-200 ${isMobile ? "snap-center" : ""} ${isSelected ? 'scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'}`}
+                style={{
+                  width: cardWidth,
+                  height: PREVIEW_IFRAME_H * scale,
+                  boxShadow: isSelected ? '0 0 32px rgba(163,230,53,0.35)' : '0 8px 32px rgba(0,0,0,0.5)',
+                  border: isSelected ? '3px solid var(--pb-brand)' : '3px solid transparent',
+                  padding: 0,
+                }}
+              >
+                <div className="rounded-xl overflow-hidden w-full h-full">
+                  <iframe
+                    src={`/variant-preview?websiteId=${websiteId}&layout=${layout}`}
+                    width={iframeW}
+                    height={PREVIEW_IFRAME_H}
+                    style={{
+                      transformOrigin: "top left",
+                      transform: `scale(${scale})`,
+                      pointerEvents: "none",
+                      border: "none",
+                      display: "block",
+                    }}
+                    title={`Preview ${layout}`}
+                  />
+                </div>
+                {/* Selected badge */}
+                {isSelected && (
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-xl"
+                    style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    Ausgewählt
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Next arrow */}
-        <button type="button" onClick={goNext}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 flex items-center justify-center transition-colors">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        {/* Dot indicators on mobile */}
+        {isMobile && (
+          <div className="flex-shrink-0 flex justify-center gap-2 py-2">
+            {variants.map((layout, i) => (
+              <button
+                key={layout}
+                type="button"
+                onClick={() => {
+                  scrollRef.current?.children[i]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  i === activeSlide ? "bg-lime-400 w-5" : selected === layout ? "bg-lime-400/60" : "bg-slate-600"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* ── Dot indicators + layout name ── */}
-      <div className="flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-1">
-        <div className="flex gap-2">
-          {variants.map((_, i) => (
-            <button key={i} type="button" onClick={() => setActiveIdx(i)}
-              className={`rounded-full transition-all ${i === activeIdx ? "w-5 h-2 bg-blue-400" : "w-2 h-2 bg-slate-600 hover:bg-slate-500"}`} />
-          ))}
-        </div>
-        <div className="text-center">
-          <span className="text-white text-sm font-semibold">{LAYOUT_LABELS[selected] ?? selected}</span>
-          <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
-        </div>
-      </div>
-
-      {/* ── Actions ── */}
-      <div className="flex-shrink-0 flex flex-col items-center gap-2 px-6 pt-1.5"
+      <div className="flex-shrink-0 flex flex-col items-center gap-1.5 px-6 pt-2"
         style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 1.25rem))" }}>
-        <button type="button" onClick={handleConfirm} disabled={selectMutation.isPending}
-          className="w-full max-w-xs py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2">
+        {selected && (
+          <div className="text-center mb-1">
+            <span className="text-white text-sm font-semibold">{LAYOUT_LABELS[selected] ?? selected}</span>
+            <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
+          </div>
+        )}
+        <button type="button" onClick={handleConfirm} disabled={!selected || selectMutation.isPending}
+          className="w-full max-w-xs py-3.5 rounded-xl disabled:opacity-40 font-bold text-sm transition-all flex items-center justify-center gap-2"
+          style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}>
           {selectMutation.isPending ? (
             <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Wird gespeichert…</>
           ) : (
@@ -354,9 +374,9 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
     <div className="relative overflow-hidden bg-[#0a0a0a]" style={{ height: "100dvh" }}>
       {/* Gradient orbs – mobile-sized, no heavy motion animations */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-blue-500/20 rounded-full blur-[80px]" />
-        <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] max-w-[400px] max-h-[400px] bg-purple-500/20 rounded-full blur-[70px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] max-w-[350px] max-h-[350px] bg-indigo-500/15 rounded-full blur-[60px]" />
+        <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-lime-500/20 rounded-full blur-[80px]" />
+        <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] max-w-[400px] max-h-[400px] bg-lime-500/20 rounded-full blur-[70px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] max-w-[350px] max-h-[350px] bg-lime-500/15 rounded-full blur-[60px]" />
       </div>
 
       {/* Warp Speed – Canvas-rendered, zero React re-renders */}
@@ -384,16 +404,16 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
           <motion.div
             animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500 to-violet-600"
+            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-lime-500 to-lime-600"
           />
           <motion.div
             animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
             transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500 to-violet-600"
+            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-lime-500 to-lime-600"
           />
           
           {/* KI-Symbol: Einzelner pulsierender Stern */}
-          <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-blue-500/50">
+          <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-lime-500 via-lime-500 to-lime-600 flex items-center justify-center shadow-2xl shadow-lime-500/30">
             <motion.div
               animate={{ 
                 scale: [1, 1.2, 1],
@@ -418,7 +438,7 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
           transition={{ delay: 0.2 }}
           className="text-4xl md:text-5xl font-bold mb-4 text-center"
         >
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-lime-400 to-yellow-300">
             Deine Website wird
           </span>
           <br />
@@ -447,7 +467,7 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
               {/* Gradient fill */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-violet-500 to-purple-500" />
+              <div className="absolute inset-0 bg-lime-500" />
               {/* Shimmer effect */}
               <motion.div
                 animate={{ x: ["-100%", "200%"] }}
@@ -461,7 +481,7 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
           <motion.div
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-purple-500/20 rounded-full blur-lg -z-10"
+            className="absolute -inset-1 bg-lime-500/20 rounded-full blur-lg -z-10"
             style={{ width: `${progress}%`, margin: "0 auto", left: 0, right: 0 }}
           />
         </div>
@@ -473,7 +493,7 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
           transition={{ delay: 0.4 }}
           className="mt-6 flex items-center gap-2"
         >
-          <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400 tabular-nums">
+          <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-lime-400 to-yellow-300 tabular-nums">
             {Math.round(progress)}
           </span>
           <span className="text-2xl text-slate-500">%</span>
@@ -824,11 +844,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (step === "editPricelist") return _addOnPricelist;
       if (step === "editGallery") return _addOnGallery;
       if (step === "email") return !hasCustomerEmail; // Skip email step if already provided
+      // Skip businessName step if name was already provided from StartPage
+      if (step === "businessName" && business?.name && business.name !== "Neues Unternehmen") return false;
+      // Skip businessCategory step if category was already provided from StartPage
+      if (step === "businessCategory" && (business as any)?.category && (business as any).category.trim() !== "") return false;
       // Opening hours only for manual onboarding (GMB already has hours from Google)
       if (step === "openingHours") return !isGmbFlow;
       return true;
     });
-  }, [siteData?.website, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
+  }, [siteData?.website, business, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -848,26 +872,29 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
+  const [exitIntentEmail, setExitIntentEmail] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const [showSaveReminder, setShowSaveReminder] = useState(false);
   // Only show exit-intent overlay once per session (not on every upward mouse move)
   const exitIntentShownRef = useRef(false);
+  const saveReminderShownRef = useRef(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
 
   useEffect(() => {
     // Check if user has email (either from auth or from data)
     const hasUserEmail = !!(isAuthenticated && user?.email);
 
-    // Kein beforeunload-Dialog mehr – Daten werden automatisch mit trySaveStep
-    // gespeichert, der User kann jederzeit zurückkehren. Der Exit-Intent-Dialog
-    // (Maus verlässt Fenster) übernimmt diese Aufgabe.
-    const handleBeforeUnload = (_e: BeforeUnloadEvent) => {
-      // intentionally left blank – no native browser dialog
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (currentStep === "welcome" || currentStep === "checkout" || currentStep === "preview") return;
+      e.preventDefault();
     };
 
     // Exit intent (mouse leaves window upwards) – shows at most once per session
     const handleMouseOut = (e: MouseEvent) => {
       if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email" && !exitIntentShownRef.current) {
         exitIntentShownRef.current = true;
+        try { (window as any).clarity?.("event", "exit_intent_triggered"); } catch {}
         if (hasUserEmail) {
           setShowExitConfirmation(true);
         } else {
@@ -887,6 +914,25 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }
     };
   }, [currentStep, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
+
+  // Mid-funnel save reminder: show after 5 min if no email captured yet
+  useEffect(() => {
+    const hasEmail = !!(siteData?.website as any)?.customerEmail || !!data.email;
+    if (hasEmail || saveReminderShownRef.current) return;
+    const timer = setTimeout(() => {
+      if (saveReminderShownRef.current) return;
+      const stillNoEmail = !(siteData?.website as any)?.customerEmail && !data.email;
+      if (stillNoEmail && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email") {
+        saveReminderShownRef.current = true;
+        setShowSaveReminder(true);
+        try { (window as any).clarity?.("event", "save_reminder_shown"); } catch {}
+      }
+    }, 5 * 60 * 1000);
+    return () => clearTimeout(timer);
+    // data.email wird im Callback per Closure frisch gelesen; nicht im Dep-Array,
+    // da `data` lexikalisch weiter unten deklariert ist (sonst TDZ-Fehler).
+  }, [siteData?.website, currentStep]);
+
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
@@ -1019,7 +1065,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     headlineFont: "",
     headlineSize: "large", // Default: extra groß
     addressingMode: 'du',
-  addOnContactForm: true,
+  addOnContactForm: false,
     contactFormFields: [
       { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
       { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
@@ -1249,7 +1295,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     const dbStepCurrent = existingOnboarding?.stepCurrent;
     if (dbStepCurrent !== undefined && dbStepCurrent !== null) {
       const stepIndex = dbStepCurrent;
-      if (stepIndex >= 0 && stepIndex < STEP_ORDER.length) {
+      if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
         const targetStep = STEP_ORDER[stepIndex];
         if (targetStep && targetStep !== 'welcome') {
           setCurrentStep(targetStep);
@@ -1745,6 +1791,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               // Refetch then show variant picker (instead of immediate reload)
               refetchSiteData().then(() => {
                 setShowVariantPicker(true);
+                try { (window as any).clarity?.("event", "variant_picker_shown"); } catch {}
               });
             } else if (status.status === "failed") {
               clearInterval(pollInterval);
@@ -1774,7 +1821,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   useEffect(() => {
     if (!siteLoading && !initialized && !isGeneratingInitialWebsite) {
       setInitialized(true);
-      
+
+      // Clarity session tags
+      try {
+        const c = (window as any).clarity;
+        if (c) {
+          c("set", "onboarding_source", siteData?.website?.source || "unknown");
+          c("set", "onboarding_website_id", String(websiteId || ""));
+          c("set", "onboarding_category", (business as any)?.category || "");
+          c("set", "onboarding_business", business?.name || "");
+          c("event", "onboarding_started");
+        }
+      } catch {}
+
       // Update captureStatus and send welcome email for external leads
       if (websiteId && siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
@@ -1850,25 +1909,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
         }
 
-        // For admin-generated websites without a customer email yet,
-        // ask for the email as the very first step.
-        if (!hasEmail && !isAuthenticated) {
-          // For external users: show the fully generated website before asking for email
-          // so they have a real incentive to leave their address.
-          if (source === "external" && !!(siteData?.website?.websiteData)) {
-            setContentPhase('complete');
-            setCategoryConfirmed(true);
-            setHeroRevealed(true);
-            setContentRevealed(true);
-            if (previewToken || websiteIdProp) {
-              localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
-            }
-          }
-          setCurrentStep("email");
-          const emailMsg = source === "admin"
-            ? "Hallo! 👋 Wir haben deine fertige Website bereits für dich erstellt. Damit du sie aktivieren kannst, brauchen wir zuerst deine **E-Mail-Adresse**."
-            : "Gefällt dir deine Website? 🎉\n\nGib kurz deine **E-Mail-Adresse** ein – so speichern wir sie für dich und du kannst jederzeit weitermachen.";
-          await addBotMessage(emailMsg, 800);
+        // Manual StartPage flow: name + category already set, skip to first real step
+        const isManualWithData = source === "external"
+          && (business as any)?.category?.trim()
+          && business?.name && business.name !== "Neues Unternehmen"
+          && business?.placeId?.startsWith("self-");
+
+        if (isManualWithData) {
+          const translatedCategory = translateGmbCategory((business as any).category);
+          setData((p) => ({ ...p, businessCategory: translatedCategory, businessName: business!.name }));
+          setCategoryConfirmed(true);
+          const firstStep = dynamicStepOrder[0] || "addressingMode";
+          setCurrentStep(firstStep);
+          await addBotMessage(getStepPrompt(firstStep), 800);
         } else if ((source === "admin" || source === "external") && (business as any)?.category) {
           // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
           const translatedCategory = translateGmbCategory((business as any).category);
@@ -1878,6 +1931,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             ? `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`
             : `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`;
           await addBotMessage(greeting, 800);
+        } else if (source === "admin") {
+          setCurrentStep("businessCategory");
+          await addBotMessage(
+            `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: In welcher **Branche** bist du tätig? (z.B. Friseur, Restaurant, Handwerker …)`,
+            800
+          );
         } else {
           setCurrentStep("businessCategory");
           await addBotMessage(getStepPrompt("businessCategory"), 800);
@@ -2156,6 +2215,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     addons: { icon: "⚡", title: "Abschnitt 3: Extras & Fertigstellung", subtitle: "Optionale Features und letzter Schliff" },
   };
 
+  const logStepMutation = trpc.onboarding.logStep.useMutation();
+
   const advanceToStep = useCallback(
     async (nextStep: ChatStep) => {
       setCurrentStep(nextStep);
@@ -2165,6 +2226,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (onboardingStorageKey) {
         localStorage.setItem(onboardingStorageKey, nextStep);
       }
+
+      // ── Analytics: track step progression ──
+      const stepIdx = STEP_ORDER.indexOf(nextStep as any);
+      if (websiteId && stepIdx >= 0) {
+        logStepMutation.mutate({ websiteId, step: nextStep, stepIndex: stepIdx, event: "reached" });
+      }
+      try {
+        trackFunnelStep(nextStep, stepIdx);
+        (window as any).clarity?.("set", "onboarding_step", nextStep);
+        (window as any).clarity?.("set", "onboarding_step_index", String(stepIdx));
+        (window as any).clarity?.("event", `step_${nextStep}`);
+      } catch {}
 
       // If this step has a section divider, inject it as a special message type
       const divider = SECTION_DIVIDERS[nextStep];
@@ -2348,34 +2421,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }
           addUserMessage(val);
           setData((p) => ({ ...p, email: val }));
-          // Fire Google Ads conversion for all onboarding starts
-          try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
-          // Save as customerEmail in DB when email is captured at the START of onboarding
+          trackConversion("qualify_lead");
+          // Save as customerEmail in DB
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
-          // Only do the "capture email → businessCategory" flow when user is at the
-          // BEGINNING of the onboarding (businessCategory not yet set).
-          // If they've already gone through all content steps, go to the normal next step.
-          const isAtStart = !data.businessCategory;
-          if (!alreadyHasEmail && websiteId && isAtStart) {
+          if (!alreadyHasEmail && websiteId) {
             saveCustomerEmailMutation.mutate(
-              { websiteId, email: val },
+              { websiteId, email: val, marketingConsent },
               {
-                onSuccess: async () => {
+                onSuccess: () => {
                   toast.success("E-Mail gespeichert! ✅");
-                  // Fire Google Ads conversion: Onboarding gestartet
-                  try { (window as any).gtag?.("event", "conversion", { send_to: "AW-16545728698/24hCCMT9wI8cELqRz9E9", value: 1.0, currency: "EUR" }); } catch {}
-                  // Refetch siteData so hasCustomerEmail becomes true and the email
-                  // step is removed from dynamicStepOrder (won't appear again later)
                   refetchSiteData();
-                  // Always start the full customization flow from businessCategory
-                  await advanceToStep("businessCategory");
                 },
                 onError: () => {
                   toast.error("E-Mail konnte nicht gespeichert werden.");
                 },
               }
             );
-            return; // advanceToStep is called in onSuccess above
           }
           break;
         }
@@ -2463,6 +2524,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           booking:     data.addOnBooking,
         },
       });
+      trackConversion("close_convert_lead");
       window.open(session.url, "_blank");
       toast.success("Du wirst zu Stripe weitergeleitet...");
     } catch (e: any) {
@@ -2863,11 +2925,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         industryKey={industryKey}
         onConfirm={() => {
           setShowVariantPicker(false);
-          window.location.href = window.location.href;
+          refetchSiteData();
         }}
         onSkip={() => {
           setShowVariantPicker(false);
-          window.location.href = window.location.href;
+          refetchSiteData();
         }}
       />
     );
@@ -2924,7 +2986,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
                   await advanceToStep("checkout");
                 }}
-                className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-xs font-semibold transition-all shadow-lg shadow-blue-500/20 flex-shrink-0"
+                className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-400 hover:to-lime-500 text-white text-xs font-semibold transition-all shadow-lg shadow-lime-500/20 flex-shrink-0"
               >
                 <Zap className="w-3 h-3" /> Website freischalten
               </button>
@@ -2961,7 +3023,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             />
           ) : (
             <div className="flex-1 flex items-center justify-center bg-slate-950">
-              <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 animate-spin text-lime-500" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
               </svg>
@@ -2987,7 +3049,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
                     await advanceToStep("checkout");
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white text-sm font-semibold transition-all shadow-lg shadow-blue-500/20"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-400 hover:to-lime-500 text-white text-sm font-semibold transition-all shadow-lg shadow-lime-500/20"
                 >
                   <Zap className="w-4 h-4" /> Website freischalten
                 </button>
@@ -2995,7 +3057,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             ) : (
               <button
                 onClick={() => setShowFullPreview(false)}
-                className="w-full flex items-center justify-center gap-2 py-3 mx-3 my-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 mx-3 my-2 rounded-xl bg-lime-500 hover:bg-lime-400 text-white text-sm font-semibold transition-colors"
                 style={{ width: "calc(100% - 24px)" }}
               >
                 <ChevronLeft className="w-4 h-4" /> Zurück zum Chat
@@ -3046,7 +3108,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <p className="text-slate-600 text-sm leading-relaxed mb-6">{extendSuccess}</p>
                 <button
                   onClick={() => setShowExtendModal(false)}
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors"
+                  className="w-full py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-gray-900 font-semibold transition-colors"
                 >
                   Weiter
                 </button>
@@ -3069,7 +3131,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       key={opt.v}
                       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                         extendReason === opt.v
-                          ? "border-indigo-500 bg-indigo-50"
+                          ? "border-lime-500 bg-lime-50"
                           : "border-slate-200 hover:border-slate-300"
                       }`}
                     >
@@ -3079,7 +3141,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         value={opt.v}
                         checked={extendReason === opt.v}
                         onChange={(e) => setExtendReason(e.target.value)}
-                        className="accent-indigo-600"
+                        className="accent-lime-500"
                       />
                       <span className="text-sm text-slate-700">{opt.t}</span>
                     </label>
@@ -3099,7 +3161,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <button
                     onClick={handleExtend}
                     disabled={extendSubmitting}
-                    className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-gray-900 font-semibold transition-colors disabled:opacity-50"
                   >
                     {extendSubmitting ? "Verlängere…" : "Um 24 Stunden verlängern"}
                   </button>
@@ -3125,7 +3187,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         >
           {/* Header */}
           <div className="px-4 py-4 border-b border-slate-700/50 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg flex-shrink-0">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center shadow-lg flex-shrink-0">
               <Zap className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -3206,7 +3268,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div className="flex items-center gap-2 px-3 py-2">
                   <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
+                      className="h-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-full"
                       initial={false}
                       animate={{ width: `${pct}%` }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -3250,7 +3312,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role === "bot" && (
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
                     <Zap className="w-3.5 h-3.5 text-white" />
                   </div>
                 )}
@@ -3260,7 +3322,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <div className="flex flex-col gap-2 max-w-[85%]">
                       {/* Category picker */}
                       {msg.step === "businessCategory" ? (
-                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-blue-500">
+                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-lime-500">
                           <p className="text-slate-300 text-xs">Branche wählen:</p>
                           <CategoryPicker
                             selected={inPlaceEditValue}
@@ -3277,7 +3339,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         </div>
                       ) : /* Color picker for color steps */
                       (msg.step === "brandColor" || msg.step === "brandSecondaryColor") ? (
-                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-blue-500">
+                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-lime-500">
                           <p className="text-slate-300 text-xs">
                             {msg.step === "brandColor" ? "Hauptfarbe wählen:" : "Sekundärfarbe wählen:"}
                           </p>
@@ -3323,14 +3385,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                 setData((p) => ({ ...p, [step]: newVal }));
                                 setInPlaceEditId(null);
                               }}
-                              className="px-2 py-1 text-xs rounded-lg bg-blue-600 hover:bg-blue-500 text-white"
+                              className="px-2 py-1 text-xs rounded-lg bg-lime-500 hover:bg-lime-400 text-white"
                             >Übernehmen</button>
                           </div>
                         </div>
                       ) : (
                         <>
                         <textarea
-                          className="bg-slate-700 text-white text-sm px-3 py-2 rounded-xl border border-blue-500 outline-none resize-none min-h-[60px] w-full"
+                          className="bg-slate-700 text-white text-sm px-3 py-2 rounded-xl border border-lime-500 outline-none resize-none min-h-[60px] w-full"
                           value={inPlaceEditValue}
                           onChange={(e) => setInPlaceEditValue(e.target.value)}
                           autoFocus
@@ -3372,7 +3434,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               }
                               setInPlaceEditId(null);
                             }}
-                            className="px-2 py-1 text-xs rounded-lg bg-blue-600 hover:bg-blue-500 text-white"
+                            className="px-2 py-1 text-xs rounded-lg bg-lime-500 hover:bg-lime-400 text-white"
                           >Speichern</button>
                         </div>
                         </>
@@ -3384,7 +3446,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                           msg.role === "bot"
                             ? "bg-slate-700/80 text-slate-100 rounded-tl-sm"
-                            : "bg-blue-600 text-white rounded-tr-sm"
+                            : "bg-lime-500 text-white rounded-tr-sm"
                         }`}
                         dangerouslySetInnerHTML={{
                           __html: msg.content
@@ -3416,7 +3478,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             {/* Typing indicator */}
             {isTyping && (
               <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mr-2 flex-shrink-0">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center mr-2 flex-shrink-0">
                   <Zap className="w-3.5 h-3.5 text-white" />
                 </div>
                 <div className="bg-slate-700/80 px-4 py-3 rounded-2xl rounded-tl-sm">
@@ -3462,7 +3524,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
                               toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
                             }}
-                            className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
+                            className="text-[10px] text-lime-400 hover:text-lime-300 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
                           >
                             Alle übernehmen
                           </button>
@@ -3485,18 +3547,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                 }}
                                 className={`text-left p-2 rounded-xl border transition-all group ${
                                   isAlreadyAdded 
-                                    ? "bg-blue-500/10 border-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.1)]" 
+                                    ? "bg-lime-400/10 border-lime-500/40 shadow-[0_0_12px_rgba(163,230,53,0.1)]" 
                                     : "bg-slate-700/40 border-slate-600/50 hover:border-slate-500"
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-blue-300' : 'text-slate-300 group-hover:text-white'}`}>
+                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-lime-300' : 'text-slate-300 group-hover:text-white'}`}>
                                     {s.title}
                                   </span>
                                   {isAlreadyAdded ? (
-                                    <Check className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                                    <Check className="w-3 h-3 text-lime-400 flex-shrink-0" />
                                   ) : (
-                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-blue-400 flex-shrink-0" />
+                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-lime-400 flex-shrink-0" />
                                   )}
                                 </div>
                               </button>
@@ -3509,14 +3571,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     {/* AI Suggestions */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-violet-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        <p className="text-lime-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
                           <Sparkles className="w-3 h-3" /> KI-Vorschläge
                         </p>
                         <div className="flex gap-3">
                           <button
                             onClick={generateServicesWithAI}
                             disabled={isGeneratingServices}
-                            className="text-[10px] text-violet-400 hover:text-violet-200 transition-colors uppercase font-bold tracking-wider"
+                            className="text-[10px] text-lime-400 hover:text-lime-200 transition-colors uppercase font-bold tracking-wider"
                           >
                             {isGeneratingServices ? "Lädt..." : "Neu generieren"}
                           </button>
@@ -3528,7 +3590,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                 setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
                                 toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
                               }}
-                              className="text-[10px] text-violet-400 hover:text-violet-200 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
+                              className="text-[10px] text-lime-400 hover:text-lime-200 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
                             >
                               Alle übernehmen
                             </button>
@@ -3555,18 +3617,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                 }}
                                 className={`text-left p-2 rounded-xl border transition-all group ${
                                   isAlreadyAdded 
-                                    ? "bg-violet-500/10 border-violet-500/40 shadow-[0_0_12px_rgba(139,92,246,0.1)]" 
-                                    : "bg-slate-700/40 border-slate-600/50 hover:border-violet-500/40"
+                                    ? "bg-lime-500/10 border-lime-500/40 shadow-[0_0_12px_rgba(163,230,53,0.1)]" 
+                                    : "bg-slate-700/40 border-slate-600/50 hover:border-lime-500/40"
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-violet-300' : 'text-slate-300 group-hover:text-violet-200'}`}>
+                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-lime-300' : 'text-slate-300 group-hover:text-lime-200'}`}>
                                     {s.title}
                                   </span>
                                   {isAlreadyAdded ? (
-                                    <Check className="w-3 h-3 text-violet-400 flex-shrink-0" />
+                                    <Check className="w-3 h-3 text-lime-400 flex-shrink-0" />
                                   ) : (
-                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-violet-400 flex-shrink-0" />
+                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-lime-400 flex-shrink-0" />
                                   )}
                                 </div>
                                 <p className="text-[9px] text-slate-500 line-clamp-1 leading-tight group-hover:text-slate-400">
@@ -3580,14 +3642,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <button
                           onClick={generateServicesWithAI}
                           disabled={isGeneratingServices}
-                          className="w-full py-3 rounded-xl border border-dashed border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/10 transition-colors flex flex-col items-center justify-center gap-1 group"
+                          className="w-full py-3 rounded-xl border border-dashed border-lime-500/30 bg-lime-500/5 hover:bg-lime-500/10 transition-colors flex flex-col items-center justify-center gap-1 group"
                         >
                           {isGeneratingServices ? (
-                            <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
+                            <Loader2 className="w-4 h-4 text-lime-400 animate-spin" />
                           ) : (
                             <>
-                              <Sparkles className="w-4 h-4 text-violet-400 group-hover:scale-110 transition-transform" />
-                              <span className="text-[11px] text-violet-300 font-bold uppercase tracking-wider">KI-Vorschläge generieren</span>
+                              <Sparkles className="w-4 h-4 text-lime-400 group-hover:scale-110 transition-transform" />
+                              <span className="text-[11px] text-lime-300 font-bold uppercase tracking-wider">KI-Vorschläge generieren</span>
                             </>
                           )}
                         </button>
@@ -3613,7 +3675,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       <p className="text-xs text-slate-500">Noch keine Leistungen hinzugefügt.</p>
                       <button 
                         onClick={() => setData(p => ({ ...p, topServices: [{ title: "", description: "" }] }))}
-                        className="text-xs text-blue-400 font-bold mt-2 hover:underline"
+                        className="text-xs text-lime-400 font-bold mt-2 hover:underline"
                       >
                         Erste Leistung anlegen
                       </button>
@@ -3624,7 +3686,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2 border border-slate-600/30">
                           <div className="flex items-center gap-2">
                             <input
-                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
                               placeholder={`Name der Leistung (z.B. Haarschnitt)`}
                               value={svc.title}
                               onChange={(e) => {
@@ -3645,7 +3707,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             </button>
                           </div>
                           <input
-                            className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
                             placeholder="Kurze Beschreibung (optional)"
                             value={svc.description}
                             onChange={(e) => {
@@ -3670,7 +3732,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowSkipServicesWarning(false)}
-                        className="flex-1 text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors"
+                        className="flex-1 text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors"
                       >
                         Doch eintragen
                       </button>
@@ -3693,7 +3755,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={() => setData((p) => ({ ...p, topServices: [...p.topServices, { title: "", description: "" }] }))}
-                    className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    className="flex items-center gap-1 text-xs text-lime-400 hover:text-lime-300 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
                   </button>
@@ -3771,7 +3833,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       }}
                       className={`text-left p-4 rounded-2xl border-2 transition-all group ${
                         JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors)
-                          ? "border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10"
+                          ? "border-lime-500 bg-lime-400/10 shadow-lg shadow-lime-500/10"
                           : "border-slate-700 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/60"
                       }`}
                     >
@@ -3782,7 +3844,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           {scheme.label}
                         </p>
                         {JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors) && (
-                          <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full bg-lime-400 flex items-center justify-center">
                             <Check className="w-2.5 h-2.5 text-white" />
                           </div>
                         )}
@@ -3806,7 +3868,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     setData((p) => ({ ...p, colorScheme: randomScheme.colors }));
                     setShowIndividualColors(false);
                   }}
-                  className="w-full py-3 px-4 rounded-xl border-2 border-purple-500/50 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 transition-all flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wider text-purple-300 hover:text-purple-200 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20"
+                  className="w-full py-3 px-4 rounded-xl border-2 border-lime-500/50 bg-gradient-to-r from-lime-600/20 to-lime-500/20 hover:from-lime-600/30 hover:to-lime-500/30 transition-all flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wider text-lime-300 hover:text-lime-200 shadow-lg shadow-lime-500/10 hover:shadow-lime-500/20"
                 >
                   <Sparkles className="w-4 h-4 animate-pulse" />
                   Überrasch mich! (Zufallsmix)
@@ -3817,7 +3879,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={() => setShowIndividualColors(!showIndividualColors)}
                     className={`w-full py-3 px-4 rounded-xl border border-dashed transition-all flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider ${
                       showIndividualColors 
-                        ? "border-blue-500/50 bg-blue-500/10 text-blue-400" 
+                        ? "border-lime-500/50 bg-lime-400/10 text-lime-400" 
                         : "border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600 hover:text-slate-300"
                     }`}
                   >
@@ -3851,7 +3913,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
                     const colorGroups = [
                       {
-                        label: "Basis", dot: "bg-blue-400",
+                        label: "Basis", dot: "bg-lime-500",
                         keys: [
                           { key: "primary", label: "Hauptfarbe" },
                           { key: "accent", label: "Akzentfarbe" },
@@ -3861,7 +3923,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         ],
                       },
                       {
-                        label: "Dunkle Layouts & Sektionen", dot: "bg-purple-400",
+                        label: "Dunkle Layouts & Sektionen", dot: "bg-lime-400",
                         keys: [
                           { key: "darkBackground", label: "Hintergrund (dunkle Layouts)" },
                           { key: "lightText", label: "Heller Text" },
@@ -3897,7 +3959,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                     <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{item.label}</span>
                                     <input
                                       type="text"
-                                      className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-blue-500/60 transition-colors"
+                                      className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-lime-500/60 transition-colors"
                                       value={rawVal}
                                       placeholder="#000000"
                                       onChange={(e) => {
@@ -3930,7 +3992,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     await trySaveStep(STEP_ORDER.indexOf("colorScheme"), { colorScheme: data.colorScheme });
                     await goToNextStep();
                   }}
-                  className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
                 >
                   Farben übernehmen <ChevronRight className="w-4 h-4" />
                 </button>
@@ -4037,14 +4099,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   }
                   await goToNextStep();
                 }}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-blue-500/60 hover:bg-blue-500/10 transition-all text-left group"
+                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-lime-500/60 hover:bg-lime-400/10 transition-all text-left group"
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-xl flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-lime-400/20 flex items-center justify-center text-xl flex-shrink-0">
                   👋
                 </div>
                 <div>
                   <div className="text-white font-semibold text-sm">Du – informell</div>
-                  <div className="text-slate-400 text-xs mt-0.5">„Wir helfen <span className="text-blue-400">dir</span>" · modern, direkt, nahbar</div>
+                  <div className="text-slate-400 text-xs mt-0.5">„Wir helfen <span className="text-lime-400">dir</span>" · modern, direkt, nahbar</div>
                   <div className="text-slate-500 text-[10px] mt-1">Passt gut zu: Restaurants, Friseure, Fitnessstudios, Shops, Startups</div>
                 </div>
               </button>
@@ -4117,7 +4179,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <button
                     key={opt.font}
                     onClick={() => setData((p) => ({ ...p, brandLogo: `font:${opt.font}` }))}
-                    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-blue-500 bg-blue-500/10" : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"}`}
+                    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-lime-500 bg-lime-400/10" : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"}`}
                   >
                     <p className="text-white text-lg mb-1" style={opt.style}>{data.businessName || business?.name || "Mein Unternehmen"}</p>
                     <p className="text-slate-400 text-xs">{opt.label}</p>
@@ -4128,7 +4190,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div className="border-t border-slate-700 pt-3">
                   <p className="text-slate-400 text-xs mb-2">Oder eigenes Logo hochladen:</p>
                   {data.brandLogo?.startsWith("url:") ? (
-                    <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-blue-500 bg-blue-500/10">
+                    <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-lime-500 bg-lime-400/10">
                       <img src={data.brandLogo.replace("url:", "")} alt="Logo" className="h-10 w-auto max-w-[120px] object-contain rounded" />
                       <div className="flex-1">
                         <p className="text-white text-sm font-medium">Logo hochgeladen ✓</p>
@@ -4213,7 +4275,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                                 onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
                                 className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                                   data.headlineFont === opt.font
-                                    ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                    ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
                                     : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                                 }`}
                               >
@@ -4232,7 +4294,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
                               className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                                 data.headlineFont === opt.font
-                                  ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                  ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
                                     : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                                 }`}
                               >
@@ -4272,7 +4334,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       onClick={() => setData((p) => ({ ...p, headlineSize: opt.value as 'large' | 'medium' | 'small' }))}
                       className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
                         data.headlineSize === opt.value
-                          ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                          ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
                           : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
                       }`}
                     >
@@ -4334,11 +4396,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       style={{ touchAction: "manipulation" }}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
                         (data as any)[addon.key]
-                          ? "border-blue-500 bg-blue-500/10"
+                          ? "border-lime-500 bg-lime-400/10"
                           : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
                       }`}
                     >
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${(data as any)[addon.key] ? "border-blue-500 bg-blue-500" : "border-slate-500"}`}>
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${(data as any)[addon.key] ? "border-lime-500 bg-lime-400" : "border-slate-500"}`}>
                         {(data as any)[addon.key] && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="text-lg">{addon.emoji}</span>
@@ -4346,15 +4408,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <p className="text-white text-sm font-medium">{addon.label}</p>
                         <p className="text-slate-400 text-xs">{addon.desc}</p>
                       </div>
-                      <span className="text-blue-400 text-xs font-medium">{addon.price}</span>
+                      <span className="text-lime-400 text-xs font-medium">{addon.price}</span>
                     </button>
                   ));
                 })()}
 
                 {/* Contact Form Info */}
                 {data.addOnContactForm && (
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 mt-2">
-                    <p className="text-blue-300 text-xs">
+                  <div className="bg-lime-400/10 border border-lime-500/30 rounded-xl p-3 mt-2">
+                    <p className="text-lime-300 text-xs">
                       <strong>📬 Kontaktformular:</strong> Name, Betreff und Nachricht werden angezeigt.
                       Du kannst das Formular später im Kundenportal noch bearbeiten.
                     </p>
@@ -4388,7 +4450,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   value={data.chatWelcomeMessage}
                   onChange={e => setData(p => ({ ...p, chatWelcomeMessage: e.target.value }))}
                   placeholder={`Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`}
-                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none placeholder-slate-500"
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50 resize-none placeholder-slate-500"
                 />
                 <p className="text-slate-500 text-xs">Der KI-Chat begrüßt Besucher auf deiner Website mit dieser Nachricht. Du kannst sie später im Dashboard jederzeit ändern.</p>
               </div>
@@ -4417,7 +4479,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
                   <input
-                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
                     value={data.addOnMenuData.headline}
                     onChange={(e) => {
                       setData(p => ({ ...p, addOnMenuData: { ...p.addOnMenuData, headline: e.target.value } }));
@@ -4430,7 +4492,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <input
-                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-blue-500 pb-1"
+                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-lime-500 pb-1"
                         value={cat.name}
                         onChange={(e) => {
                           const updated = { ...data.addOnMenuData };
@@ -4456,7 +4518,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <div key={itemIdx} className="bg-slate-700/40 rounded-xl p-3 space-y-2">
                           <div className="flex gap-2">
                             <input
-                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
                               value={item.name}
                               onChange={(e) => {
                                 const updated = { ...data.addOnMenuData };
@@ -4466,7 +4528,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               placeholder="Name des Gerichts"
                             />
                             <input
-                              className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 font-mono text-right"
+                              className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 font-mono text-right"
                               value={item.price}
                               onChange={(e) => {
                                 const updated = { ...data.addOnMenuData };
@@ -4478,7 +4540,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           </div>
                           <div className="flex gap-2 items-center">
                             <input
-                              className="flex-1 bg-slate-600/30 text-white text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                              className="flex-1 bg-slate-600/30 text-white text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
                               value={item.description}
                               onChange={(e) => {
                                 const updated = { ...data.addOnMenuData };
@@ -4506,7 +4568,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           updated.categories[catIdx].items.push({ name: "", description: "", price: "" });
                           setData(p => ({ ...p, addOnMenuData: updated }));
                         }}
-                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-1"
+                        className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 mt-1"
                       >
                         <Plus className="w-3.5 h-3.5" /> Gericht hinzufügen
                       </button>
@@ -4546,7 +4608,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         await trySaveStep(STEP_ORDER.indexOf("editMenu"), { addOnMenuData: { categories: filledCategories } });
                         await goToNextStep();
                       }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
+                      className="flex-1 bg-lime-500 hover:bg-lime-400 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
                     >
                       Speichern & weiter <ChevronRight className="w-3.5 h-3.5" />
                     </button>
@@ -4567,7 +4629,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
                   <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
                   <input
-                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
                     value={data.addOnPricelistData.headline}
                     onChange={(e) => {
                       setData(p => ({ ...p, addOnPricelistData: { ...p.addOnPricelistData, headline: e.target.value } }));
@@ -4580,7 +4642,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <input
-                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-blue-500 pb-1"
+                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-lime-500 pb-1"
                         value={cat.name}
                         onChange={(e) => {
                           const updated = { ...data.addOnPricelistData };
@@ -4605,7 +4667,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       {cat.items.map((item, itemIdx) => (
                         <div key={itemIdx} className="flex gap-2 items-center">
                           <input
-                            className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                            className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
                             value={item.name}
                             onChange={(e) => {
                               const updated = { ...data.addOnPricelistData };
@@ -4615,7 +4677,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             placeholder="Leistung"
                           />
                           <input
-                            className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 font-mono text-right"
+                            className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 font-mono text-right"
                             value={item.price}
                             onChange={(e) => {
                               const updated = { ...data.addOnPricelistData };
@@ -4642,7 +4704,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           updated.categories[catIdx].items.push({ name: "", price: "" });
                           setData(p => ({ ...p, addOnPricelistData: updated }));
                         }}
-                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-1"
+                        className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 mt-1"
                       >
                         <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
                       </button>
@@ -4682,7 +4744,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         await trySaveStep(STEP_ORDER.indexOf("editPricelist"), { addOnPricelistData: { categories: filledCategories } });
                         await goToNextStep();
                       }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
+                      className="flex-1 bg-lime-500 hover:bg-lime-400 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
                     >
                       Speichern & weiter <ChevronRight className="w-3.5 h-3.5" />
                     </button>
@@ -4704,7 +4766,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
                 <input
-                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
                   value={data.addOnGalleryData.headline}
                   onChange={(e) => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, headline: e.target.value } }))}
                   placeholder="z.B. Unsere Galerie"
@@ -4721,7 +4783,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       onClick={() => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, mode } }))}
                       className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
                         data.addOnGalleryData.mode === mode
-                          ? 'bg-blue-600/20 border-blue-500/60 text-white'
+                          ? 'bg-lime-500/20 border-lime-500/60 text-white'
                           : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200'
                       }`}
                     >
@@ -4764,7 +4826,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <div className="flex-1">
                           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Album {albumIdx + 1}</p>
                           <input
-                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
                             value={album.name}
                             onChange={(e) => {
                               const updated = [...data.addOnGalleryData.albums];
@@ -4816,7 +4878,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       const newAlbum: GalleryAlbum = { id: `album-${Date.now()}`, name: '', images: [] };
                       setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: [...p.addOnGalleryData.albums, newAlbum] } }));
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-blue-500/50 text-sm transition-all"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-lime-500/50 text-sm transition-all"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Album hinzufügen
@@ -4840,9 +4902,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Blurred content behind overlay */}
                 <div className="select-none pointer-events-none opacity-40 blur-[1px]">
               {/* Info Card */}
-                <div className="bg-blue-600/10 border border-blue-500/30 rounded-2xl p-4 space-y-2">
+                <div className="bg-lime-500/10 border border-lime-500/30 rounded-2xl p-4 space-y-2">
                   <div className="flex items-start gap-3">
-                    <Monitor className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <Monitor className="w-5 h-5 text-lime-400 mt-0.5 flex-shrink-0" />
                     <div className="space-y-1">
                       <p className="text-white text-xs font-bold leading-tight">Später bearbeitbar</p>
                       <p className="text-slate-400 text-[11px] leading-relaxed">
@@ -4850,7 +4912,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       </p>
                     </div>
                   </div>
-                  <div className="pt-2 mt-2 border-t border-blue-500/20">
+                  <div className="pt-2 mt-2 border-t border-lime-500/20">
                     <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
                       <Check className="w-3 h-3 text-emerald-400" /> Impressum & Datenschutz (inklusive)
                     </p>
@@ -4862,7 +4924,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <div key={page.id} className="bg-slate-700/60 rounded-xl p-3 flex gap-2 items-start group border border-slate-600/30 hover:border-slate-500/50 transition-colors">
                       <div className="flex-1 space-y-1.5">
                         <input
-                          className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
                           placeholder="Seitenname (z.B. Über uns)"
                           value={page.name}
                           onChange={(e) => {
@@ -4872,7 +4934,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           }}
                         />
                         <input
-                          className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
                           placeholder="Notiz zum Inhalt (optional)"
                           value={page.description}
                           onChange={(e) => {
@@ -4897,7 +4959,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <button
                     className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 text-slate-300 py-2.5 rounded-xl border border-slate-600"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Neue Unterseite hinzufügen <span className="text-blue-400 font-bold">(+9,90 €)</span>
+                    <Plus className="w-3.5 h-3.5" /> Neue Unterseite hinzufügen <span className="text-lime-400 font-bold">(+9,90 €)</span>
                   </button>
                 </div>
                 </div>{/* end blurred content */}
@@ -4905,9 +4967,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Coming Soon overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-[2px] rounded-2xl z-10">
                   <div className="flex flex-col items-center gap-3 text-center px-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/40">
-                      <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-                      <span className="text-indigo-300 text-xs font-semibold uppercase tracking-widest">Coming Soon</span>
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-lime-500/20 border border-lime-500/40">
+                      <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
+                      <span className="text-lime-300 text-xs font-semibold uppercase tracking-widest">Coming Soon</span>
                     </div>
                     <p className="text-white/70 text-sm leading-relaxed max-w-xs">
                       Unterseiten sind in Kürze verfügbar. Wir arbeiten daran!
@@ -5032,7 +5094,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                           value={data[key] || ""}
                           onChange={(e) => setData((p) => ({ ...p, [key]: e.target.value }))}
                           placeholder={placeholder}
-                          className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-blue-500 placeholder-slate-500"
+                          className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-lime-500 placeholder-slate-500"
                         />
                       </div>
                     ))}
@@ -5051,7 +5113,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         if (data.legalPhone) await trySaveStep(stepIdx + 4, { legalPhone: data.legalPhone });
                         await advanceToStep("legalVat");
                       }}
-                      className="w-full flex items-center justify-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors mt-1"
+                      className="w-full flex items-center justify-center gap-1.5 text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors mt-1"
                     >
                       <Check className="w-3.5 h-3.5" /> Bestätigen & weiter
                     </button>
@@ -5134,14 +5196,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             type="time"
                             value={dh.from}
                             onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from: e.target.value } : d))}
-                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
                           />
                           <span className="text-slate-500 text-xs">–</span>
                           <input
                             type="time"
                             value={dh.to}
                             onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to: e.target.value } : d))}
-                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
                           />
                           {/* Add second slot button */}
                           {!dh.from2 && (
@@ -5159,14 +5221,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               type="time"
                               value={dh.from2}
                               onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: e.target.value } : d))}
-                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
                             />
                             <span className="text-slate-500 text-xs">–</span>
                             <input
                               type="time"
                               value={dh.to2}
                               onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to2: e.target.value } : d))}
-                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-blue-400"
+                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
                             />
                             <button
                               onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: undefined, to2: undefined } : d))}
@@ -5262,7 +5324,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                               onDragEnd={handleDragEnd}
                               className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all select-none ${
                                 isDragging
-                                  ? "opacity-40 border-blue-500/60 bg-blue-500/10 scale-[0.98]"
+                                  ? "opacity-40 border-lime-500/60 bg-lime-400/10 scale-[0.98]"
                                   : isHidden
                                   ? "border-slate-700 bg-slate-800/40 text-slate-500"
                                   : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
@@ -5332,7 +5394,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {previewToken && (
                 <button
                   onClick={() => setShowFullPreview(true)}
-                  className="w-full border border-slate-500/60 hover:border-blue-500/60 hover:bg-blue-500/10 text-slate-300 hover:text-white font-medium px-5 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full border border-slate-500/60 hover:border-lime-500/60 hover:bg-lime-400/10 text-slate-300 hover:text-white font-medium px-5 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <Monitor className="w-4 h-4" /> Vollbild-Vorschau öffnen
                 </button>
@@ -5342,7 +5404,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
                   await advanceToStep("checkout");
                 }}
-                className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-400 hover:to-lime-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-lime-500/20 flex items-center justify-center gap-2"
               >
                 <Zap className="w-4 h-4" /> Website freischalten
               </button>
@@ -5364,7 +5426,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={() => setBillingInterval("yearly")}
                     className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
                       billingInterval === "yearly"
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-lime-500 text-gray-900"
                         : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
                     }`}
                   >
@@ -5379,7 +5441,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     onClick={() => setBillingInterval("monthly")}
                     className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
                       billingInterval === "monthly"
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-lime-500 text-gray-900"
                         : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
                     }`}
                   >
@@ -5496,13 +5558,28 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                             handleSubmit(reply);
                           }
                         }}
-                        className="text-sm bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 hover:border-blue-400/70 text-blue-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
+                        className="text-sm bg-lime-500/20 hover:bg-lime-500/40 border border-lime-500/50 hover:border-lime-400/70 text-lime-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
                       >
                         {reply}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
+              {/* Marketing consent checkbox — shown on email step */}
+              {currentStep === "email" && (
+                <label className="flex items-start gap-2.5 cursor-pointer mb-2">
+                  <input
+                    type="checkbox"
+                    checked={marketingConsent}
+                    onChange={(e) => setMarketingConsent(e.target.checked)}
+                    className="mt-0.5 shrink-0 w-4 h-4 rounded accent-lime-500 cursor-pointer"
+                  />
+                  <span className="text-slate-400 text-xs leading-relaxed">
+                    Ich möchte gelegentlich per E-Mail über Neuigkeiten und Tipps informiert werden.{" "}
+                    <a href="/datenschutz" target="_blank" className="text-lime-400 underline underline-offset-2 hover:text-lime-300">Datenschutz</a>
+                  </span>
+                </label>
               )}
               <div className="flex gap-2">
                 {/* AI generate button for text fields */}
@@ -5511,21 +5588,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <button
                       onClick={() => generateWithAI(currentStep as keyof OnboardingData)}
                       disabled={isGenerating}
-                      className="w-10 h-10 rounded-xl bg-violet-600/30 hover:bg-violet-600/50 border border-violet-500/60 flex items-center justify-center transition-all ai-glow-btn"
+                      className="w-10 h-10 rounded-xl bg-lime-600/20 hover:bg-lime-600/30 border border-lime-500/60 flex items-center justify-center transition-all ai-glow-btn"
                       title="Mit KI generieren"
                     >
                       {isGenerating ? (
-                        <Loader2 className="w-4 h-4 text-violet-300 animate-spin" />
+                        <Loader2 className="w-4 h-4 text-lime-300 animate-spin" />
                       ) : (
-                        <Sparkles className="w-4 h-4 text-violet-300" />
+                        <Sparkles className="w-4 h-4 text-lime-300" />
                       )}
                     </button>
                     {/* Tooltip – anchored to left edge so it never overflows off-screen */}
                     <div className="absolute bottom-full left-0 mb-2 w-48 pointer-events-none opacity-0 group-hover/ai:opacity-100 transition-opacity duration-200 z-20">
-                      <div className="bg-violet-900/95 border border-violet-500/50 text-violet-100 text-xs px-3 py-2 rounded-lg shadow-lg text-center leading-snug">
+                      <div className="bg-slate-800/95 border border-lime-500/50 text-slate-100 text-xs px-3 py-2 rounded-lg shadow-lg text-center leading-snug">
                         ✨ Automatisch von KI<br/>generieren lassen
                         {/* Arrow points to the button center (~left-5 ≈ 20px = half of w-10 button) */}
-                        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-violet-900/95" />
+                        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800/95" />
                       </div>
                     </div>
                   </div>
@@ -5554,7 +5631,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         ? `z.B. "Damen und Herren in ${data.legalCity || 'Köln'}, die Wert auf..."`
                         : "Deine Antwort... (Shift+Enter für neue Zeile)"
                     }
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50 resize-none leading-relaxed"
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50 resize-none leading-relaxed"
                     style={{ minHeight: "72px", maxHeight: "160px" }}
                   />
                 ) : (
@@ -5580,13 +5657,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         ? "deine@email.de"
                         : "Deine Antwort..."
                     }
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500 border border-slate-600/50"
+                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
                   />
                 )}
                 <button
                   onClick={() => handleSubmit()}
                   disabled={!inputValue.trim() && currentStep !== "businessName" && currentStep !== "legalVat"}
-                  className="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-colors disabled:opacity-40 flex-shrink-0"
+                  className="w-10 h-10 rounded-xl bg-lime-500 hover:bg-lime-400 flex items-center justify-center transition-colors disabled:opacity-40 flex-shrink-0"
                 >
                   <Send className="w-4 h-4 text-white" />
                 </button>
@@ -5625,7 +5702,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5646,7 +5723,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await trySaveStep(STEP_ORDER.indexOf("editAiChat"), { chatWelcomeMessage: msg });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5665,7 +5742,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5682,7 +5759,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5700,7 +5777,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await trySaveStep(STEP_ORDER.indexOf("headlineSize"), { headlineSize: data.headlineSize });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5722,7 +5799,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5746,7 +5823,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5763,7 +5840,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: [] });
                   await goToNextStep();
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5785,7 +5862,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   });
                   await advanceToStep("preview");
                 }}
-                className="w-full flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter <ChevronRight className="w-4 h-4" />
               </button>
@@ -5905,7 +5982,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-full transition-all duration-500"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -5927,7 +6004,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {/* Branchen-Update Toast – erscheint über dem Preview, stört Chat-Flow nicht */}
                 {previewNotification && (
                   <div
-                    className="absolute top-4 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 rounded-full bg-violet-600/90 px-4 py-2 text-[11px] font-medium text-white shadow-lg backdrop-blur-sm pointer-events-none"
+                    className="absolute top-4 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 rounded-full bg-lime-500/90 px-4 py-2 text-[11px] font-medium text-gray-900 shadow-lg backdrop-blur-sm pointer-events-none"
                     style={{ animation: 'fadeInDown 0.25s ease' }}
                   >
                     {previewNotification}
@@ -5945,7 +6022,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 >
                   {/* Subtle grid */}
                   <div className="absolute inset-0" style={{
-                    backgroundImage: 'linear-gradient(rgba(99,102,241,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.07) 1px, transparent 1px)',
+                    backgroundImage: 'linear-gradient(rgba(163,230,53,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(163,230,53,0.07) 1px, transparent 1px)',
                     backgroundSize: '28px 28px',
                   }} />
                   {/* Wireframe blocks */}
@@ -5983,7 +6060,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   {/* Center hint */}
                   <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                     <div className="text-center bg-white/90 backdrop-blur-sm rounded-xl border border-slate-200 px-5 py-3 space-y-1.5 shadow-md">
-                      <Sparkles className="w-5 h-5 text-indigo-400 mx-auto" />
+                      <Sparkles className="w-5 h-5 text-lime-400 mx-auto" />
                       <p className="text-slate-700 text-xs font-medium">Vorschau erscheint hier</p>
                       <p className="text-slate-400 text-[10px]">beantworte die Fragen im Chat</p>
                     </div>
@@ -6006,6 +6083,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     heroImageUrl={data.heroPhotoUrl || heroImageUrl}
                     aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
                     layoutStyle={layoutStyle}
+                    layoutVersion={(siteData?.website as any)?.layoutVersion ?? undefined}
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
                     isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}
@@ -6053,6 +6131,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       zIndex: 10,
                     }}
                   />
+
+                  {/* Click-to-info overlay — shows tooltip when user clicks on the non-interactive preview */}
+                  <div
+                    style={{ position: 'absolute', inset: 0, zIndex: 20, cursor: 'default' }}
+                    onClick={() => toast.info("Das ist deine Live-Vorschau. Beantworte die Fragen im Chat – alle Inhalte, Bilder und Farben lassen sich dort anpassen.", { duration: 4000 })}
+                  />
                 </div>
               </div>
             </MacbookMockup>
@@ -6069,6 +6153,55 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       </div>
 
       {/* Exit intent modal */}
+      {/* Mid-funnel save reminder (5 min timer) */}
+      {showSaveReminder && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-br from-lime-500 to-lime-600 p-6 text-center">
+              <div className="w-14 h-14 bg-black/15 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Mail className="w-7 h-7 text-gray-900" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Entwurf speichern?</h2>
+              <p className="text-gray-800 text-sm">Sichere deinen Fortschritt — wir senden dir den Link per E-Mail.</p>
+            </div>
+            <div className="p-6 space-y-3">
+              <input
+                type="email"
+                placeholder="deine@email.de"
+                value={exitIntentEmail}
+                onChange={(e) => setExitIntentEmail(e.target.value)}
+                className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-lime-500 placeholder-slate-500"
+              />
+              <button
+                onClick={async () => {
+                  const email = exitIntentEmail.trim();
+                  if (!email || !email.includes("@") || !email.includes(".")) {
+                    toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
+                    return;
+                  }
+                  setData(p => ({ ...p, email }));
+                  await trySaveStep(STEP_ORDER.indexOf("email"), { email });
+                  if (websiteId) saveCustomerEmailMutation.mutate({ websiteId, email, marketingConsent });
+                  trackConversion("qualify_lead");
+                  toast.success("Gespeichert! Du kannst jederzeit zurückkehren.");
+                  setShowSaveReminder(false);
+                }}
+                className="w-full py-3 rounded-xl font-semibold text-gray-900 transition-colors"
+                style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
+              >
+                Fortschritt speichern
+              </button>
+              <button
+                onClick={() => setShowSaveReminder(false)}
+                className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors text-center py-1"
+              >
+                Später
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showExitIntent && (() => {
         const knownEmail = data.email || data.legalEmail;
         return (
@@ -6121,15 +6254,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               ) : (
                 /* ── Capture-state: no email yet ── */
                 <>
-                  <div className="bg-gradient-to-br from-blue-600 to-violet-700 p-8 text-center relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-lime-600 to-lime-700 p-8 text-center relative overflow-hidden">
                     <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
+                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-lime-400/20 rounded-full blur-xl" />
                     <div className="relative z-10">
                       <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
                         <Clock className="w-8 h-8 text-white" />
                       </div>
                       <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Warte kurz! ⚡</h2>
-                      <p className="text-blue-100 text-sm font-medium leading-relaxed">
+                      <p className="text-lime-100 text-sm font-medium leading-relaxed">
                         Deine Website ist nur noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
                       </p>
                     </div>
@@ -6144,24 +6277,38 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         <input
                           type="email"
                           placeholder="deine@email.de"
-                          value={data.email}
-                          onChange={(e) => setData(p => ({ ...p, email: e.target.value }))}
-                          className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500"
+                          value={exitIntentEmail}
+                          onChange={(e) => setExitIntentEmail(e.target.value)}
+                          className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-lime-500 transition-all placeholder-slate-500"
                         />
+                        <label className="flex items-start gap-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={marketingConsent}
+                            onChange={(e) => setMarketingConsent(e.target.checked)}
+                            className="mt-0.5 shrink-0 w-4 h-4 rounded accent-lime-500 cursor-pointer"
+                          />
+                          <span className="text-slate-400 text-xs leading-relaxed">
+                            Ich möchte gelegentlich per E-Mail über Neuigkeiten und Tipps informiert werden.{" "}
+                            <a href="/datenschutz" target="_blank" className="text-lime-400 underline underline-offset-2 hover:text-lime-300">Datenschutz</a>
+                          </span>
+                        </label>
                         <button
                           onClick={async () => {
-                            if (!data.email || !data.email.includes("@")) {
+                            const email = exitIntentEmail.trim();
+                            if (!email || !email.includes("@") || !email.includes(".")) {
                               toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
                               return;
                             }
-                            await trySaveStep(STEP_ORDER.indexOf("email"), { email: data.email });
+                            setData(p => ({ ...p, email }));
+                            await trySaveStep(STEP_ORDER.indexOf("email"), { email });
                             if (websiteId) {
-                              saveCustomerEmailMutation.mutate({ websiteId, email: data.email });
+                              saveCustomerEmailMutation.mutate({ websiteId, email, marketingConsent });
                             }
                             toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
                             setShowExitIntent(false);
                           }}
-                          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                          className="w-full bg-lime-500 hover:bg-lime-400 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-lime-500/20"
                         >
                           Fortschritt speichern & weiter
                         </button>
@@ -6247,6 +6394,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </div>
         </div>
       )}
+      <HelpWidget websiteId={websiteId} />
     </motion.div>
   );
 }
@@ -6308,7 +6456,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
                 key={url + idx}
                 onClick={() => togglePhoto(url)}
                 className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                  selectedPhotos.includes(url) ? "border-blue-500 ring-2 ring-blue-500/20" : "border-transparent hover:border-slate-500"
+                  selectedPhotos.includes(url) ? "border-lime-500 ring-2 ring-lime-500/20" : "border-transparent hover:border-slate-500"
                 }`}
               >
                 <img
@@ -6318,8 +6466,8 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
                   onError={() => setBrokenImages(prev => new Set(prev).add(url))}
                 />
                 {selectedPhotos.includes(url) && (
-                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                  <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center shadow-lg">
                       <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   </div>
@@ -6338,7 +6486,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
       <div className="grid grid-cols-3 gap-2">
         {isLoadingSuggestions ? (
           <div className="col-span-3 py-10 flex flex-col items-center justify-center gap-3 bg-slate-800/30 rounded-xl border border-slate-700/30">
-            <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+            <Loader2 className="w-5 h-5 text-lime-500 animate-spin" />
             <p className="text-slate-500 text-[10px]">Passende Fotos werden geladen…</p>
           </div>
         ) : (
@@ -6347,7 +6495,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
               key={idx}
               onClick={() => togglePhoto(photo.url)}
               className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                selectedPhotos.includes(photo.url) ? "border-blue-500 ring-2 ring-blue-500/20" : "border-transparent hover:border-slate-500"
+                selectedPhotos.includes(photo.url) ? "border-lime-500 ring-2 ring-lime-500/20" : "border-transparent hover:border-slate-500"
               }`}
             >
               <img
@@ -6357,8 +6505,8 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
                 onError={() => setBrokenImages(prev => new Set(prev).add(photo.url))}
               />
               {selectedPhotos.includes(photo.url) && (
-                <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center shadow-lg">
                     <Check className="w-3.5 h-3.5 text-white" />
                   </div>
                 </div>
@@ -6375,7 +6523,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
       <div className="border-t border-slate-700 pt-3">
         <div className="flex flex-wrap gap-2 mb-3">
           {selectedPhotos.filter(url => !photos.some(p => p.url === url) && !gmbPhotos.includes(url)).map((url, i) => (
-            <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-blue-500 group">
+            <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-lime-500 group">
               <img src={url} alt="" className="w-full h-full object-cover" />
               <button 
                 onClick={() => onUpdate(selectedPhotos.filter(u => u !== url))}
@@ -6465,7 +6613,7 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Branche suchen oder eintippen…"
-          className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-blue-500/60 focus:bg-blue-600/10 transition-all"
+          className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500/60 focus:bg-lime-500/10 transition-all"
         />
         {search && (
           <button
@@ -6484,7 +6632,7 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
               <span className="text-slate-400 text-sm">Keine Treffer – Branche trotzdem übernehmen?</span>
               <button
                 onClick={() => onSelect(search.trim())}
-                className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+                className="text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
               >
                 Übernehmen
               </button>
@@ -6496,7 +6644,7 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
                 onClick={() => onSelect(cat)}
                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                   selected === cat
-                    ? "bg-blue-600/30 text-white"
+                    ? "bg-lime-500/30 text-white"
                     : "text-slate-200 hover:bg-slate-700/60 hover:text-white"
                 }`}
               >
@@ -6522,8 +6670,8 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
                     onClick={() => onSelect(cat)}
                     className={`text-xs border px-2.5 py-1.5 rounded-lg transition-all ${
                       selected === cat
-                        ? "bg-blue-600/40 border-blue-500/60 text-white"
-                        : "bg-slate-700/60 hover:bg-blue-600/30 border-slate-600/50 hover:border-blue-500/50 text-slate-200 hover:text-white"
+                        ? "bg-lime-500/40 border-lime-500/60 text-white"
+                        : "bg-slate-700/60 hover:bg-lime-500/30 border-slate-600/50 hover:border-lime-500/50 text-slate-200 hover:text-white"
                     }`}
                   >
                     {cat}
@@ -6597,7 +6745,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
                 onClick={() => onSelect(heroPhotoUrl === photo.url ? "" : photo.url)}
                 className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
                   heroPhotoUrl === photo.url
-                    ? "border-blue-400 ring-2 ring-blue-400/40"
+                    ? "border-lime-400 ring-2 ring-lime-400/40"
                     : "border-slate-600/40 hover:border-slate-400"
                 }`}
                 title={photo.alt}
@@ -6610,8 +6758,8 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
                   onError={() => setBrokenImages(prev => { const next = new Set(prev); next.add(photo.url); return next; })}
                 />
                 {heroPhotoUrl === photo.url && (
-                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center">
                       <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   </div>
@@ -6627,7 +6775,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
       <div className="grid grid-cols-3 gap-2">
         {isLoadingSuggestions ? (
           <div className="col-span-3 py-12 flex flex-col items-center justify-center gap-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-            <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+            <Loader2 className="w-6 h-6 text-lime-500 animate-spin" />
             <p className="text-slate-400 text-xs">Passende Fotos werden geladen…</p>
           </div>
         ) : (
@@ -6645,7 +6793,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
                 onClick={() => onSelect(heroPhotoUrl === url ? "" : url)}
                 className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
                   heroPhotoUrl === url
-                    ? "border-blue-400 ring-2 ring-blue-400/40"
+                    ? "border-lime-400 ring-2 ring-lime-400/40"
                     : "border-slate-600/40 hover:border-slate-400"
                 }`}
                 title={alt}
@@ -6664,8 +6812,8 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
                   }}
                 />
                 {heroPhotoUrl === url && (
-                  <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center">
                       <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   </div>
@@ -6691,7 +6839,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
       <div className="border-t border-slate-700 pt-3">
         <p className="text-slate-400 text-xs mb-2">Oder eigenes Foto hochladen:</p>
         {heroPhotoUrl && !photos.some((p) => p.url === heroPhotoUrl) ? (
-          <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-blue-500 bg-blue-500/10">
+          <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-lime-500 bg-lime-400/10">
             <img src={heroPhotoUrl} alt="Eigenes Foto" className="h-12 w-20 object-cover rounded" />
             <div className="flex-1">
               <p className="text-white text-sm font-medium">Eigenes Foto ✓</p>
@@ -6759,7 +6907,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
         <button
           disabled={isUploading}
           onClick={onNext}
-          className="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Weiter <ChevronRight className="w-4 h-4" />
         </button>

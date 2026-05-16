@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw,
   Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle,
-  Clock, TrendingDown, UserPlus, Database, Zap, Users
+  Clock, TrendingDown, UserPlus, Database, Zap, Users, MessageCircle, ListChecks
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -48,35 +48,6 @@ const captureLabels: Record<string, string> = {
   converted: "Konvertiert",
   abandoned: "Abgebrochen",
 };
-
-// Deutsche Labels der Onboarding-Schritte – Reihenfolge = STEP_ORDER in OnboardingChat.tsx
-const ONBOARDING_STEP_LABELS = [
-  "Branche", "Firmenname", "Anrede", "Logo", "Farben",
-  "Hauptbild", "Über-uns-Bild", "Schriftart", "Schriftgröße", "Slogan",
-  "Beschreibung", "Alleinstellung", "Leistungen", "Inhaber", "Straße",
-  "PLZ/Ort", "E-Mail (Impressum)", "Telefon", "Öffnungszeiten", "USt-ID",
-  "Add-ons", "KI-Chat", "Speisekarte", "Preisliste", "Galerie",
-  "Unterseiten", "E-Mail-Erfassung", "Sektionen", "Vorschau", "Checkout",
-];
-
-/** Liefert eine lesbare Beschreibung des aktuellen Onboarding-Schritts. */
-function formatOnboardingStep(w: any): { label: string; sub: string | null; tone: "idle" | "active" | "done" } {
-  const status = w.onboardingResponseStatus;
-  const step = w.onboardingStep;
-  if (status === "completed" || w.onboardingStatus === "completed") {
-    return { label: "Abgeschlossen", sub: null, tone: "done" };
-  }
-  if (!status || status === "pending") {
-    return { label: "Nicht gestartet", sub: null, tone: "idle" };
-  }
-  // in_progress
-  if (typeof step === "number" && step >= 0) {
-    const total = ONBOARDING_STEP_LABELS.length;
-    const name = ONBOARDING_STEP_LABELS[step] || `Schritt ${step + 1}`;
-    return { label: `Schritt ${step + 1} / ${total}`, sub: name, tone: "active" };
-  }
-  return { label: "Gestartet", sub: null, tone: "active" };
-}
 
 /**
  * Derive the logical funnel status from both website status and captureStatus.
@@ -462,10 +433,7 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(w.createdAt).toLocaleString("de-DE", {
-                        day: "2-digit", month: "2-digit", year: "numeric",
-                        hour: "2-digit", minute: "2-digit",
-                      })}
+                      {new Date(w.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -505,6 +473,12 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const websiteIds = websites.map((w: any) => w.id);
+  const { data: chatCounts } = trpc.website.supportChatCount.useQuery(
+    { websiteIds },
+    { enabled: websiteIds.length > 0 }
+  );
 
   const bulkDeleteMutation = trpc.website.bulkDelete.useMutation({
     onSuccess: (data) => {
@@ -632,7 +606,6 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                   <TableHead>E-Mail / Slug</TableHead>
                   <TableHead>Branche</TableHead>
                   <TableHead>Funnel-Status</TableHead>
-                  <TableHead>Onboarding-Schritt</TableHead>
                   <TableHead>Website-Status</TableHead>
                   <TableHead>Erstellt</TableHead>
                   <TableHead className="text-right">Aktionen</TableHead>
@@ -666,30 +639,12 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                       ); })()}
                     </TableCell>
                     <TableCell>
-                      {(() => {
-                        const s = formatOnboardingStep(w);
-                        const toneClass =
-                          s.tone === "done" ? "text-emerald-400"
-                          : s.tone === "active" ? "text-blue-400"
-                          : "text-muted-foreground";
-                        return (
-                          <div className="text-sm">
-                            <div className={`font-medium ${toneClass}`}>{s.label}</div>
-                            {s.sub && <div className="text-xs text-muted-foreground">{s.sub}</div>}
-                          </div>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell>
                       <Badge variant="outline" className={statusColors[w.status] || ""}>
                         {statusLabels[w.status] || w.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(w.createdAt).toLocaleString("de-DE", {
-                        day: "2-digit", month: "2-digit", year: "numeric",
-                        hour: "2-digit", minute: "2-digit",
-                      })}
+                      {new Date(w.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -700,6 +655,8 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                             </a>
                           </Button>
                         )}
+                        <ProgressButton websiteId={w.id} />
+                        <SupportChatButton websiteId={w.id} chatCount={(chatCounts as any)?.[w.id]} />
                         <ExternalLeadStatusDialog website={w} onUpdate={(id, status) => updateStatusMutation.mutate({ id, captureStatus: status as any })} isPending={updateStatusMutation.isPending} />
                         <DeleteWebsiteDialog website={w} />
                       </div>
@@ -1105,4 +1062,110 @@ function BusinessLeadTypeBadge({ hasWebsite, leadType, website }: { hasWebsite: 
   if (lt === "outdated_website") return <div><Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1"><Clock className="h-3 w-3" /> Veraltete Website</Badge>{link}</div>;
   if (lt === "poor_website") return <div><Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1"><TrendingDown className="h-3 w-3" /> Schlechte Website</Badge>{link}</div>;
   return <div><Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1"><CheckCircle className="h-3 w-3" /> Hat Website</Badge>{link}</div>;
+}
+
+// ── Support Chat Dialog (per Website) ─────────────────────
+function SupportChatButton({ websiteId, chatCount }: { websiteId: number; chatCount?: { count: number; totalMessages: number } }) {
+  const [open, setOpen] = useState(false);
+  const { data, isLoading } = trpc.website.supportChats.useQuery(
+    { websiteId },
+    { enabled: open }
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="relative">
+          <MessageCircle className="h-3 w-3 mr-1" />
+          Chat
+          {chatCount && chatCount.totalMessages > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-lime-500 text-[9px] font-bold text-gray-900 flex items-center justify-center">
+              {chatCount.count}
+            </span>
+          )}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Support-Chats</DialogTitle>
+          <DialogDescription>Chat-Verläufe für diese Website</DialogDescription>
+        </DialogHeader>
+        {isLoading ? (
+          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+        ) : !data?.length ? (
+          <p className="text-center text-muted-foreground text-sm py-8">Keine Support-Chats vorhanden.</p>
+        ) : (
+          <div className="space-y-4">
+            {data.map((chat: any) => (
+              <div key={chat.id} className="border rounded-lg p-3 space-y-2">
+                <div className="text-xs text-muted-foreground flex justify-between">
+                  <span>{new Date(chat.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+                  <span>{chat.messageCount} Nachrichten</span>
+                </div>
+                <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                  {((chat.messages || []) as any[]).map((msg: any, i: number) => (
+                    <div key={i} className={`text-xs px-2.5 py-1.5 rounded-lg max-w-[85%] ${msg.role === "user" ? "bg-lime-500/15 ml-auto text-right" : "bg-muted"}`}>
+                      {msg.content}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Onboarding Progress Dialog (per Website) ──────────────
+function ProgressButton({ websiteId }: { websiteId: number }) {
+  const [open, setOpen] = useState(false);
+  const { data, isLoading } = trpc.onboarding.getStepEvents.useQuery(
+    { websiteId },
+    { enabled: open }
+  );
+
+  const STEP_LABELS: Record<string, string> = {
+    businessCategory: "Branche", businessName: "Unternehmensname", addressingMode: "Ansprache",
+    brandLogo: "Logo", colorScheme: "Farben", heroPhoto: "Hauptbild", aboutPhoto: "Über-uns-Bild",
+    headlineFont: "Schriftart", headlineSize: "Schriftgröße", tagline: "Slogan", description: "Beschreibung",
+    usp: "USP", services: "Leistungen", legalOwner: "Inhaber", legalStreet: "Straße",
+    legalZipCity: "PLZ/Stadt", legalEmail: "E-Mail", legalPhone: "Telefon", legalVat: "USt-ID",
+    openingHours: "Öffnungszeiten", addons: "Add-Ons", email: "Kontakt-E-Mail",
+    hideSections: "Bereiche", preview: "Vorschau", checkout: "Checkout",
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <ListChecks className="h-3 w-3 mr-1" /> Fortschritt
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Onboarding-Fortschritt</DialogTitle>
+          <DialogDescription>Abgeschlossene Steps</DialogDescription>
+        </DialogHeader>
+        {isLoading ? (
+          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+        ) : !data?.length ? (
+          <p className="text-center text-muted-foreground text-sm py-8">Noch keine Steps abgeschlossen.</p>
+        ) : (
+          <div className="space-y-1">
+            {data.map((evt: any, i: number) => (
+              <div key={i} className="flex items-center gap-2 text-sm py-1.5 border-b border-border/50 last:border-0">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span className="flex-1">{STEP_LABELS[evt.step] || evt.step}</span>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(evt.createdAt).toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
 }
