@@ -148,7 +148,7 @@ function reminder2h(d: LifecycleEmailData): TemplateOutput {
     ${primaryCta("Website fertigstellen", d.resumeLink)}
     <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Das dauert wirklich nur 2&ndash;3 Minuten. Versprochen.</p>
     <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
-      Falls du gerade Fragen hast oder irgendwo h&auml;ngst: Antworte einfach auf diese Mail. Ich lese jede pers&ouml;nlich.
+      Falls du Fragen hast, irgendwo h&auml;ngst <strong>oder ein technisches Problem aufgetaucht ist</strong> (Seite hat nicht geladen, Bild ging nicht hoch, irgendwas hakt): Antworte einfach auf diese Mail. Ich lese jede pers&ouml;nlich &ndash; und wenn etwas technisch nicht funktioniert, k&uuml;mmern wir uns sofort.
     </p>
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `, d.unsubscribeLink);
@@ -162,7 +162,7 @@ ${d.resumeLink}
 
 Das dauert wirklich nur 2–3 Minuten. Versprochen.
 
-Falls du gerade Fragen hast oder irgendwo hängst: Antworte einfach auf diese Mail. Ich lese jede persönlich.
+Falls du Fragen hast, irgendwo hängst oder ein technisches Problem aufgetaucht ist (Seite hat nicht geladen, Bild ging nicht hoch, irgendwas hakt): Antworte einfach auf diese Mail. Ich lese jede persönlich – und wenn etwas technisch nicht funktioniert, kümmern wir uns sofort.
 
 Viele Grüße
 Christian${footerText(d.unsubscribeLink)}`;
@@ -179,12 +179,13 @@ function reminder24h(d: LifecycleEmailData): TemplateOutput {
     </p>
     <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Die h&auml;ufigsten Gr&uuml;nde, warum Leute an dieser Stelle stecken bleiben:</p>
     <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 15px; line-height: 1.8; color: #374151;">
+      <li><strong>Ein technisches Problem</strong> (Seite hat nicht geladen, Bild ging nicht hoch, etwas hakt)</li>
       <li>Kein gutes Foto vom Laden / der Arbeit</li>
       <li>Unsicher, was man reinschreiben soll</li>
       <li>Kurz keine Zeit und dann vergessen</li>
     </ul>
     <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
-      Falls dich eines davon betrifft &ndash; kein Problem. Antworte einfach auf diese Mail, und ich helfe dir pers&ouml;nlich weiter. Texte und Fotos bekommen wir auch gemeinsam hin.
+      Falls dich eines davon betrifft &ndash; kein Problem. Antworte einfach auf diese Mail, und ich helfe dir pers&ouml;nlich weiter. Speziell wenn technisch etwas nicht funktioniert hat: <strong>bitte schreib mir</strong>, das wollen wir wissen und sofort beheben. Texte und Fotos bekommen wir auch gemeinsam hin.
     </p>
     ${primaryCta("Website jetzt fertigstellen", d.resumeLink)}
     ${d.extendLink ? secondaryLink("Ich brauche noch 24 Stunden mehr Zeit", d.extendLink) : ""}
@@ -195,11 +196,12 @@ function reminder24h(d: LifecycleEmailData): TemplateOutput {
 gestern hast du angefangen, deine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} zu bauen. Sie wartet noch auf dich – reserviert für dich bis morgen früh.
 
 Die häufigsten Gründe, warum Leute an dieser Stelle stecken bleiben:
+- Ein technisches Problem (Seite hat nicht geladen, Bild ging nicht hoch, etwas hakt)
 - Kein gutes Foto vom Laden / der Arbeit
 - Unsicher, was man reinschreiben soll
 - Kurz keine Zeit und dann vergessen
 
-Falls dich eines davon betrifft – kein Problem. Antworte einfach auf diese Mail, und ich helfe dir persönlich weiter.
+Falls dich eines davon betrifft – kein Problem. Antworte einfach auf diese Mail, und ich helfe dir persönlich weiter. Speziell wenn technisch etwas nicht funktioniert hat: bitte schreib mir, das wollen wir wissen und sofort beheben.
 
 Website jetzt fertigstellen:
 ${d.resumeLink}${d.extendLink ? `\n\nIch brauche noch 24 Stunden mehr Zeit:\n${d.extendLink}` : ""}
@@ -222,7 +224,7 @@ function reminderFinal(d: LifecycleEmailData): TemplateOutput {
       ${primaryCta("Jetzt fertigstellen", d.resumeLink)}
       ${d.extendLink ? secondaryLink("Ich brauche noch mehr Zeit", d.extendLink) : ""}
       <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;">
-        Falls dich etwas Konkretes abh&auml;lt &ndash; schreib mir. Ich antworte normalerweise innerhalb einer Stunde.
+        Falls dich etwas Konkretes abh&auml;lt &ndash; auch technische Probleme z&auml;hlen dazu (Seite l&auml;dt nicht, Bilder fehlen, etwas funktioniert nicht): schreib mir. Ich antworte normalerweise innerhalb einer Stunde und wir kriegen das gefixt.
       </p>
       <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
     `, d.unsubscribeLink);
@@ -235,7 +237,7 @@ Wenn du bis dahin nichts tust, ist der Entwurf weg.
 Jetzt fertigstellen:
 ${d.resumeLink}${d.extendLink ? `\n\nIch brauche noch mehr Zeit:\n${d.extendLink}` : ""}
 
-Falls dich etwas Konkretes abhält – schreib mir. Ich antworte normalerweise innerhalb einer Stunde.
+Falls dich etwas Konkretes abhält – auch technische Probleme zählen dazu (Seite lädt nicht, Bilder fehlen, etwas funktioniert nicht): schreib mir. Ich antworte normalerweise innerhalb einer Stunde und wir kriegen das gefixt.
 
 Viele Grüße
 Christian${footerText(d.unsubscribeLink)}`;
@@ -259,7 +261,7 @@ Christian${footerText(d.unsubscribeLink)}`;
     <p style="margin: 24px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
       Wenn gerade einfach nicht der richtige Moment ist: Das ist okay. Du kannst jederzeit einen neuen Entwurf starten. Aber alles, was du schon eingegeben hast, w&auml;re dann weg.
     </p>
-    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Bei Fragen: Einfach auf diese Mail antworten.</p>
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Bei Fragen oder wenn etwas technisch nicht funktioniert (Seite l&auml;dt nicht, Bilder fehlen): einfach auf diese Mail antworten. Ich antworte schnell und wir kriegen das gefixt.</p>
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `, d.unsubscribeLink);
   const text = `${greeting(d.firstName)}
@@ -273,7 +275,7 @@ ${d.resumeLink}${d.extendLink ? `\n\n2. Nochmal 24 Stunden Zeit nehmen:\n${d.ext
 
 Wenn gerade einfach nicht der richtige Moment ist: Das ist okay. Du kannst jederzeit einen neuen Entwurf starten. Aber alles, was du schon eingegeben hast, wäre dann weg.
 
-Bei Fragen: Einfach auf diese Mail antworten.
+Bei Fragen oder wenn etwas technisch nicht funktioniert (Seite lädt nicht, Bilder fehlen): einfach auf diese Mail antworten. Ich antworte schnell und wir kriegen das gefixt.
 
 Viele Grüße
 Christian${footerText(d.unsubscribeLink)}`;
