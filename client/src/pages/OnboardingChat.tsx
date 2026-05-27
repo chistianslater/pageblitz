@@ -876,6 +876,54 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const [showSaveReminder, setShowSaveReminder] = useState(false);
+  // Quick-Support innerhalb des Exit-Modals
+  const [supportMode, setSupportMode] = useState<"closed" | "select" | "details" | "sent">("closed");
+  const [supportType, setSupportType] = useState<"tech" | "content" | "other" | null>(null);
+  const [supportText, setSupportText] = useState("");
+  const [supportSending, setSupportSending] = useState(false);
+
+  const handleSupportSubmit = async () => {
+    if (!supportType) return;
+    setSupportSending(true);
+    const labels: Record<string, string> = {
+      tech: "Technisches Problem (Seite hakt / Bilder fehlen / Fehler)",
+      content: "Frage zum Inhalt (was reinschreiben, Texte, Bilder)",
+      other: "Anderes",
+    };
+    const email = user?.email || data.email || (siteData?.website as any)?.customerEmail || "";
+    const websiteSlug = siteData?.website?.slug || "";
+    const message = `Schnellsupport-Anfrage aus dem Onboarding\n\nKategorie: ${labels[supportType]}\nAktueller Schritt: ${currentStep}\nWebsite-ID: ${websiteId || "—"}\nSlug: ${websiteSlug}\n\nNachricht des Users:\n${supportText.trim() || "(keine zusätzliche Nachricht)"}`;
+    try {
+      await fetch("/api/support-chat/ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.legalOwner || user?.name || "",
+          email,
+          message,
+          page: `Onboarding · ${currentStep}`,
+        }),
+      });
+      setSupportMode("sent");
+    } catch (err) {
+      console.error("[Quick-Support] Senden fehlgeschlagen:", err);
+      toast.error("Konnte nicht senden – versuche es bitte direkt per E-Mail: hello@pageblitz.de");
+    } finally {
+      setSupportSending(false);
+    }
+  };
+
+  // Modal-Close räumt Support-State auf
+  const closeExitModalsFully = () => {
+    setShowExitConfirmation(false);
+    setShowExitIntent(false);
+    // kleiner Delay damit der Fade-Out nicht den Reset zeigt
+    setTimeout(() => {
+      setSupportMode("closed");
+      setSupportType(null);
+      setSupportText("");
+    }, 200);
+  };
   // Only show exit-intent overlay once per session (not on every upward mouse move)
   const exitIntentShownRef = useRef(false);
   const saveReminderShownRef = useRef(false);
@@ -6351,45 +6399,157 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             </div>
 
             <div className="p-8 space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                  <Mail className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-emerald-300 text-sm font-medium">
-                      E-Mail gespeichert:
+              {supportMode === "closed" && (
+                <>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                      <Mail className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-emerald-300 text-sm font-medium">E-Mail gespeichert:</p>
+                        <p className="text-white font-semibold">{user?.email}</p>
+                      </div>
+                    </div>
+
+                    <p className="text-slate-300 text-sm leading-relaxed text-center">
+                      Wir haben dir eine E-Mail mit deinem persönlichen Link geschickt.
+                      Über diesen Link kannst du deine Seite jederzeit fertigstellen.
                     </p>
-                    <p className="text-white font-semibold">
-                      {user?.email}
+
+                    <div className="bg-slate-700/50 border border-slate-600 rounded-xl p-4 text-center">
+                      <p className="text-slate-400 text-xs mb-1">Deine Website ist reserviert für:</p>
+                      <p className="text-white font-mono text-lg font-bold tabular-nums">{countdown}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setShowExitConfirmation(false)}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"
+                    >
+                      Weiter bearbeiten
+                    </button>
+
+                    {/* Schnellsupport-Link */}
+                    <button
+                      onClick={() => setSupportMode("select")}
+                      className="w-full text-slate-400 hover:text-white text-sm transition-colors py-1 flex items-center justify-center gap-1.5"
+                    >
+                      <span>⚡</span>
+                      <span>Hakt etwas? Schnellsupport →</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShowExitConfirmation(false)}
+                      className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors py-2"
+                    >
+                      Schließen
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {supportMode === "select" && (
+                <>
+                  <div className="text-center">
+                    <h3 className="text-white font-bold text-lg mb-1">Was hakt gerade?</h3>
+                    <p className="text-slate-400 text-sm">Wir antworten persönlich, meist innerhalb einer Stunde.</p>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { v: "tech" as const, emoji: "🐛", title: "Technisches Problem", desc: "Bilder fehlen, Seite hakt, Fehlermeldung" },
+                      { v: "content" as const, emoji: "💭", title: "Frage zum Inhalt", desc: "Was soll ich reinschreiben, Hilfe bei Texten/Fotos" },
+                      { v: "other" as const, emoji: "✍️", title: "Etwas anderes", desc: "Sag uns kurz, was los ist" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.v}
+                        onClick={() => { setSupportType(opt.v); setSupportMode("details"); }}
+                        className="w-full text-left p-4 rounded-xl border border-slate-700 hover:border-emerald-500/50 bg-slate-700/30 hover:bg-emerald-500/10 transition-all group"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="text-2xl">{opt.emoji}</div>
+                          <div className="flex-1">
+                            <div className="text-white font-semibold text-sm">{opt.title}</div>
+                            <div className="text-slate-400 text-xs mt-0.5">{opt.desc}</div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 mt-1" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setSupportMode("closed")}
+                    className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors py-1"
+                  >
+                    ← Zurück
+                  </button>
+                </>
+              )}
+
+              {supportMode === "details" && supportType && (
+                <>
+                  <div>
+                    <h3 className="text-white font-bold text-lg mb-1">
+                      {supportType === "tech" && "🐛 Technisches Problem"}
+                      {supportType === "content" && "💭 Frage zum Inhalt"}
+                      {supportType === "other" && "✍️ Was anderes"}
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      {supportType === "tech" && "Was funktioniert nicht? Mehr Infos helfen uns, schneller zu fixen."}
+                      {supportType === "content" && "Was ist deine Frage? Wir helfen gerne."}
+                      {supportType === "other" && "Was möchtest du uns sagen?"}
                     </p>
                   </div>
+                  <textarea
+                    value={supportText}
+                    onChange={(e) => setSupportText(e.target.value)}
+                    placeholder={
+                      supportType === "tech"
+                        ? "z.B. „Hero-Bild lädt nicht, sehe nur ein graues Rechteck" + '"'
+                        : supportType === "content"
+                        ? "z.B. „Brauche Hilfe bei den Service-Beschreibungen" + '"'
+                        : "Deine Nachricht…"
+                    }
+                    rows={4}
+                    className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-emerald-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none resize-none transition-colors"
+                  />
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleSupportSubmit}
+                      disabled={supportSending}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
+                    >
+                      {supportSending ? "Senden…" : "Senden"}
+                    </button>
+                    <button
+                      onClick={() => setSupportMode("select")}
+                      className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors py-1"
+                    >
+                      ← Zurück
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {supportMode === "sent" && (
+                <div className="text-center space-y-4 py-4">
+                  <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                    <CheckCircle className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg mb-1">Nachricht ist raus!</h3>
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      Wir antworten meist innerhalb einer Stunde an <strong className="text-white">{user?.email}</strong>.
+                      Du kannst die Seite jetzt schließen — wir melden uns.
+                    </p>
+                  </div>
+                  <button
+                    onClick={closeExitModalsFully}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all"
+                  >
+                    Alles klar
+                  </button>
                 </div>
-
-                <p className="text-slate-300 text-sm leading-relaxed text-center">
-                  Wir haben dir eine E-Mail mit deinem persönlichen Link geschickt.
-                  Über diesen Link kannst du deine Seite jederzeit fertigstellen.
-                </p>
-
-                <div className="bg-slate-700/50 border border-slate-600 rounded-xl p-4 text-center">
-                  <p className="text-slate-400 text-xs mb-1">Deine Website ist reserviert für:</p>
-                  <p className="text-white font-mono text-lg font-bold tabular-nums">{countdown}</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => setShowExitConfirmation(false)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"
-                >
-                  Weiter bearbeiten
-                </button>
-
-                <button
-                  onClick={() => setShowExitConfirmation(false)}
-                  className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors py-2"
-                >
-                  Schließen
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
