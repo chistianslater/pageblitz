@@ -84,6 +84,40 @@ window.addEventListener("unhandledrejection", (event) => {
   });
 });
 
+// ── Stale-Cache-Recovery: auto-reload bei Chunk-Load-Errors ────────────────
+// Nach einem Deploy haben Asset-Bundles neue Hashes. Browser mit alter
+// index.html versuchen alte Chunks zu laden → 404 → JS-SyntaxError +
+// "Failed to fetch dynamically imported module". Symptom für den User:
+// Bilder/Layouts laden nicht. Einmaliger Auto-Reload löst das.
+function isStaleChunkError(msg: string): boolean {
+  return (
+    msg.includes("Failed to fetch dynamically imported module") ||
+    msg.includes("Importing a module script failed") ||
+    msg.includes("error loading dynamically imported module") ||
+    msg.includes("Loading chunk") ||
+    (msg.includes("Unexpected token") && msg.includes("<"))
+  );
+}
+
+function maybeReloadForStaleCache(msg: string) {
+  if (!isStaleChunkError(msg)) return;
+  // Einmaliger Reload pro Session – sonst Endlos-Schleife wenn der Reload
+  // selbst auch fehlschlägt.
+  if (sessionStorage.getItem("stale-cache-reload-done") === "1") return;
+  sessionStorage.setItem("stale-cache-reload-done", "1");
+  console.warn("[Stale-Cache] Detected chunk-load error, forcing reload");
+  // Hard-reload mit cache-bypass
+  window.location.reload();
+}
+
+window.addEventListener("error", (event) => {
+  maybeReloadForStaleCache(event.message || "");
+});
+window.addEventListener("unhandledrejection", (event) => {
+  const msg = (event.reason as any)?.message || String(event.reason ?? "");
+  maybeReloadForStaleCache(msg);
+});
+
 // ── localStorage Sanitization ──────────────────────────────────────────────
 // The Manus runtime reads "manus-runtime-user-info" from localStorage and
 // sends it via postMessage to the container, which calls JSON.parse() on it.

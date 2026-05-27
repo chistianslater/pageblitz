@@ -363,6 +363,10 @@ async function startServer() {
     const indexHtmlPath = path.resolve(distPath, "index.html");
 
     const injectMetaTags = async (req: express.Request, res: express.Response) => {
+      // index.html darf NICHT lange gecached werden – sonst zeigt der Browser
+      // nach einem Deploy alte chunk-Hashes, die nicht mehr existieren →
+      // "SyntaxError: Unexpected token '<'" + Bilder/Layouts laden nicht.
+      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
       try {
         const slug = req.params.slug;
         if (!slug || !fs.existsSync(indexHtmlPath)) {
