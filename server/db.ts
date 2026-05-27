@@ -762,12 +762,16 @@ export async function countRecentSubmissionsByIp(ip: string, sinceMs: number): P
 // ── MAGIC LINK TOKENS ────────────────────────────────────────────────────────
 
 /** Erstellt einen sicheren Token, speichert den SHA-256-Hash und gibt den Klartext zurück. */
-export async function createMagicLinkToken(email: string, redirectUrl: string): Promise<string> {
+export async function createMagicLinkToken(
+  email: string,
+  redirectUrl: string,
+  validForMs: number = 15 * 60 * 1000, // Default: 15 Minuten
+): Promise<string> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const token = crypto.randomBytes(32).toString("hex"); // 64-char hex, kryptografisch sicher
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 Minuten
+  const expiresAt = new Date(Date.now() + validForMs);
   await db.insert(magicLinkTokens).values({ tokenHash, email, redirectUrl, expiresAt });
   return token;
 }

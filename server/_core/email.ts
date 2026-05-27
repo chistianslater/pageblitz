@@ -440,6 +440,131 @@ export async function sendAppointmentCancellationEmail({
 }
 
 /**
+ * "Deine Website ist fertig" – wird vom Admin manuell verschickt nach
+ * dem Concierge-Service (du hast die Website für jemanden gebaut, sie
+ * soll nur noch reinschauen + aktivieren).
+ *
+ * magicUrl loggt den Empfänger ein und leitet zur Website-Vorschau
+ * mit dem aktiven "Website freischalten"-Button.
+ */
+export async function sendActivationReadyEmail(args: {
+  to: string;
+  firstName?: string | null;
+  businessName: string;
+  magicUrl: string;
+}): Promise<{ success: boolean; error?: string; id?: string }> {
+  const { to, firstName, businessName, magicUrl } = args;
+  const greeting = firstName ? `Hey ${firstName},` : "Hey,";
+  const bizPart = businessName && businessName !== "deine Website"
+    ? ` für <strong>${businessName}</strong>`
+    : "";
+  const bizPartText = businessName && businessName !== "deine Website"
+    ? ` für ${businessName}`
+    : "";
+  const subject = businessName && businessName !== "deine Website"
+    ? `Deine Website für ${businessName} ist fertig – jetzt freischalten`
+    : "Deine Website ist fertig – jetzt freischalten";
+
+  const html = `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #18181b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f5;">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+        <table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="max-width: 560px; width: 100%; background-color: #ffffff; border-radius: 12px;">
+          <tr>
+            <td style="background-color: #18181b; border-radius: 12px 12px 0 0; padding: 28px 32px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="padding-right: 10px; vertical-align: middle;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 8px; width: 32px; height: 32px;">
+                      <tr><td width="32" height="32" align="center" style="font-size: 18px; line-height: 32px;">⚡</td></tr>
+                    </table>
+                  </td>
+                  <td style="vertical-align: middle; color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: -0.3px;">
+                    Page<span style="color: #818cf8;">blitz</span>
+                  </td>
+                </tr>
+              </table>
+              <p style="color: #a1a1aa; font-size: 11px; margin: 12px 0 0 0; text-transform: uppercase; letter-spacing: 0.08em;">Bereit zum Freischalten</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px;">
+              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting}</p>
+              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+                wie besprochen habe ich deine Website${bizPart} fertiggestellt &ndash; du musst sie nur noch anschauen und freischalten.
+              </p>
+              <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Hier kommst du direkt zu deiner Vorschau:</p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
+                <tr>
+                  <td align="left">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td align="center" bgcolor="#4f46e5" style="background-color: #4f46e5; border-radius: 10px;">
+                          <a href="${magicUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1; text-decoration: none; border-radius: 10px;">Website ansehen &amp; freischalten</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+                Der Link loggt dich automatisch ein. In der Vorschau findest du oben rechts den <strong>"Website freischalten"</strong>-Button &ndash; ein Klick, Stripe-Checkout, fertig.
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+                Falls du noch &Auml;nderungen m&ouml;chtest oder etwas nicht passt: einfach auf diese Mail antworten. Ich passe es gerne f&uuml;r dich an.
+              </p>
+              <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f9fafb; border-top: 1px solid #f0f0f0; border-radius: 0 0 12px 12px; padding: 20px 32px; text-align: center;">
+              <p style="color: #9ca3af; font-size: 11px; line-height: 1.6; margin: 0;">
+                Pageblitz &middot; Websites f&uuml;r Kleinunternehmen<br>
+                Der Login-Link ist 7 Tage g&uuml;ltig.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `${greeting}
+
+wie besprochen habe ich deine Website${bizPartText} fertiggestellt – du musst sie nur noch anschauen und freischalten.
+
+Hier kommst du direkt zu deiner Vorschau (Link loggt dich automatisch ein, 7 Tage gültig):
+${magicUrl}
+
+In der Vorschau findest du oben rechts den "Website freischalten"-Button – ein Klick, Stripe-Checkout, fertig.
+
+Falls du noch Änderungen möchtest oder etwas nicht passt: einfach auf diese Mail antworten. Ich passe es gerne für dich an.
+
+Viele Grüße
+Christian
+
+---
+Pageblitz – Websites für Kleinunternehmen`;
+
+  return sendEmail({
+    to,
+    subject,
+    html,
+    text,
+    from: "Christian von Pageblitz <christian@pageblitz.de>",
+    replyTo: "christian@pageblitz.de",
+  });
+}
+
+/**
  * Send lead nurturing email based on capture status
  */
 export async function sendLeadEmail({

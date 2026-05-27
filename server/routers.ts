@@ -2389,6 +2389,65 @@ export const appRouter = router({
         }
         return result;
       }),
+
+    /**
+     * Admin: schickt der Kundin einen Magic-Link mit eingebettetem
+     * Preview-Token zu ihrer fertigen Website. Sie loggt sich ein,
+     * schaut die Vorschau an und kann direkt freischalten (Stripe).
+     * Use-Case: Concierge-Service – Admin hat die Website für sie gebaut.
+     * Token ist 7 Tage gültig.
+     */
+    sendActivationLink: adminProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+        if (!website.customerEmail) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Keine Kunden-Email auf der Website hinterlegt" });
+        }
+        if (!website.previewToken) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Kein previewToken auf der Website" });
+        }
+
+        // Magic-Link mit Redirect zur Website-Vorschau, 7 Tage gültig
+        const { createMagicLinkToken: createMagicTokenFn } = await import("./db");
+        const APP_BASE_URL = process.env.APP_BASE_URL || "https://pageblitz.de";
+        const redirectUrl = `/preview/${website.previewToken}/onboarding`;
+        const token = await createMagicTokenFn(
+          website.customerEmail,
+          redirectUrl,
+          7 * 24 * 60 * 60 * 1000, // 7 Tage
+        );
+        const magicUrl = `${APP_BASE_URL}/api/auth/magic?token=${encodeURIComponent(token)}`;
+
+        // businessName + firstName aus onboarding/business holen
+        let businessName = "deine Website";
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        if (onboarding?.businessName) {
+          businessName = onboarding.businessName;
+        } else {
+          const business = await getBusinessById(website.businessId);
+          if (business?.name && !business.name.startsWith("Lead ")) {
+            businessName = business.name;
+          }
+        }
+        let firstName: string | null = null;
+        if (onboarding?.legalOwner) {
+          firstName = onboarding.legalOwner.trim().split(/\s+/)[0] || null;
+        }
+
+        const { sendActivationReadyEmail } = await import("./_core/email");
+        const result = await sendActivationReadyEmail({
+          to: website.customerEmail,
+          firstName,
+          businessName,
+          magicUrl,
+        });
+        if (!result.success) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error || "Mail-Versand fehlgeschlagen" });
+        }
+        return { success: true, sentTo: website.customerEmail };
+      }),
   }),
 
   // ── Admin: Outreach ────────────────────────────────

@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw,
   Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle,
-  Clock, TrendingDown, UserPlus, Database, Zap, Users, MessageCircle, ListChecks
+  Clock, TrendingDown, UserPlus, Database, Zap, Users, MessageCircle, ListChecks, Send
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -657,6 +657,9 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                         )}
                         <ProgressButton websiteId={w.id} />
                         <SupportChatButton websiteId={w.id} chatCount={(chatCounts as any)?.[w.id]} />
+                        {w.customerEmail && w.status === "preview" && (
+                          <SendActivationLinkButton websiteId={w.id} customerEmail={w.customerEmail} />
+                        )}
                         <ExternalLeadStatusDialog website={w} onUpdate={(id, status) => updateStatusMutation.mutate({ id, captureStatus: status as any })} isPending={updateStatusMutation.isPending} />
                         <DeleteWebsiteDialog website={w} />
                       </div>
@@ -1165,6 +1168,44 @@ function ProgressButton({ websiteId }: { websiteId: number }) {
             ))}
           </div>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Aktivierungs-Link an Kundin senden (Concierge-Workflow) ────────────────
+function SendActivationLinkButton({ websiteId, customerEmail }: { websiteId: number; customerEmail: string }) {
+  const [open, setOpen] = useState(false);
+  const mutation = trpc.website.sendActivationLink.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Aktivierungs-Link an ${data.sentTo} gesendet`);
+      setOpen(false);
+    },
+    onError: (err) => toast.error("Fehler: " + err.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" title="Aktivierungs-Link an Kundin senden">
+          <Send className="h-3 w-3 mr-1" /> Aktivieren
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Aktivierungs-Link senden</DialogTitle>
+          <DialogDescription>
+            Schickt eine persönliche Email an <strong>{customerEmail}</strong> mit einem
+            Login-Link zur fertigen Website-Vorschau. Die Kundin loggt sich automatisch ein
+            und kann direkt freischalten (Stripe-Checkout). Link ist 7 Tage gültig.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
+          <Button onClick={() => mutation.mutate({ websiteId })} disabled={mutation.isPending}>
+            {mutation.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+            Jetzt senden
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
