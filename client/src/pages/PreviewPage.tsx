@@ -42,6 +42,32 @@ export default function PreviewPage() {
     return data.website.colorScheme as ColorScheme;
   }, [data]);
 
+  // websiteData mit Onboarding-Overrides patchen (analog zu liveWebsiteData
+  // im OnboardingChat). Die Layout-Komponenten lesen u.a. addOnContactForm,
+  // contactFormFields, addOnGallery aus websiteData direkt – diese Felder
+  // werden im Onboarding gespeichert (onboarding_responses), aber nicht
+  // automatisch ins websiteData-JSON übernommen.
+  // WICHTIG: useMemo MUSS vor den early returns stehen (Rules of Hooks).
+  const websiteData = useMemo((): WebsiteData | null => {
+    if (!data) return null;
+    const base = data.website.websiteData as WebsiteData;
+    const ob = onboardingData as any;
+    if (!ob) return base;
+    const patched: any = JSON.parse(JSON.stringify(base || {}));
+    if (ob.addOnContactForm !== undefined && ob.addOnContactForm !== null) {
+      patched.addOnContactForm = ob.addOnContactForm;
+    }
+    if (ob.contactFormFields) {
+      patched.contactFormFields = ob.contactFormFields;
+    }
+    if (ob.addOnGallery !== undefined) patched.addOnGallery = ob.addOnGallery;
+    if (ob.addOnMenu !== undefined) patched.addOnMenu = ob.addOnMenu;
+    if (ob.addOnMenuData) patched.addOnMenuData = ob.addOnMenuData;
+    if (ob.addOnPricelist !== undefined) patched.addOnPricelist = ob.addOnPricelist;
+    if (ob.addOnPricelistData) patched.addOnPricelistData = ob.addOnPricelistData;
+    return patched as WebsiteData;
+  }, [data, onboardingData]);
+
   // MutationObserver: fires as soon as WebsiteRenderer adds the <nav> to the DOM.
   // Uses setProperty('top', …, 'important') so it beats any CSS rule incl. Tailwind layers.
   useEffect(() => {
@@ -79,7 +105,7 @@ export default function PreviewPage() {
     );
   }
 
-  if (error || !data || !colorScheme) {
+  if (error || !data || !colorScheme || !websiteData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
@@ -90,30 +116,6 @@ export default function PreviewPage() {
       </div>
     );
   }
-
-  // websiteData mit Onboarding-Overrides patchen (analog zu liveWebsiteData
-  // im OnboardingChat). Die Layout-Komponenten lesen u.a. addOnContactForm,
-  // contactFormFields, addOnGallery aus websiteData direkt – diese Felder
-  // werden im Onboarding gespeichert (onboarding_responses), aber nicht
-  // automatisch ins websiteData-JSON übernommen.
-  const websiteData = useMemo((): WebsiteData => {
-    const base = data.website.websiteData as WebsiteData;
-    const ob = onboardingData as any;
-    if (!ob) return base;
-    const patched: any = JSON.parse(JSON.stringify(base || {}));
-    if (ob.addOnContactForm !== undefined && ob.addOnContactForm !== null) {
-      patched.addOnContactForm = ob.addOnContactForm;
-    }
-    if (ob.contactFormFields) {
-      patched.contactFormFields = ob.contactFormFields;
-    }
-    if (ob.addOnGallery !== undefined) patched.addOnGallery = ob.addOnGallery;
-    if (ob.addOnMenu !== undefined) patched.addOnMenu = ob.addOnMenu;
-    if (ob.addOnMenuData) patched.addOnMenuData = ob.addOnMenuData;
-    if (ob.addOnPricelist !== undefined) patched.addOnPricelist = ob.addOnPricelist;
-    if (ob.addOnPricelistData) patched.addOnPricelistData = ob.addOnPricelistData;
-    return patched as WebsiteData;
-  }, [data.website.websiteData, onboardingData]);
 
   const heroImageUrl = (onboardingData as any)?.heroPhotoUrl
     || ((data.website as any).heroImageUrl as string | null | undefined);
