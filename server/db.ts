@@ -668,7 +668,8 @@ export async function getWebsitesByUserId(userId: number) {
 export async function createGenerationJob(data: InsertGenerationJob): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const result = await db.insert(generationJobs).values(data);
+  const now = new Date();
+  const result = await db.insert(generationJobs).values({ ...data, createdAt: now, updatedAt: now });
   return (result[0] as any).insertId as number;
 }
 
@@ -692,7 +693,26 @@ export async function getGenerationJobByWebsiteId(websiteId: number): Promise<Ge
 export async function updateGenerationJob(id: number, data: Partial<InsertGenerationJob>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  await db.update(generationJobs).set(data).where(eq(generationJobs.id, id));
+  await db.update(generationJobs).set({ ...data, updatedAt: new Date() }).where(eq(generationJobs.id, id));
+}
+
+/**
+ * Recover orphaned generation jobs: any job in status='processing' is stale
+ * (the in-memory runWebsiteGeneration died with the previous server process).
+ * Mark them as failed so users see a clean error instead of an endless progress bar.
+ */
+export async function failOrphanGenerationJobs(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db
+    .update(generationJobs)
+    .set({
+      status: "failed",
+      error: "Server-Restart hat den laufenden Job unterbrochen. Bitte erneut starten.",
+      updatedAt: new Date(),
+    })
+    .where(eq(generationJobs.status, "processing"));
+  return (result[0] as any)?.affectedRows ?? 0;
 }
 
 // ── Contact Submissions ────────────────────────────────

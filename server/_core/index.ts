@@ -438,6 +438,17 @@ async function startServer() {
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
 
+    // Recover orphaned generation jobs from previous process. Jobs in
+    // status='processing' can never resume across a restart (the worker
+    // was an in-memory async function), so mark them failed → user sees
+    // a clean error instead of an endless progress bar.
+    import("../db")
+      .then(({ failOrphanGenerationJobs }) => failOrphanGenerationJobs())
+      .then((n) => {
+        if (n > 0) console.log(`[Startup] Marked ${n} orphan generation job(s) as failed.`);
+      })
+      .catch((e) => console.error("[Startup] failOrphanGenerationJobs error:", e));
+
     // Start automated outreach pipeline scheduler
     import("../outreachPipeline")
       .then(({ startPipelineScheduler }) => {
