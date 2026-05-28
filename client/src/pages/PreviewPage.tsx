@@ -1,6 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { useParams } from "wouter";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
+import AgeGate from "@/components/AgeGate";
 import CookieBanner from "@/components/CookieBanner";
 import { Loader2, Zap, AlertCircle, CheckCircle, MessageSquare, Bot, Calendar, Globe } from "lucide-react";
 import { useState, useMemo, useRef, useEffect } from "react";
@@ -99,6 +100,8 @@ export default function PreviewPage() {
   const headlineSize = (onboardingData as any)?.headlineSize || undefined;
   const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
   const layoutVersion = (data.website as any).layoutVersion as number | null | undefined;
+  const requiresAgeGate = !!(data.website as any).requiresAgeGate;
+  const slug = (data.website as any).slug as string;
   const business = data.business;
 
   // Navigate to onboarding
@@ -108,6 +111,13 @@ export default function PreviewPage() {
 
   return (
     <div className="pageblitz-preview-root">
+      {/* FSK-18 Age-Gate – wenn aktiv, gleiches Modal wie auf der Live-Site,
+          damit Admin/Kundin den echten Besucher-Eindruck sieht.
+          Im Inkognito-Tab erscheint es jedes Mal neu (zum Testen). */}
+      {requiresAgeGate && slug && (
+        <AgeGate slug={slug} businessName={business?.name} />
+      )}
+
       {/* Shift all layout fixed-navbars below the preview bar.
           Layout navbars use `fixed top-0 z-50` (Tailwind → top:0px, specificity 0,0,1).
           `.pageblitz-preview-root nav` has specificity 0,1,1 → wins without !important. */}
