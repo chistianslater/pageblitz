@@ -2011,11 +2011,31 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       setCategoryConfirmed(true);
       setHeroRevealed(true);
       setContentRevealed(true);
+      // WICHTIG: auch das isGeneratingInitialContent-Flag clearen. Wenn die
+      // Mutation früher unterbrochen wurde (pm2-Restart, Reload mid-fetch),
+      // bleibt der localStorage-Flag sonst stuck → Skeleton bleibt sichtbar
+      // bei allen nachfolgenden Schritten.
+      setIsGeneratingInitialContent(false);
       if (previewToken || websiteIdProp) {
         localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       }
     }
   }, [siteData?.website?.source, siteData?.website?.websiteData, currentStep, contentPhase, previewToken, websiteIdProp]);
+
+  // Stale-Flag-Recovery: wenn localStorage sagt "generation läuft" aber tatsächlich
+  // keine Mutation pending ist (Page wurde mid-fetch entladen, pm2-Restart killed
+  // den Fetch ohne Reject, …), ist der Flag stale → clear. Ohne diesen Effect
+  // bleibt isLoading=true für immer, weil keine andere Codestelle den Flag löscht.
+  useEffect(() => {
+    if (isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
+      setIsGeneratingInitialContent(false);
+      if (previewToken || websiteIdProp) {
+        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Progressive content revelation based on user input ─────────
 
