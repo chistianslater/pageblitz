@@ -284,13 +284,13 @@ function HeroVariantA({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
 
         <div className="flex flex-wrap items-center gap-4 mt-0">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-            <button style={{ fontFamily: displayFont }}
+            <button onClick={scrollToContact} style={{ fontFamily: displayFont }}
               className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
+            <button onClick={scrollToLearnMore} style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
               className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-square whitespace-nowrap">
               Mehr erfahren
             </button>
@@ -378,13 +378,13 @@ function HeroVariantB({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
         {/* CTA row */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-            <button style={{ fontFamily: displayFont }}
+            <button onClick={scrollToContact} style={{ fontFamily: displayFont }}
               className="pb-btn pb-btn-primary pb-btn-lg pb-btn-pill whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-            <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
+            <button onClick={scrollToLearnMore} style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.7)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.25)' : `${primaryColor}55` }}
               className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-pill whitespace-nowrap">
               Mehr erfahren
             </button>
@@ -470,13 +470,13 @@ function HeroVariantC({ websiteData, cs, isLoading, displayFont, bodyFont, heroI
             </Skeleton>
             <div className="flex flex-wrap gap-4">
               <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-                <button style={{ fontFamily: displayFont }}
+                <button onClick={scrollToContact} style={{ fontFamily: displayFont }}
                   className="pb-btn pb-btn-primary pb-btn-lg pb-btn-pill whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-                <button style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
+                <button onClick={scrollToLearnMore} style={{ fontFamily: displayFont, color: dark ? 'rgba(255,255,255,0.75)' : textMuted, borderColor: dark ? 'rgba(255,255,255,0.3)' : `${primaryColor}50` }}
                   className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-pill whitespace-nowrap">
                   Mehr erfahren
                 </button>
@@ -1509,6 +1509,14 @@ function TestimonialsLight({ websiteData, cs, isLoading, heading, serif }: any) 
 // ── NAV LINKS ────────────────────────────────────────────────────
 const scrollToContact = () =>
   document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+
+// "Mehr erfahren" → scrollt zur nächstbesten Sektion (services > about > testimonials).
+const scrollToLearnMore = () => {
+  for (const id of ['services', 'about', 'testimonials', 'process']) {
+    const el = document.getElementById(id);
+    if (el) { el.scrollIntoView({ behavior: 'smooth' }); return; }
+  }
+};
 
 const NavLinks = ({ textClass = "text-inherit" }: { textClass?: string }) => (
   <div className="hidden md:flex items-center gap-6">

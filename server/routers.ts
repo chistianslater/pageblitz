@@ -2435,7 +2435,9 @@ export const appRouter = router({
           redirectUrl,
           7 * 24 * 60 * 60 * 1000, // 7 Tage
         );
-        const magicUrl = `${APP_BASE_URL}/api/auth/magic?token=${encodeURIComponent(token)}`;
+        // ACHTUNG: route ist /api/auth/magic-link/verify (siehe magicLinkAuth.ts) –
+        // NICHT /api/auth/magic (das führt zu 404).
+        const magicUrl = `${APP_BASE_URL}/api/auth/magic-link/verify?token=${encodeURIComponent(token)}`;
 
         // businessName + firstName aus onboarding/business holen
         let businessName = "deine Website";
