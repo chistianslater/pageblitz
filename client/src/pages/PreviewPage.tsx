@@ -65,6 +65,43 @@ export default function PreviewPage() {
     if (ob.addOnMenuData) patched.addOnMenuData = ob.addOnMenuData;
     if (ob.addOnPricelist !== undefined) patched.addOnPricelist = ob.addOnPricelist;
     if (ob.addOnPricelistData) patched.addOnPricelistData = ob.addOnPricelistData;
+
+    // Kontakt-Section mit Impressum-Daten + Öffnungszeiten patchen (analog
+    // OnboardingChat#liveWebsiteData). Die linke Spalte der ContactSection
+    // liest address/phone/hours aus websiteData.sections[contact].items[].
+    if (!Array.isArray(patched.sections)) patched.sections = [];
+    const contactIdx = patched.sections.findIndex((s: any) => s.type === "contact");
+    const contactSec: any = contactIdx > -1
+      ? patched.sections[contactIdx]
+      : { type: "contact", headline: "Kontakt", items: [] };
+    const items: any[] = [...(contactSec.items || [])];
+    const setItem = (icon: string, value: string) => {
+      if (!value) return;
+      const idx = items.findIndex((i: any) => i.icon === icon);
+      if (idx > -1) items[idx] = { ...items[idx], description: value };
+      else items.push({ icon, description: value });
+    };
+    const street = ob.legalStreet || "";
+    const zipCity = ob.legalZip && ob.legalCity ? `${ob.legalZip} ${ob.legalCity}` : (ob.legalCity || "");
+    const address = [street, zipCity].filter(Boolean).join(", ");
+    setItem("MapPin", address);
+    setItem("Phone", ob.legalPhone || "");
+    setItem("Mail", ob.legalEmail || "");
+    if (Array.isArray(ob.openingHours) && ob.openingHours.length > 0 && typeof ob.openingHours[0] === "object") {
+      const openDays = ob.openingHours.filter((d: any) => d.open);
+      if (openDays.length > 0) {
+        const hoursStr = openDays.map((d: any) => {
+          const slot1 = `${d.from}–${d.to}`;
+          const slot2 = d.from2 && d.to2 ? `, ${d.from2}–${d.to2}` : "";
+          return `${(d.day || "").slice(0, 2)}: ${slot1}${slot2}`;
+        }).join(" · ");
+        setItem("Clock", hoursStr);
+      }
+    }
+    const updated = { ...contactSec, items };
+    if (contactIdx > -1) patched.sections[contactIdx] = updated;
+    else patched.sections.push(updated);
+
     return patched as WebsiteData;
   }, [data, onboardingData]);
 
