@@ -2772,7 +2772,7 @@ export function PremiumLayoutV2({
             </Skeleton>
             <div className="h-10 md:h-14" />
             <Skeleton isLoading={isLoading} className="w-44 h-12">
-              <button style={{ fontFamily: BODY }} className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">{heroCta}</button>
+              <button onClick={scrollToContact} style={{ fontFamily: BODY }} className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">{heroCta}</button>
             </Skeleton>
           </div>
         </div>
@@ -3413,13 +3413,13 @@ export function EdenLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
           <div className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
-              <button style={{ fontFamily: BODY }}
+              <button onClick={scrollToContact} style={{ fontFamily: BODY }}
                 className="pb-btn pb-btn-primary pb-btn-lg pb-btn-pill whitespace-nowrap">
                 {heroCta}
               </button>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-              <button style={{ fontFamily: BODY, color: textMuted, borderColor: primaryColor + '50' }}
+              <button onClick={scrollToLearnMore} style={{ fontFamily: BODY, color: textMuted, borderColor: primaryColor + '50' }}
                 className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-pill whitespace-nowrap">
                 Mehr erfahren
               </button>
@@ -3628,13 +3628,13 @@ export function ApexLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
 
           <div className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[160px] h-12">
-              <button style={{ fontFamily: BODY }}
+              <button onClick={scrollToContact} style={{ fontFamily: BODY }}
                 className="pb-btn pb-btn-primary pb-btn-lg pb-btn-square whitespace-nowrap">
                 {heroCta}
               </button>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="min-w-[130px] h-12">
-              <button style={{ fontFamily: BODY, color: textMuted, borderColor: `${primaryColor}50` }}
+              <button onClick={scrollToLearnMore} style={{ fontFamily: BODY, color: textMuted, borderColor: `${primaryColor}50` }}
                 className="pb-btn pb-btn-secondary pb-btn-lg pb-btn-square whitespace-nowrap">
                 Mehr erfahren
               </button>
@@ -3856,13 +3856,13 @@ export function AuroraLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headl
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.5 }}
           className="flex flex-wrap gap-4 justify-center">
           <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-            <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:700, color:'#fff' }}
+            <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`, fontFamily:BODY, fontWeight:700, color:'#fff' }}
               className="pb-btn pb-btn-lg pb-btn-pill whitespace-nowrap">
               {heroCta}
             </button>
           </Skeleton>
           <Skeleton isLoading={isLoading} className="min-w-[140px] h-14">
-            <button style={{ fontFamily:BODY, color:TXT_M, border:`1px solid ${BORDER}`, background:'rgba(255,255,255,0.04)', backdropFilter:'blur(10px)' }}
+            <button onClick={scrollToLearnMore} style={{ fontFamily:BODY, color:TXT_M, border:`1px solid ${BORDER}`, background:'rgba(255,255,255,0.04)', backdropFilter:'blur(10px)' }}
               className="px-8 py-4 rounded-full text-sm hover:bg-white/10 transition-colors whitespace-nowrap">
               Mehr erfahren
             </button>
@@ -4017,7 +4017,7 @@ export function NexusLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
                 </h1>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="min-h-[2.5rem] min-w-[120px]">
-                <button style={{ backgroundColor:'#ffffff', color:primaryColor, fontFamily:BODY, fontWeight:700 }}
+                <button onClick={scrollToContact} style={{ backgroundColor:'#ffffff', color:primaryColor, fontFamily:BODY, fontWeight:700 }}
                   className="px-7 py-3 rounded-full text-sm pb-btn whitespace-nowrap">
                   {heroCta}
                 </button>
@@ -4206,14 +4206,14 @@ export function ClayLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
             </Skeleton>
             <div className="flex flex-wrap gap-4">
               <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
-                <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
+                <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#fff',
                   borderRadius:'50px', boxShadow:`0 12px 30px ${primaryColor}45` }}
                   className="px-10 py-4 text-sm pb-btn whitespace-nowrap">
                   {heroCta}
                 </button>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-                <div style={{ ...clay(), padding:'1rem 2rem', cursor:'pointer', fontFamily:BODY, color:TXT_M }}
+                <div onClick={scrollToLearnMore} style={{ ...clay(), padding:'1rem 2rem', cursor:'pointer', fontFamily:BODY, color:TXT_M }}
                   className="text-sm hover:scale-[1.02] transition-transform whitespace-nowrap flex items-center">
                   Mehr erfahren
                 </div>
@@ -4374,13 +4374,13 @@ export function ForgeLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
           <div className="h-10 md:h-14" />
           <div className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-              <button style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
+              <button onClick={scrollToContact} style={{ backgroundColor:TXT, fontFamily:BODY, fontWeight:500, color:'#fff', letterSpacing:'0.08em' }}
                 className="px-10 py-4 text-xs uppercase hover:opacity-80 active:opacity-60 transition-opacity whitespace-nowrap">
                 {heroCta}
               </button>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="min-w-[140px] h-14">
-              <button style={{ fontFamily:BODY, color:TXT_M, border:`2px solid ${TXT}`, letterSpacing:'0.08em',
+              <button onClick={scrollToLearnMore} style={{ fontFamily:BODY, color:TXT_M, border:`2px solid ${TXT}`, letterSpacing:'0.08em',
                 backgroundColor:'transparent' }}
                 className="px-8 py-4 text-xs uppercase hover:bg-black hover:text-white transition-colors whitespace-nowrap">
                 Mehr erfahren
@@ -4557,7 +4557,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
             </Skeleton>
             <div className="flex flex-wrap gap-4">
               <Skeleton isLoading={isLoading} className="min-w-[150px] h-14">
-                <button style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`,
+                <button onClick={scrollToContact} style={{ background:`linear-gradient(135deg,${primaryColor},${accentColor})`,
                   fontFamily:BODY, fontWeight:700, color:'#fff', borderRadius:'50px',
                   boxShadow:`0 10px 28px ${primaryColor}50` }}
                   className="px-10 py-4 text-sm pb-btn whitespace-nowrap">
@@ -4565,7 +4565,7 @@ export function PulseLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headli
                 </button>
               </Skeleton>
               <Skeleton isLoading={isLoading} className="min-w-[130px] h-14">
-                <button style={{ ...neuRaised, fontFamily:BODY, color:TXT_M, paddingLeft:'2rem', paddingRight:'2rem', paddingTop:'1rem', paddingBottom:'1rem' }}
+                <button onClick={scrollToLearnMore} style={{ ...neuRaised, fontFamily:BODY, color:TXT_M, paddingLeft:'2rem', paddingRight:'2rem', paddingTop:'1rem', paddingBottom:'1rem' }}
                   className="text-sm whitespace-nowrap">
                   Mehr erfahren
                 </button>
@@ -4748,14 +4748,14 @@ export function FluxLayoutV2({ websiteData, cs, heroImageUrl, isLoading, headlin
           <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.6 }}
             className="flex flex-wrap gap-4">
             <Skeleton isLoading={isLoading} className="min-w-[160px] h-14">
-              <button style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#000',
+              <button onClick={scrollToContact} style={{ backgroundColor:primaryColor, fontFamily:BODY, fontWeight:700, color:'#000',
                 letterSpacing:'0.08em' }}
                 className="pb-btn pb-btn-lg pb-btn-square whitespace-nowrap">
                 {heroCta}
               </button>
             </Skeleton>
             <Skeleton isLoading={isLoading} className="min-w-[140px] h-14">
-              <button style={{ fontFamily:BODY, color:TXT_M, border:'1px solid rgba(255,255,255,0.2)',
+              <button onClick={scrollToLearnMore} style={{ fontFamily:BODY, color:TXT_M, border:'1px solid rgba(255,255,255,0.2)',
                 letterSpacing:'0.08em', backgroundColor:'transparent' }}
                 className="px-8 py-4 text-xs uppercase hover:bg-white/5 transition-colors whitespace-nowrap">
                 Mehr erfahren
