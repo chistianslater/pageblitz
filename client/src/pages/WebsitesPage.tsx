@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw,
   Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle,
-  Clock, TrendingDown, UserPlus, Database, Zap, Users, MessageCircle, ListChecks, Send
+  Clock, TrendingDown, UserPlus, Database, Zap, Users, MessageCircle, ListChecks, Send, Pencil
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -652,6 +652,13 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                           <Button variant="outline" size="sm" asChild>
                             <a href={`/preview/${w.previewToken}`} target="_blank" rel="noopener">
                               <Eye className="h-3 w-3 mr-1" /> Preview
+                            </a>
+                          </Button>
+                        )}
+                        {w.previewToken && (
+                          <Button variant="outline" size="sm" asChild title="Onboarding-Chat öffnen – Inhalte/Bilder/Steps weiter bearbeiten">
+                            <a href={`/preview/${w.previewToken}/onboarding`} target="_blank" rel="noopener">
+                              <Pencil className="h-3 w-3 mr-1" /> Bearbeiten
                             </a>
                           </Button>
                         )}
