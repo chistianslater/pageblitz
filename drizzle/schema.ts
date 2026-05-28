@@ -366,8 +366,11 @@ export const generationJobs = mysqlTable("generation_jobs", {
   progress: int("progress").default(0).notNull(), // 0-100
   result: json("result"), // { success: boolean, alreadyGenerated: boolean }
   error: text("error"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  // Achtung: DB-Spalten sind BIGINT (UNIX ms), nicht TIMESTAMP – Schema-Drift
+  // historisch entstanden. Daher hier explizit bigint, sonst rejected MySQL
+  // den Drizzle-Date-Insert ("Incorrect bigint value: '2026-...'").
+  createdAt: bigint("createdAt", { mode: "number" }).default(0).notNull(),
+  updatedAt: bigint("updatedAt", { mode: "number" }).default(0).notNull(),
 });
 
 export type GenerationJob = typeof generationJobs.$inferSelect;

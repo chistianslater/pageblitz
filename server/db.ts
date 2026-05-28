@@ -668,7 +668,7 @@ export async function getWebsitesByUserId(userId: number) {
 export async function createGenerationJob(data: InsertGenerationJob): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const now = new Date();
+  const now = Date.now();
   const result = await db.insert(generationJobs).values({ ...data, createdAt: now, updatedAt: now });
   return (result[0] as any).insertId as number;
 }
@@ -693,7 +693,7 @@ export async function getGenerationJobByWebsiteId(websiteId: number): Promise<Ge
 export async function updateGenerationJob(id: number, data: Partial<InsertGenerationJob>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  await db.update(generationJobs).set({ ...data, updatedAt: new Date() }).where(eq(generationJobs.id, id));
+  await db.update(generationJobs).set({ ...data, updatedAt: Date.now() }).where(eq(generationJobs.id, id));
 }
 
 /**
@@ -709,7 +709,7 @@ export async function failOrphanGenerationJobs(): Promise<number> {
     .set({
       status: "failed",
       error: "Server-Restart hat den laufenden Job unterbrochen. Bitte erneut starten.",
-      updatedAt: new Date(),
+      updatedAt: Date.now(),
     })
     .where(eq(generationJobs.status, "processing"));
   return (result[0] as any)?.affectedRows ?? 0;
