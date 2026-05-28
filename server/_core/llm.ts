@@ -294,8 +294,8 @@ async function callLLM(params: InvokeParams, useBackup: boolean): Promise<Invoke
   // Detect Kimi/Moonshot API (primary only)
   const isKimi = !useBackup && (ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn"));
   // Backup model: gemini-2.0-flash (cheap, fast, reliable)
-  // Primary Kimi-Modell: kimi-k2.6 (newest, 262K Context, Reasoning, Vision)
-  const model = useBackup ? "gemini-2.0-flash" : (isKimi ? "kimi-k2.6" : "gemini-2.5-flash");
+  // Primary Kimi-Modell: kimi-k2.5 (schneller als k2.6 bei vergleichbarer Qualität)
+  const model = useBackup ? "gemini-2.0-flash" : (isKimi ? "kimi-k2.5" : "gemini-2.5-flash");
   const apiKey = useBackup ? ENV.backupApiKey : ENV.forgeApiKey;
 
   const payload: Record<string, unknown> = {
