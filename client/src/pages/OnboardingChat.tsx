@@ -6256,7 +6256,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
 
-              {knownEmail ? (
+              {supportMode === "closed" && knownEmail ? (
                 /* ── Saved-state: email already known ── */
                 <>
                   <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 text-center relative overflow-hidden">
@@ -6299,7 +6299,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 </>
-              ) : (
+              ) : supportMode === "closed" ? (
                 /* ── Capture-state: no email yet ── */
                 <>
                   <div className="bg-gradient-to-br from-lime-600 to-lime-700 p-8 text-center relative overflow-hidden">
@@ -6363,6 +6363,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       </div>
                     </div>
 
+                    {/* Schnellsupport-Link */}
+                    <button
+                      onClick={() => setSupportMode("select")}
+                      className="w-full text-slate-400 hover:text-white text-sm transition-colors py-1 flex items-center justify-center gap-1.5"
+                    >
+                      <span>⚡</span>
+                      <span>Hakt etwas? Schnellsupport →</span>
+                    </button>
+
                     <button
                       onClick={() => setShowExitIntent(false)}
                       className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
@@ -6371,6 +6380,122 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     </button>
                   </div>
                 </>
+              ) : null}
+
+              {/* Quick-Support-Panel (über die ganze Modal-Höhe legen) */}
+              {supportMode !== "closed" && (
+                <div className="p-8 space-y-6">
+                  {supportMode === "select" && (
+                    <>
+                      <div className="text-center">
+                        <h3 className="text-white font-bold text-lg mb-1">Was hakt gerade?</h3>
+                        <p className="text-slate-400 text-sm">Wir antworten persönlich, meist innerhalb einer Stunde.</p>
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { v: "tech" as const, emoji: "🐛", title: "Technisches Problem", desc: "Bilder fehlen, Seite hakt, Fehlermeldung" },
+                          { v: "content" as const, emoji: "💭", title: "Frage zum Inhalt", desc: "Was soll ich reinschreiben, Hilfe bei Texten/Fotos" },
+                          { v: "other" as const, emoji: "✍️", title: "Etwas anderes", desc: "Sag uns kurz, was los ist" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.v}
+                            onClick={() => { setSupportType(opt.v); setSupportMode("details"); }}
+                            className="w-full text-left p-4 rounded-xl border border-slate-700 hover:border-lime-500/50 bg-slate-700/30 hover:bg-lime-500/10 transition-all group"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="text-2xl">{opt.emoji}</div>
+                              <div className="flex-1">
+                                <div className="text-white font-semibold text-sm">{opt.title}</div>
+                                <div className="text-slate-400 text-xs mt-0.5">{opt.desc}</div>
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-lime-400 mt-1" />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setSupportMode("closed")}
+                        className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors py-1"
+                      >
+                        ← Zurück
+                      </button>
+                    </>
+                  )}
+
+                  {supportMode === "details" && supportType && (
+                    <>
+                      <div>
+                        <h3 className="text-white font-bold text-lg mb-1">
+                          {supportType === "tech" && "🐛 Technisches Problem"}
+                          {supportType === "content" && "💭 Frage zum Inhalt"}
+                          {supportType === "other" && "✍️ Was anderes"}
+                        </h3>
+                        <p className="text-slate-400 text-sm">
+                          {supportType === "tech" && "Was funktioniert nicht? Mehr Infos helfen uns, schneller zu fixen."}
+                          {supportType === "content" && "Was ist deine Frage? Wir helfen gerne."}
+                          {supportType === "other" && "Was möchtest du uns sagen?"}
+                        </p>
+                      </div>
+                      {!knownEmail && (
+                        <input
+                          type="email"
+                          placeholder="Deine E-Mail (damit wir antworten können)"
+                          value={data.email}
+                          onChange={(e) => setData((p) => ({ ...p, email: e.target.value }))}
+                          className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-lime-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none transition-colors"
+                        />
+                      )}
+                      <textarea
+                        value={supportText}
+                        onChange={(e) => setSupportText(e.target.value)}
+                        placeholder={
+                          supportType === "tech"
+                            ? 'z.B. "Hero-Bild lädt nicht, sehe nur ein graues Rechteck"'
+                            : supportType === "content"
+                            ? 'z.B. "Brauche Hilfe bei den Service-Beschreibungen"'
+                            : "Deine Nachricht…"
+                        }
+                        rows={4}
+                        className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-lime-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none resize-none transition-colors"
+                      />
+                      <div className="space-y-2">
+                        <button
+                          onClick={handleSupportSubmit}
+                          disabled={supportSending || (!knownEmail && !data.email)}
+                          className="w-full bg-lime-500 hover:bg-lime-400 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-lime-500/20"
+                        >
+                          {supportSending ? "Senden…" : "Senden"}
+                        </button>
+                        <button
+                          onClick={() => setSupportMode("select")}
+                          className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors py-1"
+                        >
+                          ← Zurück
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {supportMode === "sent" && (
+                    <div className="text-center space-y-4 py-4">
+                      <div className="w-14 h-14 rounded-full bg-lime-500/20 text-lime-400 flex items-center justify-center mx-auto">
+                        <CheckCircle className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold text-lg mb-1">Nachricht ist raus!</h3>
+                        <p className="text-slate-400 text-sm leading-relaxed">
+                          Wir antworten meist innerhalb einer Stunde. Du kannst die Seite jetzt schließen — wir melden uns.
+                        </p>
+                      </div>
+                      <button
+                        onClick={closeExitModalsFully}
+                        className="w-full bg-lime-500 hover:bg-lime-400 text-white font-bold py-3.5 rounded-xl transition-all"
+                      >
+                        Alles klar
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
 
             </div>
