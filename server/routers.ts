@@ -5444,13 +5444,21 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
   ]
 }`;
 
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: "Du bist ein Conversion-Texter, der das StoryBrand-Framework von Donald Miller beherrscht. Du schreibst deutsche Website-Texte, die Kunden als Helden positionieren und das Unternehmen als kompetenten Guide. Antworte AUSSCHLIESSLICH mit validem JSON." },
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
-        });
+        // Hard-Timeout 30s: das Kimi-LLM kann gelegentlich >60s brauchen, die
+        // Onboarding-UX leidet stark darunter. Bei Timeout/Fehler wirft die
+        // Mutation, der Client zeigt eine Fallback-Toast + schließt das Skeleton.
+        const response = await Promise.race([
+          invokeLLM({
+            messages: [
+              { role: "system", content: "Du bist ein Conversion-Texter, der das StoryBrand-Framework von Donald Miller beherrscht. Du schreibst deutsche Website-Texte, die Kunden als Helden positionieren und das Unternehmen als kompetenten Guide. Antworte AUSSCHLIESSLICH mit validem JSON." },
+              { role: "user", content: prompt },
+            ],
+            response_format: { type: "json_object" },
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("LLM-Timeout nach 30s")), 30_000)
+          ),
+        ]);
 
         const content = response.choices[0]?.message?.content;
         if (!content || typeof content !== "string") {

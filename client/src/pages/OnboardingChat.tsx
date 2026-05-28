@@ -59,10 +59,13 @@ const DEFAULT_VARIANT_RANKINGS: [string[], string[], string[]] = [
   ["clay","pulse","fresh","clean","modern","warm"],
 ];
 
-/** Returns 3 layout names — one per design family — based on industry + round. */
+/** Returns 2 layout names — one Dark-Family + one Editorial-Family — based on industry + round.
+ *  Die 3. (helle/clean) Familie überlappt visuell oft mit der 2. (editorial); zwei
+ *  maximal gegensätzliche Optionen (Dark vs. hell-editorial) sind klarer für die
+ *  Kundin. */
 function getVariantLayouts(industryKey: string, round: number): string[] {
   const families = VARIANT_FAMILY_RANKINGS[industryKey] || DEFAULT_VARIANT_RANKINGS;
-  return families.map((family) => family[round % family.length]);
+  return [families[0], families[1]].map((family) => family[round % family.length]);
 }
 
 /** Friendly display names per layout style. */
@@ -126,8 +129,9 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
       if (mobile) {
         setCardWidth(Math.min(cw - 48, 340));
       } else {
-        const w = Math.floor((cw - 32) / 3);
-        setCardWidth(Math.max(200, Math.min(400, w)));
+        // 2 Karten nebeneinander (vorher 3) → mehr Platz pro Variante
+        const w = Math.floor((cw - 32) / 2);
+        setCardWidth(Math.max(220, Math.min(480, w)));
       }
     };
     update();
@@ -142,7 +146,9 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
     if (!el || !isMobile) return;
     const handleScroll = () => {
       const scrollLeft = el.scrollLeft;
-      const itemWidth = el.scrollWidth / 3;
+      // Anzahl Slides dynamisch (vorher hartcodiert /3) – jetzt 2 Varianten
+      const slideCount = el.children.length || 1;
+      const itemWidth = el.scrollWidth / slideCount;
       setActiveSlide(Math.round(scrollLeft / itemWidth));
     };
     el.addEventListener("scroll", handleScroll, { passive: true });
@@ -926,6 +932,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   };
   // Only show exit-intent overlay once per session (not on every upward mouse move)
   const exitIntentShownRef = useRef(false);
+  // Suppress exit-intent für eine kurze Periode nach Modal-Closes (z.B. Variant-Picker)
+  // damit der Cursor-Sprung beim DOM-Wechsel keinen false-positive Exit-Intent triggert.
+  const exitIntentSuppressedUntilRef = useRef(0);
   const saveReminderShownRef = useRef(false);
   const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
 
@@ -940,6 +949,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Exit intent (mouse leaves window upwards) – shows at most once per session
     const handleMouseOut = (e: MouseEvent) => {
+      // Suppression während kurzer Zeit nach Modal-Closes (Variant-Picker etc.) –
+      // verhindert false-positive Exit-Intent durch Cursor-Sprünge beim DOM-Wechsel.
+      if (Date.now() < exitIntentSuppressedUntilRef.current) return;
       if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email" && !exitIntentShownRef.current) {
         exitIntentShownRef.current = true;
         try { (window as any).clarity?.("event", "exit_intent_triggered"); } catch {}
@@ -2037,6 +2049,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Hard-Timeout für isGeneratingInitialContent: wenn die Mutation tatsächlich
+  // länger als 60s pending ist (langsames LLM, Network-Stall), force-clearen
+  // wir den Loading-State – die Kundin soll nicht ewig Skeleton sehen.
+  // Die Mutation läuft im Hintergrund weiter; falls sie doch noch erfolgreich
+  // ist, schreibt das .then()-Handler die Texte in data, was die UI updated.
+  useEffect(() => {
+    if (!isGeneratingInitialContent) return;
+    const timeout = setTimeout(() => {
+      console.warn("[Onboarding] AI text generation > 60s, clearing skeleton state");
+      setIsGeneratingInitialContent(false);
+      setContentPhase('complete');
+      setContentRevealed(true);
+      if (previewToken || websiteIdProp) {
+        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
+        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+      }
+    }, 60_000);
+    return () => clearTimeout(timeout);
+  }, [isGeneratingInitialContent, previewToken, websiteIdProp]);
+
   // ── Progressive content revelation based on user input ─────────
 
   // Phase 1: When businessCategory is explicitly confirmed by user -> show colors
@@ -2992,10 +3024,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         aboutImageUrl={aboutImageUrl}
         industryKey={industryKey}
         onConfirm={() => {
+          // 3s Exit-Intent-Suppression: das Schließen des Fullscreen-Modals löst
+          // mouseout-Events aus, die je nach Cursor-Position fälschlich als
+          // Exit-Intent gedeutet werden.
+          exitIntentSuppressedUntilRef.current = Date.now() + 3000;
           setShowVariantPicker(false);
           refetchSiteData();
         }}
         onSkip={() => {
+          exitIntentSuppressedUntilRef.current = Date.now() + 3000;
           setShowVariantPicker(false);
           refetchSiteData();
         }}
@@ -7004,6 +7041,20 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
   const [isUploading, setIsUploading] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
+  const nextButtonRef = useRef<HTMLDivElement>(null);
+
+  // Auto-Scroll zum "Weiter"-Button, sobald ein Foto ausgewählt wird –
+  // sonst muss die Kundin manuell runterscrollen.
+  useEffect(() => {
+    if (heroPhotoUrl) {
+      // Kurze Verzögerung, damit das DOM-Update (Highlight des gewählten Fotos)
+      // vor dem Scroll fertig ist und der Scroll smooth wirkt.
+      const t = setTimeout(() => {
+        nextButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 120);
+      return () => clearTimeout(t);
+    }
+  }, [heroPhotoUrl]);
 
   const { data: suggestionsData, isLoading: isLoadingSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
     { category: businessCategory },
@@ -7202,7 +7253,7 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div ref={nextButtonRef} className="flex gap-2">
         <button
           onClick={() => { onSelect(""); onNext(); }}
           className="flex-1 text-xs text-slate-400 hover:text-slate-300 px-3 py-2 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors"
