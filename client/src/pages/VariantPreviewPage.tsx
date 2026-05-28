@@ -36,6 +36,15 @@ export default function VariantPreviewPage() {
     { enabled: websiteId > 0, staleTime: 0 },
   );
 
+  // Placeholder-Bilder per Kategorie laden, falls die Kundin noch kein Foto
+  // ausgewählt hat (Variant-Picker kommt vor dem heroPhoto-Step). Sonst
+  // zeigen die Previews leere Gradients statt eine echte Website.
+  const category = (data as any)?.business?.category || "";
+  const { data: photoSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
+    { category },
+    { enabled: !!category },
+  );
+
   const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout];
 
   if (!websiteId || isLoading) {
@@ -54,13 +63,17 @@ export default function VariantPreviewPage() {
   }
 
   const { website } = data as any;
+  const suggestions = photoSuggestions?.suggestions || [];
+  // Echte URLs falls vorhanden, sonst Kategorie-passender Stock-Fallback.
+  const heroImageUrl = website.heroImageUrl || suggestions[0]?.url;
+  const aboutImageUrl = website.aboutImageUrl || suggestions[1]?.url || suggestions[0]?.url;
 
   return (
     <WebsiteRenderer
       websiteData={website.websiteData ?? website}
       colorScheme={cs ?? website.colorScheme}
-      heroImageUrl={website.heroImageUrl}
-      aboutImageUrl={website.aboutImageUrl}
+      heroImageUrl={heroImageUrl}
+      aboutImageUrl={aboutImageUrl}
       layoutStyle={layout}
       isLoading={false}
     />
