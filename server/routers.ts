@@ -1199,7 +1199,7 @@ export async function runWebsiteGeneration(jobId: number, websiteId: number): Pr
     // Progress: 95% - Saving to database
     await updateGenerationJob(jobId, { progress: 95 });
 
-    await updateWebsite(websiteId, { websiteData, colorScheme, industry: category, heroImageUrl: finalHeroImageUrl, layoutStyle, requiresAgeGate: shouldRequireAgeGate(category, businessName) });
+    await updateWebsite(websiteId, { websiteData, colorScheme, industry: category, heroImageUrl: finalHeroImageUrl, layoutStyle, requiresAgeGate: shouldRequireAgeGate(category, business.name) });
 
     // Progress: 100% - Complete
     await updateGenerationJob(jobId, { 
@@ -2039,7 +2039,7 @@ export const appRouter = router({
           heroImageUrl: finalHeroImageUrl,
           layoutStyle,
           layoutVersion: CURRENT_LAYOUT_VERSION,
-          requiresAgeGate: shouldRequireAgeGate(category, businessName),
+          requiresAgeGate: shouldRequireAgeGate(category, business.name),
         });
 
         return { websiteId, slug, previewToken, heroImageUrl: finalHeroImageUrl, layoutStyle };
@@ -2233,7 +2233,7 @@ export const appRouter = router({
           previewToken: newPreviewToken,
           heroImageUrl: finalHeroImageUrl,
           layoutStyle,
-          requiresAgeGate: shouldRequireAgeGate(category, businessName),
+          requiresAgeGate: shouldRequireAgeGate(category, business.name),
         });
 
         return {
@@ -2525,7 +2525,7 @@ export const appRouter = router({
               heroImageUrl,
               layoutStyle,
               layoutVersion: CURRENT_LAYOUT_VERSION,
-              requiresAgeGate: shouldRequireAgeGate(category, businessName),
+              requiresAgeGate: shouldRequireAgeGate(category, business.name),
             });
 
             const jobId = await createGenerationJob({
