@@ -2984,10 +2984,17 @@ Kontext: ${input.context}`,
         const website = await getWebsiteById(input.websiteId);
         if (!website) throw new TRPCError({ code: "NOT_FOUND" });
 
+        // Branchen-Kontext-Hint: bei sensitiven Kategorien (Erotik, Bar, Casino)
+        // bekommt das LLM explizite Beispiele, damit es nicht in generische
+        // Euphemismen ausweicht ("private Shoppingtermine" statt "Begleitservice").
+        const { getCategoryServiceHint } = await import("@shared/ageGate");
+        const business = await getBusinessById(website.businessId);
+        const categoryHint = getCategoryServiceHint(business?.category, business?.name);
+
         const response = await invokeLLM({
           messages: [
             { role: "system", content: "Du bist ein Experte für lokale Unternehmenswebsites in Deutschland, der das StoryBrand-Framework beherrscht. Leistungen werden als Lösungen für Kundenprobleme formuliert – outcome-focused. Der Titel nennt die Leistung, die Beschreibung nennt den Kundennutzen (was der Kunde erreicht/gewinnt). Antworte immer mit validem JSON." },
-            { role: "user", content: `Schlage 6 verschiedene, typische Leistungen für dieses Unternehmen vor. Jede Leistung: Titel = klare Bezeichnung der Leistung, Beschreibung = was der Kunde dadurch gewinnt/erreicht (max 12 Wörter, Kundenperspektive). Gib nur ein JSON-Array zurück, kein Markdown, keine Erklärung.\n\nFormat: [{\"title\": \"Leistungsname\", \"description\": \"Was der Kunde dadurch gewinnt (max 12 Wörter)\"}]\n\nKontext: ${input.context}` },
+            { role: "user", content: `Schlage 6 verschiedene, typische Leistungen für dieses Unternehmen vor. Jede Leistung: Titel = klare Bezeichnung der Leistung, Beschreibung = was der Kunde dadurch gewinnt/erreicht (max 12 Wörter, Kundenperspektive). Gib nur ein JSON-Array zurück, kein Markdown, keine Erklärung.\n\nFormat: [{\"title\": \"Leistungsname\", \"description\": \"Was der Kunde dadurch gewinnt (max 12 Wörter)\"}]\n\nKontext: ${input.context}${categoryHint}` },
           ],
           response_format: {
             type: "json_schema",
@@ -5444,6 +5451,12 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
   ]
 }`;
 
+        // Branchen-Kontext-Hint anhängen (Erotik, Bar, Casino) – sonst weicht
+        // das LLM in Euphemismen aus.
+        const { getCategoryServiceHint } = await import("@shared/ageGate");
+        const categoryHint = getCategoryServiceHint(businessCategory, businessName);
+        const fullPrompt = prompt + categoryHint;
+
         // Hard-Timeout 30s: das Kimi-LLM kann gelegentlich >60s brauchen, die
         // Onboarding-UX leidet stark darunter. Bei Timeout/Fehler wirft die
         // Mutation, der Client zeigt eine Fallback-Toast + schließt das Skeleton.
@@ -5451,7 +5464,7 @@ Antworte AUSSCHLIESSLICH mit validem JSON:
           invokeLLM({
             messages: [
               { role: "system", content: "Du bist ein Conversion-Texter, der das StoryBrand-Framework von Donald Miller beherrscht. Du schreibst deutsche Website-Texte, die Kunden als Helden positionieren und das Unternehmen als kompetenten Guide. Antworte AUSSCHLIESSLICH mit validem JSON." },
-              { role: "user", content: prompt },
+              { role: "user", content: fullPrompt },
             ],
             response_format: { type: "json_object" },
           }),

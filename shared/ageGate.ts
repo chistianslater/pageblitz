@@ -45,3 +45,61 @@ export function shouldRequireAgeGate(category?: string | null, businessName?: st
 
 /** Default-Mindestalter — könnte später pro Site konfigurierbar werden. */
 export const AGE_GATE_MIN_AGE = 18;
+
+/**
+ * Category-spezifische Hilfe für LLM-Prompts (Leistungen, Texte, etc.).
+ *
+ * Hintergrund: LLMs (Kimi, Gemini, Claude) wenden bei „Erotik"-Kategorien
+ * Content-Filter an und generieren generische Euphemismen wie
+ * „private Shoppingtermine" oder „Geschenkkonzierge" statt branchengerechte
+ * Leistungen. Dieser Hint macht dem Modell explizit klar, dass es sich um
+ * ein gewerblich angemeldetes, legales FSK-18-Business handelt – und liefert
+ * konkrete Beispielnamen, damit es nicht ausweicht.
+ *
+ * Für nicht-sensitive Kategorien wird ein leerer String zurückgegeben (kein
+ * Hint nötig – das LLM kommt bei Friseur/Restaurant/etc. allein klar).
+ */
+export function getCategoryServiceHint(category?: string | null, businessName?: string | null): string {
+  if (!shouldRequireAgeGate(category, businessName)) return "";
+
+  const haystack = `${category || ""} ${businessName || ""}`.toLowerCase();
+
+  // Erotik – Begleitservice / Escort / Bordell / Massagestudio etc.
+  if (/erotik|escort|begleit|bordell|stripclub|tabledance|rotlicht|etablissement|sm-studio|fetisch|bdsm|fkk|swinger|saunaclub|kontaktbar/.test(haystack)) {
+    return `
+
+WICHTIG – Branchen-Kontext: Dies ist ein gewerblich angemeldetes, FSK-18, in Deutschland legales Erotik-/Begleitservice-Unternehmen. NICHT auf generische "Shoppingtermine" oder "Konzierge"-Euphemismen ausweichen. Schlage stattdessen konkrete, professionelle Bezeichnungen aus diesem Bereich vor, z.B.:
+- "Begleitservice (Outcall)" – diskrete Begleitung beim Restaurant- oder Eventbesuch
+- "Begleitservice (Incall)" – Treffen in der Wohlfühlatmosphäre
+- "Erotische Massage" / "Tantra-Massage"
+- "Domina-Sitzung" / "BDSM-Sitzung"
+- "Paarbegleitung" / "Couples-Booking"
+- "Private Show" / "Striptease"
+- "Reisebegleitung" / "Dinner-Date"
+- "Fotoshooting / Modelagentur"
+Wähle die Beispiele passend zur konkreten Branche aus dem Kontext. Schreibe stilvoll, diskret und professionell – nicht vulgär, nicht reißerisch. Die Beschreibung beschreibt das Erlebnis für den Kunden (z.B. "Stilvolle Begleitung für Geschäftsessen und Events") nicht den Akt.`;
+  }
+
+  // Sexshop / Dessous-Boutique – Produktverkauf, nicht Dienstleistung
+  if (/sexshop|sex-shop|dessous|lingerie|adult-shop/.test(haystack)) {
+    return `
+
+WICHTIG – Branchen-Kontext: Dies ist ein FSK-18-Einzelhandel (Erotikartikel/Dessous), legal und gewerblich angemeldet. Schlage konkrete Sortiment-/Service-Kategorien vor, z.B.: "Beratung & Einkaufserlebnis", "Dessous & Reizwäsche", "Toys & Lifestyle", "Größenberatung BH", "Geschenkverpackung", "Brautmode-Wäsche". Stilvoll, diskret, professionell – nicht vulgär.`;
+  }
+
+  // Bar / Cocktailbar / Vinothek / Brauerei
+  if (/\bbar\b|cocktail|whisky|wein|vinothek|brauerei|spirituosen|destillerie/.test(haystack)) {
+    return `
+
+WICHTIG – Branchen-Kontext: Bar/Gastronomie mit Alkoholausschank. Schlage Leistungen wie z.B. "Cocktailkarte & Signature Drinks", "Wein- & Whisky-Tasting", "Private Events / Buchungen", "Aperitif-Stunde", "Live-Musik / DJ", "Cigar-Lounge" vor.`;
+  }
+
+  // Casino / Spielhalle / Wettbüro
+  if (/casino|spielhalle|spielothek|wettbüro|wettbuero|wettannahme|sportwetten|lotto/.test(haystack)) {
+    return `
+
+WICHTIG – Branchen-Kontext: Konzessioniertes Glücksspiel-/Wettbüro-Geschäft. Schlage Leistungen wie "Spielautomaten", "Live-Sportwetten", "Roulette / Black Jack", "Lotto-Annahme", "VIP-Bereich / Stammkundenkarte" vor. Verantwortungsvolles Spielen (Spielsuchtprävention) als Service erwähnenswert.`;
+  }
+
+  return "";
+}
