@@ -42,6 +42,7 @@ import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz, patchWebsiteData } from "./legalGenerator";
 import { registerUmamiWebsite, getUmamiStats } from "./umami";
 import { getIndustryServicesSeed, getIndustryProfile } from "@shared/industryServices";
+import { shouldRequireAgeGate } from "@shared/ageGate";
 import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG, CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import { searchStockPhotos } from "./_core/stockPhotos";
@@ -1198,7 +1199,7 @@ export async function runWebsiteGeneration(jobId: number, websiteId: number): Pr
     // Progress: 95% - Saving to database
     await updateGenerationJob(jobId, { progress: 95 });
 
-    await updateWebsite(websiteId, { websiteData, colorScheme, industry: category, heroImageUrl: finalHeroImageUrl, layoutStyle });
+    await updateWebsite(websiteId, { websiteData, colorScheme, industry: category, heroImageUrl: finalHeroImageUrl, layoutStyle, requiresAgeGate: shouldRequireAgeGate(category, businessName) });
 
     // Progress: 100% - Complete
     await updateGenerationJob(jobId, { 
@@ -2038,6 +2039,7 @@ export const appRouter = router({
           heroImageUrl: finalHeroImageUrl,
           layoutStyle,
           layoutVersion: CURRENT_LAYOUT_VERSION,
+          requiresAgeGate: shouldRequireAgeGate(category, businessName),
         });
 
         return { websiteId, slug, previewToken, heroImageUrl: finalHeroImageUrl, layoutStyle };
@@ -2231,6 +2233,7 @@ export const appRouter = router({
           previewToken: newPreviewToken,
           heroImageUrl: finalHeroImageUrl,
           layoutStyle,
+          requiresAgeGate: shouldRequireAgeGate(category, businessName),
         });
 
         return {
@@ -2391,6 +2394,20 @@ export const appRouter = router({
       }),
 
     /**
+     * Admin: Age-Gate (FSK-18) manuell ein-/ausschalten. Wird normal über
+     * shouldRequireAgeGate automatisch beim Generate/Categorize gesetzt –
+     * hier kann es überschrieben werden.
+     */
+    setAgeGate: adminProcedure
+      .input(z.object({ websiteId: z.number(), enabled: z.boolean() }))
+      .mutation(async ({ input }) => {
+        const website = await getWebsiteById(input.websiteId);
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Website nicht gefunden" });
+        await updateWebsite(input.websiteId, { requiresAgeGate: input.enabled });
+        return { success: true, requiresAgeGate: input.enabled };
+      }),
+
+    /**
      * Admin: schickt der Kundin einen Magic-Link mit eingebettetem
      * Preview-Token zu ihrer fertigen Website. Sie loggt sich ein,
      * schaut die Vorschau an und kann direkt freischalten (Stripe).
@@ -2508,6 +2525,7 @@ export const appRouter = router({
               heroImageUrl,
               layoutStyle,
               layoutVersion: CURRENT_LAYOUT_VERSION,
+              requiresAgeGate: shouldRequireAgeGate(category, businessName),
             });
 
             const jobId = await createGenerationJob({
@@ -3170,11 +3188,12 @@ Kontext: ${input.context}`,
              }
           }
 
-          await updateWebsite(input.websiteId, { 
-            industry: newCategory, 
-            heroImageUrl, 
+          await updateWebsite(input.websiteId, {
+            industry: newCategory,
+            heroImageUrl,
             colorScheme,
-            websiteData: updatedWebsiteData
+            websiteData: updatedWebsiteData,
+            requiresAgeGate: shouldRequireAgeGate(newCategory, bizName),
           });
         }
 

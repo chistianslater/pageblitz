@@ -2,6 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { useParams } from "wouter";
 import { useEffect, useState } from "react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
+import AgeGate from "@/components/AgeGate";
 import CookieBanner from "@/components/CookieBanner";
 import ChatWidget from "@/components/ChatWidget";
 import BookingWidget from "@/components/BookingWidget";
@@ -128,6 +129,12 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
 
   return (
     <>
+      {/* FSK-18 Age-Gate: Self-Declaration vor dem Site-Content, wenn die
+          Branche Adult/Alkohol/Glücksspiel ist. Rendert nur wenn Flag aktiv
+          und Besucher noch nicht bestätigt hat (localStorage, 30 Tage). */}
+      {w?.requiresAgeGate && (
+        <AgeGate slug={effectiveSlug} businessName={business?.name} />
+      )}
       <WebsiteRenderer
         websiteData={websiteData}
         colorScheme={colorScheme}

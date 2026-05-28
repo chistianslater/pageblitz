@@ -103,6 +103,8 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   // GDPR marketing consent
   marketingConsent: boolean("marketingConsent").default(false),
   marketingConsentAt: bigint("marketingConsentAt", { mode: "number" }),
+  // FSK-18 / Age-Gate: Self-Declaration-Modal vor dem Site-Rendering
+  requiresAgeGate: boolean("requiresAgeGate").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

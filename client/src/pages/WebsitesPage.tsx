@@ -657,6 +657,7 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                         )}
                         <ProgressButton websiteId={w.id} />
                         <SupportChatButton websiteId={w.id} chatCount={(chatCounts as any)?.[w.id]} />
+                        <AgeGateToggle websiteId={w.id} enabled={!!w.requiresAgeGate} />
                         {w.customerEmail && w.status === "preview" && (
                           <SendActivationLinkButton websiteId={w.id} customerEmail={w.customerEmail} />
                         )}
@@ -1168,6 +1169,64 @@ function ProgressButton({ websiteId }: { websiteId: number }) {
             ))}
           </div>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── FSK-18 Age-Gate Toggle ─────────────────────────────────────────────────
+function AgeGateToggle({ websiteId, enabled }: { websiteId: number; enabled: boolean }) {
+  const [open, setOpen] = useState(false);
+  const utils = trpc.useUtils();
+  const mutation = trpc.website.setAgeGate.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.requiresAgeGate ? "Age-Gate aktiviert" : "Age-Gate deaktiviert");
+      utils.website.list.invalidate();
+      setOpen(false);
+    },
+    onError: (err) => toast.error("Fehler: " + err.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          title={enabled ? "FSK-18 Age-Gate aktiv" : "FSK-18 Age-Gate aus"}
+          className={enabled ? "border-rose-500/40 text-rose-300 hover:bg-rose-500/10" : ""}
+        >
+          {enabled ? "18+ ✓" : "18+"}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>FSK-18 Age-Gate</DialogTitle>
+          <DialogDescription>
+            Zeigt Besuchern vor dem Site-Content ein Modal mit Altersbestätigung
+            („Ich bin 18+"). Wird automatisch aktiviert bei Erotik-, Alkohol-,
+            Glücksspiel- und Tabak-Branchen. Hier kannst du es manuell überschreiben.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4 px-1">
+          <p className="text-sm text-foreground mb-2">
+            Aktueller Status: <strong>{enabled ? "Aktiv" : "Aus"}</strong>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Besucher müssen pro Browser einmal alle 30 Tage bestätigen.
+            Bei „Nein" werden sie auf google.de weitergeleitet.
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
+          <Button
+            onClick={() => mutation.mutate({ websiteId, enabled: !enabled })}
+            disabled={mutation.isPending}
+            variant={enabled ? "destructive" : "default"}
+          >
+            {mutation.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+            {enabled ? "Age-Gate deaktivieren" : "Age-Gate aktivieren"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
