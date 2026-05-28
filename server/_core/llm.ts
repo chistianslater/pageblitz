@@ -294,7 +294,8 @@ async function callLLM(params: InvokeParams, useBackup: boolean): Promise<Invoke
   // Detect Kimi/Moonshot API (primary only)
   const isKimi = !useBackup && (ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn"));
   // Backup model: gemini-2.0-flash (cheap, fast, reliable)
-  const model = useBackup ? "gemini-2.0-flash" : (isKimi ? "kimi-k2-turbo-preview" : "gemini-2.5-flash");
+  // Primary Kimi-Modell: kimi-k2-0711-preview (k2-turbo-preview wurde abgekündigt → 404)
+  const model = useBackup ? "gemini-2.0-flash" : (isKimi ? "kimi-k2-0711-preview" : "gemini-2.5-flash");
   const apiKey = useBackup ? ENV.backupApiKey : ENV.forgeApiKey;
 
   const payload: Record<string, unknown> = {
@@ -351,9 +352,13 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } catch (err: any) {
     const msg = err?.message ?? "";
     const is429 = msg.includes("429") || msg.includes("overloaded") || msg.includes("Too Many") || msg.includes("engine_overloaded");
-    // Only retry with backup if we have one configured and it was a rate-limit error
-    if (is429 && ENV.backupApiUrl && ENV.backupApiKey) {
-      console.warn("[LLM] Primary API rate-limited (429), retrying with backup model...");
+    const is404 = msg.includes("404") || msg.includes("Not found") || msg.includes("not_found") || msg.includes("Model not found");
+    const is5xx = /\b5\d{2}\b/.test(msg) || msg.includes("Internal Server Error") || msg.includes("Bad Gateway") || msg.includes("Service Unavailable");
+    const isAuth = msg.includes("Permission denied") || msg.includes("401") || msg.includes("403") || msg.includes("Invalid API key");
+    const shouldFallback = is429 || is404 || is5xx || isAuth;
+    if (shouldFallback && ENV.backupApiUrl && ENV.backupApiKey) {
+      const reason = is429 ? "rate-limited (429)" : is404 ? "model 404" : is5xx ? "server error (5xx)" : "auth error";
+      console.warn(`[LLM] Primary API ${reason}, retrying with backup model (gemini-2.0-flash)...`);
       return await callLLM(params, true);
     }
     throw err;
