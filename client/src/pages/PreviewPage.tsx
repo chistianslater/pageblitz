@@ -28,6 +28,14 @@ export default function PreviewPage() {
     { enabled: !!params.token }
   );
 
+  // Onboarding-Overrides (headlineFont, headlineSize, aboutPhotoUrl) damit die
+  // Vollbild-Vorschau dasselbe Aussehen hat wie die Inline-Vorschau im Onboarding.
+  const websiteIdForOnboarding = data?.website?.id;
+  const { data: onboardingData } = trpc.onboarding.get.useQuery(
+    { websiteId: websiteIdForOnboarding! },
+    { enabled: !!websiteIdForOnboarding },
+  );
+
   const colorScheme = useMemo(() => {
     if (!data) return null;
     return data.website.colorScheme as ColorScheme;
@@ -83,7 +91,12 @@ export default function PreviewPage() {
   }
 
   const websiteData = data.website.websiteData as WebsiteData;
-  const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
+  const heroImageUrl = (onboardingData as any)?.heroPhotoUrl
+    || ((data.website as any).heroImageUrl as string | null | undefined);
+  const aboutImageUrl = (onboardingData as any)?.aboutPhotoUrl
+    || ((data.website as any).aboutImageUrl as string | null | undefined);
+  const headlineFontOverride = (onboardingData as any)?.headlineFont || undefined;
+  const headlineSize = (onboardingData as any)?.headlineSize || undefined;
   const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
   const layoutVersion = (data.website as any).layoutVersion as number | null | undefined;
   const business = data.business;
@@ -129,6 +142,9 @@ export default function PreviewPage() {
         websiteData={websiteData}
         colorScheme={colorScheme}
         heroImageUrl={heroImageUrl}
+        aboutImageUrl={aboutImageUrl}
+        headlineFontOverride={headlineFontOverride}
+        headlineSize={headlineSize}
         layoutStyle={layoutStyle}
         layoutVersion={layoutVersion}
         businessPhone={business?.phone || undefined}
