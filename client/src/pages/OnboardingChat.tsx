@@ -703,7 +703,11 @@ const STEP_ORDER: ChatStep[] = [
 ];
 
 // Maps each onboarding step to the section ID used in the layout components.
-// Layout IDs come from PremiumLayoutsV2.tsx: hero, leistungen, ueber-uns, kontakt, galerie, speisekarte, preise
+// Layout IDs in PremiumLayoutsV2.tsx: hero, services, about, contact (Englisch!),
+// sowie die Add-On-Sections galerie, speisekarte, preise (Deutsch, historisch).
+// ACHTUNG: ursprünglich waren die Main-IDs auch Deutsch (leistungen, ueber-uns,
+// kontakt) – die Umstellung auf Englisch hat den Step↔Preview-Scroll-Sync
+// gebrochen, weil dieses Mapping nicht mitgezogen wurde.
 const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   welcome: null,
   businessCategory: "hero",
@@ -711,23 +715,23 @@ const STEP_TO_SECTION_ID: Record<ChatStep, string | null> = {
   brandColor: "hero",
   brandSecondaryColor: "hero",
   heroPhoto: "hero",
-  aboutPhoto: "ueber-uns",
+  aboutPhoto: "about",
   brandLogo: "hero",
   headlineFont: "hero",
   headlineSize: "hero",
   businessName: "hero",
   addressingMode: null,
   tagline: "hero",
-  description: "ueber-uns",
-  usp: "leistungen",
-  services: "leistungen",
-  targetAudience: "kontakt",
+  description: "about",
+  usp: "services",
+  services: "services",
+  targetAudience: "contact",
   legalOwner: null,
   legalStreet: null,
   legalZipCity: null,
   legalEmail: null,
   legalPhone: null,
-  openingHours: "kontakt",
+  openingHours: "contact",
   legalVat: null,
   addons: null,
   editAiChat: null,
