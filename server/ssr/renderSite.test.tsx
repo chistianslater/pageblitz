@@ -28,3 +28,70 @@ describe("renderSiteHtml", () => {
     expect(html).toContain("Massarbeit");
   });
 });
+
+describe("renderSiteHtml — Rechtsseiten (Impressum/Datenschutz)", () => {
+  test("pathname /impressum mit gefülltem impressumHtml rendert den Legal-Inhalt + Zurück-Link, nicht die Hauptseite", () => {
+    const data = {
+      ...getFixture("werkbank", "full"),
+      legal: { impressumHtml: "<p>Firma XY, Musterstraße 1</p>" },
+    };
+    const html = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: "/impressum",
+    });
+    expect(html).toContain("<p>Firma XY, Musterstraße 1</p>");
+    expect(html).toContain('href="/"');
+    expect(html).toContain("Zurück");
+    expect(html).not.toContain('id="leistungen"');
+    expect(html).not.toContain("Massarbeit");
+  });
+
+  test("pathname /impressum ohne legal-Feld zeigt den 404-Text", () => {
+    const data = getFixture("werkbank", "full");
+    const html = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: "/impressum",
+    });
+    expect(html).toContain("nicht gefunden");
+  });
+
+  test('pathname /impressum mit leerem impressumHtml ("") zeigt trotzdem den 404-Text', () => {
+    const data = {
+      ...getFixture("werkbank", "full"),
+      legal: { impressumHtml: "" },
+    };
+    const html = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: "/impressum",
+    });
+    expect(html).toContain("nicht gefunden");
+  });
+});
+
+describe("renderSiteHtml — Escaping", () => {
+  test('businessName und seo.title mit <script> und " erscheinen nur escaped im Head, JSON-LD enthält kein rohes </script> oder <', () => {
+    const base = getFixture("werkbank", "full");
+    const data = {
+      ...base,
+      businessName: '<script>alert(1)</script>"',
+      seo: {
+        ...base.seo,
+        title: '<script>alert(1)</script>"',
+      },
+    };
+    const html = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+    });
+    expect(html).not.toContain("<script>alert(1)</script>");
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;&quot;");
+
+    const jsonLdMatch = html.match(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
+    );
+    expect(jsonLdMatch).not.toBeNull();
+    const jsonLd = jsonLdMatch?.[1] ?? "";
+    expect(jsonLd).not.toContain("</script>");
+    expect(jsonLd).not.toContain("<");
+    expect(jsonLd).toContain("\\u003cscript");
+  });
+});

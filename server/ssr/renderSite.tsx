@@ -120,7 +120,10 @@ function renderLegalPage(
   title: string,
   bodyHtml: string | undefined
 ): string {
-  const content = bodyHtml ?? "<p>Diese Seite wurde nicht gefunden.</p>";
+  const content =
+    bodyHtml && bodyHtml.trim().length > 0
+      ? bodyHtml
+      : "<p>Diese Seite wurde nicht gefunden.</p>";
   return `<!doctype html>
 <html lang="de">
 <head>
