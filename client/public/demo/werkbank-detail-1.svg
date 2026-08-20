@@ -1,0 +1,37 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Warmes Werkstatt-Duoton-Placeholder, Eiche-Ton">
+  <defs>
+    <linearGradient id="werkbankDetail1Base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C7A788" />
+      <stop offset="50%" stop-color="#8A6B4E" />
+      <stop offset="100%" stop-color="#453329" />
+    </linearGradient>
+    <linearGradient id="detail1GrainFade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2A1F16" stop-opacity="0.16" />
+      <stop offset="50%" stop-color="#2A1F16" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#2A1F16" stop-opacity="0.16" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#werkbankDetail1Base)" />
+
+  <!-- Subtile, unregelmäßige vertikale Holzmaserung -->
+  <g stroke="url(#detail1GrainFade)" stroke-linecap="round" fill="none">
+    <path d="M 60 0 C 46 200, 78 440, 58 900" stroke-width="3" />
+    <path d="M 140 0 C 156 170, 122 410, 150 900" stroke-width="2" />
+    <path d="M 224 0 C 208 250, 242 510, 216 900" stroke-width="4" />
+    <path d="M 310 0 C 322 140, 292 370, 318 900" stroke-width="2" />
+    <path d="M 392 0 C 376 230, 410 490, 386 900" stroke-width="3" />
+    <path d="M 476 0 C 492 180, 460 420, 484 900" stroke-width="2" />
+    <path d="M 560 0 C 544 260, 578 530, 552 900" stroke-width="5" />
+    <path d="M 642 0 C 656 150, 628 390, 650 900" stroke-width="2" />
+    <path d="M 726 0 C 710 220, 742 470, 720 900" stroke-width="3" />
+    <path d="M 808 0 C 822 170, 792 410, 814 900" stroke-width="2" />
+    <path d="M 892 0 C 876 240, 908 500, 884 900" stroke-width="4" />
+    <path d="M 976 0 C 990 160, 960 400, 982 900" stroke-width="2" />
+    <path d="M 1058 0 C 1042 230, 1074 490, 1050 900" stroke-width="3" />
+    <path d="M 1140 0 C 1154 180, 1124 420, 1146 900" stroke-width="2" />
+  </g>
+
+  <!-- Sanftes Vignetten-Overlay für Tiefe -->
+  <rect width="1200" height="900" fill="#241A12" opacity="0.08" />
+</svg>

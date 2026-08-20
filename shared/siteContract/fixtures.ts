@@ -69,15 +69,15 @@ const WERKBANK_FULL: WebsiteDataV2 = {
       headline: "Projekte",
       images: [
         {
-          url: "/demo/werkbank-gallery-1.jpg",
+          url: "/demo/werkbank-hero.svg",
           alt: "Massivholztisch in einer Dortmunder Altbauwohnung",
         },
         {
-          url: "/demo/werkbank-gallery-2.jpg",
+          url: "/demo/werkbank-detail-1.svg",
           alt: "Maßgefertigter Einbauschrank aus Eiche",
         },
         {
-          url: "/demo/werkbank-gallery-3.jpg",
+          url: "/demo/werkbank-detail-2.svg",
           alt: "Restauriertes Sideboard aus den 1960ern",
         },
       ],

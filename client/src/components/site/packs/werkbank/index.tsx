@@ -181,13 +181,7 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-              gap: "12px",
-            }}
-          >
+          <div className="pb-wb-gallery">
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -244,7 +238,7 @@ function renderSection(
             </address>
           )}
           {section.openingHours && section.openingHours.length > 0 && (
-            <table>
+            <table className="pb-wb-hours">
               <tbody>
                 {section.openingHours.map(oh => (
                   <tr key={oh.day}>

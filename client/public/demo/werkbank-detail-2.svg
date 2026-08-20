@@ -1,0 +1,38 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Warmes Werkstatt-Duoton-Placeholder, dunkler Nussbaum-Ton">
+  <defs>
+    <linearGradient id="werkbankDetail2Base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8F8378" />
+      <stop offset="50%" stop-color="#544539" />
+      <stop offset="100%" stop-color="#2A211B" />
+    </linearGradient>
+    <linearGradient id="detail2GrainFade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1C1512" stop-opacity="0.18" />
+      <stop offset="50%" stop-color="#1C1512" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#1C1512" stop-opacity="0.18" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#werkbankDetail2Base)" />
+
+  <!-- Subtile, unregelmäßige vertikale Holzmaserung -->
+  <g stroke="url(#detail2GrainFade)" stroke-linecap="round" fill="none">
+    <path d="M 30 0 C 44 210, 12 450, 34 900" stroke-width="2" />
+    <path d="M 104 0 C 88 180, 122 420, 96 900" stroke-width="4" />
+    <path d="M 186 0 C 200 260, 168 500, 194 900" stroke-width="2" />
+    <path d="M 268 0 C 252 150, 286 390, 260 900" stroke-width="3" />
+    <path d="M 350 0 C 364 240, 332 480, 358 900" stroke-width="2" />
+    <path d="M 434 0 C 418 190, 452 430, 426 900" stroke-width="5" />
+    <path d="M 518 0 C 532 270, 500 520, 526 900" stroke-width="2" />
+    <path d="M 600 0 C 584 160, 618 400, 592 900" stroke-width="3" />
+    <path d="M 682 0 C 696 230, 664 470, 690 900" stroke-width="2" />
+    <path d="M 766 0 C 750 180, 784 420, 758 900" stroke-width="4" />
+    <path d="M 848 0 C 862 250, 830 500, 856 900" stroke-width="2" />
+    <path d="M 930 0 C 914 170, 948 410, 922 900" stroke-width="3" />
+    <path d="M 1014 0 C 1028 240, 996 480, 1022 900" stroke-width="2" />
+    <path d="M 1096 0 C 1080 190, 1114 430, 1088 900" stroke-width="3" />
+    <path d="M 1178 0 C 1192 260, 1160 500, 1186 900" stroke-width="2" />
+  </g>
+
+  <!-- Sanftes Vignetten-Overlay für Tiefe -->
+  <rect width="1200" height="900" fill="#120D0A" opacity="0.1" />
+</svg>
