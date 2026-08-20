@@ -34,6 +34,7 @@ import {
 import { listActiveWebsites, getWebsiteBySlugWithBusiness, updateOutreachEmail } from "../db";
 import { outreachEmails } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { registerSsrRoutes } from "../ssr/routes";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -419,6 +420,12 @@ async function startServer() {
     app.get("/site/:slug/datenschutz", injectMetaTags);
   }
   // ── End SEO Routes ──────────────────────────────────────────────────────────
+
+  // ── SSR-Routen (Dev-Preview + Kundenseiten-SSR hinter SSR_SITES-Flag) ───────
+  // MUSS vor dem SPA-Fallback (Vite-Middleware in dev, serveStatic()'s
+  // `app.use("*", ...)` in prod, server/_core/static.ts) registriert werden,
+  // damit sie überhaupt greifen kann, bevor jede Route auf index.html fällt.
+  registerSsrRoutes(app);
 
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {

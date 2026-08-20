@@ -25,7 +25,7 @@ const WERKBANK_FULL: WebsiteDataV2 = {
         "Schreinerei Brandt fertigt Möbel, Einbauten und Restaurierungen in Dortmund — von Hand, auf Maß, für die Ewigkeit gedacht.",
       ctaText: "Projekt anfragen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/werkbank-hero.jpg",
+      imageUrl: "/demo/werkbank-hero.svg",
     },
     {
       type: "services",
@@ -145,7 +145,7 @@ const WERKBANK_MINIMAL: WebsiteDataV2 = {
         "Schreinerei Brandt fertigt Möbel und Einbauten in Dortmund — auf Maß, von Hand.",
       ctaText: "Projekt anfragen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/werkbank-hero.jpg",
+      imageUrl: "/demo/werkbank-hero.svg",
     },
     {
       type: "services",
