@@ -1,0 +1,609 @@
+<meta charset="utf-8">
+<title>Pageblitz Stilkatalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Archivo+Black&family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Karla:wght@400;500&family=Inter+Tight:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500&family=Plus+Jakarta+Sans:wght@400;600;800&family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700&family=Playfair+Display:ital,wght@0,500;1,500&family=Lato:wght@300;400&family=Lora:ital,wght@0,500;1,500&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@500;700&family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,500;0,600;1,500&family=Outfit:wght@300;400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,500&display=swap">
+<style>
+  :root{ --bg:#FAF8F4; --ink:#1B1915; --muted:#6E6960; --hair:#E4E0D7; --card:#FFFFFF; --struck:#B8B2A6; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#151412; --ink:#EDEAE3; --muted:#9B968B; --hair:#2B2925; --card:#1D1C19; --struck:#5A564E; } }
+  :root[data-theme="dark"]{ --bg:#151412; --ink:#EDEAE3; --muted:#9B968B; --hair:#2B2925; --card:#1D1C19; --struck:#5A564E; }
+  *{box-sizing:border-box; margin:0}
+  body{background:var(--bg); color:var(--ink); font-family:'Archivo',system-ui,sans-serif; line-height:1.5}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 96px}
+  header.top{position:sticky; top:0; z-index:50; background:var(--bg); border-bottom:1px solid var(--hair)}
+  .topline{max-width:1080px; margin:0 auto; padding:14px 24px; display:flex; align-items:baseline; gap:16px; flex-wrap:wrap}
+  .topline h1{font-size:15px; font-weight:700}
+  .topline .count{font-family:'Space Mono',monospace; font-size:13px; color:var(--muted); margin-left:auto}
+  .intro{padding:56px 0 40px; max-width:660px}
+  .intro .kicker{font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:14px}
+  .intro h2{font-size:clamp(26px,4vw,38px); font-weight:700; letter-spacing:-.02em; line-height:1.12; text-wrap:balance; margin-bottom:16px}
+  .intro p{color:var(--muted); font-size:15.5px; margin-bottom:10px}
+  .intro strong{color:var(--ink); font-weight:600}
+  .pack{display:grid; grid-template-columns:270px 1fr; gap:28px; padding:40px 0; border-top:1px solid var(--hair); align-items:start}
+  @media(max-width:860px){ .pack{grid-template-columns:1fr} }
+  .pack-num{font-family:'Space Mono',monospace; font-size:13px; color:var(--muted); margin-bottom:8px}
+  .pack h3{font-size:24px; font-weight:700; margin-bottom:6px}
+  .pack .tag{font-size:14.5px; margin-bottom:10px; line-height:1.45}
+  .pack .desc{font-size:13.5px; color:var(--muted); margin-bottom:14px}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px}
+  .chips span{font-size:11.5px; border:1px solid var(--hair); border-radius:99px; padding:3px 10px; color:var(--muted)}
+  .dots{display:flex; gap:6px; margin-bottom:18px}
+  .dots i{width:22px; height:22px; border-radius:50%; border:1px solid rgba(127,127,127,.25); display:block}
+  .strike-btn{font-family:'Archivo',sans-serif; font-size:13px; font-weight:600; padding:8px 16px; border-radius:8px; border:1px solid var(--hair); background:transparent; color:var(--muted); cursor:pointer}
+  .strike-btn:hover{border-color:var(--muted)}
+  .strike-btn:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+  .pack.struck .frame,.pack.struck .tag,.pack.struck .desc,.pack.struck .chips,.pack.struck .dots{opacity:.28; filter:saturate(.3)}
+  .pack.struck h3{text-decoration:line-through; text-decoration-color:var(--struck); opacity:.5}
+  .pack.struck .strike-btn{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+  .frame{border:1px solid var(--hair); border-radius:12px; overflow:hidden; background:var(--card); box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 28px rgba(0,0,0,.05)}
+  .bbar{display:flex; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid var(--hair)}
+  .bbar i{width:9px; height:9px; border-radius:50%; background:var(--hair)}
+  .bbar .url{font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); margin-left:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .mock{min-height:430px; position:relative; overflow:hidden}
+  .mnav{display:flex; align-items:center; gap:18px; font-size:12px}
+  .mnav .links{display:flex; gap:14px; margin-left:auto}
+  .cta{display:inline-block; cursor:default}
+  footer.note{border-top:1px solid var(--hair); padding-top:28px; margin-top:8px; font-size:13.5px; color:var(--muted); max-width:660px}
+
+  /* 01 WERKBANK — Vertikal-Rail, Outline-Type, Diagonale, Marquee */
+  .m1{background:#E8E6E1; color:#191919; font-family:'Inter',sans-serif; padding:0 0 0 54px}
+  .m1 .rail{position:absolute; left:0; top:0; bottom:0; width:54px; background:#191919; color:#E8E6E1; display:flex; align-items:center; justify-content:center}
+  .m1 .rail b{writing-mode:vertical-rl; transform:rotate(180deg); font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.3em; font-weight:400}
+  .m1 .body{padding:20px 26px 70px}
+  .m1 .mnav{font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:.06em}
+  .m1 .logo{font-family:'Archivo Black'; font-size:15px}
+  .m1 h4{font-family:'Archivo Black'; text-transform:uppercase; line-height:.9; margin-top:34px; font-size:clamp(34px,6vw,62px); letter-spacing:-.01em}
+  .m1 h4 .line2{display:block; color:transparent; -webkit-text-stroke:2px #191919}
+  .m1 h4 .line3{display:block; color:#FF4D00}
+  .m1 .meta{display:flex; gap:26px; margin-top:18px; font-family:'Space Mono',monospace; font-size:11px; color:#4A4844; flex-wrap:wrap}
+  .m1 .photo{position:absolute; right:0; top:0; width:34%; height:78%; background:linear-gradient(200deg,#B7B1A6,#6E675C 55%,#3A3733); clip-path:polygon(28% 0,100% 0,100% 100%,0 100%); border-left:8px solid #FF4D00}
+  @media(max-width:640px){.m1 .photo{display:none}}
+  .m1 .marquee{position:absolute; left:-4%; right:-4%; bottom:16px; background:#191919; color:#E8E6E1; transform:rotate(-2deg); padding:10px 0; white-space:nowrap; overflow:hidden; font-family:'Archivo Black'; font-size:13px; text-transform:uppercase; letter-spacing:.08em}
+  .m1 .marquee em{font-style:normal; color:#FF4D00; padding:0 14px}
+  /* 02 PATINA — Doppel-Bogen, Initial-Wasserzeichen, Asymmetrie */
+  .m2{background:#FBF4E7; color:#2B2620; font-family:'Karla',sans-serif; padding:22px 28px 34px}
+  .m2 .init{position:absolute; right:-10px; top:-40px; font-family:'Fraunces',serif; font-style:italic; font-size:340px; color:rgba(176,90,54,.09); line-height:1; pointer-events:none}
+  .m2 .logo{font-family:'Fraunces',serif; font-weight:600; font-size:16px}
+  .m2 .grid{display:grid; grid-template-columns:1.2fr 1fr; gap:30px; margin-top:34px; align-items:center}
+  @media(max-width:640px){.m2 .grid{grid-template-columns:1fr}}
+  .m2 .eyebrow{font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B05A36}
+  .m2 h4{font-family:'Fraunces',serif; font-weight:400; font-size:clamp(30px,4.8vw,48px); line-height:1.06; margin-top:12px}
+  .m2 h4 em{font-style:italic; color:#B05A36}
+  .m2 .sub{margin-top:14px; font-size:13.5px; color:#6B5F4E; max-width:40ch}
+  .m2 .cta2{margin-top:20px; background:#B05A36; color:#FBF4E7; padding:11px 26px; border-radius:99px; font-size:13px}
+  .m2 .pics{position:relative; height:270px}
+  .m2 .arch{position:absolute; border-radius:200px 200px 14px 14px}
+  .m2 .a1{width:62%; height:100%; right:26%; background:linear-gradient(170deg,#D9A184,#B05A36 60%,#7C3A20)}
+  .m2 .a2{width:46%; height:64%; right:0; bottom:0; background:linear-gradient(170deg,#E9D3AE,#C9A468 70%,#8F6C3A); box-shadow:-10px -10px 0 #FBF4E7}
+  .m2 .note{position:absolute; left:0; bottom:-6px; font-family:'Fraunces',serif; font-style:italic; font-size:14px; color:#8A7A62; transform:rotate(-4deg)}
+  /* 03 KANZLEI — sichtbares Raster, Index, Paragraphen-Marke */
+  .m3{background:#F7F7F4; color:#101012; font-family:'Inter Tight',sans-serif; padding:22px 28px 30px; background-image:linear-gradient(90deg,#EBEBE6 1px,transparent 1px); background-size:25% 100%; background-position:12px 0}
+  .m3 .mnav{font-size:12px; font-weight:500; border-bottom:1px solid #101012; padding-bottom:14px}
+  .m3 .logo{font-weight:700; font-size:14px}
+  .m3 .idx{position:absolute; right:26px; top:74px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#1D3FBF; text-align:right; line-height:1.9}
+  .m3 .para{position:absolute; right:18px; bottom:-30px; font-family:'Source Serif 4',serif; font-size:190px; color:rgba(29,63,191,.07); line-height:1}
+  .m3 .mono{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; color:#1D3FBF; margin:44px 0 12px}
+  .m3 h4{font-size:clamp(32px,5.4vw,56px); font-weight:600; letter-spacing:-.035em; line-height:.98; max-width:14ch}
+  .m3 h4 span{color:#9C9C94}
+  .m3 .cols{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:36px; border-top:1px solid #101012; padding-top:14px}
+  @media(max-width:640px){.m3 .cols{grid-template-columns:1fr}}
+  .m3 .cols div{font-size:11.5px; color:#54544E}
+  .m3 .cols b{display:block; font-size:20px; color:#101012; font-weight:600; letter-spacing:-.02em}
+  .m3 .cols u{text-decoration:none; border-bottom:2px solid #1D3FBF; color:#101012; font-weight:600}
+  /* 04 SALON NOIR — Bild-Overlap, Goldrahmen, Vertikal-Label */
+  .m4{background:#121110; color:#F4EDE3; font-family:'Jost',sans-serif}
+  .m4 .inner{position:absolute; inset:12px; border:1px solid rgba(200,169,106,.45); padding:18px 24px}
+  .m4 .mnav{font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:#9C9488; justify-content:center; gap:26px}
+  .m4 .logo{font-family:'Cormorant Garamond',serif; font-size:18px; letter-spacing:.32em; color:#F4EDE3}
+  .m4 .photo{position:absolute; right:24px; top:64px; bottom:56px; width:38%; background:linear-gradient(180deg,#3A342C,#241F1A 40%,#0E0C0A); border:1px solid rgba(200,169,106,.3)}
+  @media(max-width:640px){.m4 .photo{opacity:.35}}
+  .m4 .vert{position:absolute; right:8px; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; font-size:9.5px; letter-spacing:.4em; color:#6E675C; text-transform:uppercase}
+  .m4 h4{position:absolute; left:24px; top:120px; font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500; font-size:clamp(34px,5.6vw,58px); line-height:1.04; max-width:11ch; z-index:2}
+  .m4 h4 b{font-weight:500; color:#C8A96A}
+  .m4 .sub{position:absolute; left:24px; bottom:96px; font-weight:300; font-size:13px; color:#B5AC9E; max-width:34ch; letter-spacing:.03em}
+  .m4 .cta2{position:absolute; left:24px; bottom:34px; border:1px solid #C8A96A; color:#C8A96A; padding:10px 26px; font-size:11px; letter-spacing:.2em; text-transform:uppercase}
+  /* 05 MORGENLICHT — Blob-Overlap, schwebende Karten, Wellen-Übergang */
+  .m5{background:#F4F8F7; color:#1C2B29; font-family:'Plus Jakarta Sans',sans-serif; padding:18px 24px 0}
+  .m5 .mnav{background:#fff; border-radius:99px; padding:10px 18px; font-size:12px; font-weight:600; box-shadow:0 2px 10px rgba(28,60,56,.06); position:relative; z-index:3}
+  .m5 .logo{color:#2E7E78; font-weight:800; font-size:13.5px}
+  .m5 .mnav .cta{background:#2E7E78; color:#fff; border-radius:99px; padding:6px 14px; font-size:11px}
+  .m5 .blob{position:absolute; right:-40px; top:50px; width:46%; height:300px; background:linear-gradient(160deg,#9CC8C2,#2E7E78 70%); border-radius:58% 42% 55% 45%/55% 48% 52% 45%}
+  @media(max-width:640px){.m5 .blob{opacity:.3}}
+  .m5 h4{position:relative; z-index:2; font-size:clamp(28px,4.6vw,44px); font-weight:800; letter-spacing:-.02em; line-height:1.1; margin-top:44px; max-width:15ch}
+  .m5 h4 em{font-style:normal; color:#2E7E78}
+  .m5 .sub{position:relative; z-index:2; margin-top:12px; font-size:13.5px; color:#5C6E6B; max-width:38ch}
+  .m5 .cta2{position:relative; z-index:2; margin-top:20px; background:#2E7E78; color:#fff; padding:12px 24px; border-radius:99px; font-weight:600; font-size:13.5px}
+  .m5 .float1{position:absolute; right:16%; top:110px; z-index:2; background:#fff; border-radius:16px; padding:12px 16px; font-size:11px; color:#5C6E6B; box-shadow:0 8px 24px rgba(28,60,56,.14); transform:rotate(3deg)}
+  .m5 .float2{position:absolute; right:6%; top:230px; z-index:2; background:#fff; border-radius:16px; padding:12px 16px; font-size:11px; color:#5C6E6B; box-shadow:0 8px 24px rgba(28,60,56,.14); transform:rotate(-2deg)}
+  .m5 .float1 b,.m5 .float2 b{display:block; color:#1C2B29; font-size:12px}
+  @media(max-width:640px){.m5 .float1,.m5 .float2{display:none}}
+  .m5 svg.wave{display:block; margin:34px -24px 0; width:calc(100% + 48px)}
+  .m5 .band{background:#DCEAE7; margin:0 -24px; padding:14px 24px 18px; display:flex; gap:18px; font-size:11.5px; font-weight:600; color:#2E7E78; flex-wrap:wrap}
+  /* 06 MARKTPLATZ — Sticker-Chaos, Konfetti, Bogenkante */
+  .m6{background:#FFF8EC; color:#262133; font-family:'Nunito',sans-serif; padding:20px 26px 46px; background-image:radial-gradient(#FFD98A 2px,transparent 2.5px),radial-gradient(#FFC0B5 2px,transparent 2.5px); background-size:90px 90px,120px 120px; background-position:0 0,45px 60px}
+  .m6 .mnav{font-weight:700; font-size:12.5px}
+  .m6 .logo{font-family:'Baloo 2'; font-weight:800; font-size:17px; color:#FF6B57}
+  .m6 .card{background:#fff; border-radius:22px; padding:26px 28px 30px; margin-top:30px; max-width:66%; transform:rotate(-1.2deg); box-shadow:0 6px 0 #F0E4CC}
+  @media(max-width:640px){.m6 .card{max-width:100%}}
+  .m6 h4{font-family:'Baloo 2'; font-weight:800; font-size:clamp(28px,4.8vw,44px); line-height:1.04}
+  .m6 h4 em{font-style:normal; color:#FF6B57; position:relative; display:inline-block}
+  .m6 h4 em svg{position:absolute; left:0; right:0; bottom:-8px; width:100%}
+  .m6 .sub{margin-top:12px; font-size:13.5px; color:#5D5570}
+  .m6 .cta2{margin-top:18px; background:#FF6B57; color:#fff; padding:12px 24px; border-radius:14px; font-weight:800; font-size:14px; font-family:'Baloo 2'; box-shadow:0 4px 0 #D94A37}
+  .m6 .st1{position:absolute; right:11%; top:88px; background:#FFC838; border-radius:99px; padding:18px 16px; font-family:'Baloo 2'; font-weight:800; font-size:12px; line-height:1.1; transform:rotate(9deg); text-align:center; box-shadow:0 3px 0 #E0A81C}
+  .m6 .st2{position:absolute; right:24%; bottom:64px; background:#3E8E7E; color:#fff; border-radius:14px; padding:10px 14px; font-weight:700; font-size:11.5px; transform:rotate(-7deg)}
+  .m6 .st3{position:absolute; right:6%; bottom:120px; background:#fff; border:2px dashed #FF6B57; border-radius:14px; padding:9px 13px; font-weight:700; font-size:11px; color:#FF6B57; transform:rotate(4deg)}
+  @media(max-width:640px){.m6 .st1,.m6 .st2,.m6 .st3{display:none}}
+  .m6 .scallop{position:absolute; left:0; right:0; bottom:-2px; height:22px; background:radial-gradient(circle at 12px -6px,transparent 16px,#FFE9C4 17px); background-size:44px 32px}
+  /* 07 GUSTO — Doppelrahmen, Tellerkreis-Overlap, Menü-Zeile */
+  .m7{background:#16110D; color:#F3E9DB; font-family:'Lato',sans-serif}
+  .m7 .inner{position:absolute; inset:14px; border:1px solid rgba(201,155,74,.5); outline:1px solid rgba(201,155,74,.25); outline-offset:4px; padding:18px 26px; text-align:center}
+  .m7 .mnav{justify-content:center; gap:24px; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:#A08D6F}
+  .m7 .logo{font-family:'Playfair Display',serif; font-size:17px; color:#F3E9DB; letter-spacing:.05em}
+  .m7 .eyebrow{margin-top:30px; font-size:10px; letter-spacing:.34em; color:#C99B4A; text-transform:uppercase}
+  .m7 h4{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(28px,4.6vw,44px); line-height:1.12; margin-top:10px}
+  .m7 h4 em{color:#C99B4A}
+  .m7 .sub{font-weight:300; font-size:13px; color:#B9A88F; max-width:44ch; margin:14px auto 0}
+  .m7 .menu{margin:22px auto 0; max-width:46ch; text-align:left; font-size:12px; color:#D9C9AF}
+  .m7 .menu div{display:flex; align-items:baseline; gap:8px; padding:4px 0}
+  .m7 .menu i{flex:1; border-bottom:1px dotted #4A3C28; font-style:normal}
+  .m7 .menu b{color:#C99B4A; font-weight:400}
+  .m7 .plate{position:absolute; right:-70px; top:50%; transform:translateY(-50%); width:200px; height:200px; border-radius:50%; background:radial-gradient(circle at 38% 32%,#6E4A2A,#3A2716 55%,#241A0F 75%); border:10px solid #241C15; box-shadow:0 0 0 1px rgba(201,155,74,.4)}
+  @media(max-width:700px){.m7 .plate{display:none}}
+  .m7 .cta2{display:inline-block; margin-top:20px; background:#C99B4A; color:#16110D; padding:11px 28px; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase}
+  /* 08 LANDGUT — Pflanzreihen-Bögen, Saison-Ticker */
+  .m8{background:#F6F3EA; color:#2E2A20; font-family:'Karla',sans-serif; padding:22px 28px 0}
+  .m8 .logo{font-family:'Lora',serif; font-weight:500; font-size:15.5px}
+  .m8 .grid{display:grid; grid-template-columns:1.2fr 1fr; gap:30px; margin-top:30px; align-items:end}
+  @media(max-width:640px){.m8 .grid{grid-template-columns:1fr}}
+  .m8 .eyebrow{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#4A6741}
+  .m8 h4{font-family:'Lora',serif; font-weight:500; font-size:clamp(28px,4.6vw,44px); line-height:1.1; margin-top:10px}
+  .m8 h4 em{font-style:italic; color:#4A6741}
+  .m8 .sub{margin-top:12px; font-size:13.5px; color:#6D6656; max-width:38ch}
+  .m8 .cta2{display:inline-block; margin:18px 0 26px; background:#4A6741; color:#F6F3EA; padding:11px 24px; border-radius:99px; font-size:13px}
+  .m8 .rows{display:flex; gap:12px; align-items:end; height:250px}
+  .m8 .rows i{flex:1; border-radius:120px 120px 0 0; display:block}
+  .m8 .r1{height:96%; background:linear-gradient(170deg,#8FA872,#4A6741 65%,#33492C)}
+  .m8 .r2{height:70%; background:linear-gradient(170deg,#C9BC8F,#8F8352 70%)}
+  .m8 .r3{height:84%; background:linear-gradient(170deg,#7C9468,#41593A 70%)}
+  .m8 .ticker{margin:0 -28px; background:#4A6741; color:#F6F3EA; padding:11px 0; white-space:nowrap; overflow:hidden; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase}
+  .m8 .ticker em{font-style:normal; opacity:.55; padding:0 12px}
+  /* 09 ATELIER — Magazin-Cover, Masthead, Bild+Caption-Raster */
+  .m9{background:#fff; color:#0F0F0F; font-family:'Inter',sans-serif; padding:18px 26px 26px}
+  .m9 .masthead{font-family:'Instrument Serif',serif; font-size:clamp(40px,7.4vw,76px); line-height:.95; letter-spacing:-.01em; border-bottom:3px solid #0F0F0F; padding-bottom:10px}
+  .m9 .masthead b{color:#E0301E; font-weight:400}
+  .m9 .meta{display:flex; justify-content:space-between; gap:12px; font-family:'Space Mono',monospace; font-size:10.5px; color:#555550; border-bottom:1px solid #0F0F0F; padding:8px 0; flex-wrap:wrap}
+  .m9 .cover{display:grid; grid-template-columns:1.5fr 1fr; gap:0; margin-top:0; border-bottom:3px solid #0F0F0F}
+  @media(max-width:640px){.m9 .cover{grid-template-columns:1fr}}
+  .m9 .img{height:230px; background:linear-gradient(200deg,#D8D8D3,#8A8A85 50%,#3A3A38); position:relative; border-right:1px solid #0F0F0F}
+  .m9 .img b{position:absolute; left:14px; bottom:12px; font-family:'Instrument Serif',serif; font-style:italic; font-size:26px; color:#fff; font-weight:400; line-height:1.1}
+  .m9 .capcol{padding:16px 0 16px 18px; display:flex; flex-direction:column; gap:12px}
+  .m9 .capcol .n{font-family:'Space Mono',monospace; font-size:10.5px; color:#E0301E}
+  .m9 .capcol p{font-size:12px; color:#555550; line-height:1.55}
+  .m9 .capcol .lnk{font-family:'Space Mono',monospace; font-size:11.5px; font-weight:700; border-bottom:2px solid #0F0F0F; align-self:flex-start; padding-bottom:2px; margin-top:auto}
+  /* 10 KLARWERK — Bento mit Terminal-Zelle, Status */
+  .m10{background:#fff; color:#14171C; font-family:'Inter',sans-serif; padding:20px 26px 26px}
+  .m10 .mnav{font-size:12.5px; font-weight:500}
+  .m10 .logo{font-family:'Space Grotesk'; font-weight:700; font-size:14.5px}
+  .m10 .mnav .cta{background:#3B5BFD; color:#fff; border-radius:8px; padding:7px 14px; font-size:11.5px; font-weight:600}
+  .m10 h4{font-family:'Space Grotesk'; font-weight:700; font-size:clamp(26px,4.2vw,40px); letter-spacing:-.03em; line-height:1.05; margin-top:30px; max-width:18ch}
+  .m10 h4 em{font-style:normal; color:#3B5BFD}
+  .m10 .bento{display:grid; grid-template-columns:1.3fr 1fr 1fr; grid-template-rows:auto auto; gap:10px; margin-top:22px}
+  @media(max-width:640px){.m10 .bento{grid-template-columns:1fr}}
+  .m10 .term{grid-row:span 2; background:#14171C; border-radius:14px; padding:14px 16px; font-family:'Space Mono',monospace; font-size:10.5px; color:#7EE787; line-height:1.9}
+  .m10 .term .dim{color:#5B6472}
+  .m10 .cell{background:#F2F4F7; border-radius:14px; padding:13px 15px; font-size:11px; color:#5B6472}
+  .m10 .cell b{display:block; font-family:'Space Grotesk'; font-size:18px; color:#14171C; letter-spacing:-.02em}
+  .m10 .cell.hi{background:#3B5BFD; color:#C9D4FF}
+  .m10 .cell.hi b{color:#fff}
+  .m10 .cell .ok{display:inline-block; width:7px; height:7px; border-radius:50%; background:#22B573; margin-right:6px}
+  /* 11 VERVE — Stroke-Repeat-BG, Tape-Streifen, Skew-Panel */
+  .m11{background:#101114; color:#F5F5F2; font-family:'Inter',sans-serif; padding:20px 26px 30px}
+  .m11 .ghostword{position:absolute; left:-20px; top:88px; font-family:'Bebas Neue'; font-size:150px; line-height:.82; color:transparent; -webkit-text-stroke:1px #26282E; white-space:nowrap; pointer-events:none}
+  .m11 .mnav{font-size:12px; font-weight:600; position:relative; z-index:2}
+  .m11 .logo{font-family:'Bebas Neue'; font-size:19px; letter-spacing:.06em; color:#D4F542}
+  .m11 h4{position:relative; z-index:2; font-family:'Bebas Neue'; font-size:clamp(46px,8vw,80px); line-height:.88; margin-top:34px}
+  .m11 h4 em{font-style:normal; color:#101114; background:#D4F542; padding:0 12px; display:inline-block; transform:skewX(-6deg)}
+  .m11 .sub{position:relative; z-index:2; margin-top:14px; font-size:13px; color:#9DA0A8; max-width:40ch}
+  .m11 .cta2{position:relative; z-index:2; display:inline-block; margin-top:18px; background:#D4F542; color:#101114; padding:11px 22px; font-weight:700; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; transform:skewX(-6deg)}
+  .m11 .panel{position:absolute; right:-40px; top:60px; width:36%; height:70%; background:linear-gradient(200deg,#3E4048,#1C1E24 60%); transform:skewX(-6deg); border-left:4px solid #D4F542; z-index:1}
+  @media(max-width:640px){.m11 .panel{display:none}}
+  .m11 .tape{position:absolute; right:-30px; bottom:44px; background:#D4F542; color:#101114; font-family:'Bebas Neue'; font-size:14px; letter-spacing:.14em; padding:6px 40px; transform:rotate(-8deg); z-index:2}
+  /* 12 ZUNFT — Ornament-Bordüre, Stempel-Overlap, Punktlinien */
+  .m12{background:#F5EFE2; color:#2A2118; font-family:'Karla',sans-serif; padding:0; text-align:center}
+  .m12 .borde{border-bottom:1px solid #B98A2F; padding:8px 0; color:#B98A2F; font-size:9px; letter-spacing:.9em; overflow:hidden; white-space:nowrap}
+  .m12 .body{padding:16px 28px 30px; position:relative}
+  .m12 .mnav{justify-content:center; gap:22px; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:#7A6A52}
+  .m12 .logo{font-family:'Crimson Pro',serif; font-weight:600; font-size:17px; color:#5E1F22; letter-spacing:.04em}
+  .m12 .rule2{width:180px; margin:22px auto 0; border-top:1px solid #2A2118; border-bottom:1px solid #2A2118; height:5px}
+  .m12 h4{font-family:'Crimson Pro',serif; font-weight:500; font-size:clamp(32px,5.2vw,50px); line-height:1.06; margin-top:18px; position:relative; display:inline-block}
+  .m12 h4 em{font-style:italic; color:#5E1F22}
+  .m12 .stamp{position:absolute; right:-64px; top:-26px; width:84px; height:84px; border-radius:50%; border:2px solid #5E1F22; color:#5E1F22; display:flex; align-items:center; justify-content:center; font-size:9px; letter-spacing:.16em; text-transform:uppercase; line-height:1.5; transform:rotate(12deg); opacity:.85}
+  @media(max-width:640px){.m12 .stamp{display:none}}
+  .m12 .sub{margin:12px auto 0; font-size:13px; color:#7A6A52; max-width:46ch}
+  .m12 .sorte{margin:20px auto 0; max-width:40ch; text-align:left; font-size:12px; color:#4A3E30}
+  .m12 .sorte div{display:flex; align-items:baseline; gap:8px; padding:3px 0}
+  .m12 .sorte i{flex:1; border-bottom:1px dotted #B98A2F; font-style:normal}
+  .m12 .cta2{display:inline-block; margin-top:18px; background:#5E1F22; color:#F5EFE2; padding:11px 26px; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase}
+  /* 13 SCHIMMER — Orbs, Glaskarte, Ringe */
+  .m13{background:#FDF7FA; color:#241E2A; font-family:'Outfit',sans-serif; padding:20px 26px 30px}
+  .m13 .orb1{position:absolute; top:-90px; right:-70px; width:360px; height:360px; border-radius:50%; background:radial-gradient(circle at 40% 40%,rgba(232,160,191,.55),rgba(182,156,255,.3) 55%,transparent 75%)}
+  .m13 .orb2{position:absolute; bottom:-120px; left:-80px; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle at 60% 40%,rgba(182,156,255,.35),transparent 70%)}
+  .m13 .ring{position:absolute; right:16%; bottom:20%; width:120px; height:120px; border-radius:50%; border:1px solid rgba(139,108,232,.4)}
+  .m13 .mnav{font-size:12.5px; position:relative; z-index:2}
+  .m13 .logo{font-weight:600; font-size:15px; letter-spacing:.14em; text-transform:uppercase}
+  .m13 .glass{position:relative; z-index:2; margin-top:36px; max-width:70%; background:rgba(255,255,255,.55); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.9); border-radius:24px; padding:26px 28px 28px; box-shadow:0 14px 40px rgba(139,108,232,.12)}
+  @media(max-width:640px){.m13 .glass{max-width:100%}}
+  .m13 h4{font-weight:300; font-size:clamp(30px,5vw,46px); letter-spacing:-.02em; line-height:1.05}
+  .m13 h4 em{font-style:normal; font-weight:600; background:linear-gradient(100deg,#D4749C,#8B6CE8); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .m13 .sub{margin-top:12px; font-size:13.5px; color:#6E6377; max-width:40ch}
+  .m13 .row{display:flex; gap:12px; margin-top:20px; flex-wrap:wrap}
+  .m13 .cta2{background:linear-gradient(100deg,#D4749C,#8B6CE8); color:#fff; padding:11px 24px; border-radius:99px; font-weight:600; font-size:13px}
+  .m13 .ghost{border:1px solid #E5D5DE; border-radius:99px; padding:10px 20px; font-size:12.5px; color:#6E6377}
+  .m13 .chip{position:absolute; right:10%; top:110px; z-index:2; background:rgba(255,255,255,.7); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.9); border-radius:99px; padding:9px 16px; font-size:11.5px; color:#6E6377; transform:rotate(3deg)}
+  @media(max-width:640px){.m13 .chip{display:none}}
+  /* 14 FUNDAMENT — Grenzüberschreitende Headline, Muster-Panel */
+  .m14{background:#fff; color:#14263F; font-family:'Inter',sans-serif}
+  .m14 .navy{position:absolute; right:0; top:0; bottom:0; width:42%; background:#14263F; background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 28px),repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 28px)}
+  @media(max-width:640px){.m14 .navy{width:24%}}
+  .m14 .body{position:absolute; inset:0; padding:20px 26px}
+  .m14 .mnav{font-size:12px; font-weight:500; width:56%}
+  .m14 .logo{font-family:'Source Serif 4',serif; font-weight:600; font-size:15px}
+  .m14 h4{position:absolute; left:26px; top:100px; font-family:'Source Serif 4',serif; font-weight:500; font-size:clamp(32px,5.6vw,58px); line-height:1.04; max-width:13ch; z-index:2}
+  .m14 h4 em{font-style:italic; color:#A8894C}
+  .m14 .sub{position:absolute; left:26px; bottom:110px; font-size:13px; color:#5A6A80; max-width:34ch}
+  .m14 .cta2{position:absolute; left:26px; bottom:44px; background:#14263F; color:#fff; padding:12px 22px; font-size:12.5px; font-weight:600}
+  .m14 .photo{position:absolute; right:34%; top:150px; width:24%; height:150px; background:linear-gradient(200deg,#B9C6D8,#6E82A0 55%,#31445F); box-shadow:0 18px 40px rgba(20,38,63,.3); z-index:1}
+  @media(max-width:640px){.m14 .photo{display:none}}
+  .m14 .stats{position:absolute; right:26px; bottom:36px; width:calc(42% - 52px); color:#fff; z-index:2}
+  @media(max-width:640px){.m14 .stats{display:none}}
+  .m14 .stats div{border-top:1px solid rgba(255,255,255,.25); padding:10px 0; font-size:11px; color:#93A5BD}
+  .m14 .stats b{display:block; font-family:'Source Serif 4',serif; font-size:22px; color:#fff; font-weight:500}
+</style>
+
+<header class="top"><div class="topline">
+  <h1>Pageblitz Stilkatalog</h1>
+  <span style="font-size:13px;color:var(--muted)">Runde 2 — jede Vorlage mit eigener Komposition</span>
+  <span class="count" id="count">14 aktiv · 0 gestrichen</span>
+</div></header>
+
+<div class="wrap">
+  <section class="intro">
+    <p class="kicker">Teilprojekt A — Style Packs · Runde 2</p>
+    <h2>Gleiche Stile, aber keine Baukasten-Schablone mehr.</h2>
+    <p>Dein Einwand aus Runde 1: alles folgte demselben Schema (Nav → Headline → Button). Jetzt hat <strong>jedes Pack eine eigene strukturelle Signatur</strong>: Vertikal-Rails, Magazin-Mastheads, Sticker, Goldrahmen, Bild-Overlaps, Marquees, sichtbare Raster. Genauso wird es später im Code funktionieren — Style Packs liefern nicht nur Farben und Schriften, sondern eigene Kompositionen.</p>
+    <p>Ziel bleibt: <strong>10–12 bleiben übrig.</strong> Streiche im Katalog und nenn mir die Nummern.</p>
+  </section>
+
+  <section class="pack" id="p01"><aside>
+    <div class="pack-num">01</div><h3>Werkbank</h3>
+    <p class="tag">Beton, Stahl und eine Signalfarbe — Typografie wie ein Werkstück.</p>
+    <p class="desc">Vertikale Werkstatt-Leiste, Outline-Zeile, diagonal beschnittenes Bild, laufendes Leistungs-Band.</p>
+    <div class="chips"><span>Schreinerei</span><span>Bau</span><span>Elektro</span><span>KFZ</span><span>Metallbau</span></div>
+    <div class="dots"><i style="background:#191919"></i><i style="background:#FF4D00"></i><i style="background:#E8E6E1"></i><i style="background:#fff"></i></div>
+    <button class="strike-btn" data-target="p01">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">schreinerei-brandt.pageblitz.de</span></div>
+    <div class="mock m1">
+      <div class="rail"><b>SCHREINEREI · DORTMUND · SEIT 2004</b></div>
+      <div class="photo"></div>
+      <div class="body">
+        <div class="mnav"><span class="logo">Brandt</span><div class="links"><span>Projekte</span><span>Werkstatt</span></div></div>
+        <h4>Massarbeit<span class="line2">aus Holz.</span><span class="line3">Punkt.</span></h4>
+        <div class="meta"><span>→ Möbelbau</span><span>→ Innenausbau</span><span>→ Restaurierung</span></div>
+      </div>
+      <div class="marquee">Möbelbau <em>✕</em> Innenausbau <em>✕</em> Restaurierung <em>✕</em> Möbelbau <em>✕</em> Innenausbau <em>✕</em> Restaurierung <em>✕</em> Möbelbau</div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p02"><aside>
+    <div class="pack-num">02</div><h3>Patina</h3>
+    <p class="tag">Pergament, Terrakotta und Serifenkursive — wie ein gut gealtertes Journal.</p>
+    <p class="desc">Riesiges Initial-Wasserzeichen, zwei überlappende Bogen-Bilder, handschriftliche Randnotiz.</p>
+    <div class="chips"><span>Heilpraktik</span><span>Naturkosmetik</span><span>Yoga</span><span>Hofladen</span></div>
+    <div class="dots"><i style="background:#FBF4E7"></i><i style="background:#B05A36"></i><i style="background:#2B2620"></i><i style="background:#EFE5D2"></i></div>
+    <button class="strike-btn" data-target="p02">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">naturheilpraxis-voss.pageblitz.de</span></div>
+    <div class="mock m2">
+      <div class="init">A</div>
+      <div class="mnav"><span class="logo">Annelie Voss</span><div class="links"><span>Behandlungen</span><span>Über mich</span><span>Termine</span></div></div>
+      <div class="grid"><div>
+        <p class="eyebrow">Naturheilkunde · Freiburg</p>
+        <h4>Heilung beginnt mit <em>Zuhören.</em></h4>
+        <p class="sub">Ganzheitliche Begleitung für Körper und Kopf — in einer Praxis, in der Sie kein Fall sind, sondern ein Mensch.</p>
+        <span class="cta cta2">Erstgespräch vereinbaren</span>
+      </div><div class="pics">
+        <div class="arch a1"></div><div class="arch a2"></div>
+        <div class="note">— die Praxis am Lorettoberg</div>
+      </div></div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p03"><aside>
+    <div class="pack-num">03</div><h3>Kanzlei</h3>
+    <p class="tag">Weißraum, Hairlines und ein tiefes Blau — Ordnung als Ästhetik.</p>
+    <p class="desc">Sichtbares Spaltenraster, Mono-Seitenindex, riesige Paragraphen-Marke als Wasserzeichen.</p>
+    <div class="chips"><span>Steuerberatung</span><span>Recht</span><span>Beratung</span><span>Finanzen</span></div>
+    <div class="dots"><i style="background:#F7F7F4"></i><i style="background:#101012"></i><i style="background:#1D3FBF"></i><i style="background:#D8D8D2"></i></div>
+    <button class="strike-btn" data-target="p03">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">roth-weber.pageblitz.de</span></div>
+    <div class="mock m3">
+      <div class="para">§</div>
+      <div class="mnav"><span class="logo">Roth &amp; Weber</span><div class="links"><span>Leistungen</span><span>Kanzlei</span><span>Mandant werden</span></div></div>
+      <div class="idx">KANZLEI FÜR<br>STEUERRECHT<br>— 01 / 04</div>
+      <p class="mono">KÖLN · SEIT 1998</p>
+      <h4>Klarheit<br>in <span>Zahlen.</span></h4>
+      <div class="cols">
+        <div><b>250+</b>laufende Mandate</div>
+        <div><b>4 Partner</b>ein fester Ansprechpartner</div>
+        <div><u>Erstgespräch anfragen →</u></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p04"><aside>
+    <div class="pack-num">04</div><h3>Salon Noir</h3>
+    <p class="tag">Fast-Schwarz, Champagner und kursive Serifen — Understatement mit Glanz.</p>
+    <p class="desc">Goldener Passepartout-Rahmen, Headline überlappt das Porträt, vertikales Seitenlabel.</p>
+    <div class="chips"><span>Friseur</span><span>Barbier</span><span>Tattoo</span><span>Fotografie</span></div>
+    <div class="dots"><i style="background:#121110"></i><i style="background:#C8A96A"></i><i style="background:#F4EDE3"></i><i style="background:#2A2724"></i></div>
+    <button class="strike-btn" data-target="p04">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">noir-haarstudio.pageblitz.de</span></div>
+    <div class="mock m4">
+      <div class="inner">
+        <div class="mnav"><span>Leistungen</span><span class="logo">NOIR</span><span>Termine</span></div>
+        <div class="photo"></div>
+        <h4>Handwerk <b>für</b> Haar.</h4>
+        <p class="sub">Schnitt, Farbe und Pflege auf Ateliers-Niveau — mitten in München.</p>
+        <span class="cta cta2">Termin buchen</span>
+        <div class="vert">MAXVORSTADT · MÜNCHEN</div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p05"><aside>
+    <div class="pack-num">05</div><h3>Morgenlicht</h3>
+    <p class="tag">Helles Salbeigrün, runde Formen, viel Luft — beruhigend wie ein guter Empfang.</p>
+    <p class="desc">Organischer Bild-Blob, schwebende Info-Karten, Wellen-Übergang in die nächste Sektion.</p>
+    <div class="chips"><span>Zahnarzt</span><span>Physio</span><span>Therapie</span><span>Pflege</span></div>
+    <div class="dots"><i style="background:#F4F8F7"></i><i style="background:#2E7E78"></i><i style="background:#1C2B29"></i><i style="background:#DCEAE7"></i></div>
+    <button class="strike-btn" data-target="p05">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">praxis-dr-sommer.pageblitz.de</span></div>
+    <div class="mock m5">
+      <div class="blob"></div>
+      <div class="mnav"><span class="logo">Dr. Sommer</span><div class="links"><span>Leistungen</span><span>Team</span><span>Praxis</span></div><span class="cta">Termin</span></div>
+      <div class="float1"><b>Heute geöffnet</b>8:00 – 18:00 Uhr</div>
+      <div class="float2"><b>★ 4,9</b>128 Google-Bewertungen</div>
+      <h4>Ein Lächeln beginnt mit <em>Vertrauen.</em></h4>
+      <p class="sub">Moderne Zahnmedizin in Hamburg-Eppendorf — gründlich erklärt, sanft behandelt.</p>
+      <span class="cta cta2">Online Termin buchen</span>
+      <svg class="wave" viewBox="0 0 600 30" preserveAspectRatio="none" height="30"><path d="M0,18 C100,32 200,2 300,14 C400,26 500,6 600,16 L600,30 L0,30 Z" fill="#DCEAE7"/></svg>
+      <div class="band"><span>Prophylaxe</span><span>Implantate</span><span>Kinderzahnheilkunde</span><span>Angstpatienten</span></div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p06"><aside>
+    <div class="pack-num">06</div><h3>Marktplatz</h3>
+    <p class="tag">Bonbonfarben, runde fette Buchstaben, Sticker — Freude ab der ersten Sekunde.</p>
+    <p class="desc">Konfetti-Grund, gekippte Inhaltskarte, drei Sticker, Kritzel-Unterstreichung, Bogenkante.</p>
+    <div class="chips"><span>Kita</span><span>Musikschule</span><span>Hundeschule</span><span>Eisdiele</span></div>
+    <div class="dots"><i style="background:#FFF8EC"></i><i style="background:#FF6B57"></i><i style="background:#FFC838"></i><i style="background:#262133"></i></div>
+    <button class="strike-btn" data-target="p06">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">musikschule-tonleiter.pageblitz.de</span></div>
+    <div class="mock m6">
+      <div class="mnav"><span class="logo">Tonleiter</span><div class="links"><span>Kurse</span><span>Lehrer</span><span>Preise</span></div></div>
+      <div class="card">
+        <h4>Lernen, das <em>Spaß<svg viewBox="0 0 120 12" height="10"><path d="M2,8 Q20,2 40,7 T80,6 T118,7" fill="none" stroke="#FFC838" stroke-width="4" stroke-linecap="round"/></svg></em> macht!</h4>
+        <p class="sub">Musikschule Tonleiter in Nürnberg — Klavier, Gitarre und Gesang für alle ab 4 Jahren.</p>
+        <span class="cta cta2">Schnupperstunde buchen</span>
+      </div>
+      <div class="st1">1. Stunde<br>gratis!</div>
+      <div class="st2">Ohne Vorkenntnisse</div>
+      <div class="st3">ab 4 Jahren</div>
+      <div class="scallop"></div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p07"><aside>
+    <div class="pack-num">07</div><h3>Gusto</h3>
+    <p class="tag">Espresso-Dunkel, warmes Gold, kursive Serifen — ein Abend in einem Satz.</p>
+    <p class="desc">Doppelter Goldrahmen wie eine Menükarte, Teller ragt in den Rahmen, Gerichte mit Punktlinien.</p>
+    <div class="chips"><span>Restaurant</span><span>Weinbar</span><span>Catering</span><span>Abend-Café</span></div>
+    <div class="dots"><i style="background:#16110D"></i><i style="background:#C99B4A"></i><i style="background:#F3E9DB"></i><i style="background:#241C15"></i></div>
+    <button class="strike-btn" data-target="p07">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">trattoria-lucia.pageblitz.de</span></div>
+    <div class="mock m7">
+      <div class="inner">
+        <div class="mnav"><span>Menü</span><span class="logo">Trattoria Lucia</span><span>Reservieren</span></div>
+        <p class="eyebrow">Cucina Casalinga · Charlottenburg</p>
+        <h4>Ein Tisch. Ein Abend. <em>Italien.</em></h4>
+        <div class="menu">
+          <div><span>Tagliatelle al Ragù</span><i></i><b>16,5</b></div>
+          <div><span>Branzino al Forno</span><i></i><b>24</b></div>
+          <div><span>Tiramisù della Nonna</span><i></i><b>8,5</b></div>
+        </div>
+        <span class="cta cta2">Tisch reservieren</span>
+      </div>
+      <div class="plate"></div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p08"><aside>
+    <div class="pack-num">08</div><h3>Landgut</h3>
+    <p class="tag">Leinen, Blattgrün und organische Formen — geerdet und lebendig.</p>
+    <p class="desc">Drei Pflanzreihen-Bögen in unterschiedlicher Höhe, Saison-Ticker als Beet-Band.</p>
+    <div class="chips"><span>Gärtnerei</span><span>Florist</span><span>Ferienhof</span><span>Imkerei</span></div>
+    <div class="dots"><i style="background:#F6F3EA"></i><i style="background:#4A6741"></i><i style="background:#2E2A20"></i><i style="background:#E8E2D2"></i></div>
+    <button class="strike-btn" data-target="p08">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">gaertnerei-gruenholz.pageblitz.de</span></div>
+    <div class="mock m8">
+      <div class="mnav"><span class="logo">Grünholz</span><div class="links"><span>Sortiment</span><span>Saison</span><span>Anfahrt</span></div></div>
+      <div class="grid"><div>
+        <p class="eyebrow">Gärtnerei &amp; Baumschule · Ravensburg</p>
+        <h4>Vom Beet auf den <em>Balkon.</em></h4>
+        <p class="sub">Regionale Stauden, Kräuter und Beratung, die mitdenkt — seit drei Generationen.</p>
+        <span class="cta cta2">Saison entdecken</span>
+      </div><div class="rows"><i class="r1"></i><i class="r2"></i><i class="r3"></i></div></div>
+      <div class="ticker">Jetzt im Beet: Salbei <em>◦</em> Lavendel <em>◦</em> Herbst-Astern <em>◦</em> Wildrosen <em>◦</em> Salbei <em>◦</em> Lavendel <em>◦</em> Herbst-Astern</div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p09"><aside>
+    <div class="pack-num">09</div><h3>Atelier</h3>
+    <p class="tag">Riesige Serifen, harte Kanten, ein Signalrot — Magazin statt Website.</p>
+    <p class="desc">Masthead wie eine Zeitung, Meta-Zeile, Cover-Bild mit Bildunterschrift-Spalte und rotem Index.</p>
+    <div class="chips"><span>Fotografie</span><span>Design</span><span>Architektur</span><span>Kunsthandwerk</span></div>
+    <div class="dots"><i style="background:#FFFFFF"></i><i style="background:#0F0F0F"></i><i style="background:#E0301E"></i><i style="background:#EDEDEA"></i></div>
+    <button class="strike-btn" data-target="p09">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">studio-lenz.pageblitz.de</span></div>
+    <div class="mock m9">
+      <div class="masthead">Studio Lenz<b>.</b></div>
+      <div class="meta"><span>FOTOGRAFIE — LEIPZIG</span><span>PORTRÄT · REPORTAGE · MARKEN</span><span>EST. 2016</span></div>
+      <div class="cover">
+        <div class="img"><b>Bilder,<br>die bleiben.</b></div>
+        <div class="capcol">
+          <span class="n">N° 01 — AUS DER SERIE „HANDWERK"</span>
+          <p>Keine Posen, keine Filter. Momente, wie sie passieren — für Menschen und Marken, die echt aussehen wollen.</p>
+          <span class="lnk">PORTFOLIO ANSEHEN</span>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p10"><aside>
+    <div class="pack-num">10</div><h3>Klarwerk</h3>
+    <p class="tag">Weiß, Geometrie und ein elektrisches Blau — aufgeräumt wie gutes Werkzeug.</p>
+    <p class="desc">Unregelmäßiges Bento mit Terminal-Zelle, Live-Status und Kennzahlen — Produkt-Ästhetik statt Broschüre.</p>
+    <div class="chips"><span>IT-Service</span><span>Agentur</span><span>Ingenieurbüro</span><span>Dienstleister</span></div>
+    <div class="dots"><i style="background:#FFFFFF"></i><i style="background:#14171C"></i><i style="background:#3B5BFD"></i><i style="background:#F2F4F7"></i></div>
+    <button class="strike-btn" data-target="p10">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">nordwind-it.pageblitz.de</span></div>
+    <div class="mock m10">
+      <div class="mnav"><span class="logo">Nordwind IT</span><div class="links"><span>Leistungen</span><span>Referenzen</span><span>Support</span></div><span class="cta">Beratung</span></div>
+      <h4>IT, die einfach <em>läuft.</em></h4>
+      <div class="bento">
+        <div class="term"><span class="dim">$</span> backup --verify<br><span class="dim">→</span> 34/34 Systeme ok<br><span class="dim">$</span> uptime<br><span class="dim">→</span> 99,94 % (30 Tage)<br><span class="dim">$</span> tickets --offen<br><span class="dim">→</span> 0</div>
+        <div class="cell hi"><b>&lt; 2 h</b>Reaktionszeit werktags</div>
+        <div class="cell"><b>80+</b>betreute Firmen in Kiel</div>
+        <div class="cell" style="grid-column:span 2"><span class="ok"></span>Alle Systeme betriebsbereit — zuletzt geprüft vor 4 Min.</div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p11"><aside>
+    <div class="pack-num">11</div><h3>Verve</h3>
+    <p class="tag">Kondensierte Versalien, Volt-Akzent, Schräglauf — Bewegung im Stand.</p>
+    <p class="desc">Outline-Riesenwort im Hintergrund, gekipptes Foto-Panel, Volt-Tape quer über die Ecke.</p>
+    <div class="chips"><span>Fitness</span><span>Personal Training</span><span>Tanz</span><span>Kampfsport</span></div>
+    <div class="dots"><i style="background:#101114"></i><i style="background:#D4F542"></i><i style="background:#F5F5F2"></i><i style="background:#23252B"></i></div>
+    <button class="strike-btn" data-target="p11">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">studio-puls.pageblitz.de</span></div>
+    <div class="mock m11">
+      <div class="ghostword">PULS PULS</div>
+      <div class="panel"></div>
+      <div class="mnav"><span class="logo">PULS</span><div class="links"><span>Training</span><span>Coaches</span><span>Preise</span></div></div>
+      <h4>Dein Tempo.<br><em>Deine Regeln.</em></h4>
+      <p class="sub">Personal Training in Essen — Kraft, Ausdauer und ein Plan, der zu deinem Leben passt.</p>
+      <span class="cta cta2">Probetraining sichern</span>
+      <div class="tape">12 WOCHEN · MESSBAR</div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p12"><aside>
+    <div class="pack-num">12</div><h3>Zunft</h3>
+    <p class="tag">Tiefes Bordeaux, Siegel-Gold, klassische Serifen — Tradition, die man schmeckt.</p>
+    <p class="desc">Ornament-Bordüre, Stempel kippt in die Headline, Sortiment mit Punktlinien wie eine alte Preistafel.</p>
+    <div class="chips"><span>Bäckerei</span><span>Metzgerei</span><span>Brauerei</span><span>Weingut</span></div>
+    <div class="dots"><i style="background:#F5EFE2"></i><i style="background:#5E1F22"></i><i style="background:#B98A2F"></i><i style="background:#2A2118"></i></div>
+    <button class="strike-btn" data-target="p12">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">baeckerei-steinofen.pageblitz.de</span></div>
+    <div class="mock m12">
+      <div class="borde">◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆</div>
+      <div class="body">
+        <div class="mnav"><span>Sortiment</span><span class="logo">Bäckerei Steinofen</span><span>Filialen</span></div>
+        <div class="rule2"></div>
+        <h4>Brot braucht <em>Zeit.</em><div class="stamp">Seit<br>1927</div></h4>
+        <p class="sub">48 Stunden Teigruhe, Natursauerteig und ein Steinofen, der seit vier Generationen glüht.</p>
+        <div class="sorte">
+          <div><span>Steinofenkruste, 1 kg</span><i></i><b>4,80</b></div>
+          <div><span>Emmer-Vollkorn</span><i></i><b>5,60</b></div>
+        </div>
+        <span class="cta cta2">Unser Sortiment</span>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p13"><aside>
+    <div class="pack-num">13</div><h3>Schimmer</h3>
+    <p class="tag">Perlmutt-Verläufe auf hellem Grund — leicht, modern, feminin.</p>
+    <p class="desc">Glaskarte schwebt über Farborben, dünne Zierringe, ein rotierter Glas-Chip. Leichtigkeit mit Tiefe.</p>
+    <div class="chips"><span>Kosmetik</span><span>Ästhetik</span><span>Wellness</span><span>Nagelstudio</span></div>
+    <div class="dots"><i style="background:#FDF7FA"></i><i style="background:#E8A0BF"></i><i style="background:#B69CFF"></i><i style="background:#241E2A"></i></div>
+    <button class="strike-btn" data-target="p13">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">studio-lumiere.pageblitz.de</span></div>
+    <div class="mock m13">
+      <div class="orb1"></div><div class="orb2"></div><div class="ring"></div>
+      <div class="mnav"><span class="logo">Lumière</span><div class="links"><span>Behandlungen</span><span>Studio</span><span>Gutscheine</span></div></div>
+      <div class="chip">✨ Neu: HydraGlow</div>
+      <div class="glass">
+        <h4>Zeit für <em>dich.</em></h4>
+        <p class="sub">Kosmetik und apparative Ästhetik in Wiesbaden — mit ehrlicher Beratung statt Behandlungs-Baukasten.</p>
+        <div class="row"><span class="cta cta2">Behandlung buchen</span><span class="cta ghost">Gutschein verschenken</span></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="pack" id="p14"><aside>
+    <div class="pack-num">14</div><h3>Fundament</h3>
+    <p class="tag">Tiefes Marineblau gegen Weiß — Substanz, Seriosität, klare Kante.</p>
+    <p class="desc">Headline und Objektfoto überschreiten die Panel-Grenze, feines Katasterraster im Blau, Messing-Kursive.</p>
+    <div class="chips"><span>Immobilien</span><span>Versicherung</span><span>Finanzberatung</span><span>Hausverwaltung</span></div>
+    <div class="dots"><i style="background:#14263F"></i><i style="background:#FFFFFF"></i><i style="background:#A8894C"></i><i style="background:#5A6A80"></i></div>
+    <button class="strike-btn" data-target="p14">Streichen</button>
+  </aside><div class="frame">
+    <div class="bbar"><i></i><i></i><i></i><span class="url">falk-partner.pageblitz.de</span></div>
+    <div class="mock m14">
+      <div class="navy"></div>
+      <div class="photo"></div>
+      <div class="body">
+        <div class="mnav"><span class="logo">Falk &amp; Partner</span><div class="links"><span>Verkauf</span><span>Vermietung</span></div></div>
+        <h4>Werte, die <em>bleiben.</em></h4>
+        <p class="sub">Immobilienvermittlung in Münster — diskret, marktkundig, mit Handschlagqualität.</p>
+        <span class="cta cta2">Immobilie bewerten lassen</span>
+        <div class="stats"><div><b>250+</b>vermittelte Objekte</div><div><b>98 %</b>Weiterempfehlung</div></div>
+      </div>
+    </div>
+  </div></section>
+
+  <footer class="note">
+    <p><strong style="color:var(--ink)">Architektur-Konsequenz aus deinem Feedback:</strong> Style Packs sind nicht nur Design-Tokens auf einem gemeinsamen Skelett — jedes Pack bringt eigene Hero- und Sektions-Kompositionen sowie ein eigenes Dekor-System mit (Rahmen, Marquees, Sticker, Raster, Overlaps). Die Sektions-Engine liefert nur Datenvertrag und Bausteine; das Gesicht kommt vom Pack.</p>
+  </footer>
+</div>
+
+<script>
+  const count = document.getElementById('count');
+  function update(){
+    const total = document.querySelectorAll('.pack').length;
+    const struck = document.querySelectorAll('.pack.struck').length;
+    count.textContent = (total-struck) + ' aktiv · ' + struck + ' gestrichen';
+  }
+  document.querySelectorAll('.strike-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pack = document.getElementById(btn.dataset.target);
+      pack.classList.toggle('struck');
+      btn.textContent = pack.classList.contains('struck') ? 'Gestrichen' : 'Streichen';
+      update();
+    });
+  });
+</script>
