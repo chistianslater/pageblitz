@@ -4,7 +4,7 @@ const fontStack = (f: FontSpec) => `"${f.family}", ${f.fallback}`;
 
 export function toCssVars(
   c: PackConstitution,
-  overrides?: Record<string, string>,
+  overrides?: Record<string, string>
 ): Record<string, string> {
   const vars: Record<string, string> = {};
   for (const color of c.palette) {
