@@ -104,5 +104,58 @@ describe("SSR routes", () => {
       expect(res.status).toBe(404);
       expect(res.text).toBe("SPA-Fallback");
     });
+
+    test("unbekannter Pfad auf v2-Site (/irgendwas) → next(), SPA-Fallback antwortet, NICHT 200-SSR", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        websiteData: getFixture("werkbank", "full"),
+      });
+
+      const app = buildAppWithFallback();
+      const res = await request(app).get(
+        "/site/schreinerei-brandt-dortmund/irgendwas"
+      );
+
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("SPA-Fallback");
+    });
+
+    test("/impressum ohne legal-Inhalt → Status 404 mit 'nicht gefunden'-Text", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        websiteData: getFixture("werkbank", "full"),
+      });
+
+      const app = buildAppWithFallback();
+      const res = await request(app).get(
+        "/site/schreinerei-brandt-dortmund/impressum"
+      );
+
+      expect(res.status).toBe(404);
+      expect(res.text).toContain("nicht gefunden");
+    });
+
+    test("/site/FOO (uppercase) und /site/foo treffen denselben Cache-Eintrag — zweiter Request löst keinen weiteren DB-Call aus", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        websiteData: getFixture("werkbank", "full"),
+      });
+
+      const app = buildAppWithFallback();
+      const res1 = await request(app).get("/site/FOO");
+      const res2 = await request(app).get("/site/foo");
+
+      expect(res1.status).toBe(200);
+      expect(res2.status).toBe(200);
+      expect(getWebsiteBySlug).toHaveBeenCalledTimes(1);
+      expect(getWebsiteBySlug).toHaveBeenCalledWith("foo");
+    });
+
+    test("Negative-Cache: unbekannter Slug zweimal angefragt → getWebsiteBySlug nur einmal aufgerufen", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue(undefined);
+
+      const app = buildAppWithFallback();
+      await request(app).get("/site/nicht-vorhanden-2");
+      await request(app).get("/site/nicht-vorhanden-2");
+
+      expect(getWebsiteBySlug).toHaveBeenCalledTimes(1);
+    });
   });
 });

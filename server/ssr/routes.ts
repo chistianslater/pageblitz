@@ -12,9 +12,35 @@ const RESERVED_SUBDOMAINS = ["www", "api", "analytics", "admin", "mail", "ftp"];
 const CACHE_TTL_MS = 60_000;
 interface CacheEntry {
   html: string;
+  status: number;
   at: number;
 }
 const siteHtmlCache = new Map<string, CacheEntry>();
+
+/**
+ * Negative-Cache: hält für 60s fest, dass ein Slug nicht existiert oder kein
+ * v2-Dokument ist ("miss"), damit v1-Traffic und Crawler nicht bei jedem
+ * Request eine DB-Query auslösen. Slug-scoped statt pfad-scoped, weil "nicht
+ * gefunden"/"nicht v2" eine Eigenschaft des Slugs ist, nicht des Pfads.
+ */
+const NEGATIVE_CACHE_TTL_MS = 60_000;
+const siteMissCache = new Map<string, number>();
+
+/** Obergrenze pro Cache — verhindert unbegrenztes Wachstum (kein TTL-Sweep, nur Read-Eviction bisher). */
+const MAX_CACHE_ENTRIES = 500;
+
+/** Einfacher Sweep: löscht die ältesten Einträge (Map-Insertion-Order), bis die Größe wieder unter `max` liegt. */
+function capCacheSize<V>(cache: Map<string, V>, max: number): void {
+  if (cache.size <= max) return;
+  const excess = cache.size - max;
+  const oldestKeys = Array.from(cache.keys()).slice(0, excess);
+  for (const key of oldestKeys) {
+    cache.delete(key);
+  }
+}
+
+/** Nur diese Pfade werden auf v2-Kundenseiten SSR-gerendert; alles andere ist next() (Catch-All entscheidet). */
+const SSR_ALLOWED_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
 
 function isKnownPackId(value: string): value is PackId {
   return (PACK_IDS as readonly string[]).includes(value);
@@ -32,14 +58,19 @@ function getCustomerSubdomainFromHost(hostname: string): string | null {
   return RESERVED_SUBDOMAINS.includes(sub) ? null : sub;
 }
 
-/** Erkennt /site/:slug(/rest) und liefert Slug + verbleibenden Pfad (für Impressum/Datenschutz). */
+/**
+ * Erkennt /site/:slug(/rest) und liefert Slug + verbleibenden Pfad (für
+ * Impressum/Datenschutz). Der Slug wird auf lowercase normalisiert — sonst
+ * erzeugen /site/FOO und /site/foo getrennte Cache-Einträge/DB-Queries und
+ * zählen als Duplicate Content.
+ */
 function matchSitePath(
   pathname: string
 ): { slug: string; rest: string } | null {
   const match = pathname.match(/^\/site\/([a-z0-9][a-z0-9-]*)(\/.*)?$/i);
   if (!match) return null;
   return {
-    slug: match[1],
+    slug: match[1].toLowerCase(),
     rest: match[2] && match[2].length > 0 ? match[2] : "/",
   };
 }
@@ -84,8 +115,8 @@ function handleDevPreview(req: Request, res: Response): void {
   try {
     const data = getFixture(packParam, fixtureParam);
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const html = renderSiteHtml(data, { origin });
-    res.type("html").send(html);
+    const { html, status } = renderSiteHtml(data, { origin });
+    res.status(status).type("html").send(html);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Fixture-Fehler";
     res.status(400).send(message);
@@ -113,8 +144,18 @@ async function handleCustomerSiteSsr(
     next();
     return;
   }
-  // Asset-/Datei-Requests (Favicon, robots.txt, etc.) nie als Seite rendern.
-  if (/\.[a-z0-9]+$/i.test(siteRequest.pathname)) {
+  // Nur Startseite + Rechtsseiten werden SSR-gerendert. Alles andere (unbekannte
+  // Pfade, Assets, Favicon, robots.txt, ...) geht an next() — sonst würde jeder
+  // unbekannte Pfad 200 + die Startseite mit selbstreferenzierendem Canonical
+  // bekommen.
+  if (!SSR_ALLOWED_PATHNAMES.has(siteRequest.pathname)) {
+    next();
+    return;
+  }
+
+  const now = Date.now();
+  const missUntil = siteMissCache.get(siteRequest.slug);
+  if (missUntil !== undefined && now < missUntil) {
     next();
     return;
   }
@@ -123,31 +164,35 @@ async function handleCustomerSiteSsr(
 
   try {
     const cached = siteHtmlCache.get(cacheKey);
-    const now = Date.now();
     if (cached && now - cached.at < CACHE_TTL_MS) {
-      res.type("html").send(cached.html);
+      res.status(cached.status).type("html").send(cached.html);
       return;
     }
 
     const website = await getWebsiteBySlug(siteRequest.slug);
     if (!website || !website.websiteData) {
+      siteMissCache.set(siteRequest.slug, now + NEGATIVE_CACHE_TTL_MS);
+      capCacheSize(siteMissCache, MAX_CACHE_ENTRIES);
       next();
       return;
     }
 
     const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
     if (!parsed.success) {
+      siteMissCache.set(siteRequest.slug, now + NEGATIVE_CACHE_TTL_MS);
+      capCacheSize(siteMissCache, MAX_CACHE_ENTRIES);
       next();
       return;
     }
 
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const html = renderSiteHtml(parsed.data, {
+    const { html, status } = renderSiteHtml(parsed.data, {
       origin,
       pathname: siteRequest.pathname,
     });
-    siteHtmlCache.set(cacheKey, { html, at: now });
-    res.type("html").send(html);
+    siteHtmlCache.set(cacheKey, { html, status, at: now });
+    capCacheSize(siteHtmlCache, MAX_CACHE_ENTRIES);
+    res.status(status).type("html").send(html);
   } catch (err) {
     console.error("[SSR] Kundenseiten-Render fehlgeschlagen:", err);
     next();

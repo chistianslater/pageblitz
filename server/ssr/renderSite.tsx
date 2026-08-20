@@ -11,6 +11,11 @@ export interface RenderSiteOptions {
   pathname?: string;
 }
 
+export interface RenderSiteResult {
+  html: string;
+  status: number;
+}
+
 /** Schützt interpolierte Strings vor HTML-Injection (&, <, >, "). */
 function esc(value: string): string {
   return value
@@ -113,18 +118,22 @@ function renderLegalHead(
   ].join("\n");
 }
 
-/** Rendert eine schlichte Rechtsseite (Impressum/Datenschutz) statt der vollen Site. */
+/**
+ * Rendert eine schlichte Rechtsseite (Impressum/Datenschutz) statt der vollen
+ * Site. Fehlt der Inhalt, liefert der `status` 404 — der HTML-Fallback-Text
+ * bleibt trotzdem menschenlesbar (Crawler sehen Status + Text konsistent).
+ */
 function renderLegalPage(
   data: WebsiteDataV2,
   canonicalUrl: string,
   title: string,
   bodyHtml: string | undefined
-): string {
-  const content =
-    bodyHtml && bodyHtml.trim().length > 0
-      ? bodyHtml
-      : "<p>Diese Seite wurde nicht gefunden.</p>";
-  return `<!doctype html>
+): RenderSiteResult {
+  const hasContent = Boolean(bodyHtml && bodyHtml.trim().length > 0);
+  const content = hasContent
+    ? bodyHtml
+    : "<p>Diese Seite wurde nicht gefunden.</p>";
+  const html = `<!doctype html>
 <html lang="de">
 <head>
 ${renderLegalHead(data, canonicalUrl, title)}
@@ -136,12 +145,19 @@ ${content}
 </div>
 </body>
 </html>`;
+  return { html, status: hasContent ? 200 : 404 };
 }
 
+/**
+ * Rendert eine WebsiteDataV2 zu vollständigem HTML. Gibt neben dem Markup
+ * auch den passenden HTTP-Status zurück — insbesondere 404, wenn eine
+ * angeforderte Rechtsseite (Impressum/Datenschutz) keinen Inhalt hat, statt
+ * das immer als 200 zu senden.
+ */
 export function renderSiteHtml(
   data: WebsiteDataV2,
   opts: RenderSiteOptions
-): string {
+): RenderSiteResult {
   const pathname = opts.pathname ?? "/";
   const canonicalUrl = `${opts.origin}${pathname}`;
 
@@ -165,7 +181,7 @@ export function renderSiteHtml(
   const head = renderHead(data, canonicalUrl);
   const body = renderToStaticMarkup(<SiteRenderer data={data} />);
 
-  return `<!doctype html>
+  const html = `<!doctype html>
 <html lang="de">
 <head>
 ${head}
@@ -175,4 +191,5 @@ ${body}
 <script>${MOBILE_NAV_SCRIPT}</script>
 </body>
 </html>`;
+  return { html, status: 200 };
 }

@@ -4,10 +4,11 @@ import { getFixture } from "../../shared/siteContract/fixtures";
 import { renderSiteHtml } from "./renderSite";
 
 describe("renderSiteHtml", () => {
-  const html = renderSiteHtml(getFixture("werkbank", "full"), {
+  const { html, status } = renderSiteHtml(getFixture("werkbank", "full"), {
     origin: "https://brandt.pageblitz.de",
   });
-  test("liefert komplettes Dokument mit Meta und Canonical", () => {
+  test("liefert komplettes Dokument mit Meta und Canonical, Status 200", () => {
+    expect(status).toBe(200);
     expect(html).toMatch(/^<!doctype html>/i);
     expect(html).toContain('<html lang="de">');
     expect(html).toContain("<title>");
@@ -30,15 +31,16 @@ describe("renderSiteHtml", () => {
 });
 
 describe("renderSiteHtml — Rechtsseiten (Impressum/Datenschutz)", () => {
-  test("pathname /impressum mit gefülltem impressumHtml rendert den Legal-Inhalt + Zurück-Link, nicht die Hauptseite", () => {
+  test("pathname /impressum mit gefülltem impressumHtml rendert den Legal-Inhalt + Zurück-Link, nicht die Hauptseite, Status 200", () => {
     const data = {
       ...getFixture("werkbank", "full"),
       legal: { impressumHtml: "<p>Firma XY, Musterstraße 1</p>" },
     };
-    const html = renderSiteHtml(data, {
+    const { html, status } = renderSiteHtml(data, {
       origin: "https://brandt.pageblitz.de",
       pathname: "/impressum",
     });
+    expect(status).toBe(200);
     expect(html).toContain("<p>Firma XY, Musterstraße 1</p>");
     expect(html).toContain('href="/"');
     expect(html).toContain("Zurück");
@@ -46,24 +48,26 @@ describe("renderSiteHtml — Rechtsseiten (Impressum/Datenschutz)", () => {
     expect(html).not.toContain("Massarbeit");
   });
 
-  test("pathname /impressum ohne legal-Feld zeigt den 404-Text", () => {
+  test("pathname /impressum ohne legal-Feld zeigt den 404-Text mit Status 404", () => {
     const data = getFixture("werkbank", "full");
-    const html = renderSiteHtml(data, {
+    const { html, status } = renderSiteHtml(data, {
       origin: "https://brandt.pageblitz.de",
       pathname: "/impressum",
     });
+    expect(status).toBe(404);
     expect(html).toContain("nicht gefunden");
   });
 
-  test('pathname /impressum mit leerem impressumHtml ("") zeigt trotzdem den 404-Text', () => {
+  test('pathname /impressum mit leerem impressumHtml ("") zeigt trotzdem den 404-Text mit Status 404', () => {
     const data = {
       ...getFixture("werkbank", "full"),
       legal: { impressumHtml: "" },
     };
-    const html = renderSiteHtml(data, {
+    const { html, status } = renderSiteHtml(data, {
       origin: "https://brandt.pageblitz.de",
       pathname: "/impressum",
     });
+    expect(status).toBe(404);
     expect(html).toContain("nicht gefunden");
   });
 });
@@ -79,7 +83,7 @@ describe("renderSiteHtml — Escaping", () => {
         title: '<script>alert(1)</script>"',
       },
     };
-    const html = renderSiteHtml(data, {
+    const { html } = renderSiteHtml(data, {
       origin: "https://brandt.pageblitz.de",
     });
     expect(html).not.toContain("<script>alert(1)</script>");

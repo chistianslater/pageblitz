@@ -61,6 +61,11 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 
 async function startServer() {
   const app = express();
+  // Hinter Nginx terminiert TLS am Proxy — ohne trust proxy liest Express
+  // req.protocol/req.secure immer "http" (Nginx spricht Node lokal per HTTP
+  // an), was z.B. SSR-Canonicals auf http:// setzt. "1" vertraut dem ersten
+  // Hop (unserem eigenen Nginx) und liest X-Forwarded-Proto/-For von dort.
+  app.set("trust proxy", 1);
   const server = createServer(app);
 
   // ── Compression (gzip/brotli) for all text responses ──────────────────────
