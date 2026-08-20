@@ -14,6 +14,13 @@ export interface SeoIndustry {
 export interface SeoCity {
   name: string;
   slug: string;
+  /** Bundesland – für Breadcrumb und lokalen Kontext */
+  region: string;
+  /** Stadtteile für ortsspezifische Textbausteine */
+  districts: string[];
+  /** 2–3 Sätze über die lokale Kleinunternehmer-/Wettbewerbslage. Muss pro Stadt
+   *  wirklich unterschiedlich sein – sonst sind die Seiten wieder Duplikate. */
+  intro: string;
 }
 
 // ── 17 Branchen ───────────────────────────────────────────────────────────────
@@ -1447,52 +1454,66 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
 
 // ── 30 deutsche Städte nach Einwohnerzahl ────────────────────────────────────
 
+// Bewusst nur 6 Städte statt der früheren 45.
+//
+// 45 Städte × 37 Branchen = 1.665 Seiten, die sich zu 99,2 % glichen – nur der
+// Städtename wurde ausgetauscht. Google wertet so etwas als Doorway Pages
+// (Spam-Richtlinien), indexiert die Seiten nicht und zieht die Domain-Qualität
+// insgesamt runter. Weniger Seiten mit echtem Ortsbezug ranken besser als
+// tausend austauschbare.
+//
+// Wer hier eine Stadt ergänzt, schreibt `intro` und `districts` bitte wirklich
+// neu. Nur den Namen einsetzen reproduziert exakt das alte Problem.
+// Entfernte Städte werden in index.ts per 301 auf die Branchenseite geleitet.
 export const DE_CITIES: SeoCity[] = [
-  { name: "Berlin", slug: "berlin" },
-  { name: "Hamburg", slug: "hamburg" },
-  { name: "München", slug: "muenchen" },
-  { name: "Köln", slug: "koeln" },
-  { name: "Frankfurt", slug: "frankfurt" },
-  { name: "Stuttgart", slug: "stuttgart" },
-  { name: "Düsseldorf", slug: "duesseldorf" },
-  { name: "Leipzig", slug: "leipzig" },
-  { name: "Dortmund", slug: "dortmund" },
-  { name: "Essen", slug: "essen" },
-  { name: "Bremen", slug: "bremen" },
-  { name: "Dresden", slug: "dresden" },
-  { name: "Hannover", slug: "hannover" },
-  { name: "Nürnberg", slug: "nuernberg" },
-  { name: "Duisburg", slug: "duisburg" },
-  { name: "Bochum", slug: "bochum" },
-  { name: "Wuppertal", slug: "wuppertal" },
-  { name: "Bielefeld", slug: "bielefeld" },
-  { name: "Bonn", slug: "bonn" },
-  { name: "Münster", slug: "muenster" },
-  { name: "Karlsruhe", slug: "karlsruhe" },
-  { name: "Mannheim", slug: "mannheim" },
-  { name: "Augsburg", slug: "augsburg" },
-  { name: "Wiesbaden", slug: "wiesbaden" },
-  { name: "Aachen", slug: "aachen" },
-  { name: "Mönchengladbach", slug: "moenchengladbach" },
-  { name: "Braunschweig", slug: "braunschweig" },
-  { name: "Kiel", slug: "kiel" },
-  { name: "Rostock", slug: "rostock" },
-  { name: "Freiburg", slug: "freiburg" },
-  { name: "Erfurt", slug: "erfurt" },
-  { name: "Lübeck", slug: "luebeck" },
-  { name: "Ulm", slug: "ulm" },
-  { name: "Heidelberg", slug: "heidelberg" },
-  { name: "Darmstadt", slug: "darmstadt" },
-  { name: "Kassel", slug: "kassel" },
-  { name: "Hamm", slug: "hamm" },
-  { name: "Saarbrücken", slug: "saarbruecken" },
-  { name: "Mülheim", slug: "muelheim" },
-  { name: "Krefeld", slug: "krefeld" },
-  { name: "Oberhausen", slug: "oberhausen" },
-  { name: "Mainz", slug: "mainz" },
-  { name: "Osnabrück", slug: "osnabrueck" },
-  { name: "Solingen", slug: "solingen" },
-  { name: "Herne", slug: "herne" },
+  {
+    name: "Berlin",
+    slug: "berlin",
+    region: "Berlin",
+    districts: ["Mitte", "Prenzlauer Berg", "Kreuzberg", "Charlottenburg", "Neukölln"],
+    intro:
+      "Berlin ist der härteste Kiez-Markt Deutschlands: In Prenzlauer Berg oder Neukölln liegen oft ein Dutzend Betriebe derselben Branche in Laufweite. Wer hier gefunden werden will, braucht vor allem eine Website, die den Stadtteil klar benennt – die meisten Suchanfragen laufen nicht über „Berlin“, sondern über den Kiez. Dazu kommt ein hoher Anteil an Neuzugezogenen, die einen Betrieb ausschließlich online auswählen.",
+  },
+  {
+    name: "Hamburg",
+    slug: "hamburg",
+    region: "Hamburg",
+    districts: ["Altona", "Eimsbüttel", "St. Pauli", "Winterhude", "Eppendorf"],
+    intro:
+      "Hamburg ist stark in Stadtteile segmentiert – Eppendorf tickt anders als St. Pauli, und das schlägt auf Preisniveau und Bildsprache durch. Weil die Elbe die Stadt teilt, spielt Erreichbarkeit eine größere Rolle als anderswo: Anfahrt, Parkplatz und ÖPNV-Anbindung gehören auf einer Hamburger Website sichtbar nach oben, nicht ins Impressum.",
+  },
+  {
+    name: "München",
+    slug: "muenchen",
+    region: "Bayern",
+    districts: ["Schwabing", "Haidhausen", "Maxvorstadt", "Sendling", "Giesing"],
+    intro:
+      "In München sind Gewerbemieten hoch, und das prägt die Kundenerwartung: Wer hier Premiumpreise aufruft, muss das auf der Website auch zeigen – über Referenzen, Qualifikationen und saubere Fotos statt über Rabatte. Gleichzeitig ist der Anteil englischsprachiger Kundschaft in Schwabing und der Maxvorstadt spürbar höher als im Bundesschnitt.",
+  },
+  {
+    name: "Köln",
+    slug: "koeln",
+    region: "Nordrhein-Westfalen",
+    districts: ["Ehrenfeld", "Nippes", "Sülz", "Lindenthal", "Deutz"],
+    intro:
+      "Köln funktioniert über Veedel und Stammkundschaft – Empfehlungen zählen mehr als Werbebudget. Der typische Weg: Jemand hört von deinem Betrieb, googelt den Namen und will in zehn Sekunden Öffnungszeiten, Adresse und eine Telefonnummer sehen. Genau daran scheitern die meisten Kölner Kleinbetriebe, weil sie nur eine Facebook-Seite haben.",
+  },
+  {
+    name: "Frankfurt am Main",
+    slug: "frankfurt",
+    region: "Hessen",
+    districts: ["Bornheim", "Sachsenhausen", "Nordend", "Bockenheim", "Westend"],
+    intro:
+      "Frankfurt hat einen ungewöhnlich hohen Anteil an Pendlern und Kurzzeit-Bewohnern. Für lokale Betriebe heißt das: Ein großer Teil der Kundschaft kennt die Stadt kaum und entscheidet rein über Google – ohne Empfehlung, ohne Vorgeschichte. Online-Terminbuchung und mehrsprachige Angaben wirken hier stärker als in vergleichbar großen Städten.",
+  },
+  {
+    name: "Stuttgart",
+    slug: "stuttgart",
+    region: "Baden-Württemberg",
+    districts: ["Bad Cannstatt", "Vaihingen", "Feuerbach", "Degerloch", "Stuttgart-West"],
+    intro:
+      "Stuttgart liegt im Kessel, und die Topografie prägt das Suchverhalten: Wer in Degerloch wohnt, sucht selten einen Betrieb in Feuerbach. Lokale Sichtbarkeit im eigenen Stadtbezirk schlägt hier stadtweite Reichweite. Dazu kommt eine mittelständisch geprägte Kundschaft, die Wert auf Handwerksqualität und belastbare Angaben legt – Meisterbrief und Zertifikate gehören sichtbar auf die Seite.",
+  },
 ];
 
 // ── Per-industry visual style + relevant add-ons ─────────────────────────────
@@ -1656,6 +1677,7 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .feature-icon{width:2.75rem;height:2.75rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1.25rem}
 .feature-card h3{font-size:1rem;font-weight:600;margin-bottom:.5rem;color:#fff}
 .feature-card p{color:rgba(255,255,255,.4);font-size:.9375rem;line-height:1.65}
+.local-intro{max-width:760px;margin:0 auto 3rem;text-align:center;color:rgba(255,255,255,.55);font-size:1.0625rem;line-height:1.75}
 /* Add-ons */
 .addons{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .addons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;margin-top:3.5rem}
@@ -1879,6 +1901,27 @@ export function generateLandingPageHTML(
           `<a class="city-link" href="/website-erstellen/${industry.slug}/${c.slug}">${c.name}</a>`
       ).join("\n    ")}\n  </div></div></div>`;
 
+  // Ortsspezifischer Block. Kombiniert Stadt UND Branche, damit sich sowohl
+  // friseur/berlin von friseur/hamburg unterscheidet (über city.intro und die
+  // Stadtteile) als auch von restaurant/berlin (über den Branchennamen).
+  // Ohne diesen Block wären die Städte-Seiten wieder nur Namens-Varianten.
+  const [d0, d1, d2] = city?.districts ?? [];
+  const localSectionHtml = city
+    ? `
+<section class="features local">
+  <div class="container">
+    <p class="section-label">${escapeHtml(city.name)} · ${escapeHtml(city.region)}</p>
+    <h2 class="section-title">${escapeHtml(industry.displayName)}-Website in ${escapeHtml(city.name)}: worauf es hier ankommt</h2>
+    <p class="local-intro">${escapeHtml(city.intro)}</p>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">📍</div><h3>Sichtbar im Stadtteil</h3><p>Ob ${escapeHtml(d0)}, ${escapeHtml(d1)} oder ${escapeHtml(d2)} – deine Website nennt Stadtteil und Adresse genau dort, wo Google sie für die lokale Suche ausliest. Das entscheidet in ${escapeHtml(city.name)} mehr als jedes Werbebudget.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔍</div><h3>„${escapeHtml(industry.displayName)} ${escapeHtml(city.name)}“</h3><p>Genau nach dieser Kombination sucht deine Kundschaft. Pageblitz setzt Titel, Überschriften und Meta-Angaben automatisch so, dass dein Betrieb für ${escapeHtml(industry.displayName.toLowerCase())}-Suchen in ${escapeHtml(city.name)} passend ausgezeichnet ist.</p></div>
+      <div class="feature-card"><div class="feature-icon">📱</div><h3>Unterwegs entschieden</h3><p>Lokale Suchen laufen fast immer über das Handy – oft direkt vor der Tür. Deine Seite lädt schnell, zeigt Öffnungszeiten und Route sofort und macht die Kontaktaufnahme zu einem Fingertipp.</p></div>
+    </div>
+  </div>
+</section>`
+    : "";
+
   // Industry visual style
   const style = INDUSTRY_STYLES[industry.slug] ?? DEFAULT_INDUSTRY_STYLE;
 
@@ -1905,7 +1948,24 @@ export function generateLandingPageHTML(
     )
     .join("\n      ");
 
-  const faqsHtml = industry.faqs
+  // Auf Städte-Seiten kommen zwei ortsspezifische Fragen vor die Branchen-FAQs.
+  // Die gehen auch ins FAQPage-Schema – damit unterscheiden sich die Rich
+  // Results der Städte-Seiten voneinander statt identisch zu sein.
+  const pageFaqs = city
+    ? [
+        {
+          q: `Lohnt sich eine eigene Website für ${industry.displayName} in ${city.name}?`,
+          a: `Ja – gerade dort. In ${city.name} entscheidet die lokale Google-Suche darüber, wer angerufen wird. Wer nur bei Google Maps oder auf Social Media auftaucht, verliert die Kundschaft, die vorher vergleicht. Eine eigene Website mit Adresse, Öffnungszeiten und Leistungen kostet bei Pageblitz ab 19,90 €/Monat.`,
+        },
+        {
+          q: `Wird meine Website auch in meinem Stadtteil in ${city.name} gefunden?`,
+          a: `Ja. Pageblitz trägt Stadtteil und Adresse an den Stellen ein, die Google für lokale Suchen auswertet – etwa in ${city.districts.slice(0, 3).join(", ")} oder jedem anderen Bezirk. Gerade in ${city.name} laufen die meisten Suchen über den Stadtteil, nicht über den Stadtnamen.`,
+        },
+        ...industry.faqs,
+      ]
+    : industry.faqs;
+
+  const faqsHtml = pageFaqs
     .map(
       (f) =>
         `<details><summary>${escapeHtml(f.q)}</summary><div class="faq-answer"><p>${escapeHtml(f.a)}</p></div></details>`
@@ -1948,7 +2008,7 @@ export function generateLandingPageHTML(
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script type="application/ld+json">${buildFaqSchema(industry.faqs)}</script>
+  <script type="application/ld+json">${buildFaqSchema(pageFaqs)}</script>
   <script type="application/ld+json">${buildWebPageSchema(title, metaDesc, canonical)}</script>
   <script type="application/ld+json">${buildBreadcrumbSchema(industry, city)}</script>
   <style>${SHARED_CSS}</style>
@@ -2074,6 +2134,8 @@ export function generateLandingPageHTML(
     </div>
   </div>
 </section>
+
+${localSectionHtml}
 
 <section class="addons">
   <div class="container">

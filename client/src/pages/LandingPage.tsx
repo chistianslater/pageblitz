@@ -35,6 +35,8 @@ import {
   ForgeLayoutV2, FluxLayoutV2, AuroraLayoutV2, NexusLayoutV2,
 } from "@/components/layouts/PremiumLayoutsV2";
 import { PREDEFINED_COLOR_SCHEMES } from "@shared/layoutConfig";
+import { HOME_FAQ_ITEMS } from "@shared/faq";
+import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
 import type { ColorScheme } from "@shared/types";
 
 // --- Animation Components ---
@@ -179,32 +181,9 @@ const Navbar = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void })
   );
 };
 
-const FAQ_ITEMS = [
-  {
-    q: "Brauche ich technische Kenntnisse?",
-    a: "Nein. Pageblitz ist für Menschen ohne IT-Kenntnisse gemacht. Du beantwortest ein paar Fragen über dein Unternehmen – den Rest erledigt die KI.",
-  },
-  {
-    q: "Was passiert nach den 7 Tagen?",
-    a: "Nach dem kostenlosen Testzeitraum kostet Pageblitz 19,90 €/Monat bei jährlicher Zahlung oder 24,90 €/Monat bei monatlicher Zahlung. Du wirst vorher per E-Mail erinnert. Wenn du nicht weiter machen möchtest, kannst du einfach kündigen.",
-  },
-  {
-    q: "Kann ich meine eigene Domain verwenden?",
-    a: "Ja. Du kannst deine bestehende Domain in wenigen Klicks verbinden. Alternativ bekommst du eine kostenlose Subdomain (deinname.pageblitz.de).",
-  },
-  {
-    q: "Kann ich die Texte und Bilder später ändern?",
-    a: "Ja, jederzeit. Schreib einfach im Chat was du ändern möchtest – z.B. \"Ändere die Headline auf...' oder 'Füge diese Leistung hinzu'. Keine Programmierkenntnisse nötig.",
-  },
-  {
-    q: "Wie sieht meine Website aus?",
-    a: "Pageblitz erstellt eine moderne, mobiloptimierte Website passend zu deiner Branche. Du kannst die Farben, Schriften und Layouts anpassen. Scroll nach oben und sieh dir die Beispiele an.",
-  },
-  {
-    q: "Wie läuft die Kündigung ab?",
-    a: "Ganz einfach: Schreibe uns eine E-Mail oder kündige direkt in deinem Account. Keine Mindestlaufzeiten, keine Kündigungsgebühren.",
-  },
-];
+// Aus shared/faq.ts, damit sichtbarer FAQ-Block, Server-Prerender und
+// FAQPage-Schema nicht wieder auseinanderlaufen.
+const FAQ_ITEMS = HOME_FAQ_ITEMS;
 
 const FaqSection = ({ isDark }: { isDark: boolean }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -212,8 +191,8 @@ const FaqSection = ({ isDark }: { isDark: boolean }) => {
     <section className={`py-24 border-y transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
       <div className="max-w-2xl mx-auto px-6">
         <div className="text-center mb-14">
-          <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>FAQ</h2>
-          <h3 className={`text-3xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Häufige Fragen</h3>
+          <p className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>FAQ</p>
+          <h2 className={`text-3xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Häufige Fragen</h2>
         </div>
         <div className="space-y-2">
           {FAQ_ITEMS.map((item, i) => (
@@ -1988,8 +1967,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Der Ablauf</h2>
-              <h3 className={`text-3xl md:text-4xl font-semibold mb-12 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>So einfach geht's.</h3>
+              <p className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Der Ablauf</p>
+              <h2 className={`text-3xl md:text-4xl font-semibold mb-12 tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>So einfach geht's.</h2>
 
               <div className="space-y-10">
                 {[
@@ -2412,8 +2391,8 @@ export default function LandingPage() {
         />
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Preise</h2>
-            <h3 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Ein Preis. Alles inklusive.</h3>
+            <p className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Preise</p>
+            <h2 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Ein Preis. Alles inklusive.</h2>
           </div>
 
           <div className="flex justify-center">
@@ -2514,8 +2493,8 @@ export default function LandingPage() {
       <section className="py-24 relative">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
-            <h2 className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Vergleich</h2>
-            <h3 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz vs. Webagentur</h3>
+            <p className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>Vergleich</p>
+            <h2 className={`text-3xl md:text-4xl font-semibold tracking-tight transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}>Pageblitz vs. Webagentur</h2>
             <p className={`mt-4 text-base transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-500"}`}>Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen setzen.</p>
           </div>
           <div className={`rounded-2xl border overflow-hidden transition-colors duration-500 ${isDark ? "border-white/10" : "border-gray-200"}`}>
@@ -2643,6 +2622,31 @@ export default function LandingPage() {
 
       {/* Landing Page Chat Widget */}
       <LandingPageChatWidget />
+
+      {/* Branchen-Verlinkung.
+          Die 37 Branchenseiten unter /website-erstellen/* waren vorher aus der
+          App heraus überhaupt nicht verlinkt – sie standen nur in der Sitemap
+          und hingen damit als Waisenseiten in der Luft. Bewusst <a href> statt
+          wouter-<Link>: das sind serverseitig gerenderte Routen, ein
+          Client-Side-Navigate würde dort im SPA-404 landen. */}
+      <section className={`py-14 border-t transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className={`text-sm font-medium uppercase tracking-widest mb-6 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}>
+            Website erstellen – nach Branche
+          </h2>
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
+            {SEO_INDUSTRY_LINKS.map((industry) => (
+              <a
+                key={industry.slug}
+                href={`/website-erstellen/${industry.slug}`}
+                className={`text-sm transition-colors ${isDark ? "text-white/50 hover:text-white" : "text-gray-500 hover:text-gray-900"}`}
+              >
+                Website für {industry.name}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className={`py-12 border-t transition-colors duration-500 ${isDark ? "border-white/5" : "border-gray-200"}`}>
