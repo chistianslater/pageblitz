@@ -30,16 +30,19 @@ const WERKBANK_FULL: WebsiteDataV2 = {
     {
       type: "services",
       headline: "Leistungen",
-      intro: "Vier Kernbereiche, ein Anspruch: sauber gearbeitet, lange haltbar.",
+      intro:
+        "Vier Kernbereiche, ein Anspruch: sauber gearbeitet, lange haltbar.",
       items: [
         {
           title: "Möbelbau",
-          description: "Einzelstücke nach Maß — vom Küchentisch bis zum Bücherregal.",
+          description:
+            "Einzelstücke nach Maß — vom Küchentisch bis zum Bücherregal.",
           price: "ab 890 €",
         },
         {
           title: "Innenausbau",
-          description: "Einbauschränke, Türen und Verkleidungen passgenau eingepasst.",
+          description:
+            "Einbauschränke, Türen und Verkleidungen passgenau eingepasst.",
           price: "auf Anfrage",
         },
         {
@@ -49,7 +52,8 @@ const WERKBANK_FULL: WebsiteDataV2 = {
         },
         {
           title: "Fenster & Türen",
-          description: "Holzfenster und Türen gefertigt, montiert und gewartet.",
+          description:
+            "Holzfenster und Türen gefertigt, montiert und gewartet.",
           price: "auf Anfrage",
         },
       ],
@@ -64,9 +68,18 @@ const WERKBANK_FULL: WebsiteDataV2 = {
       type: "gallery",
       headline: "Projekte",
       images: [
-        { url: "/demo/werkbank-gallery-1.jpg", alt: "Massivholztisch in einer Dortmunder Altbauwohnung" },
-        { url: "/demo/werkbank-gallery-2.jpg", alt: "Maßgefertigter Einbauschrank aus Eiche" },
-        { url: "/demo/werkbank-gallery-3.jpg", alt: "Restauriertes Sideboard aus den 1960ern" },
+        {
+          url: "/demo/werkbank-gallery-1.jpg",
+          alt: "Massivholztisch in einer Dortmunder Altbauwohnung",
+        },
+        {
+          url: "/demo/werkbank-gallery-2.jpg",
+          alt: "Maßgefertigter Einbauschrank aus Eiche",
+        },
+        {
+          url: "/demo/werkbank-gallery-3.jpg",
+          alt: "Restauriertes Sideboard aus den 1960ern",
+        },
       ],
     },
     {
@@ -128,7 +141,8 @@ const WERKBANK_MINIMAL: WebsiteDataV2 = {
     {
       type: "hero",
       headline: "Massarbeit aus Holz. Punkt.",
-      subheadline: "Schreinerei Brandt fertigt Möbel und Einbauten in Dortmund — auf Maß, von Hand.",
+      subheadline:
+        "Schreinerei Brandt fertigt Möbel und Einbauten in Dortmund — auf Maß, von Hand.",
       ctaText: "Projekt anfragen",
       ctaHref: "#kontakt",
       imageUrl: "/demo/werkbank-hero.jpg",
@@ -138,7 +152,10 @@ const WERKBANK_MINIMAL: WebsiteDataV2 = {
       headline: "Leistungen",
       items: [
         { title: "Möbelbau", description: "Einzelstücke nach Maß." },
-        { title: "Innenausbau", description: "Einbauschränke und Verkleidungen passgenau eingepasst." },
+        {
+          title: "Innenausbau",
+          description: "Einbauschränke und Verkleidungen passgenau eingepasst.",
+        },
       ],
     },
     {
