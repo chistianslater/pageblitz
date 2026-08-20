@@ -33,14 +33,21 @@ function getCustomerSubdomainFromHost(hostname: string): string | null {
 }
 
 /** Erkennt /site/:slug(/rest) und liefert Slug + verbleibenden Pfad (für Impressum/Datenschutz). */
-function matchSitePath(pathname: string): { slug: string; rest: string } | null {
+function matchSitePath(
+  pathname: string
+): { slug: string; rest: string } | null {
   const match = pathname.match(/^\/site\/([a-z0-9][a-z0-9-]*)(\/.*)?$/i);
   if (!match) return null;
-  return { slug: match[1], rest: match[2] && match[2].length > 0 ? match[2] : "/" };
+  return {
+    slug: match[1],
+    rest: match[2] && match[2].length > 0 ? match[2] : "/",
+  };
 }
 
 /** Bestimmt aus Host + Pfad, ob die Anfrage eine Kundenseite adressiert (Subdomain oder /site/:slug). */
-function resolveSiteRequest(req: Request): { slug: string; pathname: string } | null {
+function resolveSiteRequest(
+  req: Request
+): { slug: string; pathname: string } | null {
   const subdomainSlug = getCustomerSubdomainFromHost(req.hostname ?? "");
   if (subdomainSlug) {
     return { slug: subdomainSlug, pathname: req.path };
