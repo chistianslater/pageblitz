@@ -104,7 +104,16 @@ export function generateHomePrerender(): string {
       <p style="display:inline-block;background:#ecfccb;border:1px solid #d9f99d;color:#3f6212;border-radius:999px;padding:.5rem 1rem;font-size:.875rem;margin:0 0 2rem">Webagentur kostet 3.000 €+ – Pageblitz ab 19,90 €/Monat</p>
       <h1 style="font-size:clamp(2.25rem,6vw,3.75rem);font-weight:600;letter-spacing:-.03em;line-height:1.1;margin:0 0 1.5rem;max-width:15ch">Deine professionelle Website in 3 Minuten.</h1>
       <p style="font-size:1.125rem;line-height:1.7;color:#4b5563;max-width:52ch;margin:0 0 2rem">Kein Webdesigner. Kein monatelanges Warten. Kein 4-stelliges Budget. Pageblitz erstellt deine Website automatisch – du musst nur dein Business beschreiben.</p>
-      <p style="margin:0 0 1rem"><a href="/start" style="display:inline-block;background:#111827;color:#fff;padding:.875rem 1.75rem;border-radius:999px;text-decoration:none;font-weight:600">7 Tage gratis starten</a></p>
+      <!-- Echtes GET-Formular: funktioniert identisch zum React-Hero, aber auch
+           ganz ohne JavaScript. /start liest ?name= aus und springt direkt in
+           die Google-My-Business-Suche. -->
+      <form action="/start" method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;max-width:32rem;margin:0 0 1rem">
+        <input type="text" name="name" placeholder="Wie heißt dein Unternehmen?" aria-label="Unternehmensname"
+               autocomplete="organization"
+               style="flex:1 1 16rem;height:3.5rem;padding:0 1.25rem;border-radius:999px;border:1px solid #d6d3d1;background:#fff;font-size:1rem;color:#111827"/>
+        <button type="submit"
+                style="height:3.5rem;padding:0 2rem;border:0;border-radius:999px;background:#111827;color:#fff;font-size:1rem;font-weight:600;cursor:pointer">Website erstellen</button>
+      </form>
       <p style="font-size:.875rem;color:#6b7280;margin:0">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</p>
     </section>
 

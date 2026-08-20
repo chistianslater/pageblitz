@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { trackConversion } from "@/lib/tracking";
 import { Button } from "@/components/ui/button";
@@ -115,6 +115,39 @@ export default function StartPage() {
   const startMutation = trpc.selfService.start.useMutation();
 
   const isLoading = startMutation.isPending;
+
+  // ── Deep-Link aus dem Landingpage-Hero: /start?name=Muster%20GmbH ──────────
+  // Wer im Hero seinen Firmennamen eingetippt hat, hat die Frage "wie möchtest
+  // du starten?" faktisch schon beantwortet. Den Auswahl-Screen hier nochmal zu
+  // zeigen, kostet nur einen Schritt. Wir gehen direkt in die GMB-Suche, weil
+  // dort Adresse, Öffnungszeiten und Bewertungen automatisch mitkommen – das
+  // ist der Moment, in dem der Nutzer seine eigene Website erkennt.
+  // Findet die Suche nichts, bleibt er im GMB-Schritt und kann über "Zurück"
+  // auf die manuelle Eingabe wechseln; der Name ist dort schon vorbelegt.
+  const didPrefill = useRef(false);
+  useEffect(() => {
+    if (didPrefill.current) return;
+    const name = new URLSearchParams(window.location.search).get("name")?.trim();
+    if (!name) return;
+    didPrefill.current = true;
+
+    setBusinessName(name);
+    setGmbSearchQuery(name);
+    setStep("gmb");
+    setGmbSearchLoading(true);
+    gmbSearchPublicMutation
+      .mutateAsync({ query: name })
+      .then((res) => {
+        setGmbSearchResults(res.results);
+        if (res.results.length === 0) {
+          toast.info("Kein Google-Eintrag gefunden – such nochmal oder starte ohne.");
+        }
+      })
+      .catch(() => toast.error("Suche fehlgeschlagen – bitte nochmal versuchen."))
+      .finally(() => setGmbSearchLoading(false));
+    // Nur beim ersten Mount; didPrefill schützt zusätzlich gegen StrictMode.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Manual → Start ────────────────────────────────────────────────────────
   const handleManualStart = async () => {

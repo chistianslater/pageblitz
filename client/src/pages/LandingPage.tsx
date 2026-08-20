@@ -1563,6 +1563,16 @@ export default function LandingPage() {
     localStorage.setItem("lp-theme", isDark ? "dark" : "light");
   }, [isDark]);
 
+  const [heroBusinessName, setHeroBusinessName] = useState("");
+
+  const handleHeroStart = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams({ billing: billingYearly ? "yearly" : "monthly" });
+    const name = heroBusinessName.trim();
+    if (name) params.set("name", name);
+    navigate(`/start?${params.toString()}`);
+  };
+
   return (
     <div
       className={`lp-root min-h-screen font-sans transition-colors duration-500 ${isDark ? "bg-[#0a0a0a] text-white selection:bg-white/20" : "bg-stone-50 text-gray-900 selection:bg-lime-200/40"}`}
@@ -1674,27 +1684,50 @@ export default function LandingPage() {
                   Pageblitz erstellt deine Website automatisch – du musst nur dein Business beschreiben.
                 </motion.p>
 
+                {/* Einstieg direkt im Hero.
+                    Vorher führte der CTA auf /start, wo als Erstes ein
+                    Auswahl-Screen stand ("Wie möchtest du starten?") – also drei
+                    Screens, bevor der Nutzer irgendetwas von seiner Website
+                    sieht. Wer hier den Firmennamen eintippt, hat sich schon
+                    festgelegt und überspringt die Auswahl komplett.
+                    Leeres Feld ist erlaubt und führt auf den bisherigen Weg. */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 }}
-                  className="flex flex-col sm:flex-row gap-4"
+                  className="flex flex-col gap-4"
                 >
-                  <Button
-                    size="lg"
-                    onClick={() => navigate(`/start?billing=${billingYearly ? "yearly" : "monthly"}`)}
-                    className="btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-all shadow-xl shadow-lime-500/30"
-                    style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
-                  >
-                    gratis ausprobieren
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
+                  <form onSubmit={handleHeroStart} className="flex flex-col sm:flex-row gap-3 max-w-lg">
+                    <input
+                      type="text"
+                      value={heroBusinessName}
+                      onChange={(e) => setHeroBusinessName(e.target.value)}
+                      placeholder="Wie heißt dein Unternehmen?"
+                      aria-label="Unternehmensname"
+                      autoComplete="organization"
+                      className={`flex-1 h-14 px-5 rounded-full text-base outline-none border transition-all duration-300 ${
+                        isDark
+                          ? "bg-white/[0.06] border-white/15 text-white placeholder:text-white/40 focus:border-lime-400/60 focus:bg-white/[0.09]"
+                          : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-lime-500 focus:shadow-md"
+                      }`}
+                    />
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="btn-shimmer rounded-full h-14 px-8 text-base font-medium group transition-all shadow-xl shadow-lime-500/30 shrink-0"
+                      style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)", color: "#0a0a0a" }}
+                    >
+                      Website erstellen
+                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </form>
                   <button
+                    type="button"
                     onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`inline-flex items-center justify-center rounded-full h-14 px-8 text-base transition-all duration-300 cursor-pointer ${isDark ? "text-white/70 hover:text-white border border-white/20 hover:border-white/40 hover:bg-white/[0.08]" : "text-lime-700 font-medium border border-lime-300 hover:border-lime-500 hover:text-gray-900 bg-transparent"}`}
+                    className={`inline-flex items-center gap-1.5 text-sm transition-colors duration-300 cursor-pointer self-start ${isDark ? "text-white/50 hover:text-white/80" : "text-gray-500 hover:text-gray-900"}`}
                   >
-                    Beispiele ansehen
-                    <ChevronDown className="ml-2 w-4 h-4" />
+                    Erst Beispiele ansehen
+                    <ChevronDown className="w-4 h-4" />
                   </button>
                 </motion.div>
 
