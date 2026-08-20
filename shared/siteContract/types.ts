@@ -1,5 +1,10 @@
 import type { z } from "zod";
-import { PACK_IDS, SECTION_TYPES, SectionV2Schema, WebsiteDataV2Schema } from "./schema";
+import {
+  PACK_IDS,
+  SECTION_TYPES,
+  SectionV2Schema,
+  WebsiteDataV2Schema,
+} from "./schema";
 
 export { PACK_IDS, SECTION_TYPES };
 export type PackId = (typeof PACK_IDS)[number];

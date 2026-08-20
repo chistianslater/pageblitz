@@ -21,7 +21,7 @@ export function getConstitution(id: PackId): PackConstitution {
 export function getPackPool(categoryKey: string): PackId[] {
   const key = categoryKey.toLowerCase();
   const pool = (Object.values(STYLE_PACKS) as PackConstitution[])
-    .filter((c) => c.industries.some((i) => key.includes(i)))
-    .map((c) => c.id);
+    .filter(c => c.industries.some(i => key.includes(i)))
+    .map(c => c.id);
   return pool.length > 0 ? pool : [FALLBACK_PACK];
 }

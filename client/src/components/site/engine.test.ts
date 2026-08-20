@@ -16,7 +16,7 @@ const base: WebsiteDataV2 = {
 
 describe("orderedSections", () => {
   test("ohne sectionOrder: hero immer zuerst, Rest in Dokument-Reihenfolge", () => {
-    expect(orderedSections(base).map((s) => s.type)).toEqual([
+    expect(orderedSections(base).map(s => s.type)).toEqual([
       "hero",
       "contact",
       "services",
@@ -28,7 +28,7 @@ describe("orderedSections", () => {
       sectionOrder: ["hero", "services", "contact"],
       hiddenSections: ["contact"],
     };
-    expect(orderedSections(d).map((s) => s.type)).toEqual(["hero", "services"]);
+    expect(orderedSections(d).map(s => s.type)).toEqual(["hero", "services"]);
   });
   test("Anker sind deutsch und vollständig", () => {
     expect(SECTION_ANCHORS.services).toBe("leistungen");

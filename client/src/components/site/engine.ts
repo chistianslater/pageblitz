@@ -1,4 +1,8 @@
-import type { SectionType, SectionV2, WebsiteDataV2 } from "../../../../shared/siteContract/types";
+import type {
+  SectionType,
+  SectionV2,
+  WebsiteDataV2,
+} from "../../../../shared/siteContract/types";
 
 export const SECTION_ANCHORS: Record<SectionType, string> = {
   hero: "start",
@@ -16,7 +20,7 @@ export const SECTION_ANCHORS: Record<SectionType, string> = {
 
 export function orderedSections(data: WebsiteDataV2): SectionV2[] {
   const hidden = new Set(data.hiddenSections ?? []);
-  const visible = data.sections.filter((s) => !hidden.has(s.type));
+  const visible = data.sections.filter(s => !hidden.has(s.type));
   const order = data.sectionOrder;
   const rank = (t: SectionType): number => {
     if (t === "hero") return -1; // Hero immer zuerst

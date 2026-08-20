@@ -1,5 +1,8 @@
 import type React from "react";
-import type { PackId, WebsiteDataV2 } from "../../../../shared/siteContract/types";
+import type {
+  PackId,
+  WebsiteDataV2,
+} from "../../../../shared/siteContract/types";
 
 export interface PackModule {
   id: PackId;
