@@ -6,15 +6,30 @@ import "../index"; // registriert alle Pack-Module
 import { SiteRenderer } from "../../SiteRenderer";
 
 const data: WebsiteDataV2 = {
-  version: 2, stylePackId: "werkbank", businessName: "Schreinerei Brandt",
-  businessCategory: "Schreinerei", tagline: "Massarbeit seit 2004",
+  version: 2,
+  stylePackId: "werkbank",
+  businessName: "Schreinerei Brandt",
+  businessCategory: "Schreinerei",
+  tagline: "Massarbeit seit 2004",
   seo: { title: "t", description: "d" },
   sections: [
-    { type: "hero", headline: "Massarbeit aus Massivholz.", ctaText: "Projekt anfragen" },
-    { type: "services", headline: "Leistungen",
-      items: [{ title: "Möbelbau" }, { title: "Innenausbau" }] },
+    {
+      type: "hero",
+      headline: "Massarbeit aus Massivholz.",
+      ctaText: "Projekt anfragen",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [{ title: "Möbelbau" }, { title: "Innenausbau" }],
+    },
     { type: "about", headline: "Über uns", body: "Seit 2004 in Dortmund." },
-    { type: "contact", phone: "0231 1", email: "post@brandt.de", city: "Dortmund" },
+    {
+      type: "contact",
+      phone: "0231 1",
+      email: "post@brandt.de",
+      city: "Dortmund",
+    },
   ],
 };
 
@@ -35,7 +50,8 @@ describe("Pack werkbank", () => {
   });
   test("versteckte Sektion wird nicht gerendert", () => {
     const h = renderToStaticMarkup(
-      <SiteRenderer data={{ ...data, hiddenSections: ["about"] }} />);
+      <SiteRenderer data={{ ...data, hiddenSections: ["about"] }} />
+    );
     expect(h).not.toContain('id="ueber-uns"');
   });
 });

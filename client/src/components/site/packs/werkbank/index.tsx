@@ -39,8 +39,8 @@ function splitHeadline(headline: string): string[] {
 
 /** Rail-Text aus Branche, Stadt (aus der Contact-Sektion) und Tagline — fehlende Teile weglassen. */
 function buildRailText(data: WebsiteDataV2, city: string | undefined): string {
-  const parts = [data.businessCategory, city].filter(
-    (v): v is string => Boolean(v)
+  const parts = [data.businessCategory, city].filter((v): v is string =>
+    Boolean(v)
   );
   const main = parts.join(" · ");
   if (data.tagline) return main ? `${main} — ${data.tagline}` : data.tagline;
@@ -60,7 +60,9 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 }
 
 /** Service-Titel 3× wiederholt, getrennt durch ✕ — direkt nach dem Hero. */
-function buildMarquee(services: SectionOf<"services"> | undefined): React.ReactNode {
+function buildMarquee(
+  services: SectionOf<"services"> | undefined
+): React.ReactNode {
   if (!services || services.items.length === 0) return null;
   const titles = services.items.map(item => item.title);
   const repeated = [...titles, ...titles, ...titles];
@@ -90,7 +92,11 @@ function renderSection(
               {lines.map((line, i) => {
                 const isLast = i === lines.length - 1;
                 const isMiddle = i > 0 && !isLast;
-                const cls = isLast ? "accent" : isMiddle ? "outline" : undefined;
+                const cls = isLast
+                  ? "accent"
+                  : isMiddle
+                    ? "outline"
+                    : undefined;
                 return (
                   <span key={line + i} className={cls} aria-hidden="true">
                     {line}
@@ -265,7 +271,9 @@ function renderSection(
     case "menu":
     case "pricelist": {
       const fallback =
-        section.type === "menu" ? FALLBACK_TITLES.menu : FALLBACK_TITLES.pricelist;
+        section.type === "menu"
+          ? FALLBACK_TITLES.menu
+          : FALLBACK_TITLES.pricelist;
       const title = section.headline ?? fallback;
       return (
         <section
