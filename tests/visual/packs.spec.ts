@@ -8,11 +8,16 @@ const VIEWPORTS = [
   { name: "desktop", width: 1440, height: 900 },
 ];
 
-for (const pack of PACKS) for (const fixture of FIXTURES) for (const vp of VIEWPORTS) {
-  test(`${pack} ${fixture} ${vp.name}`, async ({ page }) => {
-    await page.setViewportSize({ width: vp.width, height: vp.height });
-    await page.goto(`/dev/site-preview?pack=${pack}&fixture=${fixture}`);
-    await page.waitForLoadState("networkidle"); // Fonts geladen
-    await expect(page).toHaveScreenshot(`${pack}-${fixture}-${vp.name}.png`, { fullPage: true });
-  });
-}
+for (const pack of PACKS)
+  for (const fixture of FIXTURES)
+    for (const vp of VIEWPORTS) {
+      test(`${pack} ${fixture} ${vp.name}`, async ({ page }) => {
+        await page.setViewportSize({ width: vp.width, height: vp.height });
+        await page.goto(`/dev/site-preview?pack=${pack}&fixture=${fixture}`);
+        await page.waitForLoadState("networkidle"); // Fonts geladen
+        await expect(page).toHaveScreenshot(
+          `${pack}-${fixture}-${vp.name}.png`,
+          { fullPage: true }
+        );
+      });
+    }

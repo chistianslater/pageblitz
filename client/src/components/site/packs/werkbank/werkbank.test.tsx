@@ -48,6 +48,9 @@ describe("Pack werkbank", () => {
     expect(html).toContain("pb-wb-rail");
     expect(html).toContain("pb-wb-marquee");
   });
+  test("Outline-Mittelzeile bei der Fixture-Headline vorhanden (3-Wort-Headline)", () => {
+    expect(html).toContain('class="outline"');
+  });
   test("versteckte Sektion wird nicht gerendert", () => {
     const h = renderToStaticMarkup(
       <SiteRenderer data={{ ...data, hiddenSections: ["about"] }} />

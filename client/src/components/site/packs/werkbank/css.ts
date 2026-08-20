@@ -1,5 +1,5 @@
 export const WERKBANK_CSS = `
-.pb-werkbank{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.5}
+.pb-werkbank{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.5;overflow-x:clip}
 .pb-wb-rail{position:fixed;left:0;top:0;bottom:0;width:56px;background:var(--pb-ink);color:var(--pb-canvas);display:flex;align-items:center;justify-content:center;z-index:40}
 .pb-wb-rail b{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.3em;font-weight:400}
 .pb-wb-main{margin-left:56px}
@@ -19,5 +19,5 @@ export const WERKBANK_CSS = `
 .pb-wb-service{display:flex;gap:18px;padding:16px 0;border-bottom:1px solid var(--pb-line);align-items:baseline}
 .pb-wb-service .idx{font-family:var(--pb-font-utility);color:var(--pb-accent);font-size:13px}
 .pb-wb-footer{background:var(--pb-ink);color:var(--pb-canvas);padding:36px 28px;font-size:13px}
-@media(max-width:720px){.pb-wb-rail{display:none}.pb-wb-main{margin-left:0}.pb-wb-photo{display:none}}
+@media(max-width:720px){.pb-wb-rail{display:none}.pb-wb-main{margin-left:0}.pb-wb-photo{display:none}.pb-wb-nav{flex-wrap:wrap;row-gap:8px}.pb-wb-nav-links{flex-wrap:wrap;margin-left:0}}
 `;

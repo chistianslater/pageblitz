@@ -24,15 +24,23 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
 
 const MUTED_STYLE: React.CSSProperties = { color: "var(--pb-muted)" };
 
-/** Verteilt eine Headline an Wortgrenzen auf 2 (< 4 Wörter) oder 3 (≥ 4 Wörter) Zeilen. */
+/**
+ * Verteilt eine Headline an Wortgrenzen auf 2 (genau 2 Wörter) oder immer 3
+ * Zeilen (≥ 3 Wörter, damit stets eine Outline-Mittelzeile entsteht — das
+ * Kernmerkmal der Werkbank-Signatur). Bei 1 Wort: eine Zeile (Accent).
+ */
 function splitHeadline(headline: string): string[] {
   const words = headline.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return [headline];
-  const lineCount = words.length >= 4 ? 3 : 2;
-  const perLine = Math.ceil(words.length / lineCount);
+  if (words.length <= 2) return words.length === 0 ? [headline] : words;
+  const parts = 3;
+  const base = Math.floor(words.length / parts);
+  const remainder = words.length % parts;
   const lines: string[] = [];
-  for (let i = 0; i < words.length; i += perLine) {
-    lines.push(words.slice(i, i + perLine).join(" "));
+  let idx = 0;
+  for (let p = 0; p < parts; p++) {
+    const count = base + (p < remainder ? 1 : 0);
+    lines.push(words.slice(idx, idx + count).join(" "));
+    idx += count;
   }
   return lines;
 }
