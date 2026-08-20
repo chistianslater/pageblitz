@@ -49,7 +49,9 @@ describe("Pack werkbank", () => {
     expect(html).toContain("pb-wb-marquee");
   });
   test("Outline-Mittelzeile bei der Fixture-Headline vorhanden (3-Wort-Headline)", () => {
-    expect(html).toContain('class="outline"');
+    const h1Match = html.match(/<h1[^>]*>[\s\S]*?<\/h1>/);
+    expect(h1Match).not.toBeNull();
+    expect(h1Match?.[0]).toContain('class="outline"');
   });
   test("versteckte Sektion wird nicht gerendert", () => {
     const h = renderToStaticMarkup(

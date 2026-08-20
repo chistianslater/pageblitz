@@ -84,7 +84,7 @@ export const WERKBANK: PackConstitution = {
     scale: {
       basePx: 16,
       ratio: 1.25,
-      heroClamp: "clamp(2.6rem, 6vw, 5rem)",
+      heroClamp: "clamp(1.9rem, 8.5vw, 5rem)",
     },
   },
   shape: {
