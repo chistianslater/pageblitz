@@ -1238,6 +1238,169 @@ const MARKTPLATZ_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.9, reviewCount: 89 },
 };
 
+const LANDGUT_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "landgut",
+  businessName: "Gärtnerei Grünholz",
+  slug: "gaertnerei-gruenholz-ravensburg",
+  businessCategory: "Gärtnerei & Baumschule",
+  tagline: "Seit drei Generationen für Ravensburg.",
+  logo: { kind: "font", font: "Grünholz" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Vom Beet auf den Balkon.",
+      subheadline:
+        "Regionale Stauden, Kräuter und Beratung, die mitdenkt — seit drei Generationen.",
+      ctaText: "Saison entdecken",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/landgut-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      intro:
+        "Vier Bereiche, ein Ziel: dass es bei Ihnen wächst — drinnen wie draußen.",
+      items: [
+        {
+          title: "Stauden & Kräuter",
+          description:
+            "Regional gezogene Stauden, Kräuter und Saisonpflanzen — beratend ausgesucht statt von der Stange.",
+        },
+        {
+          title: "Gartenplanung",
+          description:
+            "Von der ersten Skizze bis zur Bepflanzung: Gärten, die zum Grundstück und zur Jahreszeit passen.",
+        },
+        {
+          title: "Pflanzservice",
+          description:
+            "Wir setzen, was wir empfehlen — inklusive Anwuchsgarantie für die erste Saison.",
+        },
+        {
+          title: "Baumschnitt",
+          description:
+            "Fachgerechter Schnitt für Obstbäume, Hecken und Ziergehölze, ganzjährig planbar.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über uns",
+      body: "Die Gärtnerei Grünholz wird seit drei Generationen von der Familie Grünholz in Ravensburg geführt. Was als kleine Staudengärtnerei begann, ist heute ein Betrieb mit eigener Baumschule und einem Team, das den Boden hier kennt wie kaum jemand sonst. Wir setzen auf regionale Sorten, ehrliche Beratung und Pflanzen, die wirklich zum jeweiligen Standort passen — vom schattigen Hinterhof bis zum sonnigen Balkon. Wer bei uns kauft, bekommt keine Massenware, sondern etwas, das mit Absicht gezogen wurde.",
+      imageUrl: "/demo/landgut-detail-1.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Kund:innen sagen",
+      items: [
+        {
+          author: "Petra Simmel",
+          text: "Endlich eine Gärtnerei, die mir ehrlich sagt, was an meinem Standort wirklich wächst — statt einfach zu verkaufen.",
+          rating: 5,
+        },
+        {
+          author: "Family Hasenmayer",
+          text: "Der Pflanzservice war unkompliziert und alles ist angewachsen. Unser Garten sieht aus wie aus einem anderen Leben.",
+          rating: 5,
+        },
+        {
+          author: "Jonas Rieger",
+          text: "Beratung mit Zeit und Ruhe, nicht wie im Baumarkt. Man merkt, dass hier drei Generationen Wissen dahinterstehen.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "gallery",
+      headline: "Impressionen",
+      images: [
+        {
+          url: "/demo/landgut-hero.svg",
+          alt: "Pflanzreihen mit Stauden in der Gärtnerei Grünholz",
+        },
+        {
+          url: "/demo/landgut-detail-1.svg",
+          alt: "Kräutertöpfe im Verkaufsbereich",
+        },
+        {
+          url: "/demo/landgut-detail-2.svg",
+          alt: "Frisch gepflanzte Baumschule bei Sonnenaufgang",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0751 555 4290",
+      email: "hallo@gaertnerei-gruenholz.de",
+      street: "Weingartener Straße 58",
+      zip: "88212",
+      city: "Ravensburg",
+      openingHours: [{ day: "Mo–Sa", hours: "9:00 – 18:00 (Saison)" }],
+    },
+  ],
+  seo: {
+    title:
+      "Gärtnerei Grünholz Ravensburg — Stauden, Gartenplanung, Baumschnitt",
+    description:
+      "Gärtnerei Grünholz in Ravensburg: regionale Stauden und Kräuter, Gartenplanung, Pflanzservice und Baumschnitt — seit drei Generationen.",
+  },
+  footerNote: "Gärtnerei Grünholz · Ravensburg · seit drei Generationen",
+  google: { rating: 4.8, reviewCount: 73 },
+};
+
+const LANDGUT_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "landgut",
+  businessName: "Gärtnerei Grünholz",
+  slug: "gaertnerei-gruenholz-ravensburg",
+  businessCategory: "Gärtnerei & Baumschule",
+  tagline: "Seit drei Generationen für Ravensburg.",
+  logo: { kind: "font", font: "Grünholz" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Vom Beet auf den Balkon.",
+      subheadline: "Regionale Stauden, Kräuter und Beratung aus Ravensburg.",
+      ctaText: "Saison entdecken",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/landgut-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Stauden & Kräuter",
+          description: "Regional gezogen, beratend ausgesucht.",
+        },
+        {
+          title: "Gartenplanung",
+          description: "Von der Skizze bis zur Bepflanzung.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0751 555 4290",
+      email: "hallo@gaertnerei-gruenholz.de",
+      street: "Weingartener Straße 58",
+      zip: "88212",
+      city: "Ravensburg",
+      openingHours: [{ day: "Mo–Sa", hours: "9:00 – 18:00 (Saison)" }],
+    },
+  ],
+  seo: {
+    title: "Gärtnerei Grünholz Ravensburg",
+    description:
+      "Gärtnerei Grünholz in Ravensburg: regionale Stauden und Kräuter, Gartenplanung.",
+  },
+  footerNote: "Gärtnerei Grünholz · Ravensburg · seit drei Generationen",
+  google: { rating: 4.8, reviewCount: 73 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -1246,6 +1409,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   patina: { full: PATINA_FULL, minimal: PATINA_MINIMAL },
   "salon-noir": { full: SALON_NOIR_FULL, minimal: SALON_NOIR_MINIMAL },
   marktplatz: { full: MARKTPLATZ_FULL, minimal: MARKTPLATZ_MINIMAL },
+  landgut: { full: LANDGUT_FULL, minimal: LANDGUT_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

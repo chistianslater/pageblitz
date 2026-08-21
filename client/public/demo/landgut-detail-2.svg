@@ -1,0 +1,37 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Erdiges Landgut-Placeholder: frisch gepflanzte Baumschulreihen bei Sonnenaufgang">
+  <!-- Beethimmel (Surface, bewusst abweichend vom Seiten-Canvas, sonst verschwindet die
+       Bogen-Maske optisch auf gleichfarbigem Grund), flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#EDE8D9" />
+
+  <!-- Sonne als flacher Kreis -->
+  <circle cx="600" cy="220" r="80" fill="#C9BC8F" />
+
+  <!-- Erdreihen -->
+  <rect x="0" y="620" width="1200" height="280" fill="#6D6656" />
+  <rect x="0" y="620" width="1200" height="16" fill="#41593A" />
+
+  <!-- Baumschulreihen: kleine Setzlinge, gleichmäßig verteilt -->
+  <rect x="80" y="540" width="12" height="90" fill="#41593A" />
+  <circle cx="86" cy="520" r="34" fill="#4A6741" />
+
+  <rect x="230" y="560" width="12" height="70" fill="#41593A" />
+  <circle cx="236" cy="545" r="26" fill="#8FA872" />
+
+  <rect x="380" y="530" width="12" height="100" fill="#41593A" />
+  <circle cx="386" cy="505" r="38" fill="#4A6741" />
+
+  <rect x="530" y="555" width="12" height="75" fill="#41593A" />
+  <circle cx="536" cy="540" r="28" fill="#8FA872" />
+
+  <rect x="680" y="535" width="12" height="95" fill="#41593A" />
+  <circle cx="686" cy="512" r="36" fill="#4A6741" />
+
+  <rect x="830" y="560" width="12" height="70" fill="#41593A" />
+  <circle cx="836" cy="545" r="26" fill="#8FA872" />
+
+  <rect x="980" y="540" width="12" height="90" fill="#41593A" />
+  <circle cx="986" cy="520" r="34" fill="#4A6741" />
+
+  <rect x="1100" y="555" width="12" height="75" fill="#41593A" />
+  <circle cx="1106" cy="540" r="28" fill="#8FA872" />
+</svg>
