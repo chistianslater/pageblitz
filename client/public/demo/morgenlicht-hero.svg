@@ -1,0 +1,10 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Helles Salbeigrün-Flächen-Placeholder für eine Zahnarztpraxis">
+  <!-- Flache Salbei/Lind-Flächen, keine Gradients/Filter/Opacity -->
+  <rect width="1200" height="900" fill="#F4F8F7" />
+  <circle cx="860" cy="260" r="380" fill="#DCEAE7" />
+  <circle cx="990" cy="560" r="300" fill="#9CC8C2" />
+  <circle cx="680" cy="720" r="200" fill="#2E7E78" />
+  <circle cx="340" cy="160" r="130" fill="#DCEAE7" />
+  <circle cx="230" cy="640" r="90" fill="#9CC8C2" />
+  <circle cx="520" cy="360" r="60" fill="#2E7E78" />
+</svg>

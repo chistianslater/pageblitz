@@ -310,8 +310,14 @@ const KANZLEI_MINIMAL: WebsiteDataV2 = {
       type: "services",
       headline: "Leistungen",
       items: [
-        { title: "Jahresabschluss", description: "Bilanzierung fristgerecht erstellt." },
-        { title: "Lohnbuchhaltung", description: "Monatliche Abrechnung inklusive Meldewesen." },
+        {
+          title: "Jahresabschluss",
+          description: "Bilanzierung fristgerecht erstellt.",
+        },
+        {
+          title: "Lohnbuchhaltung",
+          description: "Monatliche Abrechnung inklusive Meldewesen.",
+        },
       ],
     },
     {
@@ -334,9 +340,177 @@ const KANZLEI_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.8, reviewCount: 41 },
 };
 
+const MORGENLICHT_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "morgenlicht",
+  businessName: "Zahnarztpraxis Dr. Sommer",
+  slug: "zahnarztpraxis-dr-sommer-hamburg-eppendorf",
+  businessCategory: "Zahnarztpraxis",
+  tagline: "Ein Lächeln beginnt mit Vertrauen.",
+  logo: { kind: "font", font: "Dr. Sommer" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Ein Lächeln beginnt mit Vertrauen.",
+      subheadline:
+        "Moderne Zahnmedizin in Hamburg-Eppendorf — gründlich erklärt, sanft behandelt.",
+      ctaText: "Online Termin buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/morgenlicht-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      intro: "Vier Schwerpunkte, immer mit Zeit für Ihre Fragen.",
+      items: [
+        {
+          title: "Prophylaxe",
+          description:
+            "Professionelle Zahnreinigung und Vorsorge — gründlich und schonend.",
+          price: "ab 89 €",
+        },
+        {
+          title: "Implantate",
+          description:
+            "Festsitzender Zahnersatz, individuell geplant und in Ruhe besprochen.",
+          price: "auf Anfrage",
+        },
+        {
+          title: "Kinderzahnheilkunde",
+          description:
+            "Erste Praxisbesuche spielerisch gestaltet — ohne Angst, mit viel Geduld.",
+        },
+        {
+          title: "Angstpatienten-Sprechstunde",
+          description:
+            "Extra Zeit, ruhige Aufklärung und Behandlung im eigenen Tempo.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über uns",
+      body: "Die Praxis Dr. Sommer liegt seit 2011 mitten in Hamburg-Eppendorf und begleitet Familien über Generationen. Sechs Behandler und ein zehnköpfiges Team kümmern sich um Prophylaxe, Implantologie und Kinderzahnheilkunde — mit dem Anspruch, jede Behandlung verständlich zu erklären, bevor sie beginnt. Wer Angst vor dem Zahnarztbesuch hat, bekommt bei uns extra Zeit und eine eigene Sprechstunde. Digitale Röntgentechnik, moderne Materialien und ein helles, ruhiges Raumkonzept sorgen dafür, dass sich der Besuch nicht nach Praxis, sondern nach gutem Empfang anfühlt.",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Patienten sagen",
+      items: [
+        {
+          author: "Nadine Krüger",
+          text: "Endlich eine Praxis, die mir als Angstpatientin wirklich zuhört. Jeder Schritt wurde vorher erklärt.",
+          rating: 5,
+        },
+        {
+          author: "Tobias Ahrens",
+          text: "Mein Sohn geht mittlerweile gern zum Zahnarzt — das hätte ich vor der Implantation nicht gedacht.",
+          rating: 5,
+        },
+        {
+          author: "Familie Bergmann",
+          text: "Kurze Wartezeiten, freundliches Team, transparente Kosten. Können wir nur empfehlen.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Was kostet eine professionelle Zahnreinigung?",
+          answer:
+            "Die Prophylaxe startet bei 89 € und richtet sich nach Aufwand und Befund. Ein genaues Angebot erhalten Sie beim Termin.",
+        },
+        {
+          question: "Ich habe Angst vor dem Zahnarzt — was hilft?",
+          answer:
+            "Unsere Angstpatienten-Sprechstunde nimmt sich bewusst mehr Zeit, erklärt jeden Schritt vorab und passt das Tempo an Sie an.",
+        },
+        {
+          question: "Wie schnell bekomme ich einen Termin?",
+          answer:
+            "Für neue Patientinnen und Patienten finden sich meist innerhalb einer Woche freie Termine — online oder telefonisch buchbar.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "040 55 91 20",
+      email: "praxis@dr-sommer-hamburg.de",
+      street: "Eppendorfer Landstraße 54",
+      zip: "20249",
+      city: "Hamburg-Eppendorf",
+      openingHours: [{ day: "Mo–Fr", hours: "8:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title:
+      "Zahnarztpraxis Dr. Sommer Hamburg-Eppendorf — Prophylaxe, Implantate, Kinderzahnheilkunde",
+    description:
+      "Moderne Zahnmedizin in Hamburg-Eppendorf: Dr. Sommer betreut mit Prophylaxe, Implantologie, Kinderzahnheilkunde und einer eigenen Angstpatienten-Sprechstunde.",
+  },
+  footerNote: "Zahnarztpraxis Dr. Sommer · Hamburg-Eppendorf · seit 2011",
+  google: { rating: 4.9, reviewCount: 128 },
+};
+
+const MORGENLICHT_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "morgenlicht",
+  businessName: "Zahnarztpraxis Dr. Sommer",
+  slug: "zahnarztpraxis-dr-sommer-hamburg-eppendorf",
+  businessCategory: "Zahnarztpraxis",
+  tagline: "Ein Lächeln beginnt mit Vertrauen.",
+  logo: { kind: "font", font: "Dr. Sommer" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Ein Lächeln beginnt mit Vertrauen.",
+      subheadline:
+        "Moderne Zahnmedizin in Hamburg-Eppendorf — gründlich erklärt, sanft behandelt.",
+      ctaText: "Online Termin buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/morgenlicht-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Prophylaxe",
+          description: "Professionelle Zahnreinigung und Vorsorge.",
+        },
+        {
+          title: "Implantate",
+          description: "Festsitzender Zahnersatz, individuell geplant.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "040 55 91 20",
+      email: "praxis@dr-sommer-hamburg.de",
+      street: "Eppendorfer Landstraße 54",
+      zip: "20249",
+      city: "Hamburg-Eppendorf",
+      openingHours: [{ day: "Mo–Fr", hours: "8:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Zahnarztpraxis Dr. Sommer Hamburg-Eppendorf",
+    description:
+      "Moderne Zahnmedizin in Hamburg-Eppendorf: Dr. Sommer betreut mit Prophylaxe und Implantologie.",
+  },
+  footerNote: "Zahnarztpraxis Dr. Sommer · Hamburg-Eppendorf · seit 2011",
+  google: { rating: 4.9, reviewCount: 128 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
+  morgenlicht: { full: MORGENLICHT_FULL, minimal: MORGENLICHT_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

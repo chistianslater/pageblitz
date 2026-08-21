@@ -2,6 +2,7 @@ import type { PackId } from "../siteContract/types";
 import type { PackConstitution } from "./types";
 import { WERKBANK } from "./werkbank";
 import { KANZLEI } from "./kanzlei";
+import { MORGENLICHT } from "./morgenlicht";
 
 export type { PackConstitution, PaletteColor, FontSpec } from "./types";
 export { toCssVars } from "./toCssVars";
@@ -9,6 +10,7 @@ export { toCssVars } from "./toCssVars";
 export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {
   werkbank: WERKBANK,
   kanzlei: KANZLEI,
+  morgenlicht: MORGENLICHT,
 };
 
 export const FALLBACK_PACK: PackId = "werkbank";
