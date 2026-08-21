@@ -2,15 +2,38 @@ import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type {
   PackId,
+  SectionOf,
   SectionType,
   WebsiteDataV2,
 } from "../../shared/siteContract/types";
 import { buildContentPrompt } from "./contentPrompt";
 import { llmComplete } from "./llmClient";
 
+/**
+ * Deterministische Fakten aus dem Business-Datensatz (nicht vom LLM), die
+ * NACH der zod-Validierung der LLM-Antwort ins Dokument gemergt werden.
+ * facts.contact ERSETZT die vom LLM gelieferten Kontaktfelder vollständig —
+ * das LLM darf laut Prompt ohnehin nur "city" beisteuern (siehe
+ * contentPrompt.ts, Verbotszeile), aber der Merge ist die harte Garantie:
+ * Telefonnummern/E-Mails/Straßen kommen ausschließlich von hier.
+ */
+export interface GenerateSiteContentFacts {
+  slug?: string;
+  businessCategory?: string;
+  google?: { rating: number; reviewCount: number };
+  contact?: {
+    phone?: string;
+    email?: string;
+    street?: string;
+    zip?: string;
+    city?: string;
+  };
+}
+
 export interface GenerateSiteContentArgs {
   packId: PackId;
   business: { name: string; category: string; city?: string };
+  facts?: GenerateSiteContentFacts;
 }
 
 const DEFAULT_SECTIONS: SectionType[] = [
@@ -86,15 +109,70 @@ async function attempt(
 }
 
 /**
+ * Mergt deterministische Fakten (Business-Datensatz) in ein bereits
+ * zod-validiertes v2-Dokument. facts.contact ERSETZT die contact-Sektion
+ * vollständig (nicht partiell mit LLM-Werten mischen — sonst könnte ein
+ * vom LLM erfundenes Feld neben einem echten Fakt stehen bleiben).
+ * Immutable: gibt ein neues Objekt zurück, mutiert `data` nicht.
+ */
+function mergeFacts(
+  data: WebsiteDataV2,
+  facts: GenerateSiteContentFacts
+): WebsiteDataV2 {
+  let sections = data.sections;
+  if (facts.contact) {
+    const { phone, email, street, zip, city } = facts.contact;
+    const existingIndex = data.sections.findIndex(s => s.type === "contact");
+    const existing =
+      existingIndex >= 0
+        ? (data.sections[existingIndex] as SectionOf<"contact">)
+        : undefined;
+    const newContact: SectionOf<"contact"> = {
+      type: "contact",
+      ...(existing?.headline !== undefined
+        ? { headline: existing.headline }
+        : {}),
+      ...(phone !== undefined ? { phone } : {}),
+      ...(email !== undefined ? { email } : {}),
+      ...(street !== undefined ? { street } : {}),
+      ...(zip !== undefined ? { zip } : {}),
+      ...(city !== undefined ? { city } : {}),
+      ...(existing?.openingHours !== undefined
+        ? { openingHours: existing.openingHours }
+        : {}),
+    };
+    sections =
+      existingIndex >= 0
+        ? data.sections.map((s, i) => (i === existingIndex ? newContact : s))
+        : [...data.sections, newContact];
+  }
+
+  return {
+    ...data,
+    sections,
+    ...(facts.slug !== undefined ? { slug: facts.slug } : {}),
+    ...(facts.businessCategory !== undefined
+      ? { businessCategory: facts.businessCategory }
+      : {}),
+    ...(facts.google !== undefined ? { google: facts.google } : {}),
+  };
+}
+
+/**
  * Erzeugt die v2-Website-Inhalte per LLM: Prompt bauen → llmComplete →
  * JSON.parse → deterministische Envelope-Felder mergen → zod-Validierung.
  * Bei Fehler GENAU EIN Retry mit angehängter Fehlermeldung; scheitert auch
  * der zweite Versuch, wird geworfen (kein stiller Fallback — Spec §4.1/§6).
+ *
+ * Optionales `facts`-Objekt (Business-Datensatz, kein LLM-Output) wird ERST
+ * NACH dieser Validierung gemergt und das Ergebnis erneut per safeParse
+ * geprüft — Merge-Reihenfolge ist bewusst so, dass facts niemals von der
+ * LLM-Antwort überschrieben werden können.
  */
 export async function generateSiteContent(
   args: GenerateSiteContentArgs
 ): Promise<WebsiteDataV2> {
-  const { packId, business } = args;
+  const { packId, business, facts } = args;
   const constitution = getConstitution(packId);
   const sections = resolveSections(packId);
   const prompt = buildContentPrompt({ constitution, business, sections });
@@ -114,5 +192,17 @@ export async function generateSiteContent(
     );
   }
 
-  return result.data;
+  if (!facts) {
+    return result.data;
+  }
+
+  const merged = mergeFacts(result.data, facts);
+  const revalidated = WebsiteDataV2Schema.safeParse(merged);
+  if (!revalidated.success) {
+    throw new Error(
+      "Validierung nach Fakten-Merge fehlgeschlagen: " +
+        revalidated.error.message
+    );
+  }
+  return revalidated.data;
 }

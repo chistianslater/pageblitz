@@ -23,4 +23,19 @@ describe("stylePacks registry", () => {
   test("jede registrierte Verfassung hat konsistente id", () => {
     for (const [id, c] of Object.entries(STYLE_PACKS)) expect(c!.id).toBe(id);
   });
+
+  describe("getPackPool — Transliteration und Wortgrenzen-Matching", () => {
+    test("Logopädie (Umlaut) matched morgenlicht via logopaedie", () => {
+      expect(getPackPool("Logopädie")).toContain("morgenlicht");
+    });
+    test("Wirtschaftsprüfer (Umlaut) matched kanzlei via wirtschaftspruefer", () => {
+      expect(getPackPool("Wirtschaftsprüfer")).toContain("kanzlei");
+    });
+    test("Barbershop matched NICHT gusto (kein reiner Substring-Treffer von 'bar')", () => {
+      expect(getPackPool("Barbershop")).not.toContain("gusto");
+    });
+    test("Sanitärinstallateur matched werkbank via sanitaer-Präfix (Länge ≥ 4)", () => {
+      expect(getPackPool("Sanitärinstallateur")).toContain("werkbank");
+    });
+  });
 });

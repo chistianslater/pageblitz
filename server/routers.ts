@@ -143,6 +143,8 @@ import { searchStockPhotos } from "./_core/stockPhotos";
 import { selectPack } from "./generationV2/selectPack";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
 import { invalidateSsrCache } from "./ssr/routes";
+import { applyOnboardingToV2 } from "./onboardingV2Patch";
+import type { SectionType, WebsiteDataV2 } from "@shared/siteContract/types";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 // Compat client with older API — current_period_end not in 2026-02-25.clover
@@ -2199,6 +2201,14 @@ async function runWebsiteGenerationV2(
     name: string;
     category: string | null;
     searchRegion: string | null;
+    // Vorhandene Business-Felder (drizzle/schema.ts, Tabelle "businesses")
+    // für den deterministischen facts-Merge in generateSiteContent —
+    // NIEMALS vom LLM, immer aus dem Business-Datensatz.
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+    rating: string | null;
+    reviewCount: number | null;
   },
   category: string,
   industryKey: string
@@ -2209,12 +2219,31 @@ async function runWebsiteGenerationV2(
 
   await updateGenerationJob(jobId, { progress: 50 });
 
+  const rating = business.rating ? parseFloat(business.rating) : NaN;
   const websiteData = await generateSiteContent({
     packId,
     business: {
       name: business.name,
       category,
       city: business.searchRegion || undefined,
+    },
+    facts: {
+      slug: website.slug,
+      businessCategory: category,
+      ...(Number.isFinite(rating)
+        ? { google: { rating, reviewCount: business.reviewCount || 0 } }
+        : {}),
+      contact: {
+        phone: business.phone || undefined,
+        email: business.email || undefined,
+        // business.address ist ein unstrukturierter Freitext-Fund (GMB-Adresse,
+        // Tabelle "businesses" hat kein street/zip/city) — die v2-ContactSchema
+        // erwartet street/zip/city getrennt. Ohne strukturierte Trennung wird
+        // hier bewusst NUR die Stadt aus searchRegion übernommen; street/zip
+        // bleiben leer, bis der Onboarding-Legal-Schritt (applyOnboardingToV2)
+        // sie mit echten, vom Nutzer bestätigten Werten füllt.
+        city: business.searchRegion || undefined,
+      },
     },
   });
 
@@ -5052,6 +5081,15 @@ Kontext: ${input.context}`,
           });
         }
 
+        // v2: Patches nur beim Complete — alter Chat ist Übergangsphase bis
+        // Teilprojekt B. Die v1-Sideeffects unten (businessCategory-Patch,
+        // brandLogo, headlineFont, colorScheme) reshapen websiteData im
+        // v1-Format und würden das strikte WebsiteDataV2Schema verletzen.
+        // Antworten sind bereits oben in onboarding_responses gelandet.
+        if ((website.websiteData as any)?.version === 2) {
+          return { success: true, step: input.step };
+        }
+
         // If businessCategory changed, potentially update industry, heroImageUrl and colorScheme
         if (safeData.businessCategory) {
           const newCategory = safeData.businessCategory;
@@ -5240,74 +5278,92 @@ Kontext: ${input.context}`,
           }
         }
 
-        // Patch website data with real onboarding content (no redesign)
-        const patchedData = patchWebsiteData(website.websiteData, {
-          businessName: onboarding.businessName,
-          tagline: onboarding.tagline,
-          description: onboarding.description,
-          usp: onboarding.usp,
-          targetAudience: onboarding.targetAudience,
-          topServices,
-          addOnMenuData: (onboarding as any).addOnMenuData,
-          addOnPricelistData: (onboarding as any).addOnPricelistData,
-          addOnContactForm: onboarding.addOnContactForm ?? undefined,
-          logoUrl: onboarding.logoUrl,
-          photoUrls: onboarding.photoUrls,
-        });
+        // v2-Dokumente durchlaufen unten applyOnboardingToV2 statt der
+        // v1-Reshape-Pipeline (patchWebsiteData/contactItems/sectionOrder-
+        // Manipulation) — die v1-Pipeline setzt ein `any`-Objekt im
+        // v1-Format voraus und würde das strikte WebsiteDataV2Schema
+        // verletzen. v1-Verhalten bleibt unten unverändert (Zweig `!isV2`).
+        const isV2 = (website.websiteData as any)?.version === 2;
 
-        // Inject contact items from manual onboarding data (phone, email, address, opening hours)
-        const contactItems: Array<{
-          title: string;
-          description: string;
-          icon: string;
-        }> = [];
-        if (onboarding.legalPhone)
-          contactItems.push({
-            title: "Telefon",
-            description: onboarding.legalPhone,
-            icon: "Phone",
+        // Patch website data with real onboarding content (no redesign)
+        let patchedData: any;
+        if (!isV2) {
+          patchedData = patchWebsiteData(website.websiteData, {
+            businessName: onboarding.businessName,
+            tagline: onboarding.tagline,
+            description: onboarding.description,
+            usp: onboarding.usp,
+            targetAudience: onboarding.targetAudience,
+            topServices,
+            addOnMenuData: (onboarding as any).addOnMenuData,
+            addOnPricelistData: (onboarding as any).addOnPricelistData,
+            addOnContactForm: onboarding.addOnContactForm ?? undefined,
+            logoUrl: onboarding.logoUrl,
+            photoUrls: onboarding.photoUrls,
           });
-        if (onboarding.legalEmail)
-          contactItems.push({
-            title: "E-Mail",
-            description: onboarding.legalEmail,
-            icon: "Mail",
-          });
+        }
+
+        // Contact-Rohdaten aus dem Onboarding — v1 baut daraus unten
+        // contactItems für die v1-Sektionsform, v2 (weiter unten, nach der
+        // Legal-HTML-Generierung) übergibt dieselben Werte an
+        // applyOnboardingToV2.
         const addrParts = [
           onboarding.legalStreet,
           `${onboarding.legalZip || ""} ${onboarding.legalCity || ""}`.trim(),
         ].filter(Boolean);
         const addrStr = addrParts.join(", ");
-        if (addrStr)
-          contactItems.push({
-            title: "Adresse",
-            description: addrStr,
-            icon: "MapPin",
-          });
         const ohRaw = (onboarding as any).openingHours;
-        if (ohRaw && Array.isArray(ohRaw) && ohRaw.length > 0) {
-          const ohText = formatOpeningHoursText(ohRaw);
+        const ohText =
+          ohRaw && Array.isArray(ohRaw) && ohRaw.length > 0
+            ? formatOpeningHoursText(ohRaw)
+            : "";
+
+        if (!isV2) {
+          // Inject contact items from manual onboarding data (phone, email, address, opening hours)
+          const contactItems: Array<{
+            title: string;
+            description: string;
+            icon: string;
+          }> = [];
+          if (onboarding.legalPhone)
+            contactItems.push({
+              title: "Telefon",
+              description: onboarding.legalPhone,
+              icon: "Phone",
+            });
+          if (onboarding.legalEmail)
+            contactItems.push({
+              title: "E-Mail",
+              description: onboarding.legalEmail,
+              icon: "Mail",
+            });
+          if (addrStr)
+            contactItems.push({
+              title: "Adresse",
+              description: addrStr,
+              icon: "MapPin",
+            });
           if (ohText)
             contactItems.push({
               title: "Öffnungszeiten",
               description: ohText,
               icon: "Clock",
             });
-        }
-        if (contactItems.length > 0 && patchedData) {
-          // Ensure sections array exists (some non-GMB websites might not have one yet)
-          if (!(patchedData as any).sections)
-            (patchedData as any).sections = [];
-          (patchedData as any).sections = (patchedData as any).sections.filter(
-            (s: any) => s.type !== "contact"
-          );
-          (patchedData as any).sections.push({
-            type: "contact",
-            headline: "Kontakt",
-            items: contactItems,
-            content: "Wir freuen uns auf Ihre Nachricht.",
-            ctaText: "Nachricht senden",
-          });
+          if (contactItems.length > 0 && patchedData) {
+            // Ensure sections array exists (some non-GMB websites might not have one yet)
+            if (!(patchedData as any).sections)
+              (patchedData as any).sections = [];
+            (patchedData as any).sections = (
+              patchedData as any
+            ).sections.filter((s: any) => s.type !== "contact");
+            (patchedData as any).sections.push({
+              type: "contact",
+              headline: "Kontakt",
+              items: contactItems,
+              content: "Wir freuen uns auf Ihre Nachricht.",
+              ctaText: "Nachricht senden",
+            });
+          }
         }
 
         // Apply user's section order and hidden sections from hideSections step
@@ -5315,7 +5371,7 @@ Kontext: ${input.context}`,
           .sectionOrder;
         const savedHiddenSections: string[] | undefined = (onboarding as any)
           .hiddenSections;
-        if (patchedData && (patchedData as any).sections) {
+        if (!isV2 && patchedData && (patchedData as any).sections) {
           let secs = (patchedData as any).sections;
           if (savedHiddenSections && savedHiddenSections.length > 0) {
             secs = secs.filter(
@@ -5387,6 +5443,30 @@ Kontext: ${input.context}`,
           datenschutzHtml = generateDatenschutz(legalData);
         }
 
+        if (isV2) {
+          // v2: sämtliche Onboarding-Antworten (legal-HTML, Kontaktdaten,
+          // Section-Sichtbarkeit/-Reihenfolge, Tagline) in einem pure,
+          // schema-validierten Schritt anwenden statt der v1-Pipeline oben.
+          patchedData = applyOnboardingToV2(
+            website.websiteData as WebsiteDataV2,
+            {
+              impressumHtml: impressumHtml ?? undefined,
+              datenschutzHtml: datenschutzHtml ?? undefined,
+              legalPhone: onboarding.legalPhone ?? undefined,
+              legalEmail: onboarding.legalEmail ?? undefined,
+              legalStreet: onboarding.legalStreet ?? undefined,
+              legalZip: onboarding.legalZip ?? undefined,
+              legalCity: onboarding.legalCity ?? undefined,
+              openingHours: ohText
+                ? [{ day: "Öffnungszeiten", hours: ohText }]
+                : undefined,
+              hiddenSections: savedHiddenSections as SectionType[] | undefined,
+              sectionOrder: savedSectionOrder as SectionType[] | undefined,
+              tagline: onboarding.tagline ?? undefined,
+            }
+          );
+        }
+
         // Patch color scheme with user's chosen brand colors
         const existingColorScheme = (website.colorScheme as any) || {};
         const patchedColorScheme = {
@@ -5417,13 +5497,20 @@ Kontext: ${input.context}`,
           );
 
         // Save patched data and legal pages
+        // v2: patchedData ist bereits ein schema-validiertes WebsiteDataV2
+        // (legal.impressumHtml/datenschutzHtml liegen dort schon korrekt) —
+        // die v1-only Top-Level-Felder impressumHtml/datenschutzHtml/
+        // hasLegalPages dürfen NICHT mit hineingespreadet werden, sonst
+        // verletzt das strikte WebsiteDataV2Schema.
         const websiteUpdateData: any = {
-          websiteData: {
-            ...(patchedData || {}),
-            impressumHtml,
-            datenschutzHtml,
-            hasLegalPages: !!(impressumHtml && datenschutzHtml),
-          },
+          websiteData: isV2
+            ? patchedData
+            : {
+                ...(patchedData || {}),
+                impressumHtml,
+                datenschutzHtml,
+                hasLegalPages: !!(impressumHtml && datenschutzHtml),
+              },
           colorScheme: patchedColorScheme,
           onboardingStatus: "completed",
           hasLegalPages: !!(impressumHtml && datenschutzHtml),

@@ -65,6 +65,7 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     `## Verbote`,
     ...constitution.llmHints.dont.map(rule => `- ${rule}`),
     `- keine Bild-URLs, keine Links — ctaHref weglassen`,
+    `- Erfinde niemals Telefonnummern, E-Mail-Adressen oder Straßen — die contact-Sektion enthält höchstens city.`,
     ``,
     `## Antwortformat`,
     `Antworte mit einem JSON-Objekt mit GENAU zwei Top-Level-Feldern: "seo" und "sections". Keine weiteren Top-Level-Felder — insbesondere KEIN "version", KEIN "stylePackId", KEIN "businessName" (die setzt das System).`,

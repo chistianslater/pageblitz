@@ -143,6 +143,94 @@ describe("generateSiteContent", () => {
     vi.doUnmock("./llmClient");
     vi.resetModules();
   });
+  test("facts.contact ersetzt LLM-contact-Felder", async () => {
+    const llmAnswer = JSON.stringify({
+      seo: { title: "Schreinerei Brandt", description: "Möbelbau." },
+      sections: [
+        { type: "hero", headline: "Massarbeit." },
+        {
+          type: "services",
+          headline: "Leistungen",
+          items: [{ title: "Möbelbau" }],
+        },
+        {
+          type: "contact",
+          headline: "Kontakt",
+          phone: "ERFUNDEN-000",
+          email: "erfunden@example.com",
+          city: "Dortmund",
+        },
+      ],
+    });
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(llmAnswer),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: {
+        name: "Schreinerei Brandt",
+        category: "Schreinerei",
+        city: "Dortmund",
+      },
+      facts: {
+        contact: { phone: "0231 123456", email: "info@brandt.de" },
+      },
+    });
+    const contact = d.sections.find(s => s.type === "contact");
+    expect(contact).toMatchObject({
+      phone: "0231 123456",
+      email: "info@brandt.de",
+    });
+    expect((contact as any).city).toBeUndefined();
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("facts.google/slug/businessCategory landen im Dokument", async () => {
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(good),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: {
+        name: "Schreinerei Brandt",
+        category: "Schreinerei",
+        city: "Dortmund",
+      },
+      facts: {
+        slug: "schreinerei-brandt-dortmund",
+        businessCategory: "Schreinerei",
+        google: { rating: 4.8, reviewCount: 42 },
+      },
+    });
+    expect(d.slug).toBe("schreinerei-brandt-dortmund");
+    expect(d.businessCategory).toBe("Schreinerei");
+    expect(d.google).toEqual({ rating: 4.8, reviewCount: 42 });
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("ohne facts bleibt das Verhalten unverändert", async () => {
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(good),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: {
+        name: "Schreinerei Brandt",
+        category: "Schreinerei",
+        city: "Dortmund",
+      },
+    });
+    expect(d.slug).toBeUndefined();
+    expect(d.google).toBeUndefined();
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
   test("nach zweitem Fehlschlag: Throw, kein Fallback", async () => {
     vi.doMock("./llmClient", () => ({
       llmComplete: vi.fn().mockResolvedValue("{kaputt"),
