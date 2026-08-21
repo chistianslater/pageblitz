@@ -150,10 +150,19 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
-
-export default defineConfig({
-  plugins,
+// vitePluginManusRuntime() inlined das komplette App-Bundle als <script> in die
+// index.html (~367 KB). Im Prod-Build heißt das: kein Code-Splitting trotz
+// manualChunks, nichts separat cachebar (index.html läuft auf max-age=0) und
+// 108 KB gzip blockierendes JS bei *jedem* Seitenaufruf. Das Plugin ist ein
+// Dev-/Preview-Werkzeug – im Build hat es nichts zu suchen.
+export default defineConfig(({ command }) => ({
+  plugins: [
+    react(),
+    tailwindcss(),
+    jsxLocPlugin(),
+    ...(command === "serve" ? [vitePluginManusRuntime()] : []),
+    vitePluginManusDebugCollector(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -196,4 +205,4 @@ export default defineConfig({
       deny: ["**/.*"],
     },
   },
-});
+}));

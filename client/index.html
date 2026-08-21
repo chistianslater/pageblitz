@@ -72,63 +72,12 @@
       ]
     }
     </script>
-    <!-- Schema.org: FAQPage (matches LandingPage FAQs) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Wie schnell ist meine Website online?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "In 3 Minuten. Die KI generiert deine Website sofort nach der Eingabe deiner Unternehmensdaten – kein Warten, kein Webdesigner nötig."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Was kostet eine Website mit Pageblitz?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ab 19,90 €/Monat ohne Einrichtungsgebühr. Du kannst 7 Tage gratis testen – ohne Kreditkarte."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Brauche ich technische Kenntnisse?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Nein. Pageblitz wurde speziell für Menschen ohne IT-Kenntnisse entwickelt. Die KI übernimmt Design, Texte und Struktur automatisch."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Ist die Website DSGVO-konform?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ja. Jede Pageblitz-Website enthält automatisch Impressum, Datenschutzerklärung und einen DSGVO-konformen Cookie-Banner."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Kann ich meine Website nach der Erstellung noch anpassen?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ja. Im Kundenbereich kannst du Texte, Bilder, Öffnungszeiten und Kontaktdaten jederzeit aktualisieren."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Bekomme ich eine eigene Domain?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Eine eigene Domain ist als günstiges Add-on verfügbar. Du kannst auch direkt mit einer pageblitz.de-Subdomain starten."
-          }
-        }
-      ]
-    }
-    </script>
+    <!--
+      FAQPage-Schema wird serverseitig aus shared/faq.ts injiziert (siehe
+      server/seo/homePage.ts). Vorher stand die Liste hier hartkodiert und war
+      von den tatsächlich gerenderten FAQs abgewichen – von sechs Fragen stimmte
+      genau eine überein. Bitte nicht wieder hier eintragen.
+    -->
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />

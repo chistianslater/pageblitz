@@ -36,6 +36,7 @@ import {
   getWebsiteBySlugWithBusiness,
   updateOutreachEmail,
 } from "../db";
+import { generateHomePrerender, buildHomeFaqSchema } from "../seo/homePage";
 import { outreachEmails } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { registerSsrRoutes } from "../ssr/routes";
@@ -460,8 +461,13 @@ async function startServer() {
 
   app.get("/website-erstellen/:industry/:city", (req, res) => {
     const ind = SEO_INDUSTRIES[req.params.industry];
-    const city = DE_CITIES.find(c => c.slug === req.params.city);
     if (!ind) return res.redirect(301, "/website-erstellen");
+    const city = DE_CITIES.find((c) => c.slug === req.params.city);
+    // Unbekannte Stadt = eine der 39 abgeschalteten Städte-Seiten (oder ein
+    // Tippfehler). Vorher wurde hier die Branchenseite unter der Städte-URL
+    // ausgeliefert – also ein Duplikat mit Status 200. Jetzt sauber 301 auf das
+    // Original, damit Google die alten URLs konsolidiert statt sie zu behalten.
+    if (!city) return res.redirect(301, `/website-erstellen/${ind.slug}`);
     res.setHeader("Cache-Control", LANDING_CACHE);
     res.type("text/html").send(generateLandingPageHTML(ind, city));
   });
@@ -483,10 +489,41 @@ async function startServer() {
     const distPath = path.resolve(import.meta.dirname, "public");
     const indexHtmlPath = path.resolve(distPath, "index.html");
 
-    const injectMetaTags = async (
-      req: express.Request,
-      res: express.Response
-    ) => {
+    // ── Startseite: Prerender in #root ───────────────────────────────────────
+    // `/` lieferte bisher nur <div id="root"></div> – für Crawler ohne
+    // JS-Rendering also eine leere Seite. Hier wird der Landingpage-Inhalt als
+    // statisches HTML hineingeschrieben; React ersetzt ihn beim Mounten.
+    // Das FAQ-Schema kommt aus shared/faq.ts, damit es nicht wieder vom
+    // sichtbaren Inhalt abweicht.
+    let homeHtmlCache: string | null = null;
+    app.get("/", (_req, res) => {
+      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+      try {
+        if (homeHtmlCache === null) {
+          if (!fs.existsSync(indexHtmlPath)) {
+            console.error("[SEO] index.html fehlt:", indexHtmlPath);
+            return res.status(500).send("Server error");
+          }
+          homeHtmlCache = fs
+            .readFileSync(indexHtmlPath, "utf-8")
+            .replace(
+              '<div id="root"></div>',
+              `<div id="root">${generateHomePrerender()}</div>`
+            )
+            .replace(
+              "</head>",
+              `<script type="application/ld+json">${buildHomeFaqSchema()}</script>\n  </head>`
+            );
+        }
+        res.type("text/html").send(homeHtmlCache);
+      } catch (err) {
+        console.error("[SEO] Home-Prerender fehlgeschlagen:", err);
+        if (fs.existsSync(indexHtmlPath)) return res.sendFile(indexHtmlPath);
+        res.status(500).send("Server error");
+      }
+    });
+
+    const injectMetaTags = async (req: express.Request, res: express.Response) => {
       // index.html darf NICHT lange gecached werden – sonst zeigt der Browser
       // nach einem Deploy alte chunk-Hashes, die nicht mehr existieren →
       // "SyntaxError: Unexpected token '<'" + Bilder/Layouts laden nicht.
