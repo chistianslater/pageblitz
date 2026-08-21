@@ -46,6 +46,18 @@ Tests: `server/v2WriteGuard.test.ts`, `server/routers.v2Guards.test.ts` (C-1/C-2
 `server/routers.onboardingCompleteV2.test.ts` (I-1), `server/generationV2/generateSiteContent.test.ts`
 + `contentPrompt.test.ts` (I-2, aktualisiert). Gesamtsuite weiterhin grün (siehe §2-Update unten).
 
+**Nachtrag (2026-08-21, Restlücken-Fix):** Der C-3-Guard deckte zunächst sieben Schreibpfade ab.
+Eine gezielte Nachprüfung fand vier weitere `updateWebsite`-Aufrufe ohne `assertV2SafeWrite`:
+`customer.updateServices`, `customer.updateDesign`, `customer.updateAddons` und `website.regenerate`
+(Admin-Regenerierung). Alle vier sind jetzt ebenfalls unmittelbar vor dem Persist geguardet —
+**Gesamtabdeckung: elf geschützte Schreibpfade (7+4)**. `website.regenerate` lehnt die Regenerierung
+eines gespeicherten v2-Dokuments mit der Guard-Fehlermeldung ab, da die LLM-Ausgabe des
+Regenerierungspfads v1-förmig ist und nicht gegen `WebsiteDataV2Schema` besteht. v1-Verhalten bleibt
+für alle vier Pfade byte-identisch (Guard ist bei v1-Dokumenten ein No-Op). Tests: zwei neue Fälle in
+`server/routers.v2Guards.test.ts` (`customer.updateAddons`, `website.regenerate`, jeweils gespeichertes
+v2-Dokument + korrumpierender Payload → `TRPCError`, kein `updateWebsite`-Aufruf). Siehe auch §4
+Punkt 6 (korrigierte Menü/Preisliste-Aussage).
+
 ## 2. Lokale E2E-Probe (dieser Task, 2026-08-21)
 
 Verifikation vor der VPS-Freigabe — Dev-Server `PORT=3005 npm run dev`, danach per PID gestoppt
@@ -184,19 +196,29 @@ als „fertig" missverstanden wird:
 5. **Im alten Chat nie angewendete v2-Antworten.** Der C-1-Guard (§1a) verhindert zwar, dass der
    Alt-Chat v2-Dokumente korrumpiert, aber er lässt die betroffenen Chat-Schritte für v2-Websites
    funktional wirkungslos: Beschreibung-/USP-/Leistungs-Texte aus `generateInitialContent` werden
-   nicht mehr ins Dokument geschrieben, ebenso wenig die Hero-/About-Foto-Wahl und Add-on-Daten aus
-   Menü-, Preislisten- und Team-Schritten (Guard aus C-3 blockiert deren `updateWebsite`-Aufrufe für
-   v2 mit einer sauberen Fehlermeldung statt stiller Korruption). Für v2-Websites bleiben diese
+   nicht mehr ins Dokument geschrieben, ebenso wenig die Hero-/About-Foto-Wahl und die Team-Daten aus
+   dem Team-Schritt (`customer.saveTeamMembers`, seit C-3 geguardet). Für v2-Websites bleiben diese
    Inhalte auf dem Stand der Erstgenerierung (`runWebsiteGenerationV2`), bis der neue Onboarding-Flow
    aus Teilprojekt B sie mit v2-nativen Schreibpfaden ersetzt.
-6. **Dashboard-Guard meldet sauberen Fehler statt still zu korrumpieren.** Die vier
-   Dashboard-Funktionen `customer.uploadLogoForWebsite`, `customer.saveTeamMembers`,
-   `customer.applyAiEdit` und `customer.confirmAiEdit` unterstützen v2-Websites fachlich noch nicht
-   (v1-Feldnamen wie `logoImageUrl`/`teamMembers` passen nicht ins strikte `WebsiteDataV2Schema`).
-   Seit der Fixwelle in §1a werfen sie bei einer v2-Website `TRPCError(BAD_REQUEST)` mit der
-   Meldung „Diese Funktion unterstützt das neue Website-Format noch nicht." statt das Dokument
-   still zu korrumpieren (`server/v2WriteGuard.ts`). Bis Teilprojekt B diese Funktionen v2-nativ
-   nachrüstet, sind sie für v2-Kunden im Dashboard funktional gesperrt, nicht fehlerfrei nutzbar.
+6. **Dashboard-Guard meldet sauberen Fehler statt still zu korrumpieren.** Sieben
+   Dashboard-Funktionen unterstützen v2-Websites fachlich noch nicht: die vier aus der C-3-Fixwelle
+   (`customer.uploadLogoForWebsite`, `customer.saveTeamMembers`, `customer.applyAiEdit`,
+   `customer.confirmAiEdit`) sowie drei weitere aus dem Restlücken-Fix im Nachtrag oben
+   (`customer.updateServices`, `customer.updateDesign`, `customer.updateAddons`). Ihre
+   v1-Feldnamen/-Sektionsformen (z. B. `logoImageUrl`/`teamMembers`, oder bei `updateAddons` das
+   Menü-/Preislisten-Sektionsformat mit `mode`/`albums`/`items` statt `categories`) passen nicht ins
+   strikte `WebsiteDataV2Schema`. Alle sieben werfen bei einer v2-Website `TRPCError(BAD_REQUEST)`
+   mit der Meldung „Diese Funktion unterstützt das neue Website-Format noch nicht." statt das
+   Dokument still zu korrumpieren (`server/v2WriteGuard.ts`). Konkret bedeutet das: **Menü- und
+   Preislisten-Bearbeitung über `customer.updateAddons` ist für v2-Kunden im Dashboard aktuell
+   funktional gesperrt** (sauberer Fehler statt stiller Korruption) — nicht bereits unterstützt, wie
+   eine frühere Fassung dieses Dokuments an dieser Stelle fälschlich suggerierte. Der achte im
+   Nachtrag geguardete Pfad, `website.regenerate`, ist keine Dashboard-, sondern eine
+   Admin-Funktion (Vorschau-Regenerierung im Admin-Panel) — für eine gespeicherte v2-Website lehnt
+   sie die Regenerierung mit derselben Guard-Fehlermeldung ab, statt das Dokument mit v1-förmiger
+   LLM-Ausgabe zu überschreiben. Bis Teilprojekt B diese acht Schreibpfade v2-nativ nachrüstet (inkl.
+   Add-on-Bearbeitung für v2), bleiben sie für v2-Dokumente funktional gesperrt, nicht fehlerfrei
+   nutzbar.
 
 ## 5. Verantwortlichkeit für den nächsten Schritt
 

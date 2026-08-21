@@ -28,6 +28,10 @@ vi.mock("./db", async importOriginal => {
     updateWebsite: vi.fn(),
     getWebsitesByUserId: vi.fn(),
     getOnboardingByWebsiteId: vi.fn(),
+    updateOnboarding: vi.fn(),
+    getBusinessById: vi.fn(),
+    listTemplateUploadsByPool: vi.fn(),
+    getNextLayoutForIndustry: vi.fn(),
   };
 });
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -38,13 +42,19 @@ vi.mock("./onboardingUpload", () => ({
   }),
   uploadPhoto: vi.fn(),
 }));
+// invokeLLM wird von classifyIndustry() UND der eigentlichen Regenerate-
+// Content-Generierung aufgerufen (zwei separate Calls in website.regenerate)
+// — echte Netzwerk-Aufrufe an das LLM sind in Unit-Tests nicht zulässig.
+vi.mock("./_core/llm", () => ({ invokeLLM: vi.fn() }));
 
 import { appRouter } from "./routers";
 import * as db from "./db";
 import { invalidateSsrCache } from "./ssr/routes";
+import { invokeLLM } from "./_core/llm";
 
 const mockedDb = vi.mocked(db);
 const mockedInvalidateSsrCache = vi.mocked(invalidateSsrCache);
+const mockedInvokeLLM = vi.mocked(invokeLLM);
 
 function createPublicContext(): TrpcContext {
   return {
@@ -87,6 +97,24 @@ function v2Doc(overrides: Partial<WebsiteDataV2> = {}): WebsiteDataV2 {
     ],
     seo: { title: "Schreinerei Brandt", description: "Möbelbau in Dortmund." },
     ...overrides,
+  };
+}
+
+function createAdminContext(userId = 1): TrpcContext {
+  return {
+    user: {
+      id: userId,
+      openId: "admin-" + userId,
+      email: "admin@example.com",
+      name: "Test Admin",
+      loginMethod: "manus",
+      role: "admin",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSignedIn: new Date(),
+    } as TrpcContext["user"],
+    req: { protocol: "https", headers: {} } as TrpcContext["req"],
+    res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
   };
 }
 
@@ -202,5 +230,76 @@ describe("Zentraler Write-Guard (C-3)", () => {
     expect(writtenWebsiteData.impressumHtml).toBeUndefined();
     expect(writtenWebsiteData.datenschutzHtml).toBeUndefined();
     expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("schreinerei-brandt");
+  });
+});
+
+describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", () => {
+  test("customer.updateAddons auf v2-Website mit korrumpierendem Payload → TRPCError, kein Write", async () => {
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: baseWebsiteRow(), subscription: { status: "active" } },
+    ] as any);
+    mockedDb.updateOnboarding.mockResolvedValue(undefined as any);
+
+    const caller = appRouter.createCaller(createUserContext());
+    await expect(
+      caller.customer.updateAddons({
+        websiteId: 42,
+        addOns: {
+          gallery: { enabled: true, photos: ["https://cdn.example.com/1.jpg"] },
+        },
+      })
+    ).rejects.toThrow(TRPCError);
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("website.regenerate auf v2-Website mit korrumpierendem LLM-Payload → TRPCError, kein Write", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Schreinerei Brandt",
+      category: "Schreinerei",
+      rating: null,
+      reviewCount: 0,
+      googleReviews: null,
+      openingHours: null,
+      phone: null,
+      address: null,
+      placeId: null,
+    } as any);
+    mockedDb.listTemplateUploadsByPool.mockResolvedValue([]);
+    mockedDb.getNextLayoutForIndustry.mockResolvedValue("Kanzlei" as any);
+    // 1. Call: classifyIndustry() erwartet ein einzelnes Wort.
+    // 2. Call: die eigentliche Regenerate-Content-Generierung — bewusst
+    // v1-förmig (kein version/stylePackId/seo), um die v2-Schema-Validierung
+    // im Guard zuverlässig scheitern zu lassen.
+    mockedInvokeLLM
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: "handwerk" } }],
+      } as any)
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                tagline: "Neue Perspektiven.",
+                sections: [
+                  { type: "hero", headline: "Willkommen" },
+                  {
+                    type: "services",
+                    headline: "Leistungen",
+                    items: [{ title: "Möbelbau" }],
+                  },
+                ],
+              }),
+            },
+          },
+        ],
+      } as any);
+
+    const caller = appRouter.createCaller(createAdminContext());
+    await expect(
+      caller.website.regenerate({ websiteId: 42 })
+    ).rejects.toThrow(TRPCError);
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });

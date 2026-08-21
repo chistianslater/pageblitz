@@ -3962,6 +3962,7 @@ export const appRouter = router({
         const newPreviewToken = nanoid(32);
 
         // Update the existing website record with new content
+        assertV2SafeWrite(website.websiteData, websiteData);
         await updateWebsite(input.websiteId, {
           slug: newSlug,
           status: "preview",
@@ -6938,6 +6939,7 @@ Wichtige Felder im JSON:
           }
         }
 
+        assertV2SafeWrite(website.websiteData, websiteData);
         await updateWebsite(input.websiteId, { websiteData });
         return { success: true };
       }),
@@ -7013,6 +7015,9 @@ Wichtige Felder im JSON:
           });
         }
 
+        if (updateData.websiteData !== undefined) {
+          assertV2SafeWrite(website.websiteData, updateData.websiteData);
+        }
         await updateWebsite(input.websiteId, updateData);
         return { success: true };
       }),
@@ -7288,11 +7293,13 @@ Wichtige Felder im JSON:
         // Save contact form fields to both websiteData (for rendering) and website record
         if (input.addOns.contactFormFields) {
           websiteData.contactFormFields = input.addOns.contactFormFields;
+          assertV2SafeWrite(website.websiteData, websiteData);
           await updateWebsite(input.websiteId, {
             websiteData,
             contactFormFields: input.addOns.contactFormFields,
           });
         } else {
+          assertV2SafeWrite(website.websiteData, websiteData);
           await updateWebsite(input.websiteId, { websiteData });
         }
         return { success: true };
