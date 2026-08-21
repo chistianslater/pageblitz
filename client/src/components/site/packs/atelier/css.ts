@@ -10,7 +10,7 @@ export const ATELIER_CSS = `
 .pb-at-masthead .dot{color:var(--pb-accent);font-weight:400}
 .pb-at-meta{display:flex;justify-content:space-between;gap:14px;font-family:var(--pb-font-utility);font-size:11px;color:var(--pb-muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--pb-line);padding:10px 0;flex-wrap:wrap}
 .pb-at-cover{display:grid;grid-template-columns:1.5fr 1fr;gap:0;border-bottom:3px solid var(--pb-line)}
-.pb-at-img{position:relative;min-height:280px;border-right:1px solid var(--pb-line);overflow:hidden}
+.pb-at-img{position:relative;min-height:280px;background:var(--pb-ink);border-right:1px solid var(--pb-line);overflow:hidden}
 .pb-at-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .pb-at-caption{position:absolute;left:18px;bottom:16px;right:18px;margin:0;font-family:var(--pb-font-display);font-style:italic;font-size:clamp(1.4rem,3vw,2rem);color:var(--pb-accent-contrast);line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .pb-at-capcol{padding:22px 24px 26px 24px;display:flex;flex-direction:column;gap:16px}
