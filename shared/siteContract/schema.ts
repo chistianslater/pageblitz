@@ -34,14 +34,23 @@ export const SECTION_TYPES = [
 const PackIdSchema = z.enum(PACK_IDS);
 const SectionTypeSchema = z.enum(SECTION_TYPES);
 
+/**
+ * Erlaubt nur http(s)-URLs, root-relative Pfade ("/...") oder Anker ("#...").
+ * Blockiert insbesondere "javascript:"- und andere unsichere URL-Schemata in
+ * allen Link-/Bild-Feldern des Vertrags.
+ */
+const SafeUrlSchema = z
+  .string()
+  .regex(/^(https?:\/\/|\/|#)/, "unsichere URL");
+
 const HeroSchema = z
   .object({
     type: z.literal("hero"),
     headline: z.string().min(1),
     subheadline: z.string().optional(),
     ctaText: z.string().optional(),
-    ctaHref: z.string().optional(),
-    imageUrl: z.string().optional(),
+    ctaHref: SafeUrlSchema.optional(),
+    imageUrl: SafeUrlSchema.optional(),
   })
   .strict();
 const ServicesSchema = z
@@ -67,7 +76,7 @@ const AboutSchema = z
     type: z.literal("about"),
     headline: z.string(),
     body: z.string(),
-    imageUrl: z.string().optional(),
+    imageUrl: SafeUrlSchema.optional(),
   })
   .strict();
 const GallerySchema = z
@@ -75,7 +84,7 @@ const GallerySchema = z
     type: z.literal("gallery"),
     headline: z.string().optional(),
     images: z
-      .array(z.object({ url: z.string(), alt: z.string() }).strict())
+      .array(z.object({ url: SafeUrlSchema, alt: z.string() }).strict())
       .min(1),
   })
   .strict();
@@ -154,7 +163,7 @@ const TeamSchema = z
           .object({
             name: z.string(),
             role: z.string().optional(),
-            imageUrl: z.string().optional(),
+            imageUrl: SafeUrlSchema.optional(),
           })
           .strict()
       )
@@ -166,7 +175,7 @@ const CtaSchema = z
     type: z.literal("cta"),
     headline: z.string(),
     ctaText: z.string(),
-    ctaHref: z.string().optional(),
+    ctaHref: SafeUrlSchema.optional(),
   })
   .strict();
 
@@ -195,7 +204,7 @@ export const WebsiteDataV2Schema = z
     logo: z
       .union([
         z.object({ kind: z.literal("font"), font: z.string() }).strict(),
-        z.object({ kind: z.literal("image"), url: z.string() }).strict(),
+        z.object({ kind: z.literal("image"), url: SafeUrlSchema }).strict(),
       ])
       .optional(),
     sections: z.array(SectionV2Schema).min(1),
@@ -207,6 +216,11 @@ export const WebsiteDataV2Schema = z
       .object({ rating: z.number(), reviewCount: z.number() })
       .strict()
       .optional(),
+    // SICHERHEITS-INVARIANTE: impressumHtml/datenschutzHtml werden beim SSR
+    // (server/ssr/renderSite.tsx) bewusst UNESCAPED gerendert und sind
+    // same-origin mit dem Admin-Panel. In diese Felder darf ausschließlich
+    // systemgenerierter Output des legalGenerator gelangen, niemals rohe
+    // Nutzereingabe — sonst ist es Stored-XSS auf der Kundenseite.
     legal: z
       .object({
         impressumHtml: z.string().optional(),

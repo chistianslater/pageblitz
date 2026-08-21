@@ -462,7 +462,7 @@ async function startServer() {
   app.get("/website-erstellen/:industry/:city", (req, res) => {
     const ind = SEO_INDUSTRIES[req.params.industry];
     if (!ind) return res.redirect(301, "/website-erstellen");
-    const city = DE_CITIES.find((c) => c.slug === req.params.city);
+    const city = DE_CITIES.find(c => c.slug === req.params.city);
     // Unbekannte Stadt = eine der 39 abgeschalteten Städte-Seiten (oder ein
     // Tippfehler). Vorher wurde hier die Branchenseite unter der Städte-URL
     // ausgeliefert – also ein Duplikat mit Status 200. Jetzt sauber 301 auf das
@@ -523,7 +523,10 @@ async function startServer() {
       }
     });
 
-    const injectMetaTags = async (req: express.Request, res: express.Response) => {
+    const injectMetaTags = async (
+      req: express.Request,
+      res: express.Response
+    ) => {
       // index.html darf NICHT lange gecached werden – sonst zeigt der Browser
       // nach einem Deploy alte chunk-Hashes, die nicht mehr existieren →
       // "SyntaxError: Unexpected token '<'" + Bilder/Layouts laden nicht.

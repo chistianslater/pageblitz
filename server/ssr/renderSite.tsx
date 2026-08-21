@@ -9,6 +9,13 @@ import type { SectionOf, WebsiteDataV2 } from "../../shared/siteContract/types";
 export interface RenderSiteOptions {
   origin: string;
   pathname?: string;
+  /**
+   * Präfix für interne Pack-Links (Impressum/Datenschutz, Legal-Zurück-Link).
+   * "" für Subdomain-Sites (kunde.pageblitz.de/...), "/site/<slug>" für die
+   * Pfadform (pageblitz.de/site/<slug>/...) — sonst führen die Links dort in
+   * die Pageblitz-SPA statt zur Kundenseite.
+   */
+  basePath?: string;
 }
 
 export interface RenderSiteResult {
@@ -122,17 +129,25 @@ function renderLegalHead(
  * Rendert eine schlichte Rechtsseite (Impressum/Datenschutz) statt der vollen
  * Site. Fehlt der Inhalt, liefert der `status` 404 — der HTML-Fallback-Text
  * bleibt trotzdem menschenlesbar (Crawler sehen Status + Text konsistent).
+ *
+ * SICHERHEITS-INVARIANTE: `bodyHtml` (impressumHtml/datenschutzHtml, siehe
+ * WebsiteDataV2Schema["legal"]) wird unten als `content` bewusst UNESCAPED
+ * in `html` interpoliert — same-origin mit dem Admin-Panel. In dieses Feld
+ * darf ausschließlich systemgenerierter Output des legalGenerator gelangen,
+ * niemals rohe Nutzereingabe.
  */
 function renderLegalPage(
   data: WebsiteDataV2,
   canonicalUrl: string,
   title: string,
-  bodyHtml: string | undefined
+  bodyHtml: string | undefined,
+  basePath: string
 ): RenderSiteResult {
   const hasContent = Boolean(bodyHtml && bodyHtml.trim().length > 0);
   const content = hasContent
     ? bodyHtml
     : "<p>Diese Seite wurde nicht gefunden.</p>";
+  const backHref = basePath || "/";
   const html = `<!doctype html>
 <html lang="de">
 <head>
@@ -140,7 +155,7 @@ ${renderLegalHead(data, canonicalUrl, title)}
 </head>
 <body>
 <div class="pb-legal">
-<a href="/">&larr; Zurück zur Startseite</a>
+<a href="${esc(backHref)}">&larr; Zurück zur Startseite</a>
 ${content}
 </div>
 </body>
@@ -160,13 +175,15 @@ export function renderSiteHtml(
 ): RenderSiteResult {
   const pathname = opts.pathname ?? "/";
   const canonicalUrl = `${opts.origin}${pathname}`;
+  const basePath = opts.basePath ?? "";
 
   if (pathname === "/impressum") {
     return renderLegalPage(
       data,
       canonicalUrl,
       "Impressum",
-      data.legal?.impressumHtml
+      data.legal?.impressumHtml,
+      basePath
     );
   }
   if (pathname === "/datenschutz") {
@@ -174,12 +191,15 @@ export function renderSiteHtml(
       data,
       canonicalUrl,
       "Datenschutz",
-      data.legal?.datenschutzHtml
+      data.legal?.datenschutzHtml,
+      basePath
     );
   }
 
   const head = renderHead(data, canonicalUrl);
-  const body = renderToStaticMarkup(<SiteRenderer data={data} />);
+  const body = renderToStaticMarkup(
+    <SiteRenderer data={data} basePath={basePath} />
+  );
 
   const html = `<!doctype html>
 <html lang="de">

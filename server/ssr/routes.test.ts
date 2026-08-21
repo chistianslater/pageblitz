@@ -133,6 +133,23 @@ describe("SSR routes", () => {
       expect(res.text).toContain("nicht gefunden");
     });
 
+    test("/site/:slug-Request rendert Footer-Links mit /site/<slug>-Präfix (basePath)", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        websiteData: getFixture("werkbank", "full"),
+      });
+
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/site/schreinerei-brandt-dortmund");
+
+      expect(res.status).toBe(200);
+      expect(res.text).toContain(
+        'href="/site/schreinerei-brandt-dortmund/impressum"'
+      );
+      expect(res.text).toContain(
+        'href="/site/schreinerei-brandt-dortmund/datenschutz"'
+      );
+    });
+
     test("/site/FOO (uppercase) und /site/foo treffen denselben Cache-Eintrag — zweiter Request löst keinen weiteren DB-Call aus", async () => {
       (getWebsiteBySlug as Mock).mockResolvedValue({
         websiteData: getFixture("werkbank", "full"),

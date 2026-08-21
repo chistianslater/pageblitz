@@ -45,4 +45,44 @@ describe("WebsiteDataV2Schema", () => {
       WebsiteDataV2Schema.parse({ ...valid, hiddenSections: ["kekse"] })
     ).toThrow();
   });
+
+  describe("SafeUrlSchema — URL-Härtung", () => {
+    test("lehnt javascript:-URL in hero.ctaHref ab", () => {
+      const bad = {
+        ...valid,
+        sections: [
+          { ...valid.sections[0], ctaHref: "javascript:alert(1)" },
+          ...valid.sections.slice(1),
+        ],
+      };
+      expect(() => WebsiteDataV2Schema.parse(bad)).toThrow();
+    });
+
+    test("lehnt javascript:-URL in gallery.images[].url ab", () => {
+      const bad = {
+        ...valid,
+        sections: [
+          ...valid.sections,
+          {
+            type: "gallery",
+            images: [{ url: "javascript:alert(1)", alt: "böse" }],
+          },
+        ],
+      };
+      expect(() => WebsiteDataV2Schema.parse(bad)).toThrow();
+    });
+
+    test("akzeptiert https://-URL, root-relativen Pfad und Anker in hero.ctaHref", () => {
+      for (const href of ["https://example.com", "/kontakt", "#kontakt"]) {
+        const ok = {
+          ...valid,
+          sections: [
+            { ...valid.sections[0], ctaHref: href },
+            ...valid.sections.slice(1),
+          ],
+        };
+        expect(() => WebsiteDataV2Schema.parse(ok)).not.toThrow();
+      }
+    });
+  });
 });

@@ -75,17 +75,41 @@ function matchSitePath(
   };
 }
 
-/** Bestimmt aus Host + Pfad, ob die Anfrage eine Kundenseite adressiert (Subdomain oder /site/:slug). */
+/**
+ * Bestimmt aus Host + Pfad, ob die Anfrage eine Kundenseite adressiert
+ * (Subdomain oder /site/:slug). `basePath` ist "" für die Subdomain-Form
+ * (kunde.pageblitz.de/...) und "/site/<slug>" für die Pfadform
+ * (pageblitz.de/site/<slug>/...) — Pack-Links (Impressum/Datenschutz)
+ * brauchen dieses Präfix, sonst führen sie auf pageblitz.de in die SPA statt
+ * zur Kundenseite. `cacheKeyPrefix` unterscheidet die beiden Formen im
+ * Render-Cache, weil das erzeugte HTML sich jetzt je nach Pfadform
+ * unterscheidet (unterschiedliche Footer-/Zurück-Links).
+ */
 function resolveSiteRequest(
   req: Request
-): { slug: string; pathname: string } | null {
+): {
+  slug: string;
+  pathname: string;
+  basePath: string;
+  cacheKeyPrefix: string;
+} | null {
   const subdomainSlug = getCustomerSubdomainFromHost(req.hostname ?? "");
   if (subdomainSlug) {
-    return { slug: subdomainSlug, pathname: req.path };
+    return {
+      slug: subdomainSlug,
+      pathname: req.path,
+      basePath: "",
+      cacheKeyPrefix: "sub:",
+    };
   }
   const siteMatch = matchSitePath(req.path);
   if (siteMatch) {
-    return { slug: siteMatch.slug, pathname: siteMatch.rest };
+    return {
+      slug: siteMatch.slug,
+      pathname: siteMatch.rest,
+      basePath: `/site/${siteMatch.slug}`,
+      cacheKeyPrefix: "path:",
+    };
   }
   return null;
 }
@@ -160,7 +184,7 @@ async function handleCustomerSiteSsr(
     return;
   }
 
-  const cacheKey = `${siteRequest.slug}${siteRequest.pathname}`;
+  const cacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${siteRequest.pathname}`;
 
   try {
     const cached = siteHtmlCache.get(cacheKey);
@@ -189,6 +213,7 @@ async function handleCustomerSiteSsr(
     const { html, status } = renderSiteHtml(parsed.data, {
       origin,
       pathname: siteRequest.pathname,
+      basePath: siteRequest.basePath,
     });
     siteHtmlCache.set(cacheKey, { html, status, at: now });
     capCacheSize(siteHtmlCache, MAX_CACHE_ENTRIES);

@@ -72,6 +72,34 @@ describe("renderSiteHtml — Rechtsseiten (Impressum/Datenschutz)", () => {
   });
 });
 
+describe("renderSiteHtml — basePath (/site/:slug-Form)", () => {
+  test("Legal-Zurück-Link zeigt mit basePath auf /site/foo statt auf /", () => {
+    const data = {
+      ...getFixture("werkbank", "full"),
+      legal: { impressumHtml: "<p>Firma XY</p>" },
+    };
+    const { html } = renderSiteHtml(data, {
+      origin: "https://pageblitz.de",
+      pathname: "/impressum",
+      basePath: "/site/foo",
+    });
+    expect(html).toContain('href="/site/foo"');
+    expect(html).not.toContain('href="/"');
+  });
+
+  test("ohne basePath zeigt der Legal-Zurück-Link weiterhin auf / (Subdomain-Form)", () => {
+    const data = {
+      ...getFixture("werkbank", "full"),
+      legal: { impressumHtml: "<p>Firma XY</p>" },
+    };
+    const { html } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: "/impressum",
+    });
+    expect(html).toContain('href="/"');
+  });
+});
+
 describe("renderSiteHtml — Escaping", () => {
   test('businessName und seo.title mit <script> und " erscheinen nur escaped im Head, JSON-LD enthält kein rohes </script> oder <', () => {
     const base = getFixture("werkbank", "full");

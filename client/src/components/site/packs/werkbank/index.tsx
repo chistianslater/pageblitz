@@ -351,7 +351,10 @@ function renderSection(
   }
 }
 
-const WerkbankPage: React.FC<{ data: WebsiteDataV2 }> = ({ data }) => {
+const WerkbankPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
+  data,
+  basePath,
+}) => {
   const sections = orderedSections(data);
   const navSections = sections.filter(s => s.type !== "hero");
   const contact = sections.find(
@@ -386,8 +389,8 @@ const WerkbankPage: React.FC<{ data: WebsiteDataV2 }> = ({ data }) => {
           </p>
           {data.footerNote && <p>{data.footerNote}</p>}
           <p>
-            <a href="/impressum">Impressum</a> ·{" "}
-            <a href="/datenschutz">Datenschutz</a>
+            <a href={`${basePath}/impressum`}>Impressum</a> ·{" "}
+            <a href={`${basePath}/datenschutz`}>Datenschutz</a>
           </p>
         </footer>
       </div>
