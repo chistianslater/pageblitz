@@ -320,7 +320,7 @@ const SchimmerPage: React.FC<{
           </div>
           <div className="pb-sc-ring" aria-hidden="true" />
           {firstService && (
-            <div className="pb-sc-chip">✨ Neu: {firstService.title}</div>
+            <div className="pb-sc-chip">Neu: {firstService.title}</div>
           )}
           <div className="pb-sc-glass">
             <h1>{renderHeadline(hero.headline)}</h1>

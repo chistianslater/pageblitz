@@ -16,7 +16,6 @@ const WERKBANK_FULL: WebsiteDataV2 = {
   slug: "schreinerei-brandt-dortmund",
   businessCategory: "Schreinerei",
   tagline: "Massarbeit aus Holz. Punkt.",
-  logo: { kind: "font", font: "Brandt" },
   sections: [
     {
       type: "hero",
@@ -136,7 +135,6 @@ const WERKBANK_MINIMAL: WebsiteDataV2 = {
   slug: "schreinerei-brandt-dortmund",
   businessCategory: "Schreinerei",
   tagline: "Massarbeit aus Holz. Punkt.",
-  logo: { kind: "font", font: "Brandt" },
   sections: [
     {
       type: "hero",
@@ -185,7 +183,6 @@ const KANZLEI_FULL: WebsiteDataV2 = {
   slug: "roth-weber-steuerberater-koeln",
   businessCategory: "Steuerberater",
   tagline: "Klarheit in Zahlen.",
-  logo: { kind: "font", font: "Roth & Weber" },
   sections: [
     {
       type: "hero",
@@ -296,7 +293,6 @@ const KANZLEI_MINIMAL: WebsiteDataV2 = {
   slug: "roth-weber-steuerberater-koeln",
   businessCategory: "Steuerberater",
   tagline: "Klarheit in Zahlen.",
-  logo: { kind: "font", font: "Roth & Weber" },
   sections: [
     {
       type: "hero",
@@ -347,7 +343,6 @@ const MORGENLICHT_FULL: WebsiteDataV2 = {
   slug: "zahnarztpraxis-dr-sommer-hamburg-eppendorf",
   businessCategory: "Zahnarztpraxis",
   tagline: "Ein Lächeln beginnt mit Vertrauen.",
-  logo: { kind: "font", font: "Dr. Sommer" },
   sections: [
     {
       type: "hero",
@@ -462,7 +457,6 @@ const MORGENLICHT_MINIMAL: WebsiteDataV2 = {
   slug: "zahnarztpraxis-dr-sommer-hamburg-eppendorf",
   businessCategory: "Zahnarztpraxis",
   tagline: "Ein Lächeln beginnt mit Vertrauen.",
-  logo: { kind: "font", font: "Dr. Sommer" },
   sections: [
     {
       type: "hero",
@@ -514,7 +508,6 @@ const GUSTO_FULL: WebsiteDataV2 = {
   slug: "trattoria-lucia-berlin-charlottenburg",
   businessCategory: "Trattoria",
   tagline: "Ein Tisch. Ein Abend. Italien.",
-  logo: { kind: "font", font: "Trattoria Lucia" },
   sections: [
     {
       type: "hero",
@@ -642,7 +635,6 @@ const GUSTO_MINIMAL: WebsiteDataV2 = {
   slug: "trattoria-lucia-berlin-charlottenburg",
   businessCategory: "Trattoria",
   tagline: "Ein Tisch. Ein Abend. Italien.",
-  logo: { kind: "font", font: "Trattoria Lucia" },
   sections: [
     {
       type: "hero",
@@ -700,7 +692,6 @@ const PATINA_FULL: WebsiteDataV2 = {
   slug: "naturheilpraxis-voss-freiburg",
   businessCategory: "Naturheilkunde",
   tagline: "Heilung beginnt mit Zuhören.",
-  logo: { kind: "font", font: "Annelie Voss" },
   sections: [
     {
       type: "hero",
@@ -812,7 +803,6 @@ const PATINA_MINIMAL: WebsiteDataV2 = {
   slug: "naturheilpraxis-voss-freiburg",
   businessCategory: "Naturheilkunde",
   tagline: "Heilung beginnt mit Zuhören.",
-  logo: { kind: "font", font: "Annelie Voss" },
   sections: [
     {
       type: "hero",
@@ -863,7 +853,6 @@ const SALON_NOIR_FULL: WebsiteDataV2 = {
   slug: "noir-haarstudio-muenchen-maxvorstadt",
   businessCategory: "Friseursalon",
   tagline: "Handwerk für Haar.",
-  logo: { kind: "font", font: "NOIR Haarstudio" },
   sections: [
     {
       type: "hero",
@@ -998,7 +987,6 @@ const SALON_NOIR_MINIMAL: WebsiteDataV2 = {
   slug: "noir-haarstudio-muenchen-maxvorstadt",
   businessCategory: "Friseursalon",
   tagline: "Handwerk für Haar.",
-  logo: { kind: "font", font: "NOIR Haarstudio" },
   sections: [
     {
       type: "hero",
@@ -1051,7 +1039,6 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
   slug: "musikschule-tonleiter-nuernberg",
   businessCategory: "Musikschule",
   tagline: "1. Stunde gratis!",
-  logo: { kind: "font", font: "Tonleiter" },
   sections: [
     {
       type: "hero",
@@ -1191,7 +1178,6 @@ const MARKTPLATZ_MINIMAL: WebsiteDataV2 = {
   slug: "musikschule-tonleiter-nuernberg",
   businessCategory: "Musikschule",
   tagline: "1. Stunde gratis!",
-  logo: { kind: "font", font: "Tonleiter" },
   sections: [
     {
       type: "hero",
@@ -1245,7 +1231,6 @@ const LANDGUT_FULL: WebsiteDataV2 = {
   slug: "gaertnerei-gruenholz-ravensburg",
   businessCategory: "Gärtnerei & Baumschule",
   tagline: "Seit drei Generationen für Ravensburg.",
-  logo: { kind: "font", font: "Grünholz" },
   sections: [
     {
       type: "hero",
@@ -1357,7 +1342,6 @@ const LANDGUT_MINIMAL: WebsiteDataV2 = {
   slug: "gaertnerei-gruenholz-ravensburg",
   businessCategory: "Gärtnerei & Baumschule",
   tagline: "Seit drei Generationen für Ravensburg.",
-  logo: { kind: "font", font: "Grünholz" },
   sections: [
     {
       type: "hero",
@@ -1408,7 +1392,6 @@ const ATELIER_FULL: WebsiteDataV2 = {
   slug: "studio-lenz-fotografie-leipzig",
   businessCategory: "Fotografie",
   tagline: "Bilder, die bleiben.",
-  logo: { kind: "font", font: "Studio Lenz" },
   sections: [
     {
       type: "hero",
@@ -1511,7 +1494,6 @@ const ATELIER_MINIMAL: WebsiteDataV2 = {
   slug: "studio-lenz-fotografie-leipzig",
   businessCategory: "Fotografie",
   tagline: "Bilder, die bleiben.",
-  logo: { kind: "font", font: "Studio Lenz" },
   sections: [
     {
       type: "hero",
@@ -1560,7 +1542,6 @@ const KLARWERK_FULL: WebsiteDataV2 = {
   slug: "nordwind-it-kiel",
   businessCategory: "IT-Service",
   tagline: "IT, die einfach läuft.",
-  logo: { kind: "font", font: "Nordwind IT" },
   sections: [
     {
       type: "hero",
@@ -1672,7 +1653,6 @@ const KLARWERK_MINIMAL: WebsiteDataV2 = {
   slug: "nordwind-it-kiel",
   businessCategory: "IT-Service",
   tagline: "IT, die einfach läuft.",
-  logo: { kind: "font", font: "Nordwind IT" },
   sections: [
     {
       type: "hero",
@@ -1726,7 +1706,6 @@ const VERVE_FULL: WebsiteDataV2 = {
   slug: "studio-puls-essen",
   businessCategory: "Personal Training",
   tagline: "12 Wochen. Messbar.",
-  logo: { kind: "font", font: "Studio PULS" },
   sections: [
     {
       type: "hero",
@@ -1844,7 +1823,6 @@ const VERVE_MINIMAL: WebsiteDataV2 = {
   slug: "studio-puls-essen",
   businessCategory: "Personal Training",
   tagline: "12 Wochen. Messbar.",
-  logo: { kind: "font", font: "Studio PULS" },
   sections: [
     {
       type: "hero",
@@ -1893,7 +1871,6 @@ const ZUNFT_FULL: WebsiteDataV2 = {
   slug: "baeckerei-steinofen-augsburg",
   businessCategory: "Bäckerei",
   tagline: "Brot braucht Zeit.",
-  logo: { kind: "font", font: "Bäckerei Steinofen" },
   sections: [
     {
       type: "hero",
@@ -2009,7 +1986,6 @@ const ZUNFT_MINIMAL: WebsiteDataV2 = {
   slug: "baeckerei-steinofen-augsburg",
   businessCategory: "Bäckerei",
   tagline: "Brot braucht Zeit.",
-  logo: { kind: "font", font: "Bäckerei Steinofen" },
   sections: [
     {
       type: "hero",
@@ -2059,7 +2035,6 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
   slug: "studio-lumiere-wiesbaden",
   businessCategory: "Kosmetikstudio",
   tagline: "Zeit für dich.",
-  logo: { kind: "font", font: "Studio Lumière" },
   sections: [
     {
       type: "hero",
@@ -2174,7 +2149,6 @@ const SCHIMMER_MINIMAL: WebsiteDataV2 = {
   slug: "studio-lumiere-wiesbaden",
   businessCategory: "Kosmetikstudio",
   tagline: "Zeit für dich.",
-  logo: { kind: "font", font: "Studio Lumière" },
   sections: [
     {
       type: "hero",
