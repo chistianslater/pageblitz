@@ -353,23 +353,6 @@ const MarktplatzPage: React.FC<{
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-mp-hero">
           <div className="pb-mp-hero-inner">
-            {hero.imageUrl && (
-              <img
-                className="pb-mp-photo"
-                src={hero.imageUrl}
-                alt=""
-                aria-hidden="true"
-              />
-            )}
-            <div className="pb-mp-sticker pill" aria-hidden="true">
-              {stickers.pill}
-            </div>
-            <div className="pb-mp-sticker ink" aria-hidden="true">
-              {stickers.ink}
-            </div>
-            <div className="pb-mp-sticker outline" aria-hidden="true">
-              {stickers.outline}
-            </div>
             <div className="pb-mp-card">
               {data.businessCategory && (
                 <p className="pb-mp-eyebrow">{data.businessCategory}</p>
@@ -384,6 +367,25 @@ const MarktplatzPage: React.FC<{
                 </a>
               )}
             </div>
+            {hero.imageUrl && (
+              <div className="pb-mp-photo-wrap">
+                <img
+                  className="pb-mp-photo"
+                  src={hero.imageUrl}
+                  alt=""
+                  aria-hidden="true"
+                />
+                <div className="pb-mp-sticker pill" aria-hidden="true">
+                  {stickers.pill}
+                </div>
+                <div className="pb-mp-sticker ink" aria-hidden="true">
+                  {stickers.ink}
+                </div>
+                <div className="pb-mp-sticker outline" aria-hidden="true">
+                  {stickers.outline}
+                </div>
+              </div>
+            )}
           </div>
           <div className="pb-mp-scallop" aria-hidden="true" />
         </section>
