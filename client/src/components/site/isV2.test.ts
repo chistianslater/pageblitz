@@ -4,7 +4,9 @@ import { parseV2 } from "./isV2";
 
 describe("parseV2", () => {
   test("gültiges v2-Dokument wird erkannt", () => {
-    expect(parseV2(getFixture("werkbank", "full"))?.stylePackId).toBe("werkbank");
+    expect(parseV2(getFixture("werkbank", "full"))?.stylePackId).toBe(
+      "werkbank"
+    );
   });
   test("v1-Dokument (ohne version:2) → null", () => {
     expect(parseV2({ businessName: "Alt", sections: [] })).toBeNull();

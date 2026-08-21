@@ -1,11 +1,24 @@
 import type { WebsiteData, ColorScheme } from "@shared/types";
 import { CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import {
-  BoldLayoutV2, ElegantLayoutV2, CleanLayoutV2, CraftLayoutV2,
-  DynamicLayoutV2, FreshLayoutV2, LuxuryLayoutV2, ModernLayoutV2,
-  NaturalLayoutV2, PremiumLayoutV2, EdenLayoutV2, ApexLayoutV2,
-  AuroraLayoutV2, NexusLayoutV2, ClayLayoutV2, ForgeLayoutV2,
-  PulseLayoutV2, FluxLayoutV2,
+  BoldLayoutV2,
+  ElegantLayoutV2,
+  CleanLayoutV2,
+  CraftLayoutV2,
+  DynamicLayoutV2,
+  FreshLayoutV2,
+  LuxuryLayoutV2,
+  ModernLayoutV2,
+  NaturalLayoutV2,
+  PremiumLayoutV2,
+  EdenLayoutV2,
+  ApexLayoutV2,
+  AuroraLayoutV2,
+  NexusLayoutV2,
+  ClayLayoutV2,
+  ForgeLayoutV2,
+  PulseLayoutV2,
+  FluxLayoutV2,
 } from "./layouts/PremiumLayoutsV2";
 import { parseV2 } from "./site/isV2";
 import { SiteRenderer } from "./site/SiteRenderer";
@@ -22,79 +35,109 @@ interface WebsiteRendererProps {
   layoutStyle?: string | null;
   layoutVersion?: number | null;
   isLoading?: boolean;
-  headlineSize?: 'large' | 'medium' | 'small';
+  headlineSize?: "large" | "medium" | "small";
   headlineFontOverride?: string;
   slug?: string;
 }
 
-function getLayoutComponent(category: string = "", layoutStyle?: string | null, _layoutVersion?: number | null): any {
+function getLayoutComponent(
+  category: string = "",
+  layoutStyle?: string | null,
+  _layoutVersion?: number | null
+): any {
   // If explicit layoutStyle is provided (from admin/dashboard), use it directly
   if (layoutStyle) {
     const style = layoutStyle.toLowerCase();
-    if (style === 'bold')    return BoldLayoutV2;
-    if (style === 'elegant') return ElegantLayoutV2;
-    if (style === 'clean')   return CleanLayoutV2;
-    if (style === 'craft')   return CraftLayoutV2;
-    if (style === 'dynamic') return DynamicLayoutV2;
-    if (style === 'fresh')   return FreshLayoutV2;
-    if (style === 'luxury')  return LuxuryLayoutV2;
-    if (style === 'modern')  return ModernLayoutV2;
-    if (style === 'natural') return NaturalLayoutV2;
-    if (style === 'eden')    return EdenLayoutV2;
-    if (style === 'apex')    return ApexLayoutV2;
-    if (style === 'aurora')  return AuroraLayoutV2;
-    if (style === 'nexus')   return NexusLayoutV2;
-    if (style === 'clay')    return ClayLayoutV2;
-    if (style === 'forge')   return ForgeLayoutV2;
-    if (style === 'pulse')   return PulseLayoutV2;
-    if (style === 'flux')    return FluxLayoutV2;
+    if (style === "bold") return BoldLayoutV2;
+    if (style === "elegant") return ElegantLayoutV2;
+    if (style === "clean") return CleanLayoutV2;
+    if (style === "craft") return CraftLayoutV2;
+    if (style === "dynamic") return DynamicLayoutV2;
+    if (style === "fresh") return FreshLayoutV2;
+    if (style === "luxury") return LuxuryLayoutV2;
+    if (style === "modern") return ModernLayoutV2;
+    if (style === "natural") return NaturalLayoutV2;
+    if (style === "eden") return EdenLayoutV2;
+    if (style === "apex") return ApexLayoutV2;
+    if (style === "aurora") return AuroraLayoutV2;
+    if (style === "nexus") return NexusLayoutV2;
+    if (style === "clay") return ClayLayoutV2;
+    if (style === "forge") return ForgeLayoutV2;
+    if (style === "pulse") return PulseLayoutV2;
+    if (style === "flux") return FluxLayoutV2;
     // Aliased styles — unique structure + their own colour scheme
-    if (style === 'warm')    return ElegantLayoutV2;   // warm serif editorial
-    if (style === 'trust')   return PulseLayoutV2;     // clean card-based professional
-    if (style === 'vibrant') return DynamicLayoutV2;   // energetic diagonal cuts
+    if (style === "warm") return ElegantLayoutV2; // warm serif editorial
+    if (style === "trust") return PulseLayoutV2; // clean card-based professional
+    if (style === "vibrant") return DynamicLayoutV2; // energetic diagonal cuts
   }
-  
+
   // Fallback: determine by business category
   const cat = category.toLowerCase();
-  if (cat.includes('bau') || cat.includes('industrie')) return BoldLayoutV2;
-  if (cat.includes('friseur') || cat.includes('beauty')) return ElegantLayoutV2;
-  if (cat.includes('arzt') || cat.includes('praxis')) return CleanLayoutV2;
-  if (cat.includes('tischler') || cat.includes('handwerk')) return CraftLayoutV2;
-  if (cat.includes('fitness') || cat.includes('sport')) return DynamicLayoutV2;
-  if (cat.includes('café') || cat.includes('restaurant')) return FreshLayoutV2;
-  if (cat.includes('auto') || cat.includes('fahrzeug')) return LuxuryLayoutV2;
-  if (cat.includes('agentur') || cat.includes('it')) return ModernLayoutV2;
-  if (cat.includes('natur') || cat.includes('bio')) return NaturalLayoutV2;
+  if (cat.includes("bau") || cat.includes("industrie")) return BoldLayoutV2;
+  if (cat.includes("friseur") || cat.includes("beauty")) return ElegantLayoutV2;
+  if (cat.includes("arzt") || cat.includes("praxis")) return CleanLayoutV2;
+  if (cat.includes("tischler") || cat.includes("handwerk"))
+    return CraftLayoutV2;
+  if (cat.includes("fitness") || cat.includes("sport")) return DynamicLayoutV2;
+  if (cat.includes("café") || cat.includes("restaurant")) return FreshLayoutV2;
+  if (cat.includes("auto") || cat.includes("fahrzeug")) return LuxuryLayoutV2;
+  if (cat.includes("agentur") || cat.includes("it")) return ModernLayoutV2;
+  if (cat.includes("natur") || cat.includes("bio")) return NaturalLayoutV2;
   return PremiumLayoutV2;
 }
 
-export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, layoutVersion, headlineSize, headlineFontOverride, slug }: WebsiteRendererProps) {
+export default function WebsiteRenderer({
+  websiteData,
+  colorScheme,
+  heroImageUrl,
+  aboutImageUrl,
+  isLoading = false,
+  businessCategory,
+  layoutStyle,
+  layoutVersion,
+  headlineSize,
+  headlineFontOverride,
+  slug,
+}: WebsiteRendererProps) {
   const v2 = parseV2(websiteData);
   if (v2) return <SiteRenderer data={v2} />;
   // … bestehender v1-Pfad unverändert
 
-  const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
-  const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
-  
+  const cs = colorScheme || websiteData?.colorScheme || { primary: "#3b82f6" };
+  const heroImg =
+    heroImageUrl ||
+    websiteData?.heroImage ||
+    "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
+
   // Patch aboutImageUrl and headlineFont into websiteData if provided externally
   // Also filter out hidden sections
   let wd = websiteData as any;
   const hiddenSections = (websiteData as any)?.hiddenSections || [];
-  
-  if (aboutImageUrl || headlineFontOverride || hiddenSections.length > 0 || slug) {
+
+  if (
+    aboutImageUrl ||
+    headlineFontOverride ||
+    hiddenSections.length > 0 ||
+    slug
+  ) {
     wd = { ...websiteData } as any;
     if (aboutImageUrl) wd.aboutImageUrl = aboutImageUrl;
     if (headlineFontOverride) {
-      wd.designTokens = { ...(wd.designTokens || {}), headlineFont: headlineFontOverride };
+      wd.designTokens = {
+        ...(wd.designTokens || {}),
+        headlineFont: headlineFontOverride,
+      };
     }
     // Filter out hidden sections
     if (Array.isArray(wd.sections) && hiddenSections.length > 0) {
-      wd.sections = wd.sections.filter((s: any) => !hiddenSections.includes(s.type));
+      wd.sections = wd.sections.filter(
+        (s: any) => !hiddenSections.includes(s.type)
+      );
     }
     // Pass slug so ContactSection can submit forms
     if (slug) wd.slug = slug;
   }
-  
+
   // Use layoutStyle if provided (from admin/dashboard), otherwise fall back to businessCategory
   const version = layoutVersion ?? (websiteData as any)?.layoutVersion ?? 1;
   const LayoutComponent = getLayoutComponent(
@@ -102,5 +145,13 @@ export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl
     layoutStyle || (websiteData as any)?.layoutStyle,
     version
   );
-  return <LayoutComponent websiteData={wd} cs={cs} heroImageUrl={heroImg} isLoading={isLoading} headlineSize={headlineSize} />;
+  return (
+    <LayoutComponent
+      websiteData={wd}
+      cs={cs}
+      heroImageUrl={heroImg}
+      isLoading={isLoading}
+      headlineSize={headlineSize}
+    />
+  );
 }
