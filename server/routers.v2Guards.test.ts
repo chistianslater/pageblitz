@@ -297,9 +297,9 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
       } as any);
 
     const caller = appRouter.createCaller(createAdminContext());
-    await expect(
-      caller.website.regenerate({ websiteId: 42 })
-    ).rejects.toThrow(TRPCError);
+    await expect(caller.website.regenerate({ websiteId: 42 })).rejects.toThrow(
+      TRPCError
+    );
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });
