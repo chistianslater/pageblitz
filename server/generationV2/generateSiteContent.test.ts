@@ -100,6 +100,46 @@ describe("generateSiteContent", () => {
     vi.doUnmock("./llmClient");
     vi.resetModules();
   });
+  test("Envelope-Whitelist: LLM-Antwort mit legal/logo/colorOverrides → Felder werden NICHT übernommen, Ergebnis validiert trotzdem", async () => {
+    const smuggled = JSON.stringify({
+      seo: { title: "Schreinerei Brandt", description: "Möbelbau in Dortmund." },
+      sections: [
+        { type: "hero", headline: "Massarbeit.", ctaText: "Anfragen" },
+        {
+          type: "services",
+          headline: "Leistungen",
+          items: [{ title: "Möbelbau" }],
+        },
+        { type: "contact", city: "Dortmund" },
+      ],
+      legal: { impressumHtml: "<script>alert(1)</script>" },
+      logo: { kind: "font", font: "Böse Schrift" },
+      colorOverrides: { accent: "red;background:url(evil)" },
+      version: 999,
+      stylePackId: "patina",
+      businessName: "Eingeschmuggelt",
+    });
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(smuggled),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: {
+        name: "Schreinerei Brandt",
+        category: "Schreinerei",
+        city: "Dortmund",
+      },
+    });
+    expect(d.version).toBe(2);
+    expect(d.stylePackId).toBe("werkbank");
+    expect(d.businessName).toBe("Schreinerei Brandt");
+    expect(d.legal).toBeUndefined();
+    expect(d.logo).toBeUndefined();
+    expect(d.colorOverrides).toBeUndefined();
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
   test("nach zweitem Fehlschlag: Throw, kein Fallback", async () => {
     vi.doMock("./llmClient", () => ({
       llmComplete: vi.fn().mockResolvedValue("{kaputt"),

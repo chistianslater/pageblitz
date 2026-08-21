@@ -48,15 +48,6 @@ function buildFontsUrl(fonts: (FontSpec | undefined)[]): string {
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
 
-/** Inline-Toggle für die mobile Navigation — kein React im Browser. */
-const MOBILE_NAV_SCRIPT = `document.querySelectorAll("[data-nav-toggle]").forEach(function (btn) {
-  btn.addEventListener("click", function () {
-    document.querySelectorAll("[data-nav]").forEach(function (nav) {
-      nav.classList.toggle("is-open");
-    });
-  });
-});`;
-
 function findContact(data: WebsiteDataV2): SectionOf<"contact"> | undefined {
   return data.sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
@@ -230,7 +221,6 @@ ${head}
 </head>
 <body>
 ${body}
-<script>${MOBILE_NAV_SCRIPT}</script>
 </body>
 </html>`;
   return { html, status: 200 };

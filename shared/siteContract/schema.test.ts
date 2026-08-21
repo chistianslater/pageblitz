@@ -85,4 +85,21 @@ describe("WebsiteDataV2Schema", () => {
       }
     });
   });
+
+  describe("colorOverrides — nur Hex erlaubt (CSS-Injection-Härtung)", () => {
+    test("lehnt CSS-Injection-Payload ab", () => {
+      const bad = {
+        ...valid,
+        colorOverrides: { accent: "red;background:url(x)" },
+      };
+      expect(() => WebsiteDataV2Schema.parse(bad)).toThrow();
+    });
+    test("akzeptiert Hex-Farbe", () => {
+      const ok = {
+        ...valid,
+        colorOverrides: { accent: "#ff0000" },
+      };
+      expect(() => WebsiteDataV2Schema.parse(ok)).not.toThrow();
+    });
+  });
 });

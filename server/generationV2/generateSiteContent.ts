@@ -33,12 +33,21 @@ type AttemptResult =
 /**
  * Ein LLM-Versuch: Prompt senden → JSON.parse → die deterministischen
  * Envelope-Felder (version/stylePackId/businessName) VOR der zod-Validierung
- * hart in das geparste Objekt mergen. Der Prompt verlangt vom LLM bewusst
- * nur "seo" + "sections" — WebsiteDataV2Schema ist `.strict()` und verlangt
+ * hart in ein NEUES Objekt setzen. Der Prompt verlangt vom LLM bewusst nur
+ * "seo" + "sections" — WebsiteDataV2Schema ist `.strict()` und verlangt
  * zusätzlich version/stylePackId/businessName als Pflichtfelder; ohne diesen
  * Merge würde jede Antwort, die sich wörtlich an den Prompt hält, an der
  * Validierung scheitern. version und stylePackId kommen dadurch nie vom LLM,
  * sondern immer deterministisch vom System.
+ *
+ * SICHERHEIT: Aus dem geparsten LLM-Objekt werden NUR "seo" und "sections"
+ * übernommen (Whitelist statt Spread). Ein voller `...parsed`-Spread würde
+ * dem LLM erlauben, beliebige weitere Felder einzuschmuggeln — insbesondere
+ * `legal.impressumHtml`/`datenschutzHtml`, die im SSR (server/ssr/renderSite.tsx)
+ * bewusst UNESCAPED gerendert werden (siehe Invariante in
+ * shared/siteContract/schema.ts). Ein LLM-kontrolliertes `legal`-Feld wäre
+ * damit Stored-XSS auf der Kundenseite. Ebenso dürfen `logo`, `colorOverrides`
+ * und alle sonstigen Felder nicht vom LLM kommen.
  */
 async function attempt(
   prompt: string,
@@ -56,15 +65,18 @@ async function attempt(
     return { ok: false, error: message };
   }
 
-  const envelope =
+  const parsedRecord: Record<string, unknown> =
     typeof parsed === "object" && parsed !== null
-      ? {
-          ...(parsed as Record<string, unknown>),
-          version: 2 as const,
-          stylePackId: packId,
-          businessName,
-        }
-      : parsed;
+      ? (parsed as Record<string, unknown>)
+      : {};
+
+  const envelope = {
+    version: 2 as const,
+    stylePackId: packId,
+    businessName,
+    seo: parsedRecord.seo,
+    sections: parsedRecord.sections,
+  };
 
   const validated = WebsiteDataV2Schema.safeParse(envelope);
   if (!validated.success) {
