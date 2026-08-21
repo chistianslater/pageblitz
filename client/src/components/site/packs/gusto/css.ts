@@ -14,7 +14,7 @@ export const GUSTO_CSS = `
 .pb-gu-hero{position:relative;padding:72px 32px 64px;text-align:center;overflow:visible}
 .pb-gu-hero h1{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:var(--pb-hero-size);letter-spacing:-.01em;line-height:1.12;max-width:17ch;margin:0 auto}
 .pb-gu-hero p{margin:20px auto 0;max-width:46ch;color:var(--pb-muted);font-size:15px;text-align:center}
-.pb-gu-cta{display:inline-block;margin-top:30px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:15px 34px;font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;transition:opacity .15s}
+.pb-gusto a.pb-gu-cta{display:inline-block;margin-top:30px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:15px 34px;font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;transition:opacity .15s}
 .pb-gu-cta:hover,.pb-gu-cta:focus-visible{opacity:.85}
 .pb-gu-menu-preview{max-width:420px;margin:34px auto 0;text-align:left}
 .pb-gu-menu{display:flex;align-items:baseline;gap:8px;padding:7px 0}

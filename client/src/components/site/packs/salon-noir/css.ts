@@ -13,7 +13,7 @@ export const SALON_NOIR_CSS = `
 .pb-sn-eyebrow{letter-spacing:.3em;text-transform:uppercase;font-size:10px;color:var(--pb-accent);margin:0 0 16px}
 .pb-sn-hero h1{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:var(--pb-hero-size);line-height:1.08;letter-spacing:-.01em;max-width:12ch;width:fit-content;margin:0 -56px 0 auto}
 .pb-sn-sub{margin-top:18px;color:var(--pb-muted);font-size:15px;max-width:44ch}
-.pb-sn-cta{display:inline-block;margin-top:28px;border:1px solid var(--pb-accent);color:var(--pb-accent);background:transparent;padding:13px 30px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .15s,color .15s}
+.pb-salon-noir a.pb-sn-cta{display:inline-block;margin-top:28px;border:1px solid var(--pb-accent);color:var(--pb-accent);background:transparent;padding:13px 30px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .15s,color .15s}
 .pb-sn-cta:hover,.pb-sn-cta:focus-visible{background:var(--pb-accent);color:var(--pb-accent-contrast)}
 .pb-sn-photo{position:relative;z-index:1;aspect-ratio:3/4;background-color:var(--pb-surface);background-size:cover;background-position:center;border:1px solid color-mix(in srgb, var(--pb-accent) 45%, transparent)}
 .pb-sn-vert{position:absolute;right:14px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--pb-muted);white-space:nowrap;pointer-events:none;margin:0}

@@ -14,7 +14,7 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-accent-word{position:relative;display:inline-block;color:var(--pb-accent)}
 .pb-mp-squiggle{position:absolute;left:0;right:0;bottom:-10px;width:100%;height:10px;overflow:visible}
 .pb-mp-sub{margin-top:14px;color:var(--pb-muted);font-size:15px;max-width:44ch}
-.pb-mp-cta{display:inline-block;margin-top:24px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 28px;border-radius:var(--pb-radius-button);font-family:var(--pb-font-display);font-weight:800;font-size:14.5px;box-shadow:0 4px 0 #D94A37;transition:transform .15s}
+.pb-marktplatz a.pb-mp-cta{display:inline-block;margin-top:24px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 28px;border-radius:var(--pb-radius-button);font-family:var(--pb-font-display);font-weight:800;font-size:14.5px;box-shadow:0 4px 0 #D94A37;transition:transform .15s}
 .pb-mp-cta:hover,.pb-mp-cta:focus-visible{transform:translateY(2px);box-shadow:0 2px 0 #D94A37}
 .pb-mp-photo-wrap{position:relative;flex:0 1 280px;min-width:150px;margin-top:14px}
 .pb-mp-photo{position:relative;z-index:1;display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--pb-radius-card);transform:rotate(3deg);box-shadow:0 6px 0 var(--pb-line)}
@@ -53,7 +53,7 @@ export const MARKTPLATZ_CSS = `
 @media(max-width:720px){.pb-mp-contact{grid-template-columns:1fr}}
 .pb-marktplatz a[href^="tel:"],.pb-marktplatz a[href^="mailto:"]{color:var(--pb-ink);border-bottom:2px solid var(--pb-accent-2);padding-bottom:1px;transition:color .15s}
 .pb-marktplatz a[href^="tel:"]:hover,.pb-marktplatz a[href^="mailto:"]:hover{color:var(--pb-accent)}
-.pb-mp-link{display:inline-block;color:var(--pb-accent);font-weight:800;font-family:var(--pb-font-display)}
+.pb-marktplatz a.pb-mp-link{display:inline-block;color:var(--pb-accent);font-weight:800;font-family:var(--pb-font-display)}
 .pb-mp-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-mp-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-mp-footer a:hover,.pb-mp-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}

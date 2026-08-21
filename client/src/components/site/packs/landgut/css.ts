@@ -13,7 +13,7 @@ export const LANDGUT_CSS = `
 .pb-lg-hero h1{font-family:var(--pb-font-display);font-weight:500;font-size:var(--pb-hero-size);line-height:1.1;margin-top:14px;max-width:14ch}
 .pb-lg-hero h1 span{font-style:italic;color:var(--pb-accent)}
 .pb-lg-sub{margin-top:16px;color:var(--pb-muted);font-size:15px;max-width:44ch}
-.pb-lg-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 28px;border-radius:var(--pb-radius-button);font-weight:600;font-size:13.5px;transition:opacity .15s}
+.pb-landgut a.pb-lg-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 28px;border-radius:var(--pb-radius-button);font-weight:600;font-size:13.5px;transition:opacity .15s}
 .pb-lg-cta:hover,.pb-lg-cta:focus-visible{opacity:.85}
 .pb-lg-rows{display:flex;align-items:flex-end;gap:12px;height:280px}
 .pb-lg-row{flex:1;position:relative;border-radius:120px 120px 0 0;min-width:0}
@@ -51,7 +51,7 @@ export const LANDGUT_CSS = `
 .pb-lg-member p{color:var(--pb-muted);font-size:13px}
 .pb-lg-menu-category{margin-bottom:32px}
 .pb-lg-menu-category h3{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:15px;color:var(--pb-accent);margin-bottom:10px}
-.pb-lg-link{color:var(--pb-accent);font-weight:600;border-bottom:2px solid var(--pb-accent);padding-bottom:1px;transition:opacity .15s}
+.pb-landgut a.pb-lg-link{color:var(--pb-accent);font-weight:600;border-bottom:2px solid var(--pb-accent);padding-bottom:1px;transition:opacity .15s}
 .pb-lg-link:hover,.pb-lg-link:focus-visible{opacity:.7}
 .pb-landgut a[href^="tel:"],.pb-landgut a[href^="mailto:"]{color:var(--pb-ink);border-bottom:1px solid var(--pb-line);padding-bottom:1px;transition:border-color .15s,color .15s}
 .pb-landgut a[href^="tel:"]:hover,.pb-landgut a[href^="mailto:"]:hover{color:var(--pb-accent);border-color:var(--pb-accent)}

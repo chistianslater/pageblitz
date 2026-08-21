@@ -6,14 +6,14 @@ export const KLARWERK_CSS = `
 .pb-kw-nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;font-size:13.5px;font-weight:500}
 .pb-kw-nav-links a{transition:color .15s}
 .pb-kw-nav-links a:hover,.pb-kw-nav-links a:focus-visible{color:var(--pb-accent)}
-.pb-kw-nav-cta{background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:9px 18px;font-weight:600;font-size:13px;transition:opacity .15s}
+.pb-klarwerk a.pb-kw-nav-cta{background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:9px 18px;font-weight:600;font-size:13px;transition:opacity .15s}
 .pb-kw-nav-cta:hover,.pb-kw-nav-cta:focus-visible{opacity:.85}
 .pb-kw-hero{padding:64px 32px 8px;max-width:900px}
 .pb-kw-eyebrow{font-size:13px;font-weight:600;color:var(--pb-muted);margin-bottom:14px}
 .pb-kw-hero h1{font-family:var(--pb-font-display);font-weight:700;font-size:var(--pb-hero-size);letter-spacing:-.03em;line-height:1.05}
 .pb-kw-hero h1 span{color:var(--pb-accent)}
 .pb-kw-hero p{margin-top:20px;max-width:56ch;color:var(--pb-muted);font-size:16px}
-.pb-kw-hero-cta{display:inline-block;margin-top:28px;background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:13px 26px;font-weight:600;font-size:14.5px;transition:opacity .15s}
+.pb-klarwerk a.pb-kw-hero-cta{display:inline-block;margin-top:28px;background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:13px 26px;font-weight:600;font-size:14.5px;transition:opacity .15s}
 .pb-kw-hero-cta:hover,.pb-kw-hero-cta:focus-visible{opacity:.85}
 .pb-kw-bento{display:grid;grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:auto auto;gap:16px;padding:40px 32px 64px;max-width:1040px}
 .pb-kw-term{grid-row:span 2;background:var(--pb-ink);border-radius:var(--pb-radius-card);padding:20px 22px;font-family:ui-monospace,SFMono-Regular,monospace;font-size:12.5px;line-height:2;color:#7EE787;overflow:hidden}

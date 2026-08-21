@@ -18,7 +18,7 @@ export const ZUNFT_CSS = `
 .pb-zf-tafel{display:flex;align-items:baseline;gap:8px;padding:5px 0;font-size:13px}
 .pb-zf-tafel i{flex:1;border-bottom:1px dotted var(--pb-accent-2);font-style:normal}
 .pb-zf-price{color:var(--pb-accent-2);font-weight:600;font-size:13px;white-space:nowrap}
-.pb-zf-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 30px;font-weight:700;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;transition:opacity .15s}
+.pb-zunft a.pb-zf-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 30px;font-weight:700;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;transition:opacity .15s}
 .pb-zf-cta:hover,.pb-zf-cta:focus-visible{opacity:.85}
 .pb-zf-section{padding:60px 32px;border-top:1px solid var(--pb-line);text-align:center}
 .pb-zf-section h2{font-family:var(--pb-font-display);font-weight:600;font-style:italic;font-size:clamp(1.5rem,2.6vw,2.1rem);margin-bottom:28px}

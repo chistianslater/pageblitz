@@ -18,7 +18,7 @@ export const KANZLEI_CSS = `
 .pb-kz-facts div{flex:1;padding:14px 14px 0 0;font-size:12px;color:var(--pb-muted);border-right:1px solid var(--pb-line);margin-right:14px}
 .pb-kz-facts div:last-child{border-right:none}
 .pb-kz-facts b{display:block;font-size:19px;color:var(--pb-ink);font-weight:600;letter-spacing:-.02em}
-.pb-kz-link{color:var(--pb-accent);font-weight:600;text-decoration:none;border-bottom:2px solid var(--pb-accent);padding-bottom:1px;transition:opacity .15s}
+.pb-kanzlei a.pb-kz-link{color:var(--pb-accent);font-weight:600;text-decoration:none;border-bottom:2px solid var(--pb-accent);padding-bottom:1px;transition:opacity .15s}
 .pb-kz-link:hover,.pb-kz-link:focus-visible{opacity:.7}
 .pb-kanzlei a[href^="tel:"],.pb-kanzlei a[href^="mailto:"]{color:var(--pb-ink);border-bottom:1px solid var(--pb-line);padding-bottom:1px;transition:border-color .15s,color .15s}
 .pb-kanzlei a[href^="tel:"]:hover,.pb-kanzlei a[href^="mailto:"]:hover{color:var(--pb-accent);border-color:var(--pb-accent)}

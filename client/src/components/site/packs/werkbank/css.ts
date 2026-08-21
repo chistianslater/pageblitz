@@ -16,7 +16,7 @@ export const WERKBANK_CSS = `
 .pb-wb-hero .outline{display:block;color:transparent;-webkit-text-stroke:2px var(--pb-ink)}
 .pb-wb-hero .accent{display:block;color:var(--pb-accent)}
 .pb-wb-photo{position:absolute;right:0;top:0;width:34%;height:82%;object-fit:cover;clip-path:polygon(26% 0,100% 0,100% 100%,0 100%);border-left:8px solid var(--pb-accent)}
-.pb-wb-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:14px 26px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-decoration:none}
+.pb-werkbank a.pb-wb-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:14px 26px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-decoration:none}
 .pb-wb-marquee{background:var(--pb-ink);color:var(--pb-canvas);transform:rotate(-2deg);margin:0 -4%;padding:12px 0;white-space:nowrap;overflow:hidden;font-family:var(--pb-font-display);text-transform:uppercase;font-size:14px;letter-spacing:.08em}
 .pb-wb-marquee em{font-style:normal;color:var(--pb-accent);padding:0 16px}
 .pb-wb-section{padding:70px 28px;border-top:1px solid var(--pb-line)}

@@ -16,7 +16,7 @@ export const VERVE_CSS = `
 .pb-vv-hero h1 span{display:block}
 .pb-vv-block{display:inline-block;color:var(--pb-accent-contrast);background:var(--pb-accent);padding:0 14px;transform:skewX(-6deg);margin-top:6px}
 .pb-vv-hero p{margin-top:18px;color:var(--pb-muted);font-size:15px;max-width:44ch}
-.pb-vv-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:14px 28px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;transform:skewX(-6deg);transition:filter .15s}
+.pb-verve a.pb-vv-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:14px 28px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;transform:skewX(-6deg);transition:filter .15s}
 .pb-vv-cta:hover,.pb-vv-cta:focus-visible{filter:brightness(1.1)}
 .pb-vv-tape{position:absolute;right:-30px;bottom:44px;background:var(--pb-accent);color:var(--pb-accent-contrast);font-family:var(--pb-font-display);font-size:14px;letter-spacing:.14em;padding:7px 40px;transform:rotate(-8deg);z-index:2;text-transform:uppercase;white-space:nowrap}
 .pb-vv-stats{position:relative;z-index:2;display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
