@@ -13,8 +13,20 @@ export async function setupVite(app: Express, server: Server) {
     allowedHosts: true as const,
   };
 
+  // vite.config.ts exportiert ein UserConfigFn (defineConfig mit Callback,
+  // wegen des `command`-abhängigen Plugins), kein UserConfig-Objekt. Ein
+  // `{...viteConfig}`-Spread einer Funktion liefert nur `{}` zurück — root,
+  // publicDir, Plugins und Aliase gingen dadurch still verloren, wodurch
+  // Vite auf die Defaults zurückfiel (root = Projektwurzel, publicDir =
+  // "public") und z.B. /demo/*.svg nie gefunden, sondern per SPA-Fallback
+  // als index.html ausgeliefert wurde.
+  const resolvedViteConfig =
+    typeof viteConfig === "function"
+      ? await viteConfig({ command: "serve", mode: "development" })
+      : viteConfig;
+
   const vite = await createViteServer({
-    ...viteConfig,
+    ...resolvedViteConfig,
     configFile: false,
     server: serverOptions,
     appType: "custom",
