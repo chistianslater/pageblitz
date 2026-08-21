@@ -3,7 +3,8 @@ import type { PackConstitution } from "./types";
 export const KLARWERK: PackConstitution = {
   id: "klarwerk",
   name: "Klarwerk",
-  essence: "Weiß, Geometrie und ein elektrisches Blau — aufgeräumt wie gutes Werkzeug.",
+  essence:
+    "Weiß, Geometrie und ein elektrisches Blau — aufgeräumt wie gutes Werkzeug.",
   industries: [
     "it-service",
     "edv",
@@ -87,8 +88,14 @@ export const KLARWERK: PackConstitution = {
   },
   signature: {
     hero: "Nav mit gefülltem Accent-Button + Headline mit Akzentwort, gefolgt von unregelmäßigem Bento (hohe Terminal-Zelle mit $-Prompts/→-Ergebnissen, Accent-Kennzahl-Zelle, kleine Zelle, breite Status-Zelle mit grünem Punkt)",
-    decor: ["irregular-bento", "terminal-cell", "status-dot", "accent-headline"],
-    imageTreatment: "flache, gradientenfreie Blau-/Grau-Geometrie — nie Fotos im Bento",
+    decor: [
+      "irregular-bento",
+      "terminal-cell",
+      "status-dot",
+      "accent-headline",
+    ],
+    imageTreatment:
+      "flache, gradientenfreie Blau-/Grau-Geometrie — nie Fotos im Bento",
   },
   llmHints: {
     do: [
