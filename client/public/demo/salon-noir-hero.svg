@@ -1,0 +1,18 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dunkles Salon-Placeholder: fast-schwarze Flächen mit einem Champagner-Lichtstreifen">
+  <!-- Fast-schwarze Bühne, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#121110" />
+
+  <!-- Kohle-Flächen als flache Blöcke -->
+  <rect x="0" y="0" width="620" height="900" fill="#1A1815" />
+  <rect x="620" y="0" width="580" height="900" fill="#211F1C" />
+
+  <!-- Hairlines, hart -->
+  <rect x="180" y="0" width="1" height="900" fill="#3A362F" />
+  <rect x="960" y="0" width="1" height="900" fill="#3A362F" />
+
+  <!-- Ein einzelner Champagner-Lichtstreifen, diagonal, flach -->
+  <polygon points="720,0 800,0 480,900 400,900" fill="#C8A96A" />
+
+  <!-- Schmaler Innenrahmen, wie ein Passepartout -->
+  <rect x="40" y="40" width="1120" height="820" fill="none" stroke="#C8A96A" stroke-width="2" />
+</svg>

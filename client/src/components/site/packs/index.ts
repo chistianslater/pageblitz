@@ -4,3 +4,4 @@ import "./kanzlei";
 import "./morgenlicht";
 import "./gusto";
 import "./patina";
+import "./salon-noir";

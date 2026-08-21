@@ -5,6 +5,7 @@ import { KANZLEI } from "./kanzlei";
 import { MORGENLICHT } from "./morgenlicht";
 import { GUSTO } from "./gusto";
 import { PATINA } from "./patina";
+import { SALON_NOIR } from "./salon-noir";
 
 export type { PackConstitution, PaletteColor, FontSpec } from "./types";
 export { toCssVars } from "./toCssVars";
@@ -15,6 +16,7 @@ export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {
   morgenlicht: MORGENLICHT,
   gusto: GUSTO,
   patina: PATINA,
+  "salon-noir": SALON_NOIR,
 };
 
 export const FALLBACK_PACK: PackId = "werkbank";

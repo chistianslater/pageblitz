@@ -856,12 +856,201 @@ const PATINA_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.9, reviewCount: 54 },
 };
 
+const SALON_NOIR_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "salon-noir",
+  businessName: "NOIR Haarstudio",
+  slug: "noir-haarstudio-muenchen-maxvorstadt",
+  businessCategory: "Friseursalon",
+  tagline: "Handwerk für Haar.",
+  logo: { kind: "font", font: "NOIR Haarstudio" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Handwerk für Haar.",
+      subheadline:
+        "NOIR Haarstudio verbindet Schnitt, Farbe und Pflege auf Ateliers-Niveau — mitten in der Münchner Maxvorstadt.",
+      ctaText: "Termin buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/salon-noir-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      intro: "Vier Kernleistungen, ein Anspruch: präzise Handarbeit.",
+      items: [
+        {
+          title: "Schnitt",
+          description:
+            "Präzisionsschnitt nach Beratung — auf Kopfform und Alltag abgestimmt.",
+          price: "ab 45",
+        },
+        {
+          title: "Farbe & Balayage",
+          description:
+            "Freihand-Balayage und Vollfärbung mit lichtreflektierenden Nuancen.",
+          price: "ab 45",
+        },
+        {
+          title: "Pflege",
+          description:
+            "Tiefenwirksame Kuren für Struktur, Glanz und gesundes Haar.",
+          price: "ab 45",
+        },
+        {
+          title: "Styling",
+          description: "Föhnfrisuren und Hochsteckfrisuren für jeden Anlass.",
+          price: "ab 45",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über uns",
+      body: "NOIR Haarstudio wurde 2016 in der Maxvorstadt gegründet — mit dem Anspruch, Friseurhandwerk wie ein Handwerk zu behandeln, nicht wie eine schnelle Dienstleistung. Jeder Schnitt beginnt mit einer ausführlichen Beratung, jede Farbe wird individuell gemischt. Unser kleines Team aus erfahrenen Stylisten arbeitet in ruhigem Tempo, mit Champagner statt Filterkaffee und einem Blick fürs Detail, der auch nach dem Termin noch hält.",
+      imageUrl: "/demo/salon-noir-hero.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Kundinnen und Kunden sagen",
+      items: [
+        {
+          author: "Katharina Reuter",
+          text: "Endlich ein Salon, der sich Zeit nimmt. Die Balayage hält seit Monaten ihre Form.",
+          rating: 5,
+        },
+        {
+          author: "Jonas Wieland",
+          text: "Bester Herrenschnitt in München. Ruhige Atmosphäre, präzise Arbeit.",
+          rating: 5,
+        },
+        {
+          author: "Elif Demir",
+          text: "Beratung, Farbe, Ergebnis — alles auf den Punkt. Ich fahre extra aus Schwabing hierher.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "pricelist",
+      headline: "Preisliste",
+      categories: [
+        {
+          name: "Damen",
+          items: [
+            {
+              name: "Waschen, Schneiden, Föhnen",
+              price: "68",
+            },
+            {
+              name: "Balayage komplett",
+              price: "165",
+            },
+            {
+              name: "Olaplex-Kur",
+              price: "32",
+            },
+          ],
+        },
+        {
+          name: "Herren",
+          items: [
+            {
+              name: "Herrenschnitt klassisch",
+              price: "42",
+            },
+            {
+              name: "Bartkontur",
+              price: "18",
+            },
+            {
+              name: "Schnitt & Bart komplett",
+              price: "55",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "089 55 17 92",
+      email: "termin@noir-haarstudio.de",
+      street: "Türkenstraße 42",
+      zip: "80799",
+      city: "München-Maxvorstadt",
+      openingHours: [{ day: "Di–Sa", hours: "9:00 – 19:00" }],
+    },
+  ],
+  seo: {
+    title: "NOIR Haarstudio München-Maxvorstadt — Friseur für Schnitt & Farbe",
+    description:
+      "NOIR Haarstudio in München-Maxvorstadt: Schnitt, Balayage und Pflege auf Ateliers-Niveau seit 2016.",
+  },
+  footerNote: "NOIR Haarstudio · München-Maxvorstadt · seit 2016",
+  google: { rating: 4.8, reviewCount: 167 },
+};
+
+const SALON_NOIR_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "salon-noir",
+  businessName: "NOIR Haarstudio",
+  slug: "noir-haarstudio-muenchen-maxvorstadt",
+  businessCategory: "Friseursalon",
+  tagline: "Handwerk für Haar.",
+  logo: { kind: "font", font: "NOIR Haarstudio" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Handwerk für Haar.",
+      subheadline: "Schnitt, Farbe und Pflege auf Ateliers-Niveau in München.",
+      ctaText: "Termin buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/salon-noir-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Schnitt",
+          description: "Präzisionsschnitt nach Beratung.",
+          price: "ab 45",
+        },
+        {
+          title: "Farbe & Balayage",
+          description: "Freihand-Balayage mit lichtreflektierenden Nuancen.",
+          price: "ab 45",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "089 55 17 92",
+      email: "termin@noir-haarstudio.de",
+      street: "Türkenstraße 42",
+      zip: "80799",
+      city: "München-Maxvorstadt",
+      openingHours: [{ day: "Di–Sa", hours: "9:00 – 19:00" }],
+    },
+  ],
+  seo: {
+    title: "NOIR Haarstudio München-Maxvorstadt",
+    description:
+      "NOIR Haarstudio in München-Maxvorstadt: Schnitt, Balayage und Pflege auf Ateliers-Niveau.",
+  },
+  footerNote: "NOIR Haarstudio · München-Maxvorstadt · seit 2016",
+  google: { rating: 4.8, reviewCount: 167 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
   morgenlicht: { full: MORGENLICHT_FULL, minimal: MORGENLICHT_MINIMAL },
   gusto: { full: GUSTO_FULL, minimal: GUSTO_MINIMAL },
   patina: { full: PATINA_FULL, minimal: PATINA_MINIMAL },
+  "salon-noir": { full: SALON_NOIR_FULL, minimal: SALON_NOIR_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
