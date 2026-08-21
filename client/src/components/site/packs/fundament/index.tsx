@@ -337,7 +337,7 @@ const FundamentPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-fd-hero">
-          <div className="pb-fd-panel" aria-hidden="true">
+          <div className="pb-fd-panel">
             {stats.length > 0 && (
               <div className="pb-fd-stats">
                 {stats.map((stat, i) => (
