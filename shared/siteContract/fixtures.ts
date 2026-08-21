@@ -693,11 +693,175 @@ const GUSTO_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.7, reviewCount: 213 },
 };
 
+const PATINA_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "patina",
+  businessName: "Naturheilpraxis Annelie Voss",
+  slug: "naturheilpraxis-voss-freiburg",
+  businessCategory: "Naturheilkunde",
+  tagline: "Heilung beginnt mit Zuhören.",
+  logo: { kind: "font", font: "Annelie Voss" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Heilung beginnt mit Zuhören.",
+      subheadline:
+        "Ganzheitliche Begleitung für Körper und Kopf — in einer Praxis, in der Sie kein Fall sind, sondern ein Mensch.",
+      ctaText: "Erstgespräch vereinbaren",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/patina-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Behandlungen",
+      items: [
+        {
+          title: "Akupunktur",
+          description:
+            "Feine Nadeln entlang der Meridiane — zur Unterstützung von Ausgleich und innerer Ruhe.",
+        },
+        {
+          title: "Phytotherapie",
+          description:
+            "Individuell abgestimmte Pflanzenheilkunde, die den Alltag begleitet statt ihn zu ersetzen.",
+        },
+        {
+          title: "Ernährungsberatung",
+          description:
+            "Gemeinsam entwickelte Ernährungsgewohnheiten, angepasst an Ihren Rhythmus und Ihre Vorlieben.",
+        },
+        {
+          title: "Ordnungstherapie",
+          description:
+            "Struktur für Schlaf, Bewegung und Ruhephasen nach den fünf Säulen der Ordnungstherapie.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über mich",
+      body: "Annelie Voss führt ihre Naturheilpraxis seit 2014 am Lorettoberg in Freiburg. Ausgebildet in Traditioneller Chinesischer Medizin und Ernährungsberatung, begleitet sie Menschen, die ihrem Körper wieder zuhören möchten — bei Erschöpfung, Verdauungsthemen oder auf der Suche nach mehr Ruhe im Alltag. Jede Behandlung beginnt mit einem ausführlichen Gespräch, nicht mit einem Rezept. Die Praxis liegt in einem Altbau mit Blick auf den Schwarzwald, bewusst klein gehalten, damit Zeit bleibt — für Sie, für Fragen, für das, was zwischen den Zeilen mitschwingt.",
+      imageUrl: "/demo/patina-detail-1.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Klienten sagen",
+      items: [
+        {
+          author: "Anne Kessler",
+          text: "Zum ersten Mal hatte ich das Gefühl, dass sich jemand wirklich Zeit für mein ganzes Bild nimmt, nicht nur für ein Symptom.",
+          rating: 5,
+        },
+        {
+          author: "Thomas Reber",
+          text: "Die Gespräche allein waren schon die Praxisgebühr wert. Ruhig, klar, ohne Druck.",
+          rating: 5,
+        },
+        {
+          author: "Miriam Lang",
+          text: "Ich komme seit zwei Jahren regelmäßig und merke, wie viel bewusster ich inzwischen mit mir umgehe.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Übernimmt die Krankenkasse die Kosten?",
+          answer:
+            "Viele gesetzliche und private Kassen erstatten heilpraktische Leistungen anteilig — die Details klären wir im Erstgespräch.",
+        },
+        {
+          question: "Wie läuft das Erstgespräch ab?",
+          answer:
+            "Rund 60 Minuten Zeit für Ihre Geschichte, aktuelle Beschwerden und die Frage, was Sie sich von der Begleitung wünschen.",
+        },
+        {
+          question: "Muss ich vorher etwas mitbringen?",
+          answer:
+            "Frühere Befunde oder Laborwerte sind hilfreich, aber kein Muss — wir beginnen dort, wo Sie gerade stehen.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0761 555 8420",
+      email: "praxis@voss-naturheilkunde.de",
+      street: "Lorettostraße 14",
+      zip: "79100",
+      city: "Freiburg",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Naturheilpraxis Annelie Voss Freiburg — Akupunktur, Phytotherapie",
+    description:
+      "Naturheilpraxis in Freiburg seit 2014: Annelie Voss begleitet mit Akupunktur, Phytotherapie, Ernährungsberatung und Ordnungstherapie.",
+  },
+  footerNote: "Naturheilpraxis Annelie Voss · Freiburg · seit 2014",
+  google: { rating: 4.9, reviewCount: 54 },
+};
+
+const PATINA_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "patina",
+  businessName: "Naturheilpraxis Annelie Voss",
+  slug: "naturheilpraxis-voss-freiburg",
+  businessCategory: "Naturheilkunde",
+  tagline: "Heilung beginnt mit Zuhören.",
+  logo: { kind: "font", font: "Annelie Voss" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Heilung beginnt mit Zuhören.",
+      subheadline: "Ganzheitliche Begleitung für Körper und Kopf in Freiburg.",
+      ctaText: "Erstgespräch vereinbaren",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/patina-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Behandlungen",
+      items: [
+        {
+          title: "Akupunktur",
+          description: "Zur Unterstützung von Ausgleich und innerer Ruhe.",
+        },
+        {
+          title: "Phytotherapie",
+          description: "Individuell abgestimmte Pflanzenheilkunde.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0761 555 8420",
+      email: "praxis@voss-naturheilkunde.de",
+      street: "Lorettostraße 14",
+      zip: "79100",
+      city: "Freiburg",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Naturheilpraxis Annelie Voss Freiburg",
+    description:
+      "Naturheilpraxis in Freiburg: Annelie Voss begleitet mit Akupunktur und Phytotherapie.",
+  },
+  footerNote: "Naturheilpraxis Annelie Voss · Freiburg · seit 2014",
+  google: { rating: 4.9, reviewCount: 54 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
   morgenlicht: { full: MORGENLICHT_FULL, minimal: MORGENLICHT_MINIMAL },
   gusto: { full: GUSTO_FULL, minimal: GUSTO_MINIMAL },
+  patina: { full: PATINA_FULL, minimal: PATINA_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

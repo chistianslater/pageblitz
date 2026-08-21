@@ -1,0 +1,402 @@
+import React from "react";
+import type {
+  SectionOf,
+  SectionType,
+  SectionV2,
+  WebsiteDataV2,
+} from "../../../../../../shared/siteContract/types";
+import { orderedSections, SECTION_ANCHORS } from "../../engine";
+import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { PATINA_CSS } from "./css";
+
+const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
+  services: "Behandlungen",
+  about: "Über mich",
+  gallery: "Impressionen",
+  testimonials: "Was Klienten sagen",
+  contact: "Kontakt",
+  faq: "Häufige Fragen",
+  menu: "Angebot",
+  pricelist: "Preise",
+  team: "Team",
+  cta: "Termin",
+};
+
+function renderLogo(data: WebsiteDataV2): React.ReactNode {
+  if (data.logo?.kind === "font") {
+    return (
+      <span style={{ fontFamily: data.logo.font }}>{data.businessName}</span>
+    );
+  }
+  if (data.logo?.kind === "image") {
+    return <img src={data.logo.url} alt={data.businessName} />;
+  }
+  return data.businessName;
+}
+
+/** Letztes Wort der Headline kursiv in Terrakotta — der Rest bleibt Tinte-farben. */
+function renderHeadline(headline: string): React.ReactNode {
+  const words = headline.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= 1) return headline;
+  const last = words[words.length - 1];
+  const rest = words.slice(0, -1).join(" ");
+  return (
+    <>
+      {rest} <span>{last}</span>
+    </>
+  );
+}
+
+/** Erster Buchstabe des Firmennamens, groß — Basis für das Initial-Wasserzeichen. */
+function initialLetter(businessName: string): string {
+  const trimmed = businessName.trim();
+  return trimmed.length > 0 ? trimmed[0].toLocaleUpperCase("de-DE") : "";
+}
+
+function formatRating(rating: number): string {
+  return rating.toLocaleString("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+/** Handschriftlich anmutende Randnotiz: Google-Bewertung, sonst Standort. */
+function buildNote(
+  data: WebsiteDataV2,
+  contact: SectionOf<"contact"> | undefined
+): string | undefined {
+  if (data.google) {
+    return `— ★ ${formatRating(data.google.rating)} · ${data.google.reviewCount} Bewertungen`;
+  }
+  if (contact?.city) return `— mitten in ${contact.city}`;
+  return undefined;
+}
+
+function renderSection(section: SectionV2): React.ReactNode {
+  switch (section.type) {
+    case "hero":
+      return null; // eigenständig im Page-Layout gerendert
+    case "services": {
+      return (
+        <section
+          id={SECTION_ANCHORS.services}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{section.headline}</h2>
+          {section.intro && <p>{section.intro}</p>}
+          {section.items.map(item => (
+            <div className="pb-pa-service" key={item.title}>
+              <strong>{item.title}</strong>
+              {item.description && <p>{item.description}</p>}
+              {item.price && <p>{item.price}</p>}
+            </div>
+          ))}
+        </section>
+      );
+    }
+    case "about": {
+      return (
+        <section
+          id={SECTION_ANCHORS.about}
+          className="pb-pa-section pb-pa-about"
+          key={section.type}
+        >
+          <h2>{section.headline}</h2>
+          <p>{section.body}</p>
+        </section>
+      );
+    }
+    case "gallery": {
+      const title = section.headline ?? FALLBACK_TITLES.gallery;
+      return (
+        <section
+          id={SECTION_ANCHORS.gallery}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{title}</h2>
+          <div className="pb-pa-gallery">
+            {section.images.map(img => (
+              <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case "testimonials": {
+      const title = section.headline ?? FALLBACK_TITLES.testimonials;
+      return (
+        <section
+          id={SECTION_ANCHORS.testimonials}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{title}</h2>
+          {section.items.map(item => (
+            <blockquote className="pb-pa-quote" key={item.author}>
+              <p>„{item.text}“</p>
+              <footer>
+                {item.author}
+                {item.rating ? ` · ${item.rating}/5` : ""}
+              </footer>
+            </blockquote>
+          ))}
+        </section>
+      );
+    }
+    case "contact": {
+      const title = section.headline ?? FALLBACK_TITLES.contact;
+      const addressLine = [section.zip, section.city].filter(Boolean).join(" ");
+      return (
+        <section
+          id={SECTION_ANCHORS.contact}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{title}</h2>
+          <div className="pb-pa-contact">
+            <address>
+              {section.phone && (
+                <p>
+                  <a href={`tel:${section.phone}`}>{section.phone}</a>
+                </p>
+              )}
+              {section.email && (
+                <p>
+                  <a href={`mailto:${section.email}`}>{section.email}</a>
+                </p>
+              )}
+              {(section.street || addressLine) && (
+                <p>
+                  {section.street && <span>{section.street}</span>}
+                  {section.street && addressLine && <br />}
+                  {addressLine && <span>{addressLine}</span>}
+                </p>
+              )}
+            </address>
+            {section.openingHours && section.openingHours.length > 0 && (
+              <table className="pb-pa-hours">
+                <tbody>
+                  {section.openingHours.map(oh => (
+                    <tr key={oh.day}>
+                      <td>{oh.day}</td>
+                      <td>{oh.hours}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+      );
+    }
+    case "faq": {
+      const title = section.headline ?? FALLBACK_TITLES.faq;
+      return (
+        <section
+          id={SECTION_ANCHORS.faq}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{title}</h2>
+          {section.items.map(item => (
+            <div className="pb-pa-faq" key={item.question}>
+              <strong>{item.question}</strong>
+              <p>{item.answer}</p>
+            </div>
+          ))}
+        </section>
+      );
+    }
+    case "menu":
+    case "pricelist": {
+      const fallback =
+        section.type === "menu"
+          ? FALLBACK_TITLES.menu
+          : FALLBACK_TITLES.pricelist;
+      const title = section.headline ?? fallback;
+      return (
+        <section
+          id={SECTION_ANCHORS[section.type]}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{title}</h2>
+          {section.categories.map(cat => (
+            <div className="pb-pa-menu-category" key={cat.name}>
+              <h3>{cat.name}</h3>
+              {cat.items.map(item => (
+                <div className="pb-pa-service" key={item.name}>
+                  <strong>{item.name}</strong>
+                  {item.description && <p>{item.description}</p>}
+                  <p>{item.price}</p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </section>
+      );
+    }
+    case "team": {
+      const title = section.headline ?? FALLBACK_TITLES.team;
+      return (
+        <section
+          id={SECTION_ANCHORS.team}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{title}</h2>
+          <div className="pb-pa-team">
+            {section.members.map(member => (
+              <div className="pb-pa-member" key={member.name}>
+                {member.imageUrl && (
+                  <img src={member.imageUrl} alt="" loading="lazy" />
+                )}
+                <strong>{member.name}</strong>
+                {member.role && <p>{member.role}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case "cta": {
+      return (
+        <section
+          id={SECTION_ANCHORS.cta}
+          className="pb-pa-section"
+          key={section.type}
+        >
+          <h2>{section.headline}</h2>
+          <a className="pb-pa-link" href={section.ctaHref ?? "#kontakt"}>
+            {section.ctaText} →
+          </a>
+        </section>
+      );
+    }
+    default: {
+      const exhaustive: never = section;
+      return exhaustive;
+    }
+  }
+}
+
+const PatinaPage: React.FC<{
+  data: WebsiteDataV2;
+  basePath: string;
+  now: Date;
+}> = ({ data, basePath, now }) => {
+  const sections = orderedSections(data);
+  const navSections = sections.filter(s => s.type !== "hero");
+  const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
+  const about = sections.find(
+    (s): s is SectionOf<"about"> => s.type === "about"
+  );
+  const contact = sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  const services = sections.find(
+    (s): s is SectionOf<"services"> => s.type === "services"
+  );
+  const eyebrow = [data.businessCategory, contact?.city]
+    .filter((v): v is string => Boolean(v))
+    .join(" · ");
+  const serviceTitles = services?.items.map(item => item.title) ?? [];
+  const note = buildNote(data, contact);
+  const year = now.getFullYear();
+
+  return (
+    <div className="pb-patina">
+      <nav className="pb-pa-nav">
+        <span className="pb-pa-logo">{renderLogo(data)}</span>
+        <div className="pb-pa-nav-links">
+          {navSections.map(s => (
+            <a key={s.type} href={`#${SECTION_ANCHORS[s.type]}`}>
+              {FALLBACK_TITLES[s.type] ?? s.type}
+            </a>
+          ))}
+        </div>
+      </nav>
+      {hero && (
+        <section id={SECTION_ANCHORS.hero} className="pb-pa-hero">
+          <div className="pb-pa-init" aria-hidden="true">
+            {initialLetter(data.businessName)}
+          </div>
+          <div className="pb-pa-grid">
+            <div className="pb-pa-copy">
+              {eyebrow && <p className="pb-pa-eyebrow">{eyebrow}</p>}
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-pa-sub">{hero.subheadline}</p>
+              )}
+              {serviceTitles.length > 0 && (
+                <p className="pb-pa-services-line">
+                  {serviceTitles.map((title, i) => (
+                    <React.Fragment key={title}>
+                      {i > 0 && (
+                        <>
+                          {" "}
+                          <span className="sep" aria-hidden="true">
+                            ·
+                          </span>{" "}
+                        </>
+                      )}
+                      {title}
+                    </React.Fragment>
+                  ))}
+                </p>
+              )}
+              {hero.ctaText && (
+                <a className="pb-pa-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
+              )}
+            </div>
+            <div className="pb-pa-pics">
+              <div
+                className="pb-pa-arch a1"
+                aria-hidden="true"
+                style={
+                  hero.imageUrl
+                    ? { backgroundImage: `url(${hero.imageUrl})` }
+                    : undefined
+                }
+              />
+              <div
+                className="pb-pa-arch a2"
+                aria-hidden="true"
+                style={
+                  about?.imageUrl
+                    ? { backgroundImage: `url(${about.imageUrl})` }
+                    : undefined
+                }
+              />
+              {note && <p className="pb-pa-note">{note}</p>}
+            </div>
+          </div>
+        </section>
+      )}
+      {sections
+        .filter(s => s.type !== "hero")
+        .map(section => renderSection(section))}
+      <footer className="pb-pa-footer">
+        <p>
+          {data.businessName} · © {year} {data.businessName}
+        </p>
+        {data.footerNote && <p>{data.footerNote}</p>}
+        <p>
+          <a href={`${basePath}/impressum`}>Impressum</a> ·{" "}
+          <a href={`${basePath}/datenschutz`}>Datenschutz</a>
+        </p>
+      </footer>
+    </div>
+  );
+};
+
+export const PATINA_MODULE: PackModule = {
+  id: "patina",
+  css: PATINA_CSS,
+  Page: PatinaPage,
+};
+PACK_MODULES.patina = PATINA_MODULE;

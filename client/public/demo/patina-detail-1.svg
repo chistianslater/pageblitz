@@ -1,0 +1,16 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Warmes Patina-Placeholder: Sand-Bogenform mit getrockneten Kräuterbündeln">
+  <!-- Pergamentgrund, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#FBF4E7" />
+
+  <!-- Sand-Bogenform, versetzt zur Hero-Variante -->
+  <path d="M 210 900 L 210 380 A 390 390 0 0 1 990 380 L 990 900 Z" fill="#C9A468" />
+  <path d="M 280 900 L 280 410 A 320 320 0 0 1 920 410 L 920 900 Z" fill="#E9D3AE" />
+
+  <!-- Kräuterbündel: flache Stiele in Terrakotta und Sepia -->
+  <rect x="560" y="300" width="10" height="260" fill="#6B5F4E" />
+  <rect x="600" y="280" width="10" height="280" fill="#B05A36" />
+  <rect x="640" y="300" width="10" height="260" fill="#6B5F4E" />
+
+  <!-- Bindung um die Stiele -->
+  <rect x="540" y="440" width="120" height="16" fill="#8F6C3A" />
+</svg>
