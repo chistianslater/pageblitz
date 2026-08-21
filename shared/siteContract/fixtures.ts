@@ -1300,7 +1300,7 @@ const LANDGUT_FULL: WebsiteDataV2 = {
           rating: 5,
         },
         {
-          author: "Family Hasenmayer",
+          author: "Familie Hasenmayer",
           text: "Der Pflanzservice war unkompliziert und alles ist angewachsen. Unser Garten sieht aus wie aus einem anderen Leben.",
           rating: 5,
         },
