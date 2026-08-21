@@ -1,4 +1,5 @@
 import type { WebsiteData, ColorScheme } from "@shared/types";
+import type { PackId } from "@shared/siteContract/types";
 import { CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import {
   BoldLayoutV2,
@@ -44,7 +45,7 @@ interface WebsiteRendererProps {
    * Inhalte zu verändern. Wird 1:1 an SiteRenderer durchgereicht, das einen
    * nicht registrierten Override ignoriert. Für v1-Websites ohne Wirkung.
    */
-  packOverride?: string;
+  packOverride?: PackId;
 }
 
 function getLayoutComponent(
@@ -108,7 +109,7 @@ export default function WebsiteRenderer({
   packOverride,
 }: WebsiteRendererProps) {
   const v2 = parseV2(websiteData);
-  if (v2) return <SiteRenderer data={v2} packOverride={packOverride as any} />;
+  if (v2) return <SiteRenderer data={v2} packOverride={packOverride} />;
   // … bestehender v1-Pfad unverändert
 
   const cs = colorScheme || websiteData?.colorScheme || { primary: "#3b82f6" };

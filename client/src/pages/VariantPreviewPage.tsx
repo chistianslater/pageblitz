@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import { DEFAULT_LAYOUT_COLOR_SCHEMES } from "@shared/layoutConfig";
 import { STYLE_PACKS } from "@shared/stylePacks";
+import type { PackId } from "@shared/siteContract/types";
 
 export default function VariantPreviewPage() {
   const params = new URLSearchParams(window.location.search);
@@ -23,8 +24,8 @@ export default function VariantPreviewPage() {
   // Nur an v2-Dokumente durchreichen und nur wenn es eine registrierte
   // Pack-ID ist — sonst bleibt der gespeicherte Pack aktiv (v1 unberührt).
   const rawLayoutParam = (params.get("layout") || "").toLowerCase();
-  const packOverrideCandidate =
-    rawLayoutParam in STYLE_PACKS ? rawLayoutParam : undefined;
+  const packOverrideCandidate: PackId | undefined =
+    rawLayoutParam in STYLE_PACKS ? (rawLayoutParam as PackId) : undefined;
 
   // Override min-h-screen so the hero doesn't fill the entire iframe viewport.
   // Without this, 100vh = iframe height (2400px) and only the hero is visible.
