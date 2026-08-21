@@ -1,0 +1,19 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Helles Schimmer-Placeholder: zentrischer Lilac-Kreis mit Rosé-Zierring auf Perlmutt-Grund">
+  <!-- Perlmutt-Grund, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#FDF7FA" />
+
+  <!-- Weiße Bühnenfläche -->
+  <rect x="0" y="0" width="1200" height="480" fill="#FFFFFF" />
+
+  <!-- Zentrischer Kreis-Stapel -->
+  <circle cx="600" cy="420" r="280" fill="#EFD3F2" />
+  <circle cx="600" cy="420" r="200" fill="#E7C8F5" />
+  <circle cx="600" cy="420" r="120" fill="#F6DFE9" />
+
+  <!-- Kleiner Kreis unten rechts -->
+  <circle cx="980" cy="740" r="120" fill="#EFD3F2" />
+  <circle cx="980" cy="740" r="70" fill="#E7C8F5" />
+
+  <!-- Rosé-Zierring um den zentrischen Stapel -->
+  <circle cx="600" cy="420" r="280" fill="none" stroke="#D4749C" stroke-width="3" />
+</svg>

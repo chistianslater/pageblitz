@@ -17,10 +17,10 @@ describe("parseV2", () => {
   test("kaputtes v2-Dokument → null (kein Throw im Renderer-Pfad)", () => {
     expect(parseV2({ version: 2, stylePackId: "werkbank" })).toBeNull();
   });
-  test('valide stylePackId ohne registriertes Client-Modul (z. B. "schimmer") → null (v1-Fallback statt weißer Screen)', () => {
+  test('valide stylePackId ohne registriertes Client-Modul (z. B. "fundament") → null (v1-Fallback statt weißer Screen)', () => {
     const doc = {
       ...getFixture("werkbank", "full"),
-      stylePackId: "schimmer",
+      stylePackId: "fundament",
     };
     expect(parseV2(doc)).toBeNull();
   });

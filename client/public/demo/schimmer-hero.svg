@@ -1,0 +1,20 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Helles Schimmer-Placeholder: flache Rosé- und Lilac-Kreise auf Perlmutt-Grund">
+  <!-- Perlmutt-Grund, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#FDF7FA" />
+
+  <!-- Großer konzentrischer Kreis oben rechts -->
+  <circle cx="920" cy="200" r="320" fill="#F6DFE9" />
+  <circle cx="920" cy="200" r="220" fill="#EFD3F2" />
+  <circle cx="920" cy="200" r="120" fill="#E7C8F5" />
+
+  <!-- Kleinerer konzentrischer Kreis unten links -->
+  <circle cx="220" cy="700" r="240" fill="#F6DFE9" />
+  <circle cx="220" cy="700" r="160" fill="#EFD3F2" />
+  <circle cx="220" cy="700" r="80" fill="#E7C8F5" />
+
+  <!-- Dünner Lilac-Zierring als flache Kontur -->
+  <circle cx="600" cy="470" r="150" fill="none" stroke="#8B6CE8" stroke-width="3" />
+
+  <!-- Rosé-Punktakzent -->
+  <circle cx="600" cy="470" r="10" fill="#D4749C" />
+</svg>

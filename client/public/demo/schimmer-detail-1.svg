@@ -1,0 +1,21 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Helles Schimmer-Placeholder: gestaffelte Rosé-Kreise vor Weiß-Fläche">
+  <!-- Weiß-Grund, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#FFFFFF" />
+
+  <!-- Perlmutt-Bühnenfläche -->
+  <rect x="0" y="540" width="1200" height="360" fill="#FDF7FA" />
+
+  <!-- Drei versetzte konzentrische Kreise -->
+  <circle cx="320" cy="560" r="150" fill="#F6DFE9" />
+  <circle cx="320" cy="560" r="90" fill="#EFD3F2" />
+
+  <circle cx="640" cy="610" r="190" fill="#EFD3F2" />
+  <circle cx="640" cy="610" r="130" fill="#E7C8F5" />
+  <circle cx="640" cy="610" r="70" fill="#D4749C" />
+
+  <circle cx="960" cy="570" r="140" fill="#F6DFE9" />
+  <circle cx="960" cy="570" r="80" fill="#EFD3F2" />
+
+  <!-- Lilac-Zierring um den mittleren Kreis -->
+  <circle cx="640" cy="610" r="190" fill="none" stroke="#8B6CE8" stroke-width="3" />
+</svg>

@@ -12,6 +12,7 @@ import { ATELIER } from "./atelier";
 import { KLARWERK } from "./klarwerk";
 import { VERVE } from "./verve";
 import { ZUNFT } from "./zunft";
+import { SCHIMMER } from "./schimmer";
 
 export type { PackConstitution, PaletteColor, FontSpec } from "./types";
 export { toCssVars } from "./toCssVars";
@@ -29,6 +30,7 @@ export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {
   klarwerk: KLARWERK,
   verve: VERVE,
   zunft: ZUNFT,
+  schimmer: SCHIMMER,
 };
 
 export const FALLBACK_PACK: PackId = "werkbank";

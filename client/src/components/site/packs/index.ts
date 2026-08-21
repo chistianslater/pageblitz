@@ -11,3 +11,4 @@ import "./atelier";
 import "./klarwerk";
 import "./verve";
 import "./zunft";
+import "./schimmer";

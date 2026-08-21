@@ -2052,6 +2052,174 @@ const ZUNFT_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.9, reviewCount: 212 },
 };
 
+const SCHIMMER_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "schimmer",
+  businessName: "Studio Lumière",
+  slug: "studio-lumiere-wiesbaden",
+  businessCategory: "Kosmetikstudio",
+  tagline: "Zeit für dich.",
+  logo: { kind: "font", font: "Studio Lumière" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Zeit für dich.",
+      subheadline:
+        "Kosmetik und apparative Ästhetik in Wiesbaden — mit ehrlicher Beratung statt Behandlungs-Baukasten.",
+      ctaText: "Behandlung buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/schimmer-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Behandlungen",
+      intro:
+        "Vier Behandlungen, die sich kombinieren lassen — abgestimmt auf deine Haut, nicht auf ein Paket.",
+      items: [
+        {
+          title: "HydraGlow",
+          description:
+            "Tiefenreinigung, Peeling und Feuchtigkeitsinfusion in einer Behandlung — für sofort sichtbaren Glow.",
+          price: "89 €",
+        },
+        {
+          title: "Microneedling",
+          description:
+            "Feine Nadeln regen die Kollagenbildung an, verfeinern das Hautbild und mindern kleine Linien.",
+          price: "129 €",
+        },
+        {
+          title: "Wimpernwelle",
+          description:
+            "Natürlicher Schwung ganz ohne Extensions — hält bis zu sechs Wochen.",
+          price: "45 €",
+        },
+        {
+          title: "Maniküre & Gel",
+          description:
+            "Gepflegte Nägel mit langlebigem Gellack in der Farbe deiner Wahl.",
+          price: "55 €",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Studio",
+      body: "Studio Lumière liegt im Herzen von Wiesbaden und steht seit 2017 für Kosmetik, die zuhört, bevor sie behandelt. Statt eines starren Menüs entwickeln wir gemeinsam eine Pflege, die zu deiner Haut und deinem Alltag passt. Apparative Ästhetik und klassische Kosmetik ergänzen sich hier zu einem Ergebnis, das man sieht — und einer Stunde, die man spürt.",
+      imageUrl: "/demo/schimmer-detail-1.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Stimmen",
+      items: [
+        {
+          author: "Nina Vogt",
+          text: "Endlich eine Kosmetikerin, die erklärt statt verkauft. Nach dem HydraGlow strahlt meine Haut wirklich.",
+          rating: 5,
+        },
+        {
+          author: "Elif Kaya",
+          text: "Das Microneedling hat mein Hautbild sichtbar verfeinert — und die Beratung vorher war ehrlich statt aufdringlich.",
+          rating: 5,
+        },
+        {
+          author: "Sophie Lindner",
+          text: "Ruhige Atmosphäre, liebevolles Detail, immer pünktlich. Ich gehe seit zwei Jahren nur noch hierhin.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "gallery",
+      headline: "Galerie",
+      images: [
+        {
+          url: "/demo/schimmer-hero.svg",
+          alt: "Heller Behandlungsraum im Studio Lumière",
+        },
+        {
+          url: "/demo/schimmer-detail-1.svg",
+          alt: "Kosmetikbehandlung im Detail",
+        },
+        {
+          url: "/demo/schimmer-detail-2.svg",
+          alt: "Wartebereich im Studio Lumière",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0611 890 234",
+      email: "termin@studio-lumiere-wiesbaden.de",
+      street: "Taunusstraße 14",
+      zip: "65183",
+      city: "Wiesbaden",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 19:00" }],
+    },
+  ],
+  seo: {
+    title: "Studio Lumière Wiesbaden — Kosmetik & apparative Ästhetik",
+    description:
+      "Studio Lumière in Wiesbaden: HydraGlow, Microneedling, Wimpernwelle und Maniküre mit ehrlicher Beratung statt Behandlungs-Baukasten.",
+  },
+  footerNote: "Studio Lumière · Wiesbaden · seit 2017",
+  google: { rating: 4.9, reviewCount: 97 },
+};
+
+const SCHIMMER_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "schimmer",
+  businessName: "Studio Lumière",
+  slug: "studio-lumiere-wiesbaden",
+  businessCategory: "Kosmetikstudio",
+  tagline: "Zeit für dich.",
+  logo: { kind: "font", font: "Studio Lumière" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Zeit für dich.",
+      subheadline: "Kosmetik und apparative Ästhetik in Wiesbaden.",
+      ctaText: "Behandlung buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/schimmer-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Behandlungen",
+      items: [
+        {
+          title: "HydraGlow",
+          description: "Tiefenreinigung mit Feuchtigkeitsinfusion.",
+          price: "89 €",
+        },
+        {
+          title: "Microneedling",
+          description: "Regt die Kollagenbildung an.",
+          price: "129 €",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0611 890 234",
+      email: "termin@studio-lumiere-wiesbaden.de",
+      street: "Taunusstraße 14",
+      zip: "65183",
+      city: "Wiesbaden",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 19:00" }],
+    },
+  ],
+  seo: {
+    title: "Studio Lumière Wiesbaden",
+    description:
+      "Studio Lumière in Wiesbaden: Kosmetik und apparative Ästhetik.",
+  },
+  footerNote: "Studio Lumière · Wiesbaden · seit 2017",
+  google: { rating: 4.9, reviewCount: 97 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -2065,6 +2233,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   klarwerk: { full: KLARWERK_FULL, minimal: KLARWERK_MINIMAL },
   verve: { full: VERVE_FULL, minimal: VERVE_MINIMAL },
   zunft: { full: ZUNFT_FULL, minimal: ZUNFT_MINIMAL },
+  schimmer: { full: SCHIMMER_FULL, minimal: SCHIMMER_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
