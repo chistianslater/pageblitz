@@ -5232,13 +5232,11 @@ Kontext: ${input.context}`,
         ) {
           const profile = getIndustryProfile(effectiveCategory);
           if (profile) {
-            topServices = profile.services
-              .slice(0, 5)
-              .map(s => ({
-                title: s.title,
-                description: s.description,
-                icon: s.icon,
-              }));
+            topServices = profile.services.slice(0, 5).map(s => ({
+              title: s.title,
+              description: s.description,
+              icon: s.icon,
+            }));
           }
         }
 
