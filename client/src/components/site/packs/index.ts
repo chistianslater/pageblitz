@@ -10,3 +10,4 @@ import "./landgut";
 import "./atelier";
 import "./klarwerk";
 import "./verve";
+import "./zunft";

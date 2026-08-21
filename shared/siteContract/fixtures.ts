@@ -1886,6 +1886,172 @@ const VERVE_MINIMAL: WebsiteDataV2 = {
   footerNote: "Studio PULS · Essen · seit 2019",
 };
 
+const ZUNFT_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "zunft",
+  businessName: "Bäckerei Steinofen",
+  slug: "baeckerei-steinofen-augsburg",
+  businessCategory: "Bäckerei",
+  tagline: "Brot braucht Zeit.",
+  logo: { kind: "font", font: "Bäckerei Steinofen" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Brot braucht Zeit.",
+      subheadline:
+        "48 Stunden Teigruhe, Natursauerteig und ein Steinofen, der seit vier Generationen glüht.",
+      ctaText: "Unser Sortiment",
+      ctaHref: "#preise",
+      imageUrl: "/demo/zunft-hero.svg",
+    },
+    {
+      type: "pricelist",
+      headline: "Sortiment",
+      categories: [
+        {
+          name: "Brote",
+          items: [
+            {
+              name: "Steinofenkruste, 1 kg",
+              description:
+                "Knusprige Kruste, langsam gereifter Natursauerteig.",
+              price: "4,80",
+            },
+            {
+              name: "Emmer-Vollkorn",
+              description:
+                "Vollkorn aus regionalem Emmer, kräftig im Geschmack.",
+              price: "5,60",
+            },
+            {
+              name: "Bauernlaib, Roggen-Mischbrot",
+              price: "4,20",
+            },
+          ],
+        },
+        {
+          name: "Feingebäck",
+          items: [
+            { name: "Butter-Croissant", price: "2,40" },
+            { name: "Mohn-Zopf", price: "6,90" },
+            { name: "Nussecken, 4 Stück", price: "5,80" },
+          ],
+        },
+      ],
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Steinofenbrote",
+          description:
+            "Täglich frisch gebacken, mit 48 Stunden Teigruhe für kräftiges Aroma.",
+        },
+        {
+          title: "Festtagsgebäck",
+          description:
+            "Stollen, Feingebäck und Torten für besondere Anlässe — auf Vorbestellung.",
+        },
+        {
+          title: "Catering",
+          description:
+            "Brot- und Gebäckplatten für Firmenfeiern und Familienfeste.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Unsere Geschichte",
+      body: "Seit 1927 backt unsere Familie in Augsburg mit Natursauerteig, der über Jahrzehnte weitergegeben wurde. Vier Generationen haben den Steinofen gehütet, der bis heute mit Holz befeuert wird. Jeder Laib bekommt 48 Stunden Zeit zum Reifen — keine Abkürzungen, keine Backmischungen. Was hier entsteht, schmeckt man: langsam gemachtes Brot für Menschen, die genau das noch wollen.",
+      imageUrl: "/demo/zunft-detail-1.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Kunden sagen",
+      items: [
+        {
+          author: "Helga Brunner",
+          text: "Dieses Brot schmeckt wie bei meiner Großmutter — kräftig, mit richtiger Kruste. Anders bekomme ich das nirgends mehr.",
+          rating: 5,
+        },
+        {
+          author: "Jonas Reiter",
+          text: "Der Emmer-Vollkorn ist mein Wochenend-Ritual. Man merkt, dass hier niemand etwas abkürzt.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0821 34 56 78",
+      email: "info@baeckerei-steinofen-augsburg.de",
+      street: "Zunftgasse 6",
+      zip: "86150",
+      city: "Augsburg",
+      openingHours: [{ day: "Di–Sa", hours: "ab 6:00 Uhr" }],
+    },
+  ],
+  seo: {
+    title: "Bäckerei Steinofen Augsburg — Natursauerteig aus dem Steinofen",
+    description:
+      "Bäckerei Steinofen in Augsburg backt seit 1927 mit Natursauerteig und 48 Stunden Teigruhe: Brote, Feingebäck und Festtagsgebäck aus vier Generationen Handwerk.",
+  },
+  footerNote: "Bäckerei Steinofen · Augsburg · seit 1927",
+  google: { rating: 4.9, reviewCount: 212 },
+};
+
+const ZUNFT_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "zunft",
+  businessName: "Bäckerei Steinofen",
+  slug: "baeckerei-steinofen-augsburg",
+  businessCategory: "Bäckerei",
+  tagline: "Brot braucht Zeit.",
+  logo: { kind: "font", font: "Bäckerei Steinofen" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Brot braucht Zeit.",
+      subheadline: "Natursauerteig und ein Steinofen in Augsburg.",
+      ctaText: "Unser Sortiment",
+      ctaHref: "#preise",
+      imageUrl: "/demo/zunft-hero.svg",
+    },
+    {
+      type: "pricelist",
+      headline: "Sortiment",
+      categories: [
+        {
+          name: "Brote",
+          items: [
+            { name: "Steinofenkruste, 1 kg", price: "4,80" },
+            { name: "Emmer-Vollkorn", price: "5,60" },
+          ],
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0821 34 56 78",
+      email: "info@baeckerei-steinofen-augsburg.de",
+      street: "Zunftgasse 6",
+      zip: "86150",
+      city: "Augsburg",
+      openingHours: [{ day: "Di–Sa", hours: "ab 6:00 Uhr" }],
+    },
+  ],
+  seo: {
+    title: "Bäckerei Steinofen Augsburg",
+    description:
+      "Bäckerei Steinofen in Augsburg: Natursauerteig und Steinofenbrote seit 1927.",
+  },
+  footerNote: "Bäckerei Steinofen · Augsburg · seit 1927",
+  google: { rating: 4.9, reviewCount: 212 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -1898,6 +2064,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   atelier: { full: ATELIER_FULL, minimal: ATELIER_MINIMAL },
   klarwerk: { full: KLARWERK_FULL, minimal: KLARWERK_MINIMAL },
   verve: { full: VERVE_FULL, minimal: VERVE_MINIMAL },
+  zunft: { full: ZUNFT_FULL, minimal: ZUNFT_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

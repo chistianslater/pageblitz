@@ -12,6 +12,7 @@ const PACKS = [
   "atelier",
   "klarwerk",
   "verve",
+  "zunft",
 ] as const; // Plan B/C erweitern diese Liste
 const FIXTURES = ["full", "minimal"] as const;
 const VIEWPORTS = [
