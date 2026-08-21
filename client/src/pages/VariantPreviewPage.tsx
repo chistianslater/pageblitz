@@ -17,7 +17,7 @@ import { STYLE_PACKS } from "@shared/stylePacks";
 export default function VariantPreviewPage() {
   const params = new URLSearchParams(window.location.search);
   const websiteId = parseInt(params.get("websiteId") || "0", 10);
-  const layout    = (params.get("layout") || "ELEGANT").toUpperCase();
+  const layout = (params.get("layout") || "ELEGANT").toUpperCase();
   // v2-Variant-Picker: derselbe `layout`-Param kann statt eines Legacy-
   // Layoutnamens direkt eine Pack-ID sein (siehe getV2VariantCandidates).
   // Nur an v2-Dokumente durchreichen und nur wenn es eine registrierte
@@ -36,31 +36,49 @@ export default function VariantPreviewPage() {
       .min-h-\\[100vh\\] { min-height: 700px !important; }
     `;
     document.head.appendChild(style);
-    return () => { document.head.removeChild(style); };
+    return () => {
+      document.head.removeChild(style);
+    };
   }, []);
 
   const { data, isLoading } = trpc.website.get.useQuery(
     { id: websiteId },
-    { enabled: websiteId > 0, staleTime: 0 },
+    { enabled: websiteId > 0, staleTime: 0 }
   );
 
   // Placeholder-Bilder per Kategorie laden, falls die Kundin noch kein Foto
   // ausgewählt hat (Variant-Picker kommt vor dem heroPhoto-Step). Sonst
   // zeigen die Previews leere Gradients statt eine echte Website.
   const category = (data as any)?.business?.category || "";
-  const { data: photoSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
-    { category },
-    { enabled: !!category },
-  );
+  const { data: photoSuggestions } =
+    trpc.onboarding.getPhotoSuggestions.useQuery(
+      { category },
+      { enabled: !!category }
+    );
 
   const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout];
 
   if (!websiteId || isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <svg className="w-8 h-8 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        <svg
+          className="w-8 h-8 animate-spin text-slate-400"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v8z"
+          />
         </svg>
       </div>
     );
@@ -74,7 +92,8 @@ export default function VariantPreviewPage() {
   const suggestions = photoSuggestions?.suggestions || [];
   // Echte URLs falls vorhanden, sonst Kategorie-passender Stock-Fallback.
   const heroImageUrl = website.heroImageUrl || suggestions[0]?.url;
-  const aboutImageUrl = website.aboutImageUrl || suggestions[1]?.url || suggestions[0]?.url;
+  const aboutImageUrl =
+    website.aboutImageUrl || suggestions[1]?.url || suggestions[0]?.url;
   const websiteData = website.websiteData ?? website;
   const isV2Document = websiteData?.version === 2;
 
