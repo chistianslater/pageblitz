@@ -44,10 +44,7 @@ describe("Pack morgenlicht", () => {
     });
     test("Samstag (außerhalb Mo–Fr): Karte rendert nicht", () => {
       const satHtml = renderToStaticMarkup(
-        <SiteRenderer
-          data={getFixture("morgenlicht", "full")}
-          now={SATURDAY}
-        />
+        <SiteRenderer data={getFixture("morgenlicht", "full")} now={SATURDAY} />
       );
       expect(satHtml).not.toContain("Heute geöffnet");
     });
