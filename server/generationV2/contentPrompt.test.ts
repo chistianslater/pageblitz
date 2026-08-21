@@ -5,7 +5,11 @@ import { buildContentPrompt } from "./contentPrompt";
 describe("buildContentPrompt", () => {
   const p = buildContentPrompt({
     constitution: getConstitution("werkbank"),
-    business: { name: "Schreinerei Brandt", category: "Schreinerei", city: "Dortmund" },
+    business: {
+      name: "Schreinerei Brandt",
+      category: "Schreinerei",
+      city: "Dortmund",
+    },
     sections: ["hero", "services", "about", "contact"],
   });
   test("enthält Essenz und llmHints, aber keine Farb-/Font-Anweisungen", () => {

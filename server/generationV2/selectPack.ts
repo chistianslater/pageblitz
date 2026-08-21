@@ -8,7 +8,10 @@ import { getNextLayoutForIndustry } from "../db";
  * den bestehenden Layout-Counter (getNextLayoutForIndustry, nach
  * Industrie-Key). Pool-Werte sind jetzt Pack-IDs statt Legacy-Layoutnamen.
  */
-export async function selectPack(category: string, industryKey: string): Promise<PackId> {
+export async function selectPack(
+  category: string,
+  industryKey: string
+): Promise<PackId> {
   const pool = getPackPool(category);
   const packId = await getNextLayoutForIndustry(industryKey, pool);
   return packId as PackId;
