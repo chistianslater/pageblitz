@@ -45,7 +45,9 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
   ].filter((line): line is string => Boolean(line));
 
   const sectionDocs = sections
-    .map(type => `- "${type}": { "type": "${type}", ${SECTION_FIELD_DOC[type]} }`)
+    .map(
+      type => `- "${type}": { "type": "${type}", ${SECTION_FIELD_DOC[type]} }`
+    )
     .join("\n");
 
   return [
@@ -65,7 +67,11 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     `- keine Bild-URLs, keine Links — ctaHref weglassen`,
     ``,
     `## Antwortformat`,
-    `Antworte mit einem JSON-Objekt mit dem Feld "sections" (Array). Erzeuge genau diese Sektionen, in dieser Reihenfolge:`,
+    `Antworte mit einem JSON-Objekt mit GENAU zwei Top-Level-Feldern: "seo" und "sections". Keine weiteren Top-Level-Felder — insbesondere KEIN "version", KEIN "stylePackId", KEIN "businessName" (die setzt das System).`,
+    ``,
+    `"seo": { "title" (Pflicht, max. 60 Zeichen, inkl. Ort), "description" (Pflicht, max. 155 Zeichen) }`,
+    ``,
+    `"sections": Array. Erzeuge genau diese Sektionen, in dieser Reihenfolge:`,
     sectionDocs,
     ``,
     `Antworte NUR mit JSON. Keine Farben, keine Schriftnamen, keine Design-Anweisungen.`,
