@@ -1,7 +1,7 @@
 export const SALON_NOIR_CSS = `
 .pb-salon-noir{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);font-weight:300;line-height:1.6;overflow-x:clip;position:relative}
 .pb-salon-noir a{color:inherit;text-decoration:none}
-.pb-sn-frame{position:fixed;inset:12px;border:1px solid color-mix(in srgb, var(--pb-accent) 45%, transparent);pointer-events:none;z-index:50}
+.pb-sn-frame{position:absolute;inset:12px;border:1px solid color-mix(in srgb, var(--pb-accent) 45%, transparent);pointer-events:none;z-index:50}
 .pb-sn-nav{display:flex;align-items:center;justify-content:center;gap:28px;padding:26px 40px;border-bottom:1px solid var(--pb-line);flex-wrap:wrap}
 .pb-sn-nav-links{display:flex;align-items:center;gap:20px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;flex-wrap:wrap;color:var(--pb-muted)}
 .pb-sn-nav-links a{transition:color .15s}

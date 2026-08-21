@@ -344,7 +344,7 @@ const SalonNoirPage: React.FC<{
         .map(section => renderSection(section))}
       <footer className="pb-sn-footer">
         <p>
-          {data.businessName} · © {year} {data.businessName}
+          © {year} {data.businessName}
         </p>
         {data.footerNote && <p>{data.footerNote}</p>}
         <p>
