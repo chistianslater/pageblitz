@@ -1044,6 +1044,200 @@ const SALON_NOIR_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.8, reviewCount: 167 },
 };
 
+const MARKTPLATZ_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "marktplatz",
+  businessName: "Musikschule Tonleiter",
+  slug: "musikschule-tonleiter-nuernberg",
+  businessCategory: "Musikschule",
+  tagline: "1. Stunde gratis!",
+  logo: { kind: "font", font: "Tonleiter" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Lernen, das Spaß macht!",
+      subheadline:
+        "Klavier, Gitarre, Gesang und Schlagzeug für Kinder und Erwachsene — mitten in Nürnberg.",
+      ctaText: "Schnupperstunde buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/marktplatz-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Unsere Kurse",
+      intro:
+        "Vier Wege, Musik zu lieben — für jedes Alter der passende Einstieg.",
+      items: [
+        {
+          title: "Klavier",
+          description:
+            "Von den ersten Tönen bis zur Lieblingsmelodie — einzeln oder zu zweit.",
+          price: "ab 32 €/Monat",
+        },
+        {
+          title: "Gitarre",
+          description:
+            "Akustisch oder E-Gitarre, vom ersten Griff bis zum ersten Song.",
+          price: "ab 32 €/Monat",
+        },
+        {
+          title: "Gesang",
+          description:
+            "Stimmbildung für Kinder, Jugendliche und Erwachsene in kleinen Gruppen.",
+          price: "ab 29 €/Monat",
+        },
+        {
+          title: "Schlagzeug",
+          description:
+            "Rhythmusgefühl, Koordination und jede Menge Krach mit System.",
+          price: "ab 34 €/Monat",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über uns",
+      body: "Die Musikschule Tonleiter gibt es seit 2011 im Herzen von Nürnberg. Zwölf Lehrkräfte unterrichten hier vom ersten Ton bis zur Bühnenreife — in kleinen Gruppen oder ganz allein, immer im Tempo, das passt. Kein Notenlese-Zwang, keine Vorspiel-Angst: bei uns darf Musik zuerst Spaß machen, dann perfekt werden.",
+      imageUrl: "/demo/marktplatz-detail-1.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Eltern erzählen",
+      items: [
+        {
+          author: "Familie Brandt",
+          text: "Unser Sohn wollte nach der ersten Schnupperstunde sofort ein eigenes Klavier. Die Geduld der Lehrerin ist unglaublich.",
+          rating: 5,
+        },
+        {
+          author: "Nadine K.",
+          text: "Endlich ein Kurs, bei dem meine Tochter jede Woche freiwillig hingeht. Die Stimmung ist einfach warm und locker.",
+          rating: 5,
+        },
+        {
+          author: "Familie Özdemir",
+          text: "Zwei Kinder, zwei Instrumente, ein Ort — und alle drei kommen mit einem Lächeln zurück.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Ab welchem Alter kann mein Kind teilnehmen?",
+          answer:
+            "Unsere jüngsten Musikschüler starten mit 4 Jahren in der musikalischen Früherziehung — für Klavier und Gitarre empfehlen wir ab 6 Jahren.",
+        },
+        {
+          question: "Brauchen wir Vorkenntnisse oder ein eigenes Instrument?",
+          answer:
+            "Nein — wir starten bei null, und für die ersten Monate können Sie sich ein Instrument in der Schule leihen.",
+        },
+        {
+          question: "Wie funktioniert die kostenlose Schnupperstunde?",
+          answer:
+            "Eine reguläre Unterrichtsstunde, unverbindlich und ohne weitere Verpflichtung — einfach über das Kontaktformular anfragen.",
+        },
+      ],
+    },
+    {
+      type: "gallery",
+      headline: "Einblicke",
+      images: [
+        {
+          url: "/demo/marktplatz-hero.svg",
+          alt: "Übungsraum mit Klavier",
+        },
+        {
+          url: "/demo/marktplatz-detail-1.svg",
+          alt: "Gitarrenunterricht in kleiner Gruppe",
+        },
+        {
+          url: "/demo/marktplatz-detail-2.svg",
+          alt: "Kinder beim gemeinsamen Musizieren",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0911 555 3170",
+      email: "hallo@musikschule-tonleiter.de",
+      street: "Färberstraße 9",
+      zip: "90402",
+      city: "Nürnberg",
+      openingHours: [
+        { day: "Mo–Fr", hours: "14:00 – 19:00" },
+        { day: "Sa", hours: "9:00 – 13:00" },
+      ],
+    },
+  ],
+  seo: {
+    title:
+      "Musikschule Tonleiter Nürnberg — Klavier, Gitarre, Gesang, Schlagzeug",
+    description:
+      "Musikschule Tonleiter in Nürnberg: Klavier-, Gitarren-, Gesangs- und Schlagzeugunterricht für Kinder und Erwachsene — erste Stunde gratis.",
+  },
+  footerNote: "Musikschule Tonleiter · Nürnberg · seit 2011",
+  google: { rating: 4.9, reviewCount: 89 },
+};
+
+const MARKTPLATZ_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "marktplatz",
+  businessName: "Musikschule Tonleiter",
+  slug: "musikschule-tonleiter-nuernberg",
+  businessCategory: "Musikschule",
+  tagline: "1. Stunde gratis!",
+  logo: { kind: "font", font: "Tonleiter" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Lernen, das Spaß macht!",
+      subheadline:
+        "Klavier, Gitarre und Gesang in Nürnberg — die erste Stunde ist gratis.",
+      ctaText: "Schnupperstunde buchen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/marktplatz-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Unsere Kurse",
+      items: [
+        {
+          title: "Klavier",
+          description: "Von den ersten Tönen bis zur Lieblingsmelodie.",
+          price: "ab 32 €/Monat",
+        },
+        {
+          title: "Gitarre",
+          description: "Vom ersten Griff bis zum ersten Song.",
+          price: "ab 32 €/Monat",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0911 555 3170",
+      email: "hallo@musikschule-tonleiter.de",
+      street: "Färberstraße 9",
+      zip: "90402",
+      city: "Nürnberg",
+      openingHours: [{ day: "Mo–Fr", hours: "14:00 – 19:00" }],
+    },
+  ],
+  seo: {
+    title: "Musikschule Tonleiter Nürnberg",
+    description:
+      "Musikschule Tonleiter in Nürnberg: Klavier- und Gitarrenunterricht für Kinder und Erwachsene.",
+  },
+  footerNote: "Musikschule Tonleiter · Nürnberg · seit 2011",
+  google: { rating: 4.9, reviewCount: 89 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -1051,6 +1245,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   gusto: { full: GUSTO_FULL, minimal: GUSTO_MINIMAL },
   patina: { full: PATINA_FULL, minimal: PATINA_MINIMAL },
   "salon-noir": { full: SALON_NOIR_FULL, minimal: SALON_NOIR_MINIMAL },
+  marktplatz: { full: MARKTPLATZ_FULL, minimal: MARKTPLATZ_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

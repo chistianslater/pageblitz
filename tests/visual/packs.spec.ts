@@ -7,6 +7,7 @@ const PACKS = [
   "gusto",
   "patina",
   "salon-noir",
+  "marktplatz",
 ] as const; // Plan B/C erweitern diese Liste
 const FIXTURES = ["full", "minimal"] as const;
 const VIEWPORTS = [
