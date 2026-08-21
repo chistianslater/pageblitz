@@ -325,9 +325,7 @@ const KanzleiPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
 }) => {
   const sections = orderedSections(data);
   const navSections = sections.filter(s => s.type !== "hero");
-  const hero = sections.find(
-    (s): s is SectionOf<"hero"> => s.type === "hero"
-  );
+  const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const contact = sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
   );
@@ -390,7 +388,9 @@ const KanzleiPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
           ))}
         </div>
       )}
-      {sections.filter(s => s.type !== "hero").map(section => renderSection(section))}
+      {sections
+        .filter(s => s.type !== "hero")
+        .map(section => renderSection(section))}
       <footer className="pb-kz-footer">
         <p>
           {data.businessName} · © {year} {data.businessName}

@@ -12,7 +12,9 @@ describe("Pack kanzlei", () => {
     expect(c.signature.decor).toContain("column-grid");
     expect(c.signature.decor).toContain("mono-index");
   });
-  const html = renderToStaticMarkup(<SiteRenderer data={getFixture("kanzlei", "full")} />);
+  const html = renderToStaticMarkup(
+    <SiteRenderer data={getFixture("kanzlei", "full")} />
+  );
   test("eine h1, deutsche Anker, Signatur-Klassen", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
     expect(html).toContain('id="leistungen"');
