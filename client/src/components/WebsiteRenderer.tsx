@@ -7,6 +7,9 @@ import {
   AuroraLayoutV2, NexusLayoutV2, ClayLayoutV2, ForgeLayoutV2,
   PulseLayoutV2, FluxLayoutV2,
 } from "./layouts/PremiumLayoutsV2";
+import { parseV2 } from "./site/isV2";
+import { SiteRenderer } from "./site/SiteRenderer";
+import "./site/packs/index";
 
 export { CURRENT_LAYOUT_VERSION };
 
@@ -66,6 +69,10 @@ function getLayoutComponent(category: string = "", layoutStyle?: string | null, 
 }
 
 export default function WebsiteRenderer({ websiteData, colorScheme, heroImageUrl, aboutImageUrl, isLoading = false, businessCategory, layoutStyle, layoutVersion, headlineSize, headlineFontOverride, slug }: WebsiteRendererProps) {
+  const v2 = parseV2(websiteData);
+  if (v2) return <SiteRenderer data={v2} />;
+  // … bestehender v1-Pfad unverändert
+
   const cs = colorScheme || websiteData?.colorScheme || { primary: '#3b82f6' };
   const heroImg = heroImageUrl || websiteData?.heroImage || "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
   
