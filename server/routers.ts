@@ -144,7 +144,14 @@ import { selectPack } from "./generationV2/selectPack";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
 import { invalidateSsrCache } from "./ssr/routes";
 import { applyOnboardingToV2 } from "./onboardingV2Patch";
-import type { SectionType, WebsiteDataV2 } from "@shared/siteContract/types";
+import { assertV2SafeWrite } from "./v2WriteGuard";
+import { PACK_IDS, WebsiteDataV2Schema } from "@shared/siteContract/schema";
+import { SECTION_TYPES } from "@shared/siteContract/types";
+import type {
+  PackId,
+  SectionType,
+  WebsiteDataV2,
+} from "@shared/siteContract/types";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 // Compat client with older API — current_period_end not in 2026-02-25.clover
@@ -235,6 +242,27 @@ function formatOpeningHoursText(
     i = j + 1;
   }
   return lines.join("\n");
+}
+
+/**
+ * Mappt Googles `opening_hours.weekday_text` (Places API, per `language: "de"`
+ * bereits deutsch lokalisiert, z.B. "Montag: 09:00–17:00 Uhr") auf die
+ * v2-ContactSchema-Form { day, hours }. Split am ersten ": " — bei
+ * unerwartetem Format wird die Zeile als day mit leeren hours übernommen,
+ * statt sie zu verwerfen (Google liefert das Format konsistent).
+ */
+function mapGmbOpeningHoursToV2(
+  weekdayText: string[] | null | undefined
+): { day: string; hours: string }[] | undefined {
+  if (!weekdayText || weekdayText.length === 0) return undefined;
+  return weekdayText.map(line => {
+    const sepIndex = line.indexOf(": ");
+    if (sepIndex === -1) return { day: line, hours: "" };
+    return {
+      day: line.slice(0, sepIndex),
+      hours: line.slice(sepIndex + 2),
+    };
+  });
 }
 
 // Generic Google Places types that apply to virtually every business – not useful as category
@@ -1800,7 +1828,7 @@ export async function runWebsiteGeneration(
       await runWebsiteGenerationV2(
         jobId,
         website,
-        business,
+        { ...business, openingHours: business.openingHours as string[] | null },
         category,
         industryKey
       );
@@ -2209,6 +2237,7 @@ async function runWebsiteGenerationV2(
     address: string | null;
     rating: string | null;
     reviewCount: number | null;
+    openingHours: string[] | null;
   },
   category: string,
   industryKey: string
@@ -2243,6 +2272,7 @@ async function runWebsiteGenerationV2(
         // bleiben leer, bis der Onboarding-Legal-Schritt (applyOnboardingToV2)
         // sie mit echten, vom Nutzer bestätigten Werten füllt.
         city: business.searchRegion || undefined,
+        openingHours: mapGmbOpeningHoursToV2(business.openingHours),
       },
     },
   });
@@ -5447,24 +5477,52 @@ Kontext: ${input.context}`,
           // v2: sämtliche Onboarding-Antworten (legal-HTML, Kontaktdaten,
           // Section-Sichtbarkeit/-Reihenfolge, Tagline) in einem pure,
           // schema-validierten Schritt anwenden statt der v1-Pipeline oben.
-          patchedData = applyOnboardingToV2(
-            website.websiteData as WebsiteDataV2,
-            {
-              impressumHtml: impressumHtml ?? undefined,
-              datenschutzHtml: datenschutzHtml ?? undefined,
-              legalPhone: onboarding.legalPhone ?? undefined,
-              legalEmail: onboarding.legalEmail ?? undefined,
-              legalStreet: onboarding.legalStreet ?? undefined,
-              legalZip: onboarding.legalZip ?? undefined,
-              legalCity: onboarding.legalCity ?? undefined,
-              openingHours: ohText
-                ? [{ day: "Öffnungszeiten", hours: ohText }]
-                : undefined,
-              hiddenSections: savedHiddenSections as SectionType[] | undefined,
-              sectionOrder: savedSectionOrder as SectionType[] | undefined,
-              tagline: onboarding.tagline ?? undefined,
-            }
-          );
+          //
+          // savedHiddenSections/savedSectionOrder stammen aus dem alten
+          // v1-Chat und können v1-only Sektionstypen wie "process"/
+          // "features" enthalten, die SECTION_TYPES (v2) nicht kennt —
+          // ungefiltert würde WebsiteDataV2Schema.parse() in
+          // applyOnboardingToV2 mit ZodError werfen und das Onboarding
+          // hart abbrechen. Unbekannte Werte werden defensiv gedroppt statt
+          // die Fertigstellung zu blockieren.
+          const knownSectionTypes = new Set<string>(SECTION_TYPES);
+          const filterKnownSectionTypes = (
+            values: string[] | undefined
+          ): SectionType[] | undefined =>
+            values
+              ? values.filter((v): v is SectionType => knownSectionTypes.has(v))
+              : undefined;
+
+          try {
+            patchedData = applyOnboardingToV2(
+              website.websiteData as WebsiteDataV2,
+              {
+                impressumHtml: impressumHtml ?? undefined,
+                datenschutzHtml: datenschutzHtml ?? undefined,
+                legalPhone: onboarding.legalPhone ?? undefined,
+                legalEmail: onboarding.legalEmail ?? undefined,
+                legalStreet: onboarding.legalStreet ?? undefined,
+                legalZip: onboarding.legalZip ?? undefined,
+                legalCity: onboarding.legalCity ?? undefined,
+                openingHours: ohText
+                  ? [{ day: "Öffnungszeiten", hours: ohText }]
+                  : undefined,
+                hiddenSections: filterKnownSectionTypes(savedHiddenSections),
+                sectionOrder: filterKnownSectionTypes(savedSectionOrder),
+                tagline: onboarding.tagline ?? undefined,
+              }
+            );
+          } catch (e) {
+            console.error(
+              "[onboarding.complete] applyOnboardingToV2 fehlgeschlagen:",
+              e
+            );
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Das Onboarding konnte nicht abgeschlossen werden — die Website-Daten sind in einem unerwarteten Format. Bitte kontaktiere den Support.",
+            });
+          }
         }
 
         // Patch color scheme with user's chosen brand colors
@@ -5716,17 +5774,33 @@ Kontext: ${input.context}`,
         const impressumHtml = generateImpressum(legalData);
         const datenschutzHtml = generateDatenschutz(legalData);
 
-        // Update website with new legal pages
+        // Update website with new legal pages. v2: legalGenerator-Output
+        // gehört nach websiteData.legal.* statt top-level (SICHERHEITS-
+        // INVARIANTE, siehe shared/siteContract/schema.ts) — hasLegalPages
+        // ist dort kein gültiges Feld (strict schema).
         const websiteData = (website.websiteData as any) || {};
+        const nextWebsiteData =
+          websiteData.version === 2
+            ? {
+                ...websiteData,
+                legal: {
+                  ...(websiteData.legal || {}),
+                  impressumHtml,
+                  datenschutzHtml,
+                },
+              }
+            : {
+                ...websiteData,
+                impressumHtml,
+                datenschutzHtml,
+                hasLegalPages: true,
+              };
+        assertV2SafeWrite(website.websiteData, nextWebsiteData);
         await updateWebsite(input.websiteId, {
-          websiteData: {
-            ...websiteData,
-            impressumHtml,
-            datenschutzHtml,
-            hasLegalPages: true,
-          },
+          websiteData: nextWebsiteData,
           hasLegalPages: true,
         });
+        if (websiteData.version === 2) invalidateSsrCache(website.slug);
 
         return {
           success: true,
@@ -5829,8 +5903,10 @@ Kontext: ${input.context}`,
         );
         // Store logo URL in websiteData.logoImageUrl (where layouts read it from)
         const websiteData = (row.website.websiteData as any) || {};
+        const nextWebsiteData = { ...websiteData, logoImageUrl: result.url };
+        assertV2SafeWrite(row.website.websiteData, nextWebsiteData);
         await updateWebsite(input.websiteId, {
-          websiteData: { ...websiteData, logoImageUrl: result.url },
+          websiteData: nextWebsiteData,
         });
         // Also keep onboarding in sync
         await updateOnboarding(input.websiteId, {
@@ -6170,6 +6246,7 @@ Kontext: ${input.context}`,
           : {};
         currentWd.teamMembers = input.enabled ? input.members : [];
 
+        assertV2SafeWrite(row.website.websiteData, currentWd);
         await updateWebsite(input.websiteId, {
           addOnTeam: input.enabled,
           addOnTeamData: input.members,
@@ -6395,14 +6472,29 @@ Kontext: ${input.context}`,
         const datenschutzHtml = generateDatenschutz(legalData);
         const websiteData = (website.websiteData as any) || {};
 
+        // v2: legalGenerator-Output gehört nach websiteData.legal.* statt
+        // top-level (SICHERHEITS-INVARIANTE, siehe shared/siteContract/schema.ts).
+        const nextWebsiteData =
+          websiteData.version === 2
+            ? {
+                ...websiteData,
+                legal: {
+                  ...(websiteData.legal || {}),
+                  impressumHtml,
+                  datenschutzHtml,
+                },
+              }
+            : {
+                ...websiteData,
+                impressumHtml,
+                datenschutzHtml,
+                hasLegalPages: true,
+              };
+        assertV2SafeWrite(website.websiteData, nextWebsiteData);
         await updateWebsite(input.websiteId, {
-          websiteData: {
-            ...websiteData,
-            impressumHtml,
-            datenschutzHtml,
-            hasLegalPages: true,
-          },
+          websiteData: nextWebsiteData,
         });
+        if (websiteData.version === 2) invalidateSsrCache(website.slug);
 
         return { success: true };
       }),
@@ -6639,6 +6731,7 @@ Wichtige Felder im JSON:
           };
         }
 
+        assertV2SafeWrite(owned.website.websiteData, mergedData);
         await updateWebsite(input.websiteId, { websiteData: mergedData });
         return { mode: "apply" as const, aiMessage, updatedData: mergedData };
       }),
@@ -6653,11 +6746,13 @@ Wichtige Felder im JSON:
       )
       .mutation(async ({ ctx, input }) => {
         const rows = await getWebsitesByUserId(ctx.user.id);
-        if (!rows.find(r => r.website.id === input.websiteId))
+        const owned = rows.find(r => r.website.id === input.websiteId);
+        if (!owned)
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "Nicht autorisiert",
           });
+        assertV2SafeWrite(owned.website.websiteData, input.proposedData);
         await updateWebsite(input.websiteId, {
           websiteData: input.proposedData,
         });
@@ -6724,16 +6819,31 @@ Wichtige Felder im JSON:
           const impressumHtml = generateImpressum(legalData);
           const datenschutzHtml = generateDatenschutz(legalData);
 
+          // v2: legalGenerator-Output gehört nach websiteData.legal.* statt
+          // top-level (SICHERHEITS-INVARIANTE, siehe shared/siteContract/schema.ts).
           const websiteData = (website.websiteData as any) || {};
+          const nextWebsiteData =
+            websiteData.version === 2
+              ? {
+                  ...websiteData,
+                  legal: {
+                    ...(websiteData.legal || {}),
+                    impressumHtml,
+                    datenschutzHtml,
+                  },
+                }
+              : {
+                  ...websiteData,
+                  impressumHtml,
+                  datenschutzHtml,
+                  hasLegalPages: true,
+                };
+          assertV2SafeWrite(website.websiteData, nextWebsiteData);
           await updateWebsite(input.websiteId, {
-            websiteData: {
-              ...websiteData,
-              impressumHtml,
-              datenschutzHtml,
-              hasLegalPages: true,
-            },
+            websiteData: nextWebsiteData,
             hasLegalPages: true,
           });
+          if (websiteData.version === 2) invalidateSsrCache(website.slug);
 
           return { success: true, regenerated: true };
         }
@@ -7773,6 +7883,42 @@ Wichtige Felder im JSON:
             code: "NOT_FOUND",
             message: "Website not found",
           });
+
+        // v2: die Legacy-Spalte layoutStyle wird von v2-Renderern nicht
+        // gelesen (stylePackId in websiteData entscheidet) — ohne diesen
+        // Zweig wäre die Picker-Bestätigung für v2-Sites wirkungslos.
+        const storedWebsiteData = website.websiteData as any;
+        if (storedWebsiteData?.version === 2) {
+          const candidatePackId = input.layoutStyle.toLowerCase();
+          if (!(PACK_IDS as readonly string[]).includes(candidatePackId)) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Unbekanntes Style-Pack: "${input.layoutStyle}"`,
+            });
+          }
+          const nextWebsiteData = {
+            ...storedWebsiteData,
+            stylePackId: candidatePackId as PackId,
+          };
+          const validated = WebsiteDataV2Schema.safeParse(nextWebsiteData);
+          if (!validated.success) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Diese Funktion unterstützt das neue Website-Format noch nicht.",
+            });
+          }
+          await updateWebsite(input.websiteId, {
+            layoutStyle: input.layoutStyle,
+            websiteData: validated.data as any,
+            ...(input.colorScheme
+              ? { colorScheme: input.colorScheme as any }
+              : {}),
+          });
+          invalidateSsrCache(website.slug);
+          return { success: true };
+        }
+
         await updateWebsite(input.websiteId, {
           layoutStyle: input.layoutStyle,
           ...(input.colorScheme
@@ -8109,6 +8255,32 @@ Wichtige Felder im JSON:
             code: "NOT_FOUND",
             message: "Website not found",
           });
+
+        // v2: kein Schreibpfad für den alten Onboarding-Chat. Der StoryBrand-
+        // Text-Flow unten spreadet v1-Feldnamen (headline/tagline/description
+        // sowie v1-Sektionstypen wie "process"/"features") direkt in
+        // websiteData und würde das strikte WebsiteDataV2Schema verletzen —
+        // auch keine layoutStyle-Rotation. Antwort-Shape bleibt identisch
+        // (result.success + dieselben optionalen Felder), damit der Chat
+        // (client/src/pages/OnboardingChat.tsx) nicht bricht: er liest nur
+        // result.success und fällt bei fehlenden Feldern per `|| prev.x` auf
+        // die vorhandenen lokalen Werte zurück.
+        if ((website.websiteData as any)?.version === 2) {
+          return {
+            success: true,
+            headline: undefined as string | undefined,
+            tagline: undefined as string | undefined,
+            aboutHeadline: undefined as string | undefined,
+            description: undefined as string | undefined,
+            processHeadline: undefined as string | undefined,
+            processSteps: null as null,
+            services: [] as Array<{
+              title: string;
+              description: string;
+              icon: null;
+            }>,
+          };
+        }
 
         const business = await getBusinessById(website.businessId);
         if (!business)

@@ -27,6 +27,7 @@ export interface GenerateSiteContentFacts {
     street?: string;
     zip?: string;
     city?: string;
+    openingHours?: { day: string; hours: string }[];
   };
 }
 
@@ -121,7 +122,7 @@ function mergeFacts(
 ): WebsiteDataV2 {
   let sections = data.sections;
   if (facts.contact) {
-    const { phone, email, street, zip, city } = facts.contact;
+    const { phone, email, street, zip, city, openingHours } = facts.contact;
     const existingIndex = data.sections.findIndex(s => s.type === "contact");
     const existing =
       existingIndex >= 0
@@ -137,9 +138,11 @@ function mergeFacts(
       ...(street !== undefined ? { street } : {}),
       ...(zip !== undefined ? { zip } : {}),
       ...(city !== undefined ? { city } : {}),
-      ...(existing?.openingHours !== undefined
-        ? { openingHours: existing.openingHours }
-        : {}),
+      // Öffnungszeiten kommen NUR aus facts (Business-Datensatz), niemals
+      // vom LLM: liefert facts.contact keine, werden vom LLM erfundene
+      // Zeiten aus `existing` bewusst GESTRIPPT statt übernommen — sonst
+      // könnte das Modell Öffnungszeiten frei erfinden (Halluzination).
+      ...(openingHours !== undefined ? { openingHours } : {}),
     };
     sections =
       existingIndex >= 0

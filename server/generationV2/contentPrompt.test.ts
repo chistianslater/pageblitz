@@ -23,9 +23,9 @@ describe("buildContentPrompt", () => {
     expect(p).toContain('"contact"');
     expect(p).not.toContain('"gallery"');
   });
-  test("enthält die Verbotszeile gegen erfundene Kontaktdaten", () => {
+  test("enthält die Verbotszeile gegen erfundene Kontaktdaten (inkl. Öffnungszeiten)", () => {
     expect(p).toContain(
-      "Erfinde niemals Telefonnummern, E-Mail-Adressen oder Straßen — die contact-Sektion enthält höchstens city."
+      "Erfinde niemals Telefonnummern, E-Mail-Adressen, Straßen oder Öffnungszeiten — die contact-Sektion enthält höchstens city."
     );
   });
 });
