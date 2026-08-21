@@ -178,8 +178,165 @@ const WERKBANK_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.9, reviewCount: 87 },
 };
 
+const KANZLEI_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "kanzlei",
+  businessName: "Roth & Weber Steuerberater",
+  slug: "roth-weber-steuerberater-koeln",
+  businessCategory: "Steuerberater",
+  tagline: "Klarheit in Zahlen.",
+  logo: { kind: "font", font: "Roth & Weber" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Klarheit in Zahlen.",
+      subheadline:
+        "Roth & Weber berät Unternehmen und Selbstständige in Köln seit 1998 — präzise, verbindlich, ohne Umwege.",
+      ctaText: "Erstgespräch anfragen",
+      ctaHref: "#kontakt",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Jahresabschluss",
+          description:
+            "Bilanzierung und Gewinnermittlung fristgerecht und prüfsicher erstellt.",
+        },
+        {
+          title: "Lohnbuchhaltung",
+          description:
+            "Monatliche Lohn- und Gehaltsabrechnung inklusive Meldewesen.",
+        },
+        {
+          title: "Steuergestaltung",
+          description:
+            "Vorausschauende Planung zur Reduktion der Steuerlast im Rahmen des Zulässigen.",
+        },
+        {
+          title: "Gründungsberatung",
+          description:
+            "Rechtsform, Finanzamt und Buchhaltung von der ersten Stunde an geregelt.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über uns",
+      body: "Roth & Weber berät seit 1998 mit Sitz in Köln Unternehmen, Freiberufler und Selbstständige in allen Fragen der Steuer- und Rechnungslegung. Vier Partner und ein zwölfköpfiges Team betreuen aktuell mehr als 250 laufende Mandate — von der Einzelfirma bis zum mittelständischen Betrieb. Der Anspruch bleibt über alle Mandate gleich: klare Fristen, nachvollziehbare Zahlen und ein fester Ansprechpartner statt wechselnder Sachbearbeiter. Digitale Belegerfassung und persönliche Beratung schließen sich dabei nicht aus, sondern ergänzen sich.",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Mandanten sagen",
+      items: [
+        {
+          author: "Sabine Höttges, Höttges GmbH",
+          text: "Termine werden eingehalten, Rückfragen sind innerhalb eines Tages beantwortet. Genau das erwartet man von einer Steuerkanzlei.",
+          rating: 5,
+        },
+        {
+          author: "Markus Lindt, Einzelunternehmer",
+          text: "Die Gründungsberatung hat mir Monate an Nacharbeit erspart. Alles war von Anfang an sauber aufgesetzt.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Was kostet eine laufende Buchhaltung?",
+          answer:
+            "Die Vergütung richtet sich nach der Steuerberatervergütungsverordnung und dem Belegvolumen. Ein konkretes Angebot folgt nach dem Erstgespräch.",
+        },
+        {
+          question: "Welche Unterlagen benötigen Sie zum Start?",
+          answer:
+            "Gründungsdokumente, den letzten Jahresabschluss (falls vorhanden) sowie Zugang zu laufenden Belegen — digital oder in Papierform.",
+        },
+        {
+          question: "Wie werden Fristen eingehalten?",
+          answer:
+            "Jedes Mandat erhält einen festen Ansprechpartner und einen Fristenkalender, der Abgabetermine automatisch vorbereitet.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0221 55 89 21",
+      email: "kanzlei@roth-weber-koeln.de",
+      street: "Hohenzollernring 42",
+      zip: "50672",
+      city: "Köln",
+      openingHours: [
+        { day: "Montag", hours: "8:00 – 17:00" },
+        { day: "Dienstag", hours: "8:00 – 17:00" },
+        { day: "Mittwoch", hours: "8:00 – 17:00" },
+        { day: "Donnerstag", hours: "8:00 – 17:00" },
+        { day: "Freitag", hours: "8:00 – 14:00" },
+      ],
+    },
+  ],
+  seo: {
+    title: "Roth & Weber Steuerberater Köln — Jahresabschluss, Lohnbuchhaltung",
+    description:
+      "Steuerberatung in Köln seit 1998: Roth & Weber übernimmt Jahresabschluss, Lohnbuchhaltung, Steuergestaltung und Gründungsberatung.",
+  },
+  footerNote: "Roth & Weber Steuerberater · Köln · seit 1998",
+  google: { rating: 4.8, reviewCount: 41 },
+};
+
+const KANZLEI_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "kanzlei",
+  businessName: "Roth & Weber Steuerberater",
+  slug: "roth-weber-steuerberater-koeln",
+  businessCategory: "Steuerberater",
+  tagline: "Klarheit in Zahlen.",
+  logo: { kind: "font", font: "Roth & Weber" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Klarheit in Zahlen.",
+      subheadline:
+        "Roth & Weber berät Unternehmen und Selbstständige in Köln seit 1998.",
+      ctaText: "Erstgespräch anfragen",
+      ctaHref: "#kontakt",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        { title: "Jahresabschluss", description: "Bilanzierung fristgerecht erstellt." },
+        { title: "Lohnbuchhaltung", description: "Monatliche Abrechnung inklusive Meldewesen." },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0221 55 89 21",
+      email: "kanzlei@roth-weber-koeln.de",
+      street: "Hohenzollernring 42",
+      zip: "50672",
+      city: "Köln",
+      openingHours: [{ day: "Mo–Do", hours: "8:00 – 17:00" }],
+    },
+  ],
+  seo: {
+    title: "Roth & Weber Steuerberater Köln",
+    description:
+      "Steuerberatung in Köln seit 1998: Roth & Weber übernimmt Jahresabschluss und Lohnbuchhaltung.",
+  },
+  footerNote: "Roth & Weber Steuerberater · Köln · seit 1998",
+  google: { rating: 4.8, reviewCount: 41 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
+  kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
