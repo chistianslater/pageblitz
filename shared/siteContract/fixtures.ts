@@ -1745,23 +1745,23 @@ const VERVE_FULL: WebsiteDataV2 = {
         {
           title: "Personal Training 1:1",
           description: "Individueller Plan, volle Aufmerksamkeit, 60 Minuten.",
-          price: "ab 65",
+          price: "ab 65 €",
         },
         {
           title: "Kleingruppen-Training",
           description: "Max. 4 Personen, gleiches Level, gemeinsamer Push.",
-          price: "ab 35",
+          price: "ab 35 €",
         },
         {
           title: "Athletic Conditioning",
           description: "Kraft, Schnelligkeit und Beweglichkeit im Zirkel.",
-          price: "ab 45",
+          price: "ab 45 €",
         },
         {
           title: "Ernährungscoaching",
           description:
             "Individueller Ernährungsplan mit wöchentlichem Check-in.",
-          price: "ab 89",
+          price: "ab 89 €",
         },
       ],
     },
@@ -1861,12 +1861,12 @@ const VERVE_MINIMAL: WebsiteDataV2 = {
         {
           title: "Personal Training 1:1",
           description: "Individueller Plan, volle Aufmerksamkeit.",
-          price: "ab 65",
+          price: "ab 65 €",
         },
         {
           title: "Kleingruppen-Training",
           description: "Max. 4 Personen, gleiches Level.",
-          price: "ab 35",
+          price: "ab 35 €",
         },
       ],
     },
