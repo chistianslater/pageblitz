@@ -102,7 +102,10 @@ describe("generateSiteContent", () => {
   });
   test("Envelope-Whitelist: LLM-Antwort mit legal/logo/colorOverrides → Felder werden NICHT übernommen, Ergebnis validiert trotzdem", async () => {
     const smuggled = JSON.stringify({
-      seo: { title: "Schreinerei Brandt", description: "Möbelbau in Dortmund." },
+      seo: {
+        title: "Schreinerei Brandt",
+        description: "Möbelbau in Dortmund.",
+      },
       sections: [
         { type: "hero", headline: "Massarbeit.", ctaText: "Anfragen" },
         {
