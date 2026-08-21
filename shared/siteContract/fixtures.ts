@@ -2194,6 +2194,169 @@ const SCHIMMER_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.9, reviewCount: 97 },
 };
 
+const FUNDAMENT_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "fundament",
+  businessName: "Falk & Partner Immobilien",
+  slug: "falk-partner-immobilien-muenster",
+  businessCategory: "Immobilienmakler",
+  tagline: "Werte, die bleiben.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Werte, die bleiben.",
+      subheadline:
+        "Immobilienvermittlung in Münster — diskret, marktkundig, mit Handschlagqualität seit drei Generationen.",
+      ctaText: "Immobilie bewerten lassen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/fundament-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      intro: "Vier Felder, ein Anspruch: verlässlich vermittelt.",
+      items: [
+        {
+          title: "Verkauf",
+          description:
+            "Professionelle Wertermittlung und diskrete Käuferansprache — vom Exposé bis zum Notartermin.",
+        },
+        {
+          title: "Vermietung",
+          description:
+            "Sorgfältige Mieterauswahl und vollständige Vertragsabwicklung für Eigentümer.",
+        },
+        {
+          title: "Bewertung",
+          description:
+            "Marktgerechte Einschätzung Ihrer Immobilie auf Grundlage aktueller Vergleichsdaten.",
+        },
+        {
+          title: "Verwaltung",
+          description:
+            "Laufende Hausverwaltung für Wohn- und Gewerbeeinheiten — transparent und termintreu.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Unsere Geschichte",
+      body: "Seit 1962 vermittelt unsere Familie Immobilien in Münster und Umgebung — über drei Generationen hinweg. Was mit einer kleinen Kanzlei am Prinzipalmarkt begann, ist heute ein Büro mit festem Netzwerk aus Gutachtern, Notaren und Handwerkern. Wir verkaufen keine Objekte, wir vermitteln Werte: mit Marktkenntnis, Diskretion und der Ruhe, die eine Entscheidung dieser Tragweite verdient.",
+      imageUrl: "/demo/fundament-detail-1.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Kunden sagen",
+      items: [
+        {
+          author: "Dr. Elke Sommerfeld",
+          text: "Der Verkauf unseres Elternhauses war emotional heikel — Falk & Partner hat uns mit Ruhe und Fachwissen durch jeden Schritt begleitet.",
+          rating: 5,
+        },
+        {
+          author: "Torben Klaassen",
+          text: "Marktgerechte Bewertung, klare Kommunikation, fairer Preis. Genau das, was man von einem Makler erwartet.",
+          rating: 5,
+        },
+        {
+          author: "Marie-Luise Ahrens",
+          text: "Unsere Eigentumswohnung war innerhalb von drei Wochen verkauft — mit einem Käufer, der wirklich passte.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Was kostet eine Wertermittlung?",
+          answer:
+            "Die erste Einschätzung ist für Sie kostenlos und unverbindlich — sie bildet die Grundlage für alle weiteren Schritte.",
+        },
+        {
+          question: "Wie lange dauert ein Verkaufsprozess im Schnitt?",
+          answer:
+            "Je nach Lage und Objektart zwischen sechs und zwölf Wochen, von der Bewertung bis zum Notartermin.",
+        },
+        {
+          question: "Übernehmen Sie auch die Hausverwaltung nach dem Kauf?",
+          answer:
+            "Ja, auf Wunsch begleiten wir Eigentümer über den Verkauf hinaus mit laufender Verwaltung.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0251 78 45 90",
+      email: "kontakt@falk-partner-muenster.de",
+      street: "Prinzipalmarkt 12",
+      zip: "48143",
+      city: "Münster",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title:
+      "Falk & Partner Immobilien Münster — Verkauf, Vermietung, Verwaltung",
+    description:
+      "Falk & Partner vermittelt seit 1962 Immobilien in Münster: Verkauf, Vermietung, Bewertung und Hausverwaltung mit Handschlagqualität.",
+  },
+  footerNote: "Falk & Partner Immobilien · Münster · seit 1962",
+  google: { rating: 4.8, reviewCount: 58 },
+};
+
+const FUNDAMENT_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "fundament",
+  businessName: "Falk & Partner Immobilien",
+  slug: "falk-partner-immobilien-muenster",
+  businessCategory: "Immobilienmakler",
+  tagline: "Werte, die bleiben.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Werte, die bleiben.",
+      subheadline: "Immobilienvermittlung in Münster mit Handschlagqualität.",
+      ctaText: "Immobilie bewerten lassen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/fundament-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Verkauf",
+          description: "Wertermittlung und diskrete Käuferansprache.",
+        },
+        {
+          title: "Vermietung",
+          description: "Sorgfältige Mieterauswahl und Vertragsabwicklung.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0251 78 45 90",
+      email: "kontakt@falk-partner-muenster.de",
+      street: "Prinzipalmarkt 12",
+      zip: "48143",
+      city: "Münster",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Falk & Partner Immobilien Münster",
+    description:
+      "Falk & Partner: Immobilienvermittlung in Münster mit Handschlagqualität.",
+  },
+  footerNote: "Falk & Partner Immobilien · Münster · seit 1962",
+  google: { rating: 4.8, reviewCount: 58 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -2208,6 +2371,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   verve: { full: VERVE_FULL, minimal: VERVE_MINIMAL },
   zunft: { full: ZUNFT_FULL, minimal: ZUNFT_MINIMAL },
   schimmer: { full: SCHIMMER_FULL, minimal: SCHIMMER_MINIMAL },
+  fundament: { full: FUNDAMENT_FULL, minimal: FUNDAMENT_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

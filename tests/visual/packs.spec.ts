@@ -14,6 +14,7 @@ const PACKS = [
   "verve",
   "zunft",
   "schimmer",
+  "fundament",
 ] as const; // Plan B/C erweitern diese Liste
 const FIXTURES = ["full", "minimal"] as const;
 const VIEWPORTS = [

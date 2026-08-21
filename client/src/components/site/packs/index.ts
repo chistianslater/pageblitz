@@ -12,3 +12,4 @@ import "./klarwerk";
 import "./verve";
 import "./zunft";
 import "./schimmer";
+import "./fundament";
