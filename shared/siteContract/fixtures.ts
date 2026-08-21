@@ -507,10 +507,185 @@ const MORGENLICHT_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.9, reviewCount: 128 },
 };
 
+const GUSTO_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "gusto",
+  businessName: "Trattoria Lucia",
+  slug: "trattoria-lucia-berlin-charlottenburg",
+  businessCategory: "Trattoria",
+  tagline: "Ein Tisch. Ein Abend. Italien.",
+  logo: { kind: "font", font: "Trattoria Lucia" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Ein Tisch. Ein Abend. Italien.",
+      subheadline:
+        "Trattoria Lucia bringt Berlin-Charlottenburg seit 2013 Rezepte aus der Emilia-Romagna — hausgemachte Pasta, langsam geschmort, mit Herz serviert.",
+      ctaText: "Tisch reservieren",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/gusto-hero.svg",
+    },
+    {
+      type: "menu",
+      headline: "Speisekarte",
+      categories: [
+        {
+          name: "Antipasti & Primi",
+          items: [
+            {
+              name: "Burrata al Pomodoro",
+              description: "Cremige Burrata, confierte Kirschtomaten, Basilikum.",
+              price: "14",
+            },
+            {
+              name: "Tagliatelle al Ragù",
+              description: "Hausgemachte Bandnudeln, 8-Stunden-Ragù aus der Emilia-Romagna.",
+              price: "16,5",
+            },
+            {
+              name: "Risotto ai Funghi",
+              description: "Steinpilz-Risotto, Parmesan, Trüffelöl.",
+              price: "18",
+            },
+          ],
+        },
+        {
+          name: "Secondi & Dolci",
+          items: [
+            {
+              name: "Osso Buco",
+              description: "Geschmorte Kalbshaxe, Gremolata, Safranrisotto.",
+              price: "28",
+            },
+            {
+              name: "Branzino al Forno",
+              description: "Ofen-Wolfsbarsch, Zitrone, Kräuter der Saison.",
+              price: "26,5",
+            },
+            {
+              name: "Tiramisù della Nonna",
+              description: "Nonnas Original-Rezept, jeden Morgen frisch geschichtet.",
+              price: "9",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Unsere Geschichte",
+      body: "Trattoria Lucia trägt den Namen unserer Großmutter, die in Modena eine kleine Küche führte und niemanden ungegessen gehen ließ. 2013 haben wir ihre Rezepte mit nach Charlottenburg gebracht: Pasta von Hand gerollt, Ragù, das acht Stunden zieht, und ein Weinregal, das nur Betriebe aus der Emilia-Romagna führt. Geöffnet wird jeden Abend derselbe Anspruch — als säße Nonna Lucia selbst am Herd.",
+      imageUrl: "/demo/gusto-hero.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Gäste sagen",
+      items: [
+        {
+          author: "Sophie Adler",
+          text: "Die Tagliatelle al Ragù schmecken, als wäre man selbst in Modena am Tisch gesessen. Absolute Empfehlung.",
+          rating: 5,
+        },
+        {
+          author: "Matteo Furlan",
+          text: "Endlich eine Trattoria in Berlin, die keine Kompromisse macht — Pasta, Wein, Service, alles stimmt.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "gallery",
+      headline: "Impressionen",
+      images: [
+        { url: "/demo/gusto-hero.svg", alt: "Gedeckter Tisch im warmen Abendlicht der Trattoria" },
+        { url: "/demo/gusto-detail-1.svg", alt: "Hausgemachte Tagliatelle mit Ragù" },
+        { url: "/demo/gusto-detail-2.svg", alt: "Weinregal mit Flaschen aus der Emilia-Romagna" },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "030 55 17 92",
+      email: "tavolo@trattoria-lucia-berlin.de",
+      street: "Kantstraße 87",
+      zip: "10627",
+      city: "Berlin-Charlottenburg",
+      openingHours: [{ day: "Di–So", hours: "17:00 – 23:00" }],
+    },
+  ],
+  seo: {
+    title:
+      "Trattoria Lucia Berlin-Charlottenburg — Italienische Küche, hausgemachte Pasta",
+    description:
+      "Trattoria Lucia in Berlin-Charlottenburg serviert seit 2013 Rezepte aus der Emilia-Romagna: hausgemachte Pasta, langsam geschmorte Gerichte, ausgewählte Weine.",
+  },
+  footerNote: "Trattoria Lucia · Berlin-Charlottenburg · seit 2013",
+  google: { rating: 4.7, reviewCount: 213 },
+};
+
+const GUSTO_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "gusto",
+  businessName: "Trattoria Lucia",
+  slug: "trattoria-lucia-berlin-charlottenburg",
+  businessCategory: "Trattoria",
+  tagline: "Ein Tisch. Ein Abend. Italien.",
+  logo: { kind: "font", font: "Trattoria Lucia" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Ein Tisch. Ein Abend. Italien.",
+      subheadline:
+        "Trattoria Lucia bringt Berlin-Charlottenburg Rezepte aus der Emilia-Romagna.",
+      ctaText: "Tisch reservieren",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/gusto-hero.svg",
+    },
+    {
+      type: "menu",
+      headline: "Speisekarte",
+      categories: [
+        {
+          name: "Antipasti & Primi",
+          items: [
+            { name: "Burrata al Pomodoro", price: "14" },
+            { name: "Tagliatelle al Ragù", price: "16,5" },
+          ],
+        },
+        {
+          name: "Secondi & Dolci",
+          items: [
+            { name: "Osso Buco", price: "28" },
+            { name: "Tiramisù della Nonna", price: "9" },
+          ],
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "030 55 17 92",
+      email: "tavolo@trattoria-lucia-berlin.de",
+      street: "Kantstraße 87",
+      zip: "10627",
+      city: "Berlin-Charlottenburg",
+      openingHours: [{ day: "Di–So", hours: "17:00 – 23:00" }],
+    },
+  ],
+  seo: {
+    title: "Trattoria Lucia Berlin-Charlottenburg",
+    description:
+      "Trattoria Lucia in Berlin-Charlottenburg serviert Rezepte aus der Emilia-Romagna.",
+  },
+  footerNote: "Trattoria Lucia · Berlin-Charlottenburg · seit 2013",
+  google: { rating: 4.7, reviewCount: 213 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
   morgenlicht: { full: MORGENLICHT_FULL, minimal: MORGENLICHT_MINIMAL },
+  gusto: { full: GUSTO_FULL, minimal: GUSTO_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

@@ -1,0 +1,26 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dunkles Trattoria-Placeholder: Weinregal-Silhouette">
+  <!-- Espresso-Bühnengrund, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#16110D" />
+
+  <!-- Regal-Bretter -->
+  <rect x="80" y="180" width="1040" height="16" fill="#3A2F22" />
+  <rect x="80" y="420" width="1040" height="16" fill="#3A2F22" />
+  <rect x="80" y="660" width="1040" height="16" fill="#3A2F22" />
+
+  <!-- Flaschen-Silhouetten als flache Rechtecke, gleichmäßig verteilt -->
+  <rect x="120" y="80" width="40" height="100" fill="#241C15" />
+  <rect x="200" y="70" width="40" height="110" fill="#6E4A2A" />
+  <rect x="280" y="90" width="40" height="90" fill="#241C15" />
+  <rect x="360" y="75" width="40" height="105" fill="#3A2F22" />
+  <rect x="440" y="85" width="40" height="95" fill="#6E4A2A" />
+  <rect x="520" y="70" width="40" height="110" fill="#241C15" />
+  <rect x="600" y="90" width="40" height="90" fill="#3A2F22" />
+  <rect x="680" y="80" width="40" height="100" fill="#6E4A2A" />
+  <rect x="760" y="75" width="40" height="105" fill="#241C15" />
+  <rect x="840" y="85" width="40" height="95" fill="#3A2F22" />
+  <rect x="920" y="70" width="40" height="110" fill="#6E4A2A" />
+  <rect x="1000" y="90" width="40" height="90" fill="#241C15" />
+
+  <!-- Goldakzent-Linie unterhalb des obersten Bretts -->
+  <rect x="80" y="196" width="1040" height="3" fill="#C99B4A" />
+</svg>

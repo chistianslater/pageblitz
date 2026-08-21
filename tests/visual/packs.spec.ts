@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const PACKS = ["werkbank", "kanzlei", "morgenlicht"] as const; // Plan B/C erweitern diese Liste
+const PACKS = ["werkbank", "kanzlei", "morgenlicht", "gusto"] as const; // Plan B/C erweitern diese Liste
 const FIXTURES = ["full", "minimal"] as const;
 const VIEWPORTS = [
   { name: "mobil", width: 320, height: 900 },

@@ -1,0 +1,28 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dunkles Trattoria-Placeholder: gedeckter Tisch mit Teller-Kreis">
+  <!-- Espresso-Bühnengrund, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#16110D" />
+
+  <!-- Tisch-Bänder als Flat-Shapes -->
+  <rect x="0" y="560" width="1200" height="60" fill="#241C15" />
+  <rect x="0" y="620" width="1200" height="40" fill="#3A2F22" />
+  <rect x="0" y="660" width="1200" height="240" fill="#241C15" />
+
+  <!-- Vertikale Tischbrett-Linien, hart -->
+  <rect x="150" y="660" width="2" height="240" fill="#3A2F22" />
+  <rect x="380" y="660" width="2" height="240" fill="#3A2F22" />
+  <rect x="610" y="660" width="2" height="240" fill="#3A2F22" />
+  <rect x="840" y="660" width="2" height="240" fill="#3A2F22" />
+  <rect x="1070" y="660" width="2" height="240" fill="#3A2F22" />
+
+  <!-- Teller-Kreis, warm, flach -->
+  <circle cx="600" cy="380" r="220" fill="#3A2F22" />
+  <circle cx="600" cy="380" r="180" fill="#6E4A2A" />
+  <circle cx="600" cy="380" r="140" fill="#3A2F22" />
+
+  <!-- Goldring um den Teller -->
+  <circle cx="600" cy="380" r="220" fill="none" stroke="#C99B4A" stroke-width="3" />
+
+  <!-- Besteck als flache Balken links/rechts des Tellers -->
+  <rect x="300" y="260" width="14" height="240" fill="#6E4A2A" />
+  <rect x="886" y="260" width="14" height="240" fill="#6E4A2A" />
+</svg>
