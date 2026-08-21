@@ -38,6 +38,13 @@ interface WebsiteRendererProps {
   headlineSize?: "large" | "medium" | "small";
   headlineFontOverride?: string;
   slug?: string;
+  /**
+   * Nur für v2-Websites relevant (Variant-Picker-Preview): erzwingt ein
+   * anderes registriertes Pack für die Darstellung, ohne die gespeicherten
+   * Inhalte zu verändern. Wird 1:1 an SiteRenderer durchgereicht, das einen
+   * nicht registrierten Override ignoriert. Für v1-Websites ohne Wirkung.
+   */
+  packOverride?: string;
 }
 
 function getLayoutComponent(
@@ -98,9 +105,10 @@ export default function WebsiteRenderer({
   headlineSize,
   headlineFontOverride,
   slug,
+  packOverride,
 }: WebsiteRendererProps) {
   const v2 = parseV2(websiteData);
-  if (v2) return <SiteRenderer data={v2} />;
+  if (v2) return <SiteRenderer data={v2} packOverride={packOverride as any} />;
   // … bestehender v1-Pfad unverändert
 
   const cs = colorScheme || websiteData?.colorScheme || { primary: "#3b82f6" };

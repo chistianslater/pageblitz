@@ -1,9 +1,18 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, beforeEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
 import { SiteRenderer } from "./SiteRenderer";
+// Import-Nebenwirkung: registriert alle Pack-Module (u.a. kanzlei) in
+// PACK_MODULES — für die packOverride-Tests unten benötigt.
+import "./packs/index";
+
+// Referenz auf das echte werkbank-Modul sichern, BEVOR die Tests unten es
+// überschreiben/löschen (vgl. "wirft verständlich bei nicht registriertem
+// Pack-Modul") — damit der packOverride-Block es unabhängig von der
+// Ausführungsreihenfolge der vorherigen Tests wiederherstellen kann.
+const REAL_WERKBANK_MODULE = PACK_MODULES.werkbank;
 
 const data: WebsiteDataV2 = {
   version: 2,
@@ -30,5 +39,47 @@ describe("SiteRenderer", () => {
     expect(() => renderToStaticMarkup(<SiteRenderer data={data} />)).toThrow(
       /Pack-Modul nicht registriert/
     );
+  });
+
+  describe("packOverride (Variant-Picker-Preview)", () => {
+    beforeEach(() => {
+      // Unabhängig davon, was die Tests oben mit PACK_MODULES.werkbank
+      // gemacht haben (überschrieben/gelöscht) — hier auf das echte Modul
+      // zurücksetzen, damit "gespeicherter Pack bleibt aktiv" unten
+      // tatsächlich rendert statt zu werfen.
+      PACK_MODULES.werkbank = REAL_WERKBANK_MODULE;
+    });
+
+    test("registrierter Override rendert das andere Pack-CSS statt des gespeicherten", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={data} packOverride="kanzlei" />
+      );
+      expect(html).toContain("pb-kz-");
+      expect(html).not.toContain("pb-wb-hero");
+      expect(html).toContain("pb-site pb-kanzlei");
+    });
+
+    test("Inhalte bleiben beim Override erhalten", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={data} packOverride="kanzlei" />
+      );
+      expect(html).toContain("Probe");
+      // kanzlei-Modul zerlegt die Headline in <h1>Hallo <span>Welt</span></h1>
+      // (letztes Wort akzentuiert) — daher getrennt statt als ein String.
+      expect(html).toContain("Hallo");
+      expect(html).toContain("Welt");
+    });
+
+    test("nicht registrierter Override wird ignoriert — gespeicherter Pack bleibt aktiv", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={data} packOverride={"nicht-registriert" as any} />
+      );
+      expect(html).toContain("pb-site pb-werkbank");
+    });
+
+    test("ohne Override bleibt der gespeicherte Pack aktiv", () => {
+      const html = renderToStaticMarkup(<SiteRenderer data={data} />);
+      expect(html).toContain("pb-site pb-werkbank");
+    });
   });
 });

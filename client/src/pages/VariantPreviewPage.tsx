@@ -12,11 +12,19 @@ import { useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import { DEFAULT_LAYOUT_COLOR_SCHEMES } from "@shared/layoutConfig";
+import { STYLE_PACKS } from "@shared/stylePacks";
 
 export default function VariantPreviewPage() {
   const params = new URLSearchParams(window.location.search);
   const websiteId = parseInt(params.get("websiteId") || "0", 10);
   const layout    = (params.get("layout") || "ELEGANT").toUpperCase();
+  // v2-Variant-Picker: derselbe `layout`-Param kann statt eines Legacy-
+  // Layoutnamens direkt eine Pack-ID sein (siehe getV2VariantCandidates).
+  // Nur an v2-Dokumente durchreichen und nur wenn es eine registrierte
+  // Pack-ID ist — sonst bleibt der gespeicherte Pack aktiv (v1 unberührt).
+  const rawLayoutParam = (params.get("layout") || "").toLowerCase();
+  const packOverrideCandidate =
+    rawLayoutParam in STYLE_PACKS ? rawLayoutParam : undefined;
 
   // Override min-h-screen so the hero doesn't fill the entire iframe viewport.
   // Without this, 100vh = iframe height (2400px) and only the hero is visible.
@@ -67,14 +75,17 @@ export default function VariantPreviewPage() {
   // Echte URLs falls vorhanden, sonst Kategorie-passender Stock-Fallback.
   const heroImageUrl = website.heroImageUrl || suggestions[0]?.url;
   const aboutImageUrl = website.aboutImageUrl || suggestions[1]?.url || suggestions[0]?.url;
+  const websiteData = website.websiteData ?? website;
+  const isV2Document = websiteData?.version === 2;
 
   return (
     <WebsiteRenderer
-      websiteData={website.websiteData ?? website}
+      websiteData={websiteData}
       colorScheme={cs ?? website.colorScheme}
       heroImageUrl={heroImageUrl}
       aboutImageUrl={aboutImageUrl}
       layoutStyle={layout}
+      packOverride={isV2Document ? packOverrideCandidate : undefined}
       isLoading={false}
     />
   );
