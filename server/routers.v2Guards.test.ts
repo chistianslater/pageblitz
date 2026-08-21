@@ -3,6 +3,18 @@ import { TRPCError } from "@trpc/server";
 import type { TrpcContext } from "./_core/context";
 import type { WebsiteDataV2 } from "../shared/siteContract/types";
 
+// server/routers.ts konstruiert beim Modul-Import `new Stripe(process.env.STRIPE_SECRET_KEY
+// || "")` — ohne Key wirft die Stripe-SDK sofort beim Import ("Neither apiKey nor
+// config.authenticator provided"), bevor überhaupt ein Test läuft. vi.hoisted() garantiert,
+// dass dieser Stub VOR dem (weiter unten stehenden, aber ESM-hoisted) "./routers"-Import
+// gesetzt wird — ein simples `process.env.X = ...` vor dem Import würde NICHT reichen, weil
+// statische ESM-Importe immer vor dem übrigen Modulcode ausgewertet werden, unabhängig von
+// der Textreihenfolge. Rein testinterner Dummy-Wert, keine echte Stripe-Kommunikation in
+// diesen Tests.
+vi.hoisted(() => {
+  process.env.STRIPE_SECRET_KEY ||= "sk_test_dummy_for_unit_tests";
+});
+
 // ── Mocks ────────────────────────────────────────────────────────────────
 // "./db" wird selektiv gemockt: die DB-Aufrufe, die in den getesteten
 // Prozeduren tatsächlich verwendet werden, werden durch vi.fn() ersetzt;

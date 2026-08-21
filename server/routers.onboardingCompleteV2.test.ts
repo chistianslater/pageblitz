@@ -2,6 +2,14 @@ import { describe, expect, test, vi, beforeEach } from "vitest";
 import type { TrpcContext } from "./_core/context";
 import type { WebsiteDataV2 } from "../shared/siteContract/types";
 
+// server/routers.ts konstruiert beim Modul-Import `new Stripe(process.env.STRIPE_SECRET_KEY
+// || "")` — ohne Key wirft die Stripe-SDK sofort beim Import, bevor ein Test läuft.
+// vi.hoisted() garantiert, dass dieser Stub VOR dem (ESM-hoisted) "./routers"-Import gesetzt
+// wird. Rein testinterner Dummy-Wert, keine echte Stripe-Kommunikation in diesen Tests.
+vi.hoisted(() => {
+  process.env.STRIPE_SECRET_KEY ||= "sk_test_dummy_for_unit_tests";
+});
+
 vi.mock("./db", async importOriginal => {
   const actual = await importOriginal<typeof import("./db")>();
   return {
