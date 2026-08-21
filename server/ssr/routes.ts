@@ -85,9 +85,7 @@ function matchSitePath(
  * Render-Cache, weil das erzeugte HTML sich jetzt je nach Pfadform
  * unterscheidet (unterschiedliche Footer-/Zurück-Links).
  */
-function resolveSiteRequest(
-  req: Request
-): {
+function resolveSiteRequest(req: Request): {
   slug: string;
   pathname: string;
   basePath: string;

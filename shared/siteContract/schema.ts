@@ -39,9 +39,7 @@ const SectionTypeSchema = z.enum(SECTION_TYPES);
  * Blockiert insbesondere "javascript:"- und andere unsichere URL-Schemata in
  * allen Link-/Bild-Feldern des Vertrags.
  */
-const SafeUrlSchema = z
-  .string()
-  .regex(/^(https?:\/\/|\/|#)/, "unsichere URL");
+const SafeUrlSchema = z.string().regex(/^(https?:\/\/|\/|#)/, "unsichere URL");
 
 const HeroSchema = z
   .object({
