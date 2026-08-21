@@ -9,6 +9,7 @@ const PACKS = [
   "salon-noir",
   "marktplatz",
   "landgut",
+  "atelier",
 ] as const; // Plan B/C erweitern diese Liste
 const FIXTURES = ["full", "minimal"] as const;
 const VIEWPORTS = [

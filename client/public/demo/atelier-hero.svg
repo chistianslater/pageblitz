@@ -1,0 +1,15 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flaches Graustufen-Studioportrait-Placeholder mit roter Kante rechts">
+  <!-- Zonensystem-artige Graustufen-Bänder, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#EDEDEA" />
+  <rect x="0" y="0" width="900" height="900" fill="#D8D8D3" />
+  <rect x="0" y="0" width="700" height="900" fill="#B4B4AE" />
+  <rect x="0" y="0" width="480" height="900" fill="#8A8A85" />
+  <rect x="0" y="0" width="260" height="900" fill="#3A3A38" />
+
+  <!-- Horizontale Schulterlinie (Silhouette angedeutet) -->
+  <rect x="260" y="560" width="640" height="340" fill="#3A3A38" />
+  <rect x="380" y="360" width="400" height="240" fill="#3A3A38" />
+
+  <!-- Rote Kante rechts (Signalrot, hart, kein Verlauf) -->
+  <rect x="1194" y="0" width="6" height="900" fill="#E0301E" />
+</svg>

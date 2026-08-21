@@ -1401,6 +1401,158 @@ const LANDGUT_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.8, reviewCount: 73 },
 };
 
+const ATELIER_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "atelier",
+  businessName: "Studio Lenz",
+  slug: "studio-lenz-fotografie-leipzig",
+  businessCategory: "Fotografie",
+  tagline: "Bilder, die bleiben.",
+  logo: { kind: "font", font: "Studio Lenz" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Bilder, die bleiben.",
+      subheadline:
+        "Keine Posen, keine Filter. Momente, wie sie passieren — für Menschen und Marken, die echt aussehen wollen.",
+      ctaText: "Portfolio ansehen",
+      ctaHref: "#galerie",
+      imageUrl: "/demo/atelier-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      intro: "Drei Formate, ein Blick: ehrlich, ruhig, ohne Inszenierung.",
+      items: [
+        {
+          title: "Porträt",
+          description:
+            "Menschen, wie sie wirklich sind — im Studio oder an ihrem eigenen Ort.",
+          price: "ab 290 €",
+        },
+        {
+          title: "Reportage",
+          description:
+            "Begleitung über Stunden statt Sekunden: Hochzeiten, Events, Alltag.",
+          price: "ab 690 €",
+        },
+        {
+          title: "Marken",
+          description:
+            "Bildwelten für Websites, Kataloge und Social Media — konsistent kuratiert.",
+          price: "auf Anfrage",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über das Studio",
+      body: "Studio Lenz arbeitet seit 2016 in Leipzig-Plagwitz — an der Schnittstelle aus Reportage und Porträt. Kein Blitzlichtgewitter, keine gestellten Posen: Jede Serie entsteht aus Beobachtung, nicht aus Regie. Auftraggeber sind Menschen, die ein ehrliches Bild von sich wollen, und Marken, die genug haben von Stockfotografie. Entwickelt, sortiert und ausgewählt wird jede Serie von Hand — analog gedacht, digital umgesetzt.",
+      imageUrl: "/demo/atelier-detail-1.svg",
+    },
+    {
+      type: "gallery",
+      headline: "Galerie",
+      images: [
+        {
+          url: "/demo/atelier-hero.svg",
+          alt: "Porträt in Streiflicht, Studio Lenz Leipzig",
+        },
+        {
+          url: "/demo/atelier-detail-1.svg",
+          alt: "Reportage-Moment auf einer Hochzeit",
+        },
+        {
+          url: "/demo/atelier-detail-2.svg",
+          alt: "Markenshooting mit reduzierter Kulisse",
+        },
+      ],
+    },
+    {
+      type: "testimonials",
+      headline: "Was Kund:innen sagen",
+      items: [
+        {
+          author: "Nora Feldkamp",
+          text: "Keine gestellten Posen, keine Nachbearbeitungs-Orgie — einfach Bilder, die aussehen wie wir.",
+          rating: 5,
+        },
+        {
+          author: "Elias Wachter, Wachter Manufaktur",
+          text: "Das Markenshooting hat unsere Website in einem Nachmittag komplett verändert.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0341 990 4471",
+      email: "hallo@studio-lenz-leipzig.de",
+      street: "Karl-Heine-Straße 93",
+      zip: "04229",
+      city: "Leipzig",
+      openingHours: [{ day: "Di–Fr", hours: "10:00 – 18:00 (nach Termin)" }],
+    },
+  ],
+  seo: {
+    title: "Studio Lenz Leipzig — Porträt, Reportage, Markenfotografie",
+    description:
+      "Studio Lenz fotografiert in Leipzig seit 2016 Porträts, Reportagen und Markenbilder — ehrlich, ruhig, ohne Inszenierung.",
+  },
+  footerNote: "Studio Lenz · Leipzig · seit 2016",
+  google: { rating: 5.0, reviewCount: 31 },
+};
+
+const ATELIER_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "atelier",
+  businessName: "Studio Lenz",
+  slug: "studio-lenz-fotografie-leipzig",
+  businessCategory: "Fotografie",
+  tagline: "Bilder, die bleiben.",
+  logo: { kind: "font", font: "Studio Lenz" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Bilder, die bleiben.",
+      subheadline:
+        "Keine Posen, keine Filter — ehrliche Porträt- und Markenfotografie in Leipzig.",
+      ctaText: "Portfolio ansehen",
+      ctaHref: "#galerie",
+      imageUrl: "/demo/atelier-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        { title: "Porträt", description: "Im Studio oder am eigenen Ort." },
+        {
+          title: "Marken",
+          description: "Bildwelten für Website und Social Media.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0341 990 4471",
+      email: "hallo@studio-lenz-leipzig.de",
+      street: "Karl-Heine-Straße 93",
+      zip: "04229",
+      city: "Leipzig",
+      openingHours: [{ day: "Di–Fr", hours: "10:00 – 18:00 (nach Termin)" }],
+    },
+  ],
+  seo: {
+    title: "Studio Lenz Leipzig",
+    description:
+      "Studio Lenz fotografiert in Leipzig Porträts und Markenbilder.",
+  },
+  footerNote: "Studio Lenz · Leipzig · seit 2016",
+  google: { rating: 5.0, reviewCount: 31 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -1410,6 +1562,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   "salon-noir": { full: SALON_NOIR_FULL, minimal: SALON_NOIR_MINIMAL },
   marktplatz: { full: MARKTPLATZ_FULL, minimal: MARKTPLATZ_MINIMAL },
   landgut: { full: LANDGUT_FULL, minimal: LANDGUT_MINIMAL },
+  atelier: { full: ATELIER_FULL, minimal: ATELIER_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
