@@ -28,6 +28,9 @@ describe("renderSiteHtml", () => {
     expect(html).toContain('id="leistungen"');
     expect(html).toContain("Massarbeit");
   });
+  test("HTML enthält Body-Reset (margin:0) und Canvas-Hintergrundfarbe", () => {
+    expect(html).toContain("html,body{margin:0;padding:0}body{background:");
+  });
 });
 
 describe("renderSiteHtml — Rechtsseiten (Impressum/Datenschutz)", () => {

@@ -118,6 +118,17 @@ function renderHead(data: WebsiteDataV2, canonicalUrl: string): string {
   ].join("\n");
 }
 
+/** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
+function getCanvasColor(packId: string): string {
+  try {
+    const constitution = getConstitution(packId as any);
+    const canvasEntry = constitution.palette.find(c => c.role === "canvas");
+    return canvasEntry?.hex ?? "#ffffff";
+  } catch {
+    return "#ffffff";
+  }
+}
+
 /** Schlichte Meta-Hülle (Titel, Canonical) für Impressum/Datenschutz. */
 function renderLegalHead(
   data: WebsiteDataV2,
@@ -155,10 +166,12 @@ function renderLegalPage(
     ? bodyHtml
     : "<p>Diese Seite wurde nicht gefunden.</p>";
   const backHref = basePath || "/";
+  const canvasColor = getCanvasColor(data.stylePackId);
   const html = `<!doctype html>
 <html lang="de">
 <head>
 ${renderLegalHead(data, canonicalUrl, title)}
+<style>html,body{margin:0;padding:0}body{background:${canvasColor}}</style>
 </head>
 <body>
 <div class="pb-legal">
@@ -208,10 +221,12 @@ export function renderSiteHtml(
     <SiteRenderer data={data} basePath={basePath} now={opts.now} />
   );
 
+  const canvasColor = getCanvasColor(data.stylePackId);
   const html = `<!doctype html>
 <html lang="de">
 <head>
 ${head}
+<style>html,body{margin:0;padding:0}body{background:${canvasColor}}</style>
 </head>
 <body>
 ${body}
