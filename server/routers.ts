@@ -46,6 +46,9 @@ import { shouldRequireAgeGate } from "@shared/ageGate";
 import { getLayoutFonts, getLLMFontPrompt, FORBIDDEN_BODY_FONTS, DESIGN_TOKEN_CONFIG, CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import { searchStockPhotos } from "./_core/stockPhotos";
+import { selectPack } from "./generationV2/selectPack";
+import { generateSiteContent } from "./generationV2/generateSiteContent";
+import { invalidateSsrCache } from "./ssr/routes";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 // Compat client with older API — current_period_end not in 2026-02-25.clover
@@ -987,7 +990,15 @@ export async function runWebsiteGeneration(jobId: number, websiteId: number): Pr
       Promise.resolve(buildIndustryContext(category, business.name)),
       Promise.resolve(buildPersonalityHint(business.name, business.rating, business.reviewCount || 0))
     ]);
-    
+
+    // v2-Pfad: LLM liefert nur noch Inhalte, Design kommt aus der Style-Pack-
+    // Verfassung (server/generationV2). Hinter Flag, damit der Altpfad
+    // unterhalb für PB_LAYOUT_V2 !== "1" unangetastet bleibt.
+    if (process.env.PB_LAYOUT_V2 === "1") {
+      await runWebsiteGenerationV2(jobId, website, business, category, industryKey);
+      return;
+    }
+
     // Progress: 25% - Industry classified
     await updateGenerationJob(jobId, { progress: 25 });
 
@@ -1231,11 +1242,55 @@ export async function runWebsiteGeneration(jobId: number, websiteId: number): Pr
     }
   } catch (error: any) {
     console.error(`[Generation Job ${jobId}] Failed:`, error);
-    await updateGenerationJob(jobId, { 
-      status: "failed", 
-      error: error.message || "Unknown error during generation" 
+    await updateGenerationJob(jobId, {
+      status: "failed",
+      error: error.message || "Unknown error during generation"
     });
   }
+}
+
+/**
+ * v2-Generierungspfad (siehe runWebsiteGeneration oben, Aufruf hinter
+ * PB_LAYOUT_V2-Flag): Pack per Rotation wählen, Inhalte vom LLM holen
+ * (zod-validiert, genau 1 Retry, kein stiller Fallback), als websiteData
+ * persistieren (gleiche JSON-Spalte wie v1) und den SSR-Cache für den Slug
+ * invalidieren, damit die neue Seite sofort sichtbar ist statt bis zu
+ * CACHE_TTL_MS (60s) auf den TTL-Ablauf zu warten.
+ */
+async function runWebsiteGenerationV2(
+  jobId: number,
+  website: { id: number; slug: string },
+  business: { name: string; category: string | null; searchRegion: string | null },
+  category: string,
+  industryKey: string
+): Promise<void> {
+  await updateGenerationJob(jobId, { progress: 30 });
+
+  const packId = await selectPack(category, industryKey);
+
+  await updateGenerationJob(jobId, { progress: 50 });
+
+  const websiteData = await generateSiteContent({
+    packId,
+    business: {
+      name: business.name,
+      category,
+      city: business.searchRegion || undefined,
+    },
+  });
+
+  await updateGenerationJob(jobId, { progress: 90 });
+
+  await updateWebsite(website.id, { websiteData: websiteData as any });
+  invalidateSsrCache(website.slug);
+
+  await updateGenerationJob(jobId, {
+    status: "completed",
+    progress: 100,
+    result: { success: true, alreadyGenerated: false, usedFallback: false },
+  });
+
+  console.log(`[Generation Job ${jobId}] Completed (v2) for website ${website.id}, pack=${packId}`);
 }
 
 export const appRouter = router({

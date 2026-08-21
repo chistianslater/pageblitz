@@ -42,6 +42,22 @@ function capCacheSize<V>(cache: Map<string, V>, max: number): void {
 /** Nur diese Pfade werden auf v2-Kundenseiten SSR-gerendert; alles andere ist next() (Catch-All entscheidet). */
 const SSR_ALLOWED_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
 
+/**
+ * Löscht alle SSR-Cache-Einträge für einen Slug — beide Pfadformen ("sub:"
+ * für kunde.pageblitz.de/..., "path:" für pageblitz.de/site/<slug>/...) und
+ * alle SSR_ALLOWED_PATHNAMES — sowie den Negative-Cache-Eintrag. Wird nach
+ * jeder (Re-)Generierung aufgerufen, damit Kunden ihre neue Website sofort
+ * sehen statt bis zu 60s (CACHE_TTL_MS) auf den TTL-Ablauf zu warten.
+ */
+export function invalidateSsrCache(slug: string): void {
+  const key = slug.toLowerCase();
+  siteMissCache.delete(key);
+  for (const pathname of SSR_ALLOWED_PATHNAMES) {
+    siteHtmlCache.delete(`sub:${key}${pathname}`);
+    siteHtmlCache.delete(`path:${key}${pathname}`);
+  }
+}
+
 function isKnownPackId(value: string): value is PackId {
   return (PACK_IDS as readonly string[]).includes(value);
 }
