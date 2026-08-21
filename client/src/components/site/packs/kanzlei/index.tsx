@@ -319,10 +319,11 @@ function renderSection(section: SectionV2): React.ReactNode {
   }
 }
 
-const KanzleiPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
-  data,
-  basePath,
-}) => {
+const KanzleiPage: React.FC<{
+  data: WebsiteDataV2;
+  basePath: string;
+  now: Date;
+}> = ({ data, basePath, now }) => {
   const sections = orderedSections(data);
   const navSections = sections.filter(s => s.type !== "hero");
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
@@ -338,7 +339,7 @@ const KanzleiPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
   const idx = idxLines(data.businessCategory);
   const total = String(sections.length).padStart(2, "0");
   const facts = buildFacts(data, services);
-  const year = new Date().getFullYear();
+  const year = now.getFullYear();
 
   return (
     <div className="pb-kanzlei pb-kz-grid">

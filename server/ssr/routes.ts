@@ -137,7 +137,12 @@ function handleDevPreview(req: Request, res: Response): void {
   try {
     const data = getFixture(packParam, fixtureParam);
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const { html, status } = renderSiteHtml(data, { origin });
+    // fixes Datum für deterministische Visual-Baselines (nur Dev-Preview,
+    // Kundenseiten-SSR unten bleibt bei Echtzeit).
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      now: new Date("2026-08-19T10:00:00"),
+    });
     res.status(status).type("html").send(html);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Fixture-Fehler";

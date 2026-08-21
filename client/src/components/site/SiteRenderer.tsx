@@ -6,7 +6,8 @@ import { PACK_MODULES } from "./packRegistry";
 export const SiteRenderer: React.FC<{
   data: WebsiteDataV2;
   basePath?: string;
-}> = ({ data, basePath = "" }) => {
+  now?: Date;
+}> = ({ data, basePath = "", now = new Date() }) => {
   const mod = PACK_MODULES[data.stylePackId];
   if (!mod)
     throw new Error(`Pack-Modul nicht registriert: ${data.stylePackId}`);
@@ -20,7 +21,7 @@ export const SiteRenderer: React.FC<{
       style={vars as React.CSSProperties}
     >
       <style dangerouslySetInnerHTML={{ __html: mod.css }} />
-      <mod.Page data={data} basePath={basePath} />
+      <mod.Page data={data} basePath={basePath} now={now} />
     </div>
   );
 };

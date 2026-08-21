@@ -351,10 +351,11 @@ function renderSection(
   }
 }
 
-const WerkbankPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
-  data,
-  basePath,
-}) => {
+const WerkbankPage: React.FC<{
+  data: WebsiteDataV2;
+  basePath: string;
+  now: Date;
+}> = ({ data, basePath, now }) => {
   const sections = orderedSections(data);
   const navSections = sections.filter(s => s.type !== "hero");
   const contact = sections.find(
@@ -364,7 +365,7 @@ const WerkbankPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
     (s): s is SectionOf<"services"> => s.type === "services"
   );
   const railText = buildRailText(data, contact?.city);
-  const year = new Date().getFullYear();
+  const year = now.getFullYear();
 
   return (
     <div className="pb-werkbank">

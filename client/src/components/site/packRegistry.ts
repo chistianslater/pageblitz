@@ -7,7 +7,7 @@ import type {
 export interface PackModule {
   id: PackId;
   css: string;
-  Page: React.FC<{ data: WebsiteDataV2; basePath: string }>;
+  Page: React.FC<{ data: WebsiteDataV2; basePath: string; now: Date }>;
 }
 
 export const PACK_MODULES: Partial<Record<PackId, PackModule>> = {};

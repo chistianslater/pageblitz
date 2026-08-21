@@ -71,10 +71,11 @@ function formatRating(rating: number): string {
  * Unterstützt Einzeltage ("Montag", "Mo") und Bereiche ("Mo–Fr", "Mo-Fr").
  */
 function todaysOpeningHours(
-  openingHours: { day: string; hours: string }[] | undefined
+  openingHours: { day: string; hours: string }[] | undefined,
+  now: Date
 ): string | undefined {
   if (!openingHours || openingHours.length === 0) return undefined;
-  const today = new Date().getDay();
+  const today = now.getDay();
   const entry = openingHours.find(oh => {
     const day = oh.day.trim();
     const range = day.match(/^(\p{L}{2,})\s*[–-]\s*(\p{L}{2,})$/u);
@@ -328,10 +329,11 @@ function renderSection(section: SectionV2): React.ReactNode {
   }
 }
 
-const MorgenlichtPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
-  data,
-  basePath,
-}) => {
+const MorgenlichtPage: React.FC<{
+  data: WebsiteDataV2;
+  basePath: string;
+  now: Date;
+}> = ({ data, basePath, now }) => {
   const sections = orderedSections(data);
   const navSections = sections.filter(s => s.type !== "hero");
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
@@ -341,8 +343,8 @@ const MorgenlichtPage: React.FC<{ data: WebsiteDataV2; basePath: string }> = ({
   const services = sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"
   );
-  const year = new Date().getFullYear();
-  const todaysHours = todaysOpeningHours(contact?.openingHours);
+  const year = now.getFullYear();
+  const todaysHours = todaysOpeningHours(contact?.openingHours, now);
 
   return (
     <div className="pb-morgenlicht">

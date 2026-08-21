@@ -16,6 +16,13 @@ export interface RenderSiteOptions {
    * die Pageblitz-SPA statt zur Kundenseite.
    */
   basePath?: string;
+  /**
+   * Fester Zeitpunkt für datumsabhängige Pack-Elemente (z. B. "Heute
+   * geöffnet"-Karten). Nur die Dev-Preview-Route übergibt hier ein fixes
+   * Datum für deterministische Visual-Baselines — Kundenseiten-SSR bleibt
+   * bei Echtzeit (Default `new Date()` in SiteRenderer).
+   */
+  now?: Date;
 }
 
 export interface RenderSiteResult {
@@ -198,7 +205,7 @@ export function renderSiteHtml(
 
   const head = renderHead(data, canonicalUrl);
   const body = renderToStaticMarkup(
-    <SiteRenderer data={data} basePath={basePath} />
+    <SiteRenderer data={data} basePath={basePath} now={opts.now} />
   );
 
   const html = `<!doctype html>
