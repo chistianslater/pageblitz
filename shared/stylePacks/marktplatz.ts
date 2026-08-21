@@ -13,6 +13,8 @@ export const MARKTPLATZ: PackConstitution = {
     "eisdiele",
     "spielwaren",
     "nachhilfe",
+    "hundesalon",
+    "fahrschule",
   ],
   theme: "light",
   palette: [

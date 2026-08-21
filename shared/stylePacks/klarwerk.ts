@@ -15,6 +15,9 @@ export const KLARWERK: PackConstitution = {
     "dienstleistung",
     "hausmeisterservice",
     "umzug",
+    "reinigung",
+    "hausreinigung",
+    "reisebuero",
   ],
   theme: "light",
   palette: [

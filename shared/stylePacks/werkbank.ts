@@ -15,6 +15,9 @@ export const WERKBANK: PackConstitution = {
     "metallbau",
     "maler",
     "geruestbau",
+    "handwerk",
+    "klempner",
+    "schluesseldienst",
   ],
   theme: "light",
   palette: [

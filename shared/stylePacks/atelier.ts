@@ -14,6 +14,7 @@ export const ATELIER: PackConstitution = {
     "architekturbuero",
     "kunsthandwerk",
     "werbeagentur",
+    "innenarchitekt",
   ],
   theme: "light",
   palette: [

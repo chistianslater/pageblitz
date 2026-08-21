@@ -15,6 +15,7 @@ import { translateGmbCategory, CATEGORY_GROUPS } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
 import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FONTS, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
 import { getGalleryImages, getHeroImageUrl, getAboutImageUrl, getRawIndustryColors } from "@shared/industryImages";
+import { getV2VariantCandidates } from "@shared/stylePacks/variantCandidates";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -101,7 +102,7 @@ const DESKTOP_IFRAME_W = 1280;
 const MOBILE_IFRAME_W  = 390;
 const PREVIEW_IFRAME_H = 2400;
 
-function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, onSkip }: {
+function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey, onConfirm, onSkip }: {
   websiteId: number;
   websiteData?: any;
   heroImageUrl?: string;
@@ -155,7 +156,13 @@ function VariantPickerScreen({ websiteId, heroImageUrl, industryKey, onConfirm, 
     return () => el.removeEventListener("scroll", handleScroll);
   }, [isMobile]);
 
-  const variants = getVariantLayouts(industryKey, round);
+  // v2-Websites: Kandidaten aus der Style-Pack-Registry (getPackPool via
+  // getV2VariantCandidates), nicht aus den Legacy-VARIANT_FAMILY_RANKINGS.
+  // v1-Verhalten bleibt unverändert (gleicher Aufruf wie zuvor).
+  const isV2Website = websiteData?.version === 2;
+  const variants = isV2Website
+    ? getV2VariantCandidates(websiteData?.businessCategory || industryKey, round)
+    : getVariantLayouts(industryKey, round);
   const handleOtherLayouts = () => { setRound((r) => r + 1); setSelected(null); setActiveSlide(0); };
 
   const handleConfirm = async () => {

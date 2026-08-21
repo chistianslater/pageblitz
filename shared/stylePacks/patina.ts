@@ -13,6 +13,7 @@ export const PATINA: PackConstitution = {
     "massage",
     "hofladen",
     "naturkosmetik",
+    "pilates",
   ],
   theme: "light",
   palette: [

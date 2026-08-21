@@ -17,6 +17,10 @@ describe("stylePacks registry", () => {
   test("unbekannte Branche fällt auf FALLBACK_PACK zurück", () => {
     expect(getPackPool("unbekannte-branche")).toEqual([FALLBACK_PACK]);
   });
+  test("FALLBACK_PACK ist klarwerk (Spec §3.1)", () => {
+    expect(FALLBACK_PACK).toBe("klarwerk");
+    expect(getPackPool("unbekannte-branche")).toEqual(["klarwerk"]);
+  });
   test("Schreinerei landet bei werkbank", () => {
     expect(getPackPool("schreinerei")[0]).toBe("werkbank");
   });

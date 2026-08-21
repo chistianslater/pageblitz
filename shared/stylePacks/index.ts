@@ -35,7 +35,7 @@ export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {
   fundament: FUNDAMENT,
 };
 
-export const FALLBACK_PACK: PackId = "werkbank";
+export const FALLBACK_PACK: PackId = "klarwerk";
 
 export function getConstitution(id: PackId): PackConstitution {
   const c = STYLE_PACKS[id];
