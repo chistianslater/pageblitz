@@ -10,6 +10,7 @@ import { MARKTPLATZ } from "./marktplatz";
 import { LANDGUT } from "./landgut";
 import { ATELIER } from "./atelier";
 import { KLARWERK } from "./klarwerk";
+import { VERVE } from "./verve";
 
 export type { PackConstitution, PaletteColor, FontSpec } from "./types";
 export { toCssVars } from "./toCssVars";
@@ -25,6 +26,7 @@ export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {
   landgut: LANDGUT,
   atelier: ATELIER,
   klarwerk: KLARWERK,
+  verve: VERVE,
 };
 
 export const FALLBACK_PACK: PackId = "werkbank";

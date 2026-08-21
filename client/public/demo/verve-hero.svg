@@ -1,0 +1,18 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dunkles Studio-Placeholder mit Volt-Diagonale, flach">
+  <!-- Tiefschwarze Bühne, flache Formen, keine Gradients/Filter/Opacity -->
+  <rect x="0" y="0" width="1200" height="900" fill="#101114" />
+
+  <!-- Rauchglas-Flächen als flache Blöcke -->
+  <rect x="0" y="0" width="700" height="900" fill="#16171B" />
+  <rect x="700" y="0" width="500" height="900" fill="#1C1E24" />
+
+  <!-- Hairlines, hart -->
+  <rect x="240" y="0" width="1" height="900" fill="#2C2E35" />
+  <rect x="960" y="0" width="1" height="900" fill="#2C2E35" />
+
+  <!-- Volt-Diagonale, flach -->
+  <polygon points="760,0 860,0 500,900 400,900" fill="#D4F542" />
+
+  <!-- Zweite, schmalere Volt-Diagonale -->
+  <polygon points="980,0 1010,0 690,900 660,900" fill="#D4F542" />
+</svg>

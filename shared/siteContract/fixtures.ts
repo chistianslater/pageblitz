@@ -1719,6 +1719,173 @@ const KLARWERK_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.9, reviewCount: 44 },
 };
 
+const VERVE_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "verve",
+  businessName: "Studio PULS",
+  slug: "studio-puls-essen",
+  businessCategory: "Personal Training",
+  tagline: "12 Wochen. Messbar.",
+  logo: { kind: "font", font: "Studio PULS" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Dein Tempo. Deine Regeln.",
+      subheadline:
+        "Personal Training in Essen — Kraft, Ausdauer und ein Plan, der zu deinem Leben passt.",
+      ctaText: "Probetraining sichern",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/verve-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Programme",
+      intro: "Vier Programme, ein Ziel: messbarer Fortschritt.",
+      items: [
+        {
+          title: "Personal Training 1:1",
+          description: "Individueller Plan, volle Aufmerksamkeit, 60 Minuten.",
+          price: "ab 65",
+        },
+        {
+          title: "Kleingruppen-Training",
+          description: "Max. 4 Personen, gleiches Level, gemeinsamer Push.",
+          price: "ab 35",
+        },
+        {
+          title: "Athletic Conditioning",
+          description: "Kraft, Schnelligkeit und Beweglichkeit im Zirkel.",
+          price: "ab 45",
+        },
+        {
+          title: "Ernährungscoaching",
+          description:
+            "Individueller Ernährungsplan mit wöchentlichem Check-in.",
+          price: "ab 89",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über uns",
+      body: "Studio PULS wurde 2019 in Essen gegründet — aus der Überzeugung, dass Training kein Zufallsprodukt sein sollte. Jedes Programm beginnt mit einer Standortbestimmung, jeder Fortschritt wird gemessen, nicht geraten. Unser Team aus lizenzierten Trainern arbeitet in kleinen Gruppen oder 1:1, mit klaren Zielen und einem Plan, der sich an deinen Alltag anpasst — nicht umgekehrt.",
+      imageUrl: "/demo/verve-hero.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was unsere Mitglieder sagen",
+      items: [
+        {
+          author: "Nils Brandt",
+          text: "Erster Studio, in dem ich meine Fortschritte wirklich sehe. Nach 12 Wochen 8 Kilo weniger, doppelte Kraft.",
+          rating: 5,
+        },
+        {
+          author: "Merve Aydın",
+          text: "Kleingruppen-Training ist der perfekte Mix aus Motivation und Aufmerksamkeit. Kann ich nur empfehlen.",
+          rating: 5,
+        },
+        {
+          author: "Tobias Krüger",
+          text: "Das Ernährungscoaching hat den Unterschied gemacht. Endlich ein Plan, den ich im Alltag durchhalte.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Brauche ich Vorerfahrung fürs Personal Training?",
+          answer:
+            "Nein. Jedes Programm startet mit einer Standortbestimmung und wird auf dein Level abgestimmt.",
+        },
+        {
+          question: "Wie schnell sehe ich Ergebnisse?",
+          answer:
+            "Die meisten Mitglieder sehen nach 12 Wochen messbare Fortschritte bei Kraft und Ausdauer.",
+        },
+        {
+          question: "Kann ich das Probetraining jederzeit buchen?",
+          answer:
+            "Ja, das Probetraining ist ganzjährig verfügbar — auch am Wochenende.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0201 87 34 21",
+      email: "training@studio-puls-essen.de",
+      street: "Rüttenscheider Straße 92",
+      zip: "45130",
+      city: "Essen",
+      openingHours: [
+        { day: "Mo–Fr", hours: "6:00 – 22:00" },
+        { day: "Sa", hours: "8:00 – 18:00" },
+        { day: "So", hours: "9:00 – 14:00" },
+      ],
+    },
+  ],
+  seo: {
+    title: "Studio PULS Essen — Personal Training & Kleingruppen",
+    description:
+      "Studio PULS in Essen: Personal Training, Kleingruppen und Ernährungscoaching mit messbarem Fortschritt.",
+  },
+  footerNote: "Studio PULS · Essen · seit 2019",
+  google: { rating: 5.0, reviewCount: 61 },
+};
+
+const VERVE_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "verve",
+  businessName: "Studio PULS",
+  slug: "studio-puls-essen",
+  businessCategory: "Personal Training",
+  tagline: "12 Wochen. Messbar.",
+  logo: { kind: "font", font: "Studio PULS" },
+  sections: [
+    {
+      type: "hero",
+      headline: "Dein Tempo. Deine Regeln.",
+      subheadline: "Personal Training in Essen — messbarer Fortschritt.",
+      ctaText: "Probetraining sichern",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/verve-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Programme",
+      items: [
+        {
+          title: "Personal Training 1:1",
+          description: "Individueller Plan, volle Aufmerksamkeit.",
+          price: "ab 65",
+        },
+        {
+          title: "Kleingruppen-Training",
+          description: "Max. 4 Personen, gleiches Level.",
+          price: "ab 35",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0201 87 34 21",
+      email: "training@studio-puls-essen.de",
+      city: "Essen",
+    },
+  ],
+  seo: {
+    title: "Studio PULS Essen — Personal Training",
+    description:
+      "Studio PULS in Essen: Personal Training mit messbarem Fortschritt.",
+  },
+  footerNote: "Studio PULS · Essen · seit 2019",
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -1730,6 +1897,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   landgut: { full: LANDGUT_FULL, minimal: LANDGUT_MINIMAL },
   atelier: { full: ATELIER_FULL, minimal: ATELIER_MINIMAL },
   klarwerk: { full: KLARWERK_FULL, minimal: KLARWERK_MINIMAL },
+  verve: { full: VERVE_FULL, minimal: VERVE_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
