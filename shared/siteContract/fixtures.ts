@@ -534,12 +534,14 @@ const GUSTO_FULL: WebsiteDataV2 = {
           items: [
             {
               name: "Burrata al Pomodoro",
-              description: "Cremige Burrata, confierte Kirschtomaten, Basilikum.",
+              description:
+                "Cremige Burrata, confierte Kirschtomaten, Basilikum.",
               price: "14",
             },
             {
               name: "Tagliatelle al Ragù",
-              description: "Hausgemachte Bandnudeln, 8-Stunden-Ragù aus der Emilia-Romagna.",
+              description:
+                "Hausgemachte Bandnudeln, 8-Stunden-Ragù aus der Emilia-Romagna.",
               price: "16,5",
             },
             {
@@ -564,7 +566,8 @@ const GUSTO_FULL: WebsiteDataV2 = {
             },
             {
               name: "Tiramisù della Nonna",
-              description: "Nonnas Original-Rezept, jeden Morgen frisch geschichtet.",
+              description:
+                "Nonnas Original-Rezept, jeden Morgen frisch geschichtet.",
               price: "9",
             },
           ],
@@ -597,9 +600,18 @@ const GUSTO_FULL: WebsiteDataV2 = {
       type: "gallery",
       headline: "Impressionen",
       images: [
-        { url: "/demo/gusto-hero.svg", alt: "Gedeckter Tisch im warmen Abendlicht der Trattoria" },
-        { url: "/demo/gusto-detail-1.svg", alt: "Hausgemachte Tagliatelle mit Ragù" },
-        { url: "/demo/gusto-detail-2.svg", alt: "Weinregal mit Flaschen aus der Emilia-Romagna" },
+        {
+          url: "/demo/gusto-hero.svg",
+          alt: "Gedeckter Tisch im warmen Abendlicht der Trattoria",
+        },
+        {
+          url: "/demo/gusto-detail-1.svg",
+          alt: "Hausgemachte Tagliatelle mit Ragù",
+        },
+        {
+          url: "/demo/gusto-detail-2.svg",
+          alt: "Weinregal mit Flaschen aus der Emilia-Romagna",
+        },
       ],
     },
     {

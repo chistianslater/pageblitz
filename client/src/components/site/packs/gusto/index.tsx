@@ -291,9 +291,7 @@ const GustoPage: React.FC<{
   const navLeft = navSections.slice(0, half);
   const navRight = navSections.slice(half);
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
-  const menu = sections.find(
-    (s): s is SectionOf<"menu"> => s.type === "menu"
-  );
+  const menu = sections.find((s): s is SectionOf<"menu"> => s.type === "menu");
   const previewItems = menu?.categories[0]?.items.slice(0, 3) ?? [];
   const year = now.getFullYear();
 
@@ -328,7 +326,11 @@ const GustoPage: React.FC<{
             {previewItems.length > 0 && (
               <div className="pb-gu-menu-preview">
                 {previewItems.map(item => (
-                  <MenuRow key={item.name} name={item.name} price={item.price} />
+                  <MenuRow
+                    key={item.name}
+                    name={item.name}
+                    price={item.price}
+                  />
                 ))}
               </div>
             )}
