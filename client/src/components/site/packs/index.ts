@@ -8,3 +8,4 @@ import "./salon-noir";
 import "./marktplatz";
 import "./landgut";
 import "./atelier";
+import "./klarwerk";

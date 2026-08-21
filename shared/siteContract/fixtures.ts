@@ -1553,6 +1553,172 @@ const ATELIER_MINIMAL: WebsiteDataV2 = {
   google: { rating: 5.0, reviewCount: 31 },
 };
 
+const KLARWERK_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "klarwerk",
+  businessName: "Nordwind IT",
+  slug: "nordwind-it-kiel",
+  businessCategory: "IT-Service",
+  tagline: "IT, die einfach läuft.",
+  logo: { kind: "font", font: "Nordwind IT" },
+  sections: [
+    {
+      type: "hero",
+      headline: "IT, die einfach läuft.",
+      subheadline:
+        "Nordwind IT betreut Unternehmen in Kiel und Umgebung — Server, Cloud und Sicherheit aus einer Hand, ohne Rätselraten.",
+      ctaText: "Beratung anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/klarwerk-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      intro: "Vier Pauschalen, klar kalkuliert — kein Stundenzettel-Chaos.",
+      items: [
+        {
+          title: "Betreuung",
+          description:
+            "Laufende Systembetreuung inklusive Fernwartung und Vor-Ort-Support.",
+          price: "ab 149 €/Monat",
+        },
+        {
+          title: "Cloud",
+          description:
+            "Migration und Betrieb von Microsoft 365, Server und Storage in der Cloud.",
+          price: "ab 89 €/Monat",
+        },
+        {
+          title: "Sicherheit",
+          description:
+            "Firewall, Endpoint-Schutz und Monitoring gegen Ausfälle und Angriffe.",
+          price: "ab 119 €/Monat",
+        },
+        {
+          title: "Backup",
+          description:
+            "Automatisierte, geprüfte Datensicherung mit täglicher Kontrolle.",
+          price: "ab 59 €/Monat",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Über uns",
+      body: "Nordwind IT betreut seit 2012 kleine und mittlere Unternehmen in Kiel und Schleswig-Holstein. Statt Tickets in eine Warteschlange zu werfen, kennt unser sechsköpfiges Team jedes betreute System persönlich — von der Steuerkanzlei bis zum Handwerksbetrieb. Der Anspruch bleibt einfach: Systeme laufen, bevor jemand merkt, dass sie ausfallen könnten. Pauschalpreise statt Stundenzettel, feste Ansprechpartner statt Callcenter.",
+      imageUrl: "/demo/klarwerk-detail-1.svg",
+    },
+    {
+      type: "testimonials",
+      headline: "Was Kunden sagen",
+      items: [
+        {
+          author: "Jens Petersen, Petersen Spedition",
+          text: "Seit dem Wechsel zu Nordwind IT hatten wir keinen einzigen ungeplanten Ausfall mehr. Reaktionszeit ist wirklich unter zwei Stunden.",
+          rating: 5,
+        },
+        {
+          author: "Katrin Möller, Möller Steuerberatung",
+          text: "Endlich ein IT-Partner, der Rückfragen versteht statt Fachchinesisch zu reden. Die Cloud-Migration lief geräuschlos.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Wie schnell reagiert der Support?",
+          answer:
+            "Werktags innerhalb von zwei Stunden — bei kritischen Ausfällen priorisiert und sofort.",
+        },
+        {
+          question: "Sind die Pauschalen wirklich Festpreise?",
+          answer:
+            "Ja. Die Monatspauschale deckt den vereinbarten Leistungsumfang vollständig ab, ohne Stundenabrechnung.",
+        },
+        {
+          question: "Betreuen Sie auch reine Cloud-Umgebungen?",
+          answer:
+            "Ja, Microsoft 365 und gängige Cloud-Server werden ebenso betreut wie klassische Vor-Ort-Infrastruktur.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0431 660 2247",
+      email: "kontakt@nordwind-it-kiel.de",
+      street: "Holtenauer Straße 118",
+      zip: "24118",
+      city: "Kiel",
+      openingHours: [{ day: "Mo–Fr", hours: "8:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Nordwind IT Kiel — Systembetreuung, Cloud, Sicherheit, Backup",
+    description:
+      "Nordwind IT betreut Unternehmen in Kiel seit 2012: Systembetreuung, Cloud-Migration, IT-Sicherheit und Backup zur Festpreis-Pauschale.",
+  },
+  footerNote: "Nordwind IT · Kiel · seit 2012",
+  google: { rating: 4.9, reviewCount: 44 },
+};
+
+const KLARWERK_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "klarwerk",
+  businessName: "Nordwind IT",
+  slug: "nordwind-it-kiel",
+  businessCategory: "IT-Service",
+  tagline: "IT, die einfach läuft.",
+  logo: { kind: "font", font: "Nordwind IT" },
+  sections: [
+    {
+      type: "hero",
+      headline: "IT, die einfach läuft.",
+      subheadline:
+        "Nordwind IT betreut Unternehmen in Kiel — Server, Cloud und Sicherheit aus einer Hand.",
+      ctaText: "Beratung anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/klarwerk-hero.svg",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Betreuung",
+          description: "Laufende Systembetreuung inklusive Fernwartung.",
+          price: "ab 149 €/Monat",
+        },
+        {
+          title: "Backup",
+          description: "Automatisierte, geprüfte Datensicherung.",
+          price: "ab 59 €/Monat",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0431 660 2247",
+      email: "kontakt@nordwind-it-kiel.de",
+      street: "Holtenauer Straße 118",
+      zip: "24118",
+      city: "Kiel",
+      openingHours: [{ day: "Mo–Fr", hours: "8:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Nordwind IT Kiel",
+    description:
+      "Nordwind IT betreut Unternehmen in Kiel: Systembetreuung, Cloud und Backup.",
+  },
+  footerNote: "Nordwind IT · Kiel · seit 2012",
+  google: { rating: 4.9, reviewCount: 44 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -1563,6 +1729,7 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   marktplatz: { full: MARKTPLATZ_FULL, minimal: MARKTPLATZ_MINIMAL },
   landgut: { full: LANDGUT_FULL, minimal: LANDGUT_MINIMAL },
   atelier: { full: ATELIER_FULL, minimal: ATELIER_MINIMAL },
+  klarwerk: { full: KLARWERK_FULL, minimal: KLARWERK_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
