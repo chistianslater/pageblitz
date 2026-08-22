@@ -327,3 +327,117 @@ des Studios sind folgende Punkte zu beachten:
    eingebettet werden. `legalGenerator.ts` wird von beiden Onboarding-Pfaden genutzt — der Fix
    gilt also gleichermaßen für das neue Studio-Rechtliches-Panel wie für den alten
    `OnboardingChat.tsx`-Impressum-Schritt, ohne dass an letzterem etwas geändert werden musste.
+
+## 7. Inseln & Add-on-Aktivierung (Plan B3)
+
+Diese Zusammenfassung bildet ab, wie Kundenseiten-Features (Kontaktformular, KI-Chat, Terminbuchung)
+als Hydration-„Inseln" ausgeliefert werden und wie Add-on-Freischaltung über den Stripe-Webhook
+erfolgt.
+
+### 7.1 Build & Deployment: Islands-Bundle
+
+1. **Build-Ordnung:** `npm run build` führt `npm run build:islands` zuerst aus (siehe `package.json`
+   Zeile 9). Der esbuild-Task in `scripts/build-islands.mjs` baut `client/src/site-islands/main.tsx`
+   zu einem eigenständigen ESM-Bundle (`dist/public/islands/site-islands.js`, ~204 kB gzip/minified).
+   
+2. **Server-Auslieferung:** Express liefert die Insel-Assets via `express.static(islandsDistPath, {
+   maxAge: "1h" })` in `server/_core/index.ts` Zeile 495. Der 1h-Cache gilt sowohl in dev als auch
+   in prod; Nginx/PM2 bleiben unverändert.
+   
+3. **Lokale Entwicklung:** Der Dev-Server baut das Island-Bundle NICHT automatisch. Vor jedem Test
+   oder vor `npm run dev` einmalig `npm run build:islands` ausführen (sonst laden Kundenseiten-
+   Vorschauen die alten Assets).
+
+### 7.2 Inseln auf Kundenseiten
+
+Jede generierte Website rendert auf der öffentlichen Seite (`/customer/<slug>`) drei optionale
+Inseln, sofern die entsprechenden Feature-Flags aktiv sind. Alle Inseln sind **vollständig No-JS-sicher**:
+
+1. **Kontaktformular** (`websiteData.features.contactForm === true`):
+   - Rendert als `<form method="POST" action="/api/site/:slug/contact">` mit Token-Field.
+   - No-JS Fallback: Form-Submit → HTTP 303-Redirect mit Query-Param `?kontakt=gesendet` oder
+     `?kontakt=fehler` (Serverfehler oder Rate-Limit).
+   - Mit JS: Formular wird per Fetch abgesendet, Response in der Seite angezeigt, kein Seiten-
+     reload.
+   - **Rate-Limit:** 5 POST pro IP pro Stunde (IP-basiert), Honeypot-Feld im HTML.
+   - **Endpoint:** `POST /api/site/:slug/contact` (`server/contactSubmit.ts` Zeile 260).
+
+2. **KI-Chat-Widget** (`websiteData.features.aiChat === true`):
+   - Über `POST /api/chat/:slug/message` (`server/_core/chatRoutes.ts` Zeile 131).
+   - Client-seitig Fetch, async Message-Streaming.
+   - Keine Rate-Limits auf Island-Ebene (Websocket-Mock nur im Studio für `applyAiEdit`).
+
+3. **Terminbuchung** (`websiteData.features.booking === true`):
+   - Read: `GET /api/booking/:slug/settings` (Öffnungszeiten, Kalender-Typ),
+     `GET /api/booking/:slug/slots` (verfügbare Slots).
+   - Write: `POST /api/booking/:slug/book` (Termin buchen), `GET /api/booking/:slug/cancel/:token`
+     (Termin stornieren).
+   - Endpoints in `server/_core/bookingRoutes.ts`.
+
+**Keine Inseln in internen Vorschauen:** Im Dashboard, Editor und Studio-Preview-Komponenten sind
+Inseln im Preview-Modus (iframes mit `?preview`) nicht interaktiv — sie sind read-only HTML-
+Schnappschüsse.
+
+### 7.3 Webhook & Add-on-Aktivierung
+
+Der Stripe-Webhook (`server/stripeWebhookHandlers.ts`, Prozedur `handleCheckoutCompleted`) wird bei
+erfolgreicher Zahlung aufgerufen. Er:
+
+1. **Normalisiert alle 7 Add-on-Keys** (Funktion `normalizeAddOns`, Zeile 36–44):
+   - Akzeptiert alte Schlüsselnamensräume (z. B. `features.aiChat`) und neue Website-Spalten-Namens-
+     räume (`addOnAiChat`).
+   - Standard: alle 7 auf `false`, dann die in den Stripe-Metadaten angeforderten auf `true`.
+
+2. **Schreibt drei Website-Spalten** (für alle Dokumente, v1 + v2):
+   - `addOnAiChat`, `addOnBooking`, `addOnTeam` (jeweils boolean, default false).
+
+3. **Spiegelt freischaltbare Extras in v2-`features`** (nur für v2-Dokumente):
+   - `features.contactForm`, `features.aiChat`, `features.booking` (jeweils boolean).
+   - v1-Dokumente: `features`-Feld existiert nicht, kein Schreiben nötig.
+
+4. **Bindet verwaiste Abos** (`server/linkSubscriptions.ts`):
+   - Nach Zahlung ohne vorherigen User (Webhook konnte keine `userId` setzen) wird das Abo auf dem
+     VPS mit `userId = 0` angelegt.
+   - Beim Magic-Link-Login oder Google-SSO: `linkSubscriptions()` sucht Abos mit derselben E-Mail
+     (normalisiert: lowercase/trim) und bindet sie an das Konto, sofern `userId === 0` noch gilt.
+   - Idempotent: Nach dem Binding ist `userId ≠ 0`, ein erneuter Aufruf mit derselben E-Mail ist
+     ein No-Op.
+
+### 7.4 KI-Chat im Studio (`onboardingV2.aiEdit`)
+
+Der KI-Editor im Studio (`/onboarding/:token`, Panel „KI-Vorschläge") läuft über `applyAiEdit`
+(Prozedur in `server/routers.ts` ab Zeile 6385):
+
+1. **Vorschläge werden NICHT ohne Bestätigung gespeichert:**
+   - `suggestAiEdit()` in `server/onboardingV2/aiEdit.ts` speichert Vorschläge lokal im
+     Prozess-Memory (Map-basierter Speicher, 10-Minuten-TTL, siehe `SERVER_SIDE_SUGGESTIONS` Zeile
+     205).
+   - Erst `confirmAiEdit()` schreibt die bestätigten Änderungen in `websiteData` und die DB.
+   - Reload/Logout verwirft unbestätigte Vorschläge automatisch.
+
+2. **Bestimmte Inhalte sind für die KI unveränderbar:**
+   - **Kontaktdaten** (businessName, businessPhone, businessEmail, address, openingHours),
+   - **Bilder** (heroImage, aboutImage, teamPhotos),
+   - **externe Links** (instagramUrl, whatsappLink, websiteUrl, etc.),
+   - **Rechtstexte** (Impressum, Datenschutzerklärung, AGB).
+   - Der LLM-Prompt erlaubt keine Änderungen an diesen Feldern; Nutzerwünsche dazu werden
+     abgelehnt (`_mode: "chat"` + Erklärung statt Apply/Suggest).
+
+3. **Rate-Limit:** 20 Anfragen pro Website und rollierender Stunde (prozesslokal, Map-basiert).
+   - Limit wird pro PM2-Prozess gezählt — bei horizontaler Skalierung (mehrere Prozesse) würde das
+     Limit effektiv vervielfacht.
+   - Für Beta: Prozess-lokaler Speicher ist ausreichend; bei Produktions-Skalierung würde ein
+     Redis-Backend notwendig.
+
+4. **LLM-Mocking:** `PB_LLM_MOCK=1` aktiviert Mock-Responses (statisch für Testing). Das Flag wird
+   **nur außerhalb production akzeptiert** (siehe `aiEdit.ts` Zeile 129: `process.env.NODE_ENV !==
+   "production"`). Auf dem VPS ist es damit automatisch inaktiv, solange `NODE_ENV=production`.
+
+### 7.5 Deferred (nach Plan B3)
+
+Folgende Features sind bewusst ausgelagert und folgen in späteren Plänen:
+
+- **Unterseiten-Add-on** (separate Seite pro Add-on): verschoben nach Plan B4.
+- **Team-Panel im Studio:** Team-Verwaltung ist im Checkout noch nicht buchbar (`COMING_SOON_KEYS`
+  in `AddonsPanel.tsx`). Das Team-Panel UI und die vollständige Team-Verwaltung im Studio folgen
+  in Plan B3+ oder später.
