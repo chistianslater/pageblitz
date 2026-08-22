@@ -48,9 +48,20 @@ export const ContactFormIsland: React.FC<{
           autoComplete="off"
         />
       </div>
+      {/*
+        Bewusst EIN Textkind vor dem Link statt Literal-Text + separatem
+        `{" "}`-Ausdruck: renderSiteHtml nutzt renderToStaticMarkup, das
+        (anders als renderToString) KEINEN `<!-- -->`-Trenner zwischen zwei
+        benachbarten Text-Kindern einfügt. Im geparsten DOM verschmelzen zwei
+        benachbarte Textknoten dann zu einem — die Insel-Hydration
+        (hydrateRoot) sah dadurch einen Textknoten weniger als erwartet und
+        schlug mit React-Fehler #418 fehl. Ein einzelnes Ausdruck-Kind vor
+        dem `<a>` umgeht das.
+      */}
       <p className="pb-island-privacy">
-        Mit dem Absenden akzeptierst du unsere{" "}
-        <a href={`${basePath}/datenschutz`}>Datenschutzerklärung</a>.
+        {"Mit dem Absenden akzeptierst du unsere "}
+        <a href={`${basePath}/datenschutz`}>Datenschutzerklärung</a>
+        {"."}
       </p>
       <button type="submit" className="pb-island-submit">
         Nachricht senden

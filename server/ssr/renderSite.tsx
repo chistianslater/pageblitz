@@ -6,7 +6,6 @@ import { getConstitution } from "../../shared/stylePacks";
 import type { FontSpec } from "../../shared/stylePacks";
 import type { SectionOf, WebsiteDataV2 } from "../../shared/siteContract/types";
 import { hasActiveFeatures } from "../../client/src/components/site/islands/SiteIslands";
-import { islandsCss } from "../../client/src/components/site/islands/islandsCss";
 
 export interface RenderSiteOptions {
   origin: string;
@@ -94,14 +93,13 @@ function buildLocalBusinessJsonLd(data: WebsiteDataV2): string {
 
 /**
  * Meta/Canonical/OG + LocalBusiness-JSON-LD + Pack-Fonts-Link für die
- * Haupt-Site. Bekommt das Inseln-CSS nur, wenn mindestens ein Add-on aktiv
- * ist (`hasActiveFeatures`) — sonst laden Seiten ohne Add-ons unnötiges CSS.
+ * Haupt-Site. Das Inseln-CSS gehört NICHT hierher — `SiteIslands` bringt es
+ * selbst als `<style>`-Kind mit (analog zu `mod.css` in `SiteRenderer`),
+ * damit CSR-Vorschauen (Dashboard/Editor über `WebsiteRenderer`, die nie
+ * durch `renderSiteHtml` laufen) dieselben gestylten Inseln bekommen wie das
+ * SSR-HTML — eine Quelle statt zwei, die auseinanderlaufen können.
  */
-function renderHead(
-  data: WebsiteDataV2,
-  canonicalUrl: string,
-  includeIslands: boolean
-): string {
+function renderHead(data: WebsiteDataV2, canonicalUrl: string): string {
   const constitution = getConstitution(data.stylePackId);
   const fontsUrl = buildFontsUrl([
     constitution.type.display,
@@ -122,10 +120,7 @@ function renderHead(
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
     `<link rel="stylesheet" href="${esc(fontsUrl)}" />`,
     `<script type="application/ld+json">${jsonLd}</script>`,
-    includeIslands ? `<style>${islandsCss}</style>` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ].join("\n");
 }
 
 /** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
@@ -226,8 +221,11 @@ export function renderSiteHtml(
     );
   }
 
-  const includeIslands = hasActiveFeatures(data);
-  const head = renderHead(data, canonicalUrl, includeIslands);
+  // Deckt sich mit SiteIslands' eigener Render-Bedingung (Features aktiv UND
+  // ein Slug vorhanden) — sonst würde der Bundle-Tag geladen, obwohl gar
+  // keine Insel im Markup steht.
+  const includeIslands = hasActiveFeatures(data) && Boolean(opts.slug);
+  const head = renderHead(data, canonicalUrl);
   const body = renderToStaticMarkup(
     <SiteRenderer
       data={data}

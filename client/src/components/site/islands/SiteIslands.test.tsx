@@ -41,6 +41,20 @@ describe("SiteIslands", () => {
     expect(html).toBe("");
   });
 
+  test("rendert nichts ohne Slug, selbst wenn Features aktiv sind", () => {
+    const data = getFixture("werkbank", "features");
+    const html = renderToStaticMarkup(<SiteIslands data={data} slug="" />);
+    expect(html).toBe("");
+  });
+
+  test("enthält ein <style>-Tag mit dem Inseln-CSS, wenn ein Slug vorliegt", () => {
+    const data = getFixture("werkbank", "features");
+    const html = renderToStaticMarkup(
+      <SiteIslands data={data} slug="brandt" />
+    );
+    expect(html).toMatch(/<style>[^<]*\.pb-island-form\{/);
+  });
+
   test("rendert nur die aktive Insel (nur contactForm)", () => {
     const data = {
       ...getFixture("werkbank", "full"),

@@ -163,4 +163,25 @@ describe("renderSiteHtml — SSR-Inseln", () => {
     });
     expect(html).not.toContain("/islands/site-islands.js");
   });
+
+  test("Bundle-Tag und Inseln-CSS fehlen ohne slug, selbst bei aktiven Features", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "features"), {
+      origin: "https://brandt.pageblitz.de",
+      // kein slug übergeben
+    });
+    expect(html).not.toContain("/islands/site-islands.js");
+    expect(html).not.toContain(".pb-island-form{");
+  });
+
+  test("Inseln-CSS steht im <body> bei SiteIslands, nicht mehr separat im <head>", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "features"), {
+      origin: "https://brandt.pageblitz.de",
+      slug: "brandt",
+    });
+    const headEnd = html.indexOf("</head>");
+    const cssPos = html.indexOf(".pb-island-form{");
+    expect(headEnd).toBeGreaterThan(-1);
+    expect(cssPos).toBeGreaterThan(headEnd);
+    expect(html.match(/\.pb-island-form\{/g)).toHaveLength(1);
+  });
 });

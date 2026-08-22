@@ -109,7 +109,8 @@ export default function WebsiteRenderer({
   packOverride,
 }: WebsiteRendererProps) {
   const v2 = parseV2(websiteData);
-  if (v2) return <SiteRenderer data={v2} packOverride={packOverride} />;
+  if (v2)
+    return <SiteRenderer data={v2} packOverride={packOverride} slug={slug} />;
   // … bestehender v1-Pfad unverändert
 
   const cs = colorScheme || websiteData?.colorScheme || { primary: "#3b82f6" };
