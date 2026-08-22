@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { publicProcedure } from "../_core/trpc";
 import { updateWebsite } from "../db";
 import { generateDatenschutz, generateImpressum } from "../legalGenerator";
@@ -16,6 +17,7 @@ import {
   tokenInput,
   upsertOnboarding,
 } from "./state";
+import { createStudioCheckoutSession } from "./checkout";
 
 /**
  * Kommerz-Prozeduren des Studios: Rechtliches (Impressum/Datenschutz +
@@ -144,5 +146,56 @@ export const commerceProcedures = {
         ...loaded,
         website: { ...loaded.website, customerEmail: email },
       });
+    }),
+
+  /**
+   * Erzeugt die Stripe-Checkout-Session für die Website. Voraussetzung ist
+   * `checkoutReady` (Impressum + E-Mail vollständig) — sonst BAD_REQUEST
+   * ohne Stripe-Aufruf. Aktivierung/Subscription-Erzeugung übernimmt der
+   * bestehende Webhook (`stripeWebhook.ts`); hier wird nur der
+   * Onboarding-Status auf "completed" gesetzt, kein Dokument-Write.
+   */
+  createCheckout: publicProcedure
+    .input(
+      tokenInput.extend({
+        billingInterval: z.enum(["monthly", "yearly"]).default("yearly"),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      requireDoc(loaded);
+      const state = await buildState(input.token, loaded);
+
+      if (!state.checkoutReady) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Bitte zuerst Impressum-Angaben und E-Mail-Adresse vervollständigen.",
+        });
+      }
+
+      const origin = ctx.req.headers.origin || "https://pageblitz.de";
+      const { url } = await createStudioCheckoutSession({
+        websiteId: state.websiteId,
+        websiteName: state.businessName,
+        userId: ctx.user?.id ?? null,
+        customerEmail: state.customerEmail ?? "",
+        origin,
+        token: input.token,
+        billingInterval: input.billingInterval,
+        addOns: state.addOns,
+      });
+
+      await updateWebsite(state.websiteId, {
+        onboardingStatus: "completed",
+        captureStatus: "onboarding_completed",
+      });
+      await upsertOnboarding(state.websiteId, {
+        status: "completed",
+        completedAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+
+      return { url };
     }),
 };

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { TRPCError } from "@trpc/server";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import { OfferPatchSchema } from "../../shared/onboardingV2/patches";
@@ -21,9 +21,19 @@ const doc: WebsiteDataV2 = {
   sections: [{ type: "hero", headline: "H" }],
 };
 
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
 beforeEach(() => {
   vi.clearAllMocks();
   resetSuggestQuotaForTests();
+  // Jeder Fehlversuch wird jetzt via console.error protokolliert (Review-Fix) —
+  // hier global stummgeschaltet, damit die Testausgabe sauber bleibt; der
+  // dedizierte Logging-Test unten prüft explizit, dass geloggt wird.
+  consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+});
+
+afterEach(() => {
+  consoleErrorSpy.mockRestore();
 });
 
 describe("suggestTextVariants", () => {
@@ -79,6 +89,24 @@ describe("suggestTextVariants", () => {
       message:
         "Die KI konnte gerade keinen Vorschlag liefern — bitte noch einmal versuchen.",
     });
+  });
+
+  test("protokolliert jeden fehlgeschlagenen Versuch über console.error", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [{ message: { content: "kaputt" } }],
+    } as any);
+    await expect(
+      suggestTextVariants({
+        field: "headline",
+        doc,
+        businessName: "B",
+        category: "T",
+      })
+    ).rejects.toThrow();
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
+    expect(consoleErrorSpy.mock.calls[0][0]).toContain(
+      "[onboardingV2.suggest]"
+    );
   });
 
   test("zu lange Varianten werden auf die Feldlänge gekappt", async () => {
@@ -164,17 +192,28 @@ describe("suggestOffer", () => {
             price: "ab 9 €",
           },
           { name: "Salami", description: "Tomate, Salami", price: "ab 11 €" },
+          { name: "Funghi", description: "Tomate, Pilze", price: "ab 10 €" },
         ],
       },
       {
         name: "Pasta",
         items: [
           { name: "Carbonara", description: "Ei, Speck", price: "ab 12 €" },
+          { name: "Bolognese", description: "Rind, Tomate", price: "ab 11 €" },
+          {
+            name: "Pesto",
+            description: "Basilikum, Pinienkerne",
+            price: "ab 10 €",
+          },
         ],
       },
       {
         name: "Getränke",
-        items: [{ name: "Cola", description: "0,3 l", price: "ab 3 €" }],
+        items: [
+          { name: "Cola", description: "0,3 l", price: "ab 3 €" },
+          { name: "Wasser", description: "0,3 l", price: "ab 2 €" },
+          { name: "Apfelschorle", description: "0,3 l", price: "ab 3 €" },
+        ],
       },
     ];
     vi.mocked(invokeLLM).mockResolvedValue({
@@ -202,6 +241,109 @@ describe("suggestOffer", () => {
       .mockResolvedValueOnce({
         choices: [{ message: { content: "kaputt" } }],
       } as any);
+    await expect(
+      suggestOffer({ mode: "pricelist", businessName: "B", category: "T" })
+    ).rejects.toThrow();
+    expect(invokeLLM).toHaveBeenCalledTimes(2);
+  });
+
+  test("services: zu wenige Positionen (2) im ersten Versuch → Retry, dann Erfolg mit valider Anzahl", async () => {
+    const tooFew = Array.from({ length: 2 }, (_, i) => ({
+      title: `Leistung ${i}`,
+      description: `Nutzen ${i}`,
+    }));
+    const valid = Array.from({ length: 6 }, (_, i) => ({
+      title: `Leistung ${i}`,
+      description: `Nutzen ${i}`,
+    }));
+    vi.mocked(invokeLLM)
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({ headline: "H", items: tooFew }),
+            },
+          },
+        ],
+      } as any)
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({ headline: "H", items: valid }),
+            },
+          },
+        ],
+      } as any);
+    const r = await suggestOffer({
+      mode: "services",
+      businessName: "B",
+      category: "T",
+    });
+    expect(r.mode).toBe("services");
+    if (r.mode === "services") {
+      expect(r.items).toHaveLength(6);
+    }
+    expect(invokeLLM).toHaveBeenCalledTimes(2);
+  });
+
+  test("services: zu viele Positionen (9) → Retry, dann Fehler", async () => {
+    const tooMany = Array.from({ length: 9 }, (_, i) => ({
+      title: `Leistung ${i}`,
+      description: `Nutzen ${i}`,
+    }));
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({ headline: "H", items: tooMany }),
+          },
+        },
+      ],
+    } as any);
+    await expect(
+      suggestOffer({ mode: "services", businessName: "B", category: "T" })
+    ).rejects.toThrow();
+    expect(invokeLLM).toHaveBeenCalledTimes(2);
+  });
+
+  test("menu: zu wenige Kategorien (1) → Retry, dann Fehler", async () => {
+    const oneCategory = [
+      {
+        name: "Pizza",
+        items: [
+          { name: "A", description: "d", price: "ab 1 €" },
+          { name: "B", description: "d", price: "ab 2 €" },
+          { name: "C", description: "d", price: "ab 3 €" },
+        ],
+      },
+    ];
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        { message: { content: JSON.stringify({ categories: oneCategory }) } },
+      ],
+    } as any);
+    await expect(
+      suggestOffer({ mode: "menu", businessName: "B", category: "T" })
+    ).rejects.toThrow();
+    expect(invokeLLM).toHaveBeenCalledTimes(2);
+  });
+
+  test("pricelist: Kategorie mit zu wenigen Positionen (1) → Retry, dann Fehler", async () => {
+    const categories = [
+      { name: "A", items: [{ name: "x", description: "d", price: "ab 1 €" }] },
+      {
+        name: "B",
+        items: [
+          { name: "y1", description: "d", price: "ab 1 €" },
+          { name: "y2", description: "d", price: "ab 1 €" },
+          { name: "y3", description: "d", price: "ab 1 €" },
+        ],
+      },
+    ];
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify({ categories }) } }],
+    } as any);
     await expect(
       suggestOffer({ mode: "pricelist", businessName: "B", category: "T" })
     ).rejects.toThrow();

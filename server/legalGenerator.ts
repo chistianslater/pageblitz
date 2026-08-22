@@ -20,9 +20,23 @@ interface LegalData {
   websiteUrl?: string;
 }
 
+/**
+ * Escapes HTML special characters to prevent XSS attacks.
+ * Converts: & < > " '
+ */
+function esc(value: string | undefined | null): string {
+  if (!value) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function generateImpressum(data: LegalData): string {
-  const country = data.legalCountry || "Deutschland";
-  const responsible = data.legalResponsible || data.legalOwner;
+  const country = esc(data.legalCountry || "Deutschland");
+  const responsible = esc(data.legalResponsible || data.legalOwner);
 
   return `
 <!DOCTYPE html>
@@ -30,7 +44,7 @@ export function generateImpressum(data: LegalData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Impressum – ${data.businessName}</title>
+  <title>Impressum – ${esc(data.businessName)}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #1a1a1a; line-height: 1.6; }
     h1 { font-size: 2rem; margin-bottom: 0.5rem; }
@@ -46,34 +60,34 @@ export function generateImpressum(data: LegalData): string {
   <h1>Impressum</h1>
 
   <h2>Angaben gemäß § 5 TMG</h2>
-  <p><strong>${data.businessName}</strong></p>
-  <p>${data.legalStreet}</p>
-  <p>${data.legalZip} ${data.legalCity}</p>
+  <p><strong>${esc(data.businessName)}</strong></p>
+  <p>${esc(data.legalStreet)}</p>
+  <p>${esc(data.legalZip)} ${esc(data.legalCity)}</p>
   <p>${country}</p>
 
   <h2>Vertreten durch</h2>
-  <p>${data.legalOwner}</p>
+  <p>${esc(data.legalOwner)}</p>
 
   <h2>Kontakt</h2>
-  ${data.legalPhone ? `<p>Telefon: <a href="tel:${data.legalPhone}">${data.legalPhone}</a></p>` : ""}
-  <p>E-Mail: <a href="mailto:${data.legalEmail}">${data.legalEmail}</a></p>
-  ${data.websiteUrl ? `<p>Website: <a href="${data.websiteUrl}" target="_blank">${data.websiteUrl}</a></p>` : ""}
+  ${data.legalPhone ? `<p>Telefon: <a href="tel:${esc(data.legalPhone)}">${esc(data.legalPhone)}</a></p>` : ""}
+  <p>E-Mail: <a href="mailto:${esc(data.legalEmail)}">${esc(data.legalEmail)}</a></p>
+  ${data.websiteUrl ? `<p>Website: <a href="${esc(data.websiteUrl)}" target="_blank">${esc(data.websiteUrl)}</a></p>` : ""}
 
   ${data.legalVatId ? `
   <h2>Umsatzsteuer-ID</h2>
   <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:</p>
-  <p>${data.legalVatId}</p>
+  <p>${esc(data.legalVatId)}</p>
   ` : ""}
 
   ${data.legalRegister ? `
   <h2>Handelsregister</h2>
-  <p>Registernummer: ${data.legalRegister}</p>
-  ${data.legalRegisterCourt ? `<p>Registergericht: ${data.legalRegisterCourt}</p>` : ""}
+  <p>Registernummer: ${esc(data.legalRegister)}</p>
+  ${data.legalRegisterCourt ? `<p>Registergericht: ${esc(data.legalRegisterCourt)}</p>` : ""}
   ` : ""}
 
   <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
   <p>${responsible}</p>
-  <p>${data.legalStreet}, ${data.legalZip} ${data.legalCity}</p>
+  <p>${esc(data.legalStreet)}, ${esc(data.legalZip)} ${esc(data.legalCity)}</p>
 
   <h2>Streitschlichtung</h2>
   <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: 
@@ -95,7 +109,7 @@ export function generateImpressum(data: LegalData): string {
 }
 
 export function generateDatenschutz(data: LegalData): string {
-  const country = data.legalCountry || "Deutschland";
+  const country = esc(data.legalCountry || "Deutschland");
   const date = new Date().toLocaleDateString("de-DE");
 
   return `
@@ -104,7 +118,7 @@ export function generateDatenschutz(data: LegalData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Datenschutzerklärung – ${data.businessName}</title>
+  <title>Datenschutzerklärung – ${esc(data.businessName)}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #1a1a1a; line-height: 1.6; }
     h1 { font-size: 2rem; margin-bottom: 0.5rem; }
@@ -125,13 +139,13 @@ export function generateDatenschutz(data: LegalData): string {
   <h2>1. Verantwortliche Stelle</h2>
   <p>Verantwortlich für die Datenverarbeitung auf dieser Website im Sinne der DSGVO ist:</p>
   <div class="highlight">
-    <strong>${data.businessName}</strong><br>
-    ${data.legalOwner}<br>
-    ${data.legalStreet}<br>
-    ${data.legalZip} ${data.legalCity}<br>
+    <strong>${esc(data.businessName)}</strong><br>
+    ${esc(data.legalOwner)}<br>
+    ${esc(data.legalStreet)}<br>
+    ${esc(data.legalZip)} ${esc(data.legalCity)}<br>
     ${country}<br>
-    ${data.legalPhone ? `Telefon: ${data.legalPhone}<br>` : ""}
-    E-Mail: <a href="mailto:${data.legalEmail}">${data.legalEmail}</a>
+    ${data.legalPhone ? `Telefon: ${esc(data.legalPhone)}<br>` : ""}
+    E-Mail: <a href="mailto:${esc(data.legalEmail)}">${esc(data.legalEmail)}</a>
   </div>
 
   <h2>2. Allgemeines zur Datenverarbeitung</h2>
@@ -185,7 +199,7 @@ export function generateDatenschutz(data: LegalData): string {
     <li><strong>Widerspruchsrecht</strong> (Art. 21 DSGVO): Sie können der Verarbeitung Ihrer Daten auf Basis berechtigter Interessen widersprechen.</li>
     <li><strong>Widerruf der Einwilligung</strong> (Art. 7 Abs. 3 DSGVO): Sofern die Verarbeitung auf einer Einwilligung beruht, können Sie diese jederzeit widerrufen.</li>
   </ul>
-  <p>Zur Ausübung dieser Rechte wenden Sie sich bitte an: <a href="mailto:${data.legalEmail}">${data.legalEmail}</a></p>
+  <p>Zur Ausübung dieser Rechte wenden Sie sich bitte an: <a href="mailto:${esc(data.legalEmail)}">${esc(data.legalEmail)}</a></p>
 
   <h2>7. Beschwerderecht bei der Aufsichtsbehörde</h2>
   <p>Sie haben gemäß Art. 77 DSGVO das Recht, sich bei einer Datenschutz-Aufsichtsbehörde über die Verarbeitung Ihrer personenbezogenen Daten zu beschweren. Die für uns zuständige Aufsichtsbehörde richtet sich nach dem Bundesland des Unternehmenssitzes. Eine Liste der Aufsichtsbehörden finden Sie unter: <a href="https://www.bfdi.bund.de/DE/Infothek/Anschriften_Links/anschriften_links-node.html" target="_blank" rel="noopener">www.bfdi.bund.de</a>.</p>

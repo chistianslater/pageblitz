@@ -26,12 +26,23 @@ vi.mock("../_core/lifecycleScheduler", () => ({
   sendImmediateWelcomeEmail: vi.fn(),
   scheduleInitialLifecycleEmails: vi.fn(),
 }));
+// Stripe selbst ist in checkout.test.ts abgedeckt (Metadaten, unit_amount,
+// URLs) — hier nur prüfen, dass der Router sie korrekt aufruft/nicht aufruft.
+vi.mock("./checkout", () => ({
+  createStudioCheckoutSession: vi.fn().mockResolvedValue({
+    url: "https://stripe/session",
+    sessionId: "cs_1",
+    totalCents: 2380,
+  }),
+}));
 
 import { appRouter } from "../routers";
 import * as db from "../db";
 import * as lifecycleScheduler from "../_core/lifecycleScheduler";
+import * as checkoutModule from "./checkout";
 const mockedDb = vi.mocked(db);
 const mockedLifecycle = vi.mocked(lifecycleScheduler);
+const mockedCheckout = vi.mocked(checkoutModule);
 
 const ctx = (): TrpcContext => ({
   user: null,
@@ -199,9 +210,10 @@ describe("onboardingV2.setCustomerEmail", () => {
       42,
       "kunde@x.de"
     );
-    expect(
-      mockedLifecycle.scheduleInitialLifecycleEmails
-    ).toHaveBeenCalledWith(42, "kunde@x.de");
+    expect(mockedLifecycle.scheduleInitialLifecycleEmails).toHaveBeenCalledWith(
+      42,
+      "kunde@x.de"
+    );
   });
 
   test("marketingConsent → Zeitstempel gesetzt", async () => {
@@ -229,5 +241,77 @@ describe("onboardingV2.setCustomerEmail", () => {
       email: "kunde@x.de",
     });
     expect(s.customerEmail).toBe("kunde@x.de");
+  });
+});
+
+describe("onboardingV2.createCheckout", () => {
+  test("ohne vollständiges Rechtliches → BAD_REQUEST, kein Stripe-Aufruf", async () => {
+    // beforeEach: onboardingRow.legal* ist null, website.customerEmail null
+    // → checkoutReady bleibt false.
+    await expect(
+      caller().onboardingV2.createCheckout({
+        token: "tok",
+        billingInterval: "yearly",
+      })
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message:
+        "Bitte zuerst Impressum-Angaben und E-Mail-Adresse vervollständigen.",
+    });
+    expect(mockedCheckout.createStudioCheckoutSession).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+  });
+
+  test("mit vollständigem Zustand → { url }, onboardingStatus + captureStatus completed", async () => {
+    onboardingRow = {
+      ...onboardingRow,
+      legalOwner: "Max Brandt",
+      legalStreet: "Weg 1",
+      legalZip: "44135",
+      legalCity: "Dortmund",
+      legalEmail: "m@b.de",
+      legalPhone: "0231 1",
+    };
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "kunde@x.de",
+    } as any);
+
+    const result = await caller().onboardingV2.createCheckout({
+      token: "tok",
+      billingInterval: "yearly",
+    });
+
+    expect(result).toEqual({ url: "https://stripe/session" });
+    expect(mockedCheckout.createStudioCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        websiteId: 42,
+        websiteName: "Brandt",
+        userId: null,
+        customerEmail: "kunde@x.de",
+        token: "tok",
+        billingInterval: "yearly",
+      })
+    );
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        onboardingStatus: "completed",
+        captureStatus: "onboarding_completed",
+      })
+    );
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        status: "completed",
+        completedAt: expect.any(Number),
+        updatedAt: expect.any(Number),
+      })
+    );
   });
 });

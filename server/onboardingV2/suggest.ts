@@ -74,8 +74,13 @@ async function withSuggestionRetry<T>(attempt: () => Promise<T>): Promise<T> {
   for (let i = 0; i < MAX_SUGGESTION_ATTEMPTS; i++) {
     try {
       return await attempt();
-    } catch {
-      // nächster Versuch bzw. Fehler nach der Schleife
+    } catch (err) {
+      // Fehler wird protokolliert (Netzwerk/JSON/zod) und löst den nächsten
+      // Versuch aus bzw. — nach dem letzten Versuch — den TRPCError unten.
+      console.error(
+        `[onboardingV2.suggest] Versuch ${i + 1}/${MAX_SUGGESTION_ATTEMPTS} fehlgeschlagen:`,
+        err
+      );
     }
   }
   throw new TRPCError({
@@ -225,6 +230,53 @@ function buildOfferPrompt(args: {
   ].join("\n");
 }
 
+/**
+ * Erlaubte Mengen für Angebots-Vorschläge (Spec: 6 Leistungen bzw. 3
+ * Kategorien à 3–5 Positionen) — bewusst als Bereich statt exaktem Wert,
+ * damit ein LLM-Ergebnis nahe der Zielgröße nicht unnötig einen Retry
+ * auslöst, ein grob falsches Ergebnis (z. B. 1 Kategorie) aber sehr wohl.
+ */
+const OFFER_SERVICES_ITEM_COUNT = { min: 3, max: 8 };
+const OFFER_CATEGORY_COUNT = { min: 2, max: 4 };
+const OFFER_CATEGORY_ITEM_COUNT = { min: 3, max: 5 };
+
+/**
+ * Prüft die Mengen eines bereits per OfferPatchSchema validierten Vorschlags
+ * gegen die Zielgrößen. Wirft bei Abweichung (kein zod-Fehler, da
+ * OfferPatchSchema selbst großzügigere Grenzen hat) — der Fehler landet in
+ * withSuggestionRetry und löst dort den Retry aus.
+ */
+function assertOfferCounts(offer: OfferPatch): void {
+  if (offer.mode === "services") {
+    const count = offer.items.length;
+    if (
+      count < OFFER_SERVICES_ITEM_COUNT.min ||
+      count > OFFER_SERVICES_ITEM_COUNT.max
+    ) {
+      throw new Error(`Unerwartete Anzahl Leistungen: ${count}`);
+    }
+    return;
+  }
+  const categoryCount = offer.categories.length;
+  if (
+    categoryCount < OFFER_CATEGORY_COUNT.min ||
+    categoryCount > OFFER_CATEGORY_COUNT.max
+  ) {
+    throw new Error(`Unerwartete Anzahl Kategorien: ${categoryCount}`);
+  }
+  for (const category of offer.categories) {
+    const itemCount = category.items.length;
+    if (
+      itemCount < OFFER_CATEGORY_ITEM_COUNT.min ||
+      itemCount > OFFER_CATEGORY_ITEM_COUNT.max
+    ) {
+      throw new Error(
+        `Unerwartete Anzahl Positionen in Kategorie "${category.name}": ${itemCount}`
+      );
+    }
+  }
+}
+
 function buildOfferResponseFormat(mode: OfferSuggestionMode) {
   if (mode === "services") {
     return {
@@ -247,6 +299,8 @@ function buildOfferResponseFormat(mode: OfferSuggestionMode) {
                 required: ["title", "description"],
                 additionalProperties: false,
               },
+              minItems: OFFER_SERVICES_ITEM_COUNT.min,
+              maxItems: OFFER_SERVICES_ITEM_COUNT.max,
             },
           },
           required: ["headline", "items"],
@@ -282,11 +336,15 @@ function buildOfferResponseFormat(mode: OfferSuggestionMode) {
                     required: ["name", "description", "price"],
                     additionalProperties: false,
                   },
+                  minItems: OFFER_CATEGORY_ITEM_COUNT.min,
+                  maxItems: OFFER_CATEGORY_ITEM_COUNT.max,
                 },
               },
               required: ["name", "items"],
               additionalProperties: false,
             },
+            minItems: OFFER_CATEGORY_COUNT.min,
+            maxItems: OFFER_CATEGORY_COUNT.max,
           },
         },
         required: ["categories"],
@@ -321,7 +379,9 @@ export async function suggestOffer(args: {
     const rawContent = response.choices?.[0]?.message?.content;
     const text = typeof rawContent === "string" ? rawContent : "";
     const json = JSON.parse(text) as Record<string, unknown>;
-    return OfferPatchSchema.parse({ ...json, mode: args.mode });
+    const offer = OfferPatchSchema.parse({ ...json, mode: args.mode });
+    assertOfferCounts(offer);
+    return offer;
   });
 }
 
