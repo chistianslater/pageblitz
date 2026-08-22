@@ -42,7 +42,7 @@ describe("GenerationScreen", () => {
         retrying
       />
     );
-    expect(html).toContain("disabled=\"\"");
+    expect(html).toContain('disabled=""');
     expect(html).toContain("Wird erneut versucht");
   });
 });

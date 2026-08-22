@@ -50,7 +50,8 @@ export function deriveGenerationStatus({
       error: "Die Website liegt nicht im neuen Format vor.",
     };
   }
-  if (job?.status === "processing") return { status: "processing", error: null };
+  if (job?.status === "processing")
+    return { status: "processing", error: null };
   return { status: "pending", error: null };
 }
 

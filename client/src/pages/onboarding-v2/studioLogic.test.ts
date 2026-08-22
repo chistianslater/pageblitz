@@ -38,7 +38,11 @@ describe("deriveGenerationStatus", () => {
     expect(r).toEqual({ status: "processing", error: null });
   });
   test("kein Job, kein Fehler → pending", () => {
-    const r = deriveGenerationStatus({ hasDoc: false, job: null, ensureError: null });
+    const r = deriveGenerationStatus({
+      hasDoc: false,
+      job: null,
+      ensureError: null,
+    });
     expect(r).toEqual({ status: "pending", error: null });
   });
 });
@@ -65,9 +69,9 @@ describe("computeRefetchInterval", () => {
     ).toBe(1500);
   });
   test("Dokument vorhanden → stoppt", () => {
-    expect(
-      computeRefetchInterval(false, { doc: { a: 1 }, job: null })
-    ).toBe(false);
+    expect(computeRefetchInterval(false, { doc: { a: 1 }, job: null })).toBe(
+      false
+    );
   });
   test("Job failed/completed ohne Dokument → stoppt (kein sinnloses Weiterpollen)", () => {
     expect(

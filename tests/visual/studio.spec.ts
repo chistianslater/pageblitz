@@ -19,7 +19,11 @@ async function skipCookieBanner(page: Page): Promise<void> {
     ({ key }) => {
       window.localStorage.setItem(
         key,
-        JSON.stringify({ analytics: false, marketing: false, timestamp: Date.now() })
+        JSON.stringify({
+          analytics: false,
+          marketing: false,
+          timestamp: Date.now(),
+        })
       );
     },
     { key: CONSENT_KEY }
@@ -42,7 +46,11 @@ async function waitForStyleThumbnails(page: Page): Promise<void> {
           new Promise<void>(resolve => {
             const iframe = frame as HTMLIFrameElement;
             const doc = iframe.contentDocument;
-            if (doc && doc.readyState === "complete" && doc.body?.children.length > 0) {
+            if (
+              doc &&
+              doc.readyState === "complete" &&
+              doc.body?.children.length > 0
+            ) {
               resolve();
             } else {
               iframe.addEventListener("load", () => resolve(), { once: true });
