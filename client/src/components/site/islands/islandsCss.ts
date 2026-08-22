@@ -1,3 +1,5 @@
+import { bookingCss } from "./bookingCss";
+
 /**
  * Styles für die SSR-Inseln (Kontaktformular, KI-Chat, Terminbuchung).
  *
@@ -7,13 +9,19 @@
  *
  * Mehrere `.pb-island--fab`-Geschwister (KI-Chat + Terminbuchung gleichzeitig
  * aktiv) würden sich sonst am selben `right/bottom`-Fixpunkt überlappen —
- * der `~`-Selektor schiebt jeden weiteren Fab-Button nach oben.
+ * der `~`-Selektor schiebt jeden weiteren Fab-Button nach oben (vertikal
+ * gestapelt statt nebeneinander, damit keine Insel die andere überdeckt).
  *
  * `.pb-island-panel` bekommt bewusst `z-index:61` (höher als `.pb-island--fab`
  * mit `z-index:60`): der Chat kommt im Markup vor der Terminbuchung (siehe
  * `SiteIslands.tsx`), bei gleichem z-index würde deren Fab-Button — der per
  * `~`-Offset weiter oben sitzt — sonst über dem geöffneten Chat-Panel
  * liegen und dessen Senden-Button für Klicks blockieren.
+ *
+ * Die Terminbuchungs-Insel (`BookingIsland.tsx`) bringt ihre eigenen
+ * Klassen (Datums-/Slot-Chips, Zusammenfassung) aus `bookingCss.ts` mit —
+ * hier nur angehängt, damit `SiteIslands` weiterhin ein einziges
+ * `<style>`-Tag rendert.
  */
 export const islandsCss = `
 .pb-islands{font-family:var(--pb-font-body);color:var(--pb-ink)}
@@ -57,4 +65,4 @@ export const islandsCss = `
 .pb-island-panel-send:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:480px){.pb-island--fab{right:12px;bottom:12px}.pb-island--fab ~ .pb-island--fab{bottom:80px}.pb-island-panel{left:0;right:0;bottom:0;width:100%;max-width:none;max-height:80vh;border-radius:var(--pb-radius-card) var(--pb-radius-card) 0 0}}
 @media(prefers-reduced-motion:reduce){.pb-island-fab-button,.pb-island-fab-btn{transition:none}.pb-island-fab-button:hover,.pb-island-fab-button:focus-visible,.pb-island-fab-btn:hover,.pb-island-fab-btn:focus-visible{transform:none}}
-`;
+${bookingCss}`;

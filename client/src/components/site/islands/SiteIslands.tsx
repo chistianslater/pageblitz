@@ -86,8 +86,9 @@ export const SiteIslands: React.FC<{
           className="pb-island pb-island--fab"
           data-island="booking"
           data-slug={slug}
+          data-business-name={data.businessName}
         >
-          <BookingIsland slug={slug} />
+          <BookingIsland slug={slug} businessName={data.businessName} />
         </div>
       )}
     </div>

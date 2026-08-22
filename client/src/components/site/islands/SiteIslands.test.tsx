@@ -107,6 +107,27 @@ describe("SiteIslands", () => {
     expect(html).not.toContain("data-welcome=");
   });
 
+  test("Chat- und Termin-Insel rendern beide ihren Fab-Button in der pb-island-fab-Leiste (features-Fixture)", () => {
+    const data = getFixture("werkbank", "features");
+    const html = renderToStaticMarkup(
+      <SiteIslands data={data} slug="brandt" basePath="/site/brandt" />
+    );
+    expect(html.match(/class="pb-island pb-island--fab"/g)?.length).toBe(2);
+    expect(html).toContain(">Chat<");
+    expect(html).toContain(">Termin<");
+  });
+
+  test("Termin-Insel trägt data-business-name wie die Chat-Insel", () => {
+    const data = {
+      ...getFixture("werkbank", "full"),
+      features: { booking: true },
+    };
+    const html = renderToStaticMarkup(
+      <SiteIslands data={data} slug="brandt" />
+    );
+    expect(html).toContain(`data-business-name="${data.businessName}"`);
+  });
+
   test("Kontaktformular-Markup enthält Honeypot, Datenschutzlink und action auf /api/site/:slug/contact", () => {
     const data = {
       ...getFixture("werkbank", "full"),
