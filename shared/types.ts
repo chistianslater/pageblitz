@@ -121,19 +121,3 @@ export interface BusinessSearchResult {
   openingHours?: string[];
   hasWebsite: boolean;
 }
-
-export interface Addon {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  icon: string;
-  enabled: boolean;
-}
-
-export const AVAILABLE_ADDONS: Addon[] = [
-  { id: "contact-form", name: "Kontaktformular", description: "Professionelles Kontaktformular mit E-Mail-Benachrichtigung", price: 49, icon: "MessageSquare", enabled: false },
-  { id: "ai-chat", name: "KI-Chat", description: "Intelligenter Chatbot für automatische Kundenanfragen", price: 99, icon: "Bot", enabled: false },
-  { id: "booking", name: "Terminbuchung", description: "Online-Terminbuchungssystem für Ihre Kunden", price: 79, icon: "Calendar", enabled: false },
-  { id: "custom-domain", name: "Eigene Domain", description: "Verbinden Sie Ihre eigene Domain", price: 29, icon: "Globe", enabled: false },
-];

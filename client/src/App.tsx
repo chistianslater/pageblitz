@@ -27,7 +27,6 @@ const WebsitesPage = lazy(() => import("./pages/WebsitesPage"));
 const OutreachPage = lazy(() => import("./pages/OutreachPage"));
 const StatsPage = lazy(() => import("./pages/StatsPage"));
 const LeadsPage = lazy(() => import("./pages/LeadsPage"));
-const OnboardingWizard = lazy(() => import("./pages/OnboardingWizard"));
 const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const LayoutOverviewPage = lazy(() => import("./pages/LayoutOverviewPage"));
