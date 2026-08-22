@@ -62,7 +62,11 @@ export const BookingFormFields: React.FC<{
     </label>
     <label>
       Nachricht (optional)
-      <textarea value={message} onChange={e => onMessageChange(e.target.value)} rows={3} />
+      <textarea
+        value={message}
+        onChange={e => onMessageChange(e.target.value)}
+        rows={3}
+      />
     </label>
     {error && (
       <p className="pb-island-status" data-state="error" role="alert">

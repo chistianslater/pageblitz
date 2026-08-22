@@ -40,8 +40,16 @@ describe("buildDateOptions", () => {
   test("liefert die nächsten advanceDays Kalendertage, wenn jeder Wochentag aktiv ist", () => {
     const options = buildDateOptions(ALL_DAYS_SCHEDULE, 5, MONDAY);
     expect(options).toHaveLength(5);
-    expect(options[0]).toEqual({ iso: "2026-08-24", label: "24. August", weekday: "Mo" });
-    expect(options[4]).toEqual({ iso: "2026-08-28", label: "28. August", weekday: "Fr" });
+    expect(options[0]).toEqual({
+      iso: "2026-08-24",
+      label: "24. August",
+      weekday: "Mo",
+    });
+    expect(options[4]).toEqual({
+      iso: "2026-08-28",
+      label: "28. August",
+      weekday: "Fr",
+    });
   });
 
   test("überspringt deaktivierte Wochentage (Sa/So raus)", () => {
