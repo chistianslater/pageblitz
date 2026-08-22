@@ -386,6 +386,18 @@
   gap: 0.5rem;
   align-items: center;
 }
+/* Kompakte Zeile für Öffnungszeiten (Finding F1): Tag | Zeit | kleiner
+   Entfernen-Button, statt der breiteren pb-studio-row-Spalten. */
+.pb-studio-hours-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+.pb-studio-hours-remove {
+  padding: 0.5rem 0.7rem;
+  line-height: 1;
+}
 .pb-studio-cat {
   display: flex;
   flex-direction: column;

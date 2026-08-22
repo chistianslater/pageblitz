@@ -4,11 +4,11 @@ import {
   PRICING,
   calcTotalCents,
   formatEuro,
+  sanitizeAddOns,
   type AddOnFlags,
   type BillingInterval,
 } from "@shared/pricing";
 import type { StudioState } from "../../../../server/onboardingV2/state";
-import { sanitizeAddOns } from "./panels/AddonsPanel";
 
 interface CheckoutSummaryProps {
   interval: BillingInterval;
@@ -66,6 +66,9 @@ interface CheckoutBarProps {
 const ADDON_SETUP_NOTE =
   "Kontaktformular, KI-Chat, Terminbuchung und Team werden nach dem Freischalten im Dashboard eingerichtet.";
 
+/** Bewusst einfach gehalten — nur ein Client-seitiger Vorab-Check vor dem Request, die eigentliche Validierung übernimmt der Server (z.string().email()). */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 /**
  * Ständig sichtbare Checkout-Leiste am Fuß der linken Spalte (nur wenn kein
  * Panel offen, siehe StudioPage). Abrechnungsart lokal gewählt (Default
@@ -84,15 +87,24 @@ export function CheckoutBar({
   const saveEmail = trpc.onboardingV2.setCustomerEmail.useMutation();
   const checkout = trpc.onboardingV2.createCheckout.useMutation();
 
-  const legalItem = state.checklist.find(i => i.id === "legal");
+  // Aus der Checkliste abgeleitet statt hartkodiert auf "legal" (Finding
+  // F3) — deckt automatisch jeden künftigen Pflichtpunkt ab, ohne
+  // CheckoutBar bei jeder Checklisten-Änderung anfassen zu müssen.
   const missing: string[] = [
-    ...(legalItem?.status !== "done" ? ["Impressum-Angaben"] : []),
+    ...state.checklist
+      .filter(i => i.required && i.status !== "done")
+      .map(i => i.title),
     ...(!state.customerEmail ? ["E-Mail-Adresse"] : []),
   ];
 
+  const trimmedEmail = email.trim();
+  const emailValid = EMAIL_RE.test(trimmedEmail);
+  const showEmailError = trimmedEmail.length > 0 && !emailValid;
+
   const handleSaveEmail = () => {
+    if (!emailValid) return;
     saveEmail.mutate(
-      { token, email, marketingConsent },
+      { token, email: trimmedEmail, marketingConsent },
       { onSuccess: onStateChanged }
     );
   };
@@ -155,11 +167,16 @@ export function CheckoutBar({
             type="button"
             className="pb-studio-btn"
             data-variant="ghost"
-            disabled={saveEmail.isPending || email.trim().length === 0}
+            disabled={saveEmail.isPending || !emailValid}
             onClick={handleSaveEmail}
           >
             {saveEmail.isPending ? "Bitte warten…" : "Speichern"}
           </button>
+          {showEmailError && (
+            <p role="alert" style={{ color: "var(--st-warn)" }}>
+              Bitte eine gültige E-Mail-Adresse eingeben.
+            </p>
+          )}
           {saveEmail.error && (
             <p role="alert" style={{ color: "var(--st-warn)" }}>
               {saveEmail.error.message}

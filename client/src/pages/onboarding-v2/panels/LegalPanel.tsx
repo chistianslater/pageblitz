@@ -32,12 +32,38 @@ const FIELDS: TextFieldConfig[] = [
   { name: "legalVatId", label: "USt-IdNr. (optional)", type: "text" },
 ];
 
+/**
+ * Zusätzliche Hinweise unter einzelnen Feldern (Finding I2): die deutsche
+ * zod-Locale (shared/zodLocale.ts) formatiert Regex-Fehler wie bei PLZ nur
+ * als "muss dem Muster /^\d{5}$/ entsprechen" — technisch korrekt, aber für
+ * Endnutzer wenig hilfreich. Der Hinweis steht unabhängig vom Fehlerstatus
+ * permanent unter dem Feld, damit der Fall gar nicht erst eintritt.
+ */
+const FIELD_HINTS: Partial<Record<TextFieldConfig["name"], string>> = {
+  legalZip: "5-stellige Postleitzahl, nur Ziffern.",
+};
+
 interface LegalPanelProps {
   token: string;
   initial: StudioLegal;
   openingHours: { day: string; hours: string }[];
   onApplied: () => void;
   onClose: () => void;
+}
+
+/**
+ * Baut den Startwert des Formulars aus den geladenen Kontaktdaten und
+ * Öffnungszeiten (Finding I5). Als eigene, pure Funktion exportiert, weil
+ * react-hook-forms `register()` uncontrolled Inputs per `ref` befüllt —
+ * `defaultValues` taucht dadurch nie als `value`-Attribut im
+ * server-gerenderten Markup auf (`renderToStaticMarkup` ruft keine Refs
+ * auf), die Vorbelegung ist also nur über diese Funktion direkt testbar.
+ */
+export function legalDefaults(
+  initial: StudioLegal,
+  openingHours: { day: string; hours: string }[]
+): LegalPatch {
+  return { ...initial, openingHours };
 }
 
 /**
@@ -60,7 +86,7 @@ export function LegalPanel({
     formState: { errors },
   } = useForm<LegalPatch>({
     resolver: zodResolver(LegalPatchSchema),
-    defaultValues: { ...initial, openingHours },
+    defaultValues: legalDefaults(initial, openingHours),
   });
   const { fields, append, remove } = useFieldArray({
     control,
@@ -104,6 +130,7 @@ export function LegalPanel({
         {FIELDS.map(field => {
           const fieldId = `pb-legal-${field.name}`;
           const error = errors[field.name];
+          const hint = FIELD_HINTS[field.name];
           return (
             <div className="pb-studio-field" key={field.name}>
               <label htmlFor={fieldId}>{field.label}</label>
@@ -114,6 +141,13 @@ export function LegalPanel({
                 aria-invalid={!!error}
                 {...register(field.name)}
               />
+              {hint && (
+                <span
+                  style={{ color: "var(--st-muted)", fontSize: "0.8rem" }}
+                >
+                  {hint}
+                </span>
+              )}
               {error && (
                 <p role="alert" style={{ color: "var(--st-warn)" }}>
                   {error.message}
@@ -124,32 +158,39 @@ export function LegalPanel({
         })}
         <div className="pb-studio-field">
           <span>Öffnungszeiten (optional)</span>
-          {fields.map((field, i) => (
-            <div className="pb-studio-row" key={field.id}>
-              <input
-                aria-label="Tag"
-                type="text"
-                className="pb-studio-input"
-                placeholder="z. B. Mo–Fr"
-                {...register(`openingHours.${i}.day` as const)}
-              />
-              <input
-                aria-label="Uhrzeiten"
-                type="text"
-                className="pb-studio-input"
-                placeholder="z. B. 9–18 Uhr"
-                {...register(`openingHours.${i}.hours` as const)}
-              />
-              <button
-                type="button"
-                className="pb-studio-btn"
-                data-variant="ghost"
-                onClick={() => remove(i)}
-              >
-                Entfernen
-              </button>
-            </div>
-          ))}
+          {fields.map((field, i) => {
+            const dayError = errors.openingHours?.[i]?.day;
+            const hoursError = errors.openingHours?.[i]?.hours;
+            return (
+              <div className="pb-studio-hours-row" key={field.id}>
+                <input
+                  aria-label="Tag"
+                  type="text"
+                  className="pb-studio-input"
+                  placeholder="z. B. Mo–Fr"
+                  aria-invalid={!!dayError}
+                  {...register(`openingHours.${i}.day` as const)}
+                />
+                <input
+                  aria-label="Uhrzeiten"
+                  type="text"
+                  className="pb-studio-input"
+                  placeholder="z. B. 9–18 Uhr"
+                  aria-invalid={!!hoursError}
+                  {...register(`openingHours.${i}.hours` as const)}
+                />
+                <button
+                  type="button"
+                  className="pb-studio-btn pb-studio-hours-remove"
+                  data-variant="ghost"
+                  aria-label="Zeile entfernen"
+                  onClick={() => remove(i)}
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })}
           {errors.openingHours && (
             <p role="alert" style={{ color: "var(--st-warn)" }}>
               Bitte jede Zeile ausfüllen oder entfernen.

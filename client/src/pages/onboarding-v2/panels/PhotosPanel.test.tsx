@@ -20,6 +20,19 @@ describe("PhotoGrid", () => {
     expect(html).not.toContain("Keine Fotos gefunden.");
   });
 
+  test("Alt-Text nummeriert die Fotos nach Position (Finding F2)", () => {
+    const html = renderToStaticMarkup(
+      <PhotoGrid
+        photos={["https://example.com/a.jpg", "https://example.com/b.jpg"]}
+        selected={[]}
+        onPick={() => {}}
+        emptyText="Keine Fotos gefunden."
+      />
+    );
+    expect(html).toContain('alt="Foto 1"');
+    expect(html).toContain('alt="Foto 2"');
+  });
+
   test("zeigt emptyText, wenn keine Fotos vorhanden sind", () => {
     const html = renderToStaticMarkup(
       <PhotoGrid
