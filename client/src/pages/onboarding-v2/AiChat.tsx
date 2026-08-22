@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { AiDiffEntry } from "@shared/onboardingV2/aiEdit";
 import type { PackId } from "@shared/siteContract/types";
-import { AiDiffList, AiStyleCard } from "./aiChatParts";
+import { AiDiffList, AiStyleCard, canSendMessage } from "./aiChatParts";
 
-const MIN_MESSAGE_LENGTH = 3;
 /** Spec §5: Verlauf der letzten 5 Anfragen im Component-State, kein Storage. */
 const MAX_HISTORY = 5;
 /** Ablehnungsgründe, die auf Fakten-/Kontaktwünsche hindeuten, bekommen einen Link ins Rechtliches-Panel. */
@@ -17,6 +16,8 @@ type AiChatOutcome =
   | { kind: "reject"; reason: string };
 
 interface AiExchange {
+  /** Stabiler React-Key für die Verlaufsliste — Array-Index wäre instabil, sobald ältere Einträge aus MAX_HISTORY herausfallen. */
+  id: number;
   message: string;
   outcome: AiChatOutcome;
 }
@@ -49,26 +50,50 @@ export function AiChat({
   // Diffs/Ergebnissen je Eintrag, siehe unten).
   const [history, setHistory] = useState<AiExchange[]>([]);
   const [active, setActive] = useState<AiExchange | null>(null);
+  // Reiner Zähler für stabile React-Keys der Verlaufsliste (kein Re-Render nötig, daher Ref statt State).
+  const nextExchangeId = useRef(0);
 
   const aiEdit = trpc.onboardingV2.aiEdit.useMutation();
   const applyAiEdit = trpc.onboardingV2.applyAiEdit.useMutation();
   const discardAiEdit = trpc.onboardingV2.discardAiEdit.useMutation();
 
-  const trimmed = message.trim();
-  const canSend = trimmed.length >= MIN_MESSAGE_LENGTH && !aiEdit.isPending;
+  // Eingabe UND Senden sind gesperrt, solange aiEdit ODER ein laufendes
+  // Übernehmen/Verwerfen des aktuellen Vorschlags offen ist. Ohne die
+  // beiden letzteren könnte während eines laufenden applyAiEdit/
+  // discardAiEdit eine neue Nachricht gesendet werden, deren onSuccess dann
+  // applyAiEdit.reset()/discardAiEdit.reset() aufruft — das würde die noch
+  // laufende Mutation "kappen": ihr onSuccess (→ onApplied → refetch +
+  // bumpPreview) würde nie mehr sichtbar, obwohl der Server bereits
+  // persistiert hat (Review-Fund Fix-Runde 1).
+  const busy =
+    aiEdit.isPending || applyAiEdit.isPending || discardAiEdit.isPending;
+  const canSend = canSendMessage({
+    text: message,
+    aiEditPending: aiEdit.isPending,
+    applyPending: applyAiEdit.isPending,
+    discardPending: discardAiEdit.isPending,
+  });
 
   const handleSend = () => {
     if (!canSend) return;
+    const trimmed = message.trim();
     aiEdit.mutate(
       { token, message: trimmed },
       {
         onSuccess: outcome => {
-          const exchange: AiExchange = { message: trimmed, outcome };
+          const exchange: AiExchange = {
+            id: nextExchangeId.current++,
+            message: trimmed,
+            outcome,
+          };
           setHistory(prev => [...prev, exchange].slice(-MAX_HISTORY));
           setActive(exchange);
           setMessage("");
           // Fehler eines vorherigen Übernehmen/Verwerfen dürfen nicht unter
-          // der neuen Karte hängen bleiben (andere Karte, anderer Vorschlag).
+          // der neuen Karte hängen bleiben (andere Karte, anderer
+          // Vorschlag) — dank `busy`/`canSend` oben kann das nur nach
+          // Abschluss eines vorherigen Übernehmen/Verwerfen passieren, nie
+          // während es noch läuft.
           applyAiEdit.reset();
           discardAiEdit.reset();
         },
@@ -118,6 +143,7 @@ export function AiChat({
             className="pb-studio-input"
             placeholder="z. B. „Mach die Überschrift knackiger“"
             value={message}
+            disabled={busy}
             onChange={e => setMessage(e.target.value)}
             onKeyDown={e => {
               if (e.key === "Enter") {
@@ -208,8 +234,8 @@ export function AiChat({
           {history
             .slice(0, -1)
             .reverse()
-            .map((exchange, i) => (
-              <li key={i}>{exchange.message}</li>
+            .map(exchange => (
+              <li key={exchange.id}>{exchange.message}</li>
             ))}
         </ul>
       )}

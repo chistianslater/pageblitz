@@ -1,7 +1,34 @@
 import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AiDiffList, AiStyleCard } from "./aiChatParts";
+import { AiDiffList, AiStyleCard, canSendMessage } from "./aiChatParts";
+
+describe("canSendMessage", () => {
+  const base = {
+    text: "Mach die Überschrift knackiger",
+    aiEditPending: false,
+    applyPending: false,
+    discardPending: false,
+  };
+
+  test("erlaubt Senden bei ausreichend langem Text und ohne laufende Anfrage", () => {
+    expect(canSendMessage(base)).toBe(true);
+  });
+
+  test("verbietet Senden bei zu kurzem (getrimmtem) Text", () => {
+    expect(canSendMessage({ ...base, text: "  ok " })).toBe(false);
+    expect(canSendMessage({ ...base, text: "" })).toBe(false);
+  });
+
+  test("verbietet Senden, während aiEdit läuft", () => {
+    expect(canSendMessage({ ...base, aiEditPending: true })).toBe(false);
+  });
+
+  test("verbietet Senden, während ein Übernehmen/Verwerfen des aktuellen Vorschlags läuft (Race-Fix)", () => {
+    expect(canSendMessage({ ...base, applyPending: true })).toBe(false);
+    expect(canSendMessage({ ...base, discardPending: true })).toBe(false);
+  });
+});
 
 describe("AiDiffList", () => {
   test("rendert je Eintrag Label, vorher und nachher", () => {

@@ -1,6 +1,39 @@
 import React from "react";
 import type { AiDiffEntry } from "@shared/onboardingV2/aiEdit";
 
+/** Deckt sich mit dem Server-Schema (`z.string().min(3)`, server/onboardingV2/router.ts aiEdit-Input). */
+export const MIN_AI_MESSAGE_LENGTH = 3;
+
+export interface SendGuardState {
+  text: string;
+  aiEditPending: boolean;
+  applyPending: boolean;
+  discardPending: boolean;
+}
+
+/**
+ * Reine Sende-Sperre für den KI-Chat: Text muss die Mindestlänge erreichen
+ * UND es darf weder eine `aiEdit`-Anfrage noch ein laufendes
+ * Übernehmen/Verwerfen des aktuellen Vorschlags offen sein. Letzteres
+ * verhindert, dass eine neue Anfrage während eines laufenden
+ * `applyAiEdit`/`discardAiEdit` gesendet wird — sonst würde `AiChat` beim
+ * Eintreffen der neuen Antwort deren Fehlerzustand zurücksetzen
+ * (`.reset()`), während die alte Mutation noch auf ihre Antwort wartet.
+ */
+export function canSendMessage({
+  text,
+  aiEditPending,
+  applyPending,
+  discardPending,
+}: SendGuardState): boolean {
+  return (
+    text.trim().length >= MIN_AI_MESSAGE_LENGTH &&
+    !aiEditPending &&
+    !applyPending &&
+    !discardPending
+  );
+}
+
 interface AiDiffListProps {
   diff: AiDiffEntry[];
 }
